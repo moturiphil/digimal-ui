@@ -5,10 +5,12 @@
         <!-- <sdCalendarButton />
         <sdExportButton />
         <sdShareButton /> -->
-        <sdButton size="small" type="success">
-          <sdFeatherIcons type="plus" size="14" />
-          Start Campaign
-        </sdButton>
+        <router-link v-bind:to="'campaigns/create'">
+          <sdButton size="small" type="success">
+            <sdFeatherIcons type="plus" size="14" />
+            Start Campaign
+          </sdButton>
+        </router-link>
       </div>
     </template>
   </sdPageHeader>
@@ -176,7 +178,7 @@
       <a-col :xxl="8" :xs="24"
         ><Suspense>
           <template #default>
-            <EventsDetails/>
+            <EventsDetails />
           </template>
           <template #fallback>
             <sdCards headless>
@@ -225,16 +227,26 @@
   </Main>
 </template>
 <script>
-import { CardBarChart2, EChartCard } from './style';
-import Chart from '../../components/utilities/chartjs';
-import { Main } from '../styled';
-import { defineAsyncComponent } from 'vue';
+import { CardBarChart2, EChartCard } from "./style";
+import Chart from "../../components/utilities/chartjs";
+import { Main } from "../styled";
+import { defineAsyncComponent } from "vue";
 
-const NetsDistributed = defineAsyncComponent(() => import('./overview/massnet/NetsDistributed'));
-const PerformancePerCounty = defineAsyncComponent(() => import('./overview/massnet/PerformancePerCounty'));
-const EventsDetails = defineAsyncComponent(() => import('./overview/massnet/EventsDetails'));
-const OnGoingEvents = defineAsyncComponent(() => import('./overview/massnet/OnGoingEvents'));
-const HouseHoldRegistered = defineAsyncComponent(() => import('./overview/massnet/HouseHoldRegistered'));
+const NetsDistributed = defineAsyncComponent(() =>
+  import("./overview/massnet/NetsDistributed")
+);
+const PerformancePerCounty = defineAsyncComponent(() =>
+  import("./overview/massnet/PerformancePerCounty")
+);
+const EventsDetails = defineAsyncComponent(() =>
+  import("./overview/massnet/EventsDetails")
+);
+const OnGoingEvents = defineAsyncComponent(() =>
+  import("./overview/massnet/OnGoingEvents")
+);
+const HouseHoldRegistered = defineAsyncComponent(() =>
+  import("./overview/massnet/HouseHoldRegistered")
+);
 
 const chartOptions = {
   legend: {
@@ -270,7 +282,7 @@ const chartOptions = {
 };
 
 const Ecommerce = {
-  name: 'CRM',
+  name: "CRM",
   components: {
     Main,
     CardBarChart2,

@@ -42,27 +42,49 @@ const routes = [
     ],
   },
   {
-    path: '/crud',
-    name: 'axios',
+    path: '/campaigns',
+    name: 'campaigns',
     component: () => import(/* webpackChunkName: "axios" */ '@/view/crud/axios/Index.vue'),
     children: [
       {
-        path: 'axios-view',
-        name: 'axios-view',
-        component: () => import(/* webpackChunkName: "axios-view" */ '@/view/crud/axios/View.vue'),
+        path: 'view',
+        name: '',
+        component: () => import(/* webpackChunkName: "axios-view" */ '@/view/pages/campaigns/viewCampaigns.vue'),
       },
       {
-        path: 'axios-edit/:id',
-        name: 'axios-edit',
+        path: 'edit/:id',
+        name: 'edit',
         component: () => import(/* webpackChunkName: "axios-edit" */ '@/view/crud/axios/edit.vue'),
       },
       {
-        path: 'axios-add',
-        name: 'axios-add',
-        component: () => import(/* webpackChunkName: "axios-add" */ '@/view/crud/axios/addNew.vue'),
+        path: 'create',
+        name: 'create',
+        component: () => import(/* webpackChunkName: "axios-add" */ '@/view/pages/campaigns/createCampaign.vue'),
       },
     ],
   },
+  // {
+  //   path: '/crud',
+  //   name: 'axios',
+  //   component: () => import(/* webpackChunkName: "axios" */ '@/view/crud/axios/Index.vue'),
+  //   children: [
+  //     {
+  //       path: 'axios-view',
+  //       name: 'axios-view',
+  //       component: () => import(/* webpackChunkName: "axios-view" */ '@/view/crud/axios/View.vue'),
+  //     },
+  //     {
+  //       path: 'axios-edit/:id',
+  //       name: 'axios-edit',
+  //       component: () => import(/* webpackChunkName: "axios-edit" */ '@/view/crud/axios/edit.vue'),
+  //     },
+  //     {
+  //       path: 'axios-add',
+  //       name: 'axios-add',
+  //       component: () => import(/* webpackChunkName: "axios-add" */ '@/view/crud/axios/addNew.vue'),
+  //     },
+  //   ],
+  // },
   {
     path: '/crud',
     name: 'fireStore',

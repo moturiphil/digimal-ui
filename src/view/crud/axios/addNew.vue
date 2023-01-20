@@ -1,6 +1,6 @@
 <template>
-  <sdPageHeader title="Add New">
-    <sdButton class="btn-add_new" size="default" key="1" type="primary">
+  <sdPageHeader title="Start Campaign">
+    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>
   </sdPageHeader>
@@ -20,7 +20,7 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <figure class="pro-image align-center-v">
+                    <!-- <figure class="pro-image align-center-v">
                       <img
                         :src="
                           url === null
@@ -43,14 +43,14 @@
                           <a-spin />
                         </div>
                       </figcaption>
-                    </figure>
-                    <a-form-item name="name" label="Name">
-                      <a-input v-model:value="formState.name" placeholder="Input Name" />
+                    </figure> -->
+                    <a-form-item name="campaign_name" label="Campaign Name">
+                      <a-input v-model:value="formState.name" placeholder="Input Campaign Name" />
                     </a-form-item>
-                    <a-form-item name="email" label="Email">
+                    <!-- <a-form-item name="email" label="Email">
                       <a-input v-model:value="formState.email" type="email" placeholder="example@gmail.com" />
-                    </a-form-item>
-                    <a-form-item name="country" label="Country">
+                    </a-form-item> -->
+                    <!-- <a-form-item name="county" label="County">
                       <a-select v-model:value="formState.country" :style="{ width: '100%' }">
                         <a-select-option value="">Please Select</a-select-option>
                         <a-select-option value="bangladesh">Bangladesh</a-select-option>
@@ -73,19 +73,22 @@
                     </a-form-item>
                     <a-form-item name="position" label="Position">
                       <a-input v-model:value="formState.position" placeholder="Position" />
-                    </a-form-item>
-                    <a-form-item label="Joining Date">
+                    </a-form-item> -->
+                    <a-form-item label="Campaign Start Date">
                       <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
                     </a-form-item>
-                    <a-form-item name="status" label="Status">
+                    <a-form-item label="Campaign End Date">
+                      <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
+                    </a-form-item>
+                    <!-- <a-form-item name="status" label="Status">
                       <a-radio-group v-model:value="formState.status">
                         <a-radio value="active">Active</a-radio>
                         <a-radio value="deactivated">Deactivated</a-radio>
                         <a-radio value="blocked">Blocked</a-radio>
                       </a-radio-group>
-                    </a-form-item>
+                    </a-form-item> -->
                     <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="primary">
+                      <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? 'Loading...' : 'Submit' }}
                       </sdButton>
                     </div>

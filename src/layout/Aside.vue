@@ -744,12 +744,17 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu> -->
-      <a-menu-item @click="toggleCollapsed" key="gallery">
-        <router-link to="/page/gallery">
-          <sdFeatherIcons type="image" />
-          <span> Campaign </span>
-        </router-link>
-      </a-menu-item>
+      <a-sub-menu key="widgets">
+        <template v-slot:title
+          ><sdFeatherIcons type="server" /><span>Campagins</span></template
+        >
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/campaigns/create"> Start Campaign </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetsCard">
+          <router-link to="/campaigns/view"> View Campaigns </router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-menu-item @click="toggleCollapsed" key="pricing">
         <router-link to="/page/pricing">
           <sdFeatherIcons type="dollar-sign" />
