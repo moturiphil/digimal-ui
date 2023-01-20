@@ -1,7 +1,7 @@
 export const auth0options = {
   theme: {
     logo: 'https://demo.jsnorm.com/react/strikingdash/static/media/Logo_Dark.9ef25a33.svg',
-    primaryColor: '#5F63F2',
+    primaryColor: '#22C997',
     labeledSubmitButton: true,
   },
   avatar: null,

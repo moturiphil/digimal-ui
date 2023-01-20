@@ -3,7 +3,7 @@
     <ImageUrl :class="`banner-card banner-card-${type}`" :bgUrl="bgImage">
       <div class="banner-card__top align-center-v justify-content-between">
         <h4 class="banner-card__title">
-          <img :src="require(`../../static/img/icon/${icon}`)" alt="StrikingDash Banner" />
+          <img :src="require(`../../static/img/icon/${icon}`)" alt="MassNet Banner" />
           <span>{{ title }}</span>
         </h4>
         <div class="banner-card__action">

@@ -1,5 +1,10 @@
 # Recommended configuration for the application setup
 
+## Flow for User Registration and User Login
+
+![vue-3-authentication-jwt-example-flow](vue-3-authentication-jwt-example-flow.png)
+
+
 ## Project setup
 ```
 yarn
