@@ -14,31 +14,31 @@ const routes = [
         name: 'home',
         component: () => import(/* webpackChunkName: "Home" */ '@/view/dashboard'),
       },
-      {
-        path: 'business',
-        name: 'business',
-        component: () => import(/* webpackChunkName: "Business" */ '@/view/dashboard/Business.vue'),
-      },
-      {
-        path: 'eco',
-        name: 'eco',
-        component: () => import(/* webpackChunkName: "Business" */ '@/view/dashboard/Ecommerce.vue'),
-      },
-      {
-        path: 'performance',
-        name: 'performance',
-        component: () => import(/* webpackChunkName: "Performance" */ '@/view/dashboard/Performance.vue'),
-      },
+      // {
+      //   path: 'business',
+      //   name: 'business',
+      //   component: () => import(/* webpackChunkName: "Business" */ '@/view/dashboard/Business.vue'),
+      // },
+      // {
+      //   path: 'eco',
+      //   name: 'eco',
+      //   component: () => import(/* webpackChunkName: "Business" */ '@/view/dashboard/Ecommerce.vue'),
+      // },
+      // {
+      //   path: 'performance',
+      //   name: 'performance',
+      //   component: () => import(/* webpackChunkName: "Performance" */ '@/view/dashboard/Performance.vue'),
+      // },
       {
         path: 'crm',
         name: 'crm',
         component: () => import(/* webpackChunkName: "CRM" */ '@/view/dashboard/CRM.vue'),
       },
-      {
-        path: 'sales',
-        name: 'sales',
-        component: () => import(/* webpackChunkName: "sales" */ '@/view/dashboard/Sales.vue'),
-      },
+      // {
+      //   path: 'sales',
+      //   name: 'sales',
+      //   component: () => import(/* webpackChunkName: "sales" */ '@/view/dashboard/Sales.vue'),
+      // },
     ],
   },
   {

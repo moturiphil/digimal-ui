@@ -111,10 +111,10 @@ const TotalRevenue = defineComponent({
     const performanceDatasets = computed(() => [
       {
         data: performanceState.value.users[1],
-        borderColor: '#5F63F2',
+        borderColor: '#5F63F230',
         borderWidth: 4,
         fill: true,
-        backgroundColor: () => chartMethods('perform', ['#5F63F230', '#ffffff05']),
+        backgroundColor: () => chartMethods('perform', ['#20C997', '#ffffff05']),   // #5F63F230 
         label: 'Current period',
         pointStyle: 'circle',
         pointRadius: '0',
@@ -122,7 +122,7 @@ const TotalRevenue = defineComponent({
         pointBorderColor: '#fff',
         pointBackgroundColor: '#5F63F2',
         hoverBorderWidth: 5,
-        amount: '$7,596',
+        amount: '77,461',
         amountClass: 'current-amount',
       },
       {
@@ -131,12 +131,12 @@ const TotalRevenue = defineComponent({
         borderWidth: 2,
         fill: false,
         backgroundColor: '#00173750',
-        label: 'Previous period',
+        label: 'Previous Year',
         borderDash: [3, 3],
         pointStyle: 'circle',
         pointRadius: '0',
         hoverRadius: '0',
-        amount: '$3,258',
+        amount: '62,258',
         amountClass: 'prev-amount',
       },
     ]);

@@ -225,7 +225,7 @@ const chartOptions = {
 const dataSource = [
   {
     key: '1',
-    name: 'Samsung Galaxy S8 256GB',
+    name: 'Nakuru County',
     price: '$280',
     sold: 126,
     revenue: '$38,536',

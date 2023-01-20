@@ -51,11 +51,11 @@
           </a-col>
           <a-col :lg="!topMenu ? 14 : 15" :md="8" :sm="0" :xs="0">
             <TopMenu v-if="topMenu && innerWidth > 991" />
-            <HeaderSearch v-else />
+            <!-- <HeaderSearch v-else /> -->
           </a-col>
 
           <a-col :lg="6" :md="10" :sm="0" :xs="0">
-            <!-- <TopMenuSearch v-if="topMenu && innerWidth > 991">
+            <TopMenuSearch v-if="topMenu && innerWidth > 991">
               <div class="top-right-wrap d-flex">
                 <a
                   :class="`${
@@ -88,7 +88,7 @@
                 <AuthInfo />
               </div>
             </TopMenuSearch>
-            <AuthInfo v-else /> -->
+            <AuthInfo v-else />
           </a-col>
           <a-col :style="{ position: 'static' }" :md="0" :sm="18" :xs="12">
             <div class="mobile-action">
@@ -144,7 +144,7 @@
                 suppressScrollX: true,
               }"
             >
-              <p class="sidebar-nav-title">MAIN MENU</p>
+              <!-- <p class="sidebar-nav-title">MAIN MENU</p> -->
               <AsideItems
                 :toggleCollapsed="toggleCollapsedMobile"
                 :topMenu="topMenu"
