@@ -26,7 +26,7 @@
             <a-input
               v-model:value="formState.url"
               name="input-url"
-              placeholder="https://strikingdash-vue-admin-dashboard-template"
+              placeholder="https://massnet-campaign-admin-dashboard-template"
             />
           </a-form-item>
           <a-form-item label="Phone">

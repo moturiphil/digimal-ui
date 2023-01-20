@@ -7,7 +7,7 @@
     <div class="auth-contents">
       <a-form @finish="handleSubmit" :model="formState" layout="vertical">
         <sdHeading as="h3">
-          Sign in to <span class="color-secondary">Admin</span>
+          Sign in to <span class="color-success">Campaign Dashboard</span>
         </sdHeading>
         <a-form-item name="username" label="Username or Email Address">
           <a-input type="email" v-model:value="formState.email" />
@@ -29,16 +29,16 @@
           <sdButton
             class="btn-signin"
             htmlType="submit"
-            type="primary"
+            type="success"
             size="large"
           >
             {{ isLoading ? "Loading..." : "Sign In" }}
           </sdButton>
         </a-form-item>
         <p class="form-divider">
-          <span>Or</span>
+          <!-- <span>Or</span> -->
         </p>
-        <ul class="social-login">
+        <!-- <ul class="social-login">
           <li>
             <a class="google-signup" href="#">
               <img :src="require('@/static/img/google.png')" alt="" />
@@ -55,11 +55,11 @@
               <TwitterOutlined />
             </a>
           </li>
-        </ul>
-        <div class="auth0-login">
+        </ul> -->
+        <!-- <div class="auth0-login">
           <a href="#" @click="() => lock.show()"> Sign In with Auth0 </a>
           <router-link to="/auth/fb-login">Sign In With Firebase</router-link>
-        </div>
+        </div> -->
       </a-form>
     </div>
   </AuthWrapper>

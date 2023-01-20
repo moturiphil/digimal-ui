@@ -6,14 +6,13 @@
           <img :src="require('@/static/img/auth/topShape.png')" alt="" class="topShape" />
           <img :src="require('@/static/img/auth/bottomShape.png')" alt="" class="bottomShape" />
           <Content>
-            <img :style="{ width: '150px' }" :src="require('@/static/img/Logo_Dark.svg')" alt="" />
+            <img :style="{ width: '150px' }" :src="require('@/static/img/PMI_logo.svg')" alt="" />
             <br />
             <br />
             <sdHeading as="h1">
-              MassNet Capaign <br />
-              Web Application
+              MassNet Campaign <br />
             </sdHeading>
-            <img class="auth-content-figure" :src="require('@/static/img/auth/Illustration.png')" alt="" />
+            <img class="auth-content-figure" :src="require('@/static/img/auth/coat_of_arms.png')" alt="" />
           </Content>
         </div>
       </Aside>

@@ -1019,7 +1019,7 @@ const Aside = Styled.aside`
   width: 100%;
   height: 100vh;
   position: relative;
-  background-image: url("${require('@/static/img/auth/BG.png')}");
+  background-image: url("${require('@/static/img/auth/BG.jpeg')}");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-position: left top;
