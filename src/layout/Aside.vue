@@ -755,12 +755,23 @@
           <router-link to="/campaigns/view"> View Campaigns </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item @click="toggleCollapsed" key="pricing">
-        <router-link to="/page/pricing">
+      <a-sub-menu key="widgets">
+        <template v-slot:title
+          ><sdFeatherIcons type="server" /><span>Events</span></template
+        >
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/events/event-create"> Start Event </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetsCard">
+          <router-link to="/events/eventview"> View Events </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+      <!-- <a-menu-item @click="toggleCollapsed" key="pricing">
+        <router-link to="/events">
           <sdFeatherIcons type="dollar-sign" />
           <span> Events </span>
         </router-link>
-      </a-menu-item>
+      </a-menu-item> -->
       <!-- <a-menu-item @click="toggleCollapsed" key="banners">
         <router-link to="/page/banners">
           <sdFeatherIcons type="cast" />

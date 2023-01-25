@@ -86,13 +86,13 @@ const routes = [
   //   ],
   // },
   {
-    path: '/crud',
+    path: '/events',
     name: 'fireStore',
     component: () => import(/* webpackChunkName: "fireStore" */ '@/view/crud/fireStore/Index.vue'),
     children: [
       {
-        path: 'fireStore-view',
-        name: 'fireStore-view',
+        path: 'event-view',
+        name: 'event-view',
         component: () => import(/* webpackChunkName: "fireStore-view" */ '@/view/crud/fireStore/View.vue'),
       },
       {
@@ -101,8 +101,8 @@ const routes = [
         component: () => import(/* webpackChunkName: "fireStore-edit" */ '@/view/crud/fireStore/edit.vue'),
       },
       {
-        path: 'fireStore-add',
-        name: 'fireStore-add',
+        path: 'event-create',
+        name: 'event-create',
         component: () => import(/* webpackChunkName: "fireStore-add" */ '@/view/crud/fireStore/addNew.vue'),
       },
     ],

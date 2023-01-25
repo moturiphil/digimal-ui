@@ -1,21 +1,19 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Data List">
+    <sdPageHeader title="MassNet Events">
       <template #subTitle>
-        <div>
-          <sdButton class="btn-add_new" size="default" type="primary">
-            <router-link to="/crud/fireStore-add"> <sdFeatherIcons type="plus" size="14" /> Add New </router-link>
-          </sdButton>
-        </div>
+        <sdButton class="btn-add_new" size="default" type="success">
+          <router-link to="/Events/create"> <sdFeatherIcons type="plus" size="14" /> Start New Event</router-link>
+        </sdButton>
       </template>
-      <template #buttons
-        ><div class="search-box">
+      <template #buttons>
+        <div class="search-box">
           <span class="search-icon">
             <sdFeatherIcons type="search" size="14" />
           </span>
-          <input
-            @keyup="onHandleSearch"
-            v-model="searchValue"
+          <a-input
+            @change="onHandleSearch"
+            v-model:value.trim="formState.searchItem"
             type="text"
             name="recored-search"
             placeholder="Search Here"
@@ -50,114 +48,104 @@
 import { RecordViewWrapper } from './style';
 import { Main, TableWrapper } from '../../styled';
 import { useStore } from 'vuex';
-import { computed, onMounted, ref } from 'vue';
-import moment from 'moment';
+import { computed, onMounted, ref, reactive, defineComponent } from 'vue';
+import dayjs from 'dayjs';
 
 const columns = [
   {
-    title: 'Name',
+    title: 'Event Name',
     dataIndex: 'name',
     key: 'name',
   },
   {
-    title: 'Email',
+    title: 'Event Start Date',
     dataIndex: 'email',
     key: 'email',
   },
   {
-    title: 'Company',
+    title: 'Event End Date',
     dataIndex: 'company',
     key: 'company',
-  },
-  {
-    title: 'Position',
-    dataIndex: 'position',
-    key: 'position',
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-  },
-  {
-    title: 'Joining Date',
-    dataIndex: 'jdate',
-    key: 'jdate',
-  },
-  {
-    title: 'Actions',
-    dataIndex: 'action',
-    key: 'action',
-    width: '90px',
-  },
+  }
 ];
 
-const ViewPage = {
+const ViewPage = defineComponent({
   name: 'ViewPage',
   components: { RecordViewWrapper, Main, TableWrapper },
   setup() {
     const { state, dispatch } = useStore();
-    const crud = computed(() => state.fireStore.data);
-    const isLoading = computed(() => state.fireStore.loading);
+    const crud = computed(() => state.crud.data);
+    const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
-    const searchValue = ref('');
 
     onMounted(() => {
-      dispatch('fireStoreCrudGetData');
+      dispatch('axiosCrudGetData');
     });
 
-    const handleDelete = id => {
+    const handleDelete = (id) => {
       const confirm = window.confirm('Are you sure delete this?');
       if (confirm) {
-        dispatch('fireStoreDataDelete', id);
+        dispatch('axiosDataDelete', {
+          id,
+          getData: () => {
+            dispatch('axiosCrudGetData');
+          },
+        });
       }
       return false;
     };
 
+    const formState = reactive({
+      searchItem: '',
+    });
+
     const onHandleSearch = () => {
-      dispatch('fireStoreDataSearch', searchValue.value);
+      dispatch('axiosDataSearch', formState.searchItem);
     };
 
-    const dataSource = computed(
-      () =>
-        crud.value.length &&
-        crud.value.map((person, key) => {
-          const { id, name, email, company, position, join, status, city, country, image } = person;
+    const dataSource = computed(() =>
+      crud.value.length
+        ? crud.value.map((person, key) => {
+            const { id, name, email, company, position, join, status, city, country, image } = person;
 
-          return {
-            key: key + 1,
-            name: (
-              <div class="record-img align-center-v">
-                <img src={image ? image : require('@/static/img/avatar/profileImage.png')} alt={id} />
-                <span>
-                  <span>{name}</span>
-                  <span class="record-location">
-                    {city},{country}
+            return {
+              key: key + 1,
+              name: (
+                <div class="record-img align-center-v">
+                  <img
+                    src={image ? process.env.VUE_APP_BASE_URL + image : require('@/static/img/avatar/profileImage.png')}
+                    alt={id}
+                  />
+                  <span>
+                    <span>{name}</span>
+                    <span class="record-location">
+                      {city},{country}
+                    </span>
                   </span>
-                </span>
-              </div>
-            ),
-            email,
-            company,
-            position,
-            jdate: moment(join).format('YYYY-MM-DD'),
-            status: <span class={`status ${status}`}>{status}</span>,
-            action: (
-              <div class="table-actions">
-                <router-link class="edit" to={`/crud/fireStore-edit/${id}`}>
-                  <sdFeatherIcons type="edit" size={14} />
-                </router-link>
-                &nbsp;&nbsp;&nbsp;
-                <router-link class="delete" onClick={() => handleDelete(id)} to="#">
-                  <sdFeatherIcons type="trash-2" size={14} />
-                </router-link>
-              </div>
-            ),
-          };
-        }),
+                </div>
+              ),
+              email,
+              company,
+              position,
+              jdate: dayjs(join).format('YYYY-MM-DD'),
+              status: <span class={`status ${status}`}>{status}</span>,
+              action: (
+                <div class="table-actions">
+                  <router-link class="edit" to={`/crud/axios-edit/${id}`}>
+                    <sdFeatherIcons type="edit" size={14} />
+                  </router-link>
+                  &nbsp;&nbsp;&nbsp;
+                  <router-link class="delete" onClick={() => handleDelete(id)} to="#">
+                    <sdFeatherIcons type="trash-2" size={14} />
+                  </router-link>
+                </div>
+              ),
+            };
+          })
+        : [],
     );
 
-    const onSelectChange = selectedRowKey => {
+    const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
 
@@ -176,10 +164,10 @@ const ViewPage = {
       onSelectChange,
       dataSource,
       columns,
-      searchValue,
+      formState,
     };
   },
-};
+});
 
 export default ViewPage;
 </script>

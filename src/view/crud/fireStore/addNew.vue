@@ -5,92 +5,71 @@
     </sdButton>
   </sdPageHeader>
   <Main>
-    <a-row :gutter="15">
-      <a-col :xs="24">
-        <RecordFormWrapper>
-          <sdCards headless>
-            <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24">
-                <BasicFormWrapper>
-                  <a-form
-                    class="add-record-form"
-                    :style="{ width: '100%' }"
-                    layout="vertical"
-                    name="addnew"
-                    :model="formState"
-                    @finish="handleSubmit"
-                  >
-                    <figure class="pro-image align-center-v">
-                      <img :src="url === null ? require('@/static/img/avatar/profileImage.png') : url" alt="" />
-                      <figcaption>
-                        <a-upload v-bind="props">
-                          <a class="upload-btn" to="#">
-                            <sdFeatherIcons type="camera" size="16" />
-                          </a>
-                        </a-upload>
-                        <div class="profile-info">
-                          <sdHeading as="h4">Profile Photo</sdHeading>
-                        </div>
-
-                        <div v-if="isFileLoading" class="isUploadSpain">
-                          <a-spin />
-                        </div>
-                      </figcaption>
-                    </figure>
-                    <a-form-item name="name" label="Name">
-                      <a-input v-model:value="formState.name" placeholder="Input Name" />
-                    </a-form-item>
-                    <a-form-item name="email" label="Email">
-                      <a-input v-model:value="formState.email" type="email" placeholder="example@gmail.com" />
-                    </a-form-item>
-                    <a-form-item name="country" label="Country">
-                      <a-select v-model:value="formState.country" :style="{ width: '100%' }">
-                        <a-select-option value="">Please Select</a-select-option>
-                        <a-select-option value="bangladesh">Bangladesh</a-select-option>
-                        <a-select-option value="india">India</a-select-option>
-                        <a-select-option value="pakistan">Pakistan</a-select-option>
-                        <a-select-option value="srilanka">Srilanka</a-select-option>
-                      </a-select>
-                    </a-form-item>
-                    <a-form-item name="city" label="City">
-                      <a-select v-model:value="formState.city" :style="{ width: '100%' }">
-                        <a-select-option value="">Please Select</a-select-option>
-                        <a-select-option value="dhaka">Dhaka</a-select-option>
-                        <a-select-option value="mymensingh">Mymensingh</a-select-option>
-                        <a-select-option value="khulna">Khulna</a-select-option>
-                        <a-select-option value="barisal">Barisal</a-select-option>
-                      </a-select>
-                    </a-form-item>
-                    <a-form-item name="company" label="Company">
-                      <a-input v-model:value="formState.company" placeholder="Company Name" />
-                    </a-form-item>
-                    <a-form-item name="position" label="Position">
-                      <a-input v-model:value="formState.position" placeholder="Position" />
-                    </a-form-item>
-                    <a-form-item label="Joining Date">
-                      <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
-                    </a-form-item>
-                    <a-form-item name="status" label="Status">
-                      <a-radio-group v-model:value="formState.status">
-                        <a-radio value="active">Active</a-radio>
-                        <a-radio value="deactivated">Deactivated</a-radio>
-                        <a-radio value="blocked">Blocked</a-radio>
-                      </a-radio-group>
-                    </a-form-item>
-                    <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="primary">
-                        {{ isLoading ? 'Loading...' : 'Submit' }}
-                      </sdButton>
-                    </div>
-                  </a-form>
-                </BasicFormWrapper>
-              </a-col>
-            </a-row>
-          </sdCards>
-        </RecordFormWrapper>
-      </a-col>
-    </a-row>
-  </Main>
+      <a-row :gutter="15">
+        <a-col :xs="24">
+          <RecordFormWrapper>
+            <sdCards headless>
+              <a-row justify="center">
+                <a-col :xl="10" :md="16" :xs="24">
+                  <BasicFormWrapper>
+                    <a-form
+                      class="add-record-form"
+                      :style="{ width: '100%' }"
+                      layout="vertical"
+                      name="addnew"
+                      :model="formState"
+                      @finish="handleSubmit"
+                    >
+                      <!-- <figure class="pro-image align-center-v">
+                        <img
+                          :src="
+                            url === null
+                              ? require('@/static/img/avatar/profileImage.png')
+                              : `https://demo.jsnorm.com/laravel/strikingdash-api/${url}`
+                          "
+                          alt=""
+                        />
+                        <figcaption>
+                          <a-upload v-bind="props">
+                            <a class="upload-btn" to="#">
+                              <sdFeatherIcons type="camera" size="16" />
+                            </a>
+                          </a-upload>
+                          <div class="info">
+                            <sdHeading as="h4">Profile Photo</sdHeading>
+                          </div>
+  
+                          <div v-if="isFileLoading" class="isUploadSpain">
+                            <a-spin />
+                          </div>
+                        </figcaption>
+                      </figure> -->
+                      <a-form-item name="event_name" label="Event Name">
+                        <a-input v-model:value="formState.name" placeholder="Input Event Name" />
+                      </a-form-item>
+                      <a-form-item name="event_code" label="Event Code">
+                        <a-input v-model:value="formState.code" placeholder="Input Event Code" />
+                      </a-form-item>
+                      <a-form-item label="Event Start Date">
+                        <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
+                      </a-form-item>
+                      <a-form-item label="Event End Date">
+                        <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
+                      </a-form-item>
+                      <div class="record-form-actions text-right">
+                        <sdButton size="default" htmlType="Save" type="success">
+                          {{ isLoading ? 'Loading...' : 'Submit' }}
+                        </sdButton>
+                      </div>
+                    </a-form>
+                  </BasicFormWrapper>
+                </a-col>
+              </a-row>
+            </sdCards>
+          </RecordFormWrapper>
+        </a-col>
+      </a-row>
+    </Main>
 </template>
 <script>
 import { RecordFormWrapper } from './style';

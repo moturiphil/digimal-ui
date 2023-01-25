@@ -1,9 +1,9 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Data List">
+    <sdPageHeader title="MassNet Campaigns">
       <template #subTitle>
-        <sdButton class="btn-add_new" size="default" type="primary">
-          <router-link to="/crud/axios-add"> <sdFeatherIcons type="plus" size="14" /> Add New </router-link>
+        <sdButton class="btn-add_new" size="default" type="success">
+          <router-link to="/campaigns/create"> <sdFeatherIcons type="plus" size="14" /> Start New Campaign</router-link>
         </sdButton>
       </template>
       <template #buttons>
@@ -53,41 +53,20 @@ import dayjs from 'dayjs';
 
 const columns = [
   {
-    title: 'Name',
+    title: 'Campaign Name',
     dataIndex: 'name',
     key: 'name',
   },
   {
-    title: 'Email',
+    title: 'Campaign Start Date',
     dataIndex: 'email',
     key: 'email',
   },
   {
-    title: 'Company',
+    title: 'Campaign End Date',
     dataIndex: 'company',
     key: 'company',
-  },
-  {
-    title: 'Position',
-    dataIndex: 'position',
-    key: 'position',
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-  },
-  {
-    title: 'Joining Date',
-    dataIndex: 'jdate',
-    key: 'jdate',
-  },
-  {
-    title: 'Actions',
-    dataIndex: 'action',
-    key: 'action',
-    width: '90px',
-  },
+  }
 ];
 
 const ViewPage = defineComponent({
