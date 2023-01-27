@@ -23,7 +23,21 @@ import crud from './modules/crud/axios/actionCreator';
 import auth from './modules/authentication/axios/actionCreator';
 import KanbanBoard from './modules/kanban/actionCreator';
 
+
 export default createStore({
+  state: {
+    user: null
+  },
+  mutations: {
+    setUser(state, user) {
+      state.user = user;
+    }
+  },
+  actions: {
+    setUser({commit}, user) {
+      commit('setUser', user)
+    }
+  },
   modules: {
     themeLayout,
     gallery,

@@ -32,10 +32,24 @@ const router = createRouter({
   routes,
 });
 
+// router.beforeEach((to, from, next) => {
+  
+//   if (to.meta.auth && store.state.auth.login) {
+//     // next({ to: '/' });
+//     next('/');
+//   } else if (!to.meta.auth && !store.state.auth.login) {
+//     next({ name: 'login' });
+//   } else {    
+//     next();
+//   }
+
+//   window.scrollTo(0,0);
+// });
 router.beforeEach((to, from, next) => {
   
-  if (to.meta.auth && store.state.auth.login) {
-    next({ to: '/' });
+  console.log(store.state.auth.login);
+  if (1==1) {
+    next();
   } else if (!to.meta.auth && !store.state.auth.login) {
     next({ name: 'login' });
   } else {    
@@ -44,6 +58,9 @@ router.beforeEach((to, from, next) => {
 
   window.scrollTo(0,0);
 });
+
+
+
 
 
 export default router;

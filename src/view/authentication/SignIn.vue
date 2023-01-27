@@ -1,119 +1,43 @@
 <template>
-  <AuthWrapper>
-    <p class="auth-notice">
-      Don&rsquo;t have an account?
-      <router-link to="/auth/register">Sign up now</router-link>
-    </p>
-    <div class="auth-contents">
-      <a-form @finish="handleSubmit" :model="formState" layout="vertical">
-        <sdHeading as="h3">
-          Sign in to <span class="color-success">Campaign Dashboard</span>
-        </sdHeading>
-        <a-form-item name="username" label="Username or Email Address">
-          <a-input type="email" v-model:value="formState.email" />
-        </a-form-item>
-        <a-form-item name="password" initialValue="123456" label="Password">
-          <a-input
-            type="password"
-            v-model:value="formState.password"
-            placeholder="Password"
-          />
-        </a-form-item>
-        <div class="auth-form-action">
-          <a-checkbox @change="onChange">Keep me logged in</a-checkbox>
-          <router-link class="forgot-pass-link" to="/auth/forgotPassword">
-            Forgot password?
-          </router-link>
-        </div>
-        <a-form-item>
-          <sdButton
-            class="btn-signin"
-            htmlType="submit"
-            type="success"
-            size="large"
-          >
-            {{ isLoading ? "Loading..." : "Sign In" }}
-          </sdButton>
-        </a-form-item>
-        <p class="form-divider">
-          <!-- <span>Or</span> -->
-        </p>
-        <ul class="social-login">
-          <li>
-            <a class="google-signup" href="#">
-              <img :src="require('@/static/img/google.png')" alt="" />
-              <span>Sign in with Google</span>
-            </a>
-          </li>
-          <li>
-            <a class="facebook-sign" href="#">
-              <FacebookOutlined />
-            </a>
-          </li>
-          <li>
-            <a class="twitter-sign" href="#">
-              <TwitterOutlined />
-            </a>
-          </li>
-        </ul>
-        <div class="auth0-login">
-          <a href="#" @click="() => lock.show()"> Sign In with Auth0 </a>
-          <router-link to="/auth/fb-login">Sign In With Firebase</router-link>
-        </div>
-      </a-form>
-    </div>
-  </AuthWrapper>
+  <div>
+    <form @submit.prevent="login">
+      <input type="text" v-model="user.id_no" placeholder="ID Number" />
+      <input type="password" v-model="user.password" placeholder="Password" />
+      <button type="submit">Sign In</button>
+    </form>
+  </div>
 </template>
-<script>
-import { FacebookOutlined, TwitterOutlined } from "@ant-design/icons-vue";
-import { computed, reactive, ref, defineComponent } from "vue";
-import { useStore } from "vuex";
-import { AuthWrapper } from "./style";
-import { useRouter } from "vue-router";
-import { Auth0Lock } from "auth0-lock";
-import { auth0options } from "@/config/auth0";
-const domain = process.env.VUE_APP_AUTH0_DOMAIN;
-const clientId = process.env.VUE_APP_AUTH0_CLIENT_ID;
 
-const SignIn = defineComponent({
-  name: "SignIn",
-  components: { FacebookOutlined, TwitterOutlined, AuthWrapper },
-  setup() {
-    const { state, dispatch } = useStore();
-    const isLoading = computed(() => state.auth.loading);
-    const checked = ref(null);
-    const router = useRouter();
-    const handleSubmit = () => {
-      router.push("/");
-      dispatch("login");
-    };
-    const onChange = (checked) => {
-      checked.value = checked;
-    };
-    const formState = reactive({
-      email: "example@email.com",
-      password: "1234565",
-    });
-    const lock = new Auth0Lock(clientId, domain, auth0options);
-    lock.on("authenticated", (authResult) => {
-      lock.getUserInfo(authResult.accessToken, (error) => {
-        if (error) {
-          return;
-        }
-        handleSubmit();
-        lock.hide();
-      });
-    });
+<script>
+import AuthService from '../../services/auth.service';
+import { mapActions } from 'vuex';
+
+export default {
+  data() {
     return {
-      isLoading,
-      checked,
-      handleSubmit,
-      onChange,
-      formState,
-      lock,
+      user: {
+        id_no: '',
+        password: '',
+      },
     };
   },
-});
-
-export default SignIn;
+  methods: {
+    ...mapActions(['setUser']),
+    async login() {
+      try {
+        AuthService.login(this.user)
+        .then(response => {
+            this.setUser(response.data.user);
+            this.$router.push('/');
+        })
+        .catch(error => {
+            console.log(error);
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  },
+};
 </script>
+
