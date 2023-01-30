@@ -47,8 +47,8 @@ const router = createRouter({
 // });
 router.beforeEach((to, from, next) => {
   
-  console.log(store.state.auth.login);
-  if (1==1) {
+  // console.log(store.state.auth.login);
+  if (store) {
     next();
   } else if (!to.meta.auth && !store.state.auth.login) {
     next({ name: 'login' });
@@ -58,9 +58,5 @@ router.beforeEach((to, from, next) => {
 
   window.scrollTo(0,0);
 });
-
-
-
-
 
 export default router;
