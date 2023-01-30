@@ -81,13 +81,32 @@ const ViewPage = defineComponent({
     // onMounted(() => {
     //   dispatch('axiosCrudGetData');
     // });
+
+    // const dataSource = computed(() => []);
+
+    const dataSource = ref([]);
+    // onMounted(() => {
+    //   axios
+    //     .get("http://localhost:8000/api/campaign_all", {
+    //       headers: authHeader(),
+    //     })
+    //     .then((response) => {
+    //       console.log(response.data.data);
+    //       dataSource.value = response.data.data;
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //     });
+    // });
+
     onMounted(() => {
       axios
         .get("http://localhost:8000/api/campaign_all", {
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response);
+          console.log(response.data.data);
+          dataSource.value = response.data.data;
         })
         .catch((error) => {
           console.error(error);
@@ -110,8 +129,6 @@ const ViewPage = defineComponent({
     const formState = reactive({
       searchItem: "",
     });
-
-    const dataSource = computed(() => []);
 
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
@@ -137,77 +154,4 @@ const ViewPage = defineComponent({
 });
 
 export default ViewPage;
-
-//  <a-input
-//             @change="onHandleSearch"
-//             v-model:value.trim="formState.searchItem"
-//             type="text"
-//             name="recored-search"
-//             placeholder="Search Here"
-//           />
-
-// const onHandleSearch = () => {
-//   dispatch("axiosDataSearch", formState.searchItem);
-// };
-
-// const dataSource = computed(() =>
-//   crud.value.length
-//     ? crud.value.map((person, key) => {
-//         const {
-//           id,
-//           name,
-//           email,
-//           company,
-//           position,
-//           join,
-//           status,
-//           city,
-//           country,
-//           image,
-//         } = person;
-
-//         return {
-//           key: key + 1,
-//           name: (
-//             <div class="record-img align-center-v">
-//               <img
-//                 src={
-//                   image
-//                     ? process.env.VUE_APP_BASE_URL + image
-//                     : require("@/static/img/avatar/profileImage.png")
-//                 }
-//                 alt={id}
-//               />
-//               <span>
-//                 <span>{name}</span>
-//                 <span class="record-location">
-//                   {city},{country}
-//                 </span>
-//               </span>
-//             </div>
-//           ),
-//           email,
-//           company,
-//           position,
-//           jdate: dayjs(join).format("YYYY-MM-DD"),
-//           status: <span class={`status ${status}`}>{status}</span>,
-//           action: (
-//             <div class="table-actions">
-//               <router-link class="edit" to={`/crud/axios-edit/${id}`}>
-//                 <sdFeatherIcons type="edit" size={14} />
-//               </router-link>
-//               &nbsp;&nbsp;&nbsp;
-//               <router-link
-//                 class="delete"
-//                 onClick={() => handleDelete(id)}
-//                 to="#"
-//               >
-//                 <sdFeatherIcons type="trash-2" size={14} />
-//               </router-link>
-//             </div>
-//           ),
-//         };
-//       })
-//     : []
-// );
 </script>
