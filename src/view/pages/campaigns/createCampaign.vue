@@ -1,174 +1,138 @@
 <template>
-    <sdPageHeader title="Start Campaign">
-      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-        <router-link to="/crud/axios-view">View All</router-link>
-      </sdButton>
-    </sdPageHeader>
-    <Main>
-      <a-row :gutter="15">
-        <a-col :xs="24">
-          <RecordFormWrapper>
-            <sdCards headless>
-              <a-row justify="center">
-                <a-col :xl="10" :md="16" :xs="24">
-                  <BasicFormWrapper>
-                    <a-form
-                      class="add-record-form"
-                      :style="{ width: '100%' }"
-                      layout="vertical"
-                      name="addnew"
-                      :model="formState"
-                      @finish="handleSubmit"
-                    >
-                      <!-- <figure class="pro-image align-center-v">
-                        <img
-                          :src="
-                            url === null
-                              ? require('@/static/img/avatar/profileImage.png')
-                              : `https://demo.jsnorm.com/laravel/strikingdash-api/${url}`
-                          "
-                          alt=""
-                        />
-                        <figcaption>
-                          <a-upload v-bind="props">
-                            <a class="upload-btn" to="#">
-                              <sdFeatherIcons type="camera" size="16" />
-                            </a>
-                          </a-upload>
-                          <div class="info">
-                            <sdHeading as="h4">Profile Photo</sdHeading>
-                          </div>
-  
-                          <div v-if="isFileLoading" class="isUploadSpain">
-                            <a-spin />
-                          </div>
-                        </figcaption>
-                      </figure> -->
-                      <a-form-item name="campaign_name" label="Campaign Name">
-                        <a-input v-model:value="formState.name" placeholder="Input Campaign Name" />
-                      </a-form-item>
-                      <!-- <a-form-item name="email" label="Email">
-                        <a-input v-model:value="formState.email" type="email" placeholder="example@gmail.com" />
-                      </a-form-item> -->
-                      <!-- <a-form-item name="county" label="County">
-                        <a-select v-model:value="formState.country" :style="{ width: '100%' }">
-                          <a-select-option value="">Please Select</a-select-option>
-                          <a-select-option value="bangladesh">Bangladesh</a-select-option>
-                          <a-select-option value="india">India</a-select-option>
-                          <a-select-option value="pakistan">Pakistan</a-select-option>
-                          <a-select-option value="srilanka">Srilanka</a-select-option>
-                        </a-select>
-                      </a-form-item>
-                      <a-form-item name="city" label="City">
-                        <a-select v-model:value="formState.city" :style="{ width: '100%' }">
-                          <a-select-option value="">Please Select</a-select-option>
-                          <a-select-option value="dhaka">Dhaka</a-select-option>
-                          <a-select-option value="mymensingh">Mymensingh</a-select-option>
-                          <a-select-option value="khulna">Khulna</a-select-option>
-                          <a-select-option value="barisal">Barisal</a-select-option>
-                        </a-select>
-                      </a-form-item>
-                      <a-form-item name="company" label="Company">
-                        <a-input v-model:value="formState.company" placeholder="Company Name" />
-                      </a-form-item>
-                      <a-form-item name="position" label="Position">
-                        <a-input v-model:value="formState.position" placeholder="Position" />
-                      </a-form-item> -->
-                      <a-form-item label="Campaign Start Date">
-                        <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
-                      </a-form-item>
-                      <a-form-item label="Campaign End Date">
-                        <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
-                      </a-form-item>
-                      <!-- <a-form-item name="status" label="Status">
-                        <a-radio-group v-model:value="formState.status">
-                          <a-radio value="active">Active</a-radio>
-                          <a-radio value="deactivated">Deactivated</a-radio>
-                          <a-radio value="blocked">Blocked</a-radio>
-                        </a-radio-group>
-                      </a-form-item> -->
-                      <div class="record-form-actions text-right">
-                        <sdButton size="default" htmlType="Save" type="success">
-                          {{ isLoading ? 'Loading...' : 'Submit' }}
-                        </sdButton>
-                      </div>
-                    </a-form>
-                  </BasicFormWrapper>
-                </a-col>
-              </a-row>
-            </sdCards>
-          </RecordFormWrapper>
-        </a-col>
-      </a-row>
-    </Main>
-  </template>
-  <script>
-  import { RecordFormWrapper } from './style';
-  import { Main, BasicFormWrapper } from '../../styled';
-  import { useStore } from 'vuex';
-  import { computed, reactive, ref, defineComponent } from 'vue';
-  
-  const dateFormat = 'YYYY/MM/DD';
-  
-  const AddNew = defineComponent({
-    name: 'AddNew',
-    components: { RecordFormWrapper, Main, BasicFormWrapper },
-    setup() {
-      const { state, dispatch } = useStore();
-  
-      const isLoading = computed(() => state.crud.loading);
-      const url = computed(() => state.crud.url);
-      const isFileLoading = computed(() => state.crud.fileLoading);
-      const join = ref('');
-  
-      const handleSubmit = (values) => {
-        dispatch('axiosCrudSubmitData', {
-          ...values,
-          image: url.value,
-          join: join.value,
-          id: new Date().getTime(),
-        });
-        dispatch('axiosFileClear');
+  <sdPageHeader title="Start Campaign">
+    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+      <router-link to="/crud/axios-view">View All</router-link>
+    </sdButton>
+  </sdPageHeader>
+  <Main>
+    <a-row :gutter="15">
+      <a-col :xs="24">
+        <RecordFormWrapper>
+          <sdCards headless>
+            <a-row justify="center">
+              <a-col :xl="10" :md="16" :xs="24">
+                <BasicFormWrapper>
+                  <a-form
+                    class="add-record-form"
+                    :style="{ width: '100%' }"
+                    layout="vertical"
+                    name="addnew"
+                    :model="formState"
+                    @finish="handleSubmit"
+                  >
+                    <a-form-item name="name" label="Campaign Name">
+                      <a-input
+                        v-model:value="formState.name"
+                        placeholder="Input Campaign Name"
+                      />
+                    </a-form-item>
+
+                    <a-form-item name="startDate" label="Campaign Start Date">
+                      <a-date-picker
+                        :style="{ width: '100%' }"
+                        v-model:value="formState.startDate"
+                        :format="dateFormat"
+                      />
+                    </a-form-item>
+
+                    <a-form-item name="endDate" label="Campaign End Date">
+                      <a-date-picker
+                        :style="{ width: '100%' }"
+                        v-model:value="formState.endDate"
+                        :format="dateFormat"
+                      />
+                    </a-form-item>
+
+                    <div class="record-form-actions text-right">
+                      <sdButton size="default" htmlType="Save" type="success">
+                        {{ isLoading ? "Loading..." : "Submit" }}
+                      </sdButton>
+                    </div>
+                  </a-form>
+                </BasicFormWrapper>
+              </a-col>
+            </a-row>
+          </sdCards>
+        </RecordFormWrapper>
+      </a-col>
+    </a-row>
+  </Main>
+</template>
+<script>
+import { RecordFormWrapper } from "./style";
+import { Main, BasicFormWrapper } from "../../styled";
+import { useStore } from "vuex";
+import { reactive, ref, defineComponent, computed } from "vue";
+// import axios from "axios";
+import authHeader from "../../../services/auth-header";
+
+const dateFormat = "YYYY-MM-DD";
+
+const AddNew = defineComponent({
+  name: "AddNew",
+  components: { RecordFormWrapper, Main, BasicFormWrapper },
+  setup() {
+    const { state } = useStore();
+
+    const isLoading = computed(() => state.crud.loading);
+    const apiUrl = computed(() => state.crud.url);
+    const isFileLoading = computed(() => state.crud.fileLoading);
+    const join = ref("");
+
+    const API_URL = "http://localhost:8000/api/createCampaign";
+
+
+    const handleSubmit = (values) => {
+      values = {
+        name: values.name,
+        start_date: new Date(values.startDate.$d).toISOString().substr(0, 10),
+        end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
       };
-  
-      const props = {
-        name: 'file',
-        action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-        multiple: false,
-        showUploadList: false,
+
+      fetch(API_URL, {
+        method: "POST",
         headers: {
-          authorization: 'authorization-text',
+          "Content-Type": "application/json",
+          ...authHeader(),
         },
-        onChange(info) {
-          if (info.file.status !== 'uploading') {
-            dispatch('axiosFileUploader', info.file.originFileObj);
-          }
-        },
-      };
-  
-      const formState = reactive({
-        name: '',
-        email: '',
-        country: '',
-        city: '',
-        company: '',
-        position: '',
-        status: '',
-      });
-  
-      return {
-        isLoading,
-        url,
-        isFileLoading,
-        handleSubmit,
-        props,
-        dateFormat,
-        formState,
-        join,
-      };
-    },
-  });
-  
-  export default AddNew;
-  </script>
-  
+        body: JSON.stringify(values),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    };
+
+    //   axios
+    //     .post(API_URL, values, { headers: authHeader() })
+    //     .then(function (response) {
+    //       console.log(response);
+    //     })
+    //     .catch(function (error) {
+    //       console.log(error);
+    //     });
+    // };
+
+    const formState = reactive({
+      name: "",
+      startDate: "",
+      endDate: "",
+    });
+
+    return {
+      isLoading,
+      apiUrl,
+      isFileLoading,
+      handleSubmit,
+      dateFormat,
+      formState,
+      join,
+    };
+  },
+});
+
+export default AddNew;
+</script>

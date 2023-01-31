@@ -3,9 +3,8 @@
     <sdPageHeader title="MassNet Campaigns">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
-          <router-link to="/campaigns/create">
-            <sdFeatherIcons type="plus" size="14" /> Start New
-            Campaign</router-link
+          <router-link to="/campaigns/create-campaign">
+            <sdFeatherIcons type="plus" size="14" /> Start New Campaign</router-link
           >
         </sdButton>
       </template>
@@ -37,6 +36,9 @@
           </sdCards>
         </a-col>
       </a-row>
+      <a-col :xs="24">
+          <DragAndDropTable />
+        </a-col>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -47,22 +49,23 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
+// import DragAndDropTable from '../../../view/table/DragTable.vue';
 
 const columns = [
   {
     title: "Campaign Name",
     dataIndex: "name",
-    key: "name",
+    key: "id",
   },
   {
     title: "Campaign Start Date",
-    dataIndex: "Start Date",
-    key: "start_date",
+    dataIndex: "start_date",
+    key: "id",
   },
   {
     title: "Campaign End Date",
-    dataIndex: "company",
-    key: "company",
+    dataIndex: "end_date",
+    key: "id",
   },
 ];
 
@@ -75,29 +78,7 @@ const ViewPage = defineComponent({
     const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
-    // console.log(localStorage.getItem("user"));
-    // const apiToken =
-
-    // onMounted(() => {
-    //   dispatch('axiosCrudGetData');
-    // });
-
-    // const dataSource = computed(() => []);
-
     const dataSource = ref([]);
-    // onMounted(() => {
-    //   axios
-    //     .get("http://localhost:8000/api/campaign_all", {
-    //       headers: authHeader(),
-    //     })
-    //     .then((response) => {
-    //       console.log(response.data.data);
-    //       dataSource.value = response.data.data;
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //     });
-    // });
 
     onMounted(() => {
       axios

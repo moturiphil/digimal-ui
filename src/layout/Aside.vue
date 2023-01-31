@@ -11,7 +11,7 @@
           ><sdFeatherIcons type="server" /><span>Campagins</span></template
         >
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/campaigns/create"> Create Campaign </router-link>
+          <router-link to="/campaigns/create-campaign"> Create Campaign </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="widgetsCard">
           <router-link to="/campaigns/view-campaign"> List Campaigns </router-link>
@@ -25,7 +25,7 @@
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="widgetsCard">
-          <router-link to="/events/eventview"> List Events </router-link>
+          <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
     </a-menu-item-group>
