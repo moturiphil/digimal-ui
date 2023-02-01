@@ -25,7 +25,7 @@ const routes = [
   {
     path: '/campaigns',
     name: 'campaigns',
-    component: () => import(/* webpackChunkName: "axios" */ '@/view/crud/axios/Index.vue'),
+    component: () => import(/* webpackChunkName: "axios" */ '@/view/pages/campaigns/viewCampaigns.vue'),
     children: [
       {
         path: 'view-campaign',
@@ -46,23 +46,23 @@ const routes = [
   },
   {
     path: '/events',
-    name: 'fireStore',
-    component: () => import(/* webpackChunkName: "fireStore" */ '@/view/crud/fireStore/Index.vue'),
+    name: 'events',
+    component: () => import(/* webpackChunkName: "fireStore" */ '../view/pages/events/viewEvent.vue'),
     children: [
       {
         path: 'event-view',
         name: 'event-view',
-        component: () => import(/* webpackChunkName: "fireStore-view" */ '@/view/crud/fireStore/View.vue'),
+        component: () => import(/* webpackChunkName: "fireStore-view" */ '@/view/pages/events/viewEvent.vue'),
       },
-      {
-        path: 'fireStore-edit/:id',
-        name: 'fireStore-edit',
-        component: () => import(/* webpackChunkName: "fireStore-edit" */ '@/view/crud/fireStore/edit.vue'),
-      },
+    //   {
+    //     path: 'fireStore-edit/:id',
+    //     name: 'fireStore-edit',
+    //     component: () => import(/* webpackChunkName: "fireStore-edit" */ '@/view/pages/events/createEvent.vue'),
+    //   },
       {
         path: 'event-create',
         name: 'event-create',
-        component: () => import(/* webpackChunkName: "fireStore-add" */ '@/view/crud/fireStore/addNew.vue'),
+        component: () => import(/* webpackChunkName: "fireStore-add" */ '../view/pages/events/createEvent.vue'),
       },
     ],
   },
