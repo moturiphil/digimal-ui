@@ -1,115 +1,4 @@
 <template>
-  <div>
-    <form @submit.prevent="login" class="auth-contents">
-      <p class="auth-notice">
-        Don&rsquo;t have an account?
-        <router-link to="/auth/register">Sign up now</router-link>
-      </p>
-      <h3>
-        Sign in to <span class="color-success">Campaign Dashboard</span>
-      </h3>
-      <label>ID No</label>
-      <input type="number" v-model.number="user.id_no" class="a-input" />
-      <label>Password</label>
-      <input
-        type="password"
-        v-model="user.password"
-        placeholder="Password"
-        class="a-input"
-      />
-      <div class="auth-form-action">
-        <input type="checkbox" v-model="checked" @change="onChange" />
-        Keep me logged in
-        <router-link class="forgot-pass-link" to="/auth/forgotPassword">
-          Forgot password?
-        </router-link>
-      </div>
-      <button class="btn-signin" :loading="isLoading" type="submit">
-        Sign In
-      </button>
-      <p class="form-divider"></p>
-    </form>
-  </div>
-</template>
-
-<!-- <template>
-  <div>
-    <form @submit.prevent="login" class="auth-contents">
-      <p class="auth-notice">
-        Don&rsquo;t have an account?
-        <router-link to="/auth/register">Sign up now</router-link>
-      </p>
-      <h3>
-        Sign in to <span class="color-success">Campaign Dashboard</span>
-      </h3>
-      <label>ID No</label>
-      <a-input type="number" v-model.number="user.id_no" class="a-input" />
-      <label>Password</label>
-      <a-input
-        type="password"
-        v-model="user.password"
-        placeholder="Password"
-        class="a-input"
-      />
-      <div class="auth-form-action">
-        <a-checkbox v-model="checked" @change="onChange">Keep me logged in</a-checkbox>
-        <router-link class="forgot-pass-link" to="/auth/forgotPassword">
-          Forgot password?
-        </router-link>
-      </div>
-      <a-button class="btn-signin" :loading="isLoading" type="submit">
-        Sign In
-      </a-button>
-      <p class="form-divider"></p>
-    </form>
-  </div>
-</template> -->
-
-
-<script>
-import AuthService from '../../services/auth.service';
-import { mapActions } from 'vuex';
-// import { computed, reactive, ref, defineComponent } from "vue";
-// import { useStore } from "vuex";
-// import { AuthWrapper } from "./style";
-// import { useRouter } from "vue-router";
-// import { Auth0Lock } from "auth0-lock";
-// import { auth0options } from "@/config/auth0";
-
-export default {
-  data() {
-    return {
-      isLoading: false,
-      user: {
-        id_no: '',
-        password: '',
-      },
-    };
-  },
-  methods: {
-    ...mapActions(['setUser']),
-    async login() {
-      try {
-        AuthService.login(this.user)
-        .then(response => {
-            console.log(response.data.token);
-            this.setUser(response.data.user);
-            this.$router.push('/');
-        })
-        .catch(error => {
-            console.log(error);
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  },
-};
-</script>
-
-
-
-<!-- <template>
   <AuthWrapper>
     <p class="auth-notice">
       Don&rsquo;t have an account?
@@ -118,12 +7,12 @@ export default {
     <div class="auth-contents">
       <a-form @finish="handleSubmit" :model="formState" layout="vertical">
         <sdHeading as="h3">
-          Sign in to <span class="color-secondary">Campaign Dashboard</span>
+          Sign in to <span class="color-success">Campaign Dashboard</span>
         </sdHeading>
-        <a-form-item name="username" label="Id No">
-          <a-input type="number" v-model:value="formState.email" />
+        <a-form-item name="id_no" label="ID No">
+          <a-input type="number" v-model:value="formState.id_no" />
         </a-form-item>
-        <a-form-item name="password" initialValue="123456" label="Password">
+        <a-form-item name="password" initialValue="admin123" label="Password">
           <a-input
             type="password"
             v-model:value="formState.password"
@@ -131,7 +20,9 @@ export default {
           />
         </a-form-item>
         <div class="auth-form-action">
-          <a-checkbox @change="onChange">Keep me logged in</a-checkbox>
+          <a-checkbox v-model="checked" @change="onChange"
+            >Keep me logged in</a-checkbox
+          >
           <router-link class="forgot-pass-link" to="/auth/forgotPassword">
             Forgot password?
           </router-link>
@@ -140,74 +31,76 @@ export default {
           <sdButton
             class="btn-signin"
             htmlType="submit"
-            type="primary"
+            :loading="isLoading"
+            type="success"
             size="large"
           >
-            {{ isLoading ? "Loading..." : "Sign In" }}
+            Sign In
           </sdButton>
         </a-form-item>
-        <p class="form-divider">
-          <span>Or</span>
-        </p>
-        <div class="auth0-login">
-          <a href="#" @click="() => lock.show()"> Sign In with Auth0 </a>
-          <router-link to="/auth/fb-login">Sign In With Firebase</router-link>
-        </div>
+        <p class="form-divider"></p>
       </a-form>
     </div>
   </AuthWrapper>
 </template>
 <script>
-// import { FacebookOutlined, TwitterOutlined } from "@ant-design/icons-vue";
-import { computed, reactive, ref, defineComponent } from "vue";
-import { useStore } from "vuex";
-import { AuthWrapper } from "./style";
+import { computed, ref, reactive } from "vue";
+// import { mapState } from 'vuex'
+import AuthService from "../../services/auth.service";
 import { useRouter } from "vue-router";
-import { Auth0Lock } from "auth0-lock";
-import { auth0options } from "@/config/auth0";
-const domain = process.env.VUE_APP_AUTH0_DOMAIN;
-const clientId = process.env.VUE_APP_AUTH0_CLIENT_ID;
-
-const SignIn = defineComponent({
+import { AuthWrapper } from "./style";
+import store from "../../vuex/store";
+export default {
   name: "SignIn",
-  components: {  AuthWrapper },
+  components: { AuthWrapper },
   setup() {
-    const { state, dispatch } = useStore();
-    const isLoading = computed(() => state.auth.loading);
+    // console.log(store.state.auth);
+    const isLoading = computed(() => store.state.auth.loading);
+    // console.log(isLoading);
     const checked = ref(null);
     const router = useRouter();
-    const handleSubmit = () => {
-      router.push("/");
-      dispatch("login");
-    };
-    const onChange = (checked) => {
-      checked.value = checked;
-    };
+    // console.log(store.state);
     const formState = reactive({
-      email: "34401122",
-      password: "admin123",
+      id_no: "",
+      password: "",
     });
-    const lock = new Auth0Lock(clientId, domain, auth0options);
-    lock.on("authenticated", (authResult) => {
-      lock.getUserInfo(authResult.accessToken, (error) => {
-        if (error) {
-          return;
-        }
-        handleSubmit();
-        lock.hide();
+    const handleSubmit = async () => {
+      
+      // console.log("****************Sign In ")
+      // console.log(formState.id_no);
+      // console.log(formState.password);
+      
+      const response = await AuthService.login({
+        id_no: formState.id_no,
+        password: formState.password,
       });
-    });
+      if (response.status == 200) {
+          console.log(response.status);
+          console.log("res ............................");
+      
+      try{
+          router.push({path:"/"});
+      }catch(e){
+          console.log(e);
+      }
+      
+      }else{
+          router.push('/auth/login')
+      }
+    };
+  //   const status = computed(() => store.state.auth.status);
+  //   onMounted(() => {
+  //     if (status.value.loggedIn) {
+  //       console.log("logged in", status.value.loggedIn);
+  //       router.push({ path: "/" });
+  //     }
+  //   });
     return {
       isLoading,
       checked,
       handleSubmit,
-      onChange,
       formState,
-      lock,
     };
   },
-});
-
-export default SignIn;
-</script> -->
-
+};
+</script>
