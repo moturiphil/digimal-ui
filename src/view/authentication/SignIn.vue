@@ -1,9 +1,6 @@
 <template>
   <AuthWrapper>
-    <p class="auth-notice">
-      Don&rsquo;t have an account?
-      <router-link to="/auth/register">Sign up now</router-link>
-    </p>
+    <p class="auth-notice">Don&rsquo;t have an account? Contact Admin</p>
     <div class="auth-contents">
       <a-form @finish="handleSubmit" :model="formState" layout="vertical">
         <sdHeading as="h3">
@@ -40,6 +37,16 @@
         </a-form-item>
         <p class="form-divider"></p>
       </a-form>
+      <!-- implement the notification if user is not authorized -->
+      <a-notification
+        v-if="isError"
+        :message="errorMessage"
+        type="error"
+        :description="errorDescription"
+        :showIcon="true"
+        :duration="0"
+        :style="{ width: '100%' }"
+      />
     </div>
   </AuthWrapper>
 </template>
@@ -48,8 +55,10 @@ import { computed, ref, reactive } from "vue";
 // import { mapState } from 'vuex'
 import AuthService from "../../services/auth.service";
 import { useRouter } from "vue-router";
+// import { useStore } from 'vuex';
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
+// import { aMessage } from "ant-design-vue";
 export default {
   name: "SignIn",
   components: { AuthWrapper },
@@ -65,41 +74,39 @@ export default {
       password: "",
     });
     const handleSubmit = async () => {
-      
-      // console.log("****************Sign In ")
-      // console.log(formState.id_no);
-      // console.log(formState.password);
-      
       const response = await AuthService.login({
         id_no: formState.id_no,
         password: formState.password,
       });
       if (response.status == 200) {
-          console.log(response.status);
-          console.log("res ............................");
-      
-      try{
-          router.push({path:"/"});
-      }catch(e){
+        console.log(response.status);
+        console.log("res ............................");
+
+        try {
+          store.commit("auth/setUser", response.data.user);
+          router.push({ path: "/" });
+        } catch (e) {
           console.log(e);
-      }
-      
-      }else{
-          router.push('/auth/login')
+        }
+      } else {
+        // new code to display error notification
+        store.commit('auth/setError', true);
+        store.commit('auth/setErrorMessage', "Unauthorized");
+        store.commit('auth/setErrorDescription', "Incorrect ID No or Password.");
+        router.push("/auth/login");
+        console.log(response.status);
       }
     };
-  //   const status = computed(() => store.state.auth.status);
-  //   onMounted(() => {
-  //     if (status.value.loggedIn) {
-  //       console.log("logged in", status.value.loggedIn);
-  //       router.push({ path: "/" });
-  //     }
-  //   });
+
     return {
       isLoading,
       checked,
       handleSubmit,
       formState,
+      // new computed properties to access the error state from the store
+      isError: computed(() => store.state.auth.isError),
+      errorMessage: computed(() => store.state.auth.errorMessage),
+      errorDescription: computed(() => store.state.auth.errorDescription),
     };
   },
 };
