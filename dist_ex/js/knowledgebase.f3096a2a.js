@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkMassNetCampaign"]=self["webpackChunkMassNetCampaign"]||[]).push([[4579],{3795:function(n,e,r){r.r(e),r.d(e,{default:function(){return i}});var t=r(66252);function a(n,e){const r=(0,t.up)("router-view");return(0,t.wg)(),(0,t.j4)(r)}var u=r(83744);const s={},c=(0,u.Z)(s,[["render",a]]);var i=c}}]);
+//# sourceMappingURL=knowledgebase.f3096a2a.js.map

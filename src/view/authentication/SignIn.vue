@@ -80,7 +80,7 @@ export default {
       });
       if (response.status == 200) {
         console.log(response.status);
-        console.log("res ............................");
+        console.log("res............................");
 
         try {
           store.commit("auth/setUser", response.data.user);

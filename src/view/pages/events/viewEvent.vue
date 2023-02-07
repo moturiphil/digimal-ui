@@ -3,7 +3,7 @@
       <sdPageHeader title="MassNet Events">
         <template #subTitle>
           <sdButton class="btn-add_new" size="default" type="success">
-            <router-link to="/Events/create"> <sdFeatherIcons type="plus" size="14" /> Start New Event</router-link>
+            <router-link to="/events/event-create"> <sdFeatherIcons type="plus" size="14" /> Start New Event</router-link>
           </sdButton>
         </template>
         <template #buttons>

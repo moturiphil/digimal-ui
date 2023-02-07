@@ -25,7 +25,8 @@ const routes = [
   {
     path: '/campaigns',
     name: 'campaigns',
-    component: () => import(/* webpackChunkName: "axios" */ '@/view/pages/campaigns/viewCampaigns.vue'),
+    // component: () => import(/* webpackChunkName: "axios" */ '@/view/pages/campaigns/viewCampaigns.vue'),
+    component: () => import(/* webpackChunkName: "axios" */ '@/view/crud/axios/Index.vue'),
     children: [
       {
         path: 'view-campaign',
@@ -47,7 +48,7 @@ const routes = [
   {
     path: '/events',
     name: 'events',
-    component: () => import(/* webpackChunkName: "fireStore" */ '../view/pages/events/viewEvent.vue'),
+    component: () => import(/* webpackChunkName: "fireStore" */ '@/view/crud/fireStore/Index.vue'),
     children: [
       {
         path: 'event-view',
