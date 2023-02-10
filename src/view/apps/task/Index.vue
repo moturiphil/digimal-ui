@@ -1,17 +1,4 @@
 <template>
-  <sdPageHeader title="Task">
-    <template v-slot:buttons>
-      <div class="page-header-actions">
-        <sdCalendarButton />
-        <sdExportButton />
-        <sdShareButton />
-        <sdButton size="small" type="primary">
-          <sdFeatherIcons type="plus" size="14" />
-          Add New
-        </sdButton>
-      </div>
-    </template>
-  </sdPageHeader>
   <Main>
     <a-row :gutter="25">
       <a-col :xl="5" :lg="6" :md="7" :xs="24">
@@ -21,45 +8,45 @@
               <sdButton
                 class="sDash_btn-add"
                 size="large"
-                type="primary"
+                type="success"
                 raised
                 @click="showModal"
               >
                 <sdFeatherIcons type="plus" size="16" />
-                Add Task
+                Add Org Unit
               </sdButton>
               <ul class="sDash_taskApp-sidebar__nav">
                 <li class="sDash_taskApp-sidebar__nav--item">
                   <router-link
                     class="sDash_taskApp-sidebar__nav--link"
-                    :to="`${path}/all`"
+                    :to="`${path}/national`"
                   >
                     <span class="nav-item-icon">
                       <sdFeatherIcons type="edit" size="16" />
                     </span>
-                    <span class="nav-item-text">All</span>
+                    <span class="nav-item-text">National</span>
                   </router-link>
                 </li>
                 <li class="sDash_taskApp-sidebar__nav--item">
                   <router-link
                     class="sDash_taskApp-sidebar__nav--link"
-                    :to="`${path}/favorites`"
+                    :to="`${path}/county`"
                   >
                     <span class="nav-item-icon">
                       <sdFeatherIcons type="star" size="16" />
                     </span>
-                    <span class="nav-item-text">Favorite</span>
+                    <span class="nav-item-text">County</span>
                   </router-link>
                 </li>
                 <li class="sDash_taskApp-sidebar__nav--item">
                   <router-link
                     class="sDash_taskApp-sidebar__nav--link"
-                    :to="`${path}/completed`"
+                    :to="`${path}/sub-county`"
                   >
                     <span class="nav-item-icon">
                       <sdFeatherIcons type="check" size="16" />
                     </span>
-                    <span class="nav-item-text">Completed</span>
+                    <span class="nav-item-text">Sub-County</span>
                   </router-link>
                 </li>
               </ul>
@@ -108,10 +95,10 @@
                     <sdButton
                       htmlType="submit"
                       size="small"
-                      type="primary"
+                      type="success"
                       key="submit"
                     >
-                      Add Task
+                      Add Org Unit
                     </sdButton>
                   </div>
                 </a-form>
@@ -134,40 +121,40 @@
                 @click="showModal"
               >
                 <sdFeatherIcons type="plus" size="16" />
-                Add Task
+                Add Org Unit
               </sdButton>
               <ul class="sDash_taskApp-sidebar__nav">
                 <li class="sDash_taskApp-sidebar__nav--item">
                   <router-link
                     class="sDash_taskApp-sidebar__nav--link"
-                    :to="`${path}/all`"
+                    :to="`${path}/national`"
                   >
                     <span class="nav-item-icon">
                       <sdFeatherIcons type="edit" size="16" />
                     </span>
-                    <span class="nav-item-text">All</span>
+                    <span class="nav-item-text">National</span>
                   </router-link>
                 </li>
                 <li class="sDash_taskApp-sidebar__nav--item">
                   <router-link
                     class="sDash_taskApp-sidebar__nav--link"
-                    :to="`${path}/favorites`"
+                    :to="`${path}/county`"
                   >
                     <span class="nav-item-icon">
                       <sdFeatherIcons type="star" size="16" />
                     </span>
-                    <span class="nav-item-text">Favorite</span>
+                    <span class="nav-item-text">County</span>
                   </router-link>
                 </li>
                 <li class="sDash_taskApp-sidebar__nav--item">
                   <router-link
                     class="sDash_taskApp-sidebar__nav--link"
-                    :to="`${path}/completed`"
+                    :to="`${path}/sub-county`"
                   >
                     <span class="nav-item-icon">
                       <sdFeatherIcons type="check" size="16" />
                     </span>
-                    <span class="nav-item-text">Completed</span>
+                    <span class="nav-item-text">Sub-County</span>
                   </router-link>
                 </li>
               </ul>

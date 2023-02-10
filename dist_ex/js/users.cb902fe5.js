@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkMassNetCampaign"]=self["webpackChunkMassNetCampaign"]||[]).push([[2681],{36049:function(e,n,a){a.r(n),a.d(n,{default:function(){return i}});var r=a(66252);function s(e,n,a,s,t,u){const c=(0,r.up)("router-view");return(0,r.wg)(),(0,r.j4)(c,{name:"child"})}var t={name:"Users"},u=a(83744);const c=(0,u.Z)(t,[["render",s]]);var i=c}}]);
+//# sourceMappingURL=users.cb902fe5.js.map
