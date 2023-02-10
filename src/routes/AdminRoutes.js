@@ -15,11 +15,10 @@ const routes = [
         component: () => import(/* webpackChunkName: "Home" */ '@/view/dashboard'),
       },
       {
-        path: 'crm',
-        name: 'crm',
-        component: () => import(/* webpackChunkName: "CRM" */ '@/view/dashboard/CRM.vue'),
+        path: 'registered-users',
+        name: 'registered-users',
+        component: () => import(/* webpackChunkName: "Business" */ '@/view/pages/users/registeredUsers.vue'),
       },
-
     ],
   },
   {

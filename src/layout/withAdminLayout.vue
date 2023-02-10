@@ -186,7 +186,7 @@
                 </a-col>
                 <a-col :md="12" :xs="24">
                   <div class="admin-footer__links">
-                    <router-link to="/app/social/profile/overview"
+                    <router-link to="/user/profile"
                       >Profile</router-link
                     >
                     <!-- <router-link to="/app/users/team">Team</router-link> -->

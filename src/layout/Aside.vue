@@ -28,6 +28,16 @@
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-menu-item @click="toggleCollapsed" key="net-distribution">
+          <router-link to="/net/distribution/national">
+            Nets Distribution
+          </router-link>
+        </a-menu-item>
+      <a-menu-item @click="toggleCollapsed" key="registered-users">
+          <router-link to="/registered-users">
+            Users
+          </router-link>
+        </a-menu-item>
     </a-menu-item-group>
   </a-menu>
 </template>

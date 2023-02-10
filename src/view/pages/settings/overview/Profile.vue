@@ -16,25 +16,16 @@
             <a-form-item label="Phone Number">
               <a-input v-model:value="formState.phone" />
             </a-form-item>
-            <a-form-item label="Country">
-              <a-select v-model:value="formState.country" style="width: 100%">
+            <a-form-item label="Role">
+              <a-select v-model:value="formState.role" style="width: 100%">
                 <a-select-option value="">Please Select</a-select-option>
-                <a-select-option value="bangladesh">Bangladesh</a-select-option>
-                <a-select-option value="india">India</a-select-option>
-                <a-select-option value="pakistan">Pakistan</a-select-option>
+                <a-select-option value="dhaka">Program Head</a-select-option>
+                <a-select-option value="mymensingh">Program Officer</a-select-option>
+                <a-select-option value="khulna">County CHRIO</a-select-option>
               </a-select>
             </a-form-item>
-
-            <a-form-item label="City">
-              <a-select v-model:value="formState.city" style="width: 100%">
-                <a-select-option value="">Please Select</a-select-option>
-                <a-select-option value="dhaka">Dhaka</a-select-option>
-                <a-select-option value="mymensingh">Mymensingh</a-select-option>
-                <a-select-option value="khulna">Khulna</a-select-option>
-              </a-select>
-            </a-form-item>
-            <a-form-item label="Company Name">
-              <a-input v-model:value="formState.company" />
+            <a-form-item label="Organization">
+              <a-input v-model:value="formState.organization" />
             </a-form-item>
             <a-form-item label="Website">
               <a-input v-model:value="formState.website" />
@@ -42,41 +33,8 @@
             <a-form-item label="User Bio">
               <a-textarea v-model:value="formState.userBio" :rows="3" />
             </a-form-item>
-            <a-form-item name="skills" label="Skills">
-              <TagInput>
-                <div>
-                  <template v-for="(tag, index) in tags">
-                    <a-tooltip v-if="tag.length > 20" :key="tag" :title="tag">
-                      <a-tag :key="tag" :closable="index !== 0" @close="() => handleClose(tag)">
-                        {{ `${tag.slice(0, 20)}...` }}
-                      </a-tag>
-                    </a-tooltip>
-                    <a-tag v-else :key="index + 1" :closable="index !== 0" @close="() => handleClose(tag)">
-                      {{ tag }}
-                    </a-tag>
-                  </template>
-                  <div>
-                    <a-input
-                      v-if="inputVisible"
-                      ref="input"
-                      type="text"
-                      size="small"
-                      :style="{ width: '78px' }"
-                      :value="inputValue"
-                      @change="handleInputChange"
-                      @blur="handleInputConfirm"
-                      @keyup.enter="handleInputConfirm"
-                    />
-                    <a-tag v-else style="background: #fff; borderstyle: dashed" @click="showInput">
-                      <sdFeatherIcons type="plus" size="14" /> New Tag
-                    </a-tag>
-                  </div>
-                </div>
-              </TagInput>
-            </a-form-item>
-
             <div class="setting-form-actions">
-              <sdButton size="default" htmlType="submit" type="primary"> Update Profile </sdButton>
+              <sdButton size="default" htmlType="submit" type="success"> Update Profile </sdButton>
               &nbsp; &nbsp;
               <sdButton size="default" @click="handleCancel" type="light"> Cancel </sdButton>
             </div>
@@ -87,23 +45,22 @@
   </sdCards>
 </template>
 <script>
-import { BasicFormWrapper, TagInput } from '../../../styled';
+import { BasicFormWrapper } from '../../../styled';
 import { defineComponent, reactive } from 'vue';
 
 const Profile = defineComponent({
   name: 'Profile',
-  components: { BasicFormWrapper, TagInput },
+  components: { BasicFormWrapper },
 
   setup() {
     const formState = reactive({
       name: 'Duran Clayton',
-      phone: '01742920502',
-      country: '',
-      city: '',
-      company: 'Example',
-      website: 'www.example.com',
+      phone: '0711473829',
+      role: '',
+      organization: 'Kinga Malaria',
+      website: 'https://www.pmi.gov/where-we-work/kenya/',
       userBio:
-        'Nam malesuada dolor tellus pretium amet was hendrerit facilisi id vitae enim sed ornare there suspendisse sed orci neque ac sed aliquet risus faucibus in pretium molestee.',
+        'Program Head',
     });
 
     const handleFinish = (values) => {
@@ -124,7 +81,7 @@ const Profile = defineComponent({
 
   data() {
     return {
-      tags: ['UI/UX', 'Branding', 'Product Design', 'Web Design'],
+      // tags: ['UI/UX', 'Branding', 'Product Design', 'Web Design'],
       values: null,
       inputVisible: false,
       inputValue: '',

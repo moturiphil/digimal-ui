@@ -2,7 +2,7 @@
   <TaskListWrap class="mb-30">
     <div class="sDash_tasklist-wrap">
       <div class="sDash_tasklist-head">
-        <h2 class="sDash_task-list-title">Task Lists</h2>
+        <h2 class="sDash_task-list-title">Net Distribution Lists</h2>
       </div>
       <div class="sDash_tasklist-body">
         <ul v-if="task.length > 0" class="sDash_tasks">
@@ -46,7 +46,7 @@
         </ul>
 
         <div v-else class="sDash_empty-task">
-          <span>Sorry !! No Task Found :(</span>
+          <span>Sorry !! No Distribution Found :(</span>
         </div>
       </div>
     </div>

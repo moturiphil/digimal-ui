@@ -197,9 +197,9 @@ export default [
     ],
   },
   {
-    name: 'social',
-    path: '/app/social/profile',
-    component: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myProfile/Index.vue'),
+    name: 'user-profile',
+    path: '/user/profile',
+    component: () => import(/* webpackChunkName: "Profile" */ '@/view/pages/settings/overview/Profile.vue'),
     children: [
       {
         path: 'overview',
@@ -547,29 +547,29 @@ export default [
   },
 
   {
-    name: 'task',
-    path: '/app/task',
+    name: 'net-distribution',
+    path: '/net/distribution',
     component: () => import(/* webpackChunkName: "task" */ '../view/apps/task/Index.vue'),
     children: [
       {
-        name: 'all',
-        path: 'all',
+        name: 'national',
+        path: 'national',
         components: {
           default: () => import(/* webpackChunkName: "task" */ '../view/apps/task/Index.vue'),
           child: () => import(/* webpackChunkName: "all" */ '../view/apps/task/overview/all.vue'),
         },
       },
       {
-        name: 'favorites',
-        path: 'favorites',
+        name: 'county',
+        path: 'county',
         components: {
           default: () => import(/* webpackChunkName: "task" */ '../view/apps/task/Index.vue'),
           child: () => import(/* webpackChunkName: "favorites" */ '../view/apps/task/overview/favorites.vue'),
         },
       },
       {
-        name: 'completed',
-        path: 'completed',
+        name: 'sub-county',
+        path: 'sub-county',
         components: {
           default: () => import(/* webpackChunkName: "task" */ '../view/apps/task/Index.vue'),
           child: () => import(/* webpackChunkName: "completed" */ '../view/apps/task/overview/completed.vue'),
