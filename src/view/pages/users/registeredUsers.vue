@@ -46,10 +46,28 @@
     </DragDropStyle>
   </template>
   <script>
-  import { computed, ref, defineComponent } from 'vue';
+  import { computed, ref, defineComponent, onMounted } from 'vue';
   import { useStore } from 'vuex';
   import { TableWrapper, DragDropStyle } from '../../styled';
   import draggable from 'vuedraggable';
+  import axios from 'axios';
+
+import authHeader from "../../../services/auth-header";
+
+console.log(authHeader);
+
+onMounted(async () => {
+      try {
+        const { data } = await axios.get('http://localhost:8080/api/users', {
+          headers: authHeader(),
+        });
+        console.log(data);
+        // state.users.data = data;
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
   
   const DragAndDropTable = defineComponent({
     name: 'DragAndDropTable',

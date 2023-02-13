@@ -1,2 +1,0 @@
-"use strict";(self["webpackChunkMassNetCampaign"]=self["webpackChunkMassNetCampaign"]||[]).push([[160],{5792:function(n,e,t){t.r(e),t.d(e,{default:function(){return o}});var a=t(66252);function r(n,e,t,r,s,u){const c=(0,a.up)("router-view");return(0,a.wg)(),(0,a.j4)(c)}var s={name:"Components"},u=t(83744);const c=(0,u.Z)(s,[["render",r]]);var o=c}}]);
-//# sourceMappingURL=components.615dd2b7.js.map
