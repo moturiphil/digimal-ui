@@ -105,9 +105,18 @@
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
 
+    const API_URL = "http://localhost:8000/api/events/all";
+    // const apiURL = process.env.VUE_APP_API_URL;
+
+
+    // console.log(apiURL);
+
+    // get api_url from the .env file
+    // console.log(API_URL);
+
     onMounted(() => {
       axios
-        .get("http://41.89.92.206/massnet/api/events/all", {
+        .get(API_URL, {
           headers: authHeader(),
         })
         .then((response) => {

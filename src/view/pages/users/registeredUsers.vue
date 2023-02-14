@@ -50,8 +50,11 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import UserService from "../../../services/user.service";
 // import { useRouter } from "vue-router";
 // import DragAndDropTable from '../../../view/table/DragTable.vue';
+
+// console.log(userService.getAll());
 
 const columns = [
   {
@@ -90,9 +93,12 @@ const DragAndDropTable = defineComponent({
 
     console.log(authHeader());
 
+    const api_url = UserService;
+    console.log(api_url);
+
     onMounted(async () => {
       try {
-        const response = await fetch("http://41.89.92.206/massnet/api/users", {
+        const response = await fetch("http://localhost:8000/api/users", {
           method: "GET",
           headers: authHeader(),
         });

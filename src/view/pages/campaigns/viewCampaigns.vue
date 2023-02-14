@@ -86,13 +86,13 @@ const ViewPage = defineComponent({
 
     // if (!state.auth.isAuthenticated) {
     //   router.push({ name: "login" });
-    // }
+    // }  const API_URL = process.env.API_URL;
 
     console.log(authHeader());
 
     onMounted(async () => {
       try {
-        const response = await fetch("http://41.89.92.206/massnet/api/campaign_all", {
+        const response = await fetch("http://localhost:8000/api/campaign_all", {
           method: "GET",
           headers: authHeader(),
         });

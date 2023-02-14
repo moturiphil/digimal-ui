@@ -10,14 +10,18 @@
         <template v-slot:title
           ><sdFeatherIcons type="server" /><span>Campagins</span></template
         >
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/campaigns/create-campaign"> Create Campaign </router-link>
+        <a-menu-item @click="toggleCollapsed" key="widgetChart">
+          <router-link to="/campaigns/create-campaign">
+            Create Campaign
+          </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetsCard">
-          <router-link to="/campaigns/view-campaign"> List Campaigns </router-link>
+        <a-menu-item @click="toggleCollapsed" key="widgetsCar">
+          <router-link to="/campaigns/view-campaign">
+            List Campaigns
+          </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="widgets">
+      <a-sub-menu key="events">
         <template v-slot:title
           ><sdFeatherIcons type="server" /><span>Events</span></template
         >
@@ -29,15 +33,13 @@
         </a-menu-item>
       </a-sub-menu>
       <a-menu-item @click="toggleCollapsed" key="net-distribution">
-          <router-link to="/net/distribution/national">
-            Nets Distribution
-          </router-link>
-        </a-menu-item>
+        <router-link to="/net/distribution/national">
+          Nets Distribution
+        </router-link>
+      </a-menu-item>
       <a-menu-item @click="toggleCollapsed" key="registered-users">
-          <router-link to="/registered-users">
-            Users
-          </router-link>
-        </a-menu-item>
+        <router-link to="/registered-users"> Users </router-link>
+      </a-menu-item>
     </a-menu-item-group>
   </a-menu>
 </template>

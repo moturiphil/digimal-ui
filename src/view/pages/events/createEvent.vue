@@ -91,7 +91,7 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    const API_URL = "http://41.89.92.206/massnet/api/event/create";
+    const API_URL = "http://localhost:8000/api/event/create";
 
     const handleSubmit = (values) => {
       values = {
