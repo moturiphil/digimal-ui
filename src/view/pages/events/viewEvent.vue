@@ -107,7 +107,7 @@
 
     onMounted(() => {
       axios
-        .get("http://localhost:8000/api/events/all", {
+        .get("http://41.89.92.206/massnet/api/events/all", {
           headers: authHeader(),
         })
         .then((response) => {

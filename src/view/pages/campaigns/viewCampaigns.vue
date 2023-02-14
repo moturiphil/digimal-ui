@@ -92,7 +92,7 @@ const ViewPage = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/campaign_all", {
+        const response = await fetch("http://41.89.92.206/massnet/api/campaign_all", {
           method: "GET",
           headers: authHeader(),
         });

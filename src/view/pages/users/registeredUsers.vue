@@ -92,7 +92,7 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/users", {
+        const response = await fetch("http://41.89.92.206/massnet/api/users", {
           method: "GET",
           headers: authHeader(),
         });
