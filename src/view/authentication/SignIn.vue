@@ -73,6 +73,7 @@ export default {
       id_no: "",
       password: "",
     });
+    
     const handleSubmit = async () => {
       const response = await AuthService.login({
         id_no: formState.id_no,

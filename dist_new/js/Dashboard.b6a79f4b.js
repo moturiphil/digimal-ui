@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkMassNetCampaign"]=self["webpackChunkMassNetCampaign"]||[]).push([[362],{46178:function(n,a,e){e.r(a),e.d(a,{default:function(){return i}});var r=e(66252);function t(n,a,e,t,s,u){const c=(0,r.up)("router-view");return(0,r.wg)(),(0,r.j4)(c)}var s={name:"Dashboard"},u=e(83744);const c=(0,u.Z)(s,[["render",t]]);var i=c}}]);
+//# sourceMappingURL=Dashboard.b6a79f4b.js.map

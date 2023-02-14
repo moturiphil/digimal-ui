@@ -86,7 +86,7 @@ const ViewPage = defineComponent({
 
     // if (!state.auth.isAuthenticated) {
     //   router.push({ name: "login" });
-    // }
+    // }  const API_URL = process.env.API_URL;
 
     console.log(authHeader());
 
