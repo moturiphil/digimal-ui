@@ -59,8 +59,8 @@
                   alt=""
                 />
                 <figcaption>
-                  <sdHeading as="h5">Abdullah Bin Talha</sdHeading>
-                  <p>UI Expert</p>
+                  <sdHeading as="h5">Ian Njuguna</sdHeading>
+                  <p>Backend Dev</p>
                 </figcaption>
               </figure>
               <ul class="user-dropdwon__links">
@@ -106,6 +106,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { LogoutOutlined } from "@ant-design/icons-vue";
 import { defineComponent, computed } from "vue";
+import authService from "../../../services/auth.service";
 
 export default defineComponent({
   name: "AuthInfo",
@@ -137,6 +138,7 @@ export default defineComponent({
 
     const SignOut = (e) => {
       e.preventDefault();
+      authService.logout();
       push("/auth/login");
       dispatch("logOut");
     };

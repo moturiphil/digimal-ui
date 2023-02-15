@@ -141,6 +141,13 @@ const ViewPage = defineComponent({
       formState,
     };
   },
+  beforeRouteEnter(to, from, next) {
+    if (!localStorage.getItem("user")) {
+      next("/auth/login");
+    } else {
+      next();
+    }
+  },
 });
 
 export default ViewPage;

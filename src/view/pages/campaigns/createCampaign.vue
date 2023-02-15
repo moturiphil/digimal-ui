@@ -132,6 +132,13 @@ const AddNew = defineComponent({
       join,
     };
   },
+  beforeRouteEnter(to, from, next) {
+    if (!localStorage.getItem("user")) {
+      next("/auth/login");
+    } else {
+      next();
+    }
+  },
 });
 
 export default AddNew;

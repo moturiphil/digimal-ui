@@ -79,9 +79,10 @@ export default {
         id_no: formState.id_no,
         password: formState.password,
       });
+      // console.log(response.status, response.data);
       if (response.status == 200) {
         console.log(response.status);
-        console.log("res............................");
+        console.log("response successful.................");
 
         try {
           store.commit("auth/setUser", response.data.user);
