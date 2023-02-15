@@ -231,6 +231,9 @@ import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { defineAsyncComponent } from "vue";
+import { defineComponent } from 'vue';
+
+import { useRouter } from "vue-router";
 
 const NetsDistributed = defineAsyncComponent(() =>
   import("./overview/massnet/NetsDistributed")
@@ -281,7 +284,7 @@ const chartOptions = {
   },
 };
 
-const Ecommerce = {
+export default defineComponent({
   name: "CRM",
   components: {
     Main,
@@ -295,11 +298,23 @@ const Ecommerce = {
     HouseHoldRegistered,
   },
   setup() {
+    const router = useRouter();
+    
+    console.log(router);
+
+    console.log(localStorage.getItem("user"));
+
     return {
       chartOptions,
     };
   },
-};
-
-export default Ecommerce;
+  beforeRouteEnter(to, from, next) {
+    if (!localStorage.getItem("user")) {
+      next("/auth/login");
+    } else {
+      next();
+    }
+  },
+});
 </script>
+
