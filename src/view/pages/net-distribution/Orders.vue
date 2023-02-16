@@ -110,7 +110,7 @@ const Distribution = defineComponent({
     const item = computed(() => state.orders.data);
     const selectedRowKeys = ref([]);
     const stateValue = ref('');
-    const filterKey = ref(['Nationa', 'County', 'Sub-County']);
+    const filterKey = ref(['County', 'Sub-County', 'Ward']);
 
     const handleChangeForFilter = (e) => {
       dispatch('orderFilter', { column: 'status', value: e.target.value });
