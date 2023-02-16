@@ -33,7 +33,7 @@
         </a-menu-item>
       </a-sub-menu>
       <a-menu-item @click="toggleCollapsed" key="net-distribution">
-        <router-link to="/net/distribution/national">
+        <router-link to="/net/distribution">
           Nets Distribution
         </router-link>
       </a-menu-item>
