@@ -25,8 +25,7 @@ yarn install
 ```
 # Launch the app.
 ```shell
-    cd /MassNetCampaignFrontend
-    yarn serve
+yarn serve
     
 
 ### Customize configuration
