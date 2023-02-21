@@ -26,12 +26,32 @@ import KanbanBoard from './modules/kanban/actionCreator';
 
 export default createStore({
   state: {
-    user: null
+    user: null,
+    otp: "",
+    loading: false,
+    isError: false,
+    errorMessage: null,
+    errorDescription: null,
   },
   mutations: {
     setUser(state, user) {
       state.user = user;
-    }
+    },
+    setOtp(state, otp) {
+      state.otp = otp;
+    },
+    setLoading(state, loading) {
+      state.loading = loading;
+    },
+    setIsError(state, isError) {
+      state.isError = isError;
+    },
+    setErrorMessage(state, errorMessage) {
+      state.errorMessage = errorMessage;
+    },
+    setErrorDescription(state, errorDescription) {
+      state.errorDescription = errorDescription;
+    },
   },
   actions: {
     setUser({commit}, user) {

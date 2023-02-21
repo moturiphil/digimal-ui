@@ -20,8 +20,8 @@
           <a-checkbox v-model="checked" @change="onChange"
             >Keep me logged in</a-checkbox
           >
-          <router-link class="forgot-pass-link" to="/auth/forgotPassword">
-            Forgot password?
+          <router-link class="forgot-pass-link" to="/auth/register">
+            New User?
           </router-link>
         </div>
         <a-form-item>
