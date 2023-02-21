@@ -6,10 +6,10 @@
         <sdHeading as="h3">
           Sign in to <span class="color-success">Campaign Dashboard</span>
         </sdHeading>
-        <a-form-item name="id_no" label="ID No">
-          <a-input type="number" v-model:value="formState.id_no" />
+        <a-form-item name="id_no" label="National ID No">
+          <a-input type="number" v-model:value="formState.id_no"  placeholder="Enter ID No"/>
         </a-form-item>
-        <a-form-item name="password" initialValue="admin123" label="Password">
+        <a-form-item name="password" initialValue="" label="Password">
           <a-input
             type="password"
             v-model:value="formState.password"
@@ -21,6 +21,7 @@
             >Keep me logged in</a-checkbox
           >
           <router-link class="forgot-pass-link" to="/auth/register">
+
             New User?
           </router-link>
         </div>
