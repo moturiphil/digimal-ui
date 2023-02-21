@@ -3,21 +3,23 @@
     <div class="auth-contents">
       <a-form @finish="handleSubmit" :model="formState" layout="vertical">
         <sdHeading as="h3">Complete Profile?</sdHeading>
-        <p class="forgot-text">Create Password and submit email for your account</p>
+        <p class="forgot-text">
+          Create Password and submit email for your account
+        </p>
         <a-form-item label="ID NO">
           <!-- <a-input :value="formattedId" disabled /> -->
           <a-input v-model:value="formState.id_no" disabled />
         </a-form-item>
         <a-form-item label="Password" name="password">
           <a-input
-            type="number"
+            type="password"
             v-model:value="formState.password"
             placeholder="Enter Password"
           />
         </a-form-item>
         <a-form-item label="Confirm Password" name="password">
           <a-input
-            type="text"
+            type="password"
             v-model:value="formState.confirm_password"
             placeholder="Confirm Password"
           />
@@ -45,7 +47,7 @@ import { computed, ref, reactive } from "vue";
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import axios from "axios";
-import { useRouter, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 
 export default {
   name: "Password",
@@ -53,10 +55,10 @@ export default {
   setup() {
     // const id_no = props.route.params.id_no;
     // const otp = props.route.query.otp;
-    
+
     const isLoading = computed(() => store.state.auth.loading);
     const checked = ref(null);
-    const router = useRouter();
+    // const router = useRouter();
     const route = useRoute();
 
     const formattedId = computed(() => {
@@ -84,23 +86,20 @@ export default {
         id_no: formState.id_no,
         password: formState.password,
         confirm_password: formState.confirm_password,
+        otp: formState.otp,
       };
 
       try {
-        const response = await axios.post(API_URL, values);
+        // const response = await axios.post(API_URL, values);
+        const response = await axios.patch(
+          API_URL,
+          values
+        );
         console.log(response);
-        if (response.status === 200) {
-          const data = response.data;
-          console.log(data);
-          showOtpInput.value = true;
-
-          store.commit("setOtp", response.data.otp);
-          router.push({ path: "/" });
-        } else {
-          throw new Error("Network response was not ok.");
-        }
+        // handle success response
       } catch (error) {
-        console.log("Error:", error);
+        console.log(error);
+        // handle error response
       }
     };
 
@@ -118,4 +117,3 @@ export default {
   },
 };
 </script>
-

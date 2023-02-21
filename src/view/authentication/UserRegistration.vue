@@ -59,39 +59,70 @@ export default {
     });
     const showOtpInput = ref(false);
 
+    // const handleSubmit = async () => {
+    //   const values = {
+    //     id_no: formState.id_no,
+    //     otp: formState.otp,
+    //   };
+    //   const response = await axios.post(API_URL, values);
+    //   // store the id_no and otp in the local storage
+    //   localStorage.setItem("id_no", values.id_no);
+    //   localStorage.setItem("otp", values.otp);
+
+    //   console.log(localStorage.getItem("id_no"), localStorage.getItem("otp"));
+
+    //   try {
+    //     if (response.status === 200) {
+    //       const data = response.data;
+    //       console.log(data);
+    //       showOtpInput.value = true;
+    //     } else {
+    //       throw new Error("Network response was not ok.");
+    //     }
+    //   } catch (error) {
+    //     console.log("Error:", error);
+    //   }
+
+    //   if (formState.otp !== "") {
+    //     // Check if user has input an OTP
+    //     const generatedOTP = response.data.OTP;
+    //     const userOTP = formState.otp;
+
+    //     console.log(generatedOTP, userOTP);
+
+    //     if (generatedOTP === userOTP) {
+    //       router.push("/auth/set-password");
+    //     } else {
+    //       console.log("OTP does not match");
+    //     }
+    //   }
+    // };
+
     const handleSubmit = async () => {
-      const values = {
-        id_no: formState.id_no,
-        otp: formState.otp,
-      };
-      const response = await axios.post(API_URL, values);
-      // store the id_no and otp in the local storage
-      localStorage.setItem("id_no", values.id_no);
-      localStorage.setItem("otp", values.otp);
-
-      console.log(localStorage.getItem("id_no"), localStorage.getItem("otp"));
-
-      try {        // console.log(generatedOTP, userOTP);
+      if (!showOtpInput.value) {
+        // Send request to backend to generate OTP
+        const values = {
+          id_no: formState.id_no,
+        };
+        const response = await axios.post(API_URL, values);
         if (response.status === 200) {
-          const data = response.data;
-          console.log(data);
-          showOtpInput.value = true;
+          // Store generated OTP in local storage
+          localStorage.setItem("otp", response.data.OTP);
+          console.log(response.data);
         } else {
           throw new Error("Network response was not ok.");
         }
-      } catch (error) {
-        console.log("Error:", error);
-      }
-      const generatedOTP = response.data.OTP;
-      const userOTP = formState.otp;
-      // wait for user to enter the otp, compare the generated otp with the user's otp then redirect to set-password page
-      if (generatedOTP === userOTP) {
-        router.push("/auth/set-password");
+        showOtpInput.value = true;
       } else {
-        console.log("OTP does not match");
+        // Verify user input against locally stored OTP
+        const generatedOTP = localStorage.getItem("otp");
+        const userOTP = formState.otp;
+        if (generatedOTP === userOTP) {
+          router.push("/auth/set-password");
+        } else {
+          console.log("OTP does not match");
+        }
       }
-
-      // const response = await axios.post(API_URL, values);
     };
 
     return {
