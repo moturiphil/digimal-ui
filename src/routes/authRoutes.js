@@ -4,6 +4,11 @@ const routes = [
     name: 'login',
     component: () => import(/* webpackChunkName: "login" */ '@/view/authentication/SignIn.vue'),
   },
+  {
+    path: 'set-password',
+    name: 'set-password',
+    component: () => import(/* webpackChunkName: "comingSoon" */ '@/view/authentication/setPassword.vue'),
+  },
   // {
   //   path: 'register',
   //   name: 'register',
@@ -20,9 +25,9 @@ const routes = [
   //   component: () => import(/* webpackChunkName: "fb-register" */ '@/view/authentication/FbSignup.vue'),
   // },
   {
-    path: 'forgotPassword',
-    name: 'forgotPassword',
-    component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/ForgotPassword.vue'),
+    path: 'register',
+    name: 'register',
+    component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/UserRegistration.vue'),
   },
 ];
 
