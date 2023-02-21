@@ -1,6 +1,8 @@
 # MassNetCampaignBackend
 
-<!-- # Recommended configuration for the frontend application setup -->
+
+# Recommended configuration for the frontend application setup
+
 
 ## Requirements
 
@@ -25,8 +27,9 @@ yarn install
 ```
 # Launch the app.
 ```shell
-    cd /MassNetCampaignFrontend
-    yarn serve
+
+yarn serve
+
     
 
 ### Customize configuration
