@@ -10,6 +10,9 @@
           <!-- <a-input :value="formattedId" disabled /> -->
           <a-input v-model:value="formState.id_no" disabled />
         </a-form-item>
+        <a-form-item label="Email">
+          <a-input v-model:value="formState.email" placeholder="Enter Email" />
+        </a-form-item>
         <a-form-item label="Password" name="password">
           <a-input
             type="password"
@@ -46,8 +49,10 @@
 import { computed, ref, reactive } from "vue";
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
-import axios from "axios";
+// import axios from "axios";
+import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
+import AuthService from "../../services/auth.service";
 
 export default {
   name: "Password",
@@ -60,6 +65,7 @@ export default {
     const checked = ref(null);
     // const router = useRouter();
     const route = useRoute();
+    const router = useRouter();
 
     const formattedId = computed(() => {
       if (route.params?.id_no) {
@@ -69,38 +75,34 @@ export default {
       }
     });
 
-    const API_URL = "http://127.0.0.1:8000/api/set_users_password";
+    // const API_URL = "http://127.0.0.1:8000/api/set_users_password";
     const formState = reactive({
       id_no: localStorage.getItem("id_no") || "",
       otp: localStorage.getItem("otp") || "",
+      email: "",
       password: "",
       confirm_password: "",
     });
 
-    console.log(formState);
-
     const showOtpInput = ref(false);
 
     const handleSubmit = async () => {
-      const values = {
+      // const response = await axios.post(API_URL, values);
+      const response = await AuthService.register({
         id_no: formState.id_no,
+        otp: formState.otp,
         password: formState.password,
         confirm_password: formState.confirm_password,
-        otp: formState.otp,
-      };
-
-      try {
-        // const response = await axios.post(API_URL, values);
-        const response = await axios.patch(
-          API_URL,
-          values
-        );
+        email: formState.email,
+      });
+      if (response.status == 200) {
         console.log(response);
-        // handle success response
-      } catch (error) {
-        console.log(error);
-        // handle error response
+        // router.push("/auth/login");
+        console.log("response successfully sent....");
+        router.push({ path: "/" });
       }
+      // handle success response
+      // handle error response
     };
 
     return {

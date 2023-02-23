@@ -58,7 +58,7 @@ export default {
       otp: "",
     });
     const showOtpInput = ref(false);
-
+    // localStorage.removeItem("otp", response.data.OTP);
     // const handleSubmit = async () => {
     //   const values = {
     //     id_no: formState.id_no,
@@ -66,7 +66,7 @@ export default {
     //   };
     //   const response = await axios.post(API_URL, values);
     //   // store the id_no and otp in the local storage
-    //   localStorage.setItem("id_no", values.id_no);
+    //
     //   localStorage.setItem("otp", values.otp);
 
     //   console.log(localStorage.getItem("id_no"), localStorage.getItem("otp"));
@@ -83,18 +83,6 @@ export default {
     //     console.log("Error:", error);
     //   }
 
-    //   if (formState.otp !== "") {
-    //     // Check if user has input an OTP
-    //     const generatedOTP = response.data.OTP;
-    //     const userOTP = formState.otp;
-
-    //     console.log(generatedOTP, userOTP);
-
-    //     if (generatedOTP === userOTP) {
-    //       router.push("/auth/set-password");
-    //     } else {
-    //       console.log("OTP does not match");
-    //     }
     //   }
     // };
 
@@ -106,8 +94,12 @@ export default {
         };
         const response = await axios.post(API_URL, values);
         if (response.status === 200) {
-          // Store generated OTP in local storage
+          // Remove id_no and otp then store generated OTP and id_no in local storage
+          localStorage.removeItem("id_no", values.id_no);
+          localStorage.removeItem("otp", response.data.OTP);
+
           localStorage.setItem("otp", response.data.OTP);
+          localStorage.setItem("id_no", values.id_no);
           console.log(response.data);
         } else {
           throw new Error("Network response was not ok.");
@@ -122,6 +114,18 @@ export default {
         } else {
           console.log("OTP does not match");
         }
+        //   if (formState.otp !== "") {
+        //     // Check if user has input an OTP
+        //     const generatedOTP = response.data.OTP;
+        //     const userOTP = formState.otp;
+
+        //     console.log(generatedOTP, userOTP);
+
+        //     if (generatedOTP === userOTP) {
+        //       router.push("/auth/set-password");
+        //     } else {
+        //       console.log("OTP does not match");
+        //     }
       }
     };
 

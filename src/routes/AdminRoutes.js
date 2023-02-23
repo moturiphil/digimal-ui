@@ -66,6 +66,23 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/activities',
+    name: 'activities',
+    component: () => import(/* webpackChunkName: "fireStore" */ '@/view/crud/fireStore/Index.vue'),
+    children: [
+      {
+        path: 'activity-view',
+        name: 'activity-view',
+        component: () => import(/* webpackChunkName: "fireStore-view" */ '@/view/pages/activities/viewActivity.vue'),
+      },
+      {
+        path: 'activity-create',
+        name: 'activity-create',
+        component: () => import(/* webpackChunkName: "fireStore-add" */ '../view/pages/activities/createActivity.vue'),
+      },
+    ],
+  },
   ...PageRoutes,
   ...FeaturesRoutes,
   ...Components,

@@ -8,7 +8,7 @@
     <a-menu-item-group key="pages">
       <a-sub-menu key="widgets">
         <template v-slot:title
-          ><sdFeatherIcons type="server" /><span>Campagins</span></template
+          ><sdFeatherIcons type="globe" /><span>Campagins</span></template
         >
         <a-menu-item @click="toggleCollapsed" key="widgetChart">
           <router-link to="/campaigns/create-campaign">
@@ -23,7 +23,7 @@
       </a-sub-menu>
       <a-sub-menu key="events">
         <template v-slot:title
-          ><sdFeatherIcons type="server" /><span>Events</span></template
+          ><sdFeatherIcons type="twitch" /><span>Events</span></template
         >
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/events/event-create"> Create Event </router-link>
@@ -32,11 +32,39 @@
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item @click="toggleCollapsed" key="net-distribution">
-        <router-link to="/net/distribution">
-          Nets Distribution
-        </router-link>
-      </a-menu-item>
+      <a-sub-menu key="activities">
+        <template v-slot:title
+          ><sdFeatherIcons type="activity" /><span>Activities</span></template
+        >
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/activities/activity-create">
+            Create Activity
+          </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetsCard">
+          <router-link to="/activities/activity-view">
+            List Activity
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+      <a-sub-menu key="nets-distribution">
+        <template v-slot:title
+          ><sdFeatherIcons type="share-2" /><span
+            >Nets Distribution</span
+          ></template
+        >
+        <a-menu-item @click="toggleCollapsed" key="net-distribution">
+          <router-link to="/nets/distribution"> Nets Distribution </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/nets/distribution/post">
+            Distribution Post
+          </router-link>
+        </a-menu-item>
+        <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
+          <router-link to="/activities/activity-view"> List Activity </router-link>
+        </a-menu-item> -->
+      </a-sub-menu>
       <a-menu-item @click="toggleCollapsed" key="registered-users">
         <router-link to="/registered-users"> Users </router-link>
       </a-menu-item>
