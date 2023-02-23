@@ -20,12 +20,46 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="name" label="Event Name">
+                    <!-- <a-form-item name="name" label="Event Name">
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Input Event Name"
                       />
+                    </a-form-item> -->
+                    <a-form-item label="Event Name">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                      >
+                        <a-select-option value="1">Stakeholder meeting</a-select-option>
+                        <a-select-option default-value="2" value="2"
+                          >Health Care Worker Training</a-select-option
+                        >
+                        <a-select-option value="3">CHV mobilization</a-select-option>
+                        <a-select-option value="4">Village Elder mobilization</a-select-option>
+                        <a-select-option value="5">CHV/VE Training</a-select-option>
+                        <a-select-option value="5">Social mobilization</a-select-option>
+                      </a-select>
                     </a-form-item>
+
+                    <a-form-item label="Campaign Name">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                      >
+                        <a-select-option value="1">Campaign Trevion</a-select-option>
+                        <a-select-option default-value="2" value="2"
+                          >Campaign Allene</a-select-option
+                        >
+                        <a-select-option value="3">Campaign Tina</a-select-option>
+                        <a-select-option value="4">Campaign Jules</a-select-option>
+                        <a-select-option value="5">kinga Mal</a-select-option>
+                        <!-- <a-select-option value="5">Social mobilization</a-select-option> -->
+                      </a-select>
+                    </a-form-item>
+                    
                     <a-form-item name="event_code" label="Event Code">
                       <a-input
                         v-model:value="formState.event_code"
@@ -100,11 +134,11 @@ const AddNew = defineComponent({
         end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
         event_code: values.event_code,
         user_id: 1,
-        campaign_id: 1,
+        campaign_id: values.campaign_id,
         venue: values.venue,
         location_id: 1,
       };
-      console.log(values);
+      console.log(authHeader());
 
       fetch(API_URL, {
         method: "POST",

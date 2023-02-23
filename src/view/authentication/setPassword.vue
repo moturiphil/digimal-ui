@@ -10,6 +10,9 @@
           <!-- <a-input :value="formattedId" disabled /> -->
           <a-input v-model:value="formState.id_no" disabled />
         </a-form-item>
+        <a-form-item label="Email">
+          <a-input v-model:value="formState.email" placeholder="Enter Email" />
+        </a-form-item>
         <a-form-item label="Password" name="password">
           <a-input
             type="password"
@@ -73,20 +76,20 @@ export default {
     const formState = reactive({
       id_no: localStorage.getItem("id_no") || "",
       otp: localStorage.getItem("otp") || "",
+      email: "",
       password: "",
       confirm_password: "",
     });
-
-    console.log(formState);
 
     const showOtpInput = ref(false);
 
     const handleSubmit = async () => {
       const values = {
         id_no: formState.id_no,
+        otp: formState.otp,
         password: formState.password,
         confirm_password: formState.confirm_password,
-        otp: formState.otp,
+        email: formState.email
       };
 
       try {

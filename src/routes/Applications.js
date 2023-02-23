@@ -63,13 +63,18 @@ export default [
   // },
   {
     name: 'net-distribution',
-    path: '/net',
+    path: '/nets',
     component: () => import(/* webpackChunkName: "ecommerce" */ '../view/pages/net-distribution/Orders.vue'),
     children: [
       {
         name: 'distribution',
         path: 'distribution',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/Orders.vue'),
+      },
+      {
+        name: 'distribution-post',
+        path: 'distribution/post',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DistributionPost.vue'),
       },
     ],
   },
