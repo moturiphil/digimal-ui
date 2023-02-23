@@ -24,10 +24,21 @@ class AuthService {
   }
 
   register(user) {
-    return axios.post(API_URL + 'auth/signup', {
+    console.log(user);
+    return axios
+    .patch('http://127.0.0.1:8000/api/set_users_password', {
       id_no: user.id_no,
-      password: user.password
-    });
+      password: user.password,
+      confirm_password: user.confirm_password,
+      otp : user.otp,
+      email : user.email
+    })
+    .then(
+      response => {
+        console.log(response);
+        return response;
+      }
+    );
   }
 }
 
