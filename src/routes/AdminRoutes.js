@@ -33,9 +33,9 @@ const routes = [
         component: () => import(/* webpackChunkName: "axios-view" */ '@/view/pages/campaigns/viewCampaigns.vue'),
       },
       {
-        path: 'edit/:id',
-        name: 'edit',
-        component: () => import(/* webpackChunkName: "axios-edit" */ '@/view/crud/axios/edit.vue'),
+        path: '/view/:id',
+        name: 'viewCampaign',
+        component: () => import(/* webpackChunkName: "axios-edit" */ '@/view/pages/campaigns/showCampaign.vue'),
       },
       {
         path: 'create-campaign',

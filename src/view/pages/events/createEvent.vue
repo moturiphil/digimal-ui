@@ -67,7 +67,7 @@
                       />
                     </a-form-item>
 
-                    <a-form-item name="startDate" label="Event Start Date">
+                    <!-- <a-form-item name="startDate" label="Event Start Date">
                       <a-date-picker
                         :style="{ width: '100%' }"
                         v-model:value="formState.startDate"
@@ -81,12 +81,32 @@
                         v-model:value="formState.endDate"
                         :format="dateFormat"
                       />
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item name="venue" label="Event Venue">
                       <a-input
                         v-model:value="formState.venue"
                         placeholder="Input Event Venue"
                       />
+                    </a-form-item>
+                    <a-form-item label="Officers">
+                      <a-select
+                        mode="multiple"
+                        :default-value="['1']"
+                        placeholder="Please select"
+                      >
+                        <a-select-option value="1"
+                          >Admin Test 1</a-select-option
+                        >
+                        <a-select-option value="2"
+                          >Admin Test 2</a-select-option
+                        >
+                        <a-select-option value="3"
+                          >Admin Test 3</a-select-option
+                        >
+                        <a-select-option value="4"
+                          >Admin Test 4</a-select-option
+                        >
+                      </a-select>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
