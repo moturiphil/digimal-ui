@@ -35,7 +35,50 @@
                     :pagination="{ pageSize: 10, showSizeChanger: true }"
                     :dataSource="dataSource"
                     :columns="columns"
-                  />
+                  >
+                  <template #events="{ record }">
+                    <td>
+                      <div class="table-actions">
+                        <sdButton
+                          class="btn-icon"
+                          type="info"
+                          :to="`/events/${record.id}/register`"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="edit-3" size="16" />
+                          &nbsp;&nbsp; Register
+                        </sdButton>
+                        <sdButton
+                          class="btn-icon"
+                          type="info"
+                          :to="`/events/${record.id}/view`"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="edit" size="16" />
+                          &nbsp;&nbsp; View
+                        </sdButton>
+                        <sdButton
+                          class="btn-icon"
+                          type="info"
+                          :to="`/events/${record.id}/edit`"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="edit" size="16" />
+                          &nbsp;&nbsp; Edit
+                        </sdButton>
+                        <sdButton
+                          class="btn-icon"
+                          type="danger"
+                          @click="handleDelete(record.id)"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="trash-2" size="16" />
+                          &nbsp;&nbsp; Delete
+                        </sdButton>
+                      </div>
+                    </td>
+                  </template>
+                </a-table>
                 </TableWrapper>
               </div>
             </sdCards>
@@ -91,8 +134,13 @@
       title: 'venue',
       dataIndex: 'venue',
       key: 'id',
-    }
-    
+    },
+    {
+      title: 'Actions',
+      dataIndex: '',
+      key: 'events',
+      slots: { customRender: 'events' },
+    },
   ];
   
   const ViewPage = defineComponent({

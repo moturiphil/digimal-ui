@@ -31,7 +31,47 @@
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
-                />
+                >
+                  <template #actions="{ record }">
+                    <td>
+                      <div class="table-actions">
+                        <sdButton
+                        >
+                          <router-link
+                            :to="`/campaigns/${record.id}`"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="edit" size="16" />
+                            &nbsp;&nbsp; View
+                          </router-link>
+
+                          <!-- <sdFeatherIcons type="edit" size="16" /> -->
+                          <!-- &nbsp;&nbsp; View -->
+                        </sdButton>
+                        <sdButton
+                          class="btn-icon"
+                          type="info"
+                          :to="`/campaigns/${record.id}/edit`"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="edit" size="16" />
+                          &nbsp;&nbsp; Edit
+                        </sdButton>
+                        <sdButton
+                          class="btn-icon"
+                          type="danger"
+                          @click="handleDelete(record.id)"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="trash-2" size="16" />
+                          &nbsp;&nbsp; Delete
+                        </sdButton>
+                      </div>
+                    </td>
+                  </template>
+                </a-table>
               </TableWrapper>
             </div>
           </sdCards>
@@ -68,6 +108,12 @@ const columns = [
     title: "Campaign End Date",
     dataIndex: "end_date",
     key: "id",
+  },
+  {
+    title: "Actions",
+    dataIndex: "",
+    key: "actions",
+    slots: { customRender: "actions" },
   },
 ];
 

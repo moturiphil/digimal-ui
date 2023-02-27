@@ -94,13 +94,33 @@
                         type="number"
                       />
                     </a-form-item>
-                    <a-form-item name="created_by" label="Created By">
+                    <a-form-item label="Officers">
+                      <a-select
+                        mode="multiple"
+                        :default-value="['1']"
+                        placeholder="Please select"
+                      >
+                        <a-select-option value="1"
+                          >Admin Test 1</a-select-option
+                        >
+                        <a-select-option value="2"
+                          >Admin Test 2</a-select-option
+                        >
+                        <a-select-option value="3"
+                          >Admin Test 3</a-select-option
+                        >
+                        <a-select-option value="4"
+                          >Admin Test 4</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
+                    <!-- <a-form-item name="created_by" label="Created By">
                       <a-input
                         v-model:value="formState.campaign_id"
                         placeholder="Input Activity County"
                         disabled
                       />
-                    </a-form-item>
+                    </a-form-item> -->
                     <!-- <a-form-item label="Multiple Select">
                       <a-select
                         mode="multiple"

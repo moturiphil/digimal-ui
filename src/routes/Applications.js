@@ -62,6 +62,29 @@ export default [
   //   ],
   // },
   {
+    name: 'project',
+    path: '/app/project',
+    component: () => import(/* webpackChunkName: "project" */ '../view/apps/project/Project.vue'),
+    children: [
+      {
+        path: 'grid',
+        name: 'grid',
+        components: {
+          default: () => import(/* webpackChunkName: "project" */ '../view/apps/project/Project.vue'),
+          child: () => import(/* webpackChunkName: "grid" */ '../view/apps/project/overview/Grid.vue'),
+        },
+      },
+      {
+        path: 'list',
+        name: 'list',
+        components: {
+          default: () => import(/* webpackChunkName: "project" */ '../view/apps/project/Project.vue'),
+          child: () => import(/* webpackChunkName: "list" */ '../view/apps/project/overview/List.vue'),
+        },
+      },
+    ],
+  },
+  {
     name: 'net-distribution',
     path: '/nets',
     component: () => import(/* webpackChunkName: "ecommerce" */ '../view/pages/net-distribution/Orders.vue'),
