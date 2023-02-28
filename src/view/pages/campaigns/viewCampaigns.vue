@@ -38,7 +38,7 @@
                         <sdButton
                         >
                           <router-link
-                            :to="`/campaigns/${record.id}`"
+                            :to="`/campaigns/view/${record.id}`"
                             class="btn-icon"
                             type="info"
                             shape="circle"

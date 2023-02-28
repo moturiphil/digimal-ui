@@ -1,9 +1,9 @@
 <template>
     <RecordViewWrapper>
-      <sdPageHeader title="MassNet Events">
+      <sdPageHeader title="MassNet Activities">
         <template #subTitle>
           <sdButton class="btn-add_new" size="default" type="success">
-            <router-link to="/events/event-create"> <sdFeatherIcons type="plus" size="14" /> Start New Event</router-link>
+            <router-link to="/activities/activity-create"> <sdFeatherIcons type="plus" size="14" /> Start New Activity</router-link>
           </sdButton>
         </template>
         <template #buttons>
