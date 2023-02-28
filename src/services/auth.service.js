@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const API_URL = 'http://127.0.0.1:8000/api/';
+const router = useRouter();
 
 class AuthService {
   login(user) {
@@ -26,7 +28,7 @@ class AuthService {
   register(user) {
     console.log(user);
     return axios
-    .patch('http://127.0.0.1:8000/api/set_users_password', {
+    .patch(API_URL + 'set_users_password', {
       id_no: user.id_no,
       password: user.password,
       confirm_password: user.confirm_password,
@@ -36,7 +38,7 @@ class AuthService {
     .then(
       response => {
         console.log(response);
-        return response;
+        return router.push("/");
       }
     );
   }
