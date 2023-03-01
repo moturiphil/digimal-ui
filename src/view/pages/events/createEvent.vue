@@ -91,7 +91,7 @@
                     <a-form-item label="Officers">
                       <a-select
                         mode="multiple"
-                        :default-value="['1']"
+                        :default-value="['1', '2']"
                         placeholder="Please select"
                       >
                         <a-select-option value="1"
@@ -158,7 +158,7 @@ const AddNew = defineComponent({
         venue: values.venue,
         location_id: 1,
       };
-      console.log(authHeader());
+      console.log(values);
 
       fetch(API_URL, {
         method: "POST",
