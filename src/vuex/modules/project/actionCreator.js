@@ -1,5 +1,8 @@
 import staticData from '@/demoData/projectData.json';
 import mutations from './mutations';
+import axios from 'axios';
+import authHeader from "../../../services/auth-header";
+
 
 const state = () => ({
   data: staticData,
@@ -8,47 +11,24 @@ const state = () => ({
   error: null,
 });
 
-const actions = {
-  async filterSinglePage({ commit }, paramsId) {
-    try {
-      commit('singleProjectBegin');
-      const data = staticData.filter((project) => {
-        return project.id === parseInt(paramsId, 10);
-      });
-      commit('singleProjectSuccess', data);
-    } catch (err) {
-      commit('singleProjectErr', err);
-    }
-  },
-  async filterProjectByStatus({ commit }, status) {
-    try {
-      commit('filterProjectBegin');
-      const data = staticData.filter((project) => {
-        if (status !== 'all') {
-          return project.status === status;
-        }
-        return staticData;
-      });
-      commit('filterProjectSuccess', data);
-    } catch (err) {
-      commit('filterProjectErr', err.toString());
-    }
-  },
 
-  async sortingProjectByCategory({ commit }, sortBy) {
+const actions = {
+  async eventCampaignData({ commit }, paramsId) {
     try {
-      commit('sortingProjectBegin');
-      const data = staticData.sort((a, b) => {
-        return b[sortBy] - a[sortBy];
+      commit('eventCampaignBegin');
+      const response = await axios.get(`http://localhost:8000/api/campaign/${paramsId}/events`, {
+        headers: authHeader(),
       });
-      setTimeout(() => {
-        commit('sortingProjectSuccess', data);
-      }, 500);
+      console.log(response);
+      const data = response.data;
+      commit('eventCampaignSuccess', data);
     } catch (err) {
-      commit('sortingProjectErr', err);
+      commit('eventCampaignErr', err);
     }
   },
+  // other actions...
 };
+
 
 export default {
   namespaced: false,

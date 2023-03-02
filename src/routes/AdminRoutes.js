@@ -31,22 +31,20 @@ const routes = [
         name: "campaign-details",
         component: () => import("@/view/pages/campaigns/showCampaign.vue"),
       },
-    ],
-  },
-  {
-    path: "/campaigns",
-    name: "campaigns",
-    component: () => import("@/view/pages/campaigns/viewCampaigns.vue"),
-    children: [
       {
-        path: "view-campaign",
+        path: "/campaigns/create-campaign",
+        name: "create-campaign",
+        component: () => import("@/view/pages/campaigns/createCampaign.vue"),
+      },
+      {
+        path: "/campaigns/view-campaign",
         name: "view-campaigns",
         component: () => import("@/view/pages/campaigns/viewCampaigns.vue"),
       },
       {
-        path: "create-campaign",
-        name: "create-campaign",
-        component: () => import("@/view/pages/campaigns/createCampaign.vue"),
+        path: "/events/register/:id",
+        name: "events-register",
+        // component: () => import("@/view/pages/events/eventRegister.vue"),
       },
     ],
   },

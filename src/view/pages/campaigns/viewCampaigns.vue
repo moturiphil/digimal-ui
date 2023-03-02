@@ -43,10 +43,9 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="edit" size="16" />
+                            <sdFeatherIcons type="eye" size="16" />
                             &nbsp;&nbsp; View
                           </router-link>
-
                           <!-- <sdFeatherIcons type="edit" size="16" /> -->
                           <!-- &nbsp;&nbsp; View -->
                         </sdButton>

@@ -1,14 +1,14 @@
 export default {
-  singleProjectBegin(state) {
+  eventCampaignBegin(state) {
     state.loading = true;
   },
 
-  singleProjectSuccess(state, data) {
+  eventCampaignSuccess(state, data) {
     state.loading = false;
     state.singleData = data;
   },
 
-  singleProjectErr(state, err) {
+  eventCampaignErr(state, err) {
     state.loading = false;
     state.error = err;
   },
