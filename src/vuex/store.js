@@ -1,6 +1,6 @@
 import { createStore } from 'vuex';
 import themeLayout from './modules/themeLayout/actionCreator';
-import gallery from './modules/gallery';
+// import gallery from './modules/gallery';
 import users from './modules/users';
 import chartContent from './modules/chartContent/actionCreator';
 import email from './modules/email/actionCreator';
@@ -60,7 +60,7 @@ export default createStore({
   },
   modules: {
     themeLayout,
-    gallery,
+    // gallery,
     users,
     chartContent,
     email,

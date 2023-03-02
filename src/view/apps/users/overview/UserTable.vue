@@ -21,11 +21,6 @@ import users from '@/demoData/usersData.json';
 import { computed, defineComponent } from 'vue';
 const usersTableColumns = [
   {
-    title: 'User',
-    dataIndex: 'user',
-    key: 'user',
-  },
-  {
     title: 'Email',
     dataIndex: 'email',
     key: 'email',
