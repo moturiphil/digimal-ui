@@ -49,7 +49,7 @@
                           <!-- <sdFeatherIcons type="edit" size="16" /> -->
                           <!-- &nbsp;&nbsp; View -->
                         </sdButton>
-                        <sdButton
+                        <!-- <sdButton
                           class="btn-icon"
                           type="info"
                           :to="`/campaigns/${record.id}/edit`"
@@ -66,7 +66,7 @@
                         >
                           <sdFeatherIcons type="trash-2" size="16" />
                           &nbsp;&nbsp; Delete
-                        </sdButton>
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>

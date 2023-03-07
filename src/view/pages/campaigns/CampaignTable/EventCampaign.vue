@@ -3,170 +3,246 @@
     <TableWrapper class="table-responsive">
       <a-table
         :rowSelection="rowSelection"
-        :dataSource="usersTableData"
-        :columns="EventCampaignColumns"
-        :pagination="{
-          defaultPageSize: 5,
-          total: usersTableData.length,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
-        }"
+        :pagination="{ pageSize: 10, showSizeChanger: true }"
+        :dataSource="dataSource"
+        :columns="columns"
       />
     </TableWrapper>
   </UserTableStyleWrapper>
 </template>
-<script>
-import { UserTableStyleWrapper } from '../style';
-import { TableWrapper } from '../../../styled';
-// import users from '@/demoData/usersData.json';
-import users from '@/demoData/usersData.json';
-import event_campaigns from '../../../../vuex//modules/project/actionCreator';
-// import {{ useStore }} from 
-import { computed, defineComponent } from 'vue';
-// import { mapActions } from 'vuex';
-// import events data from vuex store
-// import events from 'store/'
 
-const EventCampaignColumns = [
+<!-- <script>
+import { UserTableStyleWrapper } from "../style";
+import { TableWrapper } from "../../../styled";
+// import staticData from '@/demoData/projectData.json';
+import { computed, defineComponent, onMounted, ref, reactive, watch } from "vue";
+import { useStore } from "vuex";
+import authHeader from "../../../../../src/services/auth-header";
+import axios from "axios";
+
+const columns = [
   {
-    title: 'Event Name',
-    dataIndex: 'email',
-    key: 'name',
+    title: "Event Name",
+    dataIndex: "name",
+    key: "id",
   },
   {
-    title: 'Company',
-    dataIndex: 'company',
-    key: 'company',
+    title: "Event Code",
+    dataIndex: "event_code",
+    key: "id",
   },
   {
-    title: 'Position',
-    dataIndex: 'position',
-    key: 'position',
+    title: "Event Status",
+    dataIndex: "status",
+    key: "id",
   },
   {
-    title: 'Join Date',
-    dataIndex: 'joinDate',
-    key: 'joinDate',
+    title: "Event Venue",
+    dataIndex: "venue",
+    key: "id",
   },
   {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-  },
-  {
-    title: 'Actions',
-    dataIndex: 'action',
-    key: 'action',
-    width: '90px',
+    title: "Actions",
+    dataIndex: "",
+    key: "events",
+    slots: { customRender: "events" },
+    width: "90px",
   },
 ];
+
 const EventCampaignTable = defineComponent({
-  name: 'EventCampaignTable',
+  name: "EventCampaignTable",
   components: { UserTableStyleWrapper, TableWrapper },
   setup() {
-    const usersTableData = computed(() =>
-      users.map((user) => {
-        const { id, name, designation, img, status } = user;
+    const { state } = useStore();
+    const eventData = computed(() => state.crud.data);
+    // console.log(eventData);
+    // const { eventCampaignData } = mapActions(['eventCampaignData']);
+    const dataSource = ref([]);
+    const selectedRowKeys = ref([]);
 
-        return {
-          key: id,
-          user: (
-            <div class="user-info">
-              <figure>
-                <img style={{ width: '40px' }} src={require(`@/${img}`)} alt="" />
-              </figure>
-              <figcaption>
-                <sdHeading class="user-name" as="h6">
-                  {name}
-                </sdHeading>
-                <span class="user-designation">San Francisco, CA</span>
-              </figcaption>
-            </div>
-          ),
-          email: 'john@gmail.com',
-          company: 'asdnfids',
-          position: designation,
-          joinDate: 'January 20, 2021',
-          status: <span class={`status-text ${status}`}>{status}</span>,
-          action: (
-            <div class="table-actions">
-              <>
-                <sdButton class="btn-icon" type="default" to="#" shape="circle">
-                  <sdFeatherIcons type="eye" size="16" />
-                </sdButton>
-                <sdButton class="btn-icon" type="default" to="#" shape="circle">
-                  <sdFeatherIcons type="edit" size="16" />
-                </sdButton>
-                <sdButton class="btn-icon" type="default" to="#" shape="circle">
-                  <sdFeatherIcons type="trash-2" size="16" />
-                </sdButton>
-              </>
-            </div>
-          ),
-        };
-      }),
-    );
-    
+    // const API_URL = "http://localhost:8000/api/campaign/1/events";
 
-    console.log(event_campaigns);
+    const API_URL = "http://localhost:8000/api/campaign";
 
+    const campaignId = reactive({
+      value: 1, // Set an initial value
+    });
+    // const paramsId = 1;
 
+    // onMounted(() => {
+    //   axios
+    //     .get(API_URL, {
+    //       headers: authHeader(),
+    //     })
+    //     .then((response) => {
+    //       console.log(response.data.data);
+    //       dataSource.value = response.data.data;
+    //       // console.log(dataSource.value);
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //     });
+    // });
+    // Watch for changes in "campaignId"
+    watch(campaignId, async (newCampaignId) => {
+      try {
+        const response = await axios.get(`${API_URL}/${newCampaignId}/events`, {
+          headers: authHeader(),
+        });
+        console.log(response);
+        dataSource.value = response.data.data;
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
+    // Fetch data when the component is mounted
+    onMounted(async () => {
+      try {
+        const response = await axios.get(`${API_URL}/${campaignId.value}/events`, {
+          headers: authHeader(),
+        });
+        console.log(response);
+        dataSource.value = response.data.data;
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
-
-
-
-    // const eventCampaignData = computed(() =>
-    //   users.map((user) => {
-    //     const { id, name, designation, img, status } = user;
-
-    //     return {
-    //       key: id,
-    //       user: (
-    //         <div class="user-info">
-    //           <figure>
-    //             <img style={{ width: '40px' }} src={require(`@/${img}`)} alt="" />
-    //           </figure>
-    //           <figcaption>
-    //             <sdHeading class="user-name" as="h6">
-    //               {name}
-    //             </sdHeading>
-    //             <span class="user-designation">San Francisco, CA</span>
-    //           </figcaption>
-    //         </div>
-    //       ),
-    //       email: 'john@gmail.com',
-    //       company: 'asdnfids',
-    //       position: designation,
-    //       joinDate: 'January 20, 2021',
-    //       status: <span class={`status-text ${status}`}>{status}</span>,
-    //       action: (
-    //         <div class="table-actions">
-    //           <>
-    //             <sdButton class="btn-icon" type="default" to="#" shape="circle">
-    //               <sdFeatherIcons type="eye" size="16" />
-    //             </sdButton>
-    //             <sdButton class="btn-icon" type="default" to="#" shape="circle">
-    //               <sdFeatherIcons type="edit" size="16" />
-    //             </sdButton>
-    //             <sdButton class="btn-icon" type="default" to="#" shape="circle">
-    //               <sdFeatherIcons type="trash-2" size="16" />
-    //             </sdButton>
-    //           </>
-    //         </div>
-    //       ),
-    //     };
-    //   }),
-    // );
-
-    const rowSelection = {
-      getCheckboxProps: (record) => ({
-        disabled: record.name === 'Disabled User', // Column configuration not to be checked
-        name: record.name,
-      }),
+    const onSelectChange = (selectedRowKey) => {
+      selectedRowKeys.value = selectedRowKey;
     };
 
-    return { EventCampaignColumns, usersTableData, rowSelection };
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+    };
+    // const handleDelete = (id) => {
+    //   const confirm = window.confirm("Are you sure delete this?");
+    //   if (confirm) {
+    //     dispatch("axiosDataDelete", {
+    //       id,
+    //       getData: () => {
+    //         dispatch("axiosCrudGetData");
+    //       },
+    //     });
+    //   }
+    //   return false;
+    // };
+
+    return {
+      columns,
+      eventData,
+      rowSelection,
+      dataSource,
+      selectedRowKeys,
+      onSelectChange,
+    };
+  },
+});
+
+export default EventCampaignTable;
+</script> -->
+
+
+<script>
+import { UserTableStyleWrapper } from "../style";
+import { TableWrapper } from "../../../styled";
+import { computed, defineComponent, onMounted, ref, reactive, watch } from "vue";
+import { useRoute } from "vue-router";
+import authHeader from "../../../../../src/services/auth-header";
+import axios from "axios";
+import { useStore } from "vuex";
+
+const columns = [
+  {
+    title: "Event Name",
+    dataIndex: "name",
+    key: "id",
+  },
+  {
+    title: "Event Code",
+    dataIndex: "event_code",
+    key: "id",
+  },
+  {
+    title: "Event Status",
+    dataIndex: "status",
+    key: "id",
+  },
+  {
+    title: "Event Venue",
+    dataIndex: "venue",
+    key: "id",
+  },
+  {
+    title: "Actions",
+    dataIndex: "",
+    key: "events",
+    slots: { customRender: "events" },
+    width: "90px",
+  },
+];
+
+const EventCampaignTable = defineComponent({
+  name: "EventCampaignTable",
+  components: { UserTableStyleWrapper, TableWrapper },
+  setup() {
+    const { state } = useStore();
+    const eventData = computed(() => state.crud.data);
+
+    const dataSource = ref([]);
+    const selectedRowKeys = ref([]);
+
+    const API_URL = "http://localhost:8000/api/campaign";
+
+    const route = useRoute();
+    const campaignId = reactive({
+      value: route.params.id,
+    });
+
+    watch(campaignId, async (newCampaignId) => {
+      try {
+        const response = await axios.get(`${API_URL}/${newCampaignId}/events`, {
+          headers: authHeader(),
+        });
+        console.log(response);
+        dataSource.value = response.data.data;
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    onMounted(async () => {
+      try {
+        const response = await axios.get(`${API_URL}/${campaignId.value}/events`, {
+          headers: authHeader(),
+        });
+        console.log(response);
+        dataSource.value = response.data.data;
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    const onSelectChange = (selectedRowKey) => {
+      selectedRowKeys.value = selectedRowKey;
+    };
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+    };
+
+    return {
+      columns,
+      eventData,
+      rowSelection,
+      dataSource,
+      selectedRowKeys,
+      onSelectChange,
+    };
   },
 });
 
