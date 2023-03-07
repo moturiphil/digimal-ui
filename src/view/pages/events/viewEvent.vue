@@ -10,7 +10,6 @@
         </sdButton>
       </template>
       <template #buttons>
-
         <div class="search-box">
           <span class="search-icon">
             <sdFeatherIcons type="search" size="14" />
@@ -43,7 +42,7 @@
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton @click="visible = true">
+                        <!-- <sdButton @click="visible = true">
                           <router-link
                             :to="`/event/register/${record.id}`"
                             class="btn-icon"
@@ -53,12 +52,27 @@
                             <sdFeatherIcons type="edit-3" size="16" />
                             &nbsp;&nbsp; Register
                           </router-link>
+                        </sdButton> -->
+                        <!-- <sdButton
+                          @click="showColorModal()"
+                          size="small"
+                          type="success"
+                        >
+                          Success
+                        </sdButton> -->
+                        <sdButton
+                          @click="showSuccessModal"
+                          size="small"
+                          type="success"
+                        >
+                          <sdFeatherIcons type="edit-3" size="16" />
+                          &nbsp;&nbsp; Register
                         </sdButton>
                         <sdButton>
                           <sdFeatherIcons type="eye" size="16" />
                           &nbsp;&nbsp; View
                         </sdButton>
-                        <sdButton
+                        <!-- <sdButton
                           class="btn-icon"
                           type="info"
                           :to="`/events/${record.id}/edit`"
@@ -67,6 +81,7 @@
                           <sdFeatherIcons type="edit" size="16" />
                           &nbsp;&nbsp; Edit
                         </sdButton>
+                        -->
                         <sdButton
                           class="btn-icon"
                           type="danger"
@@ -85,18 +100,6 @@
           </sdCards>
         </a-col>
       </a-row>
-      <template>
-        <Modal
-          v-model:visible="visible"
-          title="Register for Event"
-          @ok="registerForEvent"
-        >
-          <form @submit.prevent="registerForEvent">
-            <a-input v-model:value="eventCode" placeholder="Enter Event Code" />
-            <a-button html-type="submit" type="primary">Register</a-button>
-          </form>
-        </Modal>
-      </template>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -108,18 +111,9 @@ import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import { useRouter } from "vue-router";
+import { Modal } from "ant-design-vue";
 
 const router = useRouter();
-
-//   "id": 1,
-//             "name": "Event Alanna",
-//             "event_code": "NLKyzDJUNp",
-//             "start_date": "2006-06-09",
-//             "end_date": "1990-06-18",
-//             "user_id": 1,
-//             "campaign_id": 1,
-//             "venue": "Venue Vickie",
-//             "location_id": 1,
 
 const columns = [
   {
@@ -153,6 +147,99 @@ const columns = [
 const ViewPage = defineComponent({
   name: "ViewPage",
   components: { RecordViewWrapper, Main, TableWrapper },
+  data() {
+    return {
+      visible: false,
+      confirmLoading: false,
+      modalType: "primary",
+      colorVisible: false,
+    };
+  },
+  methods: {
+    // registerForEvent(eventCode) {
+    //   // Make an API call to check if the event code is valid and register the user for the event
+    //   // If the API call is successful, show a success message to the user
+    //   // If the API call fails, show an error message to the user
+
+    //   // For demonstration purposes, let's assume the API call is successful and the user is registered for the event
+    //   const isEventCodeValid = true;
+
+    //   if (isEventCodeValid) {
+    //     this.showSuccessModal();
+    //   } else {
+    //     this.showErrorModal();
+    //   }
+    // },
+    showModal() {
+      this.visible = true;
+    },
+    showSuccessModal() {
+    Modal.success({
+      title: "Success",
+      content: (
+        <div>
+          <p>Your action was successful.</p>
+          <Input placeholder="Enter event code" />
+        </div>
+      ),
+      okText: "Register",
+      onOk() {
+        console.log("Register");
+      },
+    });
+  },
+    handleOk() {
+      this.confirmLoading = true;
+      setTimeout(() => {
+        this.visible = false;
+        this.colorVisible = false;
+        this.confirmLoading = false;
+      }, 2000);
+    },
+    handleCancel() {
+      this.visible = false;
+      this.colorVisible = false;
+    },
+    changeType(type) {
+      this.modalType = type;
+    },
+    // info() {
+    //   //const h = this.$createElement;
+    //   Modal.info({
+    //     title: 'This is a notification message',
+    //     content: h('div', {}, [h('p', 'some messages...some messages...'), h('p', 'some messages...some messages...')]),
+    //     onOk() {
+    //       console.log('ok');
+    //     },
+    //   });
+    // },
+    success() {
+      Modal.success({
+        title: "This is a success message",
+        // JSX support
+        content: (
+          <div>
+            <p>some messages...some messages...</p>
+            <p>some messages...some messages...</p>
+          </div>
+        ),
+      });
+    },
+
+    error() {
+      Modal.error({
+        title: "This is an error message",
+        content: "some messages...some messages...",
+      });
+    },
+
+    warning() {
+      Modal.warning({
+        title: "This is a warning message",
+        content: "some messages...some messages...",
+      });
+    },
+  },
   setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
@@ -174,6 +261,17 @@ const ViewPage = defineComponent({
 
     // get api_url from the .env file
     // console.log(API_URL);
+    // showColorModal() {
+    //   this.colorVisible = true;
+    // }
+    // handleOk() {
+    //   this.confirmLoading = true;
+    //   setTimeout(() => {
+    //     this.visible = false;
+    //     this.colorVisible = false;
+    //     this.confirmLoading = false;
+    //   }, 2000);
+    // }
 
     onMounted(() => {
       axios
