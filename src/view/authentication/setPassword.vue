@@ -99,7 +99,7 @@ export default {
         console.log(response);
         // router.push("/auth/login");
         console.log("response successfully sent....");
-        router.push({ path: "/" });
+        router.push("/");
       }
       // handle success response
       // handle error response

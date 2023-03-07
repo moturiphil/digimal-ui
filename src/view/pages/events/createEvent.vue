@@ -60,12 +60,6 @@
                       </a-select>
                     </a-form-item>
                     
-                    <a-form-item name="event_code" label="Event Code">
-                      <a-input
-                        v-model:value="formState.event_code"
-                        placeholder="Input Event Code"
-                      />
-                    </a-form-item>
 
                     <!-- <a-form-item name="startDate" label="Event Start Date">
                       <a-date-picker
