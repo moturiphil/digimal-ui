@@ -302,14 +302,14 @@ export default defineComponent({
     
     console.log(router);
 
-    console.log(localStorage.getItem("user"));
+    console.log(sessionStorage.getItem("user"));
 
     return {
       chartOptions,
     };
   },
   beforeRouteEnter(to, from, next) {
-    if (!localStorage.getItem("user")) {
+    if (!sessionStorage.getItem("user")) {
       next("/auth/login");
     } else {
       next();

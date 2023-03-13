@@ -77,8 +77,8 @@ export default {
 
     // const API_URL = "http://127.0.0.1:8000/api/set_users_password";
     const formState = reactive({
-      id_no: localStorage.getItem("id_no") || "",
-      otp: localStorage.getItem("otp") || "",
+      id_no: sessionStorage.getItem("id_no") || "",
+      otp: sessionStorage.getItem("otp") || "",
       email: "",
       password: "",
       confirm_password: "",

@@ -133,7 +133,7 @@ const AddNew = defineComponent({
     };
   },
   beforeRouteEnter(to, from, next) {
-    if (!localStorage.getItem("user")) {
+    if (!sessionStorage.getItem("user")) {
       next("/auth/login");
     } else {
       next();

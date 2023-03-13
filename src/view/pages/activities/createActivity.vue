@@ -219,7 +219,7 @@ const AddNew = defineComponent({
     //       console.log(error);
     //     });
     // };
-    //pick the user_id in the localstorage and add it into formstate
+    //pick the user_id in the sessionstorage and add it into formstate
     // const user_id = computed(() => state.auth);
 
     // console.log(state.auth.user.id);
