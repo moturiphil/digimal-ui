@@ -195,7 +195,7 @@ const EventCampaignTable = defineComponent({
     const dataSource = ref([]);
     const selectedRowKeys = ref([]);
 
-    const API_URL = "http://localhost:8000/api/campaign";
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/campaign`;
 
     const route = useRoute();
     const campaignId = reactive({

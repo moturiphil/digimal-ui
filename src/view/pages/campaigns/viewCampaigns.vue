@@ -89,6 +89,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+// import { inject } from "vue";
 // import { useRouter } from "vue-router";
 // import DragAndDropTable from '../../../view/table/DragTable.vue';
 
@@ -126,18 +127,24 @@ const ViewPage = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    // const apiEndpoint = inject('apiEndpoint')
     // const { state, dispatch } = useStore();
     // const router = useRouter();
 
     // if (!state.auth.isAuthenticated) {
     //   router.push({ name: "login" });
-    // }  const API_URL = process.env.API_URL;
+    // }  
+    // const API_URL = process.env.API_URL;
 
     console.log(authHeader());
 
     onMounted(async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/campaign_all", {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/campaign_all`, 
+        // const re
+        
+        // const response = await fetch( apiEndpoint + "campaign_all", 
+        {
           method: "GET",
           headers: authHeader(),
         });

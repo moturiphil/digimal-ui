@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 
-const API_URL = 'http://127.0.0.1:8000/api/';
+// import { inject } from 'vue';
+
+const API_URL = `${process.env.VUE_APP_BASE_URL}/`;
 const router = useRouter();
 
 class AuthService {

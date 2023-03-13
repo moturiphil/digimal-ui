@@ -175,10 +175,10 @@ const ViewPage = defineComponent({
     },
     showSuccessModal() {
     Modal.success({
-      title: "Success",
+      title: "Event Registration",
       content: (
         <div>
-          <p>Your action was successful.</p>
+          <p>Register With Event Code</p>
           <Input placeholder="Enter event code" />
         </div>
       ),
@@ -254,7 +254,7 @@ const ViewPage = defineComponent({
     //   // default: false
     // }
 
-    const API_URL = "http://localhost:8000/api/events/all";
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
     // const apiURL = process.env.VUE_APP_API_URL;
 
     // console.log(apiURL);

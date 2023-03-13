@@ -79,7 +79,7 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    const API_URL = "http://localhost:8000/api/createCampaign";
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/createCampaign`;
 
 
     const handleSubmit = (values) => {
