@@ -1,5 +1,5 @@
 export default function authHeader() {
-    let user = JSON.parse(localStorage.getItem('user'));
+    let user = JSON.parse(sessionStorage.getItem('user'));
 
     
     console.log(user);

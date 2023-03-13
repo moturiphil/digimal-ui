@@ -58,18 +58,18 @@ export default {
       otp: "",
     });
     const showOtpInput = ref(false);
-    // localStorage.removeItem("otp", response.data.OTP);
+    // sessionStorage.removeItem("otp", response.data.OTP);
     // const handleSubmit = async () => {
     //   const values = {
     //     id_no: formState.id_no,
     //     otp: formState.otp,
     //   };
     //   const response = await axios.post(API_URL, values);
-    //   // store the id_no and otp in the local storage
+    //   // store the id_no and otp in the session storage
     //
-    //   localStorage.setItem("otp", values.otp);
+    //   sessionStorage.setItem("otp", values.otp);
 
-    //   console.log(localStorage.getItem("id_no"), localStorage.getItem("otp"));
+    //   console.log(sessionStorage.getItem("id_no"), sessionStorage.getItem("otp"));
 
     //   try {
     //     if (response.status === 200) {
@@ -94,20 +94,20 @@ export default {
         };
         const response = await axios.post(API_URL, values);
         if (response.status === 200) {
-          // Remove id_no and otp then store generated OTP and id_no in local storage
-          localStorage.removeItem("id_no", values.id_no);
-          localStorage.removeItem("otp", response.data.OTP);
+          // Remove id_no and otp then store generated OTP and id_no in session storage
+          sessionStorage.removeItem("id_no", values.id_no);
+          sessionStorage.removeItem("otp", response.data.OTP);
 
-          localStorage.setItem("otp", response.data.OTP);
-          localStorage.setItem("id_no", values.id_no);
+          sessionStorage.setItem("otp", response.data.OTP);
+          sessionStorage.setItem("id_no", values.id_no);
           console.log(response.data);
         } else {
           throw new Error("Network response was not ok.");
         }
         showOtpInput.value = true;
       } else {
-        // Verify user input against locally stored OTP
-        const generatedOTP = localStorage.getItem("otp");
+        // Verify user input against sessionly stored OTP
+        const generatedOTP = sessionStorage.getItem("otp");
         const userOTP = formState.otp;
         if (generatedOTP === userOTP) {
           router.push("/auth/set-password");
