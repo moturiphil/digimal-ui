@@ -51,7 +51,7 @@ export default {
   setup() {
     const isLoading = computed(() => store.state.auth.loading);
     const checked = ref(null);
-    const API_URL = "http://127.0.0.1:8000/api/generate_otp";
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/generate_otp`;
     const router = useRouter();
     const formState = reactive({
       id_no: "",
