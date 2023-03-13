@@ -139,7 +139,7 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    const API_URL = "http://localhost:8000/api/event/create";
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/event/create`;
 
     const handleSubmit = (values) => {
       values = {

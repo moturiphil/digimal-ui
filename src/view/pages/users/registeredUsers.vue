@@ -98,7 +98,7 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/users", {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
           method: "GET",
           headers: authHeader(),
         });
