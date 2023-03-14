@@ -68,21 +68,21 @@
                           <sdFeatherIcons type="edit-3" size="16" />
                           &nbsp;&nbsp; Register
                         </sdButton>
-                        <sdButton>
-                          <sdFeatherIcons type="eye" size="16" />
-                          &nbsp;&nbsp; View
+                        <sdButton
+                        >
+                          <router-link
+                            :to="`/event/view/${record.id}`"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; View
+                          </router-link>
+                          <!-- <sdFeatherIcons type="edit" size="16" /> -->
+                          <!-- &nbsp;&nbsp; View -->
                         </sdButton>
                         <!-- <sdButton
-                          class="btn-icon"
-                          type="info"
-                          :to="`/events/${record.id}/edit`"
-                          shape="circle"
-                        >
-                          <sdFeatherIcons type="edit" size="16" />
-                          &nbsp;&nbsp; Edit
-                        </sdButton>
-                        -->
-                        <sdButton
                           class="btn-icon"
                           type="danger"
                           @click="handleDelete(record.id)"
@@ -90,7 +90,7 @@
                         >
                           <sdFeatherIcons type="trash-2" size="16" />
                           &nbsp;&nbsp; Delete
-                        </sdButton>
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>

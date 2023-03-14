@@ -46,6 +46,11 @@ const routes = [
         name: "events-register",
         // component: () => import("@/view/pages/events/eventRegister.vue"),
       },
+      {
+        path: "/event/view/:id",
+        name: "view-event",
+        component: () => import("@/view/pages/events/showEvent.vue"),
+      },
     ],
   },
   {
