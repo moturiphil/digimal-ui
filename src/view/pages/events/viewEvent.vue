@@ -122,17 +122,17 @@ const columns = [
     key: "id",
   },
   {
-    title: "User_id",
+    title: "User Id",
     dataIndex: "user_id",
     key: "id",
   },
   {
-    title: "campaign_id",
+    title: "Campaign Id",
     dataIndex: "campaign_id",
     key: "id",
   },
   {
-    title: "venue",
+    title: "Venue",
     dataIndex: "venue",
     key: "id",
   },
