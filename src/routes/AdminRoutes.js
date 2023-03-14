@@ -103,6 +103,14 @@ const routes = [
             /* webpackChunkName: "fireStore-add" */ "../view/pages/activities/createActivity.vue"
           ),
       },
+      {
+        path: "village-create",
+        name: "village-create",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/villages/createVillage.vue"
+          ),
+      },
     ],
   },
   ...PageRoutes,
