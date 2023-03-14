@@ -39,7 +39,7 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <template #events="{ record }">
+                  <template #events="{  }">
                     <td>
                       <div class="table-actions">
                         <!-- <sdButton @click="visible = true">
@@ -65,10 +65,10 @@
                           size="small"
                           type="success"
                         >
-                          <sdFeatherIcons type="edit-3" size="16" />
+                          <sdFeatherIcons type="user-plus" size="17" />
                           &nbsp;&nbsp; Register
                         </sdButton>
-                        <sdButton
+                        <!-- <sdButton
                         >
                           <router-link
                             :to="`/event/view/${record.id}`"
@@ -78,10 +78,10 @@
                           >
                             <sdFeatherIcons type="eye" size="16" />
                             &nbsp;&nbsp; View
-                          </router-link>
+                          </router-link> -->
                           <!-- <sdFeatherIcons type="edit" size="16" /> -->
                           <!-- &nbsp;&nbsp; View -->
-                        </sdButton>
+                        <!-- </sdButton> -->
                         <!-- <sdButton
                           class="btn-icon"
                           type="danger"
@@ -137,7 +137,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "Actions",
+    title: "",
     dataIndex: "",
     key: "events",
     slots: { customRender: "events" },
@@ -174,7 +174,7 @@ const ViewPage = defineComponent({
       this.visible = true;
     },
     showSuccessModal() {
-    Modal.success({
+    Modal.info({
       title: "Event Registration",
       content: (
         <div>
@@ -183,6 +183,12 @@ const ViewPage = defineComponent({
         </div>
       ),
       okText: "Register",
+      style:{
+        float:'center',
+        display:'grid',
+        placeContent:'center'
+      },
+     
       onOk() {
         console.log("Register");
       },
