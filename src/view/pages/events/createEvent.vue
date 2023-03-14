@@ -42,38 +42,10 @@
                         <a-select-option value="5">Social mobilization</a-select-option>
                       </a-select>
                     </a-form-item>
-
-                    <a-form-item label="Campaign Name">
-                      <a-select
-                        size="large"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                      >
-                        <a-select-option value="1">Campaign Trevion</a-select-option>
-                        <a-select-option default-value="2" value="2"
-                          >Campaign Allene</a-select-option
-                        >
-                        <a-select-option value="3">Campaign Tina</a-select-option>
-                        <a-select-option value="4">Campaign Jules</a-select-option>
-                        <a-select-option value="5">kinga Mal</a-select-option>
-                        <!-- <a-select-option value="5">Social mobilization</a-select-option> -->
-                      </a-select>
-                    </a-form-item>
-                    
-
-                    <!-- <a-form-item name="startDate" label="Event Start Date">
-                      <a-date-picker
-                        :style="{ width: '100%' }"
-                        v-model:value="formState.startDate"
-                        :format="dateFormat"
-                      />
-                    </a-form-item>
-
-                    <a-form-item name="endDate" label="Event End Date">
-                      <a-date-picker
-                        :style="{ width: '100%' }"
-                        v-model:value="formState.endDate"
-                        :format="dateFormat"
+                    <!-- <a-form-item name="user_id" label="User ID">
+                      <a-input-number
+                        v-model:value="formState.user_id"
+                        placeholder="Input User ID"
                       />
                     </a-form-item> -->
                     <a-form-item name="venue" label="Event Venue">
@@ -82,27 +54,41 @@
                         placeholder="Input Event Venue"
                       />
                     </a-form-item>
-                    <a-form-item label="Officers">
+                    <a-form-item name="location_id" label="Location ID">
+                      <a-input-number
+                        v-model:value="formState.location_id"
+                        placeholder="Input Location ID"
+                      />
+                    </a-form-item>
+                    <a-form-item name="campaign_id" label="Campaign ID">
                       <a-select
-                        mode="multiple"
-                        :default-value="['1', '2']"
-                        placeholder="Please select"
+                        v-model:value="formState.campaign_id"
+                        placeholder="Select a campaign"
                       >
-                        <a-select-option value="1"
-                          >Admin Test 1</a-select-option
+                        <a-select-option
+                          v-for="campaign in campaigns"
+                          :key="campaign.id"
+                          :value="campaign.id"
                         >
-                        <a-select-option value="2"
-                          >Admin Test 2</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Admin Test 3</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Admin Test 4</a-select-option
-                        >
+                          {{ campaign.name }}
+                        </a-select-option>
                       </a-select>
                     </a-form-item>
-
+                    <a-form-item name="facilitators" label="Facilitators">
+                      <a-select
+                        mode="multiple"
+                        v-model:value="formState.facilitators"
+                        placeholder="Select one or more facilitators"
+                      >
+                        <a-select-option
+                          v-for="facilitator in facilitators"
+                          :key="facilitator.id"
+                          :value="facilitator.id"
+                        >
+                          {{ facilitator.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}
@@ -118,7 +104,107 @@
     </a-row>
   </Main>
 </template>
+
 <script>
+import { RecordFormWrapper } from "./style";
+import { Main, BasicFormWrapper } from "../../styled";
+import { useStore } from "vuex";
+import { reactive, ref, defineComponent, computed } from "vue";
+import axios from "axios";
+import authHeader from "../../../services/auth-header";
+// import Select from 'vue-select';
+
+// const dateFormat = "YYYY-MM-DD";
+
+const AddNew = defineComponent({
+  name: "AddNew",
+  components: { RecordFormWrapper, Main, BasicFormWrapper },
+  setup() {
+    const { state } = useStore();
+
+    const isLoading = computed(() => state.crud.loading);
+    const apiUrl = computed(() => state.crud.url);
+    const isFileLoading = computed(() => state.crud.fileLoading);
+    const join = ref("");
+
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/event/create`;
+
+    const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaigns_all`;
+
+    // const [campaigns, setCampaigns] = reactive({});
+    const { campaigns, setCampaigns } = reactive({
+      campaigns: [],
+      setCampaigns: () => {},
+    });
+
+    // axios
+    //   .get(campaign_url, { headers: authHeader() })
+    //   .then((response) => {
+    //     const options = response.data.map((campaign) => ({
+    //       label: campaign.name,
+    //       value: campaign.id,
+    //     }));
+    //     setCampaigns(options);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+
+    fetch(campaign_url, { headers: authHeader() })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        const options = data.map((campaign) => ({
+          label: campaign.name,
+          value: campaign.id,
+        }));
+        setCampaigns(options);
+      })
+      .catch((error) => console.log(error));
+
+    const handleSubmit = (values) => {
+      const data = {
+        name: values.name,
+        user_id: 1, // replace with the logged-in user's ID
+        venue: values.venue,
+        location_id: 1, // replace with the actual location ID
+        campaign_id: values["campaign-select"],
+        facilitators: values["officers-select"],
+      };
+      axios
+        .post(API_URL, data, { headers: authHeader() })
+        .then((response) => {
+          console.log(response.data);
+          // redirect to the event detail page or show a success message
+        })
+        .catch((error) => {
+          console.log(error);
+          // show an error message
+        });
+    };
+
+    const formState = reactive({
+      "basic-select": null,
+      "campaign-select": null,
+      venue: "",
+      "officers-select": [],
+    });
+
+    return {
+      isLoading,
+      apiUrl,
+      isFileLoading,
+      join,
+      handleSubmit,
+      formState,
+      campaigns,
+    };
+  },
+});
+
+export default AddNew;
+</script>
+<!-- <script>
 import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
@@ -141,11 +227,13 @@ const AddNew = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event/create`;
 
+    const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaigns_all`;
+
+    const [ setCampaigns] = useState([]);
+
     const handleSubmit = (values) => {
       values = {
         name: values.name,
-        start_date: new Date(values.startDate.$d).toISOString().substr(0, 10),
-        end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
         event_code: values.event_code,
         user_id: 1,
         campaign_id: values.campaign_id,
@@ -169,29 +257,29 @@ const AddNew = defineComponent({
         .catch((error) => {
           console.error("Error:", error);
         });
+
+      // fetch the list of campaigns
+      fetch(campaign_url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setCampaigns(data);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     };
-
-    //   axios
-    //     .post(API_URL, values, { headers: authHeader() })
-    //     .then(function (response) {
-    //       console.log(response);
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error);
-    //     });
-    // };
-    //pick the user_id in the localstorage and add it into formstate
-    // const user_id = computed(() => state.auth);
-
-    // console.log(state.auth.user.id);
 
     const formState = reactive({
       name: "",
-      event_code: "",
-      startDate: "",
-      endDate: "",
-      user_id: 1,
       campaign_id: 1,
+      event_code: "",
+      user_id: 1,
       venue: "",
       location_id: 1,
     });
@@ -216,4 +304,4 @@ const AddNew = defineComponent({
 });
 
 export default AddNew;
-</script>
+</script> -->
