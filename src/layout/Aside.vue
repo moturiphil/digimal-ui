@@ -61,11 +61,11 @@
         <a-menu-item @click="toggleCollapsed" key="net-distribution">
           <router-link to="/nets/distribution"> Nets Distribution </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <!-- <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/nets/distribution/post">
             Distribution Post
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/activities/village-create">
             Create Village

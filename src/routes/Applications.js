@@ -94,11 +94,11 @@ export default [
         path: 'distribution',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/Orders.vue'),
       },
-      {
-        name: 'distribution-post',
-        path: 'distribution/post',
-        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
-      },
+      // {
+      //   name: 'distribution-post',
+      //   path: 'distribution/post',
+      //   component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
+      // },
       {
         name: 'post-create',
         path: 'post-create',
