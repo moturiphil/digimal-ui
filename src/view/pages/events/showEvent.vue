@@ -36,7 +36,7 @@
                 <a-progress :percent="65" :stroke-width="5" status="active" />
               </div> -->
             <sdCards headless>
-              <div class="state-single">
+              <!-- <div class="state-single">
                 <div class="color-primary">
                   <a to="#">
                     <sdFeatherIcons type="list" size="25" />
@@ -46,7 +46,7 @@
                   <sdHeading as="h5">47</sdHeading>
                   <p>Event Participants</p>
                 </div>
-              </div>
+              </div> -->
               <div class="state-single">
                 <div class="color-secondary">
                   <a to="#" @click="getfacilitators">
@@ -58,7 +58,7 @@
                   <p>Event Facilitators</p>
                 </div>
               </div>
-              <div class="state-single">
+              <!-- <div class="state-single">
                 <div class="color-success">
                   <a to="#">
                     <sdFeatherIcons type="layout" size="25" />
@@ -90,10 +90,10 @@
                   <sdHeading as="h5">4</sdHeading>
                   <p>Event Facilitators</p>
                 </div>
-              </div>
+              </div> -->
             </sdCards>
           </a-col>
-          <a-col :xxl="18" :xl="16" :md="24" :xs="24">
+          <a-col :xxl="24" :xl="16" :md="24" :xs="24">
             <sdCards title="Event Participants"> <EventCampaignTable /></sdCards>
           </a-col>
         </a-row>

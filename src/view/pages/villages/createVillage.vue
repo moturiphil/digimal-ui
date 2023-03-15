@@ -1,5 +1,5 @@
 <template>
-    <sdPageHeader title="Village">
+    <sdPageHeader title="Create Village">
       <sdButton class="btn-add_new" size="default" key="1" type="sucess">
         <router-link to="/crud/axios-view">View All</router-link>
       </sdButton>
@@ -20,18 +20,13 @@
                       :model="formState"
                       @finish="handleSubmit"
                     >
-                      <a-form-item name="name"  label="Village Name">
-                        <a-input
-                          v-model:value="formState.name"
-                          placeholder="Enter village name"
-                        />
-                      </a-form-item>
                       <a-form-item name="county"  label="County">
                         <a-select
                           size="large"
                           name="basic-select"
                           class="sDash_fullwidth-select"
                           v-on:change="getSubCounties($event)"
+                          placeholder="Select County"
                           v-if="!loading" 
                         >
                         <a-select-option value="">Select an option</a-select-option>
@@ -43,6 +38,7 @@
                           size="large"
                           name="basic-select"
                           class="sDash_fullwidth-select"
+                          placeholder="Select Sub-County"
                           v-on:change="getWards($event)"
                         >
                         <a-select-option value="">Select an option</a-select-option>
@@ -55,11 +51,18 @@
                           size="large"
                           name="basic-select"
                           class="sDash_fullwidth-select"
+                          placeholder="Select Ward"
                           v-model:value="formState.ward_id"
                         >
                         <a-select-option value="">Select an option</a-select-option>
                         <a-select-option v-for="ward in wards" :value="ward.id" :key="ward.id">{{ward.name}}</a-select-option>
                         </a-select>
+                      </a-form-item>
+                      <a-form-item name="name"  label="Village Name">
+                        <a-input
+                          v-model:value="formState.name"
+                          placeholder="Enter village name"
+                        />
                       </a-form-item>
   
                       <div class="record-form-actions text-right">
