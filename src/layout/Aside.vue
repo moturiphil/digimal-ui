@@ -46,11 +46,6 @@
             Create Activity
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/activities/village-create">
-            Create Village
-          </router-link>
-        </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="widgetsCard">
           <router-link to="/activities/activity-view">
             List Activity
@@ -69,6 +64,11 @@
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/nets/distribution/post">
             Distribution Post
+          </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/activities/village-create">
+            Create Village
           </router-link>
         </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
