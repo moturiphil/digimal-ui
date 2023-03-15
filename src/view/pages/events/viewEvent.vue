@@ -71,10 +71,11 @@
                         <sdButton
                         >
                           <router-link
-                            :to="`/event/view/${record.id}`"
+                            :to="{ path: `/event/view/${record.id}`, query: { event_code: record.event_code }}"
                             class="btn-icon"
                             type="info"
                             shape="circle"
+                            replace="true"
                           >
                             <sdFeatherIcons type="eye" size="16" />
                             &nbsp;&nbsp; View
