@@ -50,15 +50,17 @@
                           <!-- <sdFeatherIcons type="edit" size="16" /> -->
                           <!-- &nbsp;&nbsp; View -->
                         </sdButton>
-                        <!-- <sdButton
+                        <sdButton
                           class="btn-icon"
                           type="danger"
                           @click="handleDelete(record.id)"
                           shape="circle"
+                        
                         >
                           <sdFeatherIcons type="trash-2" size="16" />
-                          &nbsp;&nbsp; Delete
-                        </sdButton> -->
+                          <a href="" title="Delete"></a>
+                          <!-- &nbsp;&nbsp; Delete -->
+                        </sdButton>
                       </div>
                     </td>
                   </template>
@@ -66,141 +68,6 @@
     </TableWrapper>
   </UserTableStyleWrapper>
 </template>
-
-<!-- <script>
-import { UserTableStyleWrapper } from "../style";
-import { TableWrapper } from "../../../styled";
-// import staticData from '@/demoData/projectData.json';
-import { computed, defineComponent, onMounted, ref, reactive, watch } from "vue";
-import { useStore } from "vuex";
-import authHeader from "../../../../../src/services/auth-header";
-import axios from "axios";
-
-const columns = [
-  {
-    title: "Event Name",
-    dataIndex: "name",
-    key: "id",
-  },
-  {
-    title: "Event Code",
-    dataIndex: "event_code",
-    key: "id",
-  },
-  {
-    title: "Event Status",
-    dataIndex: "status",
-    key: "id",
-  },
-  {
-    title: "Event Venue",
-    dataIndex: "venue",
-    key: "id",
-  },
-  {
-    title: "Actions",
-    dataIndex: "",
-    key: "events",
-    slots: { customRender: "events" },
-    width: "90px",
-  },
-];
-
-const EventCampaignTable = defineComponent({
-  name: "EventCampaignTable",
-  components: { UserTableStyleWrapper, TableWrapper },
-  setup() {
-    const { state } = useStore();
-    const eventData = computed(() => state.crud.data);
-    // console.log(eventData);
-    // const { eventCampaignData } = mapActions(['eventCampaignData']);
-    const dataSource = ref([]);
-    const selectedRowKeys = ref([]);
-
-    // const API_URL = "http://localhost:8000/api/campaign/1/events";
-
-    const API_URL = "http://localhost:8000/api/campaign";
-
-    const campaignId = reactive({
-      value: 1, // Set an initial value
-    });
-    // const paramsId = 1;
-
-    // onMounted(() => {
-    //   axios
-    //     .get(API_URL, {
-    //       headers: authHeader(),
-    //     })
-    //     .then((response) => {
-    //       console.log(response.data.data);
-    //       dataSource.value = response.data.data;
-    //       // console.log(dataSource.value);
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //     });
-    // });
-    // Watch for changes in "campaignId"
-    watch(campaignId, async (newCampaignId) => {
-      try {
-        const response = await axios.get(`${API_URL}/${newCampaignId}/events`, {
-          headers: authHeader(),
-        });
-        console.log(response);
-        dataSource.value = response.data.data;
-      } catch (error) {
-        console.error(error);
-      }
-    });
-
-    // Fetch data when the component is mounted
-    onMounted(async () => {
-      try {
-        const response = await axios.get(`${API_URL}/${campaignId.value}/events`, {
-          headers: authHeader(),
-        });
-        console.log(response);
-        dataSource.value = response.data.data;
-      } catch (error) {
-        console.error(error);
-      }
-    });
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-    // const handleDelete = (id) => {
-    //   const confirm = window.confirm("Are you sure delete this?");
-    //   if (confirm) {
-    //     dispatch("axiosDataDelete", {
-    //       id,
-    //       getData: () => {
-    //         dispatch("axiosCrudGetData");
-    //       },
-    //     });
-    //   }
-    //   return false;
-    // };
-
-    return {
-      columns,
-      eventData,
-      rowSelection,
-      dataSource,
-      selectedRowKeys,
-      onSelectChange,
-    };
-  },
-});
-
-export default EventCampaignTable;
-</script> -->
-
 
 <script>
 import { UserTableStyleWrapper } from "../style";
@@ -213,22 +80,22 @@ import { useStore } from "vuex";
 
 const columns = [
   {
-    title: "Event Name",
+    title: "Participant Name",
     dataIndex: "name",
     key: "id",
   },
   {
-    title: "Event Code",
+    title: "Participant Phone",
     dataIndex: "event_code",
     key: "id",
   },
   {
-    title: "Event Status",
+    title: "Organization",
     dataIndex: "status",
     key: "id",
   },
   {
-    title: "Event Venue",
+    title: "Role",
     dataIndex: "venue",
     key: "id",
   },

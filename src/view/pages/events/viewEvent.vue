@@ -137,7 +137,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "Actions",
+    title: "Actions",        
     dataIndex: "",
     key: "events",
     slots: { customRender: "events" },
