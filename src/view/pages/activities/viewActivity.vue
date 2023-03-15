@@ -35,7 +35,22 @@
                     :pagination="{ pageSize: 10, showSizeChanger: true }"
                     :dataSource="dataSource"
                     :columns="columns"
-                  />
+                  >
+                  <template #activities="{  }" >
+                  <td :style="{'margin-left': '3px'}">
+                        <div class="table-actions">
+                    <sdButton
+                              @click="showSuccessModal"
+                              size="small"
+                              type="success"
+                            >
+                              <sdFeatherIcons type="user-plus" size="17" />
+                              &nbsp;&nbsp; Register
+                            </sdButton>
+                          </div>
+                        </td>
+                    </template>
+                  </a-table>
                 </TableWrapper>
               </div>
             </sdCards>
@@ -50,47 +65,47 @@
   import { RecordViewWrapper } from './style';
   import { Main, TableWrapper } from '../../styled';
   import { useStore } from 'vuex';
+  import { Modal } from "ant-design-vue";
+
   import { computed, onMounted, ref, reactive, defineComponent } from 'vue';
   
-//   "id": 1,
-//             "name": "Event Alanna",
-//             "event_code": "NLKyzDJUNp",
-//             "start_date": "2006-06-09",
-//             "end_date": "1990-06-18",
-//             "user_id": 1,
-//             "campaign_id": 1,
-//             "venue": "Venue Vickie",
-//             "location_id": 1,
+
   const columns = [
     {
-      title: 'Event Name',
+      title: 'Actvity Name',
       dataIndex: 'name',
       key: 'id',
     },
     {
-      title: 'Event Start Date',
+      title: 'Activity Start Date',
       dataIndex: 'start_date',
       key: 'id',
     },
     {
-      title: 'Event End Date',
+      title: 'Activity End Date',
       dataIndex: 'end_date',
       key: 'id',
     },
     {
-      title: 'User_id',
-      dataIndex: 'user_id',
+      title: 'Number of Officers',
+      dataIndex: 'number_of_officers',
       key: 'id',
     },
     {
-      title: 'campaign_id',
+      title: 'Campaign Id',
       dataIndex: 'campaign_id',
       key: 'id',
     },
     {
-      title: 'venue',
-      dataIndex: 'venue',
+      title: 'County',
+      dataIndex: 'county_id',
       key: 'id',
+    },
+    {
+      title: '',
+      dataIndex: '',
+      key: 'activities',
+      slots: { customRender: "activities" },
     }
     
   ];
@@ -98,6 +113,49 @@
   const ViewPage = defineComponent({
     name: 'ViewPage',
     components: { RecordViewWrapper, Main, TableWrapper },
+    methods:{
+      showModal() {
+      this.visible = true;
+    },
+    showSuccessModal() {
+    Modal.info({
+      title: "Activity Registration",
+      content: (
+        <div>
+          <p>Register With Activity Code</p>
+          <Input placeholder="Enter Activity code" />
+        </div>
+      ),
+      okText: "Register",
+      style:{
+        float:'center',
+        display:'grid',
+        placeContent:'center'
+      },
+     
+      onOk() {
+        console.log("Register");
+      },
+    });
+  },
+    handleOk() {
+      this.confirmLoading = true;
+      setTimeout(() => {
+        this.visible = false;
+        this.colorVisible = false;
+        this.confirmLoading = false;
+      }, 2000);
+    },
+    handleCancel() {
+      this.visible = false;
+      this.colorVisible = false;
+    },
+    changeType(type) {
+      this.modalType = type;
+    },
+    
+    },
+
     setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
@@ -105,23 +163,36 @@
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
-    // const apiURL = process.env.VUE_APP_API_URL;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity`;
+  
 
-
-    // console.log(apiURL);
-
-    // get api_url from the .env file
-    // console.log(API_URL);
-
+   
     onMounted(() => {
       axios
         .get(API_URL, {
           headers: authHeader(),
         })
-        .then((response) => {
-          console.log(response.data.data);
-          dataSource.value = response.data.data;
+        .then(({data}) => {
+          console.log({data: data.data});
+          dataSource.value = data.data.map((obj) => {
+            switch(obj.county_id){
+              case 1:
+                obj['county_id'] = 'Bungoma';
+                return obj;
+              case 2:
+                obj['county_id'] = 'Busia';
+                return obj;
+              case 3:
+                obj['county_id'] = 'Elgeyo Marakwet';
+                return obj;
+              case 4:
+                obj['county_id'] = 'Kericho';
+                return obj;
+                
+              default:
+                return obj
+            }
+          });
         })
         .catch((error) => {
           console.error(error);
