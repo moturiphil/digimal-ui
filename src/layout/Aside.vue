@@ -71,6 +71,11 @@
             Create Village
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/post-create">
+            Create Post
+          </router-link>
+        </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
           <router-link to="/activities/activity-view"> List Activity </router-link>
         </a-menu-item> -->

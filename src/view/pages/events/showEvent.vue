@@ -110,9 +110,8 @@
 
   import { useRoute } from "vue-router";
   import EventCampaignTable from "../campaigns/CampaignTable/EventCampaign.vue";
-  import { Modal } from "ant-design-vue"; 
+  import { Modal, Table } from "ant-design-vue"; 
   import authHeader from "../../../services/auth-header";
-
 
   
   const ProjectDetails = defineComponent({
@@ -129,24 +128,55 @@
   console.log({query, params});
       const { facilitators} = reactive({facilitators: []  });
 
-      // const columns = [
-      // {
-      //   title: 'Name',
-      //   dataIndex: 'name',
-      //   key: 'name',
-      // },
-      // {
-      //   title: 'Phone Number',
-      //   dataIndex: 'phone_no',
-      //   key: 'phone_no',
-      // },
-      // {
-      //   title: 'ID Number',
-      //   dataIndex: 'id_no',
-      //   key: 'id_no',
-      // },]
+      const columns = [
+      {
+        title: 'Name',
+        dataIndex: 'first_name',
+        // key: 'first_name',
+        render: (text, record) => (
+        <span>{record.first_name} {record.last_name}</span>
+    )
+      },
+      {
+        title: 'Phone Number',
+        dataIndex: 'phone_no',
+        key: 'phone_no',
+      },
+      {
+        title: 'ID Number',
+        dataIndex: 'id_no',
+        key: 'id_no',
+      },]
       
-      const getfacilitators = async () => {
+      // const getfacilitatorsgj = async () => {
+      //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`, {
+      //     method: "GET",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       ...authHeader(),
+      //     },
+      //   });
+      //   const data = await response.json();
+      //   this.facilitators = data.data;
+      //   Modal.info({
+      //     title: 'Facilitators',
+      //     content: (
+      //         {/* {data.data.map((facilitator, index) => (
+      //           <p>{index + 1} {facilitator.first_name}  {facilitator.last_name} - {facilitator.phone_no} - {facilitator.id_no}</p>
+      //         ))
+      //         } */}
+      //         // <div>
+      //         //   <Table dataSource={data.data} columns={columns} />
+      //         // </div>
+          
+
+      //     ),
+      //     onOk() {},
+      //   });
+        
+      //   // this.loading = false;
+      // };
+      const getfacilitators=async()=>{
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`, {
           method: "GET",
           headers: {
@@ -154,53 +184,17 @@
             ...authHeader(),
           },
         });
-        const data = await response.json();
+        const data =await response.json();
         this.facilitators = data.data;
         Modal.info({
           title: 'Facilitators',
           content: (
             <div>
-              {data.data.map((facilitator, index) => (
-                <p>{index + 1} {facilitator.first_name}  {facilitator.last_name} - {facilitator.phone_no} - {facilitator.id_no}</p>
-              ))
-              }
-
-              {/* <template>
-              <a-table
-                :columns="columns"
-                :row-key="record => record.login.uuid"
-                :data-source="dataSource"
-                :pagination="pagination"
-                :loading="loading"
-                @change="handleTableChange"
-              >
-                <template #bodyCell="{ column, text }">
-                  <template v-if="column.dataIndex === 'name'">{{ text.first }} {{ text.last }}</template>
-                </template>
-              </a-table>
-            </template> */}
-
-            </div>
+              <Table dataSource={data.data} columns={columns} /></div>
           ),
           onOk() {},
         });
-        
-        // this.loading = false;
-      };
-      // const getfacilitatorsfacilitators=()=>{
-      //   Modal.info({
-      //     title: 'Facilitators',
-      //     content: (
-      //       <div>
-      //         {facilitators.map((facilitator) => (
-      //           <p>{facilitator.first_name}</p>
-      //         ))
-      //         }
-      //       </div>
-      //     ),
-      //     onOk() {},
-      //   });
-      // }
+      }
       onMounted(() =>{
        dispatch("eventCampaignData", parseInt(params.id, 10))
       }
