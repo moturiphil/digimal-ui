@@ -46,7 +46,8 @@
                 "
                 alt="logo"
               /> -->
-              <span>MassNetCampaign</span>
+              <span style="color:#22C997;"><b>MassNet Campaign</b></span>
+
             </router-link>
           </a-col>
           <a-col :lg="!topMenu ? 14 : 15" :md="8" :sm="0" :xs="0">
@@ -186,9 +187,9 @@
                 </a-col>
                 <a-col :md="12" :xs="24">
                   <div class="admin-footer__links">
-                    <router-link to="/user/profile"
+                    <!-- <router-link to="/user/profile"
                       >Profile</router-link
-                    >
+                    > -->
                     <!-- <router-link to="/app/users/team">Team</router-link> -->
                     <!-- <router-link to="/app/contact/contact-grid"
                       >Contacts</router-link

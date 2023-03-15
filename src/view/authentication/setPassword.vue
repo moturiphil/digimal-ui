@@ -50,9 +50,11 @@ import { computed, ref, reactive } from "vue";
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 // import axios from "axios";
-import { useRouter } from "vue-router";
+// import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
+import { useRouter } from 'vue-router';
 import AuthService from "../../services/auth.service";
+
 
 export default {
   name: "Password",
@@ -63,7 +65,6 @@ export default {
 
     const isLoading = computed(() => store.state.auth.loading);
     const checked = ref(null);
-    // const router = useRouter();
     const route = useRoute();
     const router = useRouter();
 
@@ -95,11 +96,13 @@ export default {
         confirm_password: formState.confirm_password,
         email: formState.email,
       });
+      // router.push("/");
+      router.replace('/');
       if (response.status == 200) {
         console.log(response);
-        // router.push("/auth/login");
+        router.push("/auth/login");
         console.log("response successfully sent....");
-        router.push("/");
+        // router.push("/"); 
       }
       // handle success response
       // handle error response

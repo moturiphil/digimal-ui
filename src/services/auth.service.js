@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 
 // import { inject } from 'vue';
 
 const API_URL = `${process.env.VUE_APP_BASE_URL}/`;
-const router = useRouter();
+// const router = useRouter();
 
 class AuthService {
   login(user) {
@@ -40,7 +40,7 @@ class AuthService {
     .then(
       response => {
         console.log(response);
-        return router.push("/");
+        // return router.push("/");
       }
     );
   }
