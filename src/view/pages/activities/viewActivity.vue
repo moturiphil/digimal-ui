@@ -69,28 +69,20 @@
 
   import { computed, onMounted, ref, reactive, defineComponent } from 'vue';
   
-//   "id": 1,
-//             "name": "Event Alanna",
-//             "event_code": "NLKyzDJUNp",
-//             "start_date": "2006-06-09",
-//             "end_date": "1990-06-18",
-//             "user_id": 1,
-//             "campaign_id": 1,
-//             "venue": "Venue Vickie",
-//             "location_id": 1,
+
   const columns = [
     {
-      title: 'Event Name',
+      title: 'Actvity Name',
       dataIndex: 'name',
       key: 'id',
     },
     {
-      title: 'Event Start Date',
+      title: 'Activity Start Date',
       dataIndex: 'start_date',
       key: 'id',
     },
     {
-      title: 'Event End Date',
+      title: 'Activity End Date',
       dataIndex: 'end_date',
       key: 'id',
     },

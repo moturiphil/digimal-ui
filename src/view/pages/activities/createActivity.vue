@@ -37,7 +37,6 @@
                     <a-form-item name="countyId" label="County">
                       <a-select
                         mode="single"
-                        default-value="1"
                         v-modlel:value="formState.countyId"
                         placeholder="Please select"
                       >
@@ -103,21 +102,17 @@
                       <a-select
                         mode="multiple"
                         v-model:value="formState.activityFacilitators"
-                        default-value="1"
-                        placeholder="Please select"
+                        placeholder="Please select"         
+                        :options="(() => {
+                          return users.map(({first_name, last_name, id}) => ({label: `${first_name} ${last_name}`, value: id}))
+                        })()"
                       >
-                        <a-select-option value="1"
-                          >Admin Test 1</a-select-option
+                        <!-- <a-select-option v-for="user in users" :key="user" :value="[`${user.id}`]"
+                        :label="`${user.first_name}-${user.id}`"
                         >
-                        <a-select-option value="2"
-                          >Admin Test 2</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Admin Test 3</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Admin Test 4</a-select-option
-                        >
+                           {` ${user.first_name} `}
+                          </a-select-option> -->
+                 
                       </a-select>
                     </a-form-item>
                     <!-- <a-form-item name="created_by" label="Created By">
@@ -167,10 +162,10 @@
 import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed, toRaw } from "vue";
+import { reactive, ref, defineComponent, computed, toRaw, onMounted } from "vue";
 import { notification } from 'ant-design-vue';
 
-// import axios from "axios";
+import axios from "axios";
 import authHeader from "../../../services/auth-header";
 
 const dateFormat = "YYYY-MM-DD";
@@ -185,6 +180,7 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
+    const users = ref([])
 
     // let county_id;
 
@@ -231,35 +227,42 @@ const AddNew = defineComponent({
         
     };
 
-    //   axios
-    //     .post(API_URL, values, { headers: authHeader() })
-    //     .then(function (response) {
-    //       console.log(response);
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error);
-    //     });
-    // };
+    
     //pick the user_id in the sessionstorage and add it into formstate
     // const user_id = computed(() => state.auth);
 
     // console.log(state.auth.user.id);
+    onMounted(() => {
+        axios
+        .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
+        .then(function ({data}) {
+          console.log({data: data.data});
+          users.value = data.data
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    
+    })
+
+    console.log({p_users: users})
 
     const formState = reactive({
       name: "",
-      countyId: "1",
+      countyId: "0",
       campaignId: 1,
       startDate: "",
       endDate: "",
       payableTravelDays: 0,
       numberOfOfficers: 0,
-      activityFacilitators: "1",
+      activityFacilitators: [],
       activityCode: ""
     });
 
     return {
       isLoading,
       apiUrl,
+      users,
       isFileLoading,
       handleSubmit,
       dateFormat,
