@@ -127,7 +127,7 @@ const EventCampaignTable = defineComponent({
 
     watch(campaignId, async (newCampaignId) => {
       try {
-        const response = await axios.get(`${API_URL}/${newCampaignId}/eventss`, {
+        const response = await axios.get(`${API_URL}/${newCampaignId}/events`, {
           headers: authHeader(),
         });
         console.log(response);
@@ -139,7 +139,7 @@ const EventCampaignTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await axios.get(`${API_URL}/${campaignId.value}/eventss`, {
+        const response = await axios.get(`${API_URL}/${campaignId.value}/events`, {
           headers: authHeader(),
         });
         console.log(response);
