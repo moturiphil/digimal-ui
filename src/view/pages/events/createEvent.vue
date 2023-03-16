@@ -26,7 +26,7 @@
                         name="name"
                         class="sDash_fullwidth-select"
                         placeholder="Select Event Type"
-                        v-model="formState.name"
+                        v-model:value="formState.name"
                       >
                         <a-select-option value="1"
                           >Stakeholder meeting</a-select-option
@@ -50,14 +50,14 @@
                     </a-form-item>
                     <a-form-item name="campaign_id" label="Campaign Name">
                       <a-select
-                        v-model="formState.campaign_id"
+                        v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign Name"
                       >
                         <a-select-option
                           v-for="campaign in campaigns"
                           :key="campaign.id"
-                          :value="campaign.name"
+                          :value="campaign.id"
                         >
                           {{ campaign.name }}
                         </a-select-option>
@@ -65,7 +65,7 @@
                     </a-form-item>
                     <a-form-item name="facilitator_id" label="Facilitator">
                       <a-select
-                        v-model="formState.facilitator_id"
+                        v-model:value="formState.facilitator_id"
                         v-if="!loading"
                         placeholder="Select Facilitator"
                       >
@@ -85,7 +85,7 @@
                     <a-form-item  label="Trainers">
                       <a-select
                         mode="multiple"
-                        v-model="formState.trainer_id"
+                        v-model:value="formState.trainer_id"
                         v-if="!loading"
                         placeholder="Select at-most two facilitators"
                       >
