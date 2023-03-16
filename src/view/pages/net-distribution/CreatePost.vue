@@ -41,10 +41,14 @@
                             />
                       </a-form-item>
                       <a-form-item name="post_supervisor_user_id"  label="Post Admin">
-                        <a-input
+                        <a-select
+                          size="medium"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
                           v-model:value="formState.post_supervisor_user_id"
-                          placeholder="Enter post name"
-                        />
+                        >
+                        <a-select-option v-for="user in users" :value="user.id" :key="user.id">{{user.first_name + ' ' + user.last_name}}</a-select-option>
+                        </a-select>
                       </a-form-item>
                       <a-form-item name="villages"  label="Villages">
                         <a-select
@@ -93,7 +97,7 @@
   import { Main, BasicFormWrapper } from "../../styled"
   import { useStore } from "vuex";
   import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-  // import axios from "axios";
+  import { notification } from 'ant-design-vue';
   import authHeader from "../../../services/auth-header";
   
   const dateFormat = "YYYY-MM-DD";
@@ -118,8 +122,9 @@
         post_code:""
       });
 
-      const { villages,loading, isFacility} = reactive({
+      const { villages,loading, isFacility, users} = reactive({
         villages: [],
+        users: [],
         loading: true,
         isFacility:false,
       });
@@ -134,25 +139,50 @@
           },
         });
         const data = await response.json();
-        console.log(data)
         this.villages = data.data;
         this.loading = false;
       };
 
+      //users
+      const getUsers = async () => {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+        const data = await response.json();
+        this.users = data.data;
+      };
+
       onMounted(() => {
+        getUsers();
         getVillages();
       });
-// console.log(formState.isFacility)
+
+      // notification
+      const openNotification = type => {
+      notification[type]({
+        message: 'Notification Title',
+        description:
+          type =="success"? 'Post created successfully': 'Post creation failed',
+      });
+    };
+
+
       const handleSubmit = (values) => {
+        let post_code = values.post_code; 
         values = {
           name:values.name,
           distribution_start_date: new Date(values.distribution_start_date).toISOString().substr(0, 10),
           distribution_end_date: new Date(values.distribution_end_date).toISOString().substr(0, 10),
           post_supervisor_user_id:values.post_supervisor_user_id,
           villages:values.villages,
-          post_code:values.post_code
-
         };
+        if(post_code){
+          values.post_code = post_code;
+        }
         fetch(API_URL, {
           method: "POST",
           headers: {
@@ -163,7 +193,12 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data);
+            if (data.success) {
+              openNotification('success');
+              // this.$router.push("/distribution_post");
+            } else {
+              openNotification('error');
+            }
           })
           .catch((error) => {
             console.error("Error:", error);
@@ -180,7 +215,8 @@
         dateFormat,
         formState,
         join,
-        villages
+        villages,
+        users,
       };
 
    

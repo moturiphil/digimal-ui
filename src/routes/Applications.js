@@ -104,6 +104,11 @@ export default [
         path: 'post-create',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
       },
+      {
+        name: 'receive-nets',
+        path: 'receive-nets',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/ReceiveNets.vue'),
+      },
     ],
   },
 ];
