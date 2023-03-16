@@ -28,22 +28,22 @@
                         placeholder="Select Event Type"
                         v-model:value="formState.name"
                       >
-                        <a-select-option value="1"
+                        <a-select-option value="Stakeholder meeting"
                           >Stakeholder meeting</a-select-option
                         >
-                        <a-select-option default-value="2" value="2"
+                        <a-select-option default-value="2" value="Health Care Worker Training"
                           >Health Care Worker Training</a-select-option
                         >
-                        <a-select-option value="3"
+                        <a-select-option value="CHV mobilization"
                           >CHV mobilization</a-select-option
                         >
-                        <a-select-option value="4"
+                        <a-select-option value="Village Elder mobilization"
                           >Village Elder mobilization</a-select-option
                         >
-                        <a-select-option value="5"
+                        <a-select-option value="CHV/VE Training"
                           >CHV/VE Training</a-select-option
                         >
-                        <a-select-option value="5"
+                        <a-select-option value="Social mobilization"
                           >Social mobilization</a-select-option
                         >
                       </a-select>
