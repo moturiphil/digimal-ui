@@ -27,81 +27,66 @@
                         placeholder="Input Activity Name"
                       />
                     </a-form-item>
-                    <a-form-item name="activityCode" label="Activity Code">
-                      <a-input
-                        v-model:value="formState.activityCode"
-                        placeholder="Input Activity Code"
-                      />
-                    </a-form-item>
+                    <a-form-item name="county_id"  label="County">
+                        <a-select
+                          size="large"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select County"
+                          v-model:value="formState.county_id"
+                        >
+                        <a-select-option value="">Select an option</a-select-option>
+                        <a-select-option v-for="county in counties" :value="county.id" :key="county.id">{{county.name}}</a-select-option>
+                        </a-select>
+                      </a-form-item>
 
-                    <a-form-item name="countyId" label="County">
-                      <a-select
-                        mode="single"
-                        v-modlel:value="formState.countyId"
-                        placeholder="Please select"
-                      >
-                        <a-select-option value="1"
-                          >Bungoma</a-select-option
-                        >
-                        <a-select-option value="2"
-                          >Busia</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Elgeyo Marakwet</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Kericho</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item>
-
-                    <a-form-item name="campaignId" label="Campaign">
+                    <a-form-item name="campaign_id" label="Campaign">
                       <a-input
-                        v-model:value="formState.campaignId"
+                        v-model:value="formState.campaign_id"
                         placeholder="Input Activity County"
                       />
                     </a-form-item>
 
-                    <a-form-item name="startDate" label="Activity Start Date">
+                    <a-form-item name="start_date" label="Activity Start Date">
                       <a-date-picker
                         :style="{ width: '100%' }"
-                        v-model:value="formState.startDate"
+                        v-model:value="formState.start_date"
                         :format="dateFormat"
                       />
                     </a-form-item>
 
-                    <a-form-item name="endDate" label="Activity End Date">
+                    <a-form-item name="end_date" label="Activity End Date">
                       <a-date-picker
                         :style="{ width: '100%' }"
-                        v-model:value="formState.endDate"
+                        v-model:value="formState.end_date"
                         :format="dateFormat"
                       />
                     </a-form-item>
                     <a-form-item
-                      name="payableTravelDays"
+                      name="payable_travel_days"
                       label="Payable Travel Days"
                     >
                       <a-input
-                        v-model:value="formState.payableTravelDays"
+                        v-model:value="formState.payable_travel_days"
                         placeholder="Payable Travel Days"
                         type="number"
                         default-value="1"
                       />
                     </a-form-item>
                     <!-- no of officers as number -->
-                    <a-form-item name="numberOfOfficers" label="No of Officers">
+                    <a-form-item name="number_of_officers" label="No of Officers">
                       <a-input
-                        v-model:value="formState.numberOfOfficers"
+                        v-model:value="formState.number_of_officers"
                         placeholder="No of Officers"
                         type="number"
                         min="0"
                       />
                     </a-form-item>
                         
-                    <a-form-item name="activityFacilitators" label="Officers">
+                    <a-form-item name="activity_facilitator" label="Officers">
                       <a-select
                         mode="multiple"
-                        v-model:value="formState.activityFacilitators"
+                        v-model:value="formState.activity_facilitator"
                         placeholder="Please select"         
                         :options="(() => {
                           return users.map(({first_name, last_name, id}) => ({label: `${first_name} ${last_name}`, value: id}))
@@ -162,7 +147,7 @@
 import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed, toRaw, onMounted } from "vue";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from 'ant-design-vue';
 
 import axios from "axios";
@@ -173,7 +158,7 @@ const dateFormat = "YYYY-MM-DD";
 const AddNew = defineComponent({
   name: "AddNew",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
-  setup() {
+  data() {
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
@@ -182,22 +167,47 @@ const AddNew = defineComponent({
     const join = ref("");
     const users = ref([])
 
-    // let county_id;
+    const { counties,} = reactive({
+        counties: []
+      });
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createActivity`;
+    const formState = reactive({
+      name: "",
+      county_id: "",
+      campaign_id: "",
+      start_date: "",
+      end_date: "",
+      payable_travel_days: "",
+      number_of_officers: "",
+      activity_facilitator: [],
+    });
+
+    //counties
+    const getCounties = async () => {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+        const data = await response.json();
+        this.counties = data.data;
+      };
 
     // const handleSelect = (values)
     const handleSubmit = (values) => {
   
       values = {
         name: values.name,
-        county_id: values.countyId,
-        campaign_id: values.campaignId,
-        start_date: new Date(values.startDate.$d).toISOString().substr(0, 10),
-        end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
-        payable_travel_days: values.payableTravelDays,
-        number_of_officers: values.numberOfOfficers,
-        activity_facilitator: toRaw(values.activityFacilitators)
+        county_id: values.county_id,
+        campaign_id: values.campaign_id,
+        start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
+        end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
+        payable_travel_days: values.payable_travel_days,
+        number_of_officers: values.number_of_officers,
+        activity_facilitator: values.activity_facilitator,
       };
       console.log({values})
    
@@ -242,28 +252,21 @@ const AddNew = defineComponent({
         .catch(function (error) {
           console.log(error);
         });
+
+        getCounties();
     
     })
 
     console.log({p_users: users})
 
-    const formState = reactive({
-      name: "",
-      countyId: "0",
-      campaignId: 1,
-      startDate: "",
-      endDate: "",
-      payableTravelDays: 0,
-      numberOfOfficers: 0,
-      activityFacilitators: [],
-      activityCode: ""
-    });
+
 
     return {
       isLoading,
       apiUrl,
       users,
       isFileLoading,
+      counties,
       handleSubmit,
       dateFormat,
       formState,
