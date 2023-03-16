@@ -87,17 +87,22 @@ export default [
   {
     name: 'net-distribution',
     path: '/nets',
-    component: () => import(/* webpackChunkName: "ecommerce" */ '../view/pages/net-distribution/Orders.vue'),
+    component: () => import(/* webpackChunkName: "ecommerce" */ '@/view/crud/fireStore/Index.vue'),
     children: [
       {
         name: 'distribution',
         path: 'distribution',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/Orders.vue'),
       },
+      // {
+      //   name: 'distribution-post',
+      //   path: 'distribution/post',
+      //   component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
+      // },
       {
-        name: 'distribution-post',
-        path: 'distribution/post',
-        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DistributionPost.vue'),
+        name: 'post-create',
+        path: 'post-create',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
       },
     ],
   },

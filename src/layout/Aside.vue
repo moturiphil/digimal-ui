@@ -61,20 +61,28 @@
         <a-menu-item @click="toggleCollapsed" key="net-distribution">
           <router-link to="/nets/distribution"> Nets Distribution </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <!-- <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/nets/distribution/post">
             Distribution Post
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/activities/village-create">
             Create Village
+          </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/post-create">
+            Create Post
           </router-link>
         </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
           <router-link to="/activities/activity-view"> List Activity </router-link>
         </a-menu-item> -->
       </a-sub-menu>
+      <a-menu-item @click="toggleCollapsed" key="">
+        <router-link to="/"> Stock Status </router-link>
+      </a-menu-item>
       <a-menu-item @click="toggleCollapsed" key="registered-users">
         <router-link to="/registered-users"> Users </router-link>
       </a-menu-item>

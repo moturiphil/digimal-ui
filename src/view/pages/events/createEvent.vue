@@ -20,18 +20,13 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <!-- <a-form-item name="name" label="Event Name">
-                      <a-input
-                        v-model:value="formState.name"
-                        placeholder="Input Event Name"
-                      />
-                    </a-form-item> -->
                     <a-form-item label="Event Type">
                       <a-select
                         size="large"
-                        name="basic-select"
+                        name="name"
                         class="sDash_fullwidth-select"
                         placeholder="Select Event Type"
+                        v-model="formState.name"
                       >
                         <a-select-option value="1"
                           >Stakeholder meeting</a-select-option
@@ -54,11 +49,15 @@
                       </a-select>
                     </a-form-item>
                     <a-form-item name="campaign_id" label="Campaign Name">
-                      <a-select v-model="formState.campaign_id" v-if="!loading" placeholder="Select Campaign Name">
+                      <a-select
+                        v-model="formState.campaign_id"
+                        v-if="!loading"
+                        placeholder="Select Campaign Name"
+                      >
                         <a-select-option
                           v-for="campaign in campaigns"
                           :key="campaign.id"
-                          :value="campaign.id"
+                          :value="campaign.name"
                         >
                           {{ campaign.name }}
                         </a-select-option>
@@ -75,7 +74,7 @@
                         <a-select-option
                           v-for="facilitator in facilitators"
                           :key="facilitator.id"
-                          :value="facilitator.id"
+                          v-model:value="facilitator.id"
                         >
                           {{ facilitator.first_name }}
                           {{ facilitator.last_name }} - {{ facilitator.id_no }}
@@ -83,73 +82,31 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="facilitator_id" label="Trainers">
+                    <a-form-item  label="Trainers">
                       <a-select
                         mode="multiple"
-                        v-model="formState.facilitator_id"
+                        v-model="formState.trainer_id"
                         v-if="!loading"
                         placeholder="Select at-most two facilitators"
                       >
-                        <!-- <a-select-option>Select Facilitator</a-select-option> -->
                         <a-select-option
-                          v-for="facilitator in facilitators"
-                          :key="facilitator.id"
-                          :value="facilitator.id"
+                          v-for="trainer in facilitators"
+                          :key="trainer.id"
+                          :value="trainer.id"
                         >
-                          {{ facilitator.first_name }}
-                          {{ facilitator.last_name }} - {{ facilitator.id_no }}
+                          {{ trainer.first_name }}
+                          {{ trainerlast_name }} - {{ trainer.id_no }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
 
-                    <!-- <a-form-item label="Officers">
-                      <a-select
-                        mode="multiple"
-                        v-model="selectedOfficers"
-                        placeholder="Please select"
-                      >
-                        <a-select-option
-                        v-for="facilitator in facilitators"
-                          :key="facilitator.id"
-                          :value="facilitator.id"
-                        >
-                          {{ option.label }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item> -->
-                    <!-- <a-form-item name="user_id" label="User ID">
-                      <a-input-number
-                        v-model:value="formState.user_id"
-                        placeholder="Input User ID"
-                      />
-                    </a-form-item> -->
                     <a-form-item name="venue" label="Event Venue">
                       <a-input
                         v-model:value="formState.venue"
                         placeholder="Input Event Venue"
                       />
                     </a-form-item>
-                    <!-- <a-form-item name="location_id" label="Location ID">
-                      <a-input-number
-                        v-model:value="formState.location_id"
-                        placeholder="Input Location ID"
-                      />
-                    </a-form-item> -->
-                    <!-- <a-form-item name="facilitators" label="Facilitators">
-                      <a-select
-                        mode="multiple"
-                        v-model:value="formState.facilitators_select"
-                        placeholder="Select one or more facilitators"
-                      >
-                        <a-select-option
-                          v-for="facilitator in facilitators"
-                          :key="facilitator.id"
-                          :value="facilitator.id"
-                        >
-                          {{ facilitator.name }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item> -->
+
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}
@@ -198,7 +155,7 @@ const AddNew = defineComponent({
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
     const { campaigns, facilitators, loading } = reactive({
-      campaigns: [],
+      campaigns: '',
       loading: true, // setCampaigns: () => {},
       facilitators: [],
       // setFacilitator: () => {},
@@ -249,16 +206,19 @@ const AddNew = defineComponent({
     };
     fetchTrainer();
 
-    const handleSubmit = (values) => {
+    const handleSubmit = () => {
       const data = {
-        name: values.name,
+        name: formState.name,
         user_id: 1, // replace with the logged-in user's ID
-        venue: values.venue,
+        venue: formState.venue,
         location_id: 1, // replace with the actual location ID
-        campaign_id: values["campaign_id"],
-        facilitator_id: values["facilitator_id"],
+        campaign_id: formState.campaign_id,
+        facilitator: formState.facilitator_id,
+        trainers: formState.trainer_id,
       };
+
       console.log(data);
+
       axios
         .post(API_URL, data, { headers: authHeader() })
         .then((response) => {
@@ -277,7 +237,8 @@ const AddNew = defineComponent({
       venue: "",
       location_id: null,
       campaign_id: null,
-      facilitator_id: [],
+      facilitator_id: '',
+      trainer_id: [],
     });
 
     console.log(formState);
