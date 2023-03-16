@@ -76,6 +76,11 @@
             Create Post
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="receive-nets">
+          <router-link to="/nets/receive-nets">
+            Receive Nets
+          </router-link>
+        </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
           <router-link to="/activities/activity-view"> List Activity </router-link>
         </a-menu-item> -->
