@@ -50,7 +50,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import UserService from "../../../services/user.service";
+// import UserService from "../../../services/user.service";
 // import { useRouter } from "vue-router";
 // import DragAndDropTable from '../../../view/table/DragTable.vue';
 
@@ -93,8 +93,8 @@ const DragAndDropTable = defineComponent({
 
     console.log(authHeader());
 
-    const api_url = UserService;
-    console.log(api_url);
+    // const api_url = UserService;
+    // console.log(api_url);
 
     onMounted(async () => {
       try {

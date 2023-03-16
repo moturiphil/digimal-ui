@@ -39,13 +39,27 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <template #events="{}">
+                  <template #events="{ record }">
                     <td>
                       <div class="table-actions">
+                        <sdButton>
+                          <router-link
+                            :to="`/event/view/${record.id}`"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; View
+                          </router-link>
+                          <!-- <sdFeatherIcons type="edit" size="16" /> -->
+                          <!-- &nbsp;&nbsp; View -->
+                        </sdButton>
                         <sdButton
-                          @click="showSuccessModal"
+                          @click="showSuccessModal(record.event_code)"
                           size="small"
                           type="success"
+                          
                         >
                           <sdFeatherIcons type="user-plus" size="17" />
                           &nbsp;&nbsp; Register
@@ -81,6 +95,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Event Code",
+    dataIndex: "event_code",
+    key: "id",
+  },
+  {
     title: "User Id",
     dataIndex: "user_id",
     key: "id",
@@ -112,60 +131,42 @@ const ViewPage = defineComponent({
       confirmLoading: false,
       modalType: "primary",
       colorVisible: false,
+      eventCode: '',
     };
   },
   methods: {
     showModal() {
       this.visible = true;
     },
-    // showSuccessModal() {
-    //   Modal.success({
-    //     title: "Event Registration",
-    //     content: (
-    //       <div>
-    //         <p>Register With Event Code</p>
-    //         <Input placeholder="Enter event code" />
-    //       </div>
-    //     ),
-    //     okText: "Register",
-    //     onOk() {
-    //       console.log("Register for event");
-    //     },
-    //     style: {
-    //       float: "center",
-    //       display: "grid",
-    //       placeContent: "center",
-    //     },
-    //   });
-    // },
-    showSuccessModal() {
+    showSuccessModal(record) {
+      console.log(record);
       Modal.success({
         title: "Event Registration",
         content: (
           <div>
-            <p>Register With Event Code</p>
-            <Input v-model={this.eventCode} placeholder="Enter event code" />
+            <p>Enter Registration Code to Register</p>
+            <Input id="regCode"
+              v-model={this.eventCode}
+              placeholder="Enter Registration code"
+            />
           </div>
         ),
         okText: "Register",
         onOk: async () => {
           try {
-            // Validate the event code
-            const { data } = await axios.get(
-              `${process.env.VUE_APP_BASE_URL}/events/all?event_code=${this.eventCode}`
-            );
-            if (!data || data.length === 0) {
-              throw new Error("Invalid event code");
-            }
 
-            // Navigate to the event registration page
-            // const participantId = 2; // Change this to the participant's ID
-            const participantId = 2;
-            const response = await axios.post(
-              `${process.env.VUE_APP_BASE_URL}/event/${data[0].id}/participant/${participantId}/assign`
+            const userRegCode = document.getElementById("regCode").value;
+            console.log(userRegCode);
+
+            const response = await axios.get(
+              `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
+              { headers: authHeader() }
             );
+            // console.log(data[0].event_code);
             if (response.status !== 200) {
-              throw new Error("Failed to assign participant to event");
+              throw new Error("Failed to Register Participant to event");
+            } else {
+              console.log("Participant Registered");
             }
 
             // Show success message

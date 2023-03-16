@@ -81,30 +81,23 @@ import { useStore } from "vuex";
 const columns = [
   {
     title: "Participant Name",
-    dataIndex: "name",
+    dataIndex: "first_name",
     key: "id",
   },
   {
     title: "Participant Phone",
-    dataIndex: "event_code",
+    dataIndex: "phone_no",
     key: "id",
   },
   {
     title: "Organization",
-    dataIndex: "status",
+    dataIndex: "org_type_type",
     key: "id",
   },
   {
     title: "Role",
-    dataIndex: "venue",
+    dataIndex: "role_id",
     key: "id",
-  },
-  {
-    title: "Actions",
-    dataIndex: "",
-    key: "events",
-    slots: { customRender: "events" },
-    width: "90px",
   },
 ];
 
@@ -118,16 +111,16 @@ const EventCampaignTable = defineComponent({
     const dataSource = ref([]);
     const selectedRowKeys = ref([]);
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/campaign`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
     const route = useRoute();
     const campaignId = reactive({
       value: route.params.id,
     });
 
-    watch(campaignId, async (newCampaignId) => {
+    watch(campaignId, async () => {
       try {
-        const response = await axios.get(`${API_URL}/${newCampaignId}/events`, {
+        const response = await axios.get(`${API_URL}/events/O3wsTKhxDr/participants`, {
           headers: authHeader(),
         });
         console.log(response);
@@ -139,22 +132,22 @@ const EventCampaignTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await axios.get(`${API_URL}/${campaignId.value}/events`, {
+        const response = await axios.get(`${API_URL}/events/O3wsTKhxDr/participants`, {
           headers: authHeader(),
         });
         console.log(response);
         // if (response.data.data.)
         // check if response.data.data.[id].status is 0 or 1 set the value of status to active or inactive
 
-        if (response.data.data.length > 0) {
-          response.data.data.forEach((element) => {
-            if (element.status === 0) {
-              element.status = "Inactive";
-            } else if (element.status === 1) {
-              element.status = "Active";
-            }
-          });
-        }
+        // if (response.data.data.length > 0) {
+        //   response.data.data.forEach((element) => {
+        //     if (element.s  tatus === 0) {
+        //       element.status = "Inactive";
+        //     } else if (element.status === 1) {
+        //       element.status = "Active";
+        //     }
+        //   });
+        // }
 
 
         dataSource.value = response.data.data;

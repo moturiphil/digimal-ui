@@ -27,6 +27,14 @@ const routes = [
           ),
       },
       {
+        path: "stock-status",
+        name: "stock-status",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/stockStatus.vue"
+          ),
+      },
+      {
         path: "/campaigns/view/:id",
         name: "campaign-details",
         component: () => import("@/view/pages/campaigns/showCampaign.vue"),
@@ -51,6 +59,11 @@ const routes = [
         name: "view-event",
         component: () => import("@/view/pages/events/showEvent.vue"),
       },
+      // {
+      //   path: "/events/get-view/:id",
+      //   name: "get-event",
+      //   component: () => import("@/view/pages/events/getEvent.vue"),
+      // },
     ],
   },
   {

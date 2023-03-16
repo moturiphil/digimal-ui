@@ -29,13 +29,13 @@
                         v-model="formState.name"
                       >
                         <a-select-option value="1"
-                          >Stakeholder meeting</a-select-option
+                          >Stakeholder Meeting</a-select-option
                         >
                         <a-select-option default-value="2" value="2"
                           >Health Care Worker Training</a-select-option
                         >
                         <a-select-option value="3"
-                          >CHV mobilization</a-select-option
+                          >CHV Mobilization</a-select-option
                         >
                         <a-select-option value="4"
                           >Village Elder mobilization</a-select-option
@@ -44,7 +44,7 @@
                           >CHV/VE Training</a-select-option
                         >
                         <a-select-option value="5"
-                          >Social mobilization</a-select-option
+                          >Social Mobilization</a-select-option
                         >
                       </a-select>
                     </a-form-item>

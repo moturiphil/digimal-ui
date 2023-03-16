@@ -81,7 +81,7 @@
         </a-menu-item> -->
       </a-sub-menu>
       <a-menu-item @click="toggleCollapsed" key="">
-        <router-link to="/"> Stock Status </router-link>
+        <router-link to="/stock-status"> Stock Status </router-link>
       </a-menu-item>
       <a-menu-item @click="toggleCollapsed" key="registered-users">
         <router-link to="/registered-users"> Users </router-link>
