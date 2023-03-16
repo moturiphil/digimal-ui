@@ -28,19 +28,19 @@
                       </a-form-item>
                       <a-form-item name="distribution_start_date" label="Start Date">
                             <a-date-picker
+                            :style="{ width: '100%' }"
                             v-model:value="formState.distribution_start_date"
-                            placeholder="mm/dd/yyyy"
                             :format="dateFormat"
                             />
                       </a-form-item>
                       <a-form-item name="distribution_end_date" label="End Date">
                             <a-date-picker
+                            :style="{ width: '100%' }"
                             v-model:value="formState.distribution_end_date"
-                            placeholder="mm/dd/yyyy"
                             :format="dateFormat"
                             />
                       </a-form-item>
-                      <a-form-item name="post_supervisor_user_id"  label="Supervisor User Id">
+                      <a-form-item name="post_supervisor_user_id"  label="Post Admin">
                         <a-input
                           v-model:value="formState.post_supervisor_user_id"
                           placeholder="Enter post name"
@@ -59,13 +59,17 @@
                         </a-select>
                       </a-form-item>
                     <a-form-item>
-                        <a-checkbox v-model:checked="formState.isFacility" name="is_facility">Is Facility?</a-checkbox>
+                        <a-checkbox v-model:checked="isFacility">Is Facility?</a-checkbox>
 
                     </a-form-item>
-                    <a-form-item name="post_code"  label="Post code">
+                    <!-- label = {{ !isFacility ? `fyufuyfuy`: `jjkhkjhkj` }} -->
+                    <a-form-item name="post_code" >
+                      <label>{{ !isFacility ? `Post Code`: `Facility MFL code` }} </label>
+                      <br/>
                         <a-input
                           v-model:value="formState.post_code"
-                          placeholder="Enter post code"
+                          placeholder= "Enter facility mfl code"
+                          :disabled="!isFacility"
                         />
                       </a-form-item>
   
@@ -103,7 +107,7 @@
       const apiUrl = computed(() => state.crud.url);
       const isFileLoading = computed(() => state.crud.fileLoading);
       const join = ref("");
-      // const API_URL = `${process.env.VUE_APP_BASE_URL}/village/create`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/distribution_post`;
   
       const formState = reactive({
         name:"",
@@ -111,13 +115,13 @@
         distribution_end_date:"",
         post_supervisor_user_id:"",
         villages:[],
-        isFacility:false,
         post_code:""
       });
 
-      const { villages,loading} = reactive({
+      const { villages,loading, isFacility} = reactive({
         villages: [],
         loading: true,
+        isFacility:false,
       });
 
       //counties
@@ -138,34 +142,32 @@
       onMounted(() => {
         getVillages();
       });
-
+// console.log(formState.isFacility)
       const handleSubmit = (values) => {
         values = {
           name:values.name,
-          distribution_start_date:values.distribution_start_date,
-          distribution_end_date:values.distribution_end_date,
+          distribution_start_date: new Date(values.distribution_start_date).toISOString().substr(0, 10),
+          distribution_end_date: new Date(values.distribution_end_date).toISOString().substr(0, 10),
           post_supervisor_user_id:values.post_supervisor_user_id,
           villages:values.villages,
-          isFacility:values.isFacility,
           post_code:values.post_code
 
         };
-  console.log(values);
-        // fetch(API_URL, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     ...authHeader(),
-        //   },
-        //   body: JSON.stringify(values),
-        // })
-        //   .then((response) => response.json())
-        //   .then((data) => {
-        //     console.log(data);
-        //   })
-        //   .catch((error) => {
-        //     console.error("Error:", error);
-        //   });
+        fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(values),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
       };
   
       return {
@@ -173,6 +175,7 @@
         loading,
         apiUrl,
         isFileLoading,
+        isFacility,
         handleSubmit,
         dateFormat,
         formState,
