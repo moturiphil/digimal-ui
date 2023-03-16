@@ -97,7 +97,7 @@
   import { Main, BasicFormWrapper } from "../../styled"
   import { useStore } from "vuex";
   import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-  // import axios from "axios";
+  import { notification } from 'ant-design-vue';
   import authHeader from "../../../services/auth-header";
   
   const dateFormat = "YYYY-MM-DD";
@@ -160,6 +160,17 @@
         getUsers();
         getVillages();
       });
+
+      // notification
+      const openNotification = type => {
+      notification[type]({
+        message: 'Notification Title',
+        description:
+          type =="success"? 'Post created successfully': 'Post creation failed',
+      });
+    };
+
+
       const handleSubmit = (values) => {
         let post_code = values.post_code; 
         values = {
@@ -182,7 +193,12 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data);
+            if (data.success) {
+              openNotification('success');
+              // this.$router.push("/distribution_post");
+            } else {
+              openNotification('error');
+            }
           })
           .catch((error) => {
             console.error("Error:", error);
