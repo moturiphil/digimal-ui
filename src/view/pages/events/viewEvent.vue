@@ -44,8 +44,11 @@
                     <td>
                       <div class="table-actions">
                         <sdButton>
+                          <!-- {path: '', query{id: record.id}} -->
+                          <!-- :to="`/event/view/${record.id}`" -->
                           <router-link
-                            :to="`/event/view/${record.id}`"
+                            
+                            :to="{path: `/event/view/${record.id}`, query: {id: record.event_code}}"
                             class="btn-icon"
                             type="info"
                             shape="circle"
@@ -162,7 +165,8 @@ const ViewPage = defineComponent({
               `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
               { headers: authHeader() }
             );
-            // console.log(data[0].event_code);
+            // console.log(record);
+            // localStorage.setItem("eventCode", record);
             if (response.status !== 200) {
               throw new Error("Failed to Register Participant to event");
             } else {

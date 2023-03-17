@@ -118,9 +118,13 @@ const EventCampaignTable = defineComponent({
       value: route.params.id,
     });
 
+    const { query } = useRoute();
+
+    console.log(query.id);
+
     watch(campaignId, async () => {
       try {
-        const response = await axios.get(`${API_URL}/events/O3wsTKhxDr/participants`, {
+        const response = await axios.get(`${API_URL}/events/${query.id}/participants`, {
           headers: authHeader(),
         });
         console.log(response);
@@ -132,6 +136,9 @@ const EventCampaignTable = defineComponent({
 
     onMounted(async () => {
       try {
+        // localStorage.getItem("eventCode");
+        // console.log(localStorage.getItem("eventCode"));
+
         const response = await axios.get(`${API_URL}/events/O3wsTKhxDr/participants`, {
           headers: authHeader(),
         });
