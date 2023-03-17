@@ -20,8 +20,9 @@
             type="text"
             name="dataSource"
             placeholder="Search Here"
-          /></div
-      ></template>
+          />
+        </div>
+      </template>
     </sdPageHeader>
     <Main>
       <a-row :gutter="15">
@@ -59,7 +60,6 @@
                           @click="showSuccessModal(record.event_code)"
                           size="small"
                           type="success"
-                          
                         >
                           <sdFeatherIcons type="user-plus" size="17" />
                           &nbsp;&nbsp; Register
@@ -131,7 +131,7 @@ const ViewPage = defineComponent({
       confirmLoading: false,
       modalType: "primary",
       colorVisible: false,
-      eventCode: '',
+      eventCode: "",
     };
   },
   methods: {
@@ -145,7 +145,8 @@ const ViewPage = defineComponent({
         content: (
           <div>
             <p>Enter Registration Code to Register</p>
-            <Input id="regCode"
+            <Input
+              id="regCode"
               v-model={this.eventCode}
               placeholder="Enter Registration code"
             />
@@ -154,7 +155,6 @@ const ViewPage = defineComponent({
         okText: "Register",
         onOk: async () => {
           try {
-
             const userRegCode = document.getElementById("regCode").value;
             console.log(userRegCode);
 
@@ -220,7 +220,6 @@ const ViewPage = defineComponent({
         // JSX support
         content: (
           <div>
-            <p>some messages...some messages...</p>
             <p>some messages...some messages...</p>
           </div>
         ),

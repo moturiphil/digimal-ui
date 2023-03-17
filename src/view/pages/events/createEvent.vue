@@ -63,11 +63,11 @@
                         </a-select-option>
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="facilitator_id" label="Facilitator">
+                    <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         v-model:value="formState.facilitator_id"
                         v-if="!loading"
-                        placeholder="Select Facilitator"
+                        placeholder="Select Host"
                       >
                         <!-- select facilitator option  -->
                         <!-- <a-select-option>Select Facilitator</a-select-option> -->
@@ -82,7 +82,7 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item  label="Trainers">
+                    <a-form-item  label="Facilitators">
                       <a-select
                         mode="multiple"
                         v-model:value="formState.trainer_id"
