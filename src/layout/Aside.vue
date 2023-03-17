@@ -85,6 +85,22 @@
           <router-link to="/activities/activity-view"> List Activity </router-link>
         </a-menu-item> -->
       </a-sub-menu>
+
+      <a-sub-menu key="house-holds">
+        <template v-slot:title
+          >
+          <span
+            >House Hold</span
+          ></template
+        >
+        
+        <a-menu-item @click="toggleCollapsed" key="house-hold-list">
+          <router-link to="/households/list">
+            List House Holds
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+
       <a-menu-item @click="toggleCollapsed" key="">
         <router-link to="/stock-status"> Stock Status </router-link>
       </a-menu-item>
