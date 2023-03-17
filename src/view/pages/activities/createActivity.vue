@@ -20,31 +20,56 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="name" label="Activity Name">
+                  <!-- <a-form-item name="name" label="Activity Name">
                       <a-input
                         :style="{ width: '100'}"
                         v-model:value="formState.name"
                         placeholder="Input Activity Name"
                       />
+                    </a-form-item> -->
+
+                    <a-form-item name="name" label="Activity Name">
+                      <a-select
+                        v-model:value="formState.name"
+                        placeholder="Please select"
+                      >
+                        <a-select-option value="1"
+                          >Activity Test 1</a-select-option
+                        >
+                        <a-select-option value="2"
+                          >Activity Test 2</a-select-option
+                        >
+                        <a-select-option value="3"
+                          >Activity Test 3</a-select-option
+                        >
+                        <a-select-option value="4"
+                          >Activity Test 4</a-select-option
+                        >
+                      </a-select>
                     </a-form-item>
+
                     <a-form-item name="county_id"  label="County">
                         <a-select
-                          size="large"
                           name="basic-select"
                           class="sDash_fullwidth-select"
                           placeholder="Select County"
                           v-model:value="formState.county_id"
                         >
-                        <a-select-option value="">Select an option</a-select-option>
+                        <a-select-option value="" disabled>Select a county</a-select-option>
                         <a-select-option v-for="county in counties" :value="county.id" :key="county.id">{{county.name}}</a-select-option>
                         </a-select>
                       </a-form-item>
 
                     <a-form-item name="campaign_id" label="Campaign">
-                      <a-input
-                        v-model:value="formState.campaign_id"
-                        placeholder="Input Activity County"
-                      />
+                      <a-select
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select County"
+                          v-model:value="formState.campaign_id"
+                        >
+                        <a-select-option value="" disabled>Select a campaign</a-select-option>
+                        <a-select-option v-for="campaign in campaigns" :value="campaign.id" :key="campaign.id">{{campaign.name}}</a-select-option>
+                        </a-select>
                     </a-form-item>
 
                     <a-form-item name="start_date" label="Activity Start Date">
@@ -167,8 +192,9 @@ const AddNew = defineComponent({
     const join = ref("");
     const users = ref([])
 
-    const { counties,} = reactive({
-        counties: []
+    const { counties,campaigns} = reactive({
+        counties: [],
+        campaigns: [],
       });
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createActivity`;
@@ -194,7 +220,20 @@ const AddNew = defineComponent({
         });
         const data = await response.json();
         this.counties = data.data;
-      };
+    };
+
+    //campaigns
+    const getCampaigns = async () => {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/campaign_all`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+        const data = await response.json();
+        this.campaigns = data.data;
+    };
 
     // const handleSelect = (values)
     const handleSubmit = (values) => {
@@ -254,6 +293,7 @@ const AddNew = defineComponent({
         });
 
         getCounties();
+        getCampaigns();
     
     })
 
@@ -267,6 +307,7 @@ const AddNew = defineComponent({
       users,
       isFileLoading,
       counties,
+      campaigns,
       handleSubmit,
       dateFormat,
       formState,

@@ -111,4 +111,17 @@ export default [
       },
     ],
   },
+  {
+    name: 'house-holds',
+    path: 'households',
+    component: () => import(/* webpackChunkName: "ecommerce" */ '@/view/crud/fireStore/Index.vue'),
+    children: [
+      {
+        name: 'list',
+        path: 'list',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/household/viewHouseholds.vue'),
+      },
+     
+    ],
+  },
 ];
