@@ -1,5 +1,5 @@
 <template>
-  <sdPageHeader title="Net Distribution"
+  <sdPageHeader title="Distribution Posts"
     ><template v-slot:buttons>
       <div class="page-header-actions">
         <!-- <sdCalendarButton /> -->
@@ -62,8 +62,10 @@
 <script>
 import { TopToolBox } from './Style';
 import { Main, TableWrapper } from '../../styled';
-import { computed, ref, defineComponent } from 'vue';
+import { computed, ref, defineComponent, onMounted, toRaw } from 'vue';
 import { useStore } from 'vuex';
+import axios from 'axios';
+import authHeader from '../../../services/auth-header';
 
 const columns = [
   {
@@ -73,23 +75,28 @@ const columns = [
   },
   {
     title: 'Distribution Post',
-    dataIndex: 'customer',
-    key: 'customer',
+    dataIndex: 'name',
+    key: 'name',
   },
   {
-    title: 'Distribution Level',
-    dataIndex: 'status',
-    key: 'status',
+    title: 'Distribution Post Code',
+    dataIndex: 'post_code',
+    key: 'post_code',
   },
   {
-    title: 'Nets Distributed',
-    dataIndex: 'amount',
-    key: 'amount',
+    title: 'Supervisor Id',
+    dataIndex: 'post_supervisor_user_id',
+    key: 'post_supervisor_user_id',
   },
   {
-    title: 'Date',
-    dataIndex: 'date',
-    key: 'date',
+    title: 'Distribution Start Date',
+    dataIndex: 'distribution_start_date',
+    key: 'distribution_start_date',
+  },
+  {
+    title: 'Distribution End Date',
+    dataIndex: 'distribution_end_date',
+    key: 'distribution_end_date',
   },
   {
     title: 'Action',
@@ -101,11 +108,12 @@ const columns = [
 const Distribution = defineComponent({
   name: 'Distribution',
   components: { TopToolBox, Main, TableWrapper },
-
+  
   setup() {
     const { state, dispatch } = useStore();
     const searchData = computed(() => state.headerSearchData);
-    const orders = computed(() => state.orders.data);
+    // const orders = computed(() => state.orders.data);
+    const orders = ref([])
 
     const item = computed(() => state.orders.data);
     const selectedRowKeys = ref([]);
@@ -116,14 +124,25 @@ const Distribution = defineComponent({
       dispatch('orderFilter', { column: 'status', value: e.target.value });
     };
 
+    onMounted(() => {
+      axios(`${process.env.VUE_APP_BASE_URL}/posts_data`, {headers: authHeader()})
+      .then(({data}) => {
+        console.log({data: data.data.data})
+        orders.value.push(data.data.data)
+      })
+      .catch(console.error)
+    })
+
     const dataSource = computed(() =>
       orders.value.map((value, key) => {
-        const { status, orderId, customers, amount, date } = value;
+      
+
+        const [{ id, name, post_code, distribution_start_date, post_supervisor_user_id, distribution_end_date }] = toRaw(value);
         return {
           key: key + 1,
-          id: <span class="order-id">{orderId}</span>,
-          customer: <span class="customer-name">{customers}</span>,
-          status: (
+          id: <span class="order-id">{id}</span>,
+          name: <span class="customer-name">{name}</span>,
+          /*status: (
             <span
               class={`status ${
                 status === 'National' ? 'Success' : status === 'County' ? 'warning' : 'error'
@@ -131,9 +150,11 @@ const Distribution = defineComponent({
             >
               {status}
             </span>
-          ),
-          amount: <span class="ordered-amount">{amount}</span>,
-          date: <span class="ordered-date">{date}</span>,
+          ),*/
+          post_code: <span class="customer-name">{post_code}</span>,
+          post_supervisor_user_id: <span class="customer-name">{post_supervisor_user_id}</span>,
+          distribution_start_date: <span class="ordered-date">{distribution_start_date}</span>,
+          distribution_end_date: <span class="ordered-date">{distribution_end_date}</span>,
           action: (
             <div class="table-actions">
               <>
