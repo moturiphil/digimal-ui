@@ -59,7 +59,7 @@ import { useRouter } from "vue-router";
 // import { useStore } from 'vuex';
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
-// import { aMessage } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 export default {
   name: "SignIn",
   components: { AuthWrapper },
@@ -88,15 +88,15 @@ export default {
         try {
           store.commit("auth/setUser", response.data.user);
           router.push({ path: "/" });
+          notification.success({
+            message: "Login Successful",
+            description: "Welcome to Campaign Dashboard",
+          });
         } catch (e) {
           console.log(e);
         }
       } else {
         // new code to display error notification
-        store.commit('auth/setError', true);
-        store.commit('auth/setErrorMessage', "Unauthorized");
-        store.commit('auth/setErrorDescription', "Incorrect ID No or Password.");
-        router.push("/auth/login");
         console.log(response.status);
       }
     };

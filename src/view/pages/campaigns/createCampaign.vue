@@ -65,6 +65,8 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -78,6 +80,8 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
+
+    const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createCampaign`;
 
@@ -98,12 +102,20 @@ const AddNew = defineComponent({
         body: JSON.stringify(values),
       })
         .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-        })
+        .then(({success}) => {
+          // console.log(data);
+          if(success){
+            router.push("view-campaign")
+            notification['success']({
+                message: 'Campaign Created',
+                description: "Campaign Created successfully.",
+                duration: 4.5
+          });
+          }
+          })
         .catch((error) => {
           console.error("Error:", error);
-        });
+        }); 
     };
 
     //   axios

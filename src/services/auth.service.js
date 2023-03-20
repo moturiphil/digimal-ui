@@ -1,7 +1,4 @@
 import axios from 'axios';
-// import { useRouter } from 'vue-router';
-
-// import { inject } from 'vue';
 
 const API_URL = `${process.env.VUE_APP_BASE_URL}/`;
 // const router = useRouter();

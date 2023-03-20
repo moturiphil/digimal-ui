@@ -30,7 +30,7 @@
             <span>Google Sheets</span>
           </router-link>
           <router-link to="#">
-            <sdFeatherIcons size="16" type="x" />
+            <sdFeatherIcons size="16" type="x"/>
             <span>Excel (XLSX)</span>
           </router-link>
           <router-link to="#">

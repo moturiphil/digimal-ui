@@ -59,7 +59,7 @@
           ></template
         >
         <a-menu-item @click="toggleCollapsed" key="net-distribution">
-          <router-link to="/nets/distribution"> Nets Distribution </router-link>
+          <router-link to="/nets/distribution"> Distribution Posts </router-link>
         </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/nets/distribution/post">
