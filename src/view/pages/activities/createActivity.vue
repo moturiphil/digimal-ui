@@ -174,6 +174,7 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from 'ant-design-vue';
+import { useRouter } from "vue-router";
 
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
@@ -189,6 +190,7 @@ const AddNew = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
+    const router = useRouter();
     const join = ref("");
     const users = ref([])
 
@@ -262,18 +264,17 @@ const AddNew = defineComponent({
         .then((response) => response.json())
         .then(({success, data}) => {
           if(success){
+            router.push("activity-view")
             notification['success']({
                 message: 'Activity Created',
                 description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
-                duration: null
+                duration: 5.5
           });
           }
           })
         .catch((error) => {
           console.error("Error:", error);
-        });
-
-        
+        }); 
     };
 
     

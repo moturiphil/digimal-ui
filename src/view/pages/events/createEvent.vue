@@ -128,8 +128,11 @@ import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
-import axios from "axios";
+// import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { notification } from 'ant-design-vue'
+import { useRouter } from "vue-router";
+
 // import Select from 'vue-select';
 
 // const dateFormat = "YYYY-MM-DD";
@@ -145,6 +148,8 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
+
+    const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event/with_facilitator`;
 
@@ -219,16 +224,48 @@ const AddNew = defineComponent({
 
       console.log(data);
 
-      axios
-        .post(API_URL, data, { headers: authHeader() })
-        .then((response) => {
-          console.log(response.data);
-          // redirect to the event detail page or show a success message
-        })
+      // axios
+      //   .post(API_URL, data, { headers: authHeader() })
+      //   .then(({success, data}) => {
+      //     console.log(success);
+      //     if(success){
+      //       notification['success']({
+      //           message: 'Activity Created',
+      //           description: `Activity Created successfully. Your activity code is ${data.data.event.event_code} `,
+      //           duration: null
+      //     });
+      //     }
+      //     })
+      //   .catch((error) => {
+      //     console.error("Error:", error);
+      //   });
+
+      // .then(() => {
+      //       router.push("/events/event-view");
+      //     })
+      fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({success, data}) => {
+          // console.log(data);
+          if(success){
+            router.push("event-view")
+            notification['success']({
+                message: 'Event Created',
+                description: `Event Created successfully. Your event code is ${data.event.event_code}`,
+                duration: 5.5
+          });
+          }
+          })
         .catch((error) => {
-          console.log(error);
-          // show an error message
-        });
+          console.error("Error:", error);
+        }); 
     };
 
     const formState = reactive({
