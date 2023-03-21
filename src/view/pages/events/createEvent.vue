@@ -224,25 +224,6 @@ const AddNew = defineComponent({
 
       console.log(data);
 
-      // axios
-      //   .post(API_URL, data, { headers: authHeader() })
-      //   .then(({success, data}) => {
-      //     console.log(success);
-      //     if(success){
-      //       notification['success']({
-      //           message: 'Activity Created',
-      //           description: `Activity Created successfully. Your activity code is ${data.data.event.event_code} `,
-      //           duration: null
-      //     });
-      //     }
-      //     })
-      //   .catch((error) => {
-      //     console.error("Error:", error);
-      //   });
-
-      // .then(() => {
-      //       router.push("/events/event-view");
-      //     })
       fetch(API_URL, {
         method: "POST",
         headers: {

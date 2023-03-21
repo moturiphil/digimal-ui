@@ -105,7 +105,7 @@
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
 
-    const API_URL = "http://localhost:8000/api/events/all";
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/event/all`;
     // const apiURL = process.env.VUE_APP_API_URL;
 
 

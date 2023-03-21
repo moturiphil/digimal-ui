@@ -254,6 +254,8 @@ const ViewPage = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
 
+    console.log(API_URL);
+
     onMounted(() => {
       axios
         .get(API_URL, {
