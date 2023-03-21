@@ -80,7 +80,7 @@ export default {
         id_no: formState.id_no,
         password: formState.password,
       });
-      // console.log(response.status, response.data);
+      console.log(response.status, response.data);
       if (response.status == 200) {
         console.log(response.status);
         console.log("response successful.................");
@@ -95,9 +95,14 @@ export default {
         } catch (e) {
           console.log(e);
         }
-      } else {
+      } else if (response.status == 401) {
         // new code to display error notification
-        console.log(response.status);
+        // console.log(response.status);
+        console.log('other error responses');
+        notification.error({
+          message: "Login Failed",
+          description: "Invalid Credentials",
+        });
       }
     };
 
