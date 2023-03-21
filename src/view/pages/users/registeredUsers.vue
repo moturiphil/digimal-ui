@@ -59,12 +59,12 @@ import authHeader from "../../../services/auth-header";
 const columns = [
   {
     title: "First Name",
-    dataIndex: "first_name",
+    dataIndex: "fullName",
     key: "id",
   },
   {
-    title: "Last Name",
-    dataIndex: "last_name",
+    title: "Organization",
+    dataIndex: "org_types_id",
     key: "id",
   },
   {
@@ -103,7 +103,19 @@ const DragAndDropTable = defineComponent({
           headers: authHeader(),
         });
         const data = await response.json();
-        dataSource.value = data.data;
+         
+        console.log(data.data);
+
+        const updatedData = data.data.map((user) => {
+          let fullName = `${user.first_name} ${user.last_name}`;
+          fullName = fullName.toUpperCase();
+          return {
+            ...user,
+            fullName,
+          };
+        });
+
+        dataSource.value = updatedData;
         console.log(data.data);
       } catch (error) {
         console.error(error);
