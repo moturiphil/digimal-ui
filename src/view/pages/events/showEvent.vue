@@ -3,7 +3,7 @@
       <sdPageHeader v-if="project">
         <template #title
           ><div key="1" class="project-header">
-            <sdHeading as="h2">{{ project[0].title }}</sdHeading>
+            <sdHeading as="h2">Event Info</sdHeading>
           </div></template
         >
       </sdPageHeader>

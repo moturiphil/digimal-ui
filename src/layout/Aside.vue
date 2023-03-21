@@ -90,13 +90,13 @@
         <template v-slot:title
           >
           <span
-            >House Hold</span
+            >HouseHolds</span
           ></template
         >
         
         <a-menu-item @click="toggleCollapsed" key="house-hold-list">
           <router-link to="/households/list">
-            List House Holds
+            Registered HouseHolds
           </router-link>
         </a-menu-item>
       </a-sub-menu>
