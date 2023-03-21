@@ -138,6 +138,20 @@
             ...authHeader(),
           },
         });
+        console.log(response);
+        if (response.status == 200) {
+          notification['success']({
+                message: 'Post Created',
+                description: `Post Created successfully.`,
+                duration: 5.5
+          });
+        } else {
+          notification['error']({
+                message: 'Post Creation Failed',
+                description: `Post Creation failed.`,
+                duration: 5.5
+          });
+        }
         const data = await response.json();
         this.villages = data.data;
         this.loading = false;
