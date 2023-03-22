@@ -6,7 +6,7 @@
     :theme="darkMode ? 'dark' : 'light'"
   >
     <a-menu-item-group key="pages">
-        <a-menu-item @click="toggleCollapsed" key="widgetChart">
+        <a-menu-item @click="toggleCollapsed" key="widgetDashboard">
           <router-link to="/">
             Dashboard
           </router-link>
@@ -15,12 +15,12 @@
         <template v-slot:title
           ><sdFeatherIcons type="globe" /><span>Campagins</span></template
         >
-        <a-menu-item @click="toggleCollapsed" key="widgetChart">
+        <a-menu-item @click="toggleCollapsed" key="widgetCampaign">
           <router-link to="/campaigns/create-campaign">
             Create Campaign
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetsCar">
+        <a-menu-item @click="toggleCollapsed" key="widgetLists">
           <router-link to="/campaigns/view-campaign">
             List Campaigns
           </router-link>
@@ -162,7 +162,9 @@ export default defineComponent({
           state.selectedKeys = [router.value.matched[3].name];
           state.openKeys = [router.value.matched[1].name];
           state.preOpenKeys = [router.value.matched[1].name];
-        } else {
+        } 
+        else 
+        {
           state.selectedKeys = [router.value.matched[1].name];
           state.openKeys = [router.value.matched[1].name];
           state.preOpenKeys = [router.value.matched[1].name];

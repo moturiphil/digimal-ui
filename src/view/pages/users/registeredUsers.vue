@@ -103,12 +103,19 @@ const DragAndDropTable = defineComponent({
           headers: authHeader(),
         });
         const data = await response.json();
-         
+
         console.log(data.data);
 
         const updatedData = data.data.map((user) => {
           let fullName = `${user.first_name} ${user.last_name}`;
-          fullName = fullName.toUpperCase();
+
+          function toTitleCase(str) {
+            return str.replace(/\w\S*/g, function (txt) {
+              return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+          }
+
+          fullName = toTitleCase(fullName);
           return {
             ...user,
             fullName,
@@ -163,6 +170,4 @@ const DragAndDropTable = defineComponent({
 });
 
 export default DragAndDropTable;
-
 </script>
-  

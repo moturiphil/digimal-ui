@@ -31,7 +31,9 @@
                         <a-select-option value="Stakeholder meeting"
                           >Stakeholder meeting</a-select-option
                         >
-                        <a-select-option default-value="2" value="Health Care Worker Training"
+                        <a-select-option
+                          default-value="2"
+                          value="Health Care Worker Training"
                           >Health Care Worker Training</a-select-option
                         >
                         <a-select-option value="CHV mobilization"
@@ -82,7 +84,7 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item  label="Facilitators">
+                    <a-form-item label="Facilitators">
                       <a-select
                         mode="multiple"
                         v-model:value="formState.trainer_id"
@@ -130,7 +132,7 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import { notification } from 'ant-design-vue'
+import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 
 // import Select from 'vue-select';
@@ -160,7 +162,7 @@ const AddNew = defineComponent({
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
     const { campaigns, facilitators, loading } = reactive({
-      campaigns: '',
+      campaigns: "",
       loading: true, // setCampaigns: () => {},
       facilitators: [],
       // setFacilitator: () => {},
@@ -233,20 +235,20 @@ const AddNew = defineComponent({
         body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then(({success, data}) => {
+        .then(({ success, data }) => {
           // console.log(data);
-          if(success){
-            router.push("event-view")
-            notification['success']({
-                message: 'Event Created',
-                description: `Event Created successfully. Your event code is ${data.event.event_code}`,
-                duration: 5.5
-          });
+          if (success) {
+            router.push("event-view");
+            notification["success"]({
+              message: "Event Created",
+              description: `Event Created successfully. Your event code is ${data.event.event_code}`,
+              duration: 5.5,
+            });
           }
-          })
+        })
         .catch((error) => {
           console.error("Error:", error);
-        }); 
+        });
     };
 
     const formState = reactive({
@@ -255,7 +257,7 @@ const AddNew = defineComponent({
       venue: "",
       location_id: null,
       campaign_id: null,
-      facilitator_id: '',
+      facilitator_id: "",
       trainer_id: [],
     });
 
