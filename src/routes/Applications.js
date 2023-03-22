@@ -30,37 +30,6 @@ export default [
       },
     ],
   },
-  // {
-  //   name: 'net-distribution',
-  //   path: '/net/distribution',
-  //   component: () => import(/* webpackChunkName: "netDistribution" */ '../view/apps/netDistribution/Index.vue'),
-  //   children: [
-  //     {
-  //       name: 'national',
-  //       path: 'national',
-  //       components: {
-  //         default: () => import(/* webpackChunkName: "netDistribution" */ '../view/apps/netDistribution/Index.vue'),
-  //         child: () => import(/* webpackChunkName: "national" */ '../view/apps/netDistribution/overview/national.vue'),
-  //       },
-  //     },
-  //     {
-  //       name: 'county',
-  //       path: 'county',
-  //       components: {
-  //         default: () => import(/* webpackChunkName: "netDistribution" */ '../view/apps/netDistribution/Index.vue'),
-  //         child: () => import(/* webpackChunkName: "county" */ '../view/apps/netDistribution/overview/county.vue'),
-  //       },
-  //     },
-  //     {
-  //       name: 'sub-county',
-  //       path: 'sub-county',
-  //       components: {
-  //         default: () => import(/* webpackChunkName: "netDistribution" */ '../view/apps/netDistribution/Index.vue'),
-  //         child: () => import(/* webpackChunkName: "subCounty" */ '../view/apps/netDistribution/overview/subCounty.vue'),
-  //       },
-  //     },
-  //   ],
-  // },
   {
     name: 'project',
     path: '/app/project',
@@ -92,7 +61,7 @@ export default [
       {
         name: 'distribution',
         path: 'distribution',
-        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/Orders.vue'),
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DistributionPosts.vue'),
       },
       // {
       //   name: 'distribution-post',

@@ -84,17 +84,9 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-    // const { state, dispatch } = useStore();
-    // const router = useRouter();
-
-    // if (!state.auth.isAuthenticated) {
-    //   router.push({ name: "login" });
-    // }
 
     console.log(authHeader());
 
-    // const api_url = UserService;
-    // console.log(api_url);
 
     onMounted(async () => {
       try {

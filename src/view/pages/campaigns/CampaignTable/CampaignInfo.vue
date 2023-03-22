@@ -1,11 +1,3 @@
-Skip to content Search or jump to… Pull requests Issues Codespaces Marketplace
-Explore @Phil-Reck uonafya / MassNetCampaignFrontend Private Cannot fork because
-forking is disabled. Code Issues Pull requests Actions Projects Security
-Insights
-MassNetCampaignFrontend/src/view/pages/campaigns/CampaignTable/EventCampaign.vue
-@Phil-Reck Phil-Reck .env api variable Latest commit d545094 last week History 1
-contributor 250 lines (225 sloc) 6.08 KB
-
 <template>
   <UserTableStyleWrapper>
     <TableWrapper class="table-responsive">
