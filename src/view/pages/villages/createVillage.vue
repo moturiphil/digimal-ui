@@ -46,6 +46,32 @@
                         </a-select>
                       </a-form-item>
 
+                      <a-form-item name="location"  label="Location">
+                        <a-select
+                          size="large"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select Sub-Location"
+                          v-on:change="getWards($event)"
+                        >
+                        <a-select-option value="">Select an option</a-select-option>
+                        <a-select-option v-for="scounty in sub_counties" :value="scounty.id" :key="scounty.id">{{scounty.name}}</a-select-option>
+                        </a-select>
+                      </a-form-item>
+
+                      <a-form-item name="sub_location"  label="Sub Location">
+                        <a-select
+                          size="large"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select Sub-County"
+                          v-on:change="getWards($event)"
+                        >
+                        <a-select-option value="">Select an option</a-select-option>
+                        <a-select-option v-for="scounty in sub_counties" :value="scounty.id" :key="scounty.id">{{scounty.name}}</a-select-option>
+                        </a-select>
+                      </a-form-item>
+
                       <a-form-item name="ward_id"  label="Ward">
                         <a-select
                           size="large"

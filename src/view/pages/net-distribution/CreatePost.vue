@@ -26,7 +26,7 @@
                         placeholder="Enter post name"
                       />
                     </a-form-item>
-                    <a-form-item
+                    <!-- <a-form-item
                       name="distribution_start_date"
                       label="Start Date"
                     >
@@ -42,7 +42,7 @@
                         v-model:value="formState.distribution_end_date"
                         :format="dateFormat"
                       />
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item
                       name="post_supervisor_user_id"
                       label="Post Admin"

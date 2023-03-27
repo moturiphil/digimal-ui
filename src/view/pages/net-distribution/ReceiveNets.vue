@@ -41,6 +41,12 @@
                           placeholder="Enter number of nets"
                         />
                       </a-form-item>
+                      <a-form-item name="number_of_nets"  label="Delivery Note No">
+                        <a-input
+                          v-model:value="formState.delivery_note_number"
+                          placeholder="Enter number of nets"
+                        />
+                      </a-form-item>
                       <a-form-item name="date_received" label="Date Received">
                             <a-date-picker
                             :style="{ width: '100%' }"
@@ -49,13 +55,21 @@
                             />
                       </a-form-item>
                       <a-form-item name="received_from"  label="Received From">
-                        <a-input
-                          v-model:value="formState.received_from"
-                          placeholder="Enter name"
-                        />
+                        <a-select
+                        v-model:value="formState.received_by"
+                        v-if="!loading"
+                        placeholder="Select Received By"
+                      >
+                        <a-select-option value="1"
+                          >KEMSA</a-select-option
+                        >
+                        <a-select-option value="2"
+                          >MEDS</a-select-option
+                        >
+                      </a-select>
                       </a-form-item>
                     
-                      <a-form-item name="received_by"  label="Received By">
+                      <!-- <a-form-item name="received_by"  label="Received By">
                       <a-select
                         v-model:value="formState.received_by"
                         v-if="!loading"
@@ -70,7 +84,7 @@
                           {{ user.last_name }} - {{ user.id_no }}
                         </a-select-option>
                       </a-select>
-                    </a-form-item>
+                    </a-form-item> -->
   
                       <div class="record-form-actions text-right">
                         <sdButton size="default" htmlType="Save" type="success" >
