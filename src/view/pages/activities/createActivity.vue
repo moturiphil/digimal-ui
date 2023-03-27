@@ -10,7 +10,7 @@
         <RecordFormWrapper>
           <sdCards headless>
             <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24" order="flex" >
+              <a-col :xl="10" :md="16" :xs="24" order="flex">
                 <BasicFormWrapper>
                   <a-form
                     class="add-record-form"
@@ -20,14 +20,6 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                  <!-- <a-form-item name="name" label="Activity Name">
-                      <a-input
-                        :style="{ width: '100'}"
-                        v-model:value="formState.name"
-                        placeholder="Input Activity Name"
-                      />
-                    </a-form-item> -->
-
                     <a-form-item name="name" label="Activity Name">
                       <a-select
                         v-model:value="formState.name"
@@ -48,28 +40,42 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="county_id"  label="County">
-                        <a-select
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select County"
-                          v-model:value="formState.county_id"
+                    <a-form-item name="county_id" label="County">
+                      <a-select
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select County"
+                        v-model:value="formState.county_id"
+                      >
+                        <a-select-option value="" disabled
+                          >Select a county</a-select-option
                         >
-                        <a-select-option value="" disabled>Select a county</a-select-option>
-                        <a-select-option v-for="county in counties" :value="county.id" :key="county.id">{{county.name}}</a-select-option>
-                        </a-select>
-                      </a-form-item>
+                        <a-select-option
+                          v-for="county in counties"
+                          :value="county.id"
+                          :key="county.id"
+                          >{{ county.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
 
                     <a-form-item name="campaign_id" label="Campaign">
                       <a-select
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select County"
-                          v-model:value="formState.campaign_id"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select County"
+                        v-model:value="formState.campaign_id"
+                      >
+                        <a-select-option value="" disabled
+                          >Select a campaign</a-select-option
                         >
-                        <a-select-option value="" disabled>Select a campaign</a-select-option>
-                        <a-select-option v-for="campaign in campaigns" :value="campaign.id" :key="campaign.id">{{campaign.name}}</a-select-option>
-                        </a-select>
+                        <a-select-option
+                          v-for="campaign in campaigns"
+                          :value="campaign.id"
+                          :key="campaign.id"
+                          >{{ campaign.name }}</a-select-option
+                        >
+                      </a-select>
                     </a-form-item>
 
                     <a-form-item name="start_date" label="Activity Start Date">
@@ -99,7 +105,10 @@
                       />
                     </a-form-item>
                     <!-- no of officers as number -->
-                    <a-form-item name="number_of_officers" label="No of Officers">
+                    <a-form-item
+                      name="number_of_officers"
+                      label="No of Officers"
+                    >
                       <a-input
                         v-model:value="formState.number_of_officers"
                         placeholder="No of Officers"
@@ -107,53 +116,36 @@
                         min="0"
                       />
                     </a-form-item>
-                        
+
                     <a-form-item name="activity_facilitator" label="Officers">
                       <a-select
                         mode="multiple"
                         v-model:value="formState.activity_facilitator"
-                        placeholder="Please select"         
-                        :options="(() => {
-                          return users.map(({first_name, last_name, id}) => ({label: `${first_name} ${last_name}`, value: id}))
-                        })()"
+                        placeholder="Please select"
+                        :options="
+                          (() => {
+                            return users.map(
+                              ({ first_name, last_name, id }) => ({
+                                label: `${first_name} ${last_name}`,
+                                value: id,
+                              })
+                            );
+                          })()
+                        "
                       >
-                        <!-- <a-select-option v-for="user in users" :key="user" :value="[`${user.id}`]"
-                        :label="`${user.first_name}-${user.id}`"
-                        >
-                           {` ${user.first_name} `}
-                          </a-select-option> -->
-                 
                       </a-select>
                     </a-form-item>
-                    <!-- <a-form-item name="created_by" label="Created By">
-                      <a-input
-                        v-model:value="formState.campaign_id"
-                        placeholder="Input Activity County"
-                        disabled
-                      />
-                    </a-form-item> -->
-                    <!-- <a-form-item label="Multiple Select">
-                      <a-select
-                        mode="multiple"
-                        :default-value="['1', '2']"
-                        placeholder="Please select"
-                      >
-                        <a-select-option value="1"
-                          >Admin User 1</a-select-option
-                        >
-                        <a-select-option value="2"
-                          >Admin User 2</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Admin User 3</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Admin User 4</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item> -->
 
                     <div class="record-form-actions text-right">
+                      <sdButton
+                        @click="showConfirmModal(formState.activity_facilitator)"
+                        size="small"
+                        type="success"
+                      >
+                        <sdFeatherIcons type="check-square" size="17" />
+                        &nbsp;&nbsp; Confirm Officers
+                      </sdButton>
+                      &nbsp;&nbsp;&nbsp;
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}
                       </sdButton>
@@ -178,6 +170,7 @@ import { useRouter } from "vue-router";
 
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { Modal } from "ant-design-vue";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -200,6 +193,7 @@ const AddNew = defineComponent({
       });
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createActivity`;
+
     const formState = reactive({
       name: "",
       county_id: "",
@@ -211,6 +205,7 @@ const AddNew = defineComponent({
       activity_facilitator: [],
     });
 
+
     //counties
     const getCounties = async () => {
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
@@ -221,7 +216,9 @@ const AddNew = defineComponent({
           },
         });
         const data = await response.json();
-        this.counties = data.data;
+        console.log('................................................................................................')
+        console.log(data);
+        this.counties = data;
     };
 
     //campaigns
@@ -239,7 +236,7 @@ const AddNew = defineComponent({
 
     // const handleSelect = (values)
     const handleSubmit = (values) => {
-  
+
       values = {
         name: values.name,
         county_id: values.county_id,
@@ -251,7 +248,11 @@ const AddNew = defineComponent({
         activity_facilitator: values.activity_facilitator,
       };
       console.log({values})
-   
+
+      localStorage.setItem("activity", JSON.stringify(values));
+
+      console.log(localStorage.getItem("activity"))
+
 
       fetch(API_URL, {
         method: "POST",
@@ -274,14 +275,9 @@ const AddNew = defineComponent({
           })
         .catch((error) => {
           console.error("Error:", error);
-        }); 
+        });
     };
 
-    
-    //pick the user_id in the sessionstorage and add it into formstate
-    // const user_id = computed(() => state.auth);
-
-    // console.log(state.auth.user.id);
     onMounted(() => {
         axios
         .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
@@ -294,13 +290,10 @@ const AddNew = defineComponent({
         });
 
         getCounties();
+
         getCampaigns();
-    
+
     })
-
-    console.log({p_users: users})
-
-
 
     return {
       isLoading,
@@ -313,7 +306,99 @@ const AddNew = defineComponent({
       dateFormat,
       formState,
       join,
+      participants: [],
     };
+  },
+  methods: {
+    showModal() {
+      this.visible = true;
+    },
+    showConfirmModal(activity_facilitator) {
+      console.log( activity_facilitator);
+      Modal.success({
+        title: "Activity Officers",
+        content: (
+          <div>
+            <p>Confirm Event Participants</p>
+            <p> {{ activity_facilitator }} </p>
+          </div>
+        ),
+        okText: "Register",
+        onOk: async () => {
+          try {
+            // Send form data to post endpoint
+            // await handleSubmit();
+
+            // Show success message
+            Modal.success({
+              title: "Success",
+              content: "You have been registered for the activity",
+            });
+          } catch (error) {
+            Modal.error({
+              title: "Error",
+              content: error.message,
+            });
+          }
+        },
+        style: {
+          float: "center",
+          display: "grid",
+          placeContent: "center",
+        },
+      });
+    },
+
+    handleOk() {
+      this.confirmLoading = true;
+      setTimeout(() => {
+        this.visible = false;
+        this.colorVisible = false;
+        this.confirmLoading = false;
+      }, 2000);
+    },
+    handleCancel() {
+      this.visible = false;
+      this.colorVisible = false;
+    },
+    changeType(type) {
+      this.modalType = type;
+    },
+    // info() {
+    //   //const h = this.$createElement;
+    //   Modal.info({
+    //     title: 'This is a notification message',
+    //     content: h('div', {}, [h('p', 'some messages...some messages...'), h('p', 'some messages...some messages...')]),
+    //     onOk() {
+    //       console.log('ok');
+    //     },
+    //   });
+    // },
+    success() {
+      Modal.success({
+        title: "This is a success message",
+        // JSX support
+        content: (
+          <div>
+            <p>some messages...some messages...</p>
+          </div>
+        ),
+      });
+    },
+
+    error() {
+      Modal.error({
+        title: "This is an error message",
+        content: "some messages...some messages...",
+      });
+    },
+
+    warning() {
+      Modal.warning({
+        title: "This is a warning message",
+        content: "some messages...some messages...",
+      });
+    },
   },
   beforeRouteEnter(to, from, next) {
     if (!localStorage.getItem("user")) {
