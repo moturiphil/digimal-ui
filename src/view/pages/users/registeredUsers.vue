@@ -1,242 +1,100 @@
 <template>
-  <sdPageHeader title="Export">
-    <template v-slot:buttons>
-      <div class="page-header-actions">
-        <!-- <sdCalendarButton />
-        <sdExportButton />
-        <sdShareButton /> -->
-        <!-- <sdButton size="small" type="primary">
-          <sdFeatherIcons type="plus" size="14" />
-          Add New
-        </sdButton> -->
-      </div>
-    </template>
-  </sdPageHeader>
-  <Main>
-    <a-row :gutter="25">
-      <a-col :sm="24" :xs="24">
-        <ExportStyleWrap>
+  <RecordViewWrapper>
+    <sdPageHeader title="Users">
+      <template #subTitle>
+        <sdButton class="btn-add_new" size="default" type="success">
+          <!-- <router-link to="/campaigns/create-campaign">
+            <sdFeatherIcons type="plus" size="14" /> Start New
+            Campaign</router-link
+          > -->
+        </sdButton>
+      </template>
+      <!-- <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <sdFeatherIcons type="search" size="14" />
+          </span></div
+      ></template> -->
+    </sdPageHeader>
+    <Main>
+      <a-row :gutter="15">
+        <a-col class="w-100" :md="24">
           <sdCards headless>
-            <div class="sDash_export-box">
-              <template v-if="selectedRows.length">
-                <sdButton class="btn-export" @click="showModal" type="success">
-                  Export
-                </sdButton>
-                <sdModal
-                  title="Export File"
-                  wrapclass="sDash_export-wrap"
-                  :visible="isModalVisible"
-                  :footer="null"
-                  :onCancel="handleCancel"
-                  class="export-modal"
-                >
-                  <a-form name="contact">
-                    <a-form-item name="f_name">
-                      <a-input
-                        placeholder="File Name"
-                        v-model:value="fileName"
-                        @change="updateFileName"
-                      />
-                    </a-form-item>
-                    <a-form-item name="f_type">
-                      <a-select default-value="xlxs" @change="updateFileType">
-                        <!-- <a-select-option value="csv">CSV</a-select-option> -->
-                        <a-select-option value="xlxs">xlxs</a-select-option>
-                      </a-select>
-                    </a-form-item>
-                    <div class="sDash-button-grp">
-                      <!-- <CSVLink v-if="convertedTo === 'csv'" :filename="`${fileName}.csv`" :data="csvJsonData">
-                        <sdButton @click="handleCancel" class="btn-export" type="primary">
-                          Export
-                        </sdButton>
-                      </CSVLink> -->
-
-                      <sdButton
-                        class="btn-export"
-                        @click="() => exportToXLSX(csvData, fileName)"
-                        type="success"
-                      >
-                        Export
-                      </sdButton>
-
-                      <sdButton
-                        htmlType="button"
-                        @click="handleCancel"
-                        size="default"
-                        type="light"
-                        outlined
-                      >
-                        Cancel
-                      </sdButton>
-                    </div>
-                  </a-form>
-                </sdModal>
-              </template>
-
-              <sdButton
-                v-else
-                class="btn-export"
-                @click="warning"
-                type="success"
-              >
-                Export
-              </sdButton>
-
-              <a-input
-                v-model:value="searchData"
-                @change="handleSearch"
-                placeholder="Search by Name"
-              >
-                <template #prefix>
-                  <sdFeatherIcons type="search" size="14" />
-                </template>
-              </a-input>
+            <div v-if="isLoading" class="spin">
+              <a-spin />
             </div>
-            <div
-              class="sDash_export-file-table table-bordered table-responsive"
-            >
-              <!-- <a-table
-                :rowSelection="rowSelection"
-                :dataSource="usersTableData"
-                :columns="usersTableColumns"
-                :pagination="{
-                  defaultPageSize: 7,
-                  total: usersTableData.length,
-                  showTotal: (total, range) =>
-                    `${range[0]}-${range[1]} of ${total} items`,
-                }"
-              /> -->
-              <a-table
-                :rowSelection="rowSelection"
-                :pagination="{ pageSize: 10, showSizeChanger: true }"
-                :dataSource="dataSource"
-                :columns="columns"
-              />
+
+            <div v-else>
+              <TableWrapper class="table-data-view table-responsive">
+                <a-table
+                  :rowSelection="rowSelection"
+                  :pagination="{ pageSize: 10, showSizeChanger: true }"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                />
+              </TableWrapper>
             </div>
           </sdCards>
-        </ExportStyleWrap>
+        </a-col>
+      </a-row>
+      <a-col :xs="24">
+        <DragAndDropTable />
       </a-col>
-    </a-row>
-  </Main>
+    </Main>
+  </RecordViewWrapper>
 </template>
 <script>
-import * as FileSaver from "file-saver";
-import * as XLSX from "xlsx";
-import { Main, ExportStyleWrap } from "../../styled";
+import { RecordViewWrapper } from "../style";
+import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { computed, ref, watchEffect, onMounted } from "vue";
-import { Modal } from "ant-design-vue";
+import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+// import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import UserService from "../../../services/user.service";
+// import { useRouter } from "vue-router";
+// import DragAndDropTable from '../../../view/table/DragTable.vue';
 
+// console.log(userService.getAll());
 
-const Import = {
-  name: "Import",
-  components: { Main, ExportStyleWrap },
+const columns = [
+  {
+    title: "First Name",
+    dataIndex: "first_name",
+    key: "id",
+  },
+  {
+    title: "Last Name",
+    dataIndex: "last_name",
+    key: "id",
+  },
+  {
+    title: "Phone Number",
+    dataIndex: "phone_no",
+    key: "id",
+  },
+];
+
+const DragAndDropTable = defineComponent({
+  name: "ViewPage",
+  components: { RecordViewWrapper, Main, TableWrapper },
+
   setup() {
     const { state, dispatch } = useStore();
-    const users = computed(() => state.contact.data);
-    const isModalVisible = ref(false);
-    const fileName = ref("strikingDash");
-    const convertedTo = ref("csv");
-    const selectedRowKeys = ref(0);
-    const selectedRows = ref([]);
-    const searchData = ref("");
+    const crud = computed(() => state.crud.data);
+    const isLoading = computed(() => state.crud.loading);
+    const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    // const { state, dispatch } = useStore();
+    // const router = useRouter();
 
-    const showModal = () => {
-      isModalVisible.value = true;
-    };
+    // if (!state.auth.isAuthenticated) {
+    //   router.push({ name: "login" });
+    // }
 
-    const handleCancel = () => {
-      isModalVisible.value = false;
-    };
+    console.log(authHeader());
 
-    const handleSearch = () => {
-      dispatch("contactSearchData", searchData.value);
-    };
-    const csvData = [["id", "name", "email", "company", "joining", "position"]];
-    const csvJsonData = [
-      {
-        id: "id",
-        name: "name",
-        email: "email",
-        company: "company",
-        joining: "joining",
-        position: "position",
-      },
-    ];
-    const usersTableData = computed(() =>
-      users.value
-        .sort((a, b) => {
-          return b.time - a.time;
-        })
-        .map((user) => {
-          const { id, name, designation, email, joining, company } = user;
-          return {
-            key: id,
-            user: name,
-            email,
-            company,
-            joining: joining,
-            position: designation,
-          };
-        })
-    );
-
-    const columns = [
-      {
-        title: "First Name",
-        dataIndex: "fullName",
-        key: "id",
-      },
-      {
-        title: "Organization",
-        dataIndex: "org_types_id",
-        key: "id",
-      },
-      {
-        title: "Phone Number",
-        dataIndex: "phone_no",
-        key: "id",
-      },
-    ];
-
-    const rowSelection = {
-      onChange: (keys, rows) => {
-        selectedRowKeys.value = keys;
-        selectedRows.value = rows;
-      },
-      getCheckboxProps: (record) => ({
-        disabled: record.name === "Disabled User", // Column configuration not to be checked
-        name: record.name,
-      }),
-    };
-
-    const warning = () => {
-      Modal.warning({
-        title: "Please Select your Required Rows!",
-      });
-    };
-
-    const fileType =
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
-    const xlsxExtension = ".xlsx";
-
-    const exportToXLSX = (inputData, fileName) => {
-      const ws = XLSX.utils.json_to_sheet(inputData);
-      const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
-      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const data = new Blob([excelBuffer], { type: fileType });
-      FileSaver.saveAs(data, fileName + xlsxExtension);
-      isModalVisible.value = false;
-    };
-
-    const updateFileName = (e) => {
-      fileName.value = e.target.value;
-    };
-    const updateFileType = (value) => {
-      convertedTo.value = value;
-    };
+    const api_url = UserService;
+    console.log(api_url);
 
     onMounted(async () => {
       try {
@@ -245,65 +103,54 @@ const Import = {
           headers: authHeader(),
         });
         const data = await response.json();
-
+        dataSource.value = data.data;
         console.log(data.data);
-
-        const updatedData = data.data.map((user) => {
-          let fullName = `${user.first_name} ${user.last_name}`;
-
-          function toTitleCase(str) {
-            return str.replace(/\w\S*/g, function (txt) {
-              return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            });
-          }
-
-          fullName = toTitleCase(fullName);
-          return {
-            ...user,
-            fullName,
-          };
-        });
-
-        // console.log(updatedData);
-
-        dataSource.value = updatedData;
       } catch (error) {
         console.error(error);
       }
     });
 
-    watchEffect(() => {
-      selectedRows.value.map((member) => {
-        const { key, user, position, email, company } = member;
-        csvJsonData.push({ id: key, name: user, email, company, position });
-        return csvData.push([key, user, email, company, position]);
-      });
+    const handleDelete = (id) => {
+      const confirm = window.confirm("Are you sure delete this?");
+      if (confirm) {
+        dispatch("axiosDataDelete", {
+          id,
+          getData: () => {
+            dispatch("axiosCrudGetData");
+          },
+        });
+      }
+      return false;
+    };
+
+    const formState = reactive({
+      searchItem: "",
     });
 
-    return {
-      columns,
-      exportToXLSX,
-      updateFileName,
-      updateFileType,
-      fileType,
-      xlsxExtension,
-      rowSelection,
-      warning,
-      usersTableData,
-      handleSearch,
-      searchData,
-      handleCancel,
-      showModal,
-      fileName,
-      convertedTo,
+    const onSelectChange = (selectedRowKey) => {
+      selectedRowKeys.value = selectedRowKey;
+    };
+
+    const rowSelection = {
       selectedRowKeys,
-      selectedRows,
-      isModalVisible,
-      csvData,
-      csvJsonData,
+      onChange: onSelectChange,
+    };
+
+    return {
+      crud,
+      isLoading,
+      selectedRowKeys,
+      handleDelete,
+      rowSelection,
+      onSelectChange,
+      dataSource,
+      columns,
+      formState,
     };
   },
-};
+});
 
-export default Import;
+export default DragAndDropTable;
+
 </script>
+  

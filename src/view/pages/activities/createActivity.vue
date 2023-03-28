@@ -304,7 +304,7 @@ const AddNew = defineComponent({
 
       console.log(localStorage.getItem("activity"));
 
-      router.push("activity-confirm"); 
+      // router.push("activity-confirm"); 
 
       fetch(API_URL, {
         method: "POST",
