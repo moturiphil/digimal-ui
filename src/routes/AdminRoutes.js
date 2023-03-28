@@ -113,7 +113,15 @@ const routes = [
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
           ),
       },
+
       {
+        path: "activity-confirm",
+        name: "activity-confirm",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/confirmActivity.vue"
+          ),
+      },      {
         path: "activity-create",
         name: "activity-create",
         component: () =>
