@@ -149,18 +149,35 @@
           },
         });
         const data = await response.json();
-        this.counties = data.data;
+        this.counties = data;
+        // console.log(data);
         this.loading = false;
       };
 
       onMounted(() => {
         getCounties();
+        getSubCounties();
       });
 
       //sub-counties
-      const getSubCounties = async (county_id) => { //7
-        console.log(county_id);
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/getcounty/${county_id}/subcounties`, {
+      // const getSubCounties = async (county_id) => { //7
+      //   console.log(county_id);
+      //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/getcounty/${county_id}/subcounties`, {
+      //     method: "GET",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       ...authHeader(),
+      //     },
+      //   });
+      //   const data = await response.json();
+      //   console.log(data);
+      //   this.sub_counties=data.county.sub_counties;
+      // };
+
+      // sub_county
+
+      const getSubCounties = async () => {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/sub_counties_list`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -168,7 +185,10 @@
           },
         });
         const data = await response.json();
-        this.sub_counties=data.county.sub_counties;
+        // console.log('check this out' + data);
+        console.log(data.data);
+        this.sub_counties = data.data;
+        this.loading = false;
       };
 
       //wards

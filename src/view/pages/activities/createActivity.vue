@@ -59,6 +59,27 @@
                       </a-select>
                     </a-form-item>
 
+                    <a-form-item name="sub_county" label="Sub County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Sub-County"
+                        v-model:value="formState.sub_county"
+                      >
+                        <!-- v-on:change="getWards($event)" -->
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="scounty in sub_counties"
+                          :value="scounty.id"
+                          :key="scounty.id"
+                          >{{ scounty.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
+
                     <a-form-item name="campaign_id" label="Campaign">
                       <a-select
                         name="basic-select"
@@ -86,14 +107,14 @@
                       />
                     </a-form-item>
 
-                    <a-form-item name="end_date" label="Activity End Date">
+                    <!-- <a-form-item name="end_date" label="Activity End Date">
                       <a-date-picker
                         :style="{ width: '100%' }"
                         v-model:value="formState.end_date"
                         :format="dateFormat"
                       />
-                    </a-form-item>
-                    <a-form-item
+                    </a-form-item> -->
+                    <!-- <a-form-item
                       name="payable_travel_days"
                       label="Payable Travel Days"
                     >
@@ -103,7 +124,7 @@
                         type="number"
                         default-value="1"
                       />
-                    </a-form-item>
+                    </a-form-item> -->
                     <!-- no of officers as number -->
                     <a-form-item
                       name="number_of_officers"
@@ -122,6 +143,7 @@
                         mode="multiple"
                         v-model:value="formState.activity_facilitator"
                         placeholder="Please select"
+                        :disabled="isOfficerSelectionDisabled"
                         :options="
                           (() => {
                             return users.map(
@@ -137,17 +159,19 @@
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <sdButton
-                        @click="showConfirmModal(formState.activity_facilitator)"
+                      <!-- <sdButton
+                        @click="
+                          showConfirmModal(formState.activity_facilitator)
+                        "
                         size="small"
                         type="success"
                       >
                         <sdFeatherIcons type="check-square" size="17" />
                         &nbsp;&nbsp; Confirm Officers
-                      </sdButton>
+                      </sdButton> -->
                       &nbsp;&nbsp;&nbsp;
                       <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                        {{ isLoading ? "Loading..." : "Confirm" }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -165,18 +189,26 @@ import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-import { notification } from 'ant-design-vue';
+import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import { Modal } from "ant-design-vue";
+// import { Modal } from "ant-design-vue";
 
 const dateFormat = "YYYY-MM-DD";
 
 const AddNew = defineComponent({
   name: "AddNew",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
+  computed : {
+    isOfficerSelectionDisabled() {
+      return (
+        this.formState.activity_facilitator.length >=
+        this.formState.number_of_officers
+      );
+    },
+  },
   data() {
     const { state } = useStore();
 
@@ -185,12 +217,13 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const router = useRouter();
     const join = ref("");
-    const users = ref([])
+    const users = ref([]);
 
-    const { counties,campaigns} = reactive({
-        counties: [],
-        campaigns: [],
-      });
+    const { counties, campaigns, sub_counties } = reactive({
+      counties: [],
+      campaigns: [],
+      sub_counties: [],
+    });
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createActivity`;
 
@@ -205,54 +238,73 @@ const AddNew = defineComponent({
       activity_facilitator: [],
     });
 
-
     //counties
     const getCounties = async () => {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      console.log(data);
+      this.counties = data;
+    };
+
+    const getSubCounties = async () => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/sub_counties_list`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
-        });
-        const data = await response.json();
-        console.log('................................................................................................')
-        console.log(data);
-        this.counties = data;
+        }
+      );
+      const data = await response.json();
+      // console.log('check this out' + data);
+      console.log(data.data);
+      this.sub_counties = data.data;
+      this.loading = false;
     };
 
     //campaigns
     const getCampaigns = async () => {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/campaign_all`, {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/campaign_all`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
-        });
-        const data = await response.json();
-        this.campaigns = data.data;
+        }
+      );
+      const data = await response.json();
+      this.campaigns = data.data;
     };
 
     // const handleSelect = (values)
     const handleSubmit = (values) => {
-
       values = {
         name: values.name,
         county_id: values.county_id,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
-        end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
-        payable_travel_days: values.payable_travel_days,
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
       };
-      console.log({values})
+      console.log('this are the values...............................................................................');
+
+      console.log('this are the values' + values);
 
       localStorage.setItem("activity", JSON.stringify(values));
 
-      console.log(localStorage.getItem("activity"))
+      console.log(localStorage.getItem("activity"));
 
+      router.push("activity-confirm"); 
 
       fetch(API_URL, {
         method: "POST",
@@ -263,37 +315,35 @@ const AddNew = defineComponent({
         body: JSON.stringify(values),
       })
         .then((response) => response.json())
-        .then(({success, data}) => {
-          if(success){
-            router.push("activity-view")
-            notification['success']({
-                message: 'Activity Created',
-                description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
-                duration: 5.5
-          });
+        .then(({ success, data }) => {
+          if (success) {
+            router.push("activity-view");
+            notification["success"]({
+              message: "Activity Created",
+              description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+              duration: 5.5,
+            });
           }
-          })
+        })
         .catch((error) => {
           console.error("Error:", error);
         });
     };
 
     onMounted(() => {
-        axios
+      axios
         .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
-        .then(function ({data}) {
-          console.log({data: data.data});
-          users.value = data.data
+        .then(function ({ data }) {
+          console.log({ data: data.data });
+          users.value = data.data;
         })
         .catch(function (error) {
           console.log(error);
         });
-
-        getCounties();
-
-        getCampaigns();
-
-    })
+      getCounties();
+      getSubCounties();
+      getCampaigns();
+    });
 
     return {
       isLoading,
@@ -301,6 +351,7 @@ const AddNew = defineComponent({
       users,
       isFileLoading,
       counties,
+      sub_counties,
       campaigns,
       handleSubmit,
       dateFormat,
@@ -308,97 +359,6 @@ const AddNew = defineComponent({
       join,
       participants: [],
     };
-  },
-  methods: {
-    showModal() {
-      this.visible = true;
-    },
-    showConfirmModal(activity_facilitator) {
-      console.log( activity_facilitator);
-      Modal.success({
-        title: "Activity Officers",
-        content: (
-          <div>
-            <p>Confirm Event Participants</p>
-            <p> {{ activity_facilitator }} </p>
-          </div>
-        ),
-        okText: "Register",
-        onOk: async () => {
-          try {
-            // Send form data to post endpoint
-            // await handleSubmit();
-
-            // Show success message
-            Modal.success({
-              title: "Success",
-              content: "You have been registered for the activity",
-            });
-          } catch (error) {
-            Modal.error({
-              title: "Error",
-              content: error.message,
-            });
-          }
-        },
-        style: {
-          float: "center",
-          display: "grid",
-          placeContent: "center",
-        },
-      });
-    },
-
-    handleOk() {
-      this.confirmLoading = true;
-      setTimeout(() => {
-        this.visible = false;
-        this.colorVisible = false;
-        this.confirmLoading = false;
-      }, 2000);
-    },
-    handleCancel() {
-      this.visible = false;
-      this.colorVisible = false;
-    },
-    changeType(type) {
-      this.modalType = type;
-    },
-    // info() {
-    //   //const h = this.$createElement;
-    //   Modal.info({
-    //     title: 'This is a notification message',
-    //     content: h('div', {}, [h('p', 'some messages...some messages...'), h('p', 'some messages...some messages...')]),
-    //     onOk() {
-    //       console.log('ok');
-    //     },
-    //   });
-    // },
-    success() {
-      Modal.success({
-        title: "This is a success message",
-        // JSX support
-        content: (
-          <div>
-            <p>some messages...some messages...</p>
-          </div>
-        ),
-      });
-    },
-
-    error() {
-      Modal.error({
-        title: "This is an error message",
-        content: "some messages...some messages...",
-      });
-    },
-
-    warning() {
-      Modal.warning({
-        title: "This is a warning message",
-        content: "some messages...some messages...",
-      });
-    },
   },
   beforeRouteEnter(to, from, next) {
     if (!localStorage.getItem("user")) {
