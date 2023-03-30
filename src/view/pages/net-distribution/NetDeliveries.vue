@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Distribution Posts">
+    <sdPageHeader title="Nets Delivered">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
@@ -42,39 +42,29 @@ import authHeader from "../../../services/auth-header";
 
 const columns = [
   {
-    title: "Distribution Id",
-    dataIndex: "id",
+    title: "Distribution Post",
+    dataIndex: "post_id",
     key: "id",
   },
   {
-    title: "Distribution Post",
-    dataIndex: "name",
-    key: "name",
+    title: "No of Nets",
+    dataIndex: "number_of_nets",
+    key: "id",
   },
   {
-    title: "Distribution Post Code",
-    dataIndex: "post_code",
-    key: "post_code",
+    title: "Date Received",
+    dataIndex: "date_received",
+    key: "date_received",
   },
   {
-    title: "Supervisor Id",
-    dataIndex: "post_supervisor_user_id",
-    key: "post_supervisor_user_id",
+    title: "Reveived From",
+    dataIndex: "received_from",
+    key: "received_from",
   },
   {
-    title: "Distribution Start Date",
-    dataIndex: "distribution_start_date",
-    key: "distribution_start_date",
-  },
-  {
-    title: "Distribution End Date",
-    dataIndex: "distribution_end_date",
-    key: "distribution_end_date",
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "action",
+    title: "Received By",
+    dataIndex: "received_by",
+    key: "received_by",
   },
 ];
 
@@ -97,7 +87,7 @@ const DragAndDropTable = defineComponent({
     onMounted(async () => {
       try {
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/posts_data`,
+          `${process.env.VUE_APP_BASE_URL}/net_deliveries`,
           {
             method: "GET",
             headers: authHeader(),
