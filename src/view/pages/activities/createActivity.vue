@@ -20,9 +20,9 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="name" label="Activity Name">
+                    <!-- <a-form-item name="activity_id" label="Activity Name">
                       <a-select
-                        v-model:value="formState.name"
+                        v-model:value="formState.activity_id"
                         placeholder="Please select"
                       >
                         <a-select-option value="1"
@@ -38,6 +38,25 @@
                           >Activity Test 4</a-select-option
                         >
                       </a-select>
+                    </a-form-item> -->
+
+                    <a-form-item name="activity_id" label="Activity Name">
+                      <a-select
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Activity"
+                        v-model:value="formState.activity_id"
+                      >
+                        <a-select-option value=""
+                          >Select an Activity</a-select-option
+                        >
+                        <a-select-option
+                          v-for="activity in activities"
+                          :value="activity.id"
+                          :key="activity.id"
+                          >{{ activity.name }}</a-select-option
+                        >
+                      </a-select>
                     </a-form-item>
 
                     <a-form-item name="county_id" label="County">
@@ -47,7 +66,7 @@
                         placeholder="Select County"
                         v-model:value="formState.county_id"
                       >
-                        <a-select-option value="" disabled
+                        <a-select-option value=""
                           >Select a county</a-select-option
                         >
                         <a-select-option
@@ -59,13 +78,13 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="sub_county" label="Sub County">
+                    <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
-                        v-model:value="formState.sub_county"
+                        v-model:value="formState.sub_county_id"
                       >
                         <!-- v-on:change="getWards($event)" -->
                         <a-select-option value=""
@@ -114,7 +133,7 @@
                         :format="dateFormat"
                       />
                     </a-form-item> -->
-                    <!-- <a-form-item
+                    <a-form-item
                       name="payable_travel_days"
                       label="Payable Travel Days"
                     >
@@ -124,7 +143,7 @@
                         type="number"
                         default-value="1"
                       />
-                    </a-form-item> -->
+                    </a-form-item>
                     <!-- no of officers as number -->
                     <a-form-item
                       name="number_of_officers"
@@ -135,6 +154,7 @@
                         placeholder="No of Officers"
                         type="number"
                         min="0"
+                        :value="computedPayableTravelDays"
                       />
                     </a-form-item>
 
@@ -159,7 +179,7 @@
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <!-- <sdButton
+                      <sdButton
                         @click="
                           showConfirmModal(formState.activity_facilitator)
                         "
@@ -168,10 +188,10 @@
                       >
                         <sdFeatherIcons type="check-square" size="17" />
                         &nbsp;&nbsp; Confirm Officers
-                      </sdButton> -->
+                      </sdButton>
                       &nbsp;&nbsp;&nbsp;
                       <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Confirm" }}
+                        {{ isLoading ? "Loading..." : "Submit" }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -191,44 +211,45 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
-
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
-// import { Modal } from "ant-design-vue";
-
+import { Modal } from "ant-design-vue";
 const dateFormat = "YYYY-MM-DD";
-
 const AddNew = defineComponent({
   name: "AddNew",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
-  computed : {
+  computed: {
     isOfficerSelectionDisabled() {
       return (
         this.formState.activity_facilitator.length >=
         this.formState.number_of_officers
       );
     },
+    computedPayableTravelDays() {
+      const activity = this.activities.find(
+        activity => activity.id === this.formState.activity_id
+      );
+      console.log(activity);
+      return activity ? activity.payable_travel_days : 1;
+    }
   },
   data() {
     const { state } = useStore();
-
     const isLoading = computed(() => state.crud.loading);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const router = useRouter();
     const join = ref("");
     const users = ref([]);
-
-    const { counties, campaigns, sub_counties } = reactive({
+    const { activities, counties, campaigns, sub_counties } = reactive({
+      activities: [],
       counties: [],
       campaigns: [],
       sub_counties: [],
     });
-
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/createActivity`;
-
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/create_activity_with_facilitator`;
     const formState = reactive({
-      name: "",
+      activity_id: "",
       county_id: "",
       campaign_id: "",
       start_date: "",
@@ -238,6 +259,21 @@ const AddNew = defineComponent({
       activity_facilitator: [],
     });
 
+    //get activities list
+
+    const getActivityList = async () => {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/activity_list`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      console.log(data.data);
+      this.activities = data.data;
+      // console.log(data);
+    };
     //counties
     const getCounties = async () => {
       const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
@@ -252,6 +288,7 @@ const AddNew = defineComponent({
       this.counties = data;
     };
 
+    //get sub_counties
     const getSubCounties = async () => {
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/sub_counties_list`,
@@ -269,7 +306,6 @@ const AddNew = defineComponent({
       this.sub_counties = data.data;
       this.loading = false;
     };
-
     //campaigns
     const getCampaigns = async () => {
       const response = await fetch(
@@ -285,26 +321,23 @@ const AddNew = defineComponent({
       const data = await response.json();
       this.campaigns = data.data;
     };
-
     // const handleSelect = (values)
     const handleSubmit = (values) => {
       values = {
-        name: values.name,
+        activity_list_id: values.activity_id,
         county_id: values.county_id,
+        // sub_county_id: values.sub_county_id,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
+        // end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
+        // payable_travel_days: values.payable_travel_days,
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
       };
-      console.log('this are the values...............................................................................');
+      console.log({ values });
 
-      console.log('this are the values' + values);
 
-      localStorage.setItem("activity", JSON.stringify(values));
 
-      console.log(localStorage.getItem("activity"));
-
-      router.push("activity-confirm"); 
 
       fetch(API_URL, {
         method: "POST",
@@ -316,6 +349,7 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success, data }) => {
+          console.log(data);
           if (success) {
             router.push("activity-view");
             notification["success"]({
@@ -329,7 +363,6 @@ const AddNew = defineComponent({
           console.error("Error:", error);
         });
     };
-
     onMounted(() => {
       axios
         .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
@@ -341,15 +374,16 @@ const AddNew = defineComponent({
           console.log(error);
         });
       getCounties();
-      getSubCounties();
       getCampaigns();
+      getSubCounties();
+      getActivityList();
     });
-
     return {
       isLoading,
       apiUrl,
       users,
       isFileLoading,
+      activities,
       counties,
       sub_counties,
       campaigns,
@@ -360,14 +394,58 @@ const AddNew = defineComponent({
       participants: [],
     };
   },
+  methods: {
+    showModal() {
+      this.visible = true;
+    },
+    showConfirmModal(activity_facilitator) {
+        console.log(activity_facilitator);
+        Modal.success({
+          title: "Activity Officers",
+          content: (
+            <div>
+              <p>Confirm Officers Participating</p>
+              <ul>
+                {activity_facilitator.map((facilitator) => (
+                  <li key={facilitator}>{facilitator}</li>
+                ))}
+              </ul>
+            </div>
+          ),
+          okText: "Register",
+          onOk: async () => {
+            // handle form submission here rk
+          },
+          style: {
+            float: "center",
+            display: "grid",
+            placeContent: "center",
+          },
+        });
+      },
+    handleOk() {
+      this.confirmLoading = true;
+      setTimeout(() => {
+        this.visible = false;
+        this.colorVisible = false;
+        this.confirmLoading = false;
+      }, 2000);
+    },
+    handleCancel() {
+      this.visible = false;
+      this.colorVisible = false;
+    },
+    changeType(type) {
+      this.modalType = type;
+    },
+  },
   beforeRouteEnter(to, from, next) {
-    if (!localStorage.getItem("user")) {
+    if (!sessionStorage.getItem("user")) {
       next("/auth/login");
     } else {
       next();
     }
   },
 });
-
 export default AddNew;
 </script>

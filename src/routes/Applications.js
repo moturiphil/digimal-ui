@@ -63,6 +63,11 @@ export default [
         path: 'distribution',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DistributionPosts.vue'),
       },
+      {
+        name: 'delivered',
+        path: 'delivered',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/NetDeliveries.vue'),
+      },
       // {
       //   name: 'distribution-post',
       //   path: 'distribution/post',

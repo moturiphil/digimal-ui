@@ -58,32 +58,53 @@
             >Nets Distribution</span
           ></template
         >
-        <a-menu-item @click="toggleCollapsed" key="net-distribution">
-          <router-link to="/nets/distribution"> Distribution Posts </router-link>
-        </a-menu-item>
-        <!-- <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/nets/distribution/post">
-            Distribution Post
-          </router-link>
-        </a-menu-item> -->
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/activities/village-create">
-            Create Village
-          </router-link>
-        </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="post-create">
           <router-link to="/nets/post-create">
             Create Post
           </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="net-distribution">
+          <router-link to="/nets/distribution"> Distribution Posts </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="receive-nets">
           <router-link to="/nets/receive-nets">
             Receive Nets
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetChart">
+          <router-link to="/nets/delivered">
+            Nets Delivered
+          </router-link>
+        </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
           <router-link to="/activities/activity-view"> List Activity </router-link>
         </a-menu-item> -->
+      </a-sub-menu>
+      <a-sub-menu key="org-units">
+        <template v-slot:title
+          >
+          <span
+            >Organization Units</span
+          ></template
+        >
+
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/activities/village-create">
+            Create Location
+          </router-link>
+        </a-menu-item>
+
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/activities/village-create">
+            Create Sub-Location
+          </router-link>
+        </a-menu-item>
+        
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/activities/village-create">
+            Create Village
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
       <a-sub-menu key="house-holds">

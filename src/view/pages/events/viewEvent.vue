@@ -47,7 +47,6 @@
                           <!-- {path: '', query{id: record.id}} -->
                           <!-- :to="`/event/view/${record.id}`" -->
                           <router-link
-                            
                             :to="{path: `/event/view/${record.id}`, query: {id: record.event_code}}"
                             class="btn-icon"
                             type="info"
