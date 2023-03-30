@@ -142,7 +142,6 @@
                         placeholder="Payable Travel Days"
                         type="number"
                         default-value="1"
-                        disabled
                       />
                     </a-form-item>
                     <!-- no of officers as number -->
@@ -248,7 +247,7 @@ const AddNew = defineComponent({
       campaigns: [],
       sub_counties: [],
     });
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/createActivity`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/create_activity_with_facilitator`;
     const formState = reactive({
       activity_id: "",
       county_id: "",
@@ -325,7 +324,7 @@ const AddNew = defineComponent({
     // const handleSelect = (values)
     const handleSubmit = (values) => {
       values = {
-        name: values.activity_id,
+        activity_list_id: values.activity_id,
         county_id: values.county_id,
         // sub_county_id: values.sub_county_id,
         campaign_id: values.campaign_id,
@@ -350,6 +349,7 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success, data }) => {
+          console.log(data);
           if (success) {
             router.push("activity-view");
             notification["success"]({
