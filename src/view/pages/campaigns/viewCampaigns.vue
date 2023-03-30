@@ -1,155 +1,111 @@
 <template>
-  <RecordViewWrapper>
-    <sdPageHeader title="MassNet Campaigns">
-      <template #subTitle>
-        <sdButton class="btn-add_new" size="default" type="success">
-          <router-link to="/campaigns/create-campaign">
-            <sdFeatherIcons type="plus" size="14" /> Start New
-            Campaign</router-link
-          >
-        </sdButton>
+  <div>
+    <sdPageHeader title="Campaigns">
+      <template v-slot:buttons>
+        <div class="page-header-actions">
+          <!-- <sdCalendarButton />
+          <sdExportButton />
+          <sdShareButton /> -->
+          <sdButton class="btn-add_new" size="default" type="success">
+            <router-link to="/campaigns/create-campaign">
+              <sdFeatherIcons type="plus" size="14" /> Start New
+              Campaign</router-link
+            >
+          </sdButton>
+        </div>
       </template>
-      <template #buttons>
-        <div class="search-box">
-          <span class="search-icon">
-            <sdFeatherIcons type="search" size="14" />
-          </span></div
-      ></template>
     </sdPageHeader>
     <Main>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
-            </div>
-
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :rowSelection="rowSelection"
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
-                  :dataSource="dataSource"
-                  :columns="columns"
+      <a-row :gutter="25">
+        <a-col :xs="24">
+          <sdCards size="default">
+            <div class="columnCardsWrapper">
+              <a-row :gutter="30">
+                <a-col
+                  :sm="8"
+                  :xs="24"
+                  v-for="(item, index) in dataSource"
+                  :key="index"
                 >
-                  <template #actions="{ record }">
-                    <td>
-                      <div class="table-actions">
-                        <sdButton
-                        >
-                          <router-link
-                            :to="`/campaigns/view/${record.id}`"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View
-                          </router-link>
-                          <!-- <sdFeatherIcons type="edit" size="16" /> -->
-                          <!-- &nbsp;&nbsp; View -->
-                        </sdButton>
-                        <!-- <sdButton
-                          class="btn-icon"
-                          type="info"
-                          :to="`/campaigns/${record.id}/edit`"
-                          shape="circle"
-                        >
-                          <sdFeatherIcons type="edit" size="16" />
-                          &nbsp;&nbsp; Edit
-                        </sdButton>
-                        <sdButton
-                          class="btn-icon"
-                          type="danger"
-                          @click="handleDelete(record.id)"
-                          shape="circle"
-                        >
-                          <sdFeatherIcons type="trash-2" size="16" />
-                          &nbsp;&nbsp; Delete
-                        </sdButton> -->
-                      </div>
-                    </td>
-                  </template>
-                </a-table>
-              </TableWrapper>
+                  <CardStyleWrapper>
+                    <sdCards :border="false" :title="item.name">
+                      <p>Start Date: {{ item.start_date }}</p>
+                      <p>End Date: {{ item.end_date }}</p>
+                      <template #actions="{ item }">
+                        <td>
+                          <div class="table-actions">
+                            <sdButton>
+                              <router-link
+                                :to="`/campaigns/view/${item.id}`"
+                                class="btn-icon"
+                                type="info"
+                                shape="circle"
+                              >
+                                <sdFeatherIcons type="eye" size="16" />
+                                &nbsp;&nbsp; View
+                              </router-link>
+                            </sdButton>
+                          </div>
+                        </td>
+                      </template>
+                    </sdCards>
+                  </CardStyleWrapper>
+                </a-col>
+              </a-row>
             </div>
           </sdCards>
         </a-col>
       </a-row>
-      <a-col :xs="24">
-        <DragAndDropTable />
-      </a-col>
     </Main>
-  </RecordViewWrapper>
+  </div>
 </template>
+
 <script>
-import { RecordViewWrapper } from "./style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
+import { CardStyleWrapper } from "../../uiElements/ui-elements-styled";
+import { defineComponent, computed, onMounted, ref, reactive } from "vue";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-// import axios from "axios";
 import authHeader from "../../../services/auth-header";
-// import { inject } from "vue";
-// import { useRouter } from "vue-router";
-// import DragAndDropTable from '../../../view/table/DragTable.vue';
 
-const columns = [
-  {
-    title: "Campaign Name",
-    dataIndex: "name",
-    key: "id",
+export default defineComponent({
+  name: "Cards",
+  components: {
+    Main,
+    CardStyleWrapper,
   },
-  {
-    title: "Campaign Start Date",
-    dataIndex: "start_date",
-    key: "id",
+  data() {
+    return {};
   },
-  {
-    title: "Campaign End Date",
-    dataIndex: "end_date",
-    key: "id",
-  },
-  {
-    title: "Actions",
-    dataIndex: "",
-    key: "actions",
-    slots: { customRender: "actions" },
-  },
-];
+  methods: {
+    onPanelChange(value, mode) {
+      console.log(value, mode);
+    },
 
-const ViewPage = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
-
+    getMonthData(value) {
+      if (value.month() === 8) {
+        return 1394;
+      }
+    },
+  },
   setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-    // const apiEndpoint = inject('apiEndpoint')
-    // const { state, dispatch } = useStore();
-    // const router = useRouter();
-
-    // if (!state.auth.isAuthenticated) {
-    //   router.push({ name: "login" });
-    // }  
-    // const API_URL = process.env.API_URL;
-
-    console.log(authHeader());
 
     onMounted(async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/campaign_all`, 
-        // const re
-        
-        // const response = await fetch( apiEndpoint + "campaign_all", 
-        {
-          method: "GET",
-          headers: authHeader(),
-        });
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/campaign_all`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
         const data = await response.json();
         dataSource.value = data.data;
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
@@ -189,7 +145,6 @@ const ViewPage = defineComponent({
       rowSelection,
       onSelectChange,
       dataSource,
-      columns,
       formState,
     };
   },
@@ -201,6 +156,4 @@ const ViewPage = defineComponent({
     }
   },
 });
-
-export default ViewPage;
 </script>

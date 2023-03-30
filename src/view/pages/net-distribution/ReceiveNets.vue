@@ -60,10 +60,10 @@
                         v-if="!loading"
                         placeholder="Select Received By"
                       >
-                        <a-select-option value="1"
+                        <a-select-option value="KEMSA"
                           >KEMSA</a-select-option
                         >
-                        <a-select-option value="2"
+                        <a-select-option value="MEDS"
                           >MEDS</a-select-option
                         >
                       </a-select>

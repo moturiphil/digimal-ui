@@ -129,12 +129,63 @@ const routes = [
             /* webpackChunkName: "fireStore-add" */ "../view/pages/activities/createActivity.vue"
           ),
       },
+      // {
+      //   path: "location-create",
+      //   name: "location-create",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createLocation.vue"
+      //     ),
+      // },
+      // {
+      //   path: "sub-location-create",
+      //   name: "sub-location-create",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createSubLocation.vue"
+      //     ),
+      // },
+      // {
+      //   path: "village-create",
+      //   name: "village-create",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
+      //     ),
+      // },
+    ],
+  },
+
+  {
+    path: "/org-units",
+    name: "org-units",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      {
+        path: "location-create",
+        name: "location-create",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createLocation.vue"
+          ),
+      },
+      {
+        path: "sub-location-create",
+        name: "sub-location-create",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createSubLocation.vue"
+          ),
+      },
       {
         path: "village-create",
         name: "village-create",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-add" */ "../view/pages/villages/createVillage.vue"
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
           ),
       },
     ],

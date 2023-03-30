@@ -73,7 +73,7 @@
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="widgetChart">
           <router-link to="/nets/delivered">
-            Nets Delivered
+            Nets Received
           </router-link>
         </a-menu-item>
         <!-- <a-menu-item @click="toggleCollapsed" key="widgetsCard">
@@ -89,19 +89,18 @@
         >
 
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/activities/village-create">
+          <router-link to="/org-units/location-create">
             Create Location
           </router-link>
         </a-menu-item>
-
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/activities/village-create">
+          <router-link to="/org-units/sub-location-create">
             Create Sub-Location
           </router-link>
         </a-menu-item>
         
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
-          <router-link to="/activities/village-create">
+          <router-link to="/org-units/village-create">
             Create Village
           </router-link>
         </a-menu-item>
