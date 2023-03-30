@@ -46,6 +46,19 @@
                         </a-select>
                       </a-form-item>
 
+                      <a-form-item name="ward_id"  label="Ward">
+                        <a-select
+                          size="large"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select Ward"
+                          v-model:value="formState.ward_id"
+                        >
+                        <a-select-option value="">Select an option</a-select-option>
+                        <a-select-option v-for="ward in wards" :value="ward.id" :key="ward.id">{{ward.name}}</a-select-option>
+                        </a-select>
+                      </a-form-item>
+
                       <a-form-item name="location"  label="Location">
                         <a-select
                           size="large"
@@ -72,18 +85,6 @@
                         </a-select>
                       </a-form-item>
 
-                      <a-form-item name="ward_id"  label="Ward">
-                        <a-select
-                          size="large"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select Ward"
-                          v-model:value="formState.ward_id"
-                        >
-                        <a-select-option value="">Select an option</a-select-option>
-                        <a-select-option v-for="ward in wards" :value="ward.id" :key="ward.id">{{ward.name}}</a-select-option>
-                        </a-select>
-                      </a-form-item>
                       <a-form-item name="name"  label="Village Name">
                         <a-input
                           v-model:value="formState.name"

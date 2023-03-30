@@ -63,8 +63,28 @@ const columns = [
     key: "id",
   },
   {
+    title: "Middle Name",
+    dataIndex: "middle_name",
+    key: "id",
+  },
+  {
     title: "Last Name",
     dataIndex: "last_name",
+    key: "id",
+  },
+  {
+    title: "Level",
+    dataIndex: "level_id",
+    key: "id",
+  },
+  {
+    title: "Organization",
+    dataIndex: "org_types_id",
+    key: "id",
+  },
+  {
+    title: "Role",
+    dataIndex: "role_id",
     key: "id",
   },
   {

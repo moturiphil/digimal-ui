@@ -56,7 +56,7 @@
                       </a-form-item>
                       <a-form-item name="received_from"  label="Received From">
                         <a-select
-                        v-model:value="formState.received_by"
+                        v-model:value="formState.received_from"
                         v-if="!loading"
                         placeholder="Select Received By"
                       >
@@ -69,7 +69,7 @@
                       </a-select>
                       </a-form-item>
                     
-                      <!-- <a-form-item name="received_by"  label="Received By">
+                      <a-form-item name="received_by"  label="Received By">
                       <a-select
                         v-model:value="formState.received_by"
                         v-if="!loading"
@@ -84,7 +84,7 @@
                           {{ user.last_name }} - {{ user.id_no }}
                         </a-select-option>
                       </a-select>
-                    </a-form-item> -->
+                    </a-form-item>
   
                       <div class="record-form-actions text-right">
                         <sdButton size="default" htmlType="Save" type="success" >
@@ -107,7 +107,9 @@
   import { useStore } from "vuex";
   import { reactive, ref, defineComponent, computed, onMounted } from "vue";
   // import axios from "axios";
+  import { notification } from "ant-design-vue";
   import authHeader from "../../../services/auth-header";
+  import { useRouter } from "vue-router";
   
   const dateFormat = "YYYY-MM-DD";
   
@@ -121,6 +123,7 @@
       const isFileLoading = computed(() => state.crud.fileLoading);
       const join = ref("");
       const API_URL = `${process.env.VUE_APP_BASE_URL}/net_deliveries`;
+      const router = useRouter();
   
       const formState = reactive({
             post_id:"",
@@ -178,6 +181,7 @@
             received_from:values.received_from,
             received_by: values.received_by,
         };
+        console.log(values)
         fetch(API_URL, {
           method: "POST",
           headers: {
@@ -187,8 +191,16 @@
           body: JSON.stringify(values),
         })
           .then((response) => response.json())
-          .then((data) => {
+          .then(({success, data}) => {
             console.log(data);
+            if (success) {
+            router.push("delivered");
+            notification["success"]({
+              message: "Nets Received",
+              description: "Nets have been successfully delivered",
+              duration: 5.5,
+            });
+          }
           })
           .catch((error) => {
             console.error("Error:", error);
