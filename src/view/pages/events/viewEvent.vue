@@ -131,7 +131,7 @@ const ViewPage = defineComponent({
     return {
       visible: false,
       confirmLoading: false,
-      modalType: "primary",
+      modalType: "success",
       colorVisible: false,
       eventCode: "",
     };
@@ -207,16 +207,6 @@ const ViewPage = defineComponent({
     changeType(type) {
       this.modalType = type;
     },
-    // info() {
-    //   //const h = this.$createElement;
-    //   Modal.info({
-    //     title: 'This is a notification message',
-    //     content: h('div', {}, [h('p', 'some messages...some messages...'), h('p', 'some messages...some messages...')]),
-    //     onOk() {
-    //       console.log('ok');
-    //     },
-    //   });
-    // },
     success() {
       Modal.success({
         title: "This is a success message",

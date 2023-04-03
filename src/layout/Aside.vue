@@ -8,7 +8,7 @@
     <a-menu-item-group key="pages">
         <a-menu-item @click="toggleCollapsed" key="widgetDashboard">
           <router-link to="/">
-            Dashboard
+            <sdFeatherIcons type="menu" />&nbsp; &nbsp; Dashboard
           </router-link>
         </a-menu-item>
       <a-sub-menu key="widgets">
@@ -83,6 +83,8 @@
       <a-sub-menu key="org-units">
         <template v-slot:title
           >
+          <sdFeatherIcons type="cpu" />
+          <!-- <sdFeatherIcons type="DeploymentUnitOutlined" />  -->
           <span
             >Organization Units</span
           ></template
@@ -109,6 +111,7 @@
       <a-sub-menu key="house-holds">
         <template v-slot:title
           >
+          <sdFeatherIcons type="home" />
           <span
             >HouseHolds</span
           ></template
@@ -122,10 +125,10 @@
       </a-sub-menu>
 
       <a-menu-item @click="toggleCollapsed" key="">
-        <router-link to="/stock-status"> Stock Status </router-link>
+        <router-link to="/stock-status"><sdFeatherIcons type="bar-chart-2" />&nbsp; &nbsp; Stock Status </router-link>
       </a-menu-item>
       <a-menu-item @click="toggleCollapsed" key="registered-users">
-        <router-link to="/registered-users"> Users </router-link>
+        <router-link to="/registered-users"> <sdFeatherIcons type="users" />&nbsp; &nbsp; Users </router-link>
       </a-menu-item>
     </a-menu-item-group>
   </a-menu>

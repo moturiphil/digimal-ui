@@ -82,8 +82,8 @@
       key: 'id',
     },
     {
-      title: 'Activity End Date',
-      dataIndex: 'end_date',
+      title: 'Activity Code',
+      dataIndex: 'activity_code',
       key: 'id',
     },
     {
