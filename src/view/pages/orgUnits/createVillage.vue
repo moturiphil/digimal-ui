@@ -155,30 +155,11 @@
         this.loading = false;
       };
 
-      onMounted(() => {
-        getCounties();
-        getSubCounties();
-      });
-
-      //sub-counties
-      // const getSubCounties = async (county_id) => { //7
-      //   console.log(county_id);
-      //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/getcounty/${county_id}/subcounties`, {
-      //     method: "GET",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       ...authHeader(),
-      //     },
-      //   });
-      //   const data = await response.json();
-      //   console.log(data);
-      //   this.sub_counties=data.county.sub_counties;
-      // };
-
-      // sub_county
-
-      const getSubCounties = async () => {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/sub_counties_list`, {
+      // sub-counties
+      const getSubCounties = async (parent_id) => { //7
+        console.log(parent_id);
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${parent_id}`, {
+        // const response = await fetch(`${process.env.VUE_APP_BASE_URL}/getcounty/${county_id}/subcounties`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -186,11 +167,24 @@
           },
         });
         const data = await response.json();
-        // console.log('check this out' + data);
-        console.log(data.data);
-        this.sub_counties = data.data;
-        this.loading = false;
+        console.log(data);
+        this.sub_counties=data.county.sub_counties;
       };
+
+      // const getSubCounties = async () => {
+      //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/sub_counties_list`, {
+      //     method: "GET",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       ...authHeader(),
+      //     },
+      //   });
+      //   const data = await response.json();
+      //   // console.log('check this out' + data);
+      //   console.log(data.data);
+      //   this.sub_counties = data.data;
+      //   this.loading = false;
+      // };
 
       //wards
       const getWards = async (subcounty_id) => { //13
@@ -204,6 +198,11 @@
         const data = await response.json();
         this.wards=data.data.ward;
       };
+
+      onMounted(() => {
+        getCounties();
+        getSubCounties();
+      });
 
       const handleSubmit = (values) => {
         values = {
