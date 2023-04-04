@@ -20,26 +20,6 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <!-- <a-form-item name="county" label="County">
-                      <a-select
-                        size="large"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        v-on:change="getSubCounties('vvOK1BxTbet')"
-                        placeholder="Select County"
-                        v-if="!loading"
-                      >
-                        <a-select-option value=""
-                          >Select an option</a-select-option
-                        >
-                        <a-select-option
-                          v-for="county in counties"
-                          :value="county.id"
-                          :key="county.id"
-                          >{{ county.name }}</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item> -->
                     <a-form-item name="county" label="County">
                       <a-select
                         size="large"
@@ -215,24 +195,7 @@ const AddNew = defineComponent({
       this.loading = false;
     };
 
-    // sub-counties
-    // const getSubCounties = async (org_id) => {
-    //   // console.log(id)
-    //   const response = await fetch(
-    //     `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-    //     {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     }
-    //   );
-    //   const data = await response.json();
-    //   console.log(data.message);
-    //   this.sub_counties = data.message;
-    //   console.log(this.sub_counties);
-    // };
+
     const getSubCounties = async (org_id) => {
       console.log(org_id);
       const response = await fetch(
@@ -252,7 +215,7 @@ const AddNew = defineComponent({
 
     //wards
     const getWards = async (org_id) => {
-      //13
+      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
