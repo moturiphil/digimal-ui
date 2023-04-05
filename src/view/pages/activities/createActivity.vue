@@ -20,26 +20,6 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <!-- <a-form-item name="activity_id" label="Activity Name">
-                      <a-select
-                        v-model:value="formState.activity_id"
-                        placeholder="Please select"
-                      >
-                        <a-select-option value="1"
-                          >Activity Test 1</a-select-option
-                        >
-                        <a-select-option value="2"
-                          >Activity Test 2</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Activity Test 3</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Activity Test 4</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item> -->
-
                     <a-form-item name="activity_id" label="Activity Name">
                       <a-select
                         name="basic-select"
@@ -125,6 +105,7 @@
                         :style="{ width: '100%' }"
                         v-model:value="formState.start_date"
                         :format="dateFormat"
+                        :disabledDate="disabledDate"
                       />
                     </a-form-item>
 
@@ -402,6 +383,12 @@ const AddNew = defineComponent({
     };
   },
   methods: {
+    disabledDate(date) {
+      // Get today's date
+      const today = new Date();
+      // Disable dates before today
+      return date && date < today;
+    },
     showModal() {
       this.visible = true;
     },
