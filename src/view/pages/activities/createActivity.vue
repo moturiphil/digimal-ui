@@ -125,6 +125,7 @@
                         placeholder="Payable Travel Days"
                         type="number"
                         default-value="1"
+                        min="0"
                       />
                     </a-form-item>
                     <!-- no of officers as number -->
