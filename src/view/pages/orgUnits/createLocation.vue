@@ -75,7 +75,7 @@
                         >
                         <a-select-option
                           v-for="ward in wards"
-                          :value="ward.id"
+                          :value="ward.org_id"
                           :key="ward.id"
                           >{{ ward.name }}</a-select-option
                         >
@@ -109,6 +109,7 @@ import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
+import { notification } from "ant-design-vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 
@@ -123,7 +124,7 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/village/create`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation?unit=location`;
 
     const formState = reactive({
       name: "",
@@ -181,8 +182,9 @@ const AddNew = defineComponent({
     };
 
     //wards
+
     const getWards = async (org_id) => {
-      console.log(org_id);
+      console.log(org_id);  
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -199,10 +201,19 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = (values) => {
-      values = {
-        name: values.name,
-        ward_id: values.ward_id,
+      console.log(' values from the form submitted');
+      console.log(values.ward_id);
+      console.log(values.name);
+
+      const data = {
+        parent_id: values.ward_id,
+        data: [
+          {
+            name: values.name,
+          },
+        ],
       };
+      console.log(API_URL);
 
       fetch(API_URL, {
         method: "POST",
@@ -210,11 +221,18 @@ const AddNew = defineComponent({
           "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
+        .then(({ success }) => {
+          if (success) {
+            // router.push("activity-view");
+            notification["success"]({
+              message: "Location Created",
+              description: `Location Created successfully`, //${data.activity_code}
+              duration: 5.5,
+            });
+          }
         })
         .catch((error) => {
           console.error("Error:", error);
