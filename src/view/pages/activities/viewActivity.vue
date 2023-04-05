@@ -76,14 +76,14 @@
       dataIndex: 'name',
       key: 'id',
     },
+    // {
+    //   title: 'Activity diffForHumans',
+    //   dataIndex: 'diffForHumans',
+    //   key: 'id',
+    // },
     {
       title: 'Activity Start Date',
       dataIndex: 'start_date',
-      key: 'id',
-    },
-    {
-      title: 'Activity End Date',
-      dataIndex: 'end_date',
       key: 'id',
     },
     {
@@ -92,7 +92,7 @@
       key: 'id',
     },
     {
-      title: 'Campaign Id',
+      title: 'Campaign',
       dataIndex: 'campaign_id',
       key: 'id',
     },
