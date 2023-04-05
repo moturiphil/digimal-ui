@@ -1,243 +1,330 @@
 <template>
-    <sdPageHeader title="Create Sub-Location">
-      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-        <router-link to="/crud/axios-view">View All</router-link>
-      </sdButton>
-    </sdPageHeader>
-    <Main>
-      <a-row :gutter="15">
-        <a-col :xs="24">
-          <RecordFormWrapper>
-            <sdCards headless>
-              <a-row justify="center">
-                <a-col :xl="10" :md="16" :xs="24">
-                  <BasicFormWrapper>
-                    <a-form
-                      class="add-record-form"
-                      :style="{ width: '100%' }"
-                      layout="vertical"
-                      name="addnew"
-                      :model="formState"
-                      @finish="handleSubmit"
-                    >
-                      <a-form-item name="county"  label="County">
-                        <a-select
-                          size="large"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          v-on:change="getSubCounties($event)"
-                          placeholder="Select County"
-                          v-if="!loading" 
+  <sdPageHeader title="Create Sub-Location">
+    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+      <router-link to="/crud/axios-view">View All</router-link>
+    </sdButton>
+  </sdPageHeader>
+  <Main>
+    <a-row :gutter="15">
+      <a-col :xs="24">
+        <RecordFormWrapper>
+          <sdCards headless>
+            <a-row justify="center">
+              <a-col :xl="10" :md="16" :xs="24">
+                <BasicFormWrapper>
+                  <a-form
+                    class="add-record-form"
+                    :style="{ width: '100%' }"
+                    layout="vertical"
+                    name="addnew"
+                    :model="formState"
+                    @finish="handleSubmit"
+                  >
+                    <a-form-item name="county" label="County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select County"
+                        v-on:change="getSubCounties($event)"
+                        v-if="!loading"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
                         >
-                        <a-select-option value="">Select an option</a-select-option>
-                        <a-select-option v-for="county in counties" :value="county.id" :key="county.id">{{county.name}}</a-select-option>
-                        </a-select>
-                      </a-form-item>
-                      <a-form-item name="sub_county"  label="Sub County">
-                        <a-select
-                          size="large"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select Sub-County"
-                          v-on:change="getWards($event)"
+                        <a-select-option
+                          v-for="county in counties"
+                          :value="county.org_id"
+                          :key="county.id"
+                          :org_id="county.org_id"
                         >
-                        <a-select-option value="">Select an option</a-select-option>
-                        <a-select-option v-for="scounty in sub_counties" :value="scounty.id" :key="scounty.id">{{scounty.name}}</a-select-option>
-                        </a-select>
-                      </a-form-item>
+                          {{ county.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+                    <a-form-item name="sub_county" label="Sub County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Sub-County"
+                        v-on:change="getWards($event)"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="scounty in sub_counties"
+                          :value="scounty.org_id"
+                          :key="scounty.id"
+                          >{{ scounty.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
 
-                      <a-form-item name="ward_id"  label="Ward">
-                        <a-select
-                          size="large"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select Ward"
-                          v-model:value="formState.ward_id"
+                    <a-form-item name="ward_id" label="Ward">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Ward"
+                        v-on:change="getLocations($event)"
+                        v-model:value="formState.ward_id"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
                         >
-                        <a-select-option value="">Select an option</a-select-option>
-                        <a-select-option v-for="ward in wards" :value="ward.id" :key="ward.id">{{ward.name}}</a-select-option>
-                        </a-select>
-                      </a-form-item>
-
-                      <a-form-item name="location_id"  label="Location">
-                        <a-select
-                          size="large"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select Location"
-                          v-model:value="formState.location_id"
+                        <a-select-option
+                          v-for="ward in wards"
+                          :value="ward.org_id"
+                          :key="ward.id"
+                          >{{ ward.name }}</a-select-option
                         >
-                        <a-select-option value="">Select an option</a-select-option>
-                        <a-select-option v-for="scounty in sub_counties" :value="scounty.id" :key="scounty.id">{{scounty.name}}</a-select-option>
-                        </a-select>
-                      </a-form-item>
+                      </a-select>
+                    </a-form-item>
 
-                      <a-form-item name="name"  label="Sub Location Name">
+                    <a-form-item name="location_id" label="Location">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Location"
+                        v-model:value="formState.location_id"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="location in locations"
+                          :value="location.org_id"
+                          :key="location.id"
+                          >{{ location.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
+
+                    <a-form-item name="name" label="Sub Location Name">
+                      <a-input
+                        v-model:value="formState.name"
+                        placeholder="Enter Sub Location name"
+                      />
+                    </a-form-item>
+                    <!-- <a-form-item label="Sub-location">
+                      <div
+                        v-for="(subLocation, index) in formState.subLocations"
+                        :key="index"
+                      >
                         <a-input
-                          v-model:value="formState.name"
-                          placeholder="Enter Sub Location name"
+                          v-model:value="formState.subLocations[index]"
+                          placeholder="Enter sub-location name"
                         />
-                      </a-form-item>
-  
-                      <div class="record-form-actions text-right">
-                        <sdButton size="default" htmlType="Save" type="success" >
-                          {{ isLoading ? "Loading..." : "Submit" }}
-                        </sdButton>
                       </div>
-                    </a-form>
-                  </BasicFormWrapper>
-                </a-col>
-              </a-row>
-            </sdCards>
-          </RecordFormWrapper>
-        </a-col>
-      </a-row>
-    </Main>
-  </template>
-  <script>
-  import { RecordFormWrapper } from "./style";
-  import { Main, BasicFormWrapper } from "../../styled";
-  import { useStore } from "vuex";
-  import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-  // import axios from "axios";
-  import authHeader from "../../../services/auth-header";
-  
-  const dateFormat = "YYYY-MM-DD";
-  
-  const AddNew = defineComponent({
-    name: "AddNew",
-    components: { RecordFormWrapper, Main, BasicFormWrapper },
-    data() {
-      const { state } = useStore();
-      const isLoading = computed(() => state.crud.loading);
-      const apiUrl = computed(() => state.crud.url);
-      const isFileLoading = computed(() => state.crud.fileLoading);
-      const join = ref("");
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/village/create`;
-  
-      const formState = reactive({
-        name: "",
-        ward_id: "",
+                      <a-button type="success" @click.prevent="addSubLocation"
+                        >Add Sub-Location</a-button
+                      >
+                    </a-form-item>
+                    <a-form-item>
+                      <a-button type="success" @click.prevent="submitForm"
+                        >Submit</a-button
+                      >
+                    </a-form-item> -->
+
+                    <div class="record-form-actions text-right">
+                      <sdButton size="default" htmlType="Save" type="success">
+                        {{ isLoading ? "Loading..." : "Submit" }}
+                      </sdButton>
+                    </div>
+                  </a-form>
+                </BasicFormWrapper>
+              </a-col>
+            </a-row>
+          </sdCards>
+        </RecordFormWrapper>
+      </a-col>
+    </a-row>
+  </Main>
+</template>
+<script>
+import { RecordFormWrapper } from "./style";
+import { Main, BasicFormWrapper } from "../../styled";
+import { useStore } from "vuex";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
+// import axios from "axios";
+import { notification } from "ant-design-vue";
+import authHeader from "../../../services/auth-header";
+
+const dateFormat = "YYYY-MM-DD";
+
+const AddNew = defineComponent({
+  name: "AddNew",
+  components: { RecordFormWrapper, Main, BasicFormWrapper },
+  data() {
+    const { state } = useStore();
+    const isLoading = computed(() => state.crud.loading);
+    const apiUrl = computed(() => state.crud.url);
+    const isFileLoading = computed(() => state.crud.fileLoading);
+    const join = ref("");
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation?unit=sub-location`;
+
+    const formState = reactive({
+      name: "",
+      ward_id: "",
+      // subLocations: [],
+    });
+
+    const { counties, loading, sub_counties, wards, locations } = reactive({
+      counties: [],
+      loading: true,
+      sub_counties: [],
+      wards: [],
+      locations: [],
+    });
+
+    //counties
+    const getCounties = async () => {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
       });
 
-      const { counties,loading,sub_counties,wards} = reactive({
-        counties: [],
-        loading: true,
-        sub_counties: [],
-        wards: [],
-      });
+      const data = await response.json();
+      this.counties = data.map((county) => ({
+        ...county,
+        // org_id: county.org_id,
+      }));
+      this.loading = false;
+    };
 
-      //counties
-      const getCounties = async () => {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+    onMounted(() => {
+      getCounties();
+      getSubCounties();
+    });
+
+    // sub_county
+
+    const getSubCounties = async (org_id) => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
-        });
-        const data = await response.json();
-        this.counties = data;
-        // console.log(data);
-        this.loading = false;
-      };
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.sub_counties = data.message;
+    };
 
-      onMounted(() => {
-        getCounties();
-        getSubCounties();
-      });
-
-      //sub-counties
-      // const getSubCounties = async (county_id) => { //7
-      //   console.log(county_id);
-      //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/getcounty/${county_id}/subcounties`, {
-      //     method: "GET",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       ...authHeader(),
-      //     },
-      //   });
-      //   const data = await response.json();
-      //   console.log(data);
-      //   this.sub_counties=data.county.sub_counties;
-      // };
-
-      // sub_county
-
-      const getSubCounties = async () => {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/sub_counties_list`, {
+    //wards
+    const getWards = async (org_id) => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
-        });
-        const data = await response.json();
-        // console.log('check this out' + data);
-        console.log(data.data);
-        this.sub_counties = data.data;
-        this.loading = false;
-      };
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.wards = data.message;
+    };
 
-      //wards
-      const getWards = async (subcounty_id) => { //13
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/getsubcounty/${subcounty_id}/ward`, {
+    const getLocations = async (org_id) => {
+      console.log(org_id);
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
-        });
-        const data = await response.json();
-        this.wards=data.data.ward;
-      };
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.locations = data.message;
+    };
 
-      const handleSubmit = (values) => {
-        values = {
-          name: values.name,
-          ward_id: values.ward_id,
-        };
-  
-        fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
+    const handleSubmit = (values) => {
+      console.log(' values from the form submitted');
+      console.log(values.location_id);
+      console.log(values);
+
+      const data = {
+        parent_id: values.location_id,
+        data: [
+          {
+            name: values.name,
           },
-          body: JSON.stringify(values),
+        ],
+      };
+      console.log(API_URL);
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success }) => {
+          if (success) {
+            // router.push("activity-view");
+            notification["success"]({
+              message: "Sub Location Created",
+              description: `Sub Location Created successfully`, //${data.activity_code}
+              duration: 5.5,
+            });
+          }
         })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-      };
-  
-      return {
-        isLoading,
-        loading,
-        apiUrl,
-        isFileLoading,
-        handleSubmit,
-        dateFormat,
-        formState,
-        join,
-        counties,sub_counties,wards,getSubCounties,getWards
-      };
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    };
 
-   
-    },
-    beforeRouteEnter(to, from, next) {
-      if (!sessionStorage.getItem("user")) {
-        next("/auth/login");
-      } else {
-        next();
-      }
-    },
-  });
-  
-  export default AddNew;
-  </script>
-  
+    return {
+      isLoading,
+      loading,
+      apiUrl,
+      isFileLoading,
+      handleSubmit,
+      dateFormat,
+      formState,
+      join,
+      counties,
+      sub_counties,
+      locations,
+      wards,
+      getSubCounties,
+      getLocations,
+      getWards,
+    };
+  },
+  beforeRouteEnter(to, from, next) {
+    if (!sessionStorage.getItem("user")) {
+      next("/auth/login");
+    } else {
+      next();
+    }
+  },
+  // methods: {
+  //   addSubLocation() {
+  //     this.formState.subLocations.push("");
+  //   },
+  // },
+});
+
+export default AddNew;
+</script>

@@ -87,6 +87,11 @@
       key: 'id',
     },
     {
+      title: 'Activity Code',
+      dataIndex: 'activity_code',
+      key: 'id',
+    },
+    {
       title: 'Number of Officers',
       dataIndex: 'number_of_officers',
       key: 'id',

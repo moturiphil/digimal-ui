@@ -58,33 +58,6 @@ export default {
       otp: "",
     });
     const showOtpInput = ref(false);
-    // sessionStorage.removeItem("otp", response.data.OTP);
-    // const handleSubmit = async () => {
-    //   const values = {
-    //     id_no: formState.id_no,
-    //     otp: formState.otp,
-    //   };
-    //   const response = await axios.post(API_URL, values);
-    //   // store the id_no and otp in the session storage
-    //
-    //   sessionStorage.setItem("otp", values.otp);
-
-    //   console.log(sessionStorage.getItem("id_no"), sessionStorage.getItem("otp"));
-
-    //   try {
-    //     if (response.status === 200) {
-    //       const data = response.data;
-    //       console.log(data);
-    //       showOtpInput.value = true;
-    //     } else {
-    //       throw new Error("Network response was not ok.");
-    //     }
-    //   } catch (error) {
-    //     console.log("Error:", error);
-    //   }
-
-    //   }
-    // };
 
     const handleSubmit = async () => {
       if (!showOtpInput.value) {
@@ -92,7 +65,11 @@ export default {
         const values = {
           id_no: formState.id_no,
         };
+        
+        console.log(sessionStorage.getItem("id_no"));
+
         const response = await axios.post(API_URL, values);
+
         if (response.status === 200) {
           // Remove id_no and otp then store generated OTP and id_no in session storage
           sessionStorage.removeItem("id_no", values.id_no);
@@ -114,18 +91,6 @@ export default {
         } else {
           console.log("OTP does not match");
         }
-        //   if (formState.otp !== "") {
-        //     // Check if user has input an OTP
-        //     const generatedOTP = response.data.OTP;
-        //     const userOTP = formState.otp;
-
-        //     console.log(generatedOTP, userOTP);
-
-        //     if (generatedOTP === userOTP) {
-        //       router.push("/auth/set-password");
-        //     } else {
-        //       console.log("OTP does not match");
-        //     }
       }
     };
 

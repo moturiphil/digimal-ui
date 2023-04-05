@@ -59,40 +59,42 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="county_id" label="County">
+                    <a-form-item name="county" label="County">
                       <a-select
+                        size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select County"
-                        v-model:value="formState.county_id"
+                        v-on:change="getSubCounties($event)"
+                        v-if="!loading"
                       >
                         <a-select-option value=""
-                          >Select a county</a-select-option
+                          >Select an option</a-select-option
                         >
                         <a-select-option
                           v-for="county in counties"
-                          :value="county.id"
+                          :value="county.org_id"
                           :key="county.id"
-                          >{{ county.name }}</a-select-option
+                          :org_id="county.org_id"
                         >
+                          {{ county.name }}
+                        </a-select-option>
                       </a-select>
                     </a-form-item>
-
-                    <a-form-item name="sub_county_id" label="Sub County">
+                    <a-form-item name="sub_county" label="Sub County">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
-                        v-model:value="formState.sub_county_id"
+                        v-on:change="getWards($event)"
                       >
-                        <!-- v-on:change="getWards($event)" -->
                         <a-select-option value=""
                           >Select an option</a-select-option
                         >
                         <a-select-option
                           v-for="scounty in sub_counties"
-                          :value="scounty.id"
+                          :value="scounty.org_id"
                           :key="scounty.id"
                           >{{ scounty.name }}</a-select-option
                         >
@@ -227,11 +229,11 @@ const AddNew = defineComponent({
     },
     computedPayableTravelDays() {
       const activity = this.activities.find(
-        activity => activity.id === this.formState.activity_id
+        (activity) => activity.id === this.formState.activity_id
       );
       console.log(activity);
       return activity ? activity.payable_travel_days : 1;
-    }
+    },
   },
   data() {
     const { state } = useStore();
@@ -262,13 +264,16 @@ const AddNew = defineComponent({
     //get activities list
 
     const getActivityList = async () => {
-      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/activity_list`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/activity_list`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
       const data = await response.json();
       console.log(data.data);
       this.activities = data.data;
@@ -283,15 +288,21 @@ const AddNew = defineComponent({
           ...authHeader(),
         },
       });
+
       const data = await response.json();
-      console.log(data);
-      this.counties = data;
+      this.counties = data.map((county) => ({
+        ...county,
+        // org_id: county.org_id,
+      }));
+      console.log(this.counties);
+      this.loading = false;
     };
 
     //get sub_counties
-    const getSubCounties = async () => {
+    const getSubCounties = async (org_id) => {
+      console.log(org_id);
       const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/sub_counties_list`,
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
           method: "GET",
           headers: {
@@ -301,10 +312,8 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      // console.log('check this out' + data);
-      console.log(data.data);
-      this.sub_counties = data.data;
-      this.loading = false;
+      console.log(data);
+      this.sub_counties = data.message;
     };
     //campaigns
     const getCampaigns = async () => {
@@ -335,9 +344,6 @@ const AddNew = defineComponent({
         activity_facilitator: values.activity_facilitator,
       };
       console.log({ values });
-
-
-
 
       fetch(API_URL, {
         method: "POST",
@@ -383,6 +389,7 @@ const AddNew = defineComponent({
       apiUrl,
       users,
       isFileLoading,
+      getSubCounties,
       activities,
       counties,
       sub_counties,
@@ -399,30 +406,30 @@ const AddNew = defineComponent({
       this.visible = true;
     },
     showConfirmModal(activity_facilitator) {
-        console.log(activity_facilitator);
-        Modal.success({
-          title: "Activity Officers",
-          content: (
-            <div>
-              <p>Confirm Officers Participating</p>
-              <ul>
-                {activity_facilitator.map((facilitator) => (
-                  <li key={facilitator}>{facilitator}</li>
-                ))}
-              </ul>
-            </div>
-          ),
-          okText: "Register",
-          onOk: async () => {
-            // handle form submission here rk
-          },
-          style: {
-            float: "center",
-            display: "grid",
-            placeContent: "center",
-          },
-        });
-      },
+      console.log(activity_facilitator);
+      Modal.success({
+        title: "Activity Officers",
+        content: (
+          <div>
+            <p>Confirm Officers Participating</p>
+            <ul>
+              {activity_facilitator.map((facilitator) => (
+                <li key={facilitator}>{facilitator}</li>
+              ))}
+            </ul>
+          </div>
+        ),
+        okText: "Register",
+        onOk: async () => {
+          // handle form submission here rk
+        },
+        style: {
+          float: "center",
+          display: "grid",
+          placeContent: "center",
+        },
+      });
+    },
     handleOk() {
       this.confirmLoading = true;
       setTimeout(() => {
