@@ -207,6 +207,7 @@
   </Main>
 </template>
 <script>
+// testing app
 import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
