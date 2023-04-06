@@ -4,7 +4,7 @@
     <div class="auth-contents">
       <a-form @finish="handleSubmit" :model="formState" layout="vertical">
         <sdHeading as="h3">
-          Sign in to <span class="color-success">Campaign Dashboard</span>
+          Sign in to <span class="color-success">DigiMal KE Dashboard</span>
         </sdHeading>
         <a-form-item name="id_no" label="National ID No">
           <a-input type="number" v-model:value="formState.id_no"  placeholder="Enter ID No"/>
