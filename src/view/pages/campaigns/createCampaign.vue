@@ -32,6 +32,7 @@
                         :style="{ width: '100%' }"
                         v-model:value="formState.startDate"
                         :format="dateFormat"
+                        :disabledDate="disabledDate"
                       />
                     </a-form-item>
 
@@ -143,6 +144,11 @@ const AddNew = defineComponent({
       formState,
       join,
     };
+  },
+  methods: {
+    disabledDate(current) {
+      return current && current < Date.now();
+    },
   },
   beforeRouteEnter(to, from, next) {
     if (!sessionStorage.getItem("user")) {

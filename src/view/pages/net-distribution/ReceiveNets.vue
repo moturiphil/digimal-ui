@@ -20,14 +20,6 @@
                       :model="formState"
                       @finish="handleSubmit"
                     >
-
-                    <!-- {
-   "post_id":242435,
-            "number_of_nets":34,
-            "date_received":"2023-03-15",
-            "received_from":"KEMSA",
-            "received_by": 1
-} -->
                       <a-form-item name="post_id"  label="Post Name">
                         <a-input
                         type="number"
@@ -35,16 +27,16 @@
                           placeholder="Enter post name"
                         />
                       </a-form-item>
-                      <a-form-item name="number_of_nets"  label="Number of Nets">
+                      <a-form-item name="number_of_nets"  label="Number of Bales">
                         <a-input
                           v-model:value="formState.number_of_nets"
-                          placeholder="Enter number of nets"
+                          placeholder="Enter number of bales"
                         />
                       </a-form-item>
-                      <a-form-item name="number_of_nets"  label="Delivery Note No">
+                      <a-form-item name="number_of_nets"  label="Delivery Note No.">
                         <a-input
                           v-model:value="formState.delivery_note_number"
-                          placeholder="Enter number of nets"
+                          placeholder="Delivery Note No."
                         />
                       </a-form-item>
                       <a-form-item name="date_received" label="Date Received">

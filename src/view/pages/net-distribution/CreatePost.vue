@@ -63,7 +63,7 @@
                         >
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="villages" label="Villages">
+                    <a-form-item name="villages" label="Select villages">
                       <a-select
                         mode="multiple"
                         size="large"
@@ -87,14 +87,14 @@
                     </a-form-item>
                     <!-- label = {{ !isFacility ? `fyufuyfuy`: `jjkhkjhkj` }} -->
                     <a-form-item name="post_code">
-                      <label
-                        >{{ !isFacility ? `Post Code` : `Facility MFL code` }}
-                      </label>
+                      <label>{{
+                        !isFacility ? " " : `Facility MFL code`
+                      }}</label>
                       <br />
                       <a-input
+                        v-if="isFacility"
                         v-model:value="formState.post_code"
                         placeholder="Enter facility mfl code"
-                        :disabled="!isFacility"
                       />
                     </a-form-item>
 
@@ -210,6 +210,8 @@ const AddNew = defineComponent({
         post_supervisor_user_id: values.post_supervisor_user_id,
         villages: values.villages,
       };
+      console.log(values);
+
       if (post_code) {
         values.post_code = post_code;
       }
@@ -226,7 +228,7 @@ const AddNew = defineComponent({
           console.log(data);
           console.log(".................................................... ");
           console.log(API_URL);
-          if ( data.success == true) {
+          if (data.success == true) {
             notification["success"]({
               message: "Post Created",
               description: `Post Created successfully.`,

@@ -20,6 +20,21 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
+                    <a-form-item name="campaign_id" label="Campaign Name">
+                      <a-select
+                        v-model:value="formState.campaign_id"
+                        v-if="!loading"
+                        placeholder="Select Campaign Name"
+                      >
+                        <a-select-option
+                          v-for="campaign in campaigns"
+                          :key="campaign.id"
+                          :value="campaign.id"
+                        >
+                          {{ campaign.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <a-form-item label="Event Type">
                       <a-select
                         size="large"
@@ -50,21 +65,6 @@
                         >
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="campaign_id" label="Campaign Name">
-                      <a-select
-                        v-model:value="formState.campaign_id"
-                        v-if="!loading"
-                        placeholder="Select Campaign Name"
-                      >
-                        <a-select-option
-                          v-for="campaign in campaigns"
-                          :key="campaign.id"
-                          :value="campaign.id"
-                        >
-                          {{ campaign.name }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item>
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         v-model:value="formState.facilitator_id"
@@ -79,7 +79,7 @@
                           v-model:value="facilitator.id"
                         >
                           {{ facilitator.first_name }}
-                          {{ facilitator.last_name }} - {{ facilitator.id_no }}
+                          {{ facilitator.last_name }} - {{ facilitator.phone_no }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
@@ -138,7 +138,6 @@ import { useRouter } from "vue-router";
 // import Select from 'vue-select';
 
 // const dateFormat = "YYYY-MM-DD";
-
 
 // testing app
 
