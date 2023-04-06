@@ -31,7 +31,7 @@ const borderColorDeep = '#C6D0DC';
 const bgGrayColorDeep = '#EFF0F3';
 const bgGrayColorLight = '#F8F9FB';
 const bgGrayColorNormal = '#F4F5F7';
-const lightGrayColor = '#868EAE';
+const lightGrayColor = '##22C997';
 const sliderRailColor = 'rgba(95,99,242,0.2)';
 const graySolid = '#9299b8';
 const pinkColor = '#F63178';
@@ -190,7 +190,7 @@ const theme = {
 
 const darkTheme = {
   ...theme,
-  'primary-color': 'red',
+  'primary-color': 'green',
   backgroundColor: '#000',
 };
 

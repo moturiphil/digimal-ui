@@ -39,13 +39,14 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="county" label="County">
+                    <a-form-item name="county_id" label="County">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select County"
                         v-on:change="getSubCounties($event)"
+                        v-model:value="formState.county_id"
                         v-if="!loading"
                       >
                         <a-select-option value=""
@@ -67,7 +68,6 @@
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
-                        v-on:change="getWards($event)"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -163,7 +163,7 @@
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <sdButton
+                      <!-- <sdButton
                         @click="
                           showConfirmModal(formState.activity_facilitator)
                         "
@@ -172,7 +172,7 @@
                       >
                         <sdFeatherIcons type="check-square" size="17" />
                         &nbsp;&nbsp; Confirm Officers
-                      </sdButton>
+                      </sdButton> -->
                       &nbsp;&nbsp;&nbsp;
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}
@@ -316,7 +316,7 @@ const AddNew = defineComponent({
     const handleSubmit = (values) => {
       values = {
         activity_list_id: values.activity_id,
-        county_id: values.county_id,
+        county_id: 1,
         // sub_county_id: values.sub_county_id,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),

@@ -63,7 +63,7 @@
                         >
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="villages" label="Villages">
+                    <a-form-item name="villages" label="Select villages">
                       <a-select
                         mode="multiple"
                         size="large"
@@ -80,21 +80,21 @@
                         >
                       </a-select>
                     </a-form-item>
-                    <a-form-item>
+                    <a-form-item name="isFacility">
                       <a-checkbox v-model:checked="isFacility"
-                        >Is Facility?</a-checkbox
+                        >Is Post a Facility?</a-checkbox
                       >
                     </a-form-item>
                     <!-- label = {{ !isFacility ? `fyufuyfuy`: `jjkhkjhkj` }} -->
                     <a-form-item name="post_code">
-                      <label
-                        >{{ !isFacility ? `Post Code` : `Facility MFL code` }}
-                      </label>
+                      <label>{{
+                        !isFacility ? " " : `Facility MFL code`
+                      }}</label>
                       <br />
                       <a-input
+                        v-if="isFacility"
                         v-model:value="formState.post_code"
                         placeholder="Enter facility mfl code"
-                        :disabled="!isFacility"
                       />
                     </a-form-item>
 
@@ -120,6 +120,7 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
+import { useRouter } from "vue-router";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -133,6 +134,7 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
     const API_URL = `${process.env.VUE_APP_BASE_URL}/distribution_post`;
+    const router = useRouter();
 
     const formState = reactive({
       name: "",
@@ -141,6 +143,7 @@ const AddNew = defineComponent({
       post_supervisor_user_id: "",
       villages: [],
       post_code: "",
+      isFacility: 0,
     });
 
     const { villages, loading, isFacility, users } = reactive({
@@ -197,19 +200,25 @@ const AddNew = defineComponent({
     //   });
     // };
 
+    // distribution_start_date: new Date(values.distribution_start_date)
+    //       .toISOString()
+    //       .substr(0, 10),
+    //     distribution_end_date: new Date(values.distribution_end_date)
+    //       .toISOString()
+    //       .substr(0, 10),
+
     const handleSubmit = (values) => {
       let post_code = values.post_code;
       values = {
         name: values.name,
-        distribution_start_date: new Date(values.distribution_start_date)
-          .toISOString()
-          .substr(0, 10),
-        distribution_end_date: new Date(values.distribution_end_date)
-          .toISOString()
-          .substr(0, 10),
+        distribution_start_date: "2023-01-01",
+        distribution_end_date: "2023-01-01",
         post_supervisor_user_id: values.post_supervisor_user_id,
         villages: values.villages,
+        isFacility: values.isFacility,
       };
+      console.log(values);
+
       if (post_code) {
         values.post_code = post_code;
       }
@@ -226,7 +235,8 @@ const AddNew = defineComponent({
           console.log(data);
           console.log(".................................................... ");
           console.log(API_URL);
-          if ( data.success == true) {
+          if (data.success == true) {
+            router.push("/nets/distribution");
             notification["success"]({
               message: "Post Created",
               description: `Post Created successfully.`,
