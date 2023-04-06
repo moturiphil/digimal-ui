@@ -68,6 +68,7 @@
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Ward"
+                        v-on:change="getLocations($event)"
                         v-model:value="formState.ward_id"
                       >
                         <a-select-option value=""
@@ -75,7 +76,7 @@
                         >
                         <a-select-option
                           v-for="ward in wards"
-                          :value="ward.id"
+                          :value="ward.org_id"
                           :key="ward.id"
                           >{{ ward.name }}</a-select-option
                         >
@@ -94,10 +95,10 @@
                           >Select an option</a-select-option
                         >
                         <a-select-option
-                          v-for="scounty in sub_counties"
-                          :value="scounty.id"
-                          :key="scounty.id"
-                          >{{ scounty.name }}</a-select-option
+                          v-for="location in locations"
+                          :value="location.org_id"
+                          :key="location.id"
+                          >{{ location.name }}</a-select-option
                         >
                       </a-select>
                     </a-form-item>
@@ -108,6 +109,25 @@
                         placeholder="Enter Sub Location name"
                       />
                     </a-form-item>
+                    <!-- <a-form-item label="Sub-location">
+                      <div
+                        v-for="(subLocation, index) in formState.subLocations"
+                        :key="index"
+                      >
+                        <a-input
+                          v-model:value="formState.subLocations[index]"
+                          placeholder="Enter sub-location name"
+                        />
+                      </div>
+                      <a-button type="success" @click.prevent="addSubLocation"
+                        >Add Sub-Location</a-button
+                      >
+                    </a-form-item>
+                    <a-form-item>
+                      <a-button type="success" @click.prevent="submitForm"
+                        >Submit</a-button
+                      >
+                    </a-form-item> -->
 
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -130,6 +150,7 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
+import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 
 const dateFormat = "YYYY-MM-DD";
@@ -143,18 +164,20 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/village/create`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation?unit=sub-location`;
 
     const formState = reactive({
       name: "",
       ward_id: "",
+      // subLocations: [],
     });
 
-    const { counties, loading, sub_counties, wards } = reactive({
+    const { counties, loading, sub_counties, wards, locations } = reactive({
       counties: [],
       loading: true,
       sub_counties: [],
       wards: [],
+      locations: [],
     });
 
     //counties
@@ -172,7 +195,6 @@ const AddNew = defineComponent({
         ...county,
         // org_id: county.org_id,
       }));
-      console.log(this.counties);
       this.loading = false;
     };
 
@@ -184,7 +206,6 @@ const AddNew = defineComponent({
     // sub_county
 
     const getSubCounties = async (org_id) => {
-      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -202,7 +223,6 @@ const AddNew = defineComponent({
 
     //wards
     const getWards = async (org_id) => {
-      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -218,11 +238,37 @@ const AddNew = defineComponent({
       this.wards = data.message;
     };
 
+    const getLocations = async (org_id) => {
+      console.log(org_id);
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.locations = data.message;
+    };
+
     const handleSubmit = (values) => {
-      values = {
-        name: values.name,
-        ward_id: values.ward_id,
+      console.log(" values from the form submitted");
+      console.log(values.location_id);
+      console.log(values);
+
+      const data = {
+        parent_id: values.location_id,
+        data: [
+          {
+            name: values.name,
+          },
+        ],
       };
+      console.log(API_URL);
 
       fetch(API_URL, {
         method: "POST",
@@ -230,11 +276,18 @@ const AddNew = defineComponent({
           "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
+        .then(({ success }) => {
+          if (success) {
+            // router.push("activity-view");
+            notification["success"]({
+              message: "Sub Location Created",
+              description: `Sub Location Created successfully`, //${data.activity_code}
+              duration: 5.5,
+            });
+          }
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -252,8 +305,10 @@ const AddNew = defineComponent({
       join,
       counties,
       sub_counties,
+      locations,
       wards,
       getSubCounties,
+      getLocations,
       getWards,
     };
   },
@@ -264,6 +319,11 @@ const AddNew = defineComponent({
       next();
     }
   },
+  // methods: {
+  //   addSubLocation() {
+  //     this.formState.subLocations.push("");
+  //   },
+  // },
 });
 
 export default AddNew;
