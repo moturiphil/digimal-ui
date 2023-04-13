@@ -148,7 +148,17 @@ const Import = {
     const handleSearch = () => {
       dispatch("contactSearchData", searchData.value);
     };
-    const csvData = [["first_name", "middle_name", "last_name", "level_id", "org_types_id", "role_id", "phone_no"]];
+    const csvData = [
+      [
+        "first_name",
+        "middle_name",
+        "last_name",
+        "level_id",
+        "org_types_id",
+        "role_id",
+        "phone_no",
+      ],
+    ];
     const csvJsonData = [
       {
         first_name: "first_name",
@@ -157,7 +167,7 @@ const Import = {
         level_id: "level_id",
         org_types_id: "org_types_id",
         role_id: "role_id",
-        phone_no: "phone_no"
+        phone_no: "phone_no",
       },
     ];
     onMounted(async () => {
@@ -181,13 +191,21 @@ const Import = {
         })
         .map((user) => {
           // console.log(user);
-          const { first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no } = user;
+          const {
+            first_name,
+            middle_name,
+            last_name,
+            level_id,
+            org_types_id,
+            role_id,
+            phone_no,
+          } = user;
           return {
             first_name: first_name,
             middle_name: middle_name,
             last_name: last_name,
             org_types_id: org_types_id,
-            level_id:level_id,
+            level_id: level_id,
             role_id: role_id,
             phone_no: phone_no,
           };
@@ -232,20 +250,31 @@ const Import = {
       },
     ];
 
+    // const rowSelection = {
+    //   onChange: (keys, rows) => {
+    //     selectedRowKeys.value = keys;
+    //     selectedRows.value = rows;
+    //   },
+    //   getCheckboxProps: (record) => ({
+    //     disabled: record.name === "Disabled User", // Column configuration not to be checked
+    //     name: record.name,
+    //   }),
+    // };
+
     const rowSelection = {
       onChange: (keys, rows) => {
         selectedRowKeys.value = keys;
-        selectedRows.value = rows;
+        selectedRows.value = [...rows]; // using the spread operator to create a new array of selected rows
       },
       getCheckboxProps: (record) => ({
-        disabled: record.name === "Disabled User", // Column configuration not to be checked
+        disabled: record.name === "Disabled User",
         name: record.name,
       }),
     };
 
     const warning = () => {
       Modal.warning({
-        title: "Please Select your Required Rows!",
+        title: "Please Select Rows to Export!",
       });
     };
 
@@ -269,12 +298,46 @@ const Import = {
       convertedTo.value = value;
     };
 
+    // watchEffect(() => {
+    //   selectedRows.value.map((member) => {
+    //     console.log(member);
+    //     const { first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no } = member;
+    //     csvJsonData.push({ first_name: first_name, middle_name: middle_name, last_name: last_name, level_id,org_types_id, role_id, phone_no});
+    //     return csvData.push([first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no]);
+    //   });
+    // });
     watchEffect(() => {
+      let csvJsonData = []; // clear the array before pushing new data
+      let csvData = []; // clear the array before pushing new data
       selectedRows.value.map((member) => {
         console.log(member);
-        const { first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no } = member;
-        csvJsonData.push({ first_name: first_name, middle_name: middle_name, last_name: last_name, level_id,org_types_id, role_id, phone_no});
-        return csvData.push([first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no]);
+        const {
+          first_name,
+          middle_name,
+          last_name,
+          level_id,
+          org_types_id,
+          role_id,
+          phone_no,
+        } = member;
+        csvJsonData.push({
+          first_name: first_name,
+          middle_name: middle_name,
+          last_name: last_name,
+          level_id,
+          org_types_id,
+          role_id,
+          phone_no,
+        });
+        return csvData.push([
+          first_name,
+          middle_name,
+          last_name,
+          level_id,
+          org_types_id,
+          role_id,
+          phone_no,
+        ]);
       });
     });
 

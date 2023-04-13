@@ -43,30 +43,6 @@
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton>
-                          <!-- {path: '', query{id: record.id}} -->
-                          <!-- :to="`/event/view/${record.id}`" -->
-                          <router-link
-                            :to="{path: `/event/view/${record.id}`, query: {id: record.event_code}}"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; Confirmed
-                          </router-link>
-                          <router-link
-                            :to="{path: `/event/view/${record.id}`, query: {id: record.event_code}}"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; Pending Confirmation
-                          </router-link>
-                          <!-- <sdFeatherIcons type="edit" size="16" /> -->
-                          <!-- &nbsp;&nbsp; View -->
-                        </sdButton>
                         <sdButton
                           @click="showSuccessModal(record.event_code)"
                           size="small"
@@ -75,6 +51,58 @@
                           <sdFeatherIcons type="user-plus" size="17" />
                           &nbsp;&nbsp; Register
                         </sdButton>
+                        <sdButton
+                          size="small"
+                          type="primary"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                        >
+                          <span v-if="!isStarted">
+                            <sdFeatherIcons type="clock" size="16" />
+                            &nbsp;&nbsp; Start Event
+                          </span>
+                          <span v-else>
+                            <sdFeatherIcons type="check" size="16" />
+                            &nbsp;&nbsp; Started
+                          </span>
+                        </sdButton>
+                        <!-- <sdButton
+                          @click="startEvent(record.id)"
+                          size="small"
+                          type="success"
+                        >
+                          <sdFeatherIcons type="clock" size="17" />
+                          &nbsp;&nbsp; Start Event
+                        </sdButton> -->
+                        <sdButton>
+                          <router-link
+                            :to="{
+                              path: `/event/view/${record.id}`,
+                              query: { id: record.event_code },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; Participants
+                          </router-link>
+                        </sdButton>
+
+                        <!-- <sdButton>
+                          <router-link
+                            :to="{
+                              path: `/event/view/${record.id}`,
+                              query: { id: record.event_code },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; Pending Confirmation
+                          </router-link>
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>
@@ -96,6 +124,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { Modal } from "ant-design-vue";
+// import axios from "axios";
 
 const router = useRouter();
 
@@ -136,6 +165,12 @@ const columns = [
 const ViewPage = defineComponent({
   name: "ViewPage",
   components: { RecordViewWrapper, Main, TableWrapper },
+  props: {
+    event: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       visible: false,
@@ -143,9 +178,29 @@ const ViewPage = defineComponent({
       modalType: "success",
       colorVisible: false,
       eventCode: "",
+      isStarting: false,
+      isStarted: false,
     };
   },
   methods: {
+    async startEvent(record) {
+      try {
+        console.log(record);
+        this.isStarting = true;
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event_start_trigger/${record}`, {
+          method: "GET",
+          headers: authHeader(),
+        });
+        console.log(response);
+        if (response.status === 200) {
+          this.isStarted = true;
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = false;
+      }
+    },
     showModal() {
       this.visible = true;
     },
