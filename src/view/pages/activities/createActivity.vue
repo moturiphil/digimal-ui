@@ -384,12 +384,21 @@ const AddNew = defineComponent({
     };
   },
   methods: {
+    // disabledDate(date) {
+    //   // Get today's date
+    //   const today = new Date();
+    //   // Disable dates before today
+    //   return date && date >= today ? false : true ;
+    // },
+
     disabledDate(date) {
-      // Get today's date
+      // Get today's date at midnight
       const today = new Date();
-      // Disable dates before today
-      return date && date < today;
+      today.setHours(0, 0, 0, 0);
+      // Disable dates before today, but include today
+      return date && date < today ? true : false;
     },
+    
     showModal() {
       this.visible = true;
     },
