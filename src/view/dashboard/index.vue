@@ -1,5 +1,5 @@
 <template>
-  <sdPageHeader title="MassNet Campaign Dashboard">
+  <sdPageHeader title="DigiMal KE Dashboard">
     <template v-slot:buttons>
       <div class="page-header-actions">
         <!-- <sdCalendarButton />

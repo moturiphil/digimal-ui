@@ -65,12 +65,14 @@ export default {
         const values = {
           id_no: formState.id_no,
         };
-        
+
         console.log(sessionStorage.getItem("id_no"));
 
         const response = await axios.post(API_URL, values);
 
-        if (response.status === 200) {
+        console.log(response);
+
+        if (response.status === 200 || response.status === 226 || response.status === 201) {
           // Remove id_no and otp then store generated OTP and id_no in session storage
           sessionStorage.removeItem("id_no", values.id_no);
           sessionStorage.removeItem("otp", response.data.OTP);

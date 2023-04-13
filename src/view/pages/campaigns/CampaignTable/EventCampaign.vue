@@ -97,7 +97,7 @@ const EventCampaignTable = defineComponent({
     onMounted(async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/events/${query.id}/participants`,
+          `${API_URL}/events/${query.id}/participants?status=1`,
           {
             headers: authHeader(),
           }

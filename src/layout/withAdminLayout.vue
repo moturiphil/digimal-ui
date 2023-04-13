@@ -46,7 +46,7 @@
                 "
                 alt="logo"
               /> -->
-              <span style="color:#22C997;"><b>MassNet Campaign</b></span>
+              <span style="color:#22C997;"><b>DigiMal KE</b></span>
 
             </router-link>
           </a-col>

@@ -10,7 +10,7 @@
             <br />
             <br />
             <sdHeading as="h1">
-              MassNet Campaign <br />
+              DigiMal KE <br />
             </sdHeading>
             <img class="auth-content-figure" :src="require('@/static/img/auth/coat_of_arms.png')" alt="" />
           </Content>

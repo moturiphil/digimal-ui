@@ -256,7 +256,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = (values) => {
-      console.log(' values from the form submitted');
+
       console.log(values.location_id);
       console.log(values);
 

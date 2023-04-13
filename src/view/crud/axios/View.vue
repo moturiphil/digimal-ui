@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="MassNet Campaigns">
+    <sdPageHeader title="DigiMal KE">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
           <router-link to="/campaigns/create"> <sdFeatherIcons type="plus" size="14" /> Start New Campaign</router-link>

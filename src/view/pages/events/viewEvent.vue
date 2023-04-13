@@ -53,7 +53,16 @@
                             shape="circle"
                           >
                             <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View
+                            &nbsp;&nbsp; Confirmed
+                          </router-link>
+                          <router-link
+                            :to="{path: `/event/view/${record.id}`, query: {id: record.event_code}}"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; Pending Confirmation
                           </router-link>
                           <!-- <sdFeatherIcons type="edit" size="16" /> -->
                           <!-- &nbsp;&nbsp; View -->

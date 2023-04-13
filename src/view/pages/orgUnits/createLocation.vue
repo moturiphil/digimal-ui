@@ -201,7 +201,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = (values) => {
-      console.log(' values from the form submitted');
+
       console.log(values.ward_id);
       console.log(values.name);
 

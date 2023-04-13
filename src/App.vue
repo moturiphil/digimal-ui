@@ -28,7 +28,6 @@ import { ThemeProvider } from "vue3-styled-components";
 import { theme } from "./config/theme/themeVariables";
 import { computed, defineComponent, onMounted } from "vue";
 import { useStore } from "vuex";
-import { provide } from "vue";
 
 export default defineComponent({
   name: "App",
@@ -43,9 +42,6 @@ export default defineComponent({
     const topMenu = computed(() => state.themeLayout.topMenu);
     const isFbAuthLoading = computed(() => state.firebase.loading);
 
-    const apiEndpoint = 'https://127.0.0.1:8000/api/'
-
-    provide('apiEndpoint', apiEndpoint)
 
     onMounted(() => {
       // provide('apiEndpoint', apiEndpoint)

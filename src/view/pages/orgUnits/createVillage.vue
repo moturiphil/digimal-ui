@@ -193,14 +193,17 @@ const AddNew = defineComponent({
       // subLocations: [],
     });
 
-    const { counties, loading, sub_counties, wards, locations, sub_locations } = reactive({
-      counties: [],
-      loading: true,
-      sub_counties: [],
-      wards: [],
-      locations: [],
-      sub_locations: [],
-    });
+
+    const { counties, loading, sub_counties, wards, locations, sub_locations } =
+      reactive({
+        counties: [],
+        loading: true,
+        sub_counties: [],
+        wards: [],
+        locations: [],
+        sub_locations: [],
+      });
+
 
     //counties
     const getCounties = async () => {
