@@ -233,7 +233,7 @@ const AddNew = defineComponent({
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
-          console.log(".................................................... ");
+          console.log(".......... ");
           console.log(API_URL);
           if (data.success == true) {
             router.push("/nets/distribution");
