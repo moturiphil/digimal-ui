@@ -135,9 +135,6 @@ import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 
-// import Select from 'vue-select';
-
-// const dateFormat = "YYYY-MM-DD";
 
 // testing app
 
@@ -165,9 +162,9 @@ const AddNew = defineComponent({
 
     const { campaigns, facilitators, loading } = reactive({
       campaigns: "",
-      loading: true, // setCampaigns: () => {},
+      loading: true, 
       facilitators: [],
-      // setFacilitator: () => {},
+
     });
 
     const fetchCampaigns = async () => {
@@ -218,9 +215,9 @@ const AddNew = defineComponent({
     const handleSubmit = () => {
       const data = {
         name: formState.name,
-        user_id: 1, // replace with the logged-in user's ID
+        user_id: 1,
         venue: formState.venue,
-        location_id: 1, // replace with the actual location ID
+        location_id: 1, 
         campaign_id: formState.campaign_id,
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
@@ -238,7 +235,6 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success, data }) => {
-          // console.log(data);
           if (success) {
             router.push("event-view");
             notification["success"]({
