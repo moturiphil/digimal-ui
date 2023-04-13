@@ -184,7 +184,7 @@ const AddNew = defineComponent({
     //wards
 
     const getWards = async (org_id) => {
-      console.log(org_id);
+      console.log(org_id);  
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -201,7 +201,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = (values) => {
-      console.log(" values from the form submitted");
+
       console.log(values.ward_id);
       console.log(values.name);
 
