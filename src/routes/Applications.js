@@ -98,4 +98,21 @@ export default [
      
     ],
   },
+  {
+    name: 'import-export',
+    path: '/users',
+    component: () => import(/* webpackChunkName: "import" */ '../view/apps/importExport/Index.vue'),
+    children: [
+      {
+        name: 'import',
+        path: 'import',
+        component: () => import(/* webpackChunkName: "import" */ '../view/apps/importExport/Import.vue'),
+      },
+      {
+        name: 'export',
+        path: 'export',
+        component: () => import(/* webpackChunkName: "export" */ '../view/apps/importExport/Export.vue'),
+      },
+    ],
+  },
 ];

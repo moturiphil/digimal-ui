@@ -44,27 +44,31 @@
                     <td>
                       <div class="table-actions">
                         <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                        >
+                          <span v-if="!record.status">
+                            <sdFeatherIcons type="clock" size="16" />
+                            &nbsp;&nbsp; Start Event
+                          </span>
+                          <!-- <span v-else>
+                            <sdFeatherIcons type="check" size="16" />
+                            &nbsp;&nbsp; Started
+                          </span> -->
+                          <span v-else class="badge badge-green">
+                            <sdFeatherIcons type="check" size="16" />
+                            &nbsp;&nbsp; Started
+                          </span>
+                        </sdButton>
+                        <sdButton
                           @click="showSuccessModal(record.event_code)"
                           size="small"
                           type="success"
                         >
                           <sdFeatherIcons type="user-plus" size="17" />
                           &nbsp;&nbsp; Register
-                        </sdButton>
-                        <sdButton
-                          size="small"
-                          type="primary"
-                          :disabled="isStarting"
-                          @click="startEvent(record.id)"
-                        >
-                          <span v-if="!isStarted">
-                            <sdFeatherIcons type="clock" size="16" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
-                          <span v-else>
-                            <sdFeatherIcons type="check" size="16" />
-                            &nbsp;&nbsp; Started
-                          </span>
                         </sdButton>
                         <!-- <sdButton
                           @click="startEvent(record.id)"
@@ -180,20 +184,50 @@ const ViewPage = defineComponent({
       eventCode: "",
       isStarting: false,
       isStarted: false,
+      events: [], // an array of events fetched from the server
+      eventStatus: {}, // an object to keep track of the status of each event
     };
   },
   methods: {
-    async startEvent(record) {
-      try {
-        console.log(record);
-        this.isStarting = true;
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event_start_trigger/${record}`, {
+    async created() {
+      // fetch events from the server and initialize eventStatus object
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/events/all`,
+        {
           method: "GET",
           headers: authHeader(),
-        });
-        console.log(response);
-        if (response.status === 200) {
-          this.isStarted = true;
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.events = data;
+      this.eventStatus = {};
+      for (const event of this.events) {
+        this.eventStatus[event.id] = event.status;
+      }
+    },
+    async startEvent(id) {
+      try {
+        this.isStarting = true;
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/event_start_trigger/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status === true) {
+          // this.$set(this.eventStatus, id, true); // update the eventStatus object for this event
+          // Vue.set(this.eventStatus, id, true); // update the eventStatus object for this event
+          this.eventStatus[id] = true;
+          // this.$router.go();
+          location.reload();
+
+          // console.log(this.eventStatus[1])
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          // console.log(localStorage.getItem("eventStatus"));
         }
       } catch (error) {
         console.error(error);
@@ -201,6 +235,27 @@ const ViewPage = defineComponent({
         this.isStarting = false;
       }
     },
+    // async startEvent(id) {
+    //   try {
+    //     // update the event status on the server
+    //     const response = await fetch(
+    //       `${process.env.VUE_APP_BASE_URL}/event_start_trigger/${id}`,
+    //       {
+    //         method: "GET",
+    //         headers: authHeader(),
+    //       }
+    //     );
+    //     const data = await response.json();
+    //     console.log(data);
+    //     if (data.status === true) {
+    //       // update the eventStatus object and persist it in local storage
+    //       this.eventStatus[id] = true;
+    //       localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // },
     showModal() {
       this.visible = true;
     },
@@ -387,3 +442,12 @@ const ViewPage = defineComponent({
 
 export default ViewPage;
 </script>
+
+<style>
+.badge-green {
+  background-color: green;
+  color: white;
+  /* padding: 4px 8px; */
+  border-radius: 8px;
+}
+</style>

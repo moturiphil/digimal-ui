@@ -81,6 +81,19 @@
               >
                 Export
               </sdButton>
+              <sdButton class="btn-import" type="success">
+                <router-link
+                  :to="{
+                    path: `/users/import`
+                  }"
+                  class="btn-icon"
+                  type="info"
+                  shape="circle"
+                >
+                  <!-- <sdFeatherIcons type="eye" size="16" /> -->
+                  &nbsp;&nbsp; Import Master List
+                </router-link>
+              </sdButton>
 
               <a-input
                 v-model:value="searchData"
@@ -250,31 +263,23 @@ const Import = {
       },
     ];
 
-    // const rowSelection = {
-    //   onChange: (keys, rows) => {
-    //     selectedRowKeys.value = keys;
-    //     selectedRows.value = rows;
-    //   },
-    //   getCheckboxProps: (record) => ({
-    //     disabled: record.name === "Disabled User", // Column configuration not to be checked
-    //     name: record.name,
-    //   }),
-    // };
-
     const rowSelection = {
+      // selectedRows,
       onChange: (keys, rows) => {
         selectedRowKeys.value = keys;
-        selectedRows.value = [...rows]; // using the spread operator to create a new array of selected rows
+        selectedRows.value = rows;
+        // selectedRows.value = selectedRows;
       },
+
       getCheckboxProps: (record) => ({
-        disabled: record.name === "Disabled User",
+        disabled: record.name === "Disabled User", // Column configuration not to be checked
         name: record.name,
       }),
     };
 
     const warning = () => {
       Modal.warning({
-        title: "Please Select Rows to Export!",
+        title: "Please Select your Required Rows!",
       });
     };
 
@@ -298,17 +303,7 @@ const Import = {
       convertedTo.value = value;
     };
 
-    // watchEffect(() => {
-    //   selectedRows.value.map((member) => {
-    //     console.log(member);
-    //     const { first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no } = member;
-    //     csvJsonData.push({ first_name: first_name, middle_name: middle_name, last_name: last_name, level_id,org_types_id, role_id, phone_no});
-    //     return csvData.push([first_name, middle_name, last_name, level_id, org_types_id, role_id, phone_no]);
-    //   });
-    // });
     watchEffect(() => {
-      let csvJsonData = []; // clear the array before pushing new data
-      let csvData = []; // clear the array before pushing new data
       selectedRows.value.map((member) => {
         console.log(member);
         const {
