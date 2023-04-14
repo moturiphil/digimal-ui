@@ -24,10 +24,16 @@ const routes = [
   //   name: 'fb-register',
   //   component: () => import(/* webpackChunkName: "fb-register" */ '@/view/authentication/FbSignup.vue'),
   // },
+
   {
     path: 'register',
     name: 'register',
     component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/UserRegistration.vue'),
+  },
+  {
+    path: 'activity-confirm',
+    name: 'activity-confirm',
+    component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/ActivityConfirm.vue'),
   },
 ];
 

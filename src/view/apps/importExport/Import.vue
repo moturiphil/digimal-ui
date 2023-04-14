@@ -1,16 +1,5 @@
 <template>
-  <sdPageHeader title="Import">
-    <template v-slot:buttons>
-      <div class="page-header-actions">
-        <sdCalendarButton />
-        <sdExportButton />
-        <sdShareButton />
-        <sdButton size="small" type="primary">
-          <sdFeatherIcons type="plus" size="14" />
-          Add New
-        </sdButton>
-      </div>
-    </template>
+  <sdPageHeader title="Import Master List">
   </sdPageHeader>
   <Main>
     <a-row :gutter="25">
@@ -53,7 +42,7 @@ const Import = defineComponent({
     const fileUploadProps = {
       name: 'file',
       multiple: true,
-      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      action: 'http://localhost:8000/api/master-import',
       onChange(info) {
         const { status } = info.file;
         if (status !== 'uploading') {

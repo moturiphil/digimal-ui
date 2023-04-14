@@ -45,7 +45,7 @@
                       <div class="table-actions">
                         <sdButton
                           size="small"
-                          type="primary"
+                          type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
                         >
@@ -448,6 +448,6 @@ export default ViewPage;
   background-color: green;
   color: white;
   /* padding: 4px 8px; */
-  border-radius: 4px;
+  border-radius: 8px;
 }
 </style>
