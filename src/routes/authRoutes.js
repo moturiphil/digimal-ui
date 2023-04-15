@@ -30,11 +30,23 @@ const routes = [
     name: 'register',
     component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/UserRegistration.vue'),
   },
+  // {
+  //   path: 'activity-confirm',
+  //   name: 'activity-confirm',
+  //   component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/ActivityConfirm.vue'),
+  // },
   {
-    path: 'activity-confirm',
-    name: 'activity-confirm',
-    component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/ActivityConfirm.vue'),
+    path: '/:a_part',
+    redirect: to => {
+      const a_code = to.query.a_code;
+      return { name: 'register', params: { a_part: to.params.a_part }, query: { a_code: a_code } };
+    }
   },
+  {
+    path: '/activity-confirm/:a_part',
+    name: 'register',
+    component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/ActivityConfirm.vue'),
+  }
 ];
 
 export default routes;

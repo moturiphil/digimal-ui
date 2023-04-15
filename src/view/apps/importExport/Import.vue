@@ -42,7 +42,7 @@ const Import = defineComponent({
     const fileUploadProps = {
       name: 'file',
       multiple: true,
-      action: 'http://localhost:8000/api/master-import',
+      action: `${process.env.VUE_APP_BASE_URL}/master-import`,
       onChange(info) {
         const { status } = info.file;
         if (status !== 'uploading') {

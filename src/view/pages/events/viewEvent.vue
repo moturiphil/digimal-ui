@@ -48,17 +48,24 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
+                          v-if="!record.status"
+                        >
+                          <span >
+                            <sdFeatherIcons type="clock" size="16" />
+                            &nbsp;&nbsp; Start Event
+                          </span>
+                        </sdButton>
+                        <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          v-else
                         >
                           <span v-if="!record.status">
                             <sdFeatherIcons type="clock" size="16" />
                             &nbsp;&nbsp; Start Event
                           </span>
-                          <!-- <span v-else>
-                            <sdFeatherIcons type="check" size="16" />
-                            &nbsp;&nbsp; Started
-                          </span> -->
-                          <span v-else class="badge badge-green">
-                            <sdFeatherIcons type="check" size="16" />
+                          <span  class="badge badge-green">
                             &nbsp;&nbsp; Started
                           </span>
                         </sdButton>
@@ -144,12 +151,12 @@ const columns = [
     key: "id",
   },
   {
-    title: "User Id",
+    title: "User",
     dataIndex: "user_id",
     key: "id",
   },
   {
-    title: "Campaign Id",
+    title: "Campaign",
     dataIndex: "campaign_id",
     key: "id",
   },
@@ -223,12 +230,11 @@ const ViewPage = defineComponent({
           // Vue.set(this.eventStatus, id, true); // update the eventStatus object for this event
           this.eventStatus[id] = true;
           // this.$router.go();
-          location.reload();
-
           // console.log(this.eventStatus[1])
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           // console.log(localStorage.getItem("eventStatus"));
         }
+        location.reload();
       } catch (error) {
         console.error(error);
       } finally {
@@ -445,9 +451,9 @@ export default ViewPage;
 
 <style>
 .badge-green {
-  background-color: green;
+  background-color: #1EC997;
   color: white;
-  /* padding: 4px 8px; */
-  border-radius: 8px;
+  padding: 4px;
+  border-radius: 3px;
 }
 </style>

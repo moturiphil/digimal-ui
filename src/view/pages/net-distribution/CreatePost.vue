@@ -20,6 +20,23 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
+                  <a-form-item name="Campaign" label="Select Campaign">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        v-model:value="formState.campaign"
+                        v-if="!loading"
+                        placeholder="Select Campaign"
+                      >
+                        <a-select-option
+                          v-for="campaign in campaigns"
+                          :value="campaign.id"
+                          :key="campaign.id"
+                          >{{ campaign.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
                     <a-form-item name="name" label="Post Name">
                       <a-input
                         v-model:value="formState.name"
@@ -52,6 +69,7 @@
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         v-model:value="formState.post_supervisor_user_id"
+                        placeholder="Select Post Admin"
                       >
                         <a-select-option
                           v-for="user in users"
@@ -71,6 +89,7 @@
                         class="sDash_fullwidth-select"
                         v-model:value="formState.villages"
                         v-if="!loading"
+                        placeholder="Select villages"
                       >
                         <a-select-option
                           v-for="village in villages"
@@ -135,6 +154,7 @@ const AddNew = defineComponent({
     const join = ref("");
     const API_URL = `${process.env.VUE_APP_BASE_URL}/distribution_post`;
     const router = useRouter();
+    const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
     const formState = reactive({
       name: "",
@@ -147,11 +167,29 @@ const AddNew = defineComponent({
     });
 
     const { villages, loading, isFacility, users } = reactive({
+      campaigns: [],
       villages: [],
       users: [],
       loading: true,
       isFacility: false,
     });
+
+    //campaigns
+    const fetchCampaigns = async () => {
+      const response = await fetch(campaign_url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      this.campaigns = data.data;
+      console.log(this.campaigns);
+      this.loading = false;
+    };
+    fetchCampaigns();
+
 
     //counties
     const getVillages = async () => {
