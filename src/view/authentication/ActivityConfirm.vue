@@ -6,9 +6,6 @@
       <a-col :lg="24" :xs="24">
         <sdCards headless>
           <OverviewSalesCard>
-            <!-- <div class="icon-box box-success">
-              <SvgConverter :src="require('../../static/img/icon/Profit.svg')" />
-            </div> -->
             <div class="card-chunk">
               <CardBarChart2>
                 <h2>Confirm Participation Details</h2>
