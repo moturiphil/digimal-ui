@@ -255,27 +255,6 @@ const ViewPage = defineComponent({
         this.isStarting = false;
       }
     },
-    // async startEvent(id) {
-    //   try {
-    //     // update the event status on the server
-    //     const response = await fetch(
-    //       `${process.env.VUE_APP_BASE_URL}/event_start_trigger/${id}`,
-    //       {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       }
-    //     );
-    //     const data = await response.json();
-    //     console.log(data);
-    //     if (data.status === true) {
-    //       // update the eventStatus object and persist it in local storage
-    //       this.eventStatus[id] = true;
-    //       localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // },
     showModal() {
       this.visible = true;
     },
