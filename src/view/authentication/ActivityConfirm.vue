@@ -1,5 +1,8 @@
 <template>
-  <sdPageHeader class="header-boxed" title="Activity Participation Confirmation">
+  <sdPageHeader
+    class="header-boxed"
+    title="ACTIVITY PARTICIPATION CONFIRMATION"
+  >
   </sdPageHeader>
   <Main class="grid-boxed">
     <a-row :gutter="25">
@@ -8,13 +11,46 @@
           <OverviewSalesCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <h2>Confirm Participation Details</h2>
-                <span>Activity Name:</span>
+                <h3>
+                  <b>
+                    Confirm Participation Details
+                    <div>
+                      <my-script :url="currentUrl"></my-script>
+                    </div>
+                  </b>
+                </h3>
+                <br />
                 <p>
-                  <!-- <span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span> -->
-                  <span>Activity Code:</span>
-                  <span>Activity Location:</span>
+                  <span class="growth-upward">
+                    <sdFeatherIcons type="at-sign"
+                  /></span>
+                  <span> <b>Participants Name:</b> {{ participant_name }}</span>
                 </p>
+                <p>
+                  <span class="growth-upward">
+                    <sdFeatherIcons type="cast"
+                  /></span>
+                  <span> <b> Activity Name: </b>{{ activity_name }} </span>
+                </p>
+                <p>
+                  <span class="growth-upward">
+                    <sdFeatherIcons type="flag" />
+                  </span>
+                  <span> <b>Confirmation Date:</b> {{ activity_date }} </span>
+                </p>
+                <br />
+                <!-- get button to align to the center -->
+
+                <sdButton
+                  class="btn-signin"
+                  htmlType="submit"
+                  :loading="isLoading"
+                  type="success"
+                  size="large"
+                  @click="confirm"
+                >
+                  Confirm
+                </sdButton>
               </CardBarChart2>
             </div>
           </OverviewSalesCard>
@@ -24,31 +60,100 @@
   </Main>
 </template>
 <script>
-import { CardBarChart2, OverviewSalesCard } from './style';
-import { Main } from '../styled';
+import { CardBarChart2, OverviewSalesCard } from "../dashboard/style";
+import { Main } from "../styled";
 // import { defineAsyncComponent } from 'vue';
-import SvgConverter from '@/components/utilities/SvgConverter.vue';
+import SvgConverter from "@/components/utilities/SvgConverter.vue";
+import { notification } from "ant-design-vue";
 
-// const AverageSalesRevenue = defineAsyncComponent(() => import('./overview/sales/AverageSalesRevenue'));
-// const SalesGrowth = defineAsyncComponent(() => import('./overview/sales/SalesGrowth'));
-// const SalesTarget = defineAsyncComponent(() => import('./overview/sales/SalesTarget'));
-// const TopSellingProduct = defineAsyncComponent(() => import('./overview/sales/TopSellingProduct'));
-// const TopCountriesRevenue = defineAsyncComponent(() => import('./overview/sales/TopCountriesRevenue'));
-// const RecentOrder = defineAsyncComponent(() => import('./overview/sales/RecentOrder'));
+
+import authHeader from "../../services/auth-header";
 
 const Sales = {
-  name: 'Sales',
+  name: "Sales",
   components: {
     Main,
     CardBarChart2,
     OverviewSalesCard,
-    // AverageSalesRevenue,
-    // SalesTarget,
-    // TopSellingProduct,
-    // SalesGrowth,
-    // RecentOrder,
-    // TopCountriesRevenue,
     SvgConverter,
+  },
+  data() {
+    // let url = this.currentUrl.replace("/auth/activity-confirm?", "act_part_cfm?");
+    // console.log(url);
+    // const confirm_response = fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
+    //   method: "GET",
+    //   headers: authHeader(),
+    // });
+    // confirm_response.then((res) => {
+    //   console.log(res);
+    //   return res.json();
+    // });
+    return {
+      currentUrl: "",
+      newUrl: "",
+      participant_name: "",
+      activity_name: "",
+      activity_date: "",
+      activity_location: "",
+    };
+  },
+  mounted() {
+    this.currentUrl = this.$route.fullPath;
+    let newUrl = this.currentUrl.replace(
+      "/auth/activity-confirm?",
+      "act_part?"
+    );
+    // console.log(this.currentUrl);
+
+    const response = fetch(`${process.env.VUE_APP_BASE_URL}/${newUrl}`, {
+      method: "GET",
+      headers: authHeader(),
+    });
+    console.log(newUrl);
+
+    response
+      .then((res) => {
+        console.log(res);
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data); // This should log the "id" property from the response data
+        this.participant_name = data.user_id;
+        this.activity_name = data.activity_id;
+        this.activity_date = data.activity_date;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  },
+  methods: {
+    confirm() {
+      let newUrl = this.currentUrl.replace(
+        "/auth/activity-confirm?",
+        "act_part_cfm?"
+      );
+      console.log(newUrl);
+      const confirm_response = fetch(`${process.env.VUE_APP_BASE_URL}/${newUrl}`, {
+        method: "GET",
+        headers: authHeader(),
+      });
+      confirm_response.then((res) => {
+        // console.log(res.status == 200);
+        // return res.json();
+        if (res.status == 200) {
+          notification.success({
+            message: "Success",
+            description: "Activity Participation Confirmed",
+          });
+          this.$router.push("/");
+        } else {
+          notification.error({
+            message: "Error",
+            description: "Activity Participation Not Confirmed",
+          });
+        }
+      });
+    },
   },
 };
 

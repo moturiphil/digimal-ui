@@ -46,7 +46,12 @@ const routes = [
     path: '/activity-confirm/:a_part',
     name: 'register',
     component: () => import(/* webpackChunkName: "forgotPassword" */ '@/view/authentication/ActivityConfirm.vue'),
-  }
+  },
+  {
+    path: '/auth/activity-confirm',
+    name: 'activity-confirm',
+    component: () => import('@/view/authentication/ActivityConfirm.vue')
+  },
 ];
 
 export default routes;

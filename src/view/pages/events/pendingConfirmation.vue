@@ -19,7 +19,7 @@
             <sdCards headless> </sdCards>
           </a-col>
           <a-col :xxl="24" :xl="24" :md="24" :xs="24">
-            <sdCards title="Event Participants"> <pendingConfirmation /></sdCards>
+            <sdCards title="Pending Participants"> <pendingConfirmation /></sdCards>
           </a-col>
         </a-row>
       </Main>
