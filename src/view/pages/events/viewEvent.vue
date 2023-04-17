@@ -96,7 +96,21 @@
                             shape="circle"
                           >
                             <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; Participants
+                            &nbsp;&nbsp; Confirmed Participants
+                          </router-link>
+                        </sdButton>
+                        <sdButton>
+                          <router-link
+                            :to="{
+                              path: `/event/pending-confirmation/${record.id}`,
+                              query: { id: record.event_code },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="pause" size="16" />
+                            &nbsp;&nbsp; Pending Confirmation
                           </router-link>
                         </sdButton>
 
