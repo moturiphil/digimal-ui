@@ -21,7 +21,7 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">77,461</sdHeading>
+                <sdHeading as="h1">{{ nets_distributed }}</sdHeading>
                 <span>Nets Distributed</span>
                 <p>
                   <!-- <span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
@@ -57,7 +57,7 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">28,947</sdHeading>
+                <sdHeading as="h1">{{registered_users}}</sdHeading>
                 <span>Registered Users</span>
                 <p>
                   <!--<span class="growth-downward"> <sdFeatherIcons type="arrow-down" /> 25% </span>
@@ -94,7 +94,7 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">41</sdHeading>
+                <sdHeading as="h1">{{ active_events }}</sdHeading>
                 <span>Active Events</span>
                 <p>
                   <!-- <span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
@@ -130,8 +130,8 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">4500</sdHeading>
-                <span>Registered HH</span>
+                <sdHeading as="h1">{{ registered_house_holds }}</sdHeading>
+                <span>Registered HouseHolds</span>
                 <p>
                   <!--<span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
                   <span>Since last week</span>-->
@@ -230,10 +230,12 @@
 import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import { defineComponent } from 'vue';
+import authHeader from "../../services/auth-header";
 
-import { useRouter } from "vue-router";
+
+// import { useRouter } from "vue-router";
 
 const NetsDistributed = defineAsyncComponent(() =>
   import("./overview/massnet/NetsDistributed")
@@ -297,15 +299,45 @@ export default defineComponent({
     OnGoingEvents,
     HouseHoldRegistered,
   },
+  data() {
+    return {
+    };
+  },
   setup() {
-    const router = useRouter();
-    
-    console.log(router);
+    const active_events = ref(0);
+    const nets_distributed= ref(0);
+    const registered_house_holds= ref(0);
+    const registered_users= ref(0);
 
-    console.log(sessionStorage.getItem("user"));
+
+    // console.log(sessionStorage.getItem("user"));
+    onMounted(async () => {
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/dash_stats`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data.active_events);
+        active_events.value = data.active_events;
+        nets_distributed.value = data.nets_distributed;
+        registered_house_holds.value = data.registered_house_holds;
+        registered_users.value = data.registered_users;
+        // console.log(data.active_events);
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
     return {
       chartOptions,
+      active_events,
+      nets_distributed,
+      registered_house_holds,
+      registered_users,
     };
   },
   beforeRouteEnter(to, from, next) {
