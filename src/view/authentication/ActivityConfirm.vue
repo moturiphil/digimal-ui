@@ -137,8 +137,9 @@ const Sales = {
         method: "GET",
         headers: authHeader(),
       });
+      // console.log(confirm_response);
       confirm_response.then((res) => {
-        // console.log(res.status == 200);
+        console.log(res);
         // return res.json();
         if (res.status == 200) {
           notification.success({
