@@ -185,15 +185,15 @@
                 <a-col :md="12" :xs="24">
                   <span class="admin-footer__copyright">2023 © MassNetCampaign</span>
                 </a-col>
+                <!-- <a-col :md="12" :xs="24">
+                  <div class="admin-footer__links">
+                    <img class="auth-content-figure" :src="require('@/static/img/auth/HealthIT-resize.png')" alt="" />
+                  </div>
+                </a-col> -->
                 <a-col :md="12" :xs="24">
                   <div class="admin-footer__links">
-                    <!-- <router-link to="/user/profile"
-                      >Profile</router-link
-                    > -->
-                    <!-- <router-link to="/app/users/team">Team</router-link> -->
-                    <!-- <router-link to="/app/contact/contact-grid"
-                      >Contacts</router-link
-                    > -->
+                    <!-- <img class="auth-content-figure" :src="require('@/static/img/auth/HealthIT-resize.png')" alt="" />
+                    <img class="auth-content-figure" :src="require('@/static/img/auth/UoN.jpeg')" alt="" /> -->
                   </div>
                 </a-col>
               </a-row>

@@ -151,8 +151,8 @@
                         :options="
                           (() => {
                             return users.map(
-                              ({ first_name, last_name, id }) => ({
-                                label: `${first_name} ${last_name}`,
+                              ({ first_name, last_name, role_id, id }) => ({
+                                label: `${first_name} ${last_name}  ${role_id}`,
                                 value: id,
                               })
                             );
@@ -213,7 +213,7 @@ const AddNew = defineComponent({
       const activity = this.activities.find(
         (activity) => activity.id === this.formState.activity_id
       );
-      console.log(activity);
+      // console.log(activity);
       return activity ? activity.payable_travel_days : 1;
     },
   },
@@ -257,7 +257,7 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data.data);
+      // console.log(data.data);
       this.activities = data.data;
       // console.log(data);
     };
@@ -276,13 +276,13 @@ const AddNew = defineComponent({
         ...county,
         // org_id: county.org_id,
       }));
-      console.log(this.counties);
+      // console.log(this.counties);
       this.loading = false;
     };
 
     //get sub_counties
     const getSubCounties = async (org_id) => {
-      console.log(org_id);
+      // console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -294,7 +294,7 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       this.sub_counties = data.message;
     };
     //campaigns
@@ -325,7 +325,7 @@ const AddNew = defineComponent({
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
       };
-      console.log({ values });
+      // console.log({ values });
 
       fetch(API_URL, {
         method: "POST",
@@ -337,7 +337,7 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success, data }) => {
-          console.log(data);
+          // console.log(data);
           if (success) {
             router.push("activity-view");
             notification["success"]({
@@ -355,7 +355,7 @@ const AddNew = defineComponent({
       axios
         .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
         .then(function ({ data }) {
-          console.log({ data: data.data });
+          // console.log({ data: data.data });
           users.value = data.data;
         })
         .catch(function (error) {
@@ -403,7 +403,7 @@ const AddNew = defineComponent({
       this.visible = true;
     },
     showConfirmModal(activity_facilitator) {
-      console.log(activity_facilitator);
+      // console.log(activity_facilitator);
       Modal.success({
         title: "Activity Officers",
         content: (

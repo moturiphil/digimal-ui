@@ -68,22 +68,12 @@
       key: 'id',
     },
     {
-      title: 'Event Start Date',
-      dataIndex: 'start_date',
-      key: 'id',
-    },
-    {
-      title: 'Event End Date',
-      dataIndex: 'end_date',
-      key: 'id',
-    },
-    {
-      title: 'User_id',
+      title: 'User',
       dataIndex: 'user_id',
       key: 'id',
     },
     {
-      title: 'campaign_id',
+      title: 'Campaign',
       dataIndex: 'campaign_id',
       key: 'id',
     },
