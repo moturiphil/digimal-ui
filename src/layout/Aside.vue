@@ -67,12 +67,18 @@
           <router-link to="/nets/delivered"> Nets Received </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="org-units">
+      <a-sub-menu key="administrative-units">
         <template v-slot:title>
           <sdFeatherIcons type="cpu" />
           <!-- <sdFeatherIcons type="DeploymentUnitOutlined" />  -->
           <span>Organization Units</span></template
         >
+
+        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+          <router-link to="/org-units/view">
+            List Orgranization Units
+          </router-link>
+        </a-menu-item>
 
         <a-menu-item @click="toggleCollapsed" key="widgetCharts">
           <router-link to="/org-units/location-create">
