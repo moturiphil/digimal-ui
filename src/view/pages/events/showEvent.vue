@@ -8,7 +8,7 @@
       </template>
     </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" @click="exportUserData">
+      <sdButton class="btn-import" type="success" @click="exportEventParticipants">
         Export Participants
       </sdButton>
       <div v-if="!project" class="spin">
@@ -48,8 +48,9 @@ const ProjectDetails = defineComponent({
     const project = computed(() => state.project.singData);
     const { params, matched, query } = useRoute();
     const { title, content } = computed(() => state.project.singData[0]);
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/generateEventParticipantCSV?event=${query.id}`;
 
-    console.log({ query, params });
+    console.log(query.id);
     const { facilitators } = reactive({ facilitators: [] });
 
     const columns = [
@@ -75,33 +76,7 @@ const ProjectDetails = defineComponent({
       },
     ];
 
-    // const getfacilitatorsgj = async () => {
-    //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       ...authHeader(),
-    //     },
-    //   });
-    //   const data = await response.json();
-    //   this.facilitators = data.data;
-    //   Modal.info({
-    //     title: 'Facilitators',
-    //     content: (
-    //         {/* {data.data.map((facilitator, index) => (
-    //           <p>{index + 1} {facilitator.first_name}  {facilitator.last_name} - {facilitator.phone_no} - {facilitator.id_no}</p>
-    //         ))
-    //         } */}
-    //         // <div>
-    //         //   <Table dataSource={data.data} columns={columns} />
-    //         // </div>
 
-    //     ),
-    //     onOk() {},
-    //   });
-
-    //   // this.loading = false;
-    // };
     const getfacilitators = async () => {
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`,
@@ -128,6 +103,32 @@ const ProjectDetails = defineComponent({
     onMounted(() => {
       dispatch("eventCampaignData", parseInt(params.id, 10));
     });
+    const exportEventParticipants = async () => {
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "event_participants.csv";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     return {
       title,
@@ -137,6 +138,7 @@ const ProjectDetails = defineComponent({
       matched,
       facilitators,
       getfacilitators,
+      exportEventParticipants,
     };
   },
 });

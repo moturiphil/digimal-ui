@@ -139,7 +139,7 @@
       },
      
       onOk() {
-        console.log("Register");
+        // console.log("Register");
       },
     });
   },
@@ -178,7 +178,7 @@
           headers: authHeader(),
         })
         .then(({data}) => {
-          console.log({data: data.data});
+          // console.log({data: data.data});
           dataSource.value = data.data.map((obj) => {
             switch(obj.county_id){
               case 1:

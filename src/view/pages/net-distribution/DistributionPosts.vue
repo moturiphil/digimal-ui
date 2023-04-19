@@ -58,19 +58,9 @@ const columns = [
     key: "post_code",
   },
   {
-    title: "Supervisor Id",
+    title: "Supervisor Name",
     dataIndex: "post_supervisor_user_id",
     key: "post_supervisor_user_id",
-  },
-  {
-    title: "Distribution Start Date",
-    dataIndex: "distribution_start_date",
-    key: "distribution_start_date",
-  },
-  {
-    title: "Distribution End Date",
-    dataIndex: "distribution_end_date",
-    key: "distribution_end_date",
   },
   {
     title: "Action",

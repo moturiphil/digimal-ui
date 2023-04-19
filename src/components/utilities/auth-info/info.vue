@@ -1,7 +1,7 @@
 <template>
   <InfoWraper>
     <!-- <Message /> -->
-    <Notification />
+    <!-- <Notification /> -->
     <!-- <Settings /> -->
     <!-- <Support /> -->
     <div class="nav-author">
@@ -59,7 +59,7 @@
                   alt=""
                 /> -->
                 <figcaption>
-                  <sdHeading as="h5">User Profile</sdHeading>
+                  <sdHeading as="h5">User Action</sdHeading>
                   <p>
                     
                   </p>
@@ -67,9 +67,9 @@
                 <br>
               </figure>
               <ul class="user-dropdwon__links">
-                <router-link to="/user/profile"
+                <!-- <router-link to="/user/profile"
                       ><sdFeatherIcons type="user" />Profile</router-link
-                    >
+                    > -->
                 <!-- <li>
                   <a to="#"> <sdFeatherIcons type="settings" /> Settings </a>
                 </li>
@@ -103,7 +103,7 @@
 import { InfoWraper, UserDropDwon } from "./auth-info-style";
 // import Support from "./Support";
 // import Settings from "./Settings";
-import Notification from "./Notification";
+// import Notification from "./Notification";
 // import Message from "./Message";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
@@ -116,7 +116,7 @@ export default defineComponent({
   components: {
     InfoWraper,
     UserDropDwon,
-    Notification,
+    // Notification,
     LogoutOutlined,
   },
   data() {

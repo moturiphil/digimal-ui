@@ -67,19 +67,18 @@
                     </a-form-item>
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
+                        placeholder="Selected Host"
                         v-model:value="formState.facilitator_id"
                         v-if="!loading"
-                        placeholder="Select Host"
                       >
-                        <!-- select facilitator option  -->
-                        <!-- <a-select-option>Select Facilitator</a-select-option> -->
                         <a-select-option
                           v-for="facilitator in facilitators"
                           :key="facilitator.id"
                           v-model:value="facilitator.id"
                         >
                           {{ facilitator.first_name }}
-                          {{ facilitator.last_name }} - {{ facilitator.phone_no }}
+                          {{ facilitator.last_name }} -
+                          {{ facilitator.role_id }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
@@ -89,7 +88,7 @@
                         mode="multiple"
                         v-model:value="formState.trainer_id"
                         v-if="!loading"
-                        placeholder="Select at-most two facilitators"
+                        placeholder="Select facilitators"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
@@ -97,7 +96,7 @@
                           :value="trainer.id"
                         >
                           {{ trainer.first_name }}
-                          {{ trainerlast_name }} - {{ trainer.id_no }}
+                          {{ trainer.last_name }} - {{ trainer.role_id }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
@@ -135,7 +134,6 @@ import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 
-
 // testing app
 
 const AddNew = defineComponent({
@@ -162,9 +160,8 @@ const AddNew = defineComponent({
 
     const { campaigns, facilitators, loading } = reactive({
       campaigns: "",
-      loading: true, 
+      loading: true,
       facilitators: [],
-
     });
 
     const fetchCampaigns = async () => {
@@ -177,7 +174,7 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.campaigns = data.data;
-      console.log(this.campaigns);
+      // console.log(this.campaigns);
       this.loading = false;
     };
     fetchCampaigns();
@@ -192,7 +189,7 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.facilitators = data.data;
-      console.log(data.data);
+      // console.log(data.data);
       this.loading = false;
     };
     fetchFacilitators();
@@ -207,7 +204,7 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.facilitators = data.data;
-      console.log(data.data);
+      // console.log(data.data);
       this.loading = false;
     };
     fetchTrainer();
@@ -217,13 +214,13 @@ const AddNew = defineComponent({
         name: formState.name,
         user_id: 1,
         venue: formState.venue,
-        location_id: 1, 
+        location_id: 1,
         campaign_id: formState.campaign_id,
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
       };
 
-      console.log(data);
+      // console.log(data);
 
       fetch(API_URL, {
         method: "POST",
@@ -259,7 +256,7 @@ const AddNew = defineComponent({
       trainer_id: [],
     });
 
-    console.log(formState);
+    // console.log(formState);
 
     return {
       isLoading,
