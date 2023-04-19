@@ -92,8 +92,6 @@ const EventCampaignTable = defineComponent({
 
     const { query } = useRoute();
 
-    console.log(query.id);
-
     onMounted(async () => {
       try {
         const response = await axios.get(
@@ -102,7 +100,7 @@ const EventCampaignTable = defineComponent({
             headers: authHeader(),
           }
         );
-        console.log(response.data.data);
+        // console.log(response.data.data);
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
@@ -114,10 +112,10 @@ const EventCampaignTable = defineComponent({
         });
 
         dataSource.value = response.data.data;
-        console.log(updatedData);
+        // console.log(updatedData);
         dataSource.value = updatedData;
 
-        console.log(dataSource.value);
+        // console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }

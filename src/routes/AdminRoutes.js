@@ -126,7 +126,8 @@ const routes = [
           import(
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/confirmActivity.vue"
           ),
-      },      {
+      },
+      {
         path: "activity-create",
         name: "activity-create",
         component: () =>
@@ -134,41 +135,24 @@ const routes = [
             /* webpackChunkName: "fireStore-add" */ "../view/pages/activities/createActivity.vue"
           ),
       },
-      // {
-      //   path: "location-create",
-      //   name: "location-create",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createLocation.vue"
-      //     ),
-      // },
-      // {
-      //   path: "sub-location-create",
-      //   name: "sub-location-create",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createSubLocation.vue"
-      //     ),
-      // },
-      // {
-      //   path: "village-create",
-      //   name: "village-create",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
-      //     ),
-      // },
     ],
   },
-
   {
-    path: "/org-units",
+    path: "/org-units/",
     name: "org-units",
     component: () =>
       import(
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
+      {
+        path: "view",
+        name: "view",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/viewUnits.vue"
+          ),
+      },
       {
         path: "location-create",
         name: "location-create",
@@ -192,6 +176,16 @@ const routes = [
           import(
             /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
           ),
+      },
+      {
+        path: "/:id/sub-counties",
+        name: "county-sub-counties",
+        component: () => import("../view/pages/orgUnits/countySubCounties.vue"),
+      },
+      {
+        path: "/:id/wards",
+        name: "sub-county-wards",
+        component: () => import("../view/pages/orgUnits/countySubCounties.vue"),
       },
     ],
   },
