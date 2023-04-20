@@ -12,11 +12,10 @@
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
-
+            <!-- :rowSelection="rowSelection" -->
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :rowSelection="rowSelection"
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"

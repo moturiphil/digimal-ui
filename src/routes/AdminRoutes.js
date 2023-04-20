@@ -185,7 +185,7 @@ const routes = [
       {
         path: "/:id/wards",
         name: "sub-county-wards",
-        component: () => import("../view/pages/orgUnits/countySubCounties.vue"),
+        component: () => import("../view/pages/orgUnits/subCountyWards.vue"),
       },
     ],
   },

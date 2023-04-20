@@ -2,12 +2,6 @@
   <RecordViewWrapper>
     <sdPageHeader title="Users">
       <template id="buttons"></template>
-      <!-- <template #buttons>
-        <div class="search-box">
-          <span class="search-icon">
-            <sdFeatherIcons type="search" size="14" />
-          </span></div
-      ></template> -->
     </sdPageHeader>
 
     <!-- sdPageBody -->
@@ -42,7 +36,6 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :rowSelection="rowSelection"
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"

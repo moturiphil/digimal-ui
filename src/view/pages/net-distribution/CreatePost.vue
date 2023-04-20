@@ -76,7 +76,7 @@
                           :value="user.id"
                           :key="user.id"
                           >{{
-                            user.first_name + " " + user.last_name
+                            user.first_name + " " + user.last_name + " " +  user.role_id
                           }}</a-select-option
                         >
                       </a-select>
