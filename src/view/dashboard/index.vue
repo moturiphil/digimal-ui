@@ -2,9 +2,6 @@
   <sdPageHeader title="DigiMal KE Dashboard">
     <template v-slot:buttons>
       <div class="page-header-actions">
-        <!-- <sdCalendarButton />
-        <sdExportButton />
-        <sdShareButton /> -->
         <router-link v-bind:to="'campaigns/create'">
           <sdButton size="small" type="success">
             <sdFeatherIcons type="plus" size="14" />

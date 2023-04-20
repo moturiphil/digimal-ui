@@ -115,6 +115,7 @@
           .then((response) => {
             console.log(response.data.data);
             dataSource.value = response.data.data;
+            // let house_hold_sz = dataSource; 
           })
           .catch((error) => {
             console.error(error);
