@@ -105,12 +105,12 @@
       dataIndex: 'county_id',
       key: 'id',
     },
-    {
-      title: '',
-      dataIndex: '',
-      key: 'activities',
-      slots: { customRender: "activities" },
-    }
+    // {
+    //   title: '',
+    //   dataIndex: '',
+    //   key: 'activities',
+    //   slots: { customRender: "activities" },
+    // }
     
   ];
   
