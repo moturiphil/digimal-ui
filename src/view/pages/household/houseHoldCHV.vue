@@ -1,5 +1,5 @@
 <template>
-  <sdPageHeader title="Add Campaign Users">
+  <sdPageHeader title="Assign Campaign Users">
     <sdButton class="btn-add_new" size="default" key="1" type="success">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>
@@ -144,7 +144,7 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-        campign_id: formState.campaign_id,
+        campaign_id: formState.campaign_id,
         user_ids: formState.chv_id,
       };
 
@@ -173,7 +173,7 @@ const AddNew = defineComponent({
             // output notification for each user
             else if (occupied_users.length > 0) {
               for (var i = 0; i < occupied_users.length; i++) {
-                notification["erro"]({
+                notification["error"]({
                   message: message,
                   description: `User ${occupied_users[i].user} already assigned to a campaign`,
                   duration: 10.5,

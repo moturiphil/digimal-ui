@@ -152,7 +152,7 @@
                           (() => {
                             return users.map(
                               ({ first_name, last_name, role_id, id }) => ({
-                                label: `${first_name} ${last_name}  ${role_id}`,
+                                label: `${first_name} ${last_name} - ${role_id}`,
                                 value: id,
                               })
                             );

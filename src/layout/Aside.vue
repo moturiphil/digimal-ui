@@ -114,6 +114,11 @@
             Campaign Users
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
+          <router-link to="/campaign/users">
+            List Campaign Users
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
       <a-menu-item @click="toggleCollapsed" key="">
