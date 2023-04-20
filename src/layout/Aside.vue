@@ -109,6 +109,11 @@
             Registered HouseHolds
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
+          <router-link to="/households/chv">
+            Campaign Users
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
       <a-menu-item @click="toggleCollapsed" key="">

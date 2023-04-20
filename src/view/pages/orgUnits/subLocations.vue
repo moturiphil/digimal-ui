@@ -1,9 +1,16 @@
 <template>
     <RecordViewWrapper>
       <sdPageHeader title="Sub Locations">
-        <template #subTitle>
-          <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
-        </template>
+        <template v-slot:buttons>
+        <!-- <div class="page-header-actions">
+          <router-link v-bind:to="'location/create'">
+            <sdButton size="small" type="success">
+              <sdFeatherIcons type="plus" size="14" />
+              Create Sub Location
+            </sdButton>
+          </router-link>
+        </div> -->
+      </template>
       </sdPageHeader>
       <Main>
         <a-row :gutter="15">

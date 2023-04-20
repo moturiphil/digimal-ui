@@ -318,7 +318,7 @@ const AddNew = defineComponent({
       values = {
         activity_list_id: values.activity_id,
         county_id: 3,
-        sub_county_id:1,
+        // sub_county_id:1,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
         // end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
@@ -338,7 +338,7 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success, data }) => {
-          // console.log(data);
+          // console.log(data); 
           if (success) {
             router.push("activity-view");
             notification["success"]({
