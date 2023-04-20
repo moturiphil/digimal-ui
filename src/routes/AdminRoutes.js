@@ -180,12 +180,27 @@ const routes = [
       {
         path: "/:id/sub-counties",
         name: "county-sub-counties",
-        component: () => import("../view/pages/orgUnits/countySubCounties.vue"),
+        component: () => import("../view/pages/orgUnits/subCounties.vue"),
       },
       {
         path: "/:id/wards",
-        name: "sub-county-wards",
-        component: () => import("../view/pages/orgUnits/subCountyWards.vue"),
+        name: "wards",
+        component: () => import("../view/pages/orgUnits/wardUnits.vue"),
+      },
+      {
+        path: "/:id/locations",
+        name: "locations",
+        component: () => import("../view/pages/orgUnits/locationUnits.vue"),
+      },
+      {
+        path: "/:id/sub-locations",
+        name: "sub-locations",
+        component: () => import("../view/pages/orgUnits/subLocations.vue"),
+      },
+      {
+        path: "/:id/villages",
+        name: "villages",
+        component: () => import("../view/pages/orgUnits/villageUnits.vue"),
       },
     ],
   },

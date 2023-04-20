@@ -1,6 +1,6 @@
 <template>
     <RecordViewWrapper>
-      <sdPageHeader title="Sub-Counties">
+      <sdPageHeader title="Sub Locations">
         <template #subTitle>
           <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
         </template>
@@ -26,7 +26,7 @@
                           <sdButton>
                             <router-link
                               :to="{
-                                path: `ward/location/${record.id}`,
+                                path: `/org-units${record.id}/villages`,
                                 query: { id: record.org_id },
                               }"
                               class="btn-icon"
@@ -34,7 +34,7 @@
                               shape="circle"
                             >
                               <sdFeatherIcons type="eye" size="16" />
-                              &nbsp;&nbsp; View Wards
+                              &nbsp;&nbsp; View Villages
                             </router-link>
                           </sdButton>
                         </div>
@@ -68,14 +68,19 @@
   //     key: "id",
   //   },
     {
-      title: "Sub County Name",
+      title: "Sub Location Name",
       dataIndex: "name",
       key: "id",
     },
     {
-      title: "Sub County Code",
+      title: "Sub Location Code",
       dataIndex: "code",
       key: "name",
+    },
+    {
+      title: "Org ID",
+      dataIndex: "org_id",
+      key: "org_id",
     },
     {
       title: "",
@@ -99,7 +104,7 @@
   
       //   const api_url = UserService;
       //   console.log(api_url);
-
+  
       console.log({ query, params });
       console.log(query.id);
   
@@ -113,6 +118,7 @@
             }
           );
           const data = await response.json();
+          console.log(data);
           dataSource.value = data.message;
           console.log(dataSource.value);
         } catch (error) {

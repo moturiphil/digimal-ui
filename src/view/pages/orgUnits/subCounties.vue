@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Wards">
+    <sdPageHeader title="Sub-Counties">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
@@ -26,7 +26,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `ward/location/${record.id}`,
+                              path: `/org-units${record.id}/wards`,
                               query: { id: record.org_id },
                             }"
                             class="btn-icon"
@@ -62,11 +62,11 @@ import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-//   {
-//     title: "Id",
-//     dataIndex: "id",
-//     key: "id",
-//   },
+  //   {
+  //     title: "Id",
+  //     dataIndex: "id",
+  //     key: "id",
+  //   },
   {
     title: "Sub County Name",
     dataIndex: "name",
@@ -76,6 +76,11 @@ const columns = [
     title: "Sub County Code",
     dataIndex: "code",
     key: "name",
+  },
+  {
+    title: "Org ID",
+    dataIndex: "org_id",
+    key: "org_id",
   },
   {
     title: "",
@@ -106,7 +111,7 @@ const DragAndDropTable = defineComponent({
     onMounted(async () => {
       try {
         const response = await fetch(
-          // `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${query.id}`,
+          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${query.id}`,
           {
             method: "GET",
             headers: authHeader(),

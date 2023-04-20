@@ -314,10 +314,11 @@ const AddNew = defineComponent({
     };
     // const handleSelect = (values)
     const handleSubmit = (values) => {
+      console.log(values);
       values = {
         activity_list_id: values.activity_id,
-        county_id: 1,
-        // sub_county_id: values.sub_county_id,
+        county_id: 3,
+        sub_county_id:1,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
         // end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
