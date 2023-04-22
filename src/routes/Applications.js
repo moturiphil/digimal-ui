@@ -93,6 +93,11 @@ export default [
         path: 'distribution-points',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/ViewPoints.vue'),
       },
+      {
+        name: 'drop-off',
+        path: 'drop-off',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/NetsDropoff.vue'),
+      },
     ],
   },
   {

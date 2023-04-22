@@ -1,5 +1,5 @@
 <template>
-  <sdPageHeader title="Receive Nets at Drop Point">
+  <sdPageHeader title="Received Nets at Drop Point">
     <sdButton class="btn-add_new" size="default" key="1" type="sucess">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>
@@ -115,7 +115,7 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
-// import { useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
 
 const dateFormat = "YYYY-MM-DD";
@@ -130,7 +130,7 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
     const API_URL = `${process.env.VUE_APP_BASE_URL}/net_deliveries_drop_of_points`;
-    // const router = useRouter();
+    const router = useRouter();
     const { query } = useRoute();
     // const drop_off_point_id = query.id;
     const parameters = { query };
@@ -256,7 +256,7 @@ const AddNew = defineComponent({
         .then(({ status, data }) => {
           console.log(data);
           if (status == true ) {
-            // router.push("delivered");
+            router.push("/nets/drop-off");
             notification["success"]({
               message: "Nets Received",
               description: "Nets have been successfully delivered",
