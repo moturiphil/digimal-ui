@@ -141,7 +141,7 @@ const AddNew = defineComponent({
     const router = useRouter();
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
-    const { villages, loading, isFacility, users, campaigns } = reactive({
+    const { loading, isFacility, campaigns, sub_counties } = reactive({
       campaigns: [],
       counties: [],
       sub_counties: [],
@@ -193,7 +193,7 @@ const AddNew = defineComponent({
 
     //get sub_counties
     const getSubCounties = async (org_id) => {
-      // console.log(org_id);
+      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -291,9 +291,10 @@ const AddNew = defineComponent({
       dateFormat,
       formState,
       join,
-      villages,
-      users,
-      campaigns
+      getSubCounties,
+      sub_counties,
+      campaigns,
+
     };
   },
   beforeRouteEnter(to, from, next) {
