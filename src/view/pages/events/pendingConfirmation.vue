@@ -44,7 +44,6 @@
   
     data() {
       const { state, dispatch } = useStore();
-  
       const project = computed(() => state.project.singData);
       const { params, matched, query } = useRoute();
       const { title, content } = computed(() => state.project.singData[0]);

@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Drop Off Points">
+    <sdPageHeader title="Drop Off Points Off">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
         </sdButton>
@@ -27,8 +27,8 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/nets/receive/${record.id}`,
-                              query: { id: record.id },
+                              path: `/receive-nets/`,
+                              query: { id: record.id, name: record.name, campaign_id: record.campaign_id },
                             }"
                             class="btn-icon"
                             type="info"
