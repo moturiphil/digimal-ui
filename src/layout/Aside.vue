@@ -53,6 +53,9 @@
           <sdFeatherIcons type="share-2" /><span>Nets Distribution</span>
         </template>
         <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/distribution-point"> Distribution Point </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="net-distribution">
