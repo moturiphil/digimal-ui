@@ -380,7 +380,7 @@ const ViewPage = defineComponent({
       try {
         // Validate the event code
         const { data } = await axios.get(
-          `${API_URL}?event_code=${eventCode.value}`
+          `${API_URL}?event_code=${ eventCode.value }`
         );
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");

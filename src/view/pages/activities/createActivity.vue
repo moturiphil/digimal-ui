@@ -35,7 +35,7 @@
                           :value="activity.id"
                           :key="activity.id"
                           >{{ activity.name }}</a-select-option
-                        >
+                        > 
                       </a-select>
                     </a-form-item>
 
@@ -62,12 +62,13 @@
                         </a-select-option>
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="sub_county" label="Sub County">
+                    <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
+                        v-model:value="formState.sub_county_id"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -85,7 +86,7 @@
                       <a-select
                         name="basic-select"
                         class="sDash_fullwidth-select"
-                        placeholder="Select County"
+                        placeholder="Select Campaign"
                         v-model:value="formState.campaign_id"
                       >
                         <a-select-option value="" disabled
@@ -235,6 +236,7 @@ const AddNew = defineComponent({
     const formState = reactive({
       activity_id: "",
       county_id: "",
+      sub_county_id: "",
       campaign_id: "",
       start_date: "",
       end_date: "",
@@ -317,8 +319,8 @@ const AddNew = defineComponent({
       console.log(values);
       values = {
         activity_list_id: values.activity_id,
-        county_id: 3,
-        // sub_county_id:1,
+        county_id:values.county_id ,
+        sub_county_id:values.sub_county_id,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
         // end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
