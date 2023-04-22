@@ -48,13 +48,25 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
+
+
+      <a-sub-menu key="drop-off-point">
+        <template v-slot:title>
+          <sdFeatherIcons type="map-pin" /><span>Distribution Point</span>
+        </template>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/distribution-point"> Create Distribution Point </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/distribution-points"> List Distribution Point </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+
+
       <a-sub-menu key="nets-distribution">
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Nets Distribution</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-point"> Distribution Point </router-link>
-        </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="post-create">
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>

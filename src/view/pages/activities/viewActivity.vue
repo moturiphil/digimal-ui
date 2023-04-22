@@ -44,7 +44,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/event/view/${record.id}`,
+                              path: `/activity/view/${record.id}`,
                               query: { id: record.event_code },
                             }"
                             class="btn-icon"
@@ -58,7 +58,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/event/pending-confirmation/${record.id}`,
+                              path: `/activity/pending-confirmation/${record.id}`,
                               query: { id: record.event_code },
                             }"
                             class="btn-icon"

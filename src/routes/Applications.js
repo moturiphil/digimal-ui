@@ -84,9 +84,19 @@ export default [
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/ReceiveNets.vue'),
       },
       {
+        name: 'receive',
+        path: 'receive',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DropoffNets.vue'),
+      },
+      {
         name: 'distribution-point',
         path: 'distribution-point',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DistributionPoint.vue'),
+      },
+      {
+        name: 'distribution-points',
+        path: 'distribution-points',
+        component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/ViewPoints.vue'),
       },
     ],
   },

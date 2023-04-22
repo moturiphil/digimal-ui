@@ -20,15 +20,18 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="Campaign" label="Select Campaign">
+                    <a-form-item name="campaign_id" label="Select Campaign">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
-                        v-model:value="formState.campaign"
+                        v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign"
                       >
+                      <a-select-option value="" disabled
+                          >Select a campaign</a-select-option
+                        >
                         <a-select-option
                           v-for="campaign in campaigns"
                           :value="campaign.id"
@@ -43,23 +46,6 @@
                         placeholder="Enter name of the distribution point"
                       />
                     </a-form-item>
-                    <!-- <a-form-item
-                        name="distribution_start_date"
-                        label="Start Date"
-                      >
-                        <a-date-picker
-                          :style="{ width: '100%' }"
-                          v-model:value="formState.distribution_start_date"
-                          :format="dateFormat"
-                        />
-                      </a-form-item>
-                      <a-form-item name="distribution_end_date" label="End Date">
-                        <a-date-picker
-                          :style="{ width: '100%' }"
-                          v-model:value="formState.distribution_end_date"
-                          :format="dateFormat"
-                        />
-                      </a-form-item> -->
                     <a-form-item name="county_id" label="County">
                       <a-select
                         size="large"
@@ -83,12 +69,13 @@
                         </a-select-option>
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="sub_county" label="Sub County">
+                    <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
+                        v-model:value="formState.sub_county_id"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -137,24 +124,25 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/distribution_post`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/new_drop_off_points`;
     const router = useRouter();
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
-    const { loading, isFacility, campaigns, sub_counties } = reactive({
+    const { loading, campaigns, sub_counties } = reactive({
       campaigns: [],
       counties: [],
       sub_counties: [],
       loading: true,
-      isFacility: false,
     });
 
     const formState = reactive({
       name: "",
-      campaigns: "",
+      campaign_id: "",
       county_id: "",
       sub_county: "",
     });
+
+    console.log(formState);
 
     //campaigns
     const getCampaigns = async () => {
@@ -167,11 +155,10 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.campaigns = data.data;
-      console.log(this.campaigns);
+      console.log(data.data);
       this.loading = false;
     };
 
-    //counties
     //counties
     const getCounties = async () => {
       const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
@@ -193,7 +180,6 @@ const AddNew = defineComponent({
 
     //get sub_counties
     const getSubCounties = async (org_id) => {
-      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -205,7 +191,7 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      // console.log(data);
+    //   console.log(data.message);
       this.sub_counties = data.message;
     };
 
@@ -215,39 +201,15 @@ const AddNew = defineComponent({
       getSubCounties();
     });
 
-    // notification
-    // const openNotification = (type) => {
-    //   notification[type]({
-    //     message: "Notification Title",
-    //     description:
-    //       type == "success"
-    //         ? "Post created successfully"
-    //         : "Post creation failed",
-    //   });
-    // };
-
-    // distribution_start_date: new Date(values.distribution_start_date)
-    //       .toISOString()
-    //       .substr(0, 10),
-    //     distribution_end_date: new Date(values.distribution_end_date)
-    //       .toISOString()
-    //       .substr(0, 10),
-
     const handleSubmit = (values) => {
-      let post_code = values.post_code;
+      console.log(values);
       values = {
         name: values.name,
-        distribution_start_date: "2023-01-01",
-        distribution_end_date: "2023-01-01",
-        post_supervisor_user_id: values.post_supervisor_user_id,
-        villages: values.villages,
-        isFacility: values.isFacility,
+        campaign_id: values.campaign_id,
+        ou_sub_county: values.sub_county_id,
       };
       console.log(values);
 
-      if (post_code) {
-        values.post_code = post_code;
-      }
       fetch(API_URL, {
         method: "POST",
         headers: {
@@ -261,17 +223,17 @@ const AddNew = defineComponent({
           console.log(data);
           console.log(".......... ");
           console.log(API_URL);
-          if (data.success == true) {
-            router.push("/nets/distribution");
+          if (data.status == true) {
+            router.push("/nets/distribution-points");
             notification["success"]({
-              message: "Post Created",
-              description: `Post Created successfully.`,
+              message: "Distribution Point Created",
+              description: `Distribution Point Created successfully.`,
               duration: 5.5,
             });
           } else {
             notification["error"]({
-              message: "Post Creation Failed",
-              description: `Post Creation failed.`,
+              message: "Distribution Point Creation Failed",
+              description: `Distribution Point Creation failed.`,
               duration: 5.5,
             });
           }
@@ -286,7 +248,6 @@ const AddNew = defineComponent({
       loading,
       apiUrl,
       isFileLoading,
-      isFacility,
       handleSubmit,
       dateFormat,
       formState,
@@ -294,7 +255,6 @@ const AddNew = defineComponent({
       getSubCounties,
       sub_counties,
       campaigns,
-
     };
   },
   beforeRouteEnter(to, from, next) {
