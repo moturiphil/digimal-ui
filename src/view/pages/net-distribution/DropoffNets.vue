@@ -1,6 +1,6 @@
 <template>
   <sdPageHeader title="Received Nets at Drop Point">
-    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+    <sdButton class="btn-add_new" size="default" key="1" type="success">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>
   </sdPageHeader>

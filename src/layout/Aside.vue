@@ -112,6 +112,9 @@
         <a-menu-item @click="toggleCollapsed" key="post-create">
           <router-link to="/nets/distribution-points"> List Distribution Point </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/distribution-point-nets"> Distribution Point Nets </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
 
