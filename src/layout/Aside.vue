@@ -49,39 +49,6 @@
         </a-menu-item>
       </a-sub-menu>
 
-
-      <a-sub-menu key="drop-off-point">
-        <template v-slot:title>
-          <sdFeatherIcons type="map-pin" /><span>Distribution Point</span>
-        </template>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-point"> Create Distribution Point </router-link>
-        </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-points"> List Distribution Point </router-link>
-        </a-menu-item>
-      </a-sub-menu>
-
-
-      <a-sub-menu key="nets-distribution">
-        <template v-slot:title>
-          <sdFeatherIcons type="share-2" /><span>Nets Distribution</span>
-        </template>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/post-create"> Create Post </router-link>
-        </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="net-distribution">
-          <router-link to="/nets/distribution">
-            Distribution Posts
-          </router-link>
-        </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="receive-nets">
-          <router-link to="/nets/receive-nets"> Receive Nets </router-link>
-        </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetChart">
-          <router-link to="/nets/delivered"> Nets Received </router-link>
-        </a-menu-item>
-      </a-sub-menu>
       <a-sub-menu key="administrative-units">
         <template v-slot:title>
           <sdFeatherIcons type="cpu" />
@@ -133,6 +100,38 @@
           <router-link to="/campaign/users">
             List Campaign Users
           </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+      <a-sub-menu key="drop-off-point">
+        <template v-slot:title>
+          <sdFeatherIcons type="map-pin" /><span>Distribution Point</span>
+        </template>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/distribution-point"> Create Distribution Point </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/distribution-points"> List Distribution Point </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+
+
+      <a-sub-menu key="nets-distribution">
+        <template v-slot:title>
+          <sdFeatherIcons type="share-2" /><span>Nets Distribution</span>
+        </template>
+        <a-menu-item @click="toggleCollapsed" key="post-create">
+          <router-link to="/nets/post-create"> Create Post </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="net-distribution">
+          <router-link to="/nets/distribution">
+            Distribution Posts
+          </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="receive-nets">
+          <router-link to="/nets/receive-nets"> Receive Nets </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="widgetChart">
+          <router-link to="/nets/delivered"> Nets Received </router-link>
         </a-menu-item>
       </a-sub-menu>
 

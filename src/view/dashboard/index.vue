@@ -160,18 +160,6 @@
       </a-col>
     </a-row>
     <a-row :gutter="25">
-      <a-col :xxl="16" :xs="24"
-        ><Suspense>
-          <template #default>
-            <NetsDistributed title="Nets Distributed" :chartHeight="70" />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
       <a-col :lg="8" :xs="24">
         <sdCards headless>
           <OverviewSalesCard>
@@ -213,7 +201,7 @@
             </div>
             <div class="card-chunk">
               <CardBarChart2>
-                <h2> 0 </h2>
+                <h2> {{ activities }} </h2>
                 <span>Active Activities</span>
               </CardBarChart2>
             </div>
@@ -293,83 +281,24 @@
         </Suspense>
       </a-col>
     </a-row>
-    <a-row :gutter="25">
-      <a-col :xxl="12" :xs="24"
-        ><Suspense>
-          <template #default>
-            <EventsDetails />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :xxl="12" :xl="12" :xs="24"
-        ><Suspense>
-          <template #default>
-            <OnGoingEvents />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :xxl="12" :xs="24"
-        ><Suspense>
-          <template #default>
-            <HouseHoldRegistered />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :xxl="12" :xl="12" :xs="24"
-        ><Suspense>
-          <template #default>
-            <PerformancePerCounty />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-    </a-row>
   </Main>
 </template>
 <script>
 import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import {  onMounted, ref } from "vue";
 import { defineComponent } from "vue";
 import authHeader from "../../services/auth-header";
 
 // import { useRouter } from "vue-router";
 
-const NetsDistributed = defineAsyncComponent(() =>
-  import("./overview/massnet/NetsDistributed")
-);
-const PerformancePerCounty = defineAsyncComponent(() =>
-  import("./overview/massnet/PerformancePerCounty")
-);
-const EventsDetails = defineAsyncComponent(() =>
-  import("./overview/massnet/EventsDetails")
-);
-const OnGoingEvents = defineAsyncComponent(() =>
-  import("./overview/massnet/OnGoingEvents")
-);
-const HouseHoldRegistered = defineAsyncComponent(() =>
-  import("./overview/massnet/HouseHoldRegistered")
-);
+// const NetsDistributed = defineAsyncComponent(() =>
+//   import("./overview/massnet/NetsDistributed")
+// );
+// const OnGoingEvents = defineAsyncComponent(() =>
+//   import("./overview/massnet/OnGoingEvents")
+// );
 
 const chartOptions = {
   legend: {
@@ -411,11 +340,6 @@ export default defineComponent({
     CardBarChart2,
     EChartCard,
     Chart,
-    NetsDistributed,
-    PerformancePerCounty,
-    EventsDetails,
-    OnGoingEvents,
-    HouseHoldRegistered,
   },
   data() {
     return {};
@@ -427,6 +351,7 @@ export default defineComponent({
     const registered_users = ref(0);
     const household_population = ref(0);
     const total_nets_required = ref(0);
+    const activities = ref(0);
 
     // console.log(sessionStorage.getItem("user"));
     onMounted(async () => {
@@ -446,6 +371,7 @@ export default defineComponent({
         registered_users.value = data.registered_users;
         household_population.value = data.all_hh_members;
         total_nets_required.value = data.sys_allocation;
+        activities.value = data.active_activities;
         // console.log(data.active_events);
       } catch (error) {
         console.error(error);
@@ -460,6 +386,7 @@ export default defineComponent({
       registered_users,
       household_population,
       total_nets_required,
+      activities,
     };
   },
   beforeRouteEnter(to, from, next) {
