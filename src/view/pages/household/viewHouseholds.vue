@@ -2,7 +2,6 @@
     <RecordViewWrapper>
       <sdPageHeader title="Households Lists">
         <template #subTitle>
-          
         </template>
         <template #buttons>
           <div class="search-box">
@@ -19,6 +18,11 @@
         ></template>
       </sdPageHeader>
       <Main>
+        <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
+          Export HouseHolds Data
+        </sdButton>
+        <br>
+        <br>
         <a-row :gutter="15">
           <a-col class="w-100" :md="24">
             <sdCards headless>
@@ -106,6 +110,8 @@
       const dataSource = ref([]);
   
       const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
+
+      const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
   
       onMounted(() => {
         axios
@@ -121,6 +127,36 @@
             console.error(error);
           });
       });
+
+      const exportHouseHoldData = async () => {
+      try {
+        const response = await fetch(
+          households_url,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "households.csv";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
   
      
   
@@ -147,6 +183,7 @@
         dataSource,
         columns,
         formState,
+        exportHouseHoldData
       };
     },
   });
