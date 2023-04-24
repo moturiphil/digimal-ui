@@ -174,7 +174,7 @@ const AddNew = defineComponent({
         ...county,
         // org_id: county.org_id,
       }));
-      // console.log(this.counties);
+      console.log(this.counties);
       this.loading = false;
     };
 
@@ -199,6 +199,7 @@ const AddNew = defineComponent({
       getCounties();
       getCampaigns();
       getSubCounties();
+      console.log(getCounties());
     });
 
     const handleSubmit = (values) => {
