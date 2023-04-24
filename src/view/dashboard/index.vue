@@ -54,7 +54,7 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">{{registered_users}}</sdHeading>
+                <sdHeading as="h1">{{ registered_users }}</sdHeading>
                 <span>Registered Users</span>
                 <p>
                   <!--<span class="growth-downward"> <sdFeatherIcons type="arrow-down" /> 25% </span>
@@ -172,7 +172,129 @@
           </template>
         </Suspense>
       </a-col>
-      <a-col :xxl="8" :xs="24"
+      <a-col :lg="8" :xs="24">
+        <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-primary">
+              <SvgConverter
+                :src="require('@/static/img/icon/New Customer.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2>{{ household_population }}</h2>
+                <span>Total HouseHold Population</span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards>
+
+        <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-secondary">
+              <SvgConverter
+                :src="require('../../static/img/icon/SalesRevenue.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2>{{ total_nets_required }}</h2>
+                <span>Total Nets Required</span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards>
+        <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-success">
+              <SvgConverter
+                :src="require('../../static/img/icon/Profit.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2> 0 </h2>
+                <span>Active Activities</span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards>
+      </a-col>
+      <a-col :lg="16" :xs="24">
+        <Suspense>
+          <template #default>
+            <AverageSalesRevenue :chartHeights="95" />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
+      <a-col :lg="8" :xs="24">
+        <Suspense>
+          <template #default>
+            <SalesTarget />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
+      <a-col :lg="8" :xs="24">
+        <Suspense>
+          <template #default>
+            <SalesGrowth />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
+      <a-col :lg="8" :xs="24">
+        <Suspense>
+          <template #default>
+            <TopCountriesRevenue />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
+      <a-col :lg="12" :xs="24">
+        <Suspense>
+          <template #default>
+            <TopSellingProduct />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
+      <a-col :lg="12" :xs="24">
+        <Suspense>
+          <template #default>
+            <RecentOrder />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
+    </a-row>
+    <a-row :gutter="25">
+      <a-col :xxl="12" :xs="24"
         ><Suspense>
           <template #default>
             <EventsDetails />
@@ -208,7 +330,7 @@
           </template>
         </Suspense>
       </a-col>
-      <a-col :xxl="24" :xl="12" :xs="24"
+      <a-col :xxl="12" :xl="12" :xs="24"
         ><Suspense>
           <template #default>
             <PerformancePerCounty />
@@ -228,9 +350,8 @@ import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { defineAsyncComponent, onMounted, ref } from "vue";
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 import authHeader from "../../services/auth-header";
-
 
 // import { useRouter } from "vue-router";
 
@@ -297,15 +418,15 @@ export default defineComponent({
     HouseHoldRegistered,
   },
   data() {
-    return {
-    };
+    return {};
   },
   setup() {
     const active_events = ref(0);
-    const nets_distributed= ref(0);
-    const registered_house_holds= ref(0);
-    const registered_users= ref(0);
-
+    const nets_distributed = ref(0);
+    const registered_house_holds = ref(0);
+    const registered_users = ref(0);
+    const household_population = ref(0);
+    const total_nets_required = ref(0);
 
     // console.log(sessionStorage.getItem("user"));
     onMounted(async () => {
@@ -318,11 +439,13 @@ export default defineComponent({
           }
         );
         const data = await response.json();
-        console.log(data.active_events);
+        console.log(data);
         active_events.value = data.active_events;
         nets_distributed.value = data.nets_distributed;
         registered_house_holds.value = data.registered_house_holds;
         registered_users.value = data.registered_users;
+        household_population.value = data.all_hh_members;
+        total_nets_required.value = data.sys_allocation;
         // console.log(data.active_events);
       } catch (error) {
         console.error(error);
@@ -335,6 +458,8 @@ export default defineComponent({
       nets_distributed,
       registered_house_holds,
       registered_users,
+      household_population,
+      total_nets_required,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -346,4 +471,5 @@ export default defineComponent({
   },
 });
 </script>
+
 
