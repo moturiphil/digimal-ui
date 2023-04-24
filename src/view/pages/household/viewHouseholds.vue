@@ -85,8 +85,13 @@
       key: "id_no",
     },
     {
-      title: "CHW",
+      title: "CHV",
       dataIndex: "chw_id",
+      key: "id_no",
+    },
+    {
+      title: "Timestamp",
+      dataIndex: "created_at",
       key: "id_no",
     },
   ];
