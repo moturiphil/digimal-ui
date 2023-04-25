@@ -80,14 +80,18 @@ export default {
         id_no: formState.id_no,
         password: formState.password,
       });
-      console.log(response.status, response.data);
+      console.log(response.data.user);
+      sessionStorage.setItem("auth-user", response.data.user);
+      console.log(sessionStorage.getItem("user"));
       if (response.status == 200) {
         console.log(response.status);
         console.log("response successful.................");
 
         try {
           store.commit("auth/setUser", response.data.user);
+          // console.log(store)
           router.push({ path: "/" });
+          console.log("...............auth-user................");
           notification.success({
             message: "Login Successful",
             description: "Welcome to Campaign Dashboard",

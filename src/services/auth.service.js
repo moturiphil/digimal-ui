@@ -41,6 +41,14 @@ class AuthService {
       }
     );
   }
+  getUser() {
+    const user = sessionStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+  hasPermission(permission) {
+    const user = this.getUser();
+    return user && user.permissions && user.permissions.includes(permission);
+  }
 }
 
 export default new AuthService();

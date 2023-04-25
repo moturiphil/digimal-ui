@@ -20,12 +20,12 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                  <a-form-item name="Campaign" label="Select Campaign">
+                  <a-form-item name="campaign_id" label="Select Campaign">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
-                        v-model:value="formState.campaign"
+                        v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign"
                       >
@@ -157,9 +157,8 @@ const AddNew = defineComponent({
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
     const formState = reactive({
+      campaign_id: "",
       name: "",
-      distribution_start_date: "",
-      distribution_end_date: "",
       post_supervisor_user_id: "",
       villages: [],
       post_code: "",
@@ -246,11 +245,11 @@ const AddNew = defineComponent({
     //       .substr(0, 10),
 
     const handleSubmit = (values) => {
+      console.log(values)
       let post_code = values.post_code;
       values = {
+        campaign_id: values.campaign_id,
         name: values.name,
-        distribution_start_date: "2023-01-01",
-        distribution_end_date: "2023-01-01",
         post_supervisor_user_id: values.post_supervisor_user_id,
         villages: values.villages,
         isFacility: values.isFacility,

@@ -165,11 +165,13 @@ import {
   watch,
   watchEffect,
   defineComponent,
+  onMounted,
 } from "vue";
 import VueTypes from "vue-types";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import versions from "../demoData/changelog.json";
+// import { AuthService } from "../services/auth.service";
 
 export default defineComponent({
   name: "AsideItems",
@@ -198,6 +200,8 @@ export default defineComponent({
       preOpenKeys: ["dashboard"],
     });
 
+    // const authService = new AuthService();
+
     watchEffect(() => {
       if (router.value.matched.length) {
         if (router.value.matched.length > 2) {
@@ -222,6 +226,11 @@ export default defineComponent({
         state.preOpenKeys = oldVal;
       }
     );
+
+    // onMounted(() => {
+    //   console.log(authService.getUser());
+    // });
+
 
     return {
       mode,
