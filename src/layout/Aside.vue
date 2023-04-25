@@ -92,7 +92,7 @@
           </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-list">
-          <router-link to="/households/validation">
+          <router-link to="/household/validation">
             HouseHolds Validation
           </router-link>
         </a-menu-item>

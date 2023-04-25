@@ -128,7 +128,7 @@ const AddNew = defineComponent({
     const router = useRouter();
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
-    const { loading, campaigns, sub_counties } = reactive({
+    const { loading, campaigns, sub_counties, counties } = reactive({
       campaigns: [],
       counties: [],
       sub_counties: [],
@@ -256,6 +256,7 @@ const AddNew = defineComponent({
       getSubCounties,
       sub_counties,
       campaigns,
+      counties,
     };
   },
   beforeRouteEnter(to, from, next) {

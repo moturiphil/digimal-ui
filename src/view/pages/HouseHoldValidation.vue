@@ -74,7 +74,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'approved'"
                         >
-                        <a-table
+                          <a-table
                             :pagination="{
                               pageSize: 40,
                               showSizeChanger: true,
@@ -94,11 +94,21 @@
                               pageSize: 40,
                               showSizeChanger: true,
                             }"
-                            :dataSource="
-                              filteredData.filter((item) => item.hh_size > 5)
-                            "
+                            :dataSource="filteredData"
                             :columns="columns"
                           >
+                            <template #households="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <sdButton type="check" size="16" @click="handleVerify(record.id)">
+                                      &nbsp;&nbsp;
+                                      <span class="badge badge-green"
+                                        >&nbsp;&nbsp; Verify</span
+                                      >
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -127,6 +137,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../src/services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
+import { notification } from "ant-design-vue";
 
 // const households = ref([]);
 
@@ -165,6 +176,12 @@ const columns = [
     title: "Timestamp",
     dataIndex: "created_at",
     key: "id_no",
+  },
+  {
+    title: "",
+    dataIndex: "",
+    key: "households",
+    slots: { customRender: "households" },
   },
 ];
 export default defineComponent({
@@ -215,7 +232,6 @@ export default defineComponent({
 
     const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
-    
     const exportHouseHoldData = async () => {
       try {
         const response = await fetch(households_url, {
@@ -272,6 +288,26 @@ export default defineComponent({
           console.error(error);
         });
     });
+    const handleVerify = (record) => {
+      console.log(record)
+      axios
+        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, { headers: authHeader() })
+        .then(({ status }) => {
+          console.log(status)
+          if (status == 200) {
+            location.reload();
+            notification["success"]({
+              message: "HouseHold Verified",
+              description: `HouseHold has been verified successfully`,
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
+        });
+    };
 
     // handleChange(tab) {
     //   if (tab === 'all') {
@@ -298,9 +334,20 @@ export default defineComponent({
       filteredData,
       handleChange,
       activeClass,
+      handleVerify,
     };
   },
   // computed: {
   // },
 });
 </script>
+<style>
+.badge-green {
+  background-color: #1ec997;
+  /* color: white; */
+  /* padding: 2px;
+  border-radius: 3px; */
+  /* size */
+  font-size: 12px;
+}
+</style>
