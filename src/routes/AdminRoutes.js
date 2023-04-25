@@ -204,6 +204,11 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/household/validation',
+    name: 'search',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/HouseHoldValidation.vue'),
+  },
   ...PageRoutes,
   ...FeaturesRoutes,
   ...Components,

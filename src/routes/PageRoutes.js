@@ -15,11 +15,6 @@ export default [
   //   component: () => import(/* webpackChunkName: "Faq" */ '@/view/pages/Faq.vue'),
   // },
   // {
-  //   path: '/page/search',
-  //   name: 'search',
-  //   component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/Search.vue'),
-  // },
-  // {
   //   path: '/page/gallery',
   //   name: 'gallery',
   //   component: () => import(/* webpackChunkName: "Gallery" */ '@/view/pages/Gallery.vue'),

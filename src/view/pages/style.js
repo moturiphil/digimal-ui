@@ -111,11 +111,11 @@ const GalleryNav = Styled.nav`
           border-radius: 10px;
           opacity: 0;
           visibility: hidden;
-          background: ${({ theme }) => theme['primary-color']};
+          background: ${({ theme }) => theme['success-color']};
           content: "";
         }
         &.active{
-          color: ${({ theme }) => theme['primary-color']};
+          color: ${({ theme }) => theme['success-color']};
           &:after{
             opacity: 1;
             visibility: visible;
@@ -396,7 +396,7 @@ const UserCard = Styled.div`
       a{
         color: ${({ theme }) => theme['dark-color']};
         &:hover{
-          color: ${({ theme }) => theme['primary-color']};
+          color: ${({ theme }) => theme['success-color']};
         }
       }
     }
@@ -465,7 +465,7 @@ const UserCard = Styled.div`
         color: ${({ theme }) => theme['gray-color']};
         border: 1px solid ${({ theme }) => theme['border-color-light']};
         &:hover{
-          border: 1px solid ${({ theme }) => theme['primary-color']};
+          border: 1px solid ${({ theme }) => theme['success-color']};
         }
       }
       button{
@@ -477,7 +477,7 @@ const UserCard = Styled.div`
         margin: 5px;
         &:hover{
           color: #fff !important;
-          background-color: ${({ theme }) => theme['primary-color']} !important;
+          background-color: ${({ theme }) => theme['success-color']} !important;
           svg,
           i{
             color: #fff;
@@ -536,9 +536,9 @@ const FaqCategoryBox = Styled.div`
           &:after{
             ${({ theme }) => (!theme.rtl ? 'left' : 'right')}: 5px;
           }
-          &.primary{
+          &.success{
             &:after{
-              background: ${({ theme }) => theme['primary-color']};
+              background: ${({ theme }) => theme['success-color']};
             }
           }
           &.secondary{
@@ -577,7 +577,7 @@ const FaqCategoryBox = Styled.div`
           opacity: 0;
           visibility: hidden;
           content: '';
-          background: ${({ theme }) => theme['primary-color']};
+          background: ${({ theme }) => theme['success-color']};
           transition: all .3s ease;
         }
         &:after{
@@ -589,7 +589,7 @@ const FaqCategoryBox = Styled.div`
           height: 8px;
           border-radius: 50%;
           content: '';
-          background: ${({ theme }) => theme['primary-color']}50;
+          background: ${({ theme }) => theme['success-color']}50;
           transition: all .3s ease;
         }
         &.secondary{
@@ -809,7 +809,7 @@ const SearchResultWrapper = Styled.div`
           background: #fff;
           &.active{
             color: #fff;
-            background: ${({ theme }) => theme['primary-color']};
+            background: ${({ theme }) => theme['success-color']};
           }
         }
       }
@@ -864,7 +864,7 @@ const ResultList = Styled.div`
           margin-bottom: 10px;
           .search-keyword{
             font-weight: 600;
-            color: ${({ theme }) => theme['primary-color']};
+            color: ${({ theme }) => theme['success-color']};
           }
         }
         p{
@@ -1192,13 +1192,13 @@ const AddUser = Styled.div`
             content: '';
             opacity: 0;
             visibility: hidden;
-            background-color: ${({ theme }) => theme['primary-color']};
+            background-color: ${({ theme }) => theme['success-color']};
             @media only screen and (max-width: 575px){
               display: none;
             }
           }
           &.active{
-            color: ${({ theme }) => theme['primary-color']};
+            color: ${({ theme }) => theme['success-color']};
             &:after{
               opacity: 1;
               visibility: visible;
@@ -1207,7 +1207,7 @@ const AddUser = Styled.div`
             img,
             i,
             span{
-              color: ${({ theme }) => theme['primary-color']};
+              color: ${({ theme }) => theme['success-color']};
             }
           }
           svg,
@@ -1247,7 +1247,7 @@ const AddUser = Styled.div`
         height: 32px;
         border-radius: 50%;
         z-index: -1;
-        background-color: ${({ theme }) => theme['primary-color']};
+        background-color: ${({ theme }) => theme['success-color']};
       }
       svg,
       i,
@@ -1324,7 +1324,7 @@ const AddUser = Styled.div`
         border-radius: 4px;
         width: 100%;
         height: 100%;
-        background-color: ${({ theme }) => theme['primary-color']};
+        background-color: ${({ theme }) => theme['success-color']};
         i,
         svg,
         span.fa{
@@ -1399,10 +1399,10 @@ const ChangelogWrapper = Styled.div`
             content: "";
           }
         }
-        &.version-primary{
+        &.version-success{
           li{
             &:after{
-              background-color: ${({ theme }) => theme['primary-color']};
+              background-color: ${({ theme }) => theme['success-color']};
             }
           }
         }
@@ -1434,8 +1434,8 @@ const ChangelogWrapper = Styled.div`
         border-radius: 4px;
         margin-bottom: 14px;
         color: #fff;
-        &.badge-primary{
-          background-color: ${({ theme }) => theme['primary-color']};
+        &.badge-success{
+          background-color: ${({ theme }) => theme['success-color']};
         }
         &.badge-info{
           background-color: ${({ theme }) => theme['info-color']};
@@ -1618,7 +1618,7 @@ const TestimonialStyleWrapper = Styled.div`
           background-color: #DCDDFA;
           opacity: 1;
           &.swiper-pagination-bullet-active{
-            background-color: ${({ theme }) => theme['primary-color']};
+            background-color: ${({ theme }) => theme['success-color']};
           }
         }
       }
@@ -2237,8 +2237,8 @@ const SupportContentWrap = Styled.div`
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      &.primary{
-        background-color: ${({ theme }) => theme['primary-color']};
+      &.success{
+        background-color: ${({ theme }) => theme['success-color']};
       }
       &.success{
         background-color: ${({ theme }) => theme['success-color']};
