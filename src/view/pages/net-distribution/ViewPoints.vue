@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Drop Off Points Off">
+    <sdPageHeader title="Drop Off Points">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
         </sdButton>

@@ -1,5 +1,5 @@
 <template>
-  <sdPageHeader title="Create Distribution Point">
+  <sdPageHeader title="Create Dropoff Point">
     <sdButton class="btn-add_new" size="default" key="1" type="sucess">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>

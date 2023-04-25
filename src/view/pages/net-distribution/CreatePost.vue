@@ -76,7 +76,7 @@
                           :value="user.id"
                           :key="user.id"
                           >{{
-                            user.first_name + " " + user.last_name + " " +  user.role_id
+                            user.first_name + " " + user.last_name + "-" +  user.role_id
                           }}</a-select-option
                         >
                       </a-select>
@@ -245,7 +245,7 @@ const AddNew = defineComponent({
     //       .substr(0, 10),
 
     const handleSubmit = (values) => {
-      console.log(values)
+      console.log(JSON.stringify(values))
       let post_code = values.post_code;
       values = {
         campaign_id: values.campaign_id,

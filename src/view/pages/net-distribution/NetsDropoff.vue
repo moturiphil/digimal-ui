@@ -21,7 +21,7 @@
                     :dataSource="dataSource"
                     :columns="columns"
                   >
-                  <template #point="{ record }">
+                  <!-- <template #point="{ record }">
                       <td>
                         <div class="table-actions">
                           <sdButton>
@@ -40,7 +40,7 @@
                           </sdButton>
                         </div>
                       </td>
-                    </template>
+                    </template> -->
                   </a-table>
                 </TableWrapper>
               </div>
@@ -101,12 +101,6 @@
       title: "Received From",
       dataIndex: "received_from",
       key: "id",
-    },
-    {
-      title: "Action",
-      dataIndex: "",
-      key: "point",
-      slots: { customRender: "point" },
     },
   ];
   

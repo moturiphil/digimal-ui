@@ -109,16 +109,16 @@
       </a-sub-menu>
       <a-sub-menu key="drop-off-point">
         <template v-slot:title>
-          <sdFeatherIcons type="map-pin" /><span>Distribution Point</span>
+          <sdFeatherIcons type="map-pin" /><span>Dropoff Point</span>
         </template>
         <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-point"> Create Distribution Point </router-link>
+          <router-link to="/nets/distribution-point"> Create Dropoff Point </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-points"> List Distribution Point </router-link>
+          <router-link to="/nets/distribution-points"> List Dropoff Point </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-point-nets"> Distribution Point Nets </router-link>
+          <router-link to="/nets/distribution-point-nets"> Nets at Dropoff </router-link>
         </a-menu-item>
       </a-sub-menu>
 
