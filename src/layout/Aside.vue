@@ -88,7 +88,12 @@
 
         <a-menu-item @click="toggleCollapsed" key="house-hold-list">
           <router-link to="/households/list">
-            Registered HouseHolds
+            HouseHolds Registered
+          </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="house-hold-list">
+          <router-link to="/households/validation">
+            HouseHolds Validation
           </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-chv">

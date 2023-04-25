@@ -79,7 +79,7 @@ const columns = [
     key: "id_no",
   },
   {
-    title: "Location",
+    title: "Village",
     dataIndex: "location_id",
     key: "id_no",
   },
