@@ -2,8 +2,7 @@
   <RecordViewWrapper>
     <sdPageHeader title="Distribution Posts">
       <template #subTitle>
-        <sdButton class="btn-add_new" size="default" type="success">
-        </sdButton>
+        <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
     </sdPageHeader>
     <Main>
@@ -20,7 +19,44 @@
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
-                />
+                >
+                <template #activities="{ record }">
+                    <td :style="{ 'margin-left': '3px' }">
+                      <div class="table-actions">
+                        <sdButton>
+                          <router-link
+                            :to="{
+                              path: `/assign-worker/${record.id}`,
+                              query: { id: record.id },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="pen-tool" size="16" />
+                            &nbsp;&nbsp; Assign Post Workers
+                          </router-link>
+                        </sdButton>
+                        <sdButton>
+                          <!-- <router-link
+                            :to="{
+                              path: `/inform-hh/${record.id}`,
+                              query: { id: record.event_code },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="send" size="16" />
+                            &nbsp;&nbsp; Inform HH Net Collection
+                          </router-link> -->
+                          <sdFeatherIcons type="send" size="16" />
+                          &nbsp;&nbsp; Inform HH Net Collection
+                        </sdButton>
+                      </div>
+                    </td>
+                  </template>
+                </a-table>
               </TableWrapper>
             </div>
           </sdCards>
@@ -41,7 +77,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-{
+  {
     title: "Distribution Id",
     dataIndex: "id",
     key: "id",
@@ -62,12 +98,12 @@ const columns = [
     key: "post_supervisor_user_id",
   },
   {
-    title: "Action",
-    dataIndex: "action",
-    key: "action",
+    title: "",
+    dataIndex: "",
+    key: "activities",
+    slots: { customRender: "activities" },
   },
 ];
-
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
@@ -98,6 +134,7 @@ const DragAndDropTable = defineComponent({
         const data = await response.json();
         dataSource.value = data.data;
         console.log(data.data);
+        // console.log($route.params.id)
       } catch (error) {
         console.error(error);
       }

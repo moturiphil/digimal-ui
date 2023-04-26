@@ -163,8 +163,8 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data.data.data);
-      this.posts = data.data.data;
+      console.log(data.data);
+      this.posts = data.data;
       // this.posts = data.map((post) => ({
       //   ...post,
       // }));

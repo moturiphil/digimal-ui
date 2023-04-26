@@ -29,7 +29,7 @@
       <template #button>
         <div class="card-nav">
           <ul>
-            <li :class="incomeFlowActive === 'week' ? 'active' : 'regular'">
+            <!-- <li :class="incomeFlowActive === 'week' ? 'active' : 'regular'">
               <router-link @click="() => handleActiveChangeIncome('week')" to="#"> Week </router-link>
             </li>
             <li :class="incomeFlowActive === 'month' ? 'active' : 'regular'">
@@ -37,7 +37,7 @@
             </li>
             <li :class="incomeFlowActive === 'year' ? 'active' : 'regular'">
               <router-link @click="() => handleActiveChangeIncome('year')" to="#"> Year </router-link>
-            </li>
+            </li> -->
           </ul>
         </div>
       </template>

@@ -21,8 +21,6 @@
                 <sdHeading as="h1">{{ nets_distributed }}</sdHeading>
                 <span>Nets Distributed</span>
                 <p>
-                  <!-- <span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
-                  <span>Since last week</span> -->
                 </p>
               </CardBarChart2>
             </div>
@@ -54,8 +52,8 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">{{ registered_users }}</sdHeading>
-                <span>Registered Users</span>
+                <sdHeading as="h1">{{ activities }}</sdHeading>
+                <span>Active Activities</span>
                 <p>
                   <!--<span class="growth-downward"> <sdFeatherIcons type="arrow-down" /> 25% </span>
                   <span>Since last week</span> -->
@@ -192,21 +190,6 @@
             </div>
           </OverviewSalesCard>
         </sdCards>
-        <sdCards headless>
-          <OverviewSalesCard>
-            <div class="icon-box box-success">
-              <SvgConverter
-                :src="require('../../static/img/icon/Profit.svg')"
-              />
-            </div>
-            <div class="card-chunk">
-              <CardBarChart2>
-                <h2> {{ activities }} </h2>
-                <span>Active Activities</span>
-              </CardBarChart2>
-            </div>
-          </OverviewSalesCard>
-        </sdCards>
       </a-col>
       <a-col :lg="16" :xs="24">
         <Suspense>
@@ -299,6 +282,7 @@ import authHeader from "../../services/auth-header";
 // const OnGoingEvents = defineAsyncComponent(() =>
 //   import("./overview/massnet/OnGoingEvents")
 // );
+// const IncomeAndExpenses = defineAsyncComponent(() => import('./overview/business/IncomeAndExpenses'));
 
 const chartOptions = {
   legend: {
@@ -340,6 +324,7 @@ export default defineComponent({
     CardBarChart2,
     EChartCard,
     Chart,
+    // IncomeAndExpenses,
   },
   data() {
     return {};

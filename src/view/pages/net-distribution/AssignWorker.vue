@@ -1,0 +1,246 @@
+<template>
+  <sdPageHeader title="Assign Worker">
+    <sdButton class="btn-add_new" size="default" key="1" type="success">
+      <router-link to="/crud/axios-view">View All</router-link>
+    </sdButton>
+  </sdPageHeader>
+  <Main>
+    <a-row :gutter="15">
+      <a-col :xs="24">
+        <RecordFormWrapper>
+          <sdCards headless>
+            <a-row justify="center">
+              <a-col :xl="10" :md="16" :xs="24">
+                <BasicFormWrapper>
+                  <a-form
+                    class="add-record-form"
+                    :style="{ width: '100%' }"
+                    layout="vertical"
+                    name="addnew"
+                    :model="formState"
+                    @finish="handleSubmit"
+                  >
+                    <!-- <a-form-item name="post_id" label="Post Name">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Post"
+                        v-model:value="formState.post_id"
+                      >
+                        <a-select-option
+                          v-for="post in posts"
+                          :value="post.id"
+                          :key="post.id"
+                          >{{ post.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item> -->
+                    <a-form-item name="received_by" label="Post Workers">
+                      <a-select
+                        mode="multiple"
+                        v-model:value="formState.received_by"
+                        v-if="!loading"
+                        placeholder="Select post workers"
+                      >
+                        <a-select-option
+                          v-for="worker in users"
+                          :key="worker.id"
+                          :value="worker.id"
+                        >
+                          {{ worker.first_name }}
+                          {{ worker.last_name }} - {{ worker.role_id }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+
+                    <div class="record-form-actions text-right">
+                      <sdButton size="default" htmlType="Save" type="success">
+                        {{ isLoading ? "Loading..." : "Submit" }}
+                      </sdButton>
+                    </div>
+                  </a-form>
+                </BasicFormWrapper>
+              </a-col>
+            </a-row>
+          </sdCards>
+        </RecordFormWrapper>
+      </a-col>
+    </a-row>
+  </Main>
+</template>
+<script>
+import { RecordFormWrapper } from "../style";
+import { Main, BasicFormWrapper } from "../../styled";
+import { useStore } from "vuex";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
+// import axios from "axios";
+import { notification } from "ant-design-vue";
+import authHeader from "../../../services/auth-header";
+import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
+
+const dateFormat = "YYYY-MM-DD";
+
+const AddNew = defineComponent({
+  name: "AddNew",
+  components: { RecordFormWrapper, Main, BasicFormWrapper },
+  data() {
+    const { state } = useStore();
+    const isLoading = computed(() => state.crud.loading);
+    const apiUrl = computed(() => state.crud.url);
+    const isFileLoading = computed(() => state.crud.fileLoading);
+    const join = ref("");
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/add_post_workers`;
+    const router = useRouter();
+    const { query } = useRoute();
+
+    const parameters = { query };
+
+    const post_id = parameters.query.id;
+
+    // console.log(parameters);
+    console.log(post_id);
+
+    const formState = reactive({
+      post_id: "",
+      number_of_nets: "",
+      date_received: "",
+      received_from: "",
+      received_by: [],
+    });
+
+    const { villages, loading, isFacility, users, posts } = reactive({
+      villages: [],
+      loading: true,
+      isFacility: false,
+      users: [],
+      posts: [],
+    });
+
+    //get posts
+    const getPosts = async () => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/posts_data`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data.data);
+      this.posts = data.data;
+      // this.posts = data.map((post) => ({
+      //   ...post,
+      // }));
+      this.loading = false;
+    };
+
+    //counties
+    const getVillages = async () => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/villages/list`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.villages = data.data;
+      this.loading = false;
+    };
+
+    //users
+    const getUsers = async () => {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      this.users = data.data;
+    };
+
+    onMounted(() => {
+      getUsers();
+      getVillages();
+      getPosts();
+    });
+    // console.log(formState.isFacility)
+    const handleSubmit = (values) => {
+      values = {
+        post_id: values.post_id,
+        workers: values.received_by,
+      };
+
+      values.post_id = post_id;
+
+      const workersProxy = values.workers;
+      const workersArray = Object.values(workersProxy); // [2, 4]
+
+      console.log(workersArray);
+
+      values.workers = workersArray;
+
+      console.log(values);
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(values),
+      })
+        .then((response) => response.json())
+        .then(({ status, data }) => {
+          console.log(data);
+          if (status) {
+            router.push("/nets/distribution");
+            notification["success"]({
+              message: "Post Workers Added",
+              description: "Post Workers have been successfully assigner",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    };
+
+    return {
+      isLoading,
+      loading,
+      apiUrl,
+      isFileLoading,
+      isFacility,
+      handleSubmit,
+      dateFormat,
+      formState,
+      join,
+      villages,
+      posts,
+      users,
+    };
+  },
+  beforeRouteEnter(to, from, next) {
+    if (!sessionStorage.getItem("user")) {
+      next("/auth/login");
+    } else {
+      next();
+    }
+  },
+});
+
+export default AddNew;
+</script>
