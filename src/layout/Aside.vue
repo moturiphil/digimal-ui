@@ -96,6 +96,11 @@
             HouseHolds Validation
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="house-hold-list">
+          <router-link to="/hh-nets-distributed">
+            HouseHolds Nets
+          </router-link>
+        </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
           <router-link to="/households/chv">
             Campaign Users
