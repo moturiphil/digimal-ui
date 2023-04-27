@@ -52,11 +52,11 @@
                       />
                     </a-form-item>
                     <a-form-item
-                      name="number_of_nets"
+                      name="delivery_no"
                       label="Delivery Note No."
                     >
                       <a-input
-                        v-model:value="formState.delivery_note_number"
+                        v-model:value="formState.delivery_no"
                         placeholder="Delivery Note No."
                       />
                     </a-form-item>
@@ -140,6 +140,7 @@ const AddNew = defineComponent({
       date_received: "",
       received_from: "",
       received_by: "",
+      delivery_no: "",
     });
 
     const { villages, loading, isFacility, users, posts } = reactive({
@@ -211,12 +212,14 @@ const AddNew = defineComponent({
     const handleSubmit = (values) => {
       values = {
         post_id: values.post_id,
-        number_of_nets: values.number_of_nets,
+        no_of_bales: values.number_of_nets,
+        bale_size: values.number_of_nets,
         date_received: new Date(values.date_received)
           .toISOString()
           .substr(0, 10),
         received_from: values.received_from,
         received_by: values.received_by,
+        delivery_note_number: values.delivery_no,
       };
       console.log(values);
       fetch(API_URL, {
