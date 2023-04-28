@@ -9,8 +9,10 @@
         >
           <p>Bukengele Friends Church</p>
           <sdHeading as="h1">
-            {{ bukengele_friends_church }}
             <sub>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ bukengele_friends_church.house_holds }} </span><br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ bukengele_friends_church.net_distributed }} </span> <br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
             </sub>
           </sdHeading>
         </div>
@@ -21,20 +23,24 @@
         >
           <p>Bukengele SDA</p>
           <sdHeading as="h1">
-            {{ bukengele_sda }}
             <sub>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ bukengele_sda.house_holds }} </span><br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ bukengele_sda.net_distributed }}  </span> <br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
             </sub>
           </sdHeading>
         </div>
         <div
           @click="() => onPerformanceTab('bounce')"
-          :class="`growth-downward ${performanceTab === 'bounce' && 'active'}`"
+          :class="`growth-upward ${performanceTab === 'bounce' && 'active'}`"
           role="button"
         >
           <p>Mukholi Primary</p>
           <sdHeading as="h1">
-            {{ mukholi_primary }}
             <sub>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ mukholi_primary.house_holds }} </span><br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ mukholi_primary.net_distributed }} </span> <br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
             </sub>
           </sdHeading>
         </div>
@@ -45,8 +51,10 @@
         >
           <p>Renje Dispensery</p>
           <sdHeading as="h1">
-            {{ ranje_dispensary }}
             <sub>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ ranje_dispensary.house_holds }}  </span><br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ ranje_dispensary.net_distributed }} </span> <br>
+              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
             </sub>
           </sdHeading>
         </div>
@@ -204,13 +212,6 @@ const WebsitePerformance = defineComponent({
         ],
       },
     };
-    const active_events = ref(0);
-    const nets_distributed = ref(0);
-    const registered_house_holds = ref(0);
-    const registered_users = ref(0);
-    const household_population = ref(0);
-    const total_nets_required = ref(0);
-    const activities = ref(0);
     const bukengele_friends_church = ref(0);
     const bukengele_sda = ref(0);
     const mukholi_primary = ref(0);
@@ -227,17 +228,10 @@ const WebsitePerformance = defineComponent({
         );
         const data = await response.json();
         console.log(data);
-        active_events.value = data.active_events;
-        nets_distributed.value = data.nets_distributed;
-        registered_house_holds.value = data.registered_house_holds;
-        registered_users.value = data.registered_users;
-        household_population.value = data.all_hh_members;
-        total_nets_required.value = data.sys_allocation;
-        activities.value = data.active_activities;
-        bukengele_friends_church.value = data.bukengele_friends_church;
-        bukengele_sda.value = data.bukengele_sda;
-        mukholi_primary.value = data.mukholi_primary;
-        ranje_dispensary.value = data.ranje_dispensary;
+        bukengele_friends_church.value = data.distribution_details_bukengele_friends_church;
+        bukengele_sda.value = data.distribution_details_bukengele_sda;
+        mukholi_primary.value = data.distribution_details_mukholi_primary;
+        ranje_dispensary.value = data.distribution_details_ranje_dispensary;
         percentage_net_distribution.value = data.percentage_net_distribution;
       } catch (error) {
         console.error(error);
@@ -256,13 +250,6 @@ const WebsitePerformance = defineComponent({
       chartLinearGradient,
       chartMethods,
       performanceDatasets,
-      active_events,
-      nets_distributed,
-      registered_house_holds,
-      registered_users,
-      household_population,
-      total_nets_required,
-      activities,
       bukengele_friends_church,
       bukengele_sda,
       mukholi_primary,
