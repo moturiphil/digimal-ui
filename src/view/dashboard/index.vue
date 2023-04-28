@@ -194,67 +194,7 @@
       <a-col :lg="16" :xs="24">
         <Suspense>
           <template #default>
-            <AverageSalesRevenue :chartHeights="95" />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :lg="8" :xs="24">
-        <Suspense>
-          <template #default>
-            <SalesTarget />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :lg="8" :xs="24">
-        <Suspense>
-          <template #default>
-            <SalesGrowth />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :lg="8" :xs="24">
-        <Suspense>
-          <template #default>
-            <TopCountriesRevenue />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :lg="12" :xs="24">
-        <Suspense>
-          <template #default>
-            <TopSellingProduct />
-          </template>
-          <template #fallback>
-            <sdCards headless>
-              <a-skeleton active />
-            </sdCards>
-          </template>
-        </Suspense>
-      </a-col>
-      <a-col :lg="12" :xs="24">
-        <Suspense>
-          <template #default>
-            <RecentOrder />
+            <WebsitePerformance />
           </template>
           <template #fallback>
             <sdCards headless>
@@ -271,18 +211,12 @@ import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import {  onMounted, ref } from "vue";
-import { defineComponent } from "vue";
+import { defineComponent, defineAsyncComponent } from "vue";
 import authHeader from "../../services/auth-header";
 
-// import { useRouter } from "vue-router";
 
-// const NetsDistributed = defineAsyncComponent(() =>
-//   import("./overview/massnet/NetsDistributed")
-// );
-// const OnGoingEvents = defineAsyncComponent(() =>
-//   import("./overview/massnet/OnGoingEvents")
-// );
-// const IncomeAndExpenses = defineAsyncComponent(() => import('./overview/business/IncomeAndExpenses'));
+const WebsitePerformance = defineAsyncComponent(() => import('./overview/performance/WebsitePerformance'));
+
 
 const chartOptions = {
   legend: {
@@ -324,6 +258,7 @@ export default defineComponent({
     CardBarChart2,
     EChartCard,
     Chart,
+    WebsitePerformance,
     // IncomeAndExpenses,
   },
   data() {

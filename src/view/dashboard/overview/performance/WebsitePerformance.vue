@@ -1,54 +1,16 @@
 <template>
   <PerformanceChartWrapper>
-    <sdCards v-if="performanceState !== null" more title="Website Performance">
-      <template #button>
-        <div class="card-nav">
-          <ul>
-            <li :class="performance === 'week' ? 'active' : 'deactivate'">
-              <router-link @click="(e) => handleActiveChangePerformance(e, 'week')" to="#"> Week </router-link>
-            </li>
-            <li :class="performance === 'month' ? 'active' : 'deactivate'">
-              <router-link @click="(e) => handleActiveChangePerformance(e, 'month')" to="#"> Month </router-link>
-            </li>
-            <li :class="performance === 'year' ? 'active' : 'deactivate'">
-              <router-link @click="(e) => handleActiveChangePerformance(e, 'year')" to="#"> Year </router-link>
-            </li>
-          </ul>
-        </div>
-      </template>
-      <template #more>
-        <router-link to="#">
-          <sdFeatherIcons size="16" type="printer" />
-          <span>Printer</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons size="16" type="book-open" />
-          <span>PDF</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons size="16" type="file-text" />
-          <span>Google Sheets</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons size="16" type="x" />
-          <span>Excel (XLSX)</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons size="16" type="file" />
-          <span>CSV</span>
-        </router-link>
-      </template>
+    <sdCards v-if="performanceState !== null" more title="Campaign Performance">
       <Pstates>
         <div
           @click="() => onPerformanceTab('users')"
           :class="`growth-upward ${performanceTab === 'users' && 'active'}`"
           role="button"
         >
-          <p>Users</p>
+          <p>Bukengele Friends Church</p>
           <sdHeading as="h1">
-            {{ performanceState.users[0] }}
+            {{ bukengele_friends_church }}
             <sub>
-              <span> <sdFeatherIcons type="arrow-up" size="14" /> 25% </span>
             </sub>
           </sdHeading>
         </div>
@@ -57,11 +19,10 @@
           :class="`growth-upward ${performanceTab === 'sessions' && 'active'}`"
           role="button"
         >
-          <p>Sessions</p>
+          <p>Bukengele SDA</p>
           <sdHeading as="h1">
-            {{ performanceState.sessions[0] }}
+            {{ bukengele_sda }}
             <sub>
-              <span> <sdFeatherIcons type="arrow-up" size="14" /> 47% </span>
             </sub>
           </sdHeading>
         </div>
@@ -70,11 +31,10 @@
           :class="`growth-downward ${performanceTab === 'bounce' && 'active'}`"
           role="button"
         >
-          <p>Bounce Rate</p>
+          <p>Mukholi Primary</p>
           <sdHeading as="h1">
-            {{ performanceState.bounce[0] }}
+            {{ mukholi_primary }}
             <sub>
-              <span> <sdFeatherIcons type="arrow-down" size="14" /> 28% </span>
             </sub>
           </sdHeading>
         </div>
@@ -83,43 +43,26 @@
           :class="`growth-upward ${performanceTab === 'duration' && 'active'}`"
           role="button"
         >
-          <p>Session Duration</p>
+          <p>Renje Dispensery</p>
           <sdHeading as="h1">
-            {{ performanceState.duration[0] }}
+            {{ ranje_dispensary }}
             <sub>
-              <span> <sdFeatherIcons icon="arrow-up" size="14" /> 13% </span>
+            </sub>
+          </sdHeading>
+        </div>
+        <div
+          @click="() => onPerformanceTab('duration')"
+          :class="`growth-upward ${performanceTab === 'coverage' && 'active'}`"
+          role="button"
+        >
+          <p>HouseHold Coverage</p>
+          <sdHeading as="h1">
+            {{ percentage_net_distribution}}
+            <sub>
             </sub>
           </sdHeading>
         </div>
       </Pstates>
-
-      <div v-if="preIsLoading" class="sd-spin">
-        <a-spin />
-      </div>
-      <div v-else class="performance-lineChart">
-        <sdChartContainer class="parentContainer">
-          <Chart
-            v-if="performanceState"
-            class="performance"
-            type="line"
-            id="performance"
-            :labels="performanceState.labels"
-            :datasets="performanceDatasets"
-            :options="chartOptions"
-            :height="height"
-          />
-        </sdChartContainer>
-        <ul>
-          <li v-for="(item, index) in performanceDatasets" :key="index + 1" class="custom-label">
-            <span
-              :style="{
-                backgroundColor: item.borderColor,
-              }"
-            />
-            {{ item.label }}
-          </li>
-        </ul>
-      </div>
     </sdCards>
   </PerformanceChartWrapper>
 </template>
@@ -128,10 +71,11 @@ import { useStore } from 'vuex';
 import { computed, ref, onMounted, defineComponent } from 'vue';
 import { PerformanceChartWrapper, Pstates } from '../../style';
 import { chartLinearGradient, customTooltips } from '../../../../components/utilities/utilities';
-import Chart from '../../../../components/utilities/chartjs';
+import authHeader from "../../../../services/auth-header";
+
 
 const WebsitePerformance = defineComponent({
-  components: { PerformanceChartWrapper, Pstates, Chart },
+  components: { PerformanceChartWrapper, Pstates },
 
   setup() {
     const store = useStore();
@@ -260,6 +204,45 @@ const WebsitePerformance = defineComponent({
         ],
       },
     };
+    const active_events = ref(0);
+    const nets_distributed = ref(0);
+    const registered_house_holds = ref(0);
+    const registered_users = ref(0);
+    const household_population = ref(0);
+    const total_nets_required = ref(0);
+    const activities = ref(0);
+    const bukengele_friends_church = ref(0);
+    const bukengele_sda = ref(0);
+    const mukholi_primary = ref(0);
+    const ranje_dispensary = ref(0);
+    const percentage_net_distribution = ref(0);
+    onMounted(async () => {
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/dash_stats`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        active_events.value = data.active_events;
+        nets_distributed.value = data.nets_distributed;
+        registered_house_holds.value = data.registered_house_holds;
+        registered_users.value = data.registered_users;
+        household_population.value = data.all_hh_members;
+        total_nets_required.value = data.sys_allocation;
+        activities.value = data.active_activities;
+        bukengele_friends_church.value = data.bukengele_friends_church;
+        bukengele_sda.value = data.bukengele_sda;
+        mukholi_primary.value = data.mukholi_primary;
+        ranje_dispensary.value = data.ranje_dispensary;
+        percentage_net_distribution.value = data.percentage_net_distribution;
+      } catch (error) {
+        console.error(error);
+      }
+    });
 
     return {
       performanceState,
@@ -273,6 +256,18 @@ const WebsitePerformance = defineComponent({
       chartLinearGradient,
       chartMethods,
       performanceDatasets,
+      active_events,
+      nets_distributed,
+      registered_house_holds,
+      registered_users,
+      household_population,
+      total_nets_required,
+      activities,
+      bukengele_friends_church,
+      bukengele_sda,
+      mukholi_primary,
+      ranje_dispensary,
+      percentage_net_distribution
     };
   },
 });
