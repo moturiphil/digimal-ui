@@ -1,6 +1,6 @@
 <template>
   <PerformanceChartWrapper>
-    <sdCards v-if="performanceState !== null" more title="Campaign Performance">
+    <sdCards v-if="performanceState !== null" more title="Bungoma Pilot Performance">
       <Pstates>
         <div
           @click="() => onPerformanceTab('users')"
@@ -87,7 +87,7 @@
           :class="`growth-upward ${performanceTab === 'duration' && 'active'}`"
           role="button"
         >
-          <p>Renje Dispensery</p>
+          <p>Ranje Dispensery</p>
           <sdHeading as="h1">
             <sub>
               <span>
@@ -113,7 +113,7 @@
           :class="`growth-upward ${performanceTab === 'coverage' && 'active'}`"
           role="button"
         >
-          <p>HouseHold Coverage</p>
+          <p>Distribution Coverage</p>
           <sdHeading as="h1">
             {{ percentage_net_distribution }}
             <sub> </sub>
