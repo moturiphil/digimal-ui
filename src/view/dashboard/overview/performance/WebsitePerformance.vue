@@ -10,9 +10,23 @@
           <p>Bukengele Friends Church</p>
           <sdHeading as="h1">
             <sub>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ bukengele_friends_church.house_holds }} </span><br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ bukengele_friends_church.net_distributed }} </span> <br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total
+                HouseHolds:
+                {{
+                  bukengele_friends_church.total_house_hold_in_this_post
+                }} </span
+              ><br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets
+                Distributed: {{ bukengele_friends_church.net_distributed }}
+              </span>
+              <br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining
+                HouseHolds: {{ bukengele_friends_church.remaining_hh_per_post }}
+              </span>
+              <br />
             </sub>
           </sdHeading>
         </div>
@@ -24,9 +38,21 @@
           <p>Bukengele SDA</p>
           <sdHeading as="h1">
             <sub>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ bukengele_sda.house_holds }} </span><br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ bukengele_sda.net_distributed }}  </span> <br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total
+                HouseHolds:
+                {{ bukengele_sda.total_house_hold_in_this_post }} </span
+              ><br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets
+                Distributed: {{ bukengele_sda.net_distributed }}
+              </span>
+              <br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining
+                HouseHolds: {{ bukengele_sda.remaining_hh_per_post }}
+              </span>
+              <br />
             </sub>
           </sdHeading>
         </div>
@@ -38,9 +64,21 @@
           <p>Mukholi Primary</p>
           <sdHeading as="h1">
             <sub>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ mukholi_primary.house_holds }} </span><br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ mukholi_primary.net_distributed }} </span> <br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total
+                HouseHolds:
+                {{ mukholi_primary.total_house_hold_in_this_post }} </span
+              ><br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets
+                Distributed: {{ mukholi_primary.net_distributed }}
+              </span>
+              <br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining
+                HouseHolds: {{ mukholi_primary.remaining_hh_per_post }}
+              </span>
+              <br />
             </sub>
           </sdHeading>
         </div>
@@ -52,9 +90,21 @@
           <p>Renje Dispensery</p>
           <sdHeading as="h1">
             <sub>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total HouseHolds: {{ ranje_dispensary.house_holds }}  </span><br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets Distributed: {{ ranje_dispensary.net_distributed }} </span> <br>
-              <span> <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining HouseHolds:  </span> <br>
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Total
+                HouseHolds:
+                {{ ranje_dispensary.total_house_hold_in_this_post }} </span
+              ><br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Nets
+                Distributed: {{ ranje_dispensary.net_distributed }}
+              </span>
+              <br />
+              <span>
+                <sdFeatherIcons type="home" size="14" /> &nbsp;&nbsp; Remaining
+                HouseHolds: {{ ranje_dispensary.remaining_hh_per_post }}
+              </span> 
+              <br />
             </sub>
           </sdHeading>
         </div>
@@ -65,9 +115,8 @@
         >
           <p>HouseHold Coverage</p>
           <sdHeading as="h1">
-            {{ percentage_net_distribution}}
-            <sub>
-            </sub>
+            {{ percentage_net_distribution }}
+            <sub> </sub>
           </sdHeading>
         </div>
       </Pstates>
@@ -75,57 +124,62 @@
   </PerformanceChartWrapper>
 </template>
 <script>
-import { useStore } from 'vuex';
-import { computed, ref, onMounted, defineComponent } from 'vue';
-import { PerformanceChartWrapper, Pstates } from '../../style';
-import { chartLinearGradient, customTooltips } from '../../../../components/utilities/utilities';
+import { useStore } from "vuex";
+import { computed, ref, onMounted, defineComponent } from "vue";
+import { PerformanceChartWrapper, Pstates } from "../../style";
+import {
+  chartLinearGradient,
+  customTooltips,
+} from "../../../../components/utilities/utilities";
 import authHeader from "../../../../services/auth-header";
-
 
 const WebsitePerformance = defineComponent({
   components: { PerformanceChartWrapper, Pstates },
 
   setup() {
     const store = useStore();
-    const performance = ref('year');
-    const performanceTab = ref('users');
+    const performance = ref("year");
+    const performanceTab = ref("users");
     const height = ref(window.innerWidth <= 575 ? 200 : 85);
 
-    const performanceState = computed(() => store.state.chartContent.performanceData);
+    const performanceState = computed(
+      () => store.state.chartContent.performanceData
+    );
     const preIsLoading = computed(() => store.state.chartContent.perLoading);
 
     const performanceDatasets = computed(() => [
       {
         data: performanceState.value[performanceTab.value][1],
-        borderColor: '#5F63F2',
+        borderColor: "#5F63F2",
         borderWidth: 4,
         fill: true,
-        backgroundColor: () => chartMethods('performance', ['#5F63F230', '#ffffff05']),
-        label: 'Current period',
-        pointStyle: 'circle',
-        pointRadius: '0',
-        hoverRadius: '9',
-        pointBorderColor: '#fff',
-        pointBackgroundColor: '#5F63F2',
+        backgroundColor: () =>
+          chartMethods("performance", ["#5F63F230", "#ffffff05"]),
+        label: "Current period",
+        pointStyle: "circle",
+        pointRadius: "0",
+        hoverRadius: "9",
+        pointBorderColor: "#fff",
+        pointBackgroundColor: "#5F63F2",
         hoverBorderWidth: 5,
       },
       {
         data: performanceState.value[performanceTab.value][2],
-        borderColor: '#C6D0DC',
+        borderColor: "#C6D0DC",
         borderWidth: 2,
         fill: false,
-        backgroundColor: '#00173750',
-        label: 'Previous period',
+        backgroundColor: "#00173750",
+        label: "Previous period",
         borderDash: [3, 3],
-        pointRadius: '0',
-        hoverRadius: '0',
+        pointRadius: "0",
+        hoverRadius: "0",
       },
     ]);
 
     const handleActiveChangePerformance = (event, value) => {
       event.preventDefault();
       performance.value = value;
-      return store.dispatch('performanceFilterData', value);
+      return store.dispatch("performanceFilterData", value);
     };
 
     function chartMethods(elementId, color) {
@@ -137,11 +191,11 @@ const WebsitePerformance = defineComponent({
 
     const onPerformanceTab = (value) => {
       performanceTab.value = value;
-      return store.dispatch('setIsLoading');
+      return store.dispatch("setIsLoading");
     };
 
     onMounted(() => {
-      store.dispatch('performanceGetData');
+      store.dispatch("performanceGetData");
     });
 
     const chartOptions = {
@@ -153,14 +207,14 @@ const WebsitePerformance = defineComponent({
         display: false,
       },
       hover: {
-        mode: 'index',
+        mode: "index",
         intersect: false,
       },
       tooltips: {
-        mode: 'label',
+        mode: "label",
         intersect: false,
-        backgroundColor: '#ffffff',
-        position: 'average',
+        backgroundColor: "#ffffff",
+        position: "average",
         enabled: false,
         custom: customTooltips,
         callbacks: {
@@ -177,16 +231,16 @@ const WebsitePerformance = defineComponent({
         yAxes: [
           {
             gridLines: {
-              color: '#e5e9f2',
+              color: "#e5e9f2",
               borderDash: [3, 3],
-              zeroLineColor: '#e5e9f2',
+              zeroLineColor: "#e5e9f2",
               zeroLineWidth: 1,
               zeroLineBorderDash: [3, 3],
             },
             ticks: {
               beginAtZero: true,
               fontSize: 13,
-              fontColor: '#182b49',
+              fontColor: "#182b49",
               max: 80,
               stepSize: 20,
               callback(label) {
@@ -200,8 +254,8 @@ const WebsitePerformance = defineComponent({
             gridLines: {
               display: true,
               zeroLineWidth: 2,
-              zeroLineColor: 'transparent',
-              color: 'transparent',
+              zeroLineColor: "transparent",
+              color: "transparent",
               z: 1,
               tickMarkLength: 0,
             },
@@ -228,7 +282,8 @@ const WebsitePerformance = defineComponent({
         );
         const data = await response.json();
         console.log(data);
-        bukengele_friends_church.value = data.distribution_details_bukengele_friends_church;
+        bukengele_friends_church.value =
+          data.distribution_details_bukengele_friends_church;
         bukengele_sda.value = data.distribution_details_bukengele_sda;
         mukholi_primary.value = data.distribution_details_mukholi_primary;
         ranje_dispensary.value = data.distribution_details_ranje_dispensary;
@@ -254,7 +309,7 @@ const WebsitePerformance = defineComponent({
       bukengele_sda,
       mukholi_primary,
       ranje_dispensary,
-      percentage_net_distribution
+      percentage_net_distribution,
     };
   },
 });
