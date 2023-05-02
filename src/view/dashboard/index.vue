@@ -158,6 +158,18 @@
       </a-col>
     </a-row>
     <a-row :gutter="25">
+      <a-col :md="24">
+        <Suspense>
+          <template #default>
+            <IncomeAndExpenses />
+          </template>
+          <template #fallback>
+            <sdCards headless>
+              <a-skeleton active />
+            </sdCards>
+          </template>
+        </Suspense>
+      </a-col>
       <a-col :lg="8" :xs="24">
         <sdCards headless>
           <OverviewSalesCard>
@@ -215,6 +227,8 @@ import { defineComponent, defineAsyncComponent } from "vue";
 import authHeader from "../../services/auth-header";
 
 
+const IncomeAndExpenses = defineAsyncComponent(() => import('./overview/business/IncomeAndExpenses'));
+
 const WebsitePerformance = defineAsyncComponent(() => import('./overview/performance/WebsitePerformance'));
 
 
@@ -259,7 +273,7 @@ export default defineComponent({
     EChartCard,
     Chart,
     WebsitePerformance,
-    // IncomeAndExpenses,
+    IncomeAndExpenses,
   },
   data() {
     return {};
@@ -272,6 +286,7 @@ export default defineComponent({
     const household_population = ref(0);
     const total_nets_required = ref(0);
     const activities = ref(0);
+    // const system_allocation = ref(0);
 
     // console.log(sessionStorage.getItem("user"));
     onMounted(async () => {

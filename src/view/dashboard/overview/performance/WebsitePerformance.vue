@@ -1,6 +1,6 @@
 <template>
   <PerformanceChartWrapper>
-    <sdCards v-if="performanceState !== null" more title="Bungoma Pilot Performance">
+    <sdCards v-if="performanceState !== null" more title="Bungoma Pilot Post Performance">
       <Pstates>
         <div
           @click="() => onPerformanceTab('users')"

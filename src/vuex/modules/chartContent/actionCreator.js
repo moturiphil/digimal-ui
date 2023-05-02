@@ -1,4 +1,5 @@
 import chartContents from '../../../demoData/dashboardChartContent.json';
+// import registrationData from '../../../dashboardData/registrationData.json';
 import mutations from './mutations';
 
 const {

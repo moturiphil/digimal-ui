@@ -2,96 +2,14 @@
   <IncomeExpenseWrapper>
     <sdCards v-if="incomeState !== null" more>
       <template #title
-        ><div>Income And Expenses <span>Nov 23, 2019 - Nov 29, 2019</span></div></template
+        ><div>HouseHolds MassNet <span>Bungoma Pilot</span></div></template
       >
-      <template #more>
-        <router-link to="#">
-          <sdFeatherIcons :size="16" type="printer" />
-          <span>Printer</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons :size="16" type="book-open" />
-          <span>PDF</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons :size="16" type="file-text" />
-          <span>Google Sheets</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons :size="16" type="x" />
-          <span>Excel (XLSX)</span>
-        </router-link>
-        <router-link to="#">
-          <sdFeatherIcons :size="16" type="file" />
-          <span>CSV</span>
-        </router-link>
-      </template>
-      <template #button>
-        <div class="card-nav">
-          <ul>
-            <!-- <li :class="incomeFlowActive === 'week' ? 'active' : 'regular'">
-              <router-link @click="() => handleActiveChangeIncome('week')" to="#"> Week </router-link>
-            </li>
-            <li :class="incomeFlowActive === 'month' ? 'active' : 'regular'">
-              <router-link @click="() => handleActiveChangeIncome('month')" to="#"> Month </router-link>
-            </li>
-            <li :class="incomeFlowActive === 'year' ? 'active' : 'regular'">
-              <router-link @click="() => handleActiveChangeIncome('year')" to="#"> Year </router-link>
-            </li> -->
-          </ul>
-        </div>
-      </template>
-
       <div v-if="isIcLoading" class="sd-spin">
         <a-spin />
       </div>
 
       <a-row v-else :gutter="25">
-        <a-col :xxl="6" :sm="24">
-          <ExList>
-            <div>
-              <p>Total income</p>
-              <sdHeading as="h1">
-                <span>${{ incomeState.total[0] }}</span>
-                <sub>
-                  <span> <sdFeatherIcons type="arrow-up" /> 37% </span>
-                  Since last month
-                </sub>
-              </sdHeading>
-            </div>
-            <div>
-              <p>Total expenses</p>
-              <sdHeading as="h1">
-                <span>${{ incomeState.sale[0] }}</span>
-                <sub class="growth-downward">
-                  <span> <sdFeatherIcons type="arrow-down" /> 25% </span>
-                  Since last month
-                </sub>
-              </sdHeading>
-            </div>
-            <div>
-              <p>Cost of goods sold</p>
-              <sdHeading as="h1">
-                <span>${{ incomeState.expense[0] }}</span>
-                <sub>
-                  <span> <sdFeatherIcons type="arrow-up" /> 25% </span>
-                  Since last month
-                </sub>
-              </sdHeading>
-            </div>
-            <div>
-              <p>Net profit</p>
-              <sdHeading as="h1">
-                <span>${{ incomeState.profit[0] }}</span>
-                <sub>
-                  <span> <sdFeatherIcons icon="arrow-up" /> 25% </span>
-                  Since last month
-                </sub>
-              </sdHeading>
-            </div>
-          </ExList>
-        </a-col>
-        <a-col :xxl="18" :xs="24">
+        <a-col :xxl="24" :xs="24">
           <sdChartContainer class="parentContainer">
             <Chart
               type="bar"
@@ -138,10 +56,10 @@
                         beginAtZero: true,
                         fontSize: 13,
                         fontColor: '#182b49',
-                        max: Math.max(...incomeState.sale[1]),
-                        stepSize: Math.max(...incomeState.sale[1]) / 5,
+                        max: Math.max(...incomeState.population[1]),
+                        stepSize: Math.max(...incomeState.population[1]) / 5,
                         callback(label) {
-                          return `${label}k`;
+                          return `${label}`;
                         },
                       },
                     },
@@ -191,52 +109,88 @@
   </IncomeExpenseWrapper>
 </template>
 <script>
-import { ExList, IncomeExpenseWrapper } from '../../style';
-import Chart from '../../../../components/utilities/chartjs';
-import { customTooltips } from '../../../../components/utilities/utilities';
-import { computed, onMounted, ref, defineComponent } from 'vue';
-import { useStore } from 'vuex';
+import { IncomeExpenseWrapper } from "../../style";
+import Chart from "../../../../components/utilities/chartjs";
+import { customTooltips } from "../../../../components/utilities/utilities";
+import { computed, onMounted, ref, defineComponent } from "vue";
+import { useStore } from "vuex";
+import authHeader from "../../../../services/auth-header";
+
 
 const IncomeAndExpenses = defineComponent({
-  name: 'IncomeAndExpenses',
-  components: { ExList, IncomeExpenseWrapper, Chart },
+  name: "HouseHolds Registration",
+  components: {  IncomeExpenseWrapper, Chart },
   setup() {
     const { state, dispatch } = useStore();
-    const incomeFlowActive = ref('year');
-    onMounted(() => dispatch('incomeGetData'));
+    const incomeFlowActive = ref("year");
+    // onMounted(() => dispatch('incomeGetData'));
+
+    const active_events = ref(0);
+    const nets_distributed = ref(0);
+    const registered_house_holds = ref(0);
+    const registered_users = ref(0);
+    const household_population = ref(0);
+    const total_nets_required = ref(0);
+    const activities = ref(0);
+
+
+    onMounted(async () => {
+      dispatch("incomeGetData");
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/dash_stats`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        console.log("Endpoint working...............");
+        const data = await response.json();
+        console.log(data);
+        active_events.value = data.active_events;
+        nets_distributed.value = data.nets_distributed;
+        registered_house_holds.value = data.registered_house_holds;
+        registered_users.value = data.registered_users;
+        household_population.value = data.all_hh_members;
+        total_nets_required.value = data.sys_allocation;
+        activities.value = data.active_activities;
+      } catch (error) {
+        console.error(error);
+      }
+    });
     const handleActiveChangeIncome = (value) => {
       incomeFlowActive.value = value;
-      return dispatch('incomeFilterData', value);
+      return dispatch("incomeFilterData", value);
     };
     const incomeState = computed(() => state.chartContent.incomeData);
     const isIcLoading = computed(() => state.chartContent.icLoading);
     const incomeDataset = computed(() => [
       {
-        data: state.chartContent.incomeData.total[1],
-        backgroundColor: '#5F63F250',
-        hoverBackgroundColor: '#5F63F2',
-        label: 'Total Income',
+        data: state.chartContent.incomeData.hh[1],
+        backgroundColor: "#5F63F250",
+        hoverBackgroundColor: "#5F63F2",
+        label: "Total Registered HouseHolds",
         barPercentage: 0.6,
       },
       {
-        data: state.chartContent.incomeData.sale[1],
-        backgroundColor: '#FF69A550',
-        hoverBackgroundColor: '#FF69A5',
-        label: 'Cost of goods sold',
+        data: state.chartContent.incomeData.population[1],
+        backgroundColor: "#FF69A550",
+        hoverBackgroundColor: "#FF69A5",
+        label: "Total Population",
         barPercentage: 0.6,
       },
       {
-        data: state.chartContent.incomeData.expense[1],
-        backgroundColor: '#FA8B0C40',
-        hoverBackgroundColor: '#FA8B0C',
-        label: 'Total expenses',
+        data: state.chartContent.incomeData.nets_req[1],
+        backgroundColor: "#FA8B0C40",
+        hoverBackgroundColor: "#FA8B0C",
+        label: "Total Nets Required",
         barPercentage: 0.6,
       },
       {
-        data: state.chartContent.incomeData.profit[1],
-        backgroundColor: '#20C99740',
-        hoverBackgroundColor: '#20C997',
-        label: 'Net profit',
+        data: state.chartContent.incomeData.nets_dist[1],
+        backgroundColor: "#20C99740",
+        hoverBackgroundColor: "#20C997",
+        label: "Total Nets Distributed",
         barPercentage: 0.6,
       },
     ]);
@@ -249,9 +203,9 @@ const IncomeAndExpenses = defineComponent({
       handleActiveChangeIncome,
       toolTips: {
         tooltips: {
-          mode: 'label',
+          mode: "label",
           intersect: false,
-          position: 'average',
+          position: "average",
           enabled: false,
           custom: customTooltips,
           callbacks: {
@@ -261,10 +215,11 @@ const IncomeAndExpenses = defineComponent({
               return `<span class="chart-data">${yLabel}</span> <span class="data-label">${dstLabel}</span>`;
             },
             labelColor(tooltipItem, chart) {
-              const dataset = chart.config.data.datasets[tooltipItem.datasetIndex];
+              const dataset =
+                chart.config.data.datasets[tooltipItem.datasetIndex];
               return {
                 backgroundColor: dataset.hoverBackgroundColor,
-                borderColor: 'transparent',
+                borderColor: "transparent",
                 usePointStyle: true,
               };
             },
