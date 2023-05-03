@@ -9,6 +9,22 @@
       </div>
 
       <a-row v-else :gutter="25">
+        <a-col :xxl="6" :sm="24">
+          <ExList>
+            <div>
+              <p>Bukengele Coverage Per Capita</p>
+              <sdHeading as="h1">
+                <span>59.8 %</span>
+              </sdHeading>
+            </div>
+            <div>
+              <p>Mufungu Coverage Per Capita</p>
+              <sdHeading as="h1">
+                <span>40.2 %</span>
+              </sdHeading>
+            </div>
+          </ExList>
+        </a-col>
         <a-col :xxl="24" :xs="24">
           <sdChartContainer class="parentContainer">
             <Chart
@@ -109,7 +125,7 @@
   </IncomeExpenseWrapper>
 </template>
 <script>
-import { IncomeExpenseWrapper } from "../../style";
+import { IncomeExpenseWrapper, ExList, } from "../../style";
 import Chart from "../../../../components/utilities/chartjs";
 import { customTooltips } from "../../../../components/utilities/utilities";
 import { computed, onMounted, ref, defineComponent } from "vue";
@@ -119,7 +135,7 @@ import authHeader from "../../../../services/auth-header";
 
 const IncomeAndExpenses = defineComponent({
   name: "HouseHolds Registration",
-  components: {  IncomeExpenseWrapper, Chart },
+  components: {  IncomeExpenseWrapper, Chart, ExList },
   setup() {
     const { state, dispatch } = useStore();
     const incomeFlowActive = ref("year");

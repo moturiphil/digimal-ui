@@ -202,6 +202,22 @@
             </div>
           </OverviewSalesCard>
         </sdCards>
+
+        <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-secondary">
+              <SvgConverter
+                :src="require('../../static/img/icon/SalesRevenue.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2>1149</h2>
+                <span>Total Actual Nets Allocation </span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards>
       </a-col>
       <a-col :lg="16" :xs="24">
         <Suspense>
@@ -286,6 +302,7 @@ export default defineComponent({
     const household_population = ref(0);
     const total_nets_required = ref(0);
     const activities = ref(0);
+    // const actual_allocation = ref(0);
     // const system_allocation = ref(0);
 
     // console.log(sessionStorage.getItem("user"));
@@ -307,6 +324,7 @@ export default defineComponent({
         household_population.value = data.all_hh_members;
         total_nets_required.value = data.sys_allocation;
         activities.value = data.active_activities;
+        // actual_allocation = data.
         // console.log(data.active_events);
       } catch (error) {
         console.error(error);
