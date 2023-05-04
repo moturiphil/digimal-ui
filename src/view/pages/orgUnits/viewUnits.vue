@@ -16,7 +16,7 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
+                  :pagination="{ pageSize: 50, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
                 >

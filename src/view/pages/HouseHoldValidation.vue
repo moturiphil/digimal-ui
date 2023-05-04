@@ -61,7 +61,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 50,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -116,12 +116,12 @@
                   </a-col>
                 </a-row>
               </div>
-              <a-pagination
+              <!-- <a-pagination
                 show-size-changer
                 :default-current="3"
                 :total="40"
                 @showSizeChange="onShowSizeChange"
-              />
+              /> -->
             </sdCards>
           </a-col>
         </a-row>

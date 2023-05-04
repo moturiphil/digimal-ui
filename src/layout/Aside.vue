@@ -158,6 +158,11 @@
           <sdFeatherIcons type="users" />&nbsp; &nbsp; Users
         </router-link>
       </a-menu-item>
+      <a-menu-item @click="toggleCollapsed" key="payroll">
+        <router-link to="/payroll">
+          <sdFeatherIcons type="dollar-sign" />&nbsp; &nbsp; Payroll
+        </router-link>
+      </a-menu-item>
     </a-menu-item-group>
   </a-menu>
 </template>

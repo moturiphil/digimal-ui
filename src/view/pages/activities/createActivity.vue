@@ -162,6 +162,24 @@
                       >
                       </a-select>
                     </a-form-item>
+                    <a-form-item name="activity_facilitator" label="Applicable Payroll Formulas">
+                      <a-select
+                        mode="multiple"
+                        v-model:value="formState.activity_facilitator"
+                        placeholder="Please select"
+                        :options="
+                          (() => {
+                            return users.map(
+                              ({ first_name, last_name, role_id, id }) => ({
+                                label: `${first_name} ${last_name} - ${role_id}`,
+                                value: id,
+                              })
+                            );
+                          })()
+                        "
+                      >
+                      </a-select>
+                    </a-form-item>
 
                     <div class="record-form-actions text-right">
                       <!-- <sdButton
