@@ -44,9 +44,9 @@
                   <li>
                     <a
                       :class="
-                        activeClass === 'outliers' ? 'active' : 'deactivate'
+                        activeClass === 'paid' ? 'active' : 'deactivate'
                       "
-                      @click="handleChange('outliers')"
+                      @click="handleChange('paid')"
                       href="#"
                     >
                       Paid
@@ -78,6 +78,18 @@
                               :dataSource="filteredData"
                               :columns="columns"
                             >
+                            <template #payroll="{ record }">
+                                <td :style="{ 'margin-left': '4px' }">
+                                  <div class="table-actions">
+                                    <sdButton type="check" size="16" @click="handleVerify(record.id)">
+                                        &nbsp;&nbsp;
+                                        <span class="badge badge-green"
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                    </sdButton>
+                                  </div>
+                                </td>
+                              </template>
                             </a-table>
                           </TableWrapper>
   
@@ -108,7 +120,7 @@
                               :dataSource="filteredData"
                               :columns="columns"
                             >
-                              <template #households="{ record }">
+                              <template #payroll="{ record }">
                                 <td :style="{ 'margin-left': '3px' }">
                                   <div class="table-actions">
                                     <sdButton type="check" size="16" @click="handleVerify(record.id)">
@@ -122,6 +134,34 @@
                               </template>
                             </a-table>
                           </TableWrapper>
+
+                          <TableWrapper
+                            class="table-data-view table-responsive"
+                            v-show="activeClass === 'paid'"
+                          >
+                            <a-table
+                              :pagination="{
+                                pageSize: 40,
+                                showSizeChanger: true,
+                              }"
+                              :dataSource="filteredData"
+                              :columns="columns"
+                            >
+                              <template #payroll="{ record }">
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton type="check" size="16" @click="handleVerify(record.id)">
+                                        &nbsp;&nbsp;
+                                        <span class="badge badge-green"
+                                          >&nbsp;&nbsp; Verify</span
+                                        >
+                                    </sdButton>
+                                  </div>
+                                </td>
+                              </template>
+                            </a-table>
+                          </TableWrapper>
+                          
                         </div>
                       </sdCards>
                     </a-col>
@@ -149,24 +189,24 @@
   const columns = [
     {
       title: "Name",
-      dataIndex: "fir_name",
-      key: "id_no",
+      dataIndex: "name",
+      key: "id",
     },
     {
-      title: "Amount",
-      dataIndex: "l_name",
-      key: "id_no",
+      title: "Activity",
+      dataIndex: "activity_id",
+      key: "id",
     },
     {
       title: "Status",
-      dataIndex: "ph_no",
-      key: "id_no",
+      dataIndex: "status",
+      key: "id",
     },
-    // {
-    //   title: "Household size",
-    //   dataIndex: "hh_size",
-    //   key: "id_no",
-    // },
+    {
+      title: "Amount",
+      dataIndex: "total_amount",
+      key: "id",
+    },
     // {
     //   title: "Village",
     //   dataIndex: "location_id",
@@ -176,18 +216,18 @@
     //   title: "CHV",
     //   dataIndex: "chw_id",
     //   key: "id_no",
-    // },
+    // },h
     // {
     //   title: "Timestamp",
     //   dataIndex: "created_at",
     //   key: "id_no",
     // },
-    // {
-    //   title: "",
-    //   dataIndex: "",
-    //   key: "households",
-    //   slots: { customRender: "households" },
-    // },
+    {
+      title: "",
+      dataIndex: "",
+      key: "payroll",
+      slots: { customRender: "payroll" },
+    },
   ];
   export default defineComponent({
     name: "HouseHold Validation",
@@ -204,7 +244,7 @@
         confirmLoading: false,
         modalType: "primary",
         colorVisible: false,
-        households: [],
+        payroll: [],
       };
     },
     methods: {
@@ -233,7 +273,7 @@
       const dataSource = ref([]);
       const activeClass = ref("all");
   
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_summary`;
   
       const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
   
