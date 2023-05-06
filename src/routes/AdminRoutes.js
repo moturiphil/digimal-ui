@@ -74,6 +74,11 @@ const routes = [
         name: "view-payroll",
         component: () => import("@/view/pages/payroll/showPayroll.vue"),
       },
+      {
+        path: "/activity/breakdown/:id",
+        name: "activity-breakdown",
+        component: () => import("@/view/pages/payroll/activityBreakdown.vue"),
+      },
     ],
   },
   {

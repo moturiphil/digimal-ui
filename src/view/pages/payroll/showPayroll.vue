@@ -90,7 +90,7 @@
                                           > -->
                                       <router-link
                                         :to="{
-                                          path: `/payroll/view/${record.id}`,
+                                          path: `/activity/breakdsown/${record.id}`,
                                           query: { id: record.event_code },
                                         }"
                                         class="btn-icon"
@@ -98,7 +98,7 @@
                                         shape="circle"
                                       >
                                         &nbsp;&nbsp; <span class="badge badge-green"
-                                            >&nbsp;&nbsp; Payroll Details</span
+                                            >&nbsp;&nbsp; Breakdown</span
                                           >
                                       </router-link>
                                     </sdButton>
