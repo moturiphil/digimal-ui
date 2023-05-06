@@ -74,7 +74,7 @@
         },
       ];
   
-      // const getfacilitatorsgj = async () => {
+      // const getfacilitators = async () => {
       //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`, {
       //     method: "GET",
       //     headers: {

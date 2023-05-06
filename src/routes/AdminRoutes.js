@@ -69,11 +69,11 @@ const routes = [
         name: "pending-confirmation-event",
         component: () => import("@/view/pages/events/pendingConfirmation.vue"),
       },
-      // {
-      //   path: "/events/get-view/:id",
-      //   name: "get-event",
-      //   component: () => import("@/view/pages/events/getEvent.vue"),
-      // },
+      {
+        path: "/payroll/view/:id",
+        name: "view-payroll",
+        component: () => import("@/view/pages/payroll/showPayroll.vue"),
+      },
     ],
   },
   {
