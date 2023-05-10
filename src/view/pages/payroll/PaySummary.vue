@@ -47,6 +47,8 @@
 <script>
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { useRoute } from "vue-router";
+
 
 export default {
   name: "ActivitySummary",
@@ -71,7 +73,9 @@ export default {
     },
   },
   mounted() {
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_detail?payroll_list_id=1`;
+    const { params, query } = useRoute();
+      console.log({params, query});
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_detail?payroll_list_id=${query.id}`;
 
     axios
       .get(API_URL, {
