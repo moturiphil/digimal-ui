@@ -1,16 +1,14 @@
 <template>
   <div class="activity-summary-inner">
     <br />
-    <sdHeading class="summary-total" as="h4">
-      <span class="activity">Activity : </span>
-      <span class="amount">{{ activity }}</span>
-    </sdHeading>
-    <br />
-    <sdHeading class="summary-total" as="h4">
-      <span class="activity">Perdiem : </span>
-      <span class="amount">{{ perdiem }}</span>
-    </sdHeading>
-    <br />
+    <div v-for="item in data" :key="item.id">
+      <sdHeading class="summary-total" as="h4">
+        <!-- <span class="activity">{{ item.item }} : </span> -->
+        <span class="activity">{{ item.item }} : </span>
+        <span class="amount">{{ item.amount }}</span>
+      </sdHeading>
+      <br />
+    </div>
     <br />
     <a-form
       :layout="formState.layout"
@@ -45,66 +43,40 @@
 </template>
 
 <script>
-import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { useRoute } from "vue-router";
-
+import axios from "axios";
 
 export default {
-  name: "ActivitySummary",
   data() {
     return {
       data: [],
-      activity: "",
-      perdiem: 0,
-      promoCode: "",
       formState: {
-        layout: "horizontal",
+        layout: "vertical",
       },
-      current: 0,
+      promoCode: "",
+      current: 1,
     };
-  },
-  methods: {
-    submitPromo(e) {
-      e.preventDefault();
-    },
-    onSubmit() {
-      this.$emit("submit", this.data);
-    },
   },
   mounted() {
     const { params, query } = useRoute();
-      console.log({params, query});
+    console.log({ params, query });
     const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_detail?payroll_list_id=${query.id}`;
-
     axios
       .get(API_URL, {
         headers: authHeader(),
       })
       .then((response) => {
         this.data = response.data.data;
-
-        const activityElement = document.querySelector(
-          ".activity:nth-of-type(1) + .amount"
-        );
-        activityElement.textContent = this.data[0].item;
-
-        this.perdiem = this.data.reduce((total, item) => {
-          if (item.item === "Perdiem for National Officers - Cities") {
-            return total + item.amount;
-          } else {
-            return total;
-          }
-        }, 0);
-
-        const perdiemElement = document.querySelector(
-          ".activity:nth-of-type(2) + .amount"
-        );
-        perdiemElement.textContent = this.perdiem;
+        console.log(this.data);
       })
       .catch((error) => {
         console.error(error);
       });
+  },
+  methods: {
+    submitPromo() {},
+    onSubmit() {},
   },
 };
 </script>
