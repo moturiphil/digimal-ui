@@ -212,7 +212,7 @@
             </div>
             <div class="card-chunk">
               <CardBarChart2>
-                <h2>1149</h2>
+                <h2>1148</h2>
                 <span>Total Actual Nets Allocation </span>
               </CardBarChart2>
             </div>

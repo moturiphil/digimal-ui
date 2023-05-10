@@ -9,7 +9,7 @@
       <Main>
         <MixedCardWrap>
           <a-row :gutter="25">
-            <a-col :lg="16" :md="35" :sm="12" :xs="24">
+            <a-col :lg="18" :md="35" :sm="12" :xs="24">
               <sdCards headless>
                 <PaySummary :subtotal="1200" />
               </sdCards>

@@ -91,7 +91,7 @@
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
-                                        query: { id: record.event_code },
+                                        query: { id: record.id },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -205,6 +205,8 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
+// import { useRoute } from "vue-router";
+
 
 // const households = ref([]);
 
@@ -297,34 +299,34 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_summary`;
 
-    const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
+    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
-    const exportHouseHoldData = async () => {
-      try {
-        const response = await fetch(households_url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
+    // const exportHouseHoldData = async () => {
+    //   try {
+    //     const response = await fetch(households_url, {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         ...authHeader(),
+    //       },
+    //     });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
+    //     if (!response.ok) {
+    //       throw new Error("Failed to fetch export data");
+    //     }
 
-        const fileBlob = await response.blob();
-        const fileName = "households.csv";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    //     const fileBlob = await response.blob();
+    //     const fileName = "households.csv";
+    //     const link = document.createElement("a");
+    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+    //     link.setAttribute("download", fileName);
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     link.parentNode.removeChild(link);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
@@ -399,7 +401,7 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      exportHouseHoldData,
+      // exportHouseHoldData,
       filteredData,
       handleChange,
       activeClass,

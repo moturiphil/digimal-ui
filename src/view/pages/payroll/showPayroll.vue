@@ -82,7 +82,6 @@
                                     <sdButton
                                       type="check"
                                       size="16"
-                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
                                       <!-- <span class="badge badge-green"
@@ -90,8 +89,8 @@
                                           > -->
                                       <router-link
                                         :to="{
-                                          path: `/activity/breakdsown/${record.id}`,
-                                          query: { id: record.event_code },
+                                          path: `/activity/breakdown/${record.id}`,
+                                          query: { id: record.id},
                                         }"
                                         class="btn-icon"
                                         type="info"
@@ -204,7 +203,8 @@
   import authHeader from "../../../services/auth-header";
   import axios from "axios";
   import { useStore } from "vuex";
-  import { notification } from "ant-design-vue";
+  // import { notification } from "ant-design-vue";
+  import { useRoute } from "vue-router";
   
   // const households = ref([]);
   
@@ -300,51 +300,55 @@
       const dataSource = ref([]);
       const activeClass = ref("all");
   
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_list?payroll_id=1`;
+      const { params, query } = useRoute();
+      console.log({params, query});
+
+      console.log(query.id);
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_list?payroll_id=${query.id}`;
+
   
-      const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
   
-      const exportHouseHoldData = async () => {
-        try {
-          const response = await fetch(households_url, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          });
+      // const exportHouseHoldData = async () => {
+      //   try {
+      //     const response = await fetch(households_url, {
+      //       method: "GET",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //         ...authHeader(),
+      //       },
+      //     });
   
-          if (!response.ok) {
-            throw new Error("Failed to fetch export data");
-          }
+      //     if (!response.ok) {
+      //       throw new Error("Failed to fetch export data");
+      //     }
   
-          const fileBlob = await response.blob();
-          const fileName = "households.csv";
-          const link = document.createElement("a");
-          link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-          link.setAttribute("download", fileName);
-          document.body.appendChild(link);
-          link.click();
-          link.parentNode.removeChild(link);
-        } catch (error) {
-          console.error(error);
-        }
-      };
-  
-      // const filteredData = computed(() => {
-      //   if (activeClass.value === "approved") {
-      //     console.log(dataSource.value);
-      //     return dataSource.value.filter((item) => item.isVerified === 1);
-      //   } else if (activeClass.value === "outliers") {
-      //     return dataSource.value.filter((item) => item.isVerified === 0);
-      //   } else {
-      //     return dataSource.value;
+      //     const fileBlob = await response.blob();
+      //     const fileName = "households.csv";
+      //     const link = document.createElement("a");
+      //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+      //     link.setAttribute("download", fileName);
+      //     document.body.appendChild(link);
+      //     link.click();
+      //     link.parentNode.removeChild(link);
+      //   } catch (error) {
+      //     console.error(error);
       //   }
-      // });
-  
-      // const handleChange = (tab) => {
-      //   activeClass.value = tab;
       // };
+  
+      const filteredData = computed(() => {
+        if (activeClass.value === "approved") {
+          console.log(dataSource.value);
+          return dataSource.value.filter((item) => item.isVerified === 1);
+        } else if (activeClass.value === "outliers") {
+          return dataSource.value.filter((item) => item.isVerified === 0);
+        } else {
+          return dataSource.value;
+        }
+      });
+  
+      const handleChange = (tab) => {
+        activeClass.value = tab;
+      };
   
       onMounted(() => {
         axios
@@ -360,28 +364,28 @@
             console.error(error);
           });
       });
-      const handleVerify = (record) => {
-        console.log(record);
-        axios
-          .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-            headers: authHeader(),
-          })
-          .then(({ status }) => {
-            console.log(status);
-            if (status == 200) {
-              location.reload();
-              notification["success"]({
-                message: "HouseHold Verified",
-                description: `HouseHold has been verified successfully`,
-                duration: 5.5,
-              });
-            }
-          })
-          .catch((error) => {
-            // handle error
-            console.log(error);
-          });
-      };
+      // const handleVerify = (record) => {
+      //   console.log(record);
+      //   axios
+      //     .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
+      //       headers: authHeader(),
+      //     })
+      //     .then(({ status }) => {
+      //       console.log(status);
+      //       if (status == 200) {
+      //         location.reload();
+      //         notification["success"]({
+      //           message: "HouseHold Verified",
+      //           description: `HouseHold has been verified successfully`,
+      //           duration: 5.5,
+      //         });
+      //       }
+      //     })
+      //     .catch((error) => {
+      //       // handle error
+      //       console.log(error);
+      //     });
+      // };
   
       // handleChange(tab) {
       //   if (tab === 'all') {
@@ -404,11 +408,10 @@
         dataSource,
         columns,
         formState,
-        exportHouseHoldData,
-        // filteredData,
-        // handleChange,
+        // exportHouseHoldData,
+        filteredData,
+        handleChange,
         activeClass,
-        handleVerify,
       };
     },
     // computed: {
