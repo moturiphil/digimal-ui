@@ -162,22 +162,34 @@
                       >
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="activity_facilitator" label="Applicable Payroll Formulas">
+                    <a-form-item name="matrix" label="Applicable Payroll Formulas">
                       <a-select
+                        size="large"
+                        name="name"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Event Type"
+                        v-model:value="formState.matrix"
                         mode="multiple"
-                        v-model:value="formState.activity_facilitator"
-                        placeholder="Please select"
-                        :options="
-                          (() => {
-                            return users.map(
-                              ({ first_name, last_name, role_id, id }) => ({
-                                label: `${first_name} ${last_name} - ${role_id}`,
-                                value: id,
-                              })
-                            );
-                          })()
-                        "
                       >
+                        <a-select-option value="1"
+                          >Perdiem for National Officers - Cities</a-select-option
+                        >
+                        <a-select-option
+                          value="2"
+                          >Perdiem for National Driver</a-select-option
+                        >
+                        <a-select-option value="3"
+                          >Communication for Officers</a-select-option
+                        >
+                        <a-select-option value="4"
+                          >Perdiem for National Officers - Cities</a-select-option
+                        >
+                        <a-select-option value="5"
+                          >Perdiem for National Officers - Cities (JG P,Q,R)</a-select-option
+                        >
+                        <a-select-option value="6"
+                          >Lunch Allowance - Supervisors</a-select-option
+                        >
                       </a-select>
                     </a-form-item>
 
@@ -261,6 +273,7 @@ const AddNew = defineComponent({
       payable_travel_days: "",
       number_of_officers: "",
       activity_facilitator: [],
+      matrix: [],
     });
 
     //get activities list
@@ -334,7 +347,6 @@ const AddNew = defineComponent({
     };
     // const handleSelect = (values)
     const handleSubmit = (values) => {
-      console.log(values);
       values = {
         activity_list_id: values.activity_id,
         county_id:values.county_id ,
@@ -345,8 +357,10 @@ const AddNew = defineComponent({
         // payable_travel_days: values.payable_travel_days,
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
+        pay_matrix: values.matrix,
+        location_type_id: 1,
       };
-      // console.log({ values });
+      console.log({ values });
 
       fetch(API_URL, {
         method: "POST",
