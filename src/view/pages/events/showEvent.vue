@@ -8,7 +8,11 @@
       </template>
     </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" @click="exportEventParticipants">
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportEventParticipants"
+      >
         Export Participants
       </sdButton>
       <div v-if="!project" class="spin">
@@ -35,7 +39,7 @@ import { reactive, computed, onMounted, defineComponent } from "vue";
 
 import { useRoute } from "vue-router";
 import EventCampaignTable from "../campaigns/CampaignTable/EventCampaign.vue";
-import { Modal, Table } from "ant-design-vue";
+import { Modal } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 
 const ProjectDetails = defineComponent({
@@ -57,12 +61,11 @@ const ProjectDetails = defineComponent({
       {
         title: "Name",
         dataIndex: "first_name",
-        // key: 'first_name',
-        render: (text, record) => (
-          <span>
-            {record.first_name} {record.last_name}
-          </span>
-        ),
+        render: function (text, record) {
+          return (
+            "<span>" + record.first_name + " " + record.last_name + "</span>"
+          );
+        },
       },
       {
         title: "Phone Number",
@@ -75,8 +78,6 @@ const ProjectDetails = defineComponent({
         key: "id_no",
       },
     ];
-
-
     const getfacilitators = async () => {
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`,
@@ -92,11 +93,31 @@ const ProjectDetails = defineComponent({
       this.facilitators = data.data;
       Modal.info({
         title: "Facilitators",
-        content: (
-          <div>
-            <Table dataSource={data.data} columns={columns} />
-          </div>
-        ),
+        content: (function () {
+          const div = document.createElement("div");
+          const table = document.createElement("table");
+          table.classList.add("ant-table");
+
+          const tbody = document.createElement("tbody");
+
+          for (let i = 0; i < data.data.length; i++) {
+            const row = document.createElement("tr");
+
+            for (let j = 0; j < columns.length; j++) {
+              const column = columns[j];
+              const cell = document.createElement("td");
+              cell.textContent = data.data[i][column.dataIndex];
+              row.appendChild(cell);
+            }
+
+            tbody.appendChild(row);
+          }
+
+          table.appendChild(tbody);
+          div.appendChild(table);
+
+          return div;
+        })(),
         onOk() {},
       });
     };

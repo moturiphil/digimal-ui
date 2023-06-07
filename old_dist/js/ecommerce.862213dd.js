@@ -1,2 +1,0 @@
-"use strict";(self["webpackChunkMassNetCampaign"]=self["webpackChunkMassNetCampaign"]||[]).push([[388],{51554:function(n,e,a){a.r(e),a.d(e,{default:function(){return i}});var r=a(66252);function t(n,e,a,t,u,s){const c=(0,r.up)("router-view");return(0,r.wg)(),(0,r.j4)(c)}var u={name:"CRUD"},s=a(83744);const c=(0,s.Z)(u,[["render",t]]);var i=c}}]);
-//# sourceMappingURL=ecommerce.862213dd.js.map

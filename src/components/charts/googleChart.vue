@@ -1,10 +1,8 @@
 <script>
-import { GChart } from 'vue3-googl-chart';
-import VueTypes from 'vue-types';
-import { defineComponent } from 'vue';
+import { GChart } from "vue3-googl-chart";
 
-export const GoogleBasicBarChart = defineComponent({
-  name: 'GoogleBasicBarChart',
+export const GoogleBasicBarChart = {
+  name: "GoogleBasicBarChart",
   components: {
     GChart,
   },
@@ -16,30 +14,39 @@ export const GoogleBasicBarChart = defineComponent({
         height: this.height,
         chartArea: { width: this.chartArea },
         hAxis: {
-          title: 'Total',
+          title: "Total",
           minValue: 0,
         },
         vAxis: {
-          title: 'City',
+          title: "City",
         },
       },
     };
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('BarChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('Chart'),
-    chartArea: VueTypes.string.def('50%'),
+    type: "BarChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "Chart",
+    chartArea: "50%",
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '1' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '1' }\" />"
+    );
   },
-});
-export const BubbleChart = defineComponent({
-  name: 'BubbleChart',
+};
+
+export const BubbleChart = {
+  name: "BubbleChart",
   components: {
     GChart,
   },
@@ -54,18 +61,27 @@ export const BubbleChart = defineComponent({
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('BubbleChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    colors: VueTypes.array.def(['#b0120a', '#ffab91']),
+    type: "BubbleChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    colors: ["#b0120a", "#ffab91"],
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      '" />'
+    );
   },
-});
-export const GoogleMaterialBarChart = defineComponent({
-  name: 'GoogleMaterialBarChart',
+};
+
+export const GoogleMaterialBarChart = {
+  name: "GoogleMaterialBarChart",
   components: {
     GChart,
   },
@@ -84,29 +100,31 @@ export const GoogleMaterialBarChart = defineComponent({
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('ColumnChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('Chart'),
-    chartArea: VueTypes.string.def('50%'),
-    subtitle: VueTypes.string.def('subtitle'),
+    type: "ColumnChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "Chart",
+    chartArea: "50%",
+    subtitle: "subtitle",
   },
   render() {
     return (
-      <GChart
-        type={this.type}
-        data={this.data}
-        options={this.chartOptions}
-        rootProps={{ 'data-testid': '2' }}
-        height={this.height}
-      />
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '2' }\" height=\"" +
+      this.height +
+      '" />'
     );
   },
-});
+};
 
-export const GoogleStackedChart = defineComponent({
-  name: 'GoogleStackedChart',
+export const GoogleStackedChart = {
+  name: "GoogleStackedChart",
   components: {
     GChart,
   },
@@ -121,39 +139,41 @@ export const GoogleStackedChart = defineComponent({
         chartArea: { width: this.chartArea },
         isStacked: true,
         hAxis: {
-          title: 'Total',
+          title: "Total",
           minValue: 0,
         },
         vAxis: {
-          title: 'City',
+          title: "City",
         },
       },
     };
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('BarChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('Chart'),
-    chartArea: VueTypes.string.def('50%'),
+    type: "BarChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "Chart",
+    chartArea: "50%",
   },
   render() {
     return (
-      <GChart
-        type={this.type}
-        data={this.data}
-        options={this.chartOptions}
-        rootProps={{ 'data-testid': '3' }}
-        height={this.height}
-      />
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '3' }\" height=\"" +
+      this.height +
+      '" />'
     );
   },
-});
+};
 
-export const GoogleCustomColorChart = defineComponent({
-  name: 'GoogleCustomColorChart',
+export const GoogleCustomColorChart = {
+  name: "GoogleCustomColorChart",
   components: {
     GChart,
   },
@@ -166,32 +186,40 @@ export const GoogleCustomColorChart = defineComponent({
         colors: this.colors,
         chartArea: { width: this.chartArea },
         hAxis: {
-          title: 'Total',
+          title: "Total",
           minValue: 0,
         },
         vAxis: {
-          title: 'City',
+          title: "City",
         },
       },
     };
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('BarChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('Chart'),
-    chartArea: VueTypes.string.def('50%'),
-    colors: VueTypes.array,
+    type: "BarChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "Chart",
+    chartArea: "50%",
+    colors: [],
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '4' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '4' }\" />"
+    );
   },
-});
+};
 
-export const GoogleComboChart = defineComponent({
-  name: 'GoogleComboChart',
+export const GoogleComboChart = {
+  name: "GoogleComboChart",
   components: {
     GChart,
   },
@@ -203,28 +231,36 @@ export const GoogleComboChart = defineComponent({
         height: this.height,
         colors: this.colors,
         chartArea: { width: this.chartArea },
-        seriesType: 'bars',
-        series: { 5: { type: 'line' } },
+        seriesType: "bars",
+        series: { 5: { type: "line" } },
       },
     };
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('ComboChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('Chart'),
-    chartArea: VueTypes.string.def('50%'),
-    colors: VueTypes.array,
+    type: "ComboChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "Chart",
+    chartArea: "50%",
+    colors: [],
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '5' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '5' }\" />"
+    );
   },
-});
+};
 
-export const GoogleLineChart = defineComponent({
-  name: 'GoogleLineChart',
+export const GoogleLineChart = {
+  name: "GoogleLineChart",
   components: {
     GChart,
   },
@@ -234,28 +270,36 @@ export const GoogleLineChart = defineComponent({
         width: this.width,
         height: this.height,
         hAxis: {
-          title: 'Time',
+          title: "Time",
         },
         vAxis: {
-          title: 'Popularity',
+          title: "Popularity",
         },
       },
     };
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('LineChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
+    type: "LineChart",
+    width: "100%",
+    height: 300,
+    data: [],
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '6' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '6' }\" />"
+    );
   },
-});
+};
 
-export const GoogleMultiLineChart = defineComponent({
-  name: 'GoogleMultiLineChart',
+export const GoogleMultiLineChart = {
+  name: "GoogleMultiLineChart",
   components: {
     GChart,
   },
@@ -265,32 +309,40 @@ export const GoogleMultiLineChart = defineComponent({
         width: this.width,
         height: this.height,
         hAxis: {
-          title: 'Time',
+          title: "Time",
         },
         vAxis: {
-          title: 'Popularity',
+          title: "Popularity",
         },
         series: {
-          0: { curveType: 'function' },
-          1: { curveType: 'function' },
+          0: { curveType: "function" },
+          1: { curveType: "function" },
         },
       },
     };
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('LineChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
+    type: "LineChart",
+    width: "100%",
+    height: 300,
+    data: [],
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '7' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '7' }\" />"
+    );
   },
-});
+};
 
-export const GoogleBasicPieChart = defineComponent({
-  name: 'GoogleBasicPieChart',
+export const GoogleBasicPieChart = {
+  name: "GoogleBasicPieChart",
   components: {
     GChart,
   },
@@ -306,20 +358,28 @@ export const GoogleBasicPieChart = defineComponent({
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('PieChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('My Daily Activities'),
-    chartArea: VueTypes.string.def('50%'),
+    type: "PieChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "My Daily Activities",
+    chartArea: "50%",
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '9' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '9' }\" />"
+    );
   },
-});
+};
 
-export const Google3dPieChart = defineComponent({
-  name: 'Google3dPieChart',
+export const Google3dPieChart = {
+  name: "Google3dPieChart",
   components: {
     GChart,
   },
@@ -336,17 +396,25 @@ export const Google3dPieChart = defineComponent({
   },
   methods: {},
   props: {
-    type: VueTypes.string.def('PieChart'),
-    width: VueTypes.string.def('100%'),
-    height: VueTypes.number.def(300),
-    data: VueTypes.array,
-    title: VueTypes.string.def('My Daily Activities'),
-    chartArea: VueTypes.string.def('50%'),
+    type: "PieChart",
+    width: "100%",
+    height: 300,
+    data: [],
+    title: "My Daily Activities",
+    chartArea: "50%",
   },
   render() {
-    return <GChart type={this.type} data={this.data} options={this.chartOptions} rootProps={{ 'data-testid': '9' }} />;
+    return (
+      '<GChart type="' +
+      this.type +
+      '" data="' +
+      this.data +
+      '" options="' +
+      this.chartOptions +
+      "\" rootProps=\"{ 'data-testid': '9' }\" />"
+    );
   },
-});
+};
 
 export default GoogleBasicBarChart;
 </script>

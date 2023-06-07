@@ -228,7 +228,7 @@ import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import { Modal } from "ant-design-vue";
+// import { Modal } from "ant-design-vue";
 const dateFormat = "YYYY-MM-DD";
 const AddNew = defineComponent({
   name: "AddNew",
@@ -437,31 +437,31 @@ const AddNew = defineComponent({
     showModal() {
       this.visible = true;
     },
-    showConfirmModal(activity_facilitator) {
-      // console.log(activity_facilitator);
-      Modal.success({
-        title: "Activity Officers",
-        content: (
-          <div>
-            <p>Confirm Officers Participating</p>
-            <ul>
-              {activity_facilitator.map((facilitator) => (
-                <li key={facilitator}>{facilitator}</li>
-              ))}
-            </ul>
-          </div>
-        ),
-        okText: "Register",
-        onOk: async () => {
-          // handle form submission here rk
-        },
-        style: {
-          float: "center",
-          display: "grid",
-          placeContent: "center",
-        },
-      });
-    },
+    // showConfirmModal(activity_facilitator) {
+    //   // console.log(activity_facilitator);
+    //   Modal.success({
+    //     title: "Activity Officers",
+    //     content: (
+    //       <div>
+    //         <p>Confirm Officers Participating</p>
+    //         <ul>
+    //           {activity_facilitator.map((facilitator) => (
+    //             <li key={facilitator}>{facilitator}</li>
+    //           ))}
+    //         </ul>
+    //       </div>
+    //     ),
+    //     okText: "Register",
+    //     onOk: async () => {
+    //       // handle form submission here rk
+    //     },
+    //     style: {
+    //       float: "center",
+    //       display: "grid",
+    //       placeContent: "center",
+    //     },
+    //   });
+    // },
     handleOk() {
       this.confirmLoading = true;
       setTimeout(() => {

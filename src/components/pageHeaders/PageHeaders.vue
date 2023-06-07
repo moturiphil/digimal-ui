@@ -1,8 +1,9 @@
 <script>
-import { PageHeaderStyle } from './style';
-import VueTypes from 'vue-types';
-import { defineComponent } from 'vue';
-export const PageHeader = defineComponent({
+import { PageHeaderStyle } from "./style";
+import VueTypes from "vue-types";
+import { defineComponent } from "vue";
+
+const PageHeader = defineComponent({
   components: {
     PageHeaderStyle,
   },
@@ -18,29 +19,47 @@ export const PageHeader = defineComponent({
   },
 
   render() {
-    return (
-      <div>
-        <div
-          style={{
-            backgroundColor: this.bgColor || '#F4F5F7',
-          }}
-        >
-          <PageHeaderStyle
-            style={{
-              backgroundColor: 'rgb(244, 245, 247)',
-            }}
-            class={this.class}
-            title={this.title || this.$slots.title()}
-            subTitle={this.subTitle || (this.$slots.subTitle ? this.$slots.subTitle() : null)}
-            breadcrumb={this.breadcrumb && this.breadcrumb}
-            ghost={this.ghost}
-            extra={this.$slots.buttons && this.$slots.buttons()}
-          ></PageHeaderStyle>
-        </div>
-      </div>
-    );
+    const pageHeaderContainer = document.createElement("div");
+    const pageHeaderStyle = document.createElement("page-header-style");
+
+    // Set background color
+    pageHeaderContainer.style.backgroundColor = this.bgColor || "#F4F5F7";
+    pageHeaderStyle.style.backgroundColor = "rgb(244, 245, 247)";
+
+    // Set class
+    if (this.class) {
+      pageHeaderStyle.setAttribute("class", this.class);
+    }
+
+    // Set title
+    pageHeaderStyle.setAttribute("title", this.title || this.$slots.title());
+
+    // Set subTitle
+    if (this.subTitle || this.$slots.subTitle) {
+      const subTitle = this.subTitle || this.$slots.subTitle();
+      pageHeaderStyle.setAttribute("subTitle", subTitle);
+    }
+
+    // Set breadcrumb
+    if (this.breadcrumb) {
+      pageHeaderStyle.setAttribute("breadcrumb", this.breadcrumb);
+    }
+
+    // Set ghost
+    if (this.ghost) {
+      pageHeaderStyle.setAttribute("ghost", this.ghost);
+    }
+
+    // Set extra (buttons)
+    if (this.$slots.buttons) {
+      const buttons = this.$slots.buttons();
+      pageHeaderStyle.setAttribute("extra", buttons);
+    }
+
+    pageHeaderContainer.appendChild(pageHeaderStyle);
+    return pageHeaderContainer;
   },
 });
 
-export default PageHeader;
+export { PageHeader as default };
 </script>

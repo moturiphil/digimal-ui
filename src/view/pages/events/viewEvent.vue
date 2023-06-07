@@ -49,7 +49,7 @@
                           @click="startEvent(record.id)"
                           v-if="!record.status"
                         >
-                          <span >
+                          <span>
                             <sdFeatherIcons type="clock" size="16" />
                             &nbsp;&nbsp; Start Event
                           </span>
@@ -64,7 +64,7 @@
                             <sdFeatherIcons type="clock" size="16" />
                             &nbsp;&nbsp; Start Event
                           </span>
-                          <span  class="badge badge-green">
+                          <span class="badge badge-green">
                             &nbsp;&nbsp; Started
                           </span>
                         </sdButton>
@@ -255,59 +255,60 @@ const ViewPage = defineComponent({
       }
     },
     showModal() {
-      this.visible = true;
-    },
-    showSuccessModal(record) {
-      console.log(record);
-      Modal.success({
-        title: "Event Registration",
-        content: (
-          <div>
-            <p>Enter Registration Code to Register</p>
-            <Input
-              id="regCode"
-              v-model={this.eventCode}
-              placeholder="Enter Registration code"
-            />
-          </div>
-        ),
-        okText: "Register",
-        onOk: async () => {
-          try {
-            const userRegCode = document.getElementById("regCode").value;
-            console.log(userRegCode);
+  this.visible = true;
+},
 
-            const response = await axios.get(
-              `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
-              { headers: authHeader() }
-            );
-            // console.log(record);
-            // localStorage.setItem("eventCode", record);
-            if (response.status !== 200) {
-              throw new Error("Failed to Register Participant to event");
-            } else {
-              console.log("Participant Registered");
-            }
+showSuccessModal(record) {
+  console.log(record);
+  const input = document.createElement("input");
+  input.id = "regCode";
+  input.placeholder = "Enter Registration code";
 
-            // Show success message
-            Modal.success({
-              title: "Success",
-              content: "You have been registered for the event",
-            });
-          } catch (error) {
-            Modal.error({
-              title: "Error",
-              content: error.message,
-            });
-          }
-        },
-        style: {
-          float: "center",
-          display: "grid",
-          placeContent: "center",
-        },
-      });
+  const div = document.createElement("div");
+  div.innerHTML = "<p>Enter Registration Code to Register</p>";
+  div.appendChild(input);
+
+  // const self = this;
+
+  Modal.success({
+    title: "Event Registration",
+    content: div,
+    okText: "Register",
+    onOk: async function() {
+      try {
+        const userRegCode = document.getElementById("regCode").value;
+        console.log(userRegCode);
+
+        const response = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
+          { headers: authHeader() }
+        );
+
+        if (response.status !== 200) {
+          throw new Error("Failed to Register Participant to event");
+        } else {
+          console.log("Participant Registered");
+        }
+
+        Modal.success({
+          title: "Success",
+          content: "You have been registered for the event",
+        });
+      } catch (error) {
+        Modal.error({
+          title: "Error",
+          content: error.message,
+        });
+      }
     },
+    style: {
+      float: "center",
+      display: "grid",
+      placeContent: "center",
+    },
+  });
+},
+
 
     handleOk() {
       this.confirmLoading = true;
@@ -323,17 +324,6 @@ const ViewPage = defineComponent({
     },
     changeType(type) {
       this.modalType = type;
-    },
-    success() {
-      Modal.success({
-        title: "This is a success message",
-        // JSX support
-        content: (
-          <div>
-            <p>some messages...some messages...</p>
-          </div>
-        ),
-      });
     },
 
     error() {
@@ -443,7 +433,7 @@ export default ViewPage;
 
 <style>
 .badge-green {
-  background-color: #1EC997;
+  background-color: #1ec997;
   color: white;
   padding: 4px;
   border-radius: 3px;

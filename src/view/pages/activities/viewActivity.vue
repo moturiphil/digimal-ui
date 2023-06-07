@@ -145,19 +145,22 @@ const ViewPage = defineComponent({
     showSuccessModal() {
       Modal.info({
         title: "Activity Registration",
-        content: (
-          <div>
-            <p>Register With Activity Code</p>
-            <Input placeholder="Enter Activity code" />
-          </div>
-        ),
+        content: function () {
+          const div = document.createElement("div");
+          div.innerHTML = "<p>Register With Activity Code</p>";
+
+          const input = document.createElement("input");
+          input.placeholder = "Enter Activity code";
+          div.appendChild(input);
+
+          return div;
+        },
         okText: "Register",
         style: {
           float: "center",
           display: "grid",
           placeContent: "center",
         },
-
         onOk() {
           // console.log("Register");
         },

@@ -59,7 +59,7 @@ const Import = defineComponent({
       defaultFileList: [],
       showUploadList: {
         showRemoveIcon: true,
-        removeIcon: <sdFeatherIcons type="trash-2" onClick={(e) => console.log(e, 'custom removeIcon event')} />,
+        // removeIcon: <sdFeatherIcons type="trash-2" onClick={(e) => console.log(e, 'custom removeIcon event')} />,
       },
     };
 
