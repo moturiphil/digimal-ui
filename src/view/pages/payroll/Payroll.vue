@@ -5,6 +5,14 @@
       <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
       </sdButton>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+       <router-link v-bind:to="'payroll-matrix'">
+          <sdButton  type="success">
+            <sdFeatherIcons size="" />
+            Assign Payroll Matrix
+          </sdButton>
+        </router-link>
+
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -97,9 +105,10 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      &nbsp;&nbsp; <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        >
+                                      &nbsp;&nbsp;
+                                      <span class="badge badge-green"
+                                        >&nbsp;&nbsp; Payroll Details</span
+                                      >
                                     </router-link>
                                   </sdButton>
                                 </div>
@@ -206,7 +215,6 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 // import { useRoute } from "vue-router";
-
 
 // const households = ref([]);
 
@@ -423,10 +431,9 @@ export default defineComponent({
 }
 </style>
 
-
 <style>
 .badge-green {
-  background-color: #1EC997;
+  background-color: #1ec997;
   color: white;
   padding: 4px;
   margin-bottom: 18px;

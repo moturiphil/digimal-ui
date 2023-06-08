@@ -224,6 +224,16 @@ const routes = [
     name: 'payroll',
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/Payroll.vue'),
   },
+  {
+    path: '/payroll-matrix',
+    name: 'payroll-matrix',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/PayrollMatrix.vue'),
+  },
+  {
+    path: '/logs',
+    name: 'logs',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/audit-logs/AuditLogs.vue'),
+  },
   ...PageRoutes,
   ...FeaturesRoutes,
   ...Components,

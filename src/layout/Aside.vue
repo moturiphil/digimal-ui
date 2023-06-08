@@ -163,6 +163,11 @@
           <sdFeatherIcons type="dollar-sign" />&nbsp; &nbsp; Payroll
         </router-link>
       </a-menu-item>
+      <a-menu-item @click="toggleCollapsed" key="logs">
+        <router-link to="/logs">
+          <sdFeatherIcons type="clipboard" />&nbsp; &nbsp; Audit Logs
+        </router-link>
+      </a-menu-item>
     </a-menu-item-group>
   </a-menu>
 </template>
