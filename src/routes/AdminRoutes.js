@@ -220,9 +220,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/HouseHoldValidation.vue'),
   },
   {
-    path: '/payroll',
-    name: 'payroll',
+    path: '/activity-payroll',
+    name: 'activity-payroll',
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/Payroll.vue'),
+  },
+  {
+    path: '/view-payroll',
+    name: 'view-payroll',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/PayrollView.vue'),
   },
   {
     path: '/payroll-matrix',

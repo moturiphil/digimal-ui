@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Payroll" />
+    <sdPageHeader ghost title="Activity Payroll" />
     <Main>
       <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data

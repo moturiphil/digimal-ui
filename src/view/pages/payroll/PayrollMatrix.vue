@@ -2,7 +2,6 @@
   <div>
     <sdPageHeader ghost title="Payroll" />
     <Main>
-
       <SearchResultWrapper>
         <a-row :gutter="25">
           <!-- <a-col :xs="24">
@@ -71,21 +70,33 @@
                               pageSize: 50,
                               showSizeChanger: true,
                             }"
-                            :dataSource="filteredData"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
+                                  <sdButton type="check" size="16">
+                                    <!-- @click="handleVerify(record.id)" -->
                                     &nbsp;&nbsp;
                                     <!-- <span class="badge badge-green"
                                           >&nbsp;&nbsp; Payroll Details</span
                                         > -->
+                                    <!-- <router-link
+                                      :to="{
+                                        path: `/activity/matrix/${record.id}`,
+                                        query: { id: record.id },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
+                                      @click="showModal = true"
+                                    >
+                                      &nbsp;&nbsp;
+                                      <span class="badge badge-green"
+                                        >&nbsp;&nbsp; Assign Matrix</span
+                                      >
+                                    </router-link> -->
                                     <router-link
                                       :to="{
                                         path: `/activity/matrix/${record.id}`,
@@ -94,6 +105,7 @@
                                       class="btn-icon"
                                       type="info"
                                       shape="circle"
+                                      @click="showModal = true"
                                     >
                                       &nbsp;&nbsp;
                                       <span class="badge badge-green"
@@ -101,83 +113,33 @@
                                       >
                                     </router-link>
                                   </sdButton>
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper>
 
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'approved'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                          </a-table>
-                        </TableWrapper>
+                                  <!-- Modal -->
+                                  <div class="modal" v-if="showModal">
+                                    <div class="modal-content">
+                                      <h2>Select Items</h2>
+                                      <div>
+                                        <label
+                                          v-for="item in items"
+                                          :key="item.id"
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            v-model="selectedItems"
+                                            :value="item.id"
+                                          />
+                                          {{ item.name }}
+                                        </label>
+                                      </div>
+                                      <button @click="submit">Submit</button>
+                                    </div>
+                                    <div
+                                      class="modal-overlay"
+                                      @click="showModal = false"
+                                    ></div>
+                                  </div>
 
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'outliers'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton>
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'paid'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton>
+                                  <!-- end modal -->
                                 </div>
                               </td>
                             </template>
@@ -203,7 +165,6 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
 // import { useRoute } from "vue-router";
 
 // const households = ref([]);
@@ -224,26 +185,6 @@ const columns = [
     dataIndex: "no_of_officers",
     key: "id",
   },
-//   {
-//     title: "Amount",
-//     dataIndex: "total_amount",
-//     key: "id",
-//   },
-  // {
-  //   title: "Village",
-  //   dataIndex: "location_id",
-  //   key: "id_no",
-  // },
-  // {
-  //   title: "CHV",
-  //   dataIndex: "chw_id",
-  //   key: "id_no",
-  // },h
-  // {
-  //   title: "Timestamp",
-  //   dataIndex: "created_at",
-  //   key: "id_no",
-  // },
   {
     title: "",
     dataIndex: "Assign Matrix",
@@ -267,6 +208,14 @@ export default defineComponent({
       modalType: "primary",
       colorVisible: false,
       payroll: [],
+      showModal: false,
+      items: [
+        // Define your list of items here
+        { id: 1, name: "Item 1" },
+        { id: 2, name: "Item 2" },
+        { id: 3, name: "Item 3" },
+      ],
+      selectedItems: [],
     };
   },
   methods: {
@@ -286,6 +235,13 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    submit() {
+      // Handle the submission of selected items
+      console.log(this.selectedItems);
+      // You can perform further actions here, such as sending the selected items to a server
+      // or updating the component's state
+      this.showModal = false; // Close the modal after submission if needed
+    },
   },
   setup() {
     const { state } = useStore();
@@ -296,46 +252,6 @@ export default defineComponent({
     const activeClass = ref("all");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_list`;
-
-    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
-
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-
-    const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
-      } else {
-        return dataSource.value;
-      }
-    });
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -348,45 +264,12 @@ export default defineComponent({
         })
         .then((response) => {
           dataSource.value = response.data.data;
-          // households.value = response.data.data;
           console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
         });
     });
-    const handleVerify = (record) => {
-      console.log(record);
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-          headers: authHeader(),
-        })
-        .then(({ status }) => {
-          console.log(status);
-          if (status == 200) {
-            location.reload();
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
-    };
-
-    // handleChange(tab) {
-    //   if (tab === 'all') {
-    //     filteredData.value = dataSource.value;
-    //   } else if (tab === 'approved') {
-    //     filteredData.value = dataSource.value.filter(item => item.isVerified === 1);
-    //   } else if (tab === 'outliers') {
-    //     filteredData.value = dataSource.value.filter(item => item.hh_size > 5);
-    //   }
-    // }
 
     const formState = reactive({
       searchItem: "",
@@ -400,10 +283,8 @@ export default defineComponent({
       columns,
       formState,
       // exportHouseHoldData,
-      filteredData,
       handleChange,
       activeClass,
-      handleVerify,
     };
   },
   // computed: {
@@ -419,14 +300,39 @@ export default defineComponent({
   /* size */
   font-size: 12px;
 }
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 1rem;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
 </style>
 
 <style>
-.badge-green {
+/* .badge-green {
   background-color: #1ec997;
   color: white;
   padding: 4px;
   margin-bottom: 18px;
   border-radius: 3px;
-}
+} */
 </style>
