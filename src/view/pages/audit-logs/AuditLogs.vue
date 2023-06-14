@@ -5,8 +5,7 @@
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
-            <div class="search-filter-menu">
-            </div>
+            <div class="search-filter-menu"></div>
           </a-col>
           <a-col :xs="24">
             <sdCards headless>
@@ -28,113 +27,12 @@
                               pageSize: 50,
                               showSizeChanger: true,
                             }"
-                            :dataSource="filteredData"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
-                            <template #payroll="{ record }">
+                            <template>
                               <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        > -->
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
-                                    >
-                                      &nbsp;&nbsp; <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        >
-                                    </router-link>
-                                  </sdButton>
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'approved'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'outliers'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton>
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'paid'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton>
-                                </div>
+                                <div class="table-actions"></div>
                               </td>
                             </template>
                           </a-table>
@@ -159,22 +57,17 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
-// import { useRoute } from "vue-router";
-
-
-// const households = ref([]);
 
 const columns = [
   {
     title: "First Name",
-    dataIndex: "first_name",
-    key: "id",
+    dataIndex: "userFirstName",
+    key: "userFirstName",
   },
-   {
+  {
     title: "Last Name",
-    dataIndex: "last_name",
-    key: "id",
+    dataIndex: "userLastName",
+    key: "userLastName",
   },
   {
     title: "Event",
@@ -199,29 +92,23 @@ const columns = [
   {
     title: "User Agent",
     dataIndex: "user_agent",
-    key: "id_no",
+    key: "",
   },
   {
     title: "IP Address",
     dataIndex: "ip_address",
-    key: "id_no",
+    key: "",
   },
   {
     title: "Created At",
     dataIndex: "created_at",
-    key: "id_no",
+    key: "",
   },
   {
     title: "Update At",
     dataIndex: "updated_at",
-    key: "id_no",
+    key: "",
   },
-//   {
-//     title: "",
-//     dataIndex: "",
-//     key: "payroll",
-//     slots: { customRender: "payroll" },
-//   },
 ];
 export default defineComponent({
   name: "HouseHold Validation",
@@ -248,9 +135,6 @@ export default defineComponent({
       );
       this.notData = data;
     },
-    // handleChange(value) {
-    //   this.activeClass = value;
-    // },
     onShowSizeChange(current, pageSize) {
       this.current = current;
       this.pageSize = pageSize;
@@ -269,49 +153,11 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/logs`;
 
-    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
-
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-
-    const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
-      } else {
-        return dataSource.value;
-      }
-    });
-
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
+
+    // const tableData = ref([]);
 
     onMounted(() => {
       axios
@@ -320,45 +166,22 @@ export default defineComponent({
         })
         .then((response) => {
           dataSource.value = response.data.data;
-          // households.value = response.data.data;
+
+          dataSource.value = response.data.data.map((item) => ({
+            ...item,
+            userFirstName: item.user.first_name,
+            userLastName: item.user.last_name,
+            old_values: item.old_values.isVerified
+              ? "Verified"
+              : "Not Verified",
+            new_values: item.new_values.isVerified ? "Verified" : "Not Verified",
+          }));
           console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
         });
     });
-    const handleVerify = (record) => {
-      console.log(record);
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-          headers: authHeader(),
-        })
-        .then(({ status }) => {
-          console.log(status);
-          if (status == 200) {
-            location.reload();
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
-    };
-
-    // handleChange(tab) {
-    //   if (tab === 'all') {
-    //     filteredData.value = dataSource.value;
-    //   } else if (tab === 'approved') {
-    //     filteredData.value = dataSource.value.filter(item => item.isVerified === 1);
-    //   } else if (tab === 'outliers') {
-    //     filteredData.value = dataSource.value.filter(item => item.hh_size > 5);
-    //   }
-    // }
 
     const formState = reactive({
       searchItem: "",
@@ -371,32 +194,23 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      // exportHouseHoldData,
-      filteredData,
       handleChange,
       activeClass,
-      handleVerify,
+      // handleVerify,
     };
   },
-  // computed: {
-  // },
 });
 </script>
 <style>
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-    border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 </style>
 
-
 <style>
 .badge-green {
-  background-color: #1EC997;
+  background-color: #1ec997;
   color: white;
   padding: 4px;
   margin-bottom: 18px;
