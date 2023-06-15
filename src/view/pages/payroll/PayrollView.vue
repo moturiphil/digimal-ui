@@ -99,7 +99,7 @@ export default defineComponent({
     item: VueTypes.object.def({
       id: 1,
       title: "User Friendly",
-      content: "Lorem Ipsum is simply dummy text of the",
+      content: "",
       img: "static/img/sampleCards/1.svg",
     }),
   },
@@ -169,7 +169,7 @@ export default defineComponent({
         .then((response) => {
           dataSource.value = response.data.data;
           // households.value = response.data.data;
-          console.log(dataSource.value);
+          // console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);

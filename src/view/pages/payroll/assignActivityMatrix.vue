@@ -1,9 +1,6 @@
 <template>
-  <sdPageHeader title="Assign Activity Matrix">
-    <sdButton class="btn-add_new" size="default" key="1" type="success">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
+  <sdPageHeader :title="`Assign Activity Payroll - ${act_name}`"></sdPageHeader>
+
   <Main>
     <a-row :gutter="15">
       <a-col :xs="24">
@@ -114,6 +111,8 @@ const AddNew = defineComponent({
 
     const act_id = activity_id;
 
+    const act_name = activity_name;
+
     console.log({ activity_name });
 
     console.log(act_id);
@@ -178,38 +177,6 @@ const AddNew = defineComponent({
     };
     fetchTrainer();
 
-    // const handleSubmit = () => {
-    //   const data = {
-    //     activity_id: act_id,
-    //     matrix: formState.matrix,
-    //   };
-
-    //   console.log(data);
-
-    //   fetch(API_URL, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       ...authHeader(),
-    //     },
-    //     body: JSON.stringify(data),
-    //   })
-    //     .then((response) => response.json())
-    //     .then(({ success }) => {
-    //       if (success) {
-    //         // router.push("event-view");
-    //         notification["success"]({
-    //           message: "Matrix Assigned successfully",
-    //           description: `Matrix Assigned successfully. You can now view the matrix`,
-    //           duration: 5.5,
-    //         });
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error:", error);
-    //     });
-    // };
-
     const handleSubmit = () => {
       const data = {
         activity_id: act_id,
@@ -218,16 +185,13 @@ const AddNew = defineComponent({
 
       console.log(data);
 
-      const urlParams = new URLSearchParams(data).toString();
-      console.log(urlParams);
-      const url = `${API_URL}?${urlParams}`;
-
-      fetch(url, {
+      fetch(API_URL, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           ...authHeader(),
         },
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
         .then(({ success }) => {
@@ -235,16 +199,58 @@ const AddNew = defineComponent({
             // router.push("event-view");
             notification["success"]({
               message: "Matrix Assigned successfully",
-              description:
-                "Matrix Assigned successfully. You can now view the matrix",
+              description: `Matrix Assigned successfully. You can now view the matrix`,
               duration: 5.5,
             });
           }
         })
         .catch((error) => {
           console.error("Error:", error);
+          if (error) {
+            notification["error"]({
+              message: "Error",
+              description: `Error occured while assigning matrix`,
+              duration: 5.5,
+            });
+          }
         });
     };
+
+    // const handleSubmit = () => {
+    //   const data = {
+    //     activity_id: act_id,
+    //     matrix: formState.matrix,
+    //   };
+
+    //   console.log(data);
+
+    //   const urlParams = new URLSearchParams(data).toString();
+    //   console.log(urlParams);
+    //   const url = `${API_URL}?${urlParams}`;
+
+    //   fetch(url, {
+    //     method: "GET",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       ...authHeader(),
+    //     },
+    //   })
+    //     .then((response) => response.json())
+    //     .then(({ success }) => {
+    //       if (success) {
+    //         // router.push("event-view");
+    //         notification["success"]({
+    //           message: "Matrix Assigned successfully",
+    //           description:
+    //             "Matrix Assigned successfully. You can now view the matrix",
+    //           duration: 5.5,
+    //         });
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error:", error);
+    //     });
+    // };
 
     const formState = reactive({
       matrix: [],
@@ -261,6 +267,7 @@ const AddNew = defineComponent({
       formState,
       matrix,
       loading,
+      act_name,
     };
   },
   beforeRouteEnter(to, from, next) {

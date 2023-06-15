@@ -305,7 +305,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_summary`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
 
     // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 

@@ -304,7 +304,7 @@
       console.log({params, query});
 
       console.log(query.id);
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_list?payroll_id=${query.id}`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
 
   
   

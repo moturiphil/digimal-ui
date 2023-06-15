@@ -225,6 +225,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/Payroll.vue'),
   },
   {
+    path: '/event-payroll',
+    name: 'event-payroll',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventPayroll.vue'),
+  },
+  {
     path: "/activity/matrix/:id",
     name: "assign-activity-matrix",
     component: () => import("@/view/pages/payroll/assignActivityMatrix.vue"),
