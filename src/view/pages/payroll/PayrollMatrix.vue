@@ -100,7 +100,7 @@
                                     <router-link
                                       :to="{
                                         path: `/activity/matrix/${record.id}`,
-                                        query: { id: record.id },
+                                        query: { id: record.id, name: record.name},
                                       }"
                                       class="btn-icon"
                                       type="info"

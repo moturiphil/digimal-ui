@@ -71,7 +71,7 @@ const routes = [
       },
       {
         path: "/payroll/view/:id",
-        name: "view-payroll",
+        name: "view-activity-payroll",
         component: () => import("@/view/pages/payroll/showPayroll.vue"),
       },
       {
@@ -223,6 +223,11 @@ const routes = [
     path: '/activity-payroll',
     name: 'activity-payroll',
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/Payroll.vue'),
+  },
+  {
+    path: "/activity/matrix/:id",
+    name: "assign-activity-matrix",
+    component: () => import("@/view/pages/payroll/assignActivityMatrix.vue"),
   },
   {
     path: '/view-payroll',

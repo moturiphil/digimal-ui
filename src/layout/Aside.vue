@@ -159,7 +159,7 @@
         </router-link>
       </a-menu-item>
       <a-menu-item @click="toggleCollapsed" key="payroll">
-        <router-link to="/payroll">
+        <router-link to="/view-payroll">
           <sdFeatherIcons type="dollar-sign" />&nbsp; &nbsp; Payroll
         </router-link>
       </a-menu-item>
