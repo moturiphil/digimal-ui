@@ -1,19 +1,6 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Locations">
-      <template v-slot:buttons>
-        <!-- <div class="page-header-actions">
-          <router-link :to="{
-                              path: `/locations/create`,
-                              query: { id: record.org_id },
-                            }">
-            <sdButton size="small" type="success">
-              <sdFeatherIcons type="plus" size="14" />
-              Create Location
-            </sdButton>
-          </router-link>
-        </div> -->
-      </template>
     </sdPageHeader>
     <Main>
       <a-row :gutter="15">

@@ -6,7 +6,7 @@
         Export Payroll Data
       </sdButton>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-       <router-link v-bind:to="'payroll-matrix'">
+      <router-link v-bind:to="'payroll-matrix'">
           <sdButton  type="success">
             <sdFeatherIcons size="" />
             Assign Payroll Matrix
@@ -98,7 +98,7 @@
                                         > -->
                                     <router-link
                                       :to="{
-                                        path: `/payroll/view/${record.id}`,
+                                        path: `/payroll/event-view/${record.id}`,
                                         query: { id: record.id },
                                       }"
                                       class="btn-icon"
@@ -225,8 +225,8 @@ const columns = [
     key: "id",
   },
   {
-    title: "Activity",
-    dataIndex: "activity_id",
+    title: "Event",
+    dataIndex: "event_id",
     key: "id",
   },
   {
@@ -236,7 +236,7 @@ const columns = [
   },
   {
     title: "Amount",
-    dataIndex: "total_amount",
+    dataIndex: "total_ammount",
     key: "id",
   },
   // {
@@ -305,7 +305,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_summary`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
 
     // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 

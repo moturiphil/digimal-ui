@@ -179,14 +179,14 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-        activity_id: act_id,
-        matrix: formState.matrix,
+        activity_list_id: act_id,
+        pay_matrix: formState.matrix,
       };
 
-      console.log(data);
+      console.log(JSON.stringify(data));
 
       fetch(API_URL, {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...authHeader(),
@@ -194,8 +194,8 @@ const AddNew = defineComponent({
         body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then(({ success }) => {
-          if (success) {
+        .then(({ status }) => {
+          if (status == 200 ) {
             // router.push("event-view");
             notification["success"]({
               message: "Matrix Assigned successfully",

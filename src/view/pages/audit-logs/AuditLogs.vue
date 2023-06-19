@@ -60,14 +60,9 @@ import { useStore } from "vuex";
 
 const columns = [
   {
-    title: "First Name",
-    dataIndex: "userFirstName",
-    key: "userFirstName",
-  },
-  {
-    title: "Last Name",
-    dataIndex: "userLastName",
-    key: "userLastName",
+    title: "User",
+    dataIndex: "user_id",
+    key: "id",
   },
   {
     title: "Event",
@@ -89,21 +84,21 @@ const columns = [
     dataIndex: "new_values",
     key: "id",
   },
-  {
-    title: "User Agent",
-    dataIndex: "user_agent",
-    key: "",
-  },
+  // {
+  //   title: "User Agent",
+  //   dataIndex: "user_agent",
+  //   key: "",
+  // },
   {
     title: "IP Address",
     dataIndex: "ip_address",
     key: "",
   },
-  {
-    title: "Created At",
-    dataIndex: "created_at",
-    key: "",
-  },
+  // {
+  //   title: "Created At",
+  //   dataIndex: "created_at",
+  //   key: "",
+  // },
   {
     title: "Update At",
     dataIndex: "updated_at",
@@ -165,16 +160,13 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
+          console.log(response.data.data)
           dataSource.value = response.data.data;
-
+          // console.log(dataSource.value);
           dataSource.value = response.data.data.map((item) => ({
             ...item,
-            userFirstName: item.user.first_name,
-            userLastName: item.user.last_name,
-            old_values: item.old_values.isVerified
-              ? "Verified"
-              : "Not Verified",
-            new_values: item.new_values.isVerified ? "Verified" : "Not Verified",
+            old_values: item.old_values,
+            new_values: item.new_values,
           }));
           console.log(dataSource.value);
         })

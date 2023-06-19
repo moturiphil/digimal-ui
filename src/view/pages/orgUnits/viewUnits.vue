@@ -113,6 +113,7 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
+        console.log(data)
         dataSource.value = data;
         console.log(dataSource.value);
       } catch (error) {

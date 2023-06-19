@@ -130,25 +130,6 @@
                         placeholder="Enter Sub Location name"
                       />
                     </a-form-item>
-                    <!-- <a-form-item label="Sub-location">
-                      <div
-                        v-for="(subLocation, index) in formState.subLocations"
-                        :key="index"
-                      >
-                        <a-input
-                          v-model:value="formState.subLocations[index]"
-                          placeholder="Enter sub-location name"
-                        />
-                      </div>
-                      <a-button type="success" @click.prevent="addSubLocation"
-                        >Add Sub-Location</a-button
-                      >
-                    </a-form-item>
-                    <a-form-item>
-                      <a-button type="success" @click.prevent="submitForm"
-                        >Submit</a-button
-                      >
-                    </a-form-item> -->
 
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
