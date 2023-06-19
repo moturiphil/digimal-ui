@@ -7,6 +7,7 @@
     <!-- sdPageBody -->
 
     <Main>
+      <a-row :gutter="16" class="search-row">
         <sdButton class="btn-import" type="success">
           <router-link
             :to="{
@@ -16,7 +17,6 @@
             type="info"
             shape="circle"
           >
-            <!-- <sdFeatherIcons type="eye" size="16" /> -->
             &nbsp;&nbsp; Import Master List
           </router-link>
         </sdButton>
@@ -24,8 +24,19 @@
         <sdButton class="btn-import" type="success" @click="exportUserData">
           Export Users
         </sdButton>
-        <br>
-        <br>
+        <br />
+        <br />
+        <a-col :xs="24" :sm="24" :md="12">
+          <sdAutoComplete
+            @onSearch="handleSearch"
+            placeholder="Search registered users"
+            :style="{ width: '80%', marginRight: '80px', height: '40px' }"
+          />
+        </a-col>
+      </a-row>
+      <a-row :gutter="16" class="search-row"> </a-row>
+      <br />
+      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -136,16 +147,13 @@ const DragAndDropTable = defineComponent({
 
     const exportUserData = async () => {
       try {
-        const response = await fetch(
-          API_URL,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        );
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch export data");
@@ -207,3 +215,10 @@ const DragAndDropTable = defineComponent({
 
 export default DragAndDropTable;
 </script>
+
+<style>
+.search-row {
+  display: flex;
+  align-items: center;
+}
+</style>
