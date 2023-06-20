@@ -2,9 +2,10 @@
     <div>
       <sdPageHeader ghost title="Event Payroll" />
       <Main>
-        <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
-          Export Payroll Data
-        </sdButton> -->
+        <sdButton class="btn-import" type="success" @click="HouseHoldData">
+          Pay
+        </sdButton>
+        <!-- 197.136.123.129 -->
         <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
@@ -89,7 +90,7 @@
                                           > -->
                                       <router-link
                                         :to="{
-                                          path: `/activity/breakdown/${record.id}`,
+                                          path: `/event/breakdown/${record.id}`,
                                           query: { id: record.id},
                                         }"
                                         class="btn-icon"
@@ -209,8 +210,8 @@
   // const households = ref([]);
   
   const columns = [
-    {
-      title: "Name",
+  {
+      title: "id",
       dataIndex: "id",
       key: "id",
     },
@@ -221,17 +222,17 @@
     },
     {
       title: "Event",
-      dataIndex: "activity_payroll_id",
-      key: "id",
-    },
-    {
-      title: "Created At",
-      dataIndex: "created_at",
+      dataIndex: "event_payroll_id",
       key: "id",
     },
     {
       title: "Amount",
       dataIndex: "amount",
+      key: "id",
+    },
+    {
+      title: "Updated At",
+      dataIndex: "updated_at",
       key: "id",
     },
     // {
@@ -304,7 +305,7 @@
       console.log({params, query});
 
       console.log(query.id);
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_details?event_payrollist_id=${query.id}`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
 
   
   

@@ -7,11 +7,11 @@
       </sdButton>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <router-link v-bind:to="'payroll-matrix'">
-          <sdButton  type="success">
-            <sdFeatherIcons size="" />
-            Assign Payroll Matrix
-          </sdButton>
-        </router-link>
+        <sdButton type="success">
+          <sdFeatherIcons size="" />
+          Assign Payroll Matrix
+        </sdButton>
+      </router-link>
 
       <SearchResultWrapper>
         <a-row :gutter="25">

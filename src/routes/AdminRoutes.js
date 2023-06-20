@@ -84,6 +84,11 @@ const routes = [
         name: "activity-breakdown",
         component: () => import("@/view/pages/payroll/activityBreakdown.vue"),
       },
+      {
+        path: "/event/breakdown/:id",
+        name: "event-breakdown",
+        component: () => import("@/view/pages/payroll/eventBreakdown.vue"),
+      },
     ],
   },
   {
@@ -243,6 +248,11 @@ const routes = [
     path: '/view-payroll',
     name: 'view-payroll',
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/PayrollView.vue'),
+  },
+  {
+    path: '/view-transactions',
+    name: 'view-transactions',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventTransactionDetails.vue'),
   },
   {
     path: '/payroll-matrix',
