@@ -70,6 +70,16 @@ const routes = [
         component: () => import("@/view/pages/events/pendingConfirmation.vue"),
       },
       {
+        path: "/activity/pending-confirmation/:id",
+        name: "pending-confirmation-activity",
+        component: () => import("@/view/pages/activities/pendingConfirmation.vue"),
+      },
+      {
+        path: "/activity/confirmed-participants/:id",
+        name: "activity-confirmed-participants",
+        component: () => import("@/view/pages/activities/confirmedParticipants.vue"),
+      },
+      {
         path: "/payroll/view/:id",
         name: "view-activity-payroll",
         component: () => import("@/view/pages/payroll/showPayroll.vue"),

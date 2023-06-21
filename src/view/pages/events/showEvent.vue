@@ -34,9 +34,7 @@ import { ProjectDetailsWrapper } from "./overview/style";
 // import FileListCard from './overview/FileListCard';
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-
 import { reactive, computed, onMounted, defineComponent } from "vue";
-
 import { useRoute } from "vue-router";
 import EventCampaignTable from "../campaigns/CampaignTable/EventCampaign.vue";
 import { Modal } from "ant-design-vue";

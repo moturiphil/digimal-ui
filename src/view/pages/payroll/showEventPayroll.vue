@@ -2,7 +2,7 @@
     <div>
       <sdPageHeader ghost title="Event Payroll" />
       <Main>
-        <sdButton class="btn-import" type="success" @click="HouseHoldData">
+        <sdButton class="btn-import" type="success" @click="PayEvent">
           Pay
         </sdButton>
         <!-- 197.136.123.129 -->

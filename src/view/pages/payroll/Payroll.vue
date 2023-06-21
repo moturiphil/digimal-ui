@@ -2,16 +2,16 @@
   <div>
     <sdPageHeader ghost title="Activity Payroll" />
     <Main>
-      <sdButton class="btn-import" type="success" @click="HouseHoldData">
+      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
       </sdButton>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-       <router-link v-bind:to="'payroll-matrix'">
-          <sdButton  type="success">
-            <sdFeatherIcons size="" />
-            Assign Payroll Matrix
-          </sdButton>
-        </router-link>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
+      <router-link v-bind:to="'payroll-matrix'">
+        <sdButton type="success">
+          <sdFeatherIcons size="" />
+          Assign Payroll Matrix
+        </sdButton>
+      </router-link>
 
       <SearchResultWrapper>
         <a-row :gutter="25">

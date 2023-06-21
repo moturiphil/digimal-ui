@@ -38,14 +38,14 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <template #activities="{ record }">
+                  <template #activity="{ record }">
                     <td :style="{ 'margin-left': '3px' }">
                       <div class="table-actions">
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/activity/view/${record.id}`,
-                              query: { id: record.event_code },
+                              path: `/activity/confirmed-participants/${record.activity_list_id}`,
+                              query: { id: record.activity_list_id, code: record.activity_code },
                             }"
                             class="btn-icon"
                             type="info"
@@ -58,8 +58,8 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/activity/pending-confirmation/${record.id}`,
-                              query: { id: record.event_code },
+                              path: `/activity/pending-confirmation/${record.activity_list_id}`,
+                              query: { id: record.activity_list_id, code: record.activity_code},
                             }"
                             class="btn-icon"
                             type="info"
@@ -130,8 +130,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    key: "activities",
-    slots: { customRender: "activities" },
+    key: "activity",
+    slots: { customRender: "activity" },
   },
 ];
 

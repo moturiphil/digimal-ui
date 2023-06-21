@@ -2,10 +2,10 @@
   <div>
     <sdPageHeader ghost title="Event Payroll" />
     <Main>
-      <sdButton class="btn-import" type="success" @click="HouseHoldData">
+      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
-      </sdButton>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </sdButton> -->
+      <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'payroll-matrix'">
         <sdButton type="success">
           <sdFeatherIcons size="" />
