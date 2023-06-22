@@ -65,6 +65,11 @@ const routes = [
         component: () => import("@/view/pages/events/showEvent.vue"),
       },
       {
+        path: "/event/details/:id",
+        name: "view-details",
+        component: () => import("@/view/pages/events/eventDetails.vue"),
+      },
+      {
         path: "/event/pending-confirmation/:id",
         name: "pending-confirmation-event",
         component: () => import("@/view/pages/events/pendingConfirmation.vue"),

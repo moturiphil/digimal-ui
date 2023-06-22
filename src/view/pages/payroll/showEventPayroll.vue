@@ -1,6 +1,6 @@
 <template>
     <div>
-      <sdPageHeader ghost title="Event Payroll" />
+      <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
       <Main>
         <sdButton class="btn-import" type="success" @click="PayEvent">
           Pay
@@ -305,6 +305,8 @@
       console.log({params, query});
 
       console.log(query.id);
+      const event_name = query.name;
+      console.log(event_name);
       const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
 
   
@@ -413,6 +415,7 @@
         filteredData,
         handleChange,
         activeClass,
+        event_name,
       };
     },
     // computed: {

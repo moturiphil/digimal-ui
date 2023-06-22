@@ -2,7 +2,7 @@
   <UserTableStyleWrapper>
     <TableWrapper class="table-responsive">
       <a-table
-        :pagination="{ pageSize: 10, showSizeChanger: true }"
+        :pagination="{ pageSize: 100, showSizeChanger: true }"
         :dataSource="dataSource"
         :columns="columns"
       >

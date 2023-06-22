@@ -54,20 +54,7 @@
                             &nbsp;&nbsp; Start Events
                           </span>
                         </sdButton>
-                        <sdButton
-                          size="small"
-                          type="success"
-                          :disabled="isStarting"
-                          v-else
-                        >
-                          <span v-if="!record.status">
-                            <sdFeatherIcons type="clock" size="16" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
-                          <span class="badge badge-green">
-                            &nbsp;&nbsp; Started
-                          </span>
-                        </sdButton>
+
 
                         <sdButton
                           size="small"
@@ -115,6 +102,20 @@
                         <sdButton>
                           <router-link
                             :to="{
+                              path: `/event/details/${record.id}`,
+                              query: { id: record.id, name: record.name, event_code: record.event_code},
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; View Event
+                          </router-link>
+                        </sdButton>
+                        <!-- <sdButton>
+                          <router-link
+                            :to="{
                               path: `/event/view/${record.id}`,
                               query: { id: record.event_code },
                             }"
@@ -122,7 +123,7 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
+                            <sdFeatherIcons type="check" size="16" />
                             &nbsp;&nbsp; Confirmed Participants
                           </router-link>
                         </sdButton>
@@ -137,21 +138,6 @@
                             shape="circle"
                           >
                             <sdFeatherIcons type="pause" size="16" />
-                            &nbsp;&nbsp; Pending Confirmation
-                          </router-link>
-                        </sdButton>
-
-                        <!-- <sdButton>
-                          <router-link
-                            :to="{
-                              path: `/event/view/${record.id}`,
-                              query: { id: record.event_code },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="eye" size="16" />
                             &nbsp;&nbsp; Pending Confirmation
                           </router-link>
                         </sdButton> -->

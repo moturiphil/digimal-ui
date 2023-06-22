@@ -32,7 +32,7 @@
                     :class="
                       activeClass === 'approved' ? 'active' : 'deactivate'
                     "
-                    @click="handleChange('approved')"
+                    @click="handleChange('all')"
                     href="#"
                   >
                     Pending Approval
@@ -43,7 +43,7 @@
                     :class="
                       activeClass === 'outliers' ? 'active' : 'deactivate'
                     "
-                    @click="handleChange('outliers')"
+                    @click="handleChange('all')"
                     href="#"
                   >
                     Pending Payment
@@ -52,7 +52,7 @@
                 <li>
                   <a
                     :class="activeClass === 'paid' ? 'active' : 'deactivate'"
-                    @click="handleChange('paid')"
+                    @click="handleChange('all')"
                     href="#"
                   >
                     Paid
@@ -85,31 +85,41 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '4px' }">
+                              <td>
                                 <div class="table-actions">
                                   <sdButton
-                                    type="check"
-                                    size="16"
                                     @click="handleVerify(record.id)"
+                                    size="17"
+                                    type="success"
                                   >
-                                    &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        > -->
                                     <router-link
                                       :to="{
                                         path: `/payroll/event-view/${record.id}`,
-                                        query: { id: record.id },
+                                        query: {
+                                          id: record.id,
+                                          name: record.name,
+                                        },
                                       }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
                                     >
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
-                                        >&nbsp;&nbsp; Payroll Details</span
-                                      >
+                                      <sdFeatherIcons
+                                        type="dollar-sign"
+                                        size="large"
+                                      />
+                                      &nbsp;&nbsp; Payroll Details
                                     </router-link>
+                                  </sdButton>
+                                  &nbsp;&nbsp;&nbsp;
+
+                                  <sdButton
+                                    @click="handlePay()"
+                                    size="small"
+                                    type="success"
+                                  >
+                                    <sdFeatherIcons
+                                      type="dollar-sign"
+                                      size="large"
+                                    />
+                                    &nbsp;&nbsp; Pay
                                   </sdButton>
                                 </div>
                               </td>
@@ -213,7 +223,8 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
+
 // import { useRoute } from "vue-router";
 
 // const households = ref([]);
@@ -296,6 +307,71 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    async handlePay() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_BASE_URL}/payment_otp`,
+          {
+            payroll_summary_id: 1,
+            payment_type: "Activity",
+          },
+          { headers: authHeader() }
+        );
+        console.log(response.status);
+        if (response.status == 200) {
+          Modal.success({
+            title: "Success",
+            content: "Payment transaction processing",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    // async handlePay() {
+    //   try {
+    //     const response = await axios.get(
+    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
+    //       null,
+    //       {
+    //         headers: authHeader(),
+    //       }
+    //     );
+    //     console.log(response);
+
+    //     // if (response.status !== 200) {
+    //     //   throw new Error("Failed to validate OTP");
+    //     // } else {
+    //     //   console.log("OTP validated");
+    //     // }
+    //     // Modal.success({
+    //     //   title: "Success",
+    //     //   content: "Payment transaction processing",
+    //     // });
+    //   } catch (error) {
+    //     console.log(error);
+    //     // Modal.error({
+    //     //   title: "Error",
+    //     //   content: error.message,
+    //     // });
+    //   }
+
+    //   // const self = this;
+
+    //   // Modal.success({
+    //   //   title: "OTP Validation",
+    //   //   content: "Enter OTP",
+    //   //   okText: "Validate",
+    //   //   onOk: async function () {
+
+    //   //   },
+    //   //   style: {
+    //   //     float: "center",
+    //   //     display: "grid",
+    //   //     placeContent: "center",
+    //   //   },
+    //   // });
+    // },
   },
   setup() {
     const { state } = useStore();
@@ -420,23 +496,3 @@ export default defineComponent({
   // },
 });
 </script>
-<style>
-.badge-green {
-  background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-    border-radius: 3px; */
-  /* size */
-  font-size: 12px;
-}
-</style>
-
-<style>
-.badge-green {
-  background-color: #1ec997;
-  color: white;
-  padding: 4px;
-  margin-bottom: 18px;
-  border-radius: 3px;
-}
-</style>

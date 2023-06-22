@@ -1,8 +1,8 @@
 export default function authHeader() {
-    let user = JSON.parse(sessionStorage.getItem('user'));
+    let token = JSON.parse(sessionStorage.getItem('user'));
   
-    if (user) {
-      return { Accept:'application/json' ,Authorization: 'Bearer ' + user }; // for back-end 
+    if (token) {
+      return { Accept:'application/json' ,Authorization: 'Bearer ' + token }; // for back-end 
     } else {
       return {};
     }
