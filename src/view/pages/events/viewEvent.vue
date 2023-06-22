@@ -51,7 +51,7 @@
                         >
                           <span>
                             <sdFeatherIcons type="clock" size="16" />
-                            &nbsp;&nbsp; Start Event
+                            &nbsp;&nbsp; Start Events
                           </span>
                         </sdButton>
                         <sdButton
@@ -68,6 +68,34 @@
                             &nbsp;&nbsp; Started
                           </span>
                         </sdButton>
+
+                        <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                          v-if="!record.status"
+                        >
+                          <span>
+                            <sdFeatherIcons type="clock" size="16" />
+                            &nbsp;&nbsp; Start Events
+                          </span>
+                        </sdButton>
+                        <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          v-else
+                        >
+                          <span v-if="!record.status">
+                            <sdFeatherIcons type="clock" size="16" />
+                            &nbsp;&nbsp; Start Event
+                          </span>
+                          <span class="badge badge-green">
+                            &nbsp;&nbsp; Started
+                          </span>
+                        </sdButton>
+
                         <sdButton
                           @click="showSuccessModal(record.event_code)"
                           size="small"
@@ -164,7 +192,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "User",
+    title: "Created By",
     dataIndex: "user_id",
     key: "id",
   },
@@ -255,60 +283,59 @@ const ViewPage = defineComponent({
       }
     },
     showModal() {
-  this.visible = true;
-},
-
-showSuccessModal(record) {
-  console.log(record);
-  const input = document.createElement("input");
-  input.id = "regCode";
-  input.placeholder = "Enter Registration code";
-
-  const div = document.createElement("div");
-  div.innerHTML = "<p>Enter Registration Code to Register</p>";
-  div.appendChild(input);
-
-  // const self = this;
-
-  Modal.success({
-    title: "Event Registration",
-    content: div,
-    okText: "Register",
-    onOk: async function() {
-      try {
-        const userRegCode = document.getElementById("regCode").value;
-        console.log(userRegCode);
-
-        const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
-          { headers: authHeader() }
-        );
-
-        if (response.status !== 200) {
-          throw new Error("Failed to Register Participant to event");
-        } else {
-          console.log("Participant Registered");
-        }
-
-        Modal.success({
-          title: "Success",
-          content: "You have been registered for the event",
-        });
-      } catch (error) {
-        Modal.error({
-          title: "Error",
-          content: error.message,
-        });
-      }
+      this.visible = true;
     },
-    style: {
-      float: "center",
-      display: "grid",
-      placeContent: "center",
-    },
-  });
-},
 
+    showSuccessModal(record) {
+      console.log(record);
+      const input = document.createElement("input");
+      input.id = "regCode";
+      input.placeholder = "Enter Registration code";
+
+      const div = document.createElement("div");
+      div.innerHTML = "<p>Enter Registration Code to Register</p>";
+      div.appendChild(input);
+
+      // const self = this;
+
+      Modal.success({
+        title: "Event Registration",
+        content: div,
+        okText: "Register",
+        onOk: async function () {
+          try {
+            const userRegCode = document.getElementById("regCode").value;
+            console.log(userRegCode);
+
+            const response = await axios.get(
+              `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
+              { headers: authHeader() }
+            );
+
+            if (response.status !== 200) {
+              throw new Error("Failed to Register Participant to event");
+            } else {
+              console.log("Participant Registered");
+            }
+
+            Modal.success({
+              title: "Success",
+              content: "You have been registered for the event",
+            });
+          } catch (error) {
+            Modal.error({
+              title: "Error",
+              content: error.message,
+            });
+          }
+        },
+        style: {
+          float: "center",
+          display: "grid",
+          placeContent: "center",
+        },
+      });
+    },
 
     handleOk() {
       this.confirmLoading = true;
@@ -370,7 +397,7 @@ showSuccessModal(record) {
       try {
         // Validate the event code
         const { data } = await axios.get(
-          `${API_URL}?event_code=${ eventCode.value }`
+          `${API_URL}?event_code=${eventCode.value}`
         );
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");

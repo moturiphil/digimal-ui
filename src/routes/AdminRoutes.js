@@ -255,6 +255,11 @@ const routes = [
     component: () => import("@/view/pages/payroll/assignActivityMatrix.vue"),
   },
   {
+    path: "/event/matrix/:id",
+    name: "assign-event-matrix",
+    component: () => import("@/view/pages/payroll/assignEventMatrix.vue"),
+  },
+  {
     path: '/view-payroll',
     name: 'view-payroll',
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/PayrollView.vue'),
@@ -265,9 +270,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventTransactionDetails.vue'),
   },
   {
-    path: '/payroll-matrix',
-    name: 'payroll-matrix',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/PayrollMatrix.vue'),
+    path: '/activity-payroll-matrix',
+    name: 'activity-payroll-matrix',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/activityPayrollMatrix.vue'),
+  },
+  {
+    path: '/event-payroll-matrix',
+    name: 'event-payroll-matrix',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventPayrollMatrix.vue'),
   },
   {
     path: '/logs',

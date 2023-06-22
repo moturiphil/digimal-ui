@@ -1,55 +1,9 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Payroll" />
+    <sdPageHeader ghost title="Event Payroll Matrix - Assignment" />
     <Main>
       <SearchResultWrapper>
         <a-row :gutter="25">
-          <!-- <a-col :xs="24">
-            <div class="search-filter-menu">
-              <ul>
-                <li>
-                  <a
-                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                    @click="handleChange('all')"
-                    href="#"
-                  >
-                    Pending validation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'approved' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('approved')"
-                    href="#"
-                  >
-                    Pending Approval
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'outliers' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('outliers')"
-                    href="#"
-                  >
-                    Pending Payment
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="activeClass === 'paid' ? 'active' : 'deactivate'"
-                    @click="handleChange('paid')"
-                    href="#"
-                  >
-                    Paid
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </a-col> -->
           <a-col :xs="24">
             <sdCards headless>
               <div class="result-list-content">
@@ -77,29 +31,10 @@
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
                                   <sdButton type="check" size="16">
-                                    <!-- @click="handleVerify(record.id)" -->
                                     &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        > -->
-                                    <!-- <router-link
-                                      :to="{
-                                        path: `/activity/matrix/${record.id}`,
-                                        query: { id: record.id },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
-                                      @click="showModal = true"
-                                    >
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
-                                        >&nbsp;&nbsp; Assign Matrix</span
-                                      >
-                                    </router-link> -->
                                     <router-link
                                       :to="{
-                                        path: `/activity/matrix/${record.id}`,
+                                        path: `/event/matrix/${record.id}`,
                                         query: { id: record.id, name: record.name},
                                       }"
                                       class="btn-icon"
@@ -160,7 +95,7 @@
 
 <script>
 import { Main } from "../../styled";
-import { SearchResultWrapper } from "./../style";
+import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
@@ -171,7 +106,7 @@ import { useStore } from "vuex";
 
 const columns = [
   {
-    title: "Activity",
+    title: "Event",
     dataIndex: "name",
     key: "id",
   },

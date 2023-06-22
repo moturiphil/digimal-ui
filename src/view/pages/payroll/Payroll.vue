@@ -6,7 +6,7 @@
         Export Payroll Data
       </sdButton>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
-      <router-link v-bind:to="'payroll-matrix'">
+      <router-link v-bind:to="'activity-payroll-matrix'">
         <sdButton type="success">
           <sdFeatherIcons size="" />
           Assign Payroll Matrix

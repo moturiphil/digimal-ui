@@ -195,7 +195,7 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ status }) => {
-          if (status == 200 ) {
+          if (status == 200) {
             // router.push("event-view");
             notification["success"]({
               message: "Matrix Assigned successfully",
