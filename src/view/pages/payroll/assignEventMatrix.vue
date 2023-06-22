@@ -1,7 +1,6 @@
 <template>
-  <sdPageHeader :title="`Assign Event Payroll - ${act_name}`"></sdPageHeader>
-
   <Main>
+    <sdPageHeader :title="`Assign Event Payroll - ${act_name}`"></sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -119,7 +118,7 @@ const AddNew = defineComponent({
 
     // console.log({ query.name, query.id });
 
-    const API_URL = `${process.env.VUE_APP_BASE_UxRL}/pay_roll_matrix_assign_to_event`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/pay_roll_matrix_assign_to_event`;
 
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
@@ -179,7 +178,7 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-        activity_list_id: act_id,
+        event_list_id: act_id,
         pay_matrix: formState.matrix,
       };
 
@@ -195,14 +194,12 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ status }) => {
-          if (status == 200) {
-            // router.push("event-view");
-            notification["success"]({
-              message: "Matrix Assigned successfully",
-              description: `Matrix Assigned successfully. You can now view the matrix`,
-              duration: 5.5,
-            });
-          }
+          console.log(status);
+          notification["success"]({
+            message: "Matrix Assigned successfully",
+            description: `Matrix Assigned successfully. You can now view the matrix`,
+            duration: 5.5,
+          });
         })
         .catch((error) => {
           console.error("Error:", error);

@@ -35,7 +35,10 @@
                                     <router-link
                                       :to="{
                                         path: `/event/matrix/${record.id}`,
-                                        query: { id: record.id, name: record.name},
+                                        query: {
+                                          id: record.id,
+                                          name: record.name,
+                                        },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -186,7 +189,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_list`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;

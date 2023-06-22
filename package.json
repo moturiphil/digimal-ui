@@ -37,6 +37,7 @@
     "highcharts": "^11.0.0",
     "jest-worker": "^27.4.6",
     "js-cookie": "^3.0.1",
+    "jsdom": "^22.1.0",
     "leaflet": "^1.7.1",
     "mitt": "^3.0.0",
     "svgmap": "^2.7.1",

@@ -297,9 +297,6 @@ export default defineComponent({
       );
       this.notData = data;
     },
-    // handleChange(value) {
-    //   this.activeClass = value;
-    // },
     onShowSizeChange(current, pageSize) {
       this.current = current;
       this.pageSize = pageSize;
@@ -307,71 +304,68 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    handleInputChange(event) {
+      this.inputValue = event.target.value;
+    },
+    // async handleOk() {
+    //   try {
+    //     const response = await axios.post(
+    //       `${process.env.VUE_APP_BASE_URL}/api/endpoint`,
+    //       {
+    //         number: this.otp,
+    //       }
+    //     );
+    //     console.log(response);
+    //     // Handle the response or perform any further actions
+    //   } catch (error) {
+    //     console.log(error);
+    //     // Handle the error or display an error message
+    //   }
+    // },
     async handlePay() {
       try {
         const response = await axios.post(
           `${process.env.VUE_APP_BASE_URL}/payment_otp`,
           {
             payroll_summary_id: 1,
-            payment_type: "Activity",
+            payment_type: "Event",
           },
           { headers: authHeader() }
         );
-        console.log(response.status);
+
+        console.log(response.data.OTP);
+        const otp = response.data.OTP;
         if (response.status == 200) {
+          const modalContent = `
+        <div>
+          <p>Payment transaction processing</p>
+          <input type="number" onchange="handleInputChange(event)" />
+        </div>
+      `;
+
           Modal.success({
             title: "Success",
-            content: "Payment transaction processing",
+            content: modalContent,
+            onOk: async () => {
+              // Define the handleOk method inline
+              try {
+                const response = await axios.get(
+                  `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
+                  { headers: authHeader() }
+                );
+                console.log(response);
+                // Handle the response or perform any further actions
+              } catch (error) {
+                console.log(error);
+                // Handle the error or display an error message
+              }
+            },
           });
         }
       } catch (error) {
         console.log(error);
       }
     },
-    // async handlePay() {
-    //   try {
-    //     const response = await axios.get(
-    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
-    //       null,
-    //       {
-    //         headers: authHeader(),
-    //       }
-    //     );
-    //     console.log(response);
-
-    //     // if (response.status !== 200) {
-    //     //   throw new Error("Failed to validate OTP");
-    //     // } else {
-    //     //   console.log("OTP validated");
-    //     // }
-    //     // Modal.success({
-    //     //   title: "Success",
-    //     //   content: "Payment transaction processing",
-    //     // });
-    //   } catch (error) {
-    //     console.log(error);
-    //     // Modal.error({
-    //     //   title: "Error",
-    //     //   content: error.message,
-    //     // });
-    //   }
-
-    //   // const self = this;
-
-    //   // Modal.success({
-    //   //   title: "OTP Validation",
-    //   //   content: "Enter OTP",
-    //   //   okText: "Validate",
-    //   //   onOk: async function () {
-
-    //   //   },
-    //   //   style: {
-    //   //     float: "center",
-    //   //     display: "grid",
-    //   //     placeContent: "center",
-    //   //   },
-    //   // });
-    // },
   },
   setup() {
     const { state } = useStore();
@@ -382,35 +376,6 @@ export default defineComponent({
     const activeClass = ref("all");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
-
-    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
-
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
@@ -463,16 +428,6 @@ export default defineComponent({
           console.log(error);
         });
     };
-
-    // handleChange(tab) {
-    //   if (tab === 'all') {
-    //     filteredData.value = dataSource.value;
-    //   } else if (tab === 'approved') {
-    //     filteredData.value = dataSource.value.filter(item => item.isVerified === 1);
-    //   } else if (tab === 'outliers') {
-    //     filteredData.value = dataSource.value.filter(item => item.hh_size > 5);
-    //   }
-    // }
 
     const formState = reactive({
       searchItem: "",
