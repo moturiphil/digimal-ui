@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Create Event">
-    <sdButton class="btn-add_new" size="default" key="1" type="success">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Create Event">
+      <sdButton class="btn-add_new" size="default" key="1" type="success">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -212,7 +212,6 @@ const AddNew = defineComponent({
     const handleSubmit = () => {
       const data = {
         name: formState.name,
-        user_id: 1,
         venue: formState.venue,
         location_id: 1,
         campaign_id: formState.campaign_id,
@@ -220,7 +219,7 @@ const AddNew = defineComponent({
         trainers: formState.trainer_id,
       };
 
-      // console.log(data);
+      console.log(data);
 
       fetch(API_URL, {
         method: "POST",
@@ -237,6 +236,14 @@ const AddNew = defineComponent({
             notification["success"]({
               message: "Event Created",
               description: `Event Created successfully. Your event code is ${data.event.event_code}`,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            notification["error"]({
+              message: "Error",
+              description: "Something went wrong",
               duration: 5.5,
             });
           }

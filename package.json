@@ -1,5 +1,5 @@
 {
-  "name": "MassNetCampaign",
+  "name": "strikingdash-vue",
   "version": "2.1.0",
   "private": true,
   "posthtml": {
@@ -7,8 +7,7 @@
   },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "set \"GENERATE_SOURCEMAP=false\" && vue-cli-service --max-old-space-size=4096 build",
-    "lint": "vue-cli-service lint"
+    "build": "set \"GENERATE_SOURCEMAP=false\" && vue-cli-service --max-old-space-size=4096 build"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^6.1.0",
@@ -34,7 +33,6 @@
     "file-saver": "^2.0.5",
     "firebase": "^8.10.0",
     "glightbox": "^3.0.9",
-    "highcharts": "^11.0.0",
     "jest-worker": "^27.4.6",
     "js-cookie": "^3.0.1",
     "leaflet": "^1.7.1",
@@ -44,14 +42,12 @@
     "vue": "^3.2.45",
     "vue-draggable-next": "^2.0.1",
     "vue-inline-svg": "^3.0.0-beta.2",
-    "vue-json-csv": "^1.2.12",
-    "vue-masonry": "^0.14.0",
+    "vue-masonry": "^0.16.0",
     "vue-router": "^4.0.4",
     "vue-types": "^4.1.1",
     "vue2-daterange-picker": "^0.6.3",
-    "vue3-apexcharts": "^1.2.1",
+    "vue3-apexcharts": "^1.4.1",
     "vue3-googl-chart": "^0.0.1",
-    "vue3-google-map": "^0.8.3",
     "vue3-perfect-scrollbar": "^1.5.5",
     "vue3-styled-components": "^1.2.1",
     "vuedraggable": "^4.0.1",

@@ -1,5 +1,16 @@
 <template>
-  <sdPageHeader title="Import Master List">
+  <sdPageHeader title="Import">
+    <template v-slot:buttons>
+      <div class="page-header-actions">
+        <sdCalendarButton />
+        <sdExportButton />
+        <sdShareButton />
+        <sdButton size="small" type="primary">
+          <sdFeatherIcons type="plus" size="14" />
+          Add New
+        </sdButton>
+      </div>
+    </template>
   </sdPageHeader>
   <Main>
     <a-row :gutter="25">
@@ -27,7 +38,7 @@
     </a-row>
   </Main>
 </template>
-<script>
+<script lang="jsx">
 import { Main, ImportStyleWrap } from '../../styled';
 import { message } from 'ant-design-vue';
 import { ref, defineComponent } from 'vue';
@@ -42,7 +53,7 @@ const Import = defineComponent({
     const fileUploadProps = {
       name: 'file',
       multiple: true,
-      action: `${process.env.VUE_APP_BASE_URL}/master-import`,
+      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
       onChange(info) {
         const { status } = info.file;
         if (status !== 'uploading') {
