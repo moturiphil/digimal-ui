@@ -1,6 +1,5 @@
 <template>
   <CardWrapper>
-    <img :src="require(`../../../${img}`)" alt="" />
     <figcaption>
       <h2>{{ title }}</h2>
       <p>{{ content }}</p>

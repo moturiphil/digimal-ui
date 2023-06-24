@@ -45,10 +45,7 @@
                           <router-link
                             :to="{
                               path: `/activity/confirmed-participants/${record.activity_list_id}`,
-                              query: {
-                                id: record.activity_list_id,
-                                code: record.activity_code,
-                              },
+                              query: { id: record.activity_list_id, code: record.activity_code },
                             }"
                             class="btn-icon"
                             type="info"
@@ -62,10 +59,7 @@
                           <router-link
                             :to="{
                               path: `/activity/pending-confirmation/${record.activity_list_id}`,
-                              query: {
-                                id: record.activity_list_id,
-                                code: record.activity_code,
-                              },
+                              query: { id: record.activity_list_id, code: record.activity_code},
                             }"
                             class="btn-icon"
                             type="info"

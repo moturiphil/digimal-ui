@@ -3,13 +3,6 @@
     <sdPageHeader title="Activity Confirmation">
       <template v-slot:buttons>
         <div class="page-header-actions">
-          <!-- <sdCalendarButton />
-          <sdExportButton />
-          <sdShareButton /> -->
-          <!-- <sdButton size="small" type="primary">
-            <sdFeatherIcons type="plus" size="14" />
-            Add New
-          </sdButton> -->
         </div>
       </template>
     </sdPageHeader>
@@ -21,12 +14,6 @@
               <template #renderItem="{ item }">
                 <a-list-item>{{ item }}</a-list-item>
               </template>
-              <!-- <template #header>
-                <div>Header</div>
-              </template> -->
-              <!-- <template #footer>
-                <div>Footer</div>
-              </template> -->
             </a-list>
           </sdCards>
         </a-col>

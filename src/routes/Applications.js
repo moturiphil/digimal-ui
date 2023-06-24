@@ -1,5 +1,36 @@
 export default [
   // {
+  //   name: 'projectDetails',
+  //   path: '/app/project/projectDetails',
+  //   component: () => import(/* webpackChunkName: "projectDetail" */ '../view/apps/project/ProjectDetails.vue'),
+  //   children: [
+  //     {
+  //       path: '',
+  //       name: '',
+  //       components: {
+  //         default: () => import(/* webpackChunkName: "projectDetail" */ '../view/apps/project/ProjectDetails.vue'),
+  //         child: () => import(/* webpackChunkName: "tasklist" */ '../view/apps/project/overview/TaskList.vue'),
+  //       },
+  //     },
+  //     {
+  //       path: 'tasklist',
+  //       name: 'tasklist',
+  //       components: {
+  //         default: () => import(/* webpackChunkName: "projectDetail" */ '../view/apps/project/ProjectDetails.vue'),
+  //         child: () => import(/* webpackChunkName: "tasklist" */ '../view/apps/project/overview/TaskList.vue'),
+  //       },
+  //     },
+  //     {
+  //       path: 'activities',
+  //       name: 'activities',
+  //       components: {
+  //         default: () => import(/* webpackChunkName: "projectDetail" */ '../view/apps/project/ProjectDetails.vue'),
+  //         child: () => import(/* webpackChunkName: "activities" */ '../view/apps/project/overview/Activities.vue'),
+  //       },
+  //     },
+  //   ],
+  // },
+  // {
   //   name: 'user-profile',
   //   path: '/user/profile',
   //   component: () => import(/* webpackChunkName: "Profile" */ '@/view/pages/settings/overview/Profile.vue'),

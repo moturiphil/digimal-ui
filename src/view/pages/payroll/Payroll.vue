@@ -1,10 +1,18 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Payroll" />
+    <sdPageHeader ghost title="Activity Payroll" />
     <Main>
-      <sdButton class="btn-import" type="success" @click="HouseHoldData">
+      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
       </sdButton>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
+      <router-link v-bind:to="'activity-payroll-matrix'">
+        <sdButton type="success">
+          <sdFeatherIcons size="" />
+          Assign Payroll Matrix
+        </sdButton>
+      </router-link>
+
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -97,9 +105,10 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      &nbsp;&nbsp; <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        >
+                                      &nbsp;&nbsp;
+                                      <span class="badge badge-green"
+                                        >&nbsp;&nbsp; Payroll Details</span
+                                      >
                                     </router-link>
                                   </sdButton>
                                 </div>
@@ -205,10 +214,6 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
-// import { useRoute } from "vue-router";
-
-
-// const households = ref([]);
 
 const columns = [
   {
@@ -231,21 +236,6 @@ const columns = [
     dataIndex: "total_amount",
     key: "id",
   },
-  // {
-  //   title: "Village",
-  //   dataIndex: "location_id",
-  //   key: "id_no",
-  // },
-  // {
-  //   title: "CHV",
-  //   dataIndex: "chw_id",
-  //   key: "id_no",
-  // },h
-  // {
-  //   title: "Timestamp",
-  //   dataIndex: "created_at",
-  //   key: "id_no",
-  // },
   {
     title: "",
     dataIndex: "",
@@ -254,7 +244,7 @@ const columns = [
   },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "Payroll",
   components: {
     Main,
     SearchResultWrapper,
@@ -297,36 +287,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/payroll_summary`;
-
-    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
-
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
@@ -423,10 +384,9 @@ export default defineComponent({
 }
 </style>
 
-
 <style>
 .badge-green {
-  background-color: #1EC997;
+  background-color: #1ec997;
   color: white;
   padding: 4px;
   margin-bottom: 18px;

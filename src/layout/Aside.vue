@@ -16,10 +16,14 @@
           <sdFeatherIcons type="globe" /><span>Campaigns</span>
         </template>
         <a-menu-item @click="toggleCollapsed" key="widgetCamp">
-          <router-link to="/campaigns/create-campaign"> Create Campaign </router-link>
+          <router-link to="/campaigns/create-campaign">
+            Create Campaign
+          </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="widgetsList">
-          <router-link to="/campaigns/view-campaign"> List Campaigns </router-link>
+          <router-link to="/campaigns/view-campaign">
+            List Campaigns
+          </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="events">
@@ -97,19 +101,13 @@
           </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-list">
-          <router-link to="/hh-nets-distributed">
-            HouseHolds Nets
-          </router-link>
+          <router-link to="/hh-nets-distributed"> HouseHolds Nets </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
-          <router-link to="/households/chv">
-            Campaign Users
-          </router-link>
+          <router-link to="/households/chv"> Campaign Users </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
-          <router-link to="/campaign/users">
-            List Campaign Users
-          </router-link>
+          <router-link to="/campaign/users"> List Campaign Users </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="drop-off-point">
@@ -117,16 +115,21 @@
           <sdFeatherIcons type="map-pin" /><span>Dropoff Point</span>
         </template>
         <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-point"> Create Dropoff Point </router-link>
+          <router-link to="/nets/distribution-point">
+            Create Dropoff Point
+          </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-points"> List Dropoff Point </router-link>
+          <router-link to="/nets/distribution-points">
+            List Dropoff Point
+          </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="post-create">
-          <router-link to="/nets/distribution-point-nets"> Nets at Dropoff </router-link>
+          <router-link to="/nets/distribution-point-nets">
+            Nets at Dropoff
+          </router-link>
         </a-menu-item>
       </a-sub-menu>
-
 
       <a-sub-menu key="nets-distribution">
         <template v-slot:title>
@@ -153,14 +156,25 @@
           ><sdFeatherIcons type="bar-chart-2" />&nbsp; &nbsp; Stock Status
         </router-link>
       </a-menu-item>
+      <a-sub-menu key="payroll">
+        <template v-slot:title>
+          <sdFeatherIcons type="share-2" /><span>Payroll</span>
+        </template>
+        <a-menu-item @click="toggleCollapsed" key="payroll-details">
+          <router-link to="/view-payroll">Payroll Details </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="transaction-details">
+          <router-link to="/view-transactions">Transaction Details </router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-menu-item @click="toggleCollapsed" key="registered-users">
         <router-link to="/registered-users">
           <sdFeatherIcons type="users" />&nbsp; &nbsp; Users
         </router-link>
       </a-menu-item>
-      <a-menu-item @click="toggleCollapsed" key="payroll">
-        <router-link to="/payroll">
-          <sdFeatherIcons type="dollar-sign" />&nbsp; &nbsp; Payroll
+      <a-menu-item @click="toggleCollapsed" key="logs">
+        <router-link to="/logs">
+          <sdFeatherIcons type="clipboard" />&nbsp; &nbsp; Audit Logs
         </router-link>
       </a-menu-item>
     </a-menu-item-group>
@@ -239,7 +253,6 @@ export default defineComponent({
     // onMounted(() => {
     //   console.log(authService.getUser());
     // });
-
 
     return {
       mode,

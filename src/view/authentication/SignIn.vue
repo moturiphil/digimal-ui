@@ -7,21 +7,41 @@
           Sign in to <span class="color-success">DigiMal KE Dashboard</span>
         </sdHeading>
         <a-form-item name="id_no" label="National ID No">
-          <a-input type="number" v-model:value="formState.id_no"  placeholder="Enter ID No"/>
-        </a-form-item>
-        <a-form-item name="password" initialValue="" label="Password">
           <a-input
-            type="password"
+            type="number"
+            v-model:value="formState.id_no"
+            placeholder="Enter ID No"
+          />
+        </a-form-item>
+        <!-- <a-form-item name="password" initialValue="" label="Password">
+          <a-input
+            :type="showPassword ? 'text' : 'password'"
             v-model:value="formState.password"
             placeholder="Password"
           />
+        </a-form-item> -->
+        <a-form-item name="password" initialValue="" label="Password">
+          <a-input
+            :type="showPassword ? 'text' : 'password'"
+            v-model:value="formState.password"
+            placeholder="Password"
+            :addon-after="getPasswordToggleIcon"
+          />
         </a-form-item>
+        <!-- <a-form-item name="password" initialValue="" label="Password">
+          <a-input
+            :type="showPassword ? 'text' : 'password'"
+            v-model:value="password"
+            placeholder="Password"
+            :addon-after="getPasswordToggleIcon()"
+          />
+        </a-form-item> -->
+
         <div class="auth-form-action">
           <a-checkbox v-model="checked" @change="onChange"
             >Keep me logged in</a-checkbox
           >
           <router-link class="forgot-pass-link" to="/auth/register">
-
             New User?
           </router-link>
         </div>
@@ -63,6 +83,11 @@ import { notification } from "ant-design-vue";
 export default {
   name: "SignIn",
   components: { AuthWrapper },
+  // computed: {
+  //   getPasswordToggleIcon() {
+  //     return this.showPassword ? "eye-slash" : "eye";
+  //   },
+  // },
   setup() {
     // console.log(store.state.auth);
     const isLoading = computed(() => store.state.auth.loading);
@@ -74,7 +99,12 @@ export default {
       id_no: "",
       password: "",
     });
-    
+    const showPassword = ref(false);
+
+    const getPasswordToggleIcon = computed(() => {
+      return showPassword.value ? "eye-slash" : "eye";
+    });
+
     const handleSubmit = async () => {
       const response = await AuthService.login({
         id_no: formState.id_no,
@@ -102,7 +132,7 @@ export default {
       } else if (response.status == 401) {
         // new code to display error notification
         // console.log(response.status);
-        console.log('other error responses');
+        console.log("other error responses");
         notification.error({
           message: "Login Failed",
           description: "Invalid Credentials",
@@ -115,6 +145,8 @@ export default {
       checked,
       handleSubmit,
       formState,
+      showPassword,
+      getPasswordToggleIcon,
       // new computed properties to access the error state from the store
       isError: computed(() => store.state.auth.isError),
       errorMessage: computed(() => store.state.auth.errorMessage),
