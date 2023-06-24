@@ -191,21 +191,6 @@ const columns = [
     dataIndex: "amount",
     key: "id",
   },
-  // {
-  //   title: "Village",
-  //   dataIndex: "location_id",
-  //   key: "id_no",
-  // },
-  // {
-  //   title: "CHV",
-  //   dataIndex: "chw_id",
-  //   key: "id_no",
-  // },h
-  // {
-  //   title: "Timestamp",
-  //   dataIndex: "created_at",
-  //   key: "id_no",
-  // },
   {
     title: "",
     dataIndex: "",

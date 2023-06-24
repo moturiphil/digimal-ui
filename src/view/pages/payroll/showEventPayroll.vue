@@ -10,48 +10,6 @@
           <a-row :gutter="25">
             <a-col :xs="24">
               <div class="search-filter-menu">
-                <!-- <ul>
-                  <li>
-                    <a
-                      :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                      @click="handleChange('all')"
-                      href="#"
-                    >
-                      Pending validation
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="
-                        activeClass === 'approved' ? 'active' : 'deactivate'
-                      "
-                      @click="handleChange('approved')"
-                      href="#"
-                    >
-                      Pending Approval
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="
-                        activeClass === 'outliers' ? 'active' : 'deactivate'
-                      "
-                      @click="handleChange('outliers')"
-                      href="#"
-                    >
-                      Pending Payment
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="activeClass === 'paid' ? 'active' : 'deactivate'"
-                      @click="handleChange('paid')"
-                      href="#"
-                    >
-                      Paid
-                    </a>
-                  </li>
-                </ul> -->
               </div>
             </a-col>
             <a-col :xs="24">
@@ -235,21 +193,6 @@
       dataIndex: "updated_at",
       key: "id",
     },
-    // {
-    //   title: "Village",
-    //   dataIndex: "location_id",
-    //   key: "id_no",
-    // },
-    // {
-    //   title: "CHV",
-    //   dataIndex: "chw_id",
-    //   key: "id_no",
-    // },h
-    // {
-    //   title: "Timestamp",
-    //   dataIndex: "created_at",
-    //   key: "id_no",
-    // },
     {
       title: "",
       dataIndex: "",

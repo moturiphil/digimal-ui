@@ -4,52 +4,6 @@
     <Main>
       <SearchResultWrapper>
         <a-row :gutter="25">
-          <!-- <a-col :xs="24">
-            <div class="search-filter-menu">
-              <ul>
-                <li>
-                  <a
-                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                    @click="handleChange('all')"
-                    href="#"
-                  >
-                    Pending validation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'approved' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('approved')"
-                    href="#"
-                  >
-                    Pending Approval
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'outliers' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('outliers')"
-                    href="#"
-                  >
-                    Pending Payment
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="activeClass === 'paid' ? 'active' : 'deactivate'"
-                    @click="handleChange('paid')"
-                    href="#"
-                  >
-                    Paid
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </a-col> -->
           <a-col :xs="24">
             <sdCards headless>
               <div class="result-list-content">
@@ -77,26 +31,7 @@
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
                                   <sdButton type="check" size="16">
-                                    <!-- @click="handleVerify(record.id)" -->
                                     &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        > -->
-                                    <!-- <router-link
-                                      :to="{
-                                        path: `/activity/matrix/${record.id}`,
-                                        query: { id: record.id },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
-                                      @click="showModal = true"
-                                    >
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
-                                        >&nbsp;&nbsp; Assign Matrix</span
-                                      >
-                                    </router-link> -->
                                     <router-link
                                       :to="{
                                         path: `/activity/matrix/${record.id}`,
@@ -327,12 +262,3 @@ export default defineComponent({
 }
 </style>
 
-<style>
-/* .badge-green {
-  background-color: #1ec997;
-  color: white;
-  padding: 4px;
-  margin-bottom: 18px;
-  border-radius: 3px;
-} */
-</style>

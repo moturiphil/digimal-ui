@@ -237,10 +237,6 @@ export default defineComponent({
 <style>
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-    border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 </style>

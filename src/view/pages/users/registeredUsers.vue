@@ -70,10 +70,6 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import UserService from "../../../services/user.service";
-// import { useRouter } from "vue-router";
-// import DragAndDropTable from '../../../view/table/DragTable.vue';
-
-// console.log(userService.getAll());
 
 const columns = [
   {

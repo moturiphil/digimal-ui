@@ -214,9 +214,6 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
-// import { useRoute } from "vue-router";
-
-// const households = ref([]);
 
 const columns = [
   {
@@ -239,21 +236,6 @@ const columns = [
     dataIndex: "total_amount",
     key: "id",
   },
-  // {
-  //   title: "Village",
-  //   dataIndex: "location_id",
-  //   key: "id_no",
-  // },
-  // {
-  //   title: "CHV",
-  //   dataIndex: "chw_id",
-  //   key: "id_no",
-  // },h
-  // {
-  //   title: "Timestamp",
-  //   dataIndex: "created_at",
-  //   key: "id_no",
-  // },
   {
     title: "",
     dataIndex: "",
@@ -262,7 +244,7 @@ const columns = [
   },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "Payroll",
   components: {
     Main,
     SearchResultWrapper,
@@ -306,35 +288,6 @@ export default defineComponent({
     const activeClass = ref("all");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
-
-    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
-
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {

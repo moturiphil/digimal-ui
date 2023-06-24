@@ -27,8 +27,7 @@
               <div v-else>
                 <TableWrapper class="table-data-view table-responsive">
                   <a-table
-                    :rowSelection="rowSelection"
-                    :pagination="{ pageSize: 10, showSizeChanger: true }"
+                    :pagination="{ pageSize: 50, showSizeChanger: true }"
                     :dataSource="dataSource"
                     :columns="columns"
                   />
@@ -48,13 +47,7 @@
   import { Main, TableWrapper } from "../../styled";
   import { useStore } from "vuex";
   import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-  // import axios from "axios";
   import authHeader from "../../../services/auth-header";
-//   import UserService from "../../../services/user.service";
-  // import { useRouter } from "vue-router";
-  // import DragAndDropTable from '../../../view/table/DragTable.vue';
-  
-  // console.log(userService.getAll());
   
   const columns = [
     {
@@ -94,12 +87,6 @@
       const isLoading = computed(() => state.crud.loading);
       const selectedRowKeys = ref([]);
       const dataSource = ref([]);
-      // const { state, dispatch } = useStore();
-      // const router = useRouter();
-  
-      // if (!state.auth.isAuthenticated) {
-      //   router.push({ name: "login" });
-      // }
   
       console.log(authHeader());
   

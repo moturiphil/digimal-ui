@@ -2,10 +2,6 @@
   <div>
     <sdPageHeader ghost title="Event Payroll" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
-        Export Payroll Data
-      </sdButton> -->
-      <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'event-payroll-matrix'">
         <sdButton type="success">
           <sdFeatherIcons size="" />
@@ -332,6 +328,14 @@ export default defineComponent({
           },
           { headers: authHeader() }
         );
+
+        var html =
+          '<div id="test_div"><ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></div>';
+        var parser = new DOMParser();
+        var wrapper = parser.parseFromString(html, "text/html");
+        wrapper.getElementsByTagName("li");
+
+        console.log(wrapper.getElementsByTagName("li"));
 
         console.log(response.data.OTP);
         const otp = response.data.OTP;

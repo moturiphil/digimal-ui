@@ -1,7 +1,8 @@
 <template>
-  <sdPageHeader :title="`Assign Activity Payroll - ${act_name}`"></sdPageHeader>
-
   <Main>
+    <sdPageHeader
+      :title="`Assign Activity Payroll - ${act_name}`"
+    ></sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -216,41 +217,6 @@ const AddNew = defineComponent({
         });
     };
 
-    // const handleSubmit = () => {
-    //   const data = {
-    //     activity_id: act_id,
-    //     matrix: formState.matrix,
-    //   };
-
-    //   console.log(data);
-
-    //   const urlParams = new URLSearchParams(data).toString();
-    //   console.log(urlParams);
-    //   const url = `${API_URL}?${urlParams}`;
-
-    //   fetch(url, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       ...authHeader(),
-    //     },
-    //   })
-    //     .then((response) => response.json())
-    //     .then(({ success }) => {
-    //       if (success) {
-    //         // router.push("event-view");
-    //         notification["success"]({
-    //           message: "Matrix Assigned successfully",
-    //           description:
-    //             "Matrix Assigned successfully. You can now view the matrix",
-    //           duration: 5.5,
-    //         });
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error:", error);
-    //     });
-    // };
 
     const formState = reactive({
       matrix: [],

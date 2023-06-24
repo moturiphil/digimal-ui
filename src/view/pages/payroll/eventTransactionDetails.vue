@@ -2,56 +2,10 @@
   <div>
     <sdPageHeader ghost title="Transactions" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
-        Pay
-      </sdButton> -->
-      <!-- 197.136.123.129 -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
             <div class="search-filter-menu">
-              <!-- <ul>
-                  <li>
-                    <a
-                      :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                      @click="handleChange('all')"
-                      href="#"
-                    >
-                      Pending validation
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="
-                        activeClass === 'approved' ? 'active' : 'deactivate'
-                      "
-                      @click="handleChange('approved')"
-                      href="#"
-                    >
-                      Pending Approval
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="
-                        activeClass === 'outliers' ? 'active' : 'deactivate'
-                      "
-                      @click="handleChange('outliers')"
-                      href="#"
-                    >
-                      Pending Payment
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="activeClass === 'paid' ? 'active' : 'deactivate'"
-                      @click="handleChange('paid')"
-                      href="#"
-                    >
-                      Paid
-                    </a>
-                  </li>
-                </ul> -->
             </div>
           </a-col>
           <a-col :xs="24">
@@ -202,10 +156,8 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-// import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 
-// const households = ref([]);
 
 const columns = [
   {
@@ -248,24 +200,9 @@ const columns = [
     dataIndex: "updated_at",
     key: "id",
   },
-  // {
-  //   title: "Village",
-  //   dataIndex: "location_id",
-  //   key: "id_no",
-  // },
-  // {
-  //   title: "CHV",
-  //   dataIndex: "chw_id",
-  //   key: "id_no",
-  // },h
-  // {
-  //   title: "Timestamp",
-  //   dataIndex: "created_at",
-  //   key: "id_no",
-  // },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "TransactionDetails",
   components: {
     Main,
     SearchResultWrapper,
@@ -342,38 +279,6 @@ export default defineComponent({
           console.error(error);
         });
     });
-    // const handleVerify = (record) => {
-    //   console.log(record);
-    //   axios
-    //     .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-    //       headers: authHeader(),
-    //     })
-    //     .then(({ status }) => {
-    //       console.log(status);
-    //       if (status == 200) {
-    //         location.reload();
-    //         notification["success"]({
-    //           message: "HouseHold Verified",
-    //           description: `HouseHold has been verified successfully`,
-    //           duration: 5.5,
-    //         });
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       // handle error
-    //       console.log(error);
-    //     });
-    // };
-
-    // handleChange(tab) {
-    //   if (tab === 'all') {
-    //     filteredData.value = dataSource.value;
-    //   } else if (tab === 'approved') {
-    //     filteredData.value = dataSource.value.filter(item => item.isVerified === 1);
-    //   } else if (tab === 'outliers') {
-    //     filteredData.value = dataSource.value.filter(item => item.hh_size > 5);
-    //   }
-    // }
 
     const formState = reactive({
       searchItem: "",
@@ -386,7 +291,6 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      // exportHouseHoldData,
       filteredData,
       handleChange,
       activeClass,
@@ -399,10 +303,6 @@ export default defineComponent({
 <style>
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 </style>

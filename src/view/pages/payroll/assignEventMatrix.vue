@@ -50,13 +50,6 @@
                       </a-select>
                     </a-form-item>
 
-                    <!-- <a-form-item name="venue" label="Event Venue">
-                      <a-input
-                        v-model:value="formState.venue"
-                        placeholder="Input Event Venue"
-                      />
-                    </a-form-item> -->
-
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}

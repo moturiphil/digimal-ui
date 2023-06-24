@@ -176,8 +176,6 @@ export default defineComponent({
     submit() {
       // Handle the submission of selected items
       console.log(this.selectedItems);
-      // You can perform further actions here, such as sending the selected items to a server
-      // or updating the component's state
       this.showModal = false; // Close the modal after submission if needed
     },
   },

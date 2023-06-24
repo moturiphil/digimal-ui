@@ -62,7 +62,6 @@ export default {
     const { params, query } = useRoute();
     console.log({ params, query });
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_details?event_payrollist_id=${query.id}`;
-    // const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_details?event_payrollist_id=8`;
     axios
       .get(API_URL, {
         headers: authHeader(),
