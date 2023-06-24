@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Create an Activity">
-    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Create an Activity">
+      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -35,7 +35,7 @@
                           :value="activity.id"
                           :key="activity.id"
                           >{{ activity.name }}</a-select-option
-                        > 
+                        >
                       </a-select>
                     </a-form-item>
 
@@ -162,36 +162,6 @@
                       >
                       </a-select>
                     </a-form-item>
-                    <a-form-item name="matrix" label="Applicable Payroll Formulas">
-                      <a-select
-                        size="large"
-                        name="name"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Event Type"
-                        v-model:value="formState.matrix"
-                        mode="multiple"
-                      >
-                        <a-select-option value="1"
-                          >Perdiem for National Officers - Cities</a-select-option
-                        >
-                        <a-select-option
-                          value="2"
-                          >Perdiem for National Driver</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Communication for Officers</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Perdiem for National Officers - Cities</a-select-option
-                        >
-                        <a-select-option value="5"
-                          >Perdiem for National Officers - Cities (JG P,Q,R)</a-select-option
-                        >
-                        <a-select-option value="6"
-                          >Lunch Allowance - Supervisors</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item>
 
                     <div class="record-form-actions text-right">
                       <!-- <sdButton
@@ -228,7 +198,7 @@ import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import { Modal } from "ant-design-vue";
+// import { Modal } from "ant-design-vue";
 const dateFormat = "YYYY-MM-DD";
 const AddNew = defineComponent({
   name: "AddNew",
@@ -273,7 +243,6 @@ const AddNew = defineComponent({
       payable_travel_days: "",
       number_of_officers: "",
       activity_facilitator: [],
-      matrix: [],
     });
 
     //get activities list
@@ -349,15 +318,14 @@ const AddNew = defineComponent({
     const handleSubmit = (values) => {
       values = {
         activity_list_id: values.activity_id,
-        county_id:values.county_id ,
-        sub_county_id:values.sub_county_id,
+        county_id: values.county_id,
+        sub_county_id: values.sub_county_id,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
         // end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
         // payable_travel_days: values.payable_travel_days,
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
-        pay_matrix: values.matrix,
         location_type_id: 1,
       };
       console.log({ values });
@@ -372,7 +340,7 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success, data }) => {
-          // console.log(data); 
+          // console.log(data);
           if (success) {
             router.push("activity-view");
             notification["success"]({
@@ -433,35 +401,35 @@ const AddNew = defineComponent({
       // Disable dates before today, but include today
       return date && date < today ? true : false;
     },
-    
+
     showModal() {
       this.visible = true;
     },
-    showConfirmModal(activity_facilitator) {
-      // console.log(activity_facilitator);
-      Modal.success({
-        title: "Activity Officers",
-        content: (
-          <div>
-            <p>Confirm Officers Participating</p>
-            <ul>
-              {activity_facilitator.map((facilitator) => (
-                <li key={facilitator}>{facilitator}</li>
-              ))}
-            </ul>
-          </div>
-        ),
-        okText: "Register",
-        onOk: async () => {
-          // handle form submission here rk
-        },
-        style: {
-          float: "center",
-          display: "grid",
-          placeContent: "center",
-        },
-      });
-    },
+    // showConfirmModal(activity_facilitator) {
+    //   // console.log(activity_facilitator);
+    //   Modal.success({
+    //     title: "Activity Officers",
+    //     content: (
+    //       <div>
+    //         <p>Confirm Officers Participating</p>
+    //         <ul>
+    //           {activity_facilitator.map((facilitator) => (
+    //             <li key={facilitator}>{facilitator}</li>
+    //           ))}
+    //         </ul>
+    //       </div>
+    //     ),
+    //     okText: "Register",
+    //     onOk: async () => {
+    //       // handle form submission here rk
+    //     },
+    //     style: {
+    //       float: "center",
+    //       display: "grid",
+    //       placeContent: "center",
+    //     },
+    //   });
+    // },
     handleOk() {
       this.confirmLoading = true;
       setTimeout(() => {

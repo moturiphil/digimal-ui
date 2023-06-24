@@ -38,14 +38,17 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <template #activities="{ record }">
+                  <template #activity="{ record }">
                     <td :style="{ 'margin-left': '3px' }">
                       <div class="table-actions">
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/activity/view/${record.id}`,
-                              query: { id: record.event_code },
+                              path: `/activity/confirmed-participants/${record.activity_list_id}`,
+                              query: {
+                                id: record.activity_list_id,
+                                code: record.activity_code,
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -58,8 +61,11 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/activity/pending-confirmation/${record.id}`,
-                              query: { id: record.event_code },
+                              path: `/activity/pending-confirmation/${record.activity_list_id}`,
+                              query: {
+                                id: record.activity_list_id,
+                                code: record.activity_code,
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -130,8 +136,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    key: "activities",
-    slots: { customRender: "activities" },
+    key: "activity",
+    slots: { customRender: "activity" },
   },
 ];
 
@@ -145,19 +151,22 @@ const ViewPage = defineComponent({
     showSuccessModal() {
       Modal.info({
         title: "Activity Registration",
-        content: (
-          <div>
-            <p>Register With Activity Code</p>
-            <Input placeholder="Enter Activity code" />
-          </div>
-        ),
+        content: function () {
+          const div = document.createElement("div");
+          div.innerHTML = "<p>Register With Activity Code</p>";
+
+          const input = document.createElement("input");
+          input.placeholder = "Enter Activity code";
+          div.appendChild(input);
+
+          return div;
+        },
         okText: "Register",
         style: {
           float: "center",
           display: "grid",
           placeContent: "center",
         },
-
         onOk() {
           // console.log("Register");
         },
@@ -245,3 +254,4 @@ const ViewPage = defineComponent({
 
 export default ViewPage;
 </script>
+Ï

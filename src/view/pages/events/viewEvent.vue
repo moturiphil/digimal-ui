@@ -49,9 +49,23 @@
                           @click="startEvent(record.id)"
                           v-if="!record.status"
                         >
-                          <span >
+                          <span>
                             <sdFeatherIcons type="clock" size="16" />
-                            &nbsp;&nbsp; Start Event
+                            &nbsp;&nbsp; Start Events
+                          </span>
+                        </sdButton>
+
+
+                        <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                          v-if="!record.status"
+                        >
+                          <span>
+                            <sdFeatherIcons type="clock" size="16" />
+                            &nbsp;&nbsp; Start Events
                           </span>
                         </sdButton>
                         <sdButton
@@ -64,10 +78,11 @@
                             <sdFeatherIcons type="clock" size="16" />
                             &nbsp;&nbsp; Start Event
                           </span>
-                          <span  class="badge badge-green">
+                          <span class="badge badge-green">
                             &nbsp;&nbsp; Started
                           </span>
                         </sdButton>
+
                         <sdButton
                           @click="showSuccessModal(record.event_code)"
                           size="small"
@@ -87,6 +102,20 @@
                         <sdButton>
                           <router-link
                             :to="{
+                              path: `/event/details/${record.id}`,
+                              query: { id: record.id, name: record.name, event_code: record.event_code},
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; View Event
+                          </router-link>
+                        </sdButton>
+                        <!-- <sdButton>
+                          <router-link
+                            :to="{
                               path: `/event/view/${record.id}`,
                               query: { id: record.event_code },
                             }"
@@ -94,7 +123,7 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
+                            <sdFeatherIcons type="check" size="16" />
                             &nbsp;&nbsp; Confirmed Participants
                           </router-link>
                         </sdButton>
@@ -109,21 +138,6 @@
                             shape="circle"
                           >
                             <sdFeatherIcons type="pause" size="16" />
-                            &nbsp;&nbsp; Pending Confirmation
-                          </router-link>
-                        </sdButton>
-
-                        <!-- <sdButton>
-                          <router-link
-                            :to="{
-                              path: `/event/view/${record.id}`,
-                              query: { id: record.event_code },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="eye" size="16" />
                             &nbsp;&nbsp; Pending Confirmation
                           </router-link>
                         </sdButton> -->
@@ -164,7 +178,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "User",
+    title: "Created By",
     dataIndex: "user_id",
     key: "id",
   },
@@ -257,22 +271,24 @@ const ViewPage = defineComponent({
     showModal() {
       this.visible = true;
     },
+
     showSuccessModal(record) {
       console.log(record);
+      const input = document.createElement("input");
+      input.id = "regCode";
+      input.placeholder = "Enter Registration code";
+
+      const div = document.createElement("div");
+      div.innerHTML = "<p>Enter Registration Code to Register</p>";
+      div.appendChild(input);
+
+      // const self = this;
+
       Modal.success({
         title: "Event Registration",
-        content: (
-          <div>
-            <p>Enter Registration Code to Register</p>
-            <Input
-              id="regCode"
-              v-model={this.eventCode}
-              placeholder="Enter Registration code"
-            />
-          </div>
-        ),
+        content: div,
         okText: "Register",
-        onOk: async () => {
+        onOk: async function () {
           try {
             const userRegCode = document.getElementById("regCode").value;
             console.log(userRegCode);
@@ -281,15 +297,13 @@ const ViewPage = defineComponent({
               `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
               { headers: authHeader() }
             );
-            // console.log(record);
-            // localStorage.setItem("eventCode", record);
+
             if (response.status !== 200) {
               throw new Error("Failed to Register Participant to event");
             } else {
               console.log("Participant Registered");
             }
 
-            // Show success message
             Modal.success({
               title: "Success",
               content: "You have been registered for the event",
@@ -323,17 +337,6 @@ const ViewPage = defineComponent({
     },
     changeType(type) {
       this.modalType = type;
-    },
-    success() {
-      Modal.success({
-        title: "This is a success message",
-        // JSX support
-        content: (
-          <div>
-            <p>some messages...some messages...</p>
-          </div>
-        ),
-      });
     },
 
     error() {
@@ -380,7 +383,7 @@ const ViewPage = defineComponent({
       try {
         // Validate the event code
         const { data } = await axios.get(
-          `${API_URL}?event_code=${ eventCode.value }`
+          `${API_URL}?event_code=${eventCode.value}`
         );
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");
@@ -443,7 +446,7 @@ export default ViewPage;
 
 <style>
 .badge-green {
-  background-color: #1EC997;
+  background-color: #1ec997;
   color: white;
   padding: 4px;
   border-radius: 3px;

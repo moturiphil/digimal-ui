@@ -35,7 +35,6 @@
   
   import { useRoute } from "vue-router";
   import pendingConfirmation from "../campaigns/CampaignTable/pendingConfirmation.vue";
-  import { Modal, Table } from "ant-design-vue";
   import authHeader from "../../../services/auth-header";
   
   const ProjectDetails = defineComponent({
@@ -53,16 +52,6 @@
   
       const columns = [
         {
-          title: "Name",
-          dataIndex: "first_name",
-          // key: 'first_name',
-          render: (text, record) => (
-            <span>
-              {record.first_name} {record.last_name}
-            </span>
-          ),
-        },
-        {
           title: "Phone Number",
           dataIndex: "phone_no",
           key: "phone_no",
@@ -74,32 +63,6 @@
         },
       ];
   
-      // const getfacilitators = async () => {
-      //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`, {
-      //     method: "GET",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       ...authHeader(),
-      //     },
-      //   });
-      //   const data = await response.json();
-      //   this.facilitators = data.data;
-      //   Modal.info({
-      //     title: 'Facilitators',
-      //     content: (
-      //         {/* {data.data.map((facilitator, index) => (
-      //           <p>{index + 1} {facilitator.first_name}  {facilitator.last_name} - {facilitator.phone_no} - {facilitator.id_no}</p>
-      //         ))
-      //         } */}
-      //         // <div>
-      //         //   <Table dataSource={data.data} columns={columns} />
-      //         // </div>
-  
-      //     ),
-      //     onOk() {},
-      //   });
-  
-      //   // this.loading = false;
       // };
       const getfacilitators = async () => {
         const response = await fetch(
@@ -114,15 +77,6 @@
         );
         const data = await response.json();
         this.facilitators = data.data;
-        Modal.info({
-          title: "Facilitators",
-          content: (
-            <div>
-              <Table dataSource={data.data} columns={columns} />
-            </div>
-          ),
-          onOk() {},
-        });
       };
       onMounted(() => {
         dispatch("eventCampaignData", parseInt(params.id, 10));
@@ -136,6 +90,7 @@
         matched,
         facilitators,
         getfacilitators,
+        columns,
       };
     },
   });
