@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Start Campaign">
-    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Start Campaign">
+      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -86,7 +86,6 @@ const AddNew = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createCampaign`;
 
-
     const handleSubmit = (values) => {
       values = {
         name: values.name,
@@ -103,20 +102,20 @@ const AddNew = defineComponent({
         body: JSON.stringify(values),
       })
         .then((response) => response.json())
-        .then(({success}) => {
+        .then(({ success }) => {
           // console.log(data);
-          if(success){
-            router.push("view-campaign")
-            notification['success']({
-                message: 'Campaign Created',
-                description: "Campaign Created successfully.",
-                duration: 4.5
-          });
+          if (success) {
+            router.push("view-campaign");
+            notification["success"]({
+              message: "Campaign Created",
+              description: "Campaign Created successfully.",
+              duration: 4.5,
+            });
           }
-          })
+        })
         .catch((error) => {
           console.error("Error:", error);
-        }); 
+        });
     };
 
     //   axios

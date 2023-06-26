@@ -35,6 +35,14 @@ const routes = [
           ),
       },
       {
+        path: "create-role",
+        name: "create-role",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/createRole.vue"
+          ),
+      },
+      {
         path: "stock-status",
         name: "stock-status",
         component: () =>
