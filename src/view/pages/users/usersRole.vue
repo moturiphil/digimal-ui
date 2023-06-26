@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Users">
+    <sdPageHeader title="User Roles">
       <template id="buttons"></template>
     </sdPageHeader>
 
@@ -11,25 +11,25 @@
         <sdButton class="btn-import" type="success">
           <router-link
             :to="{
-              path: `/users/import`,
+              path: `/create-role`,
             }"
             class="btn-icon"
             type="info"
             shape="circle"
           >
-            &nbsp;&nbsp; Import Master List
+            &nbsp;&nbsp; Create Role
           </router-link>
         </sdButton>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <sdButton class="btn-import" type="success" @click="exportUserData">
+        <!-- <sdButton class="btn-import" type="success" @click="exportUserData">
           Export Users
-        </sdButton>
+        </sdButton> -->
         <br />
         <br />
         <a-col :xs="24" :sm="24" :md="12">
           <sdAutoComplete
             @onSearch="handleSearch"
-            placeholder="Search registered users"
+            placeholder="Search role"
             :style="{ width: '80%', marginRight: '80px', height: '40px' }"
           />
         </a-col>
@@ -73,38 +73,13 @@ import UserService from "../../../services/user.service";
 
 const columns = [
   {
-    title: "First Name",
-    dataIndex: "f",
-    key: "id",
-  },
-  {
-    title: "Middle Name",
-    dataIndex: "mi",
-    key: "id",
-  },
-  {
-    title: "Last Name",
-    dataIndex: "las",
-    key: "id",
-  },
-  {
-    title: "Level",
-    dataIndex: "l",
+    title: "Name",
+    dataIndex: "name",
     key: "id",
   },
   {
     title: "Organization",
-    dataIndex: "org_t",
-    key: "id",
-  },
-  {
-    title: "Role",
-    dataIndex: "ro",
-    key: "id",
-  },
-  {
-    title: "Phone Number",
-    dataIndex: "p",
+    dataIndex: "orgtype_id",
     key: "id",
   },
 ];
@@ -129,13 +104,13 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
           headers: authHeader(),
         });
         const data = await response.json();
-        dataSource.value = data.data;
-        console.log(data.data);
+        dataSource.value = data;
+        console.log(data);
       } catch (error) {
         console.error(error);
       }
