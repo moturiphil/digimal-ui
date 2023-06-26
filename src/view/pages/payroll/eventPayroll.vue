@@ -8,10 +8,13 @@
           Assign Payroll Matrix
         </sdButton>
       </router-link>
+      <br />
+      <br />
+      <br />
 
       <SearchResultWrapper>
         <a-row :gutter="25">
-          <a-col :xs="24">
+          <!-- <a-col :xs="24">
             <div class="search-filter-menu">
               <ul>
                 <li>
@@ -56,7 +59,7 @@
                 </li>
               </ul>
             </div>
-          </a-col>
+          </a-col> -->
           <a-col :xs="24">
             <sdCards headless>
               <div class="result-list-content">
@@ -300,24 +303,55 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
-    handleInputChange(event) {
-      this.inputValue = event.target.value;
-    },
-    // async handleOk() {
+    // handleInputChange(event) {
+    //   this.inputValue = event.target.value;
+    // },
+
+    // async handlePay() {
     //   try {
     //     const response = await axios.post(
-    //       `${process.env.VUE_APP_BASE_URL}/api/endpoint`,
+    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
     //       {
-    //         number: this.otp,
-    //       }
+    //         payroll_summary_id: 1,
+    //         payment_type: "Event",
+    //       },
+    //       { headers: authHeader() }
     //     );
-    //     console.log(response);
-    //     // Handle the response or perform any further actions
+
+    //     console.log(response.data.OTP);
+    //     const otp = response.data.OTP;
+    //     if (response.status == 200) {
+    //       const modalContent = `
+    //     <div>
+    //       <p>Payment transaction processing</p>
+    //       <input type="number" onchange="handleInputChange(event)" />
+    //     </div>
+    //   `;
+
+    //       Modal.success({
+    //         title: "Success",
+    //         content: modalContent,
+    //         onOk: async () => {
+    //           // Define the handleOk method inline
+    //           try {
+    //             const response = await axios.get(
+    //               `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
+    //               { headers: authHeader() }
+    //             );
+    //             console.log(response);
+    //             // Handle the response or perform any further actions
+    //           } catch (error) {
+    //             console.log(error);
+    //             // Handle the error or display an error message
+    //           }
+    //         },
+    //       });
+    //     }
     //   } catch (error) {
     //     console.log(error);
-    //     // Handle the error or display an error message
     //   }
     // },
+
     async handlePay() {
       try {
         const response = await axios.post(
@@ -329,29 +363,20 @@ export default defineComponent({
           { headers: authHeader() }
         );
 
-        var html =
-          '<div id="test_div"><ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></div>';
-        var parser = new DOMParser();
-        var wrapper = parser.parseFromString(html, "text/html");
-        wrapper.getElementsByTagName("li");
-
-        console.log(wrapper.getElementsByTagName("li"));
-
-        console.log(response.data.OTP);
-        const otp = response.data.OTP;
-        if (response.status == 200) {
+        // console.log(response.data.OTP);
+        const otp = 315256;
+        if (response.status === 200) {
           const modalContent = `
-        <div>
-          <p>Payment transaction processing</p>
-          <input type="number" onchange="handleInputChange(event)" />
-        </div>
-      `;
+            <div>
+              <p>Payment transaction processing</p>
+              <input type="number" v-model="inputValue" />
+            </div>
+          `;
 
           Modal.success({
             title: "Success",
             content: modalContent,
             onOk: async () => {
-              // Define the handleOk method inline
               try {
                 const response = await axios.get(
                   `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
@@ -369,6 +394,11 @@ export default defineComponent({
       } catch (error) {
         console.log(error);
       }
+    },
+    handleInputChange(event) {
+      const inputValue = event.target.value;
+      // Handle the input value as needed
+      console.log(inputValue);
     },
   },
   setup() {
@@ -392,9 +422,9 @@ export default defineComponent({
       }
     });
 
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
+    // const handleChange = (tab) => {
+    //   activeClass.value = tab;
+    // };
 
     onMounted(() => {
       axios
@@ -446,7 +476,6 @@ export default defineComponent({
       formState,
       // exportHouseHoldData,
       filteredData,
-      handleChange,
       activeClass,
       handleVerify,
     };

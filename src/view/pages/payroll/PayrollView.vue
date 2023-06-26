@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Payroll" />
+    <sdPageHeader ghost title="Payroll Module" />
     <Main>
       <a-row>
         <a-col :span="11">
@@ -8,7 +8,9 @@
             <figcaption>
               <h2>Activity Payroll</h2>
               <p>{{ content }}</p>
-              <router-link to="/activity-payroll">View Payroll</router-link>
+              <!-- <router-link to="/activity-payroll">View Payroll</router-link> -->
+              <sdButton type="success" size="small"> <router-link to="/activity-payroll">View Payroll</router-link> </sdButton>
+
             </figcaption>
           </CardWrapper>
         </a-col>
@@ -18,7 +20,7 @@
             <figcaption>
               <h2>Event Payroll</h2>
               <p>{{ content }}</p>
-              <router-link to="/event-payroll">View Payroll</router-link>
+              <sdButton type="success" size="small"> <router-link to="/event-payroll">View Payroll</router-link> </sdButton>
             </figcaption>
           </CardWrapper>
         </a-col>

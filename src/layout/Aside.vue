@@ -167,11 +167,22 @@
           <router-link to="/view-transactions">Transaction Details </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item @click="toggleCollapsed" key="registered-users">
+      <a-sub-menu key="user-management">
+        <template v-slot:title>
+          <sdFeatherIcons type="share-2" /><span>User Management</span>
+        </template>
+        <a-menu-item @click="toggleCollapsed" key="users">
+          <router-link to="/registered-users">Users </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="roles">
+          <router-link to="/user-roles">Roles </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+      <!-- <a-menu-item @click="toggleCollapsed" key="registered-users">
         <router-link to="/registered-users">
           <sdFeatherIcons type="users" />&nbsp; &nbsp; Users
         </router-link>
-      </a-menu-item>
+      </a-menu-item> -->
       <a-menu-item @click="toggleCollapsed" key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" />&nbsp; &nbsp; Audit Logs
