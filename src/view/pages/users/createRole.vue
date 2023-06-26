@@ -34,14 +34,14 @@
                         v-if="!loading"
                         placeholder="Select Permissions"
                       >
-                        <a-select-option
+                        <!-- <a-select-option
                           v-for="chv in chvs"
                           :key="chv.id"
                           :value="chv.id"
                         >
                           {{ chv.first_name }}
                           {{ chv.last_name }} - {{ chv.phone_no }}
-                        </a-select-option>
+                        </a-select-option> -->
                       </a-select>
                     </a-form-item>
 
@@ -67,14 +67,14 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
 // import axios from "axios";
-import authHeader from "../../../services/auth-header";
-import { notification } from "ant-design-vue";
+// import authHeader from "../../../services/auth-header";
+// import { notification } from "ant-design-vue";
 // import { useRouter } from "vue-router";
 
 // testing app
 
-const AddNew = defineComponent({
-  name: "AddNew",
+const CreateRole = defineComponent({
+  name: "CreateRole",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
 
   data() {
@@ -87,49 +87,16 @@ const AddNew = defineComponent({
 
     // const router = useRouter();
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/users_doing_hh_reg`;
 
-    const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
     // const facilitator_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
-    const chv_url = `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=chv`;
 
     const { campaigns, chvs, loading } = reactive({
       campaigns: "",
       loading: true,
       chvs: [],
     });
-
-    const fetchCampaigns = async () => {
-      const response = await fetch(campaign_url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
-      const data = await response.json();
-      this.campaigns = data.data;
-      // console.log(this.campaigns);
-      this.loading = false;
-    };
-    fetchCampaigns();
-
-    const fetchCHV = async () => {
-      const response = await fetch(chv_url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
-      const data = await response.json();
-      this.chvs = data.data;
-      // console.log(data.data);
-      this.loading = false;
-    };
-    fetchCHV();
 
     const handleSubmit = () => {
       const data = {
@@ -138,37 +105,6 @@ const AddNew = defineComponent({
       };
 
       console.log(JSON.stringify(data));
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ success, message, occupied_users }) => {
-          if (success) {
-            // router.push("event-view");
-            console.log(success, message, occupied_users);
-            if (occupied_users == null) {
-              notification["success"]({
-                message: message,
-                description: "Users successfully assigned to a campaign",
-                duration: 10.5,
-              });
-            }
-            // output notification for each user
-            else if (occupied_users.length > 0) {
-              for (var i = 0; i < occupied_users.length; i++) {
-                notification["error"]({
-                  message: message,
-                  description: `User ${occupied_users[i].user} already assigned to a campaign`,
-                  duration: 10.5,
-                });
-              }
-            }
 
             // for (var i = 0; i < occupied_users.length; i++) {
             //   notification["success"]({
@@ -182,11 +118,7 @@ const AddNew = defineComponent({
             //   description: `Users ${occupied_users} already assigned to a campaign`,
             //   duration: 5.5,
             // });
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+
     };
 
     const formState = reactive({
@@ -217,5 +149,5 @@ const AddNew = defineComponent({
   },
 });
 
-export default AddNew;
+export default CreateRole;
 </script>
