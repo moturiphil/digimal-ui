@@ -87,15 +87,17 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton
+                                  <!-- <sdButton
                                     type="check"
                                     size="16"
+                                    
+                                  > -->
+                                  <sdButton
+                                    size="small"
+                                    type="success"
                                     @click="handleVerify(record.id)"
                                   >
                                     &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        > -->
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
@@ -106,11 +108,12 @@
                                       shape="circle"
                                     >
                                       &nbsp;&nbsp;
-                                      <span class="badge badge-green"
+                                      <span
                                         >&nbsp;&nbsp; Payroll Details</span
                                       >
                                     </router-link>
                                   </sdButton>
+                                  &nbsp;&nbsp;
                                   <sdButton
                                     @click="handlePay()"
                                     size="small"

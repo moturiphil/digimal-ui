@@ -61,7 +61,7 @@ export default {
   mounted() {
     const { params, query } = useRoute();
     console.log({ params, query });
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_detail?payroll_list_id=${query.id}`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_detail?activity_payrollist_id=${query.id}`;
     axios
       .get(API_URL, {
         headers: authHeader(),
