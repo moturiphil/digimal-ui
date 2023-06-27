@@ -80,7 +80,7 @@ import { RecordFormWrapper } from "../events/style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
-// import axios from "axios";
+import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 // import { useRouter } from "vue-router";
@@ -186,37 +186,34 @@ const AddNew = defineComponent({
 
       console.log(JSON.stringify(data));
 
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ status }) => {
-          if (status == 200) {
-            // router.push("event-view");
+      axios
+        .post(API_URL, data, {
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        })
+        .then((response) => {
+          // const { data } = response.data;
+          console.log(response);
+          if (response.status == 200) {
             notification["success"]({
-              message: "Matrix Assigned successfully",
-              description: `Matrix Assigned successfully. You can now view the matrix`,
+              message: "Matrix applied successfully",
+              description: `Matrix Created successfully.`,
+              duration: 5.5,
+            });
+          } else {
+            notification["error"]({
+              message: "Error",
+              description: "Something went wrong",
               duration: 5.5,
             });
           }
         })
         .catch((error) => {
           console.error("Error:", error);
-          if (error) {
-            notification["error"]({
-              message: "Error",
-              description: `Error occured while assigning matrix`,
-              duration: 5.5,
-            });
-          }
         });
     };
-
 
     const formState = reactive({
       matrix: [],

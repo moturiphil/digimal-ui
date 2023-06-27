@@ -87,15 +87,17 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton
+                                  <!-- <sdButton
                                     type="check"
                                     size="16"
+                                    
+                                  > -->
+                                  <sdButton
+                                    size="small"
+                                    type="success"
                                     @click="handleVerify(record.id)"
                                   >
                                     &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                          >&nbsp;&nbsp; Payroll Details</span
-                                        > -->
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
@@ -106,10 +108,22 @@
                                       shape="circle"
                                     >
                                       &nbsp;&nbsp;
-                                      <span class="badge badge-green"
+                                      <span
                                         >&nbsp;&nbsp; Payroll Details</span
                                       >
                                     </router-link>
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    @click="handlePay()"
+                                    size="small"
+                                    type="success"
+                                  >
+                                    <sdFeatherIcons
+                                      type="dollar-sign"
+                                      size="large"
+                                    />
+                                    &nbsp;&nbsp; Pay
                                   </sdButton>
                                 </div>
                               </td>
@@ -213,7 +227,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 
 const columns = [
   {
@@ -277,6 +291,50 @@ export default defineComponent({
     },
     searchData() {
       return this.$store.state.headerSearch.data;
+    },
+    async handlePay() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_BASE_URL}/payment_otp`,
+          {
+            payroll_summary_id: 1,
+            payment_type: "Event",
+          },
+          { headers: authHeader() }
+        );
+
+        // console.log(response.data.OTP);
+        // const parser = new DOMParser();
+        const otp = response.data.OTP;
+        if (response.status === 200) {
+          const modalContent = `
+            <div>
+              <p>Payment transaction processing</p>
+              <input type="number" v-model="inputValue" />
+            </div>
+          `;
+
+          Modal.success({
+            title: "Success",
+            content: modalContent,
+            onOk: async () => {
+              try {
+                const response = await axios.get(
+                  `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
+                  { headers: authHeader() }
+                );
+                console.log(response);
+                // Handle the response or perform any further actions
+              } catch (error) {
+                console.log(error);
+                // Handle the error or display an error message
+              }
+            },
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
   setup() {

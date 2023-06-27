@@ -56,7 +56,7 @@
                         </sdButton>
 
 
-                        <sdButton
+                        <!-- <sdButton
                           size="small"
                           type="success"
                           :disabled="isStarting"
@@ -67,7 +67,7 @@
                             <sdFeatherIcons type="clock" size="16" />
                             &nbsp;&nbsp; Start Events
                           </span>
-                        </sdButton>
+                        </sdButton> -->
                         <sdButton
                           size="small"
                           type="success"

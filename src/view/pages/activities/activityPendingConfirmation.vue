@@ -96,7 +96,7 @@
       onMounted(async () => {
         try {
           const response = await axios.get(
-            `${API_URL}/activity_participants?activity_id=${query.code}&confirmed=1`,
+            `${API_URL}/activity_participants?activity_id=${query.code}&confirmed=0`,
             {
               headers: authHeader(),
             }
@@ -125,7 +125,7 @@
       const onSelectChange = (selectedRowKey) => {
         selectedRowKeys.value = selectedRowKey;
       };
-  
+
       const rowSelection = {
         selectedRowKeys,
         onChange: onSelectChange,
