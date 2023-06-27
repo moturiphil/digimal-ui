@@ -35,13 +35,21 @@ const routes = [
           ),
       },
       {
-        path: "create-role",
-        name: "create-role",
+        path: "assign-permission",
+        name: "assign-permission",
         component: () =>
           import(
-            /* webpackChunkName: "Business" */ "@/view/pages/users/createRole.vue"
+            /* webpackChunkName: "Business" */ "@/view/pages/users/assignPermission.vue"
           ),
       },
+      // {
+      //   path: "assign-permission/:id",
+      //   name: "assign-permission",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "Business" */ "@/view/pages/users/assignPermission.vue"
+      //     ),
+      // },
       {
         path: "stock-status",
         name: "stock-status",
