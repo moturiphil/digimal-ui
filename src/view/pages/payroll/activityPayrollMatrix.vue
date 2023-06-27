@@ -30,23 +30,42 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton type="check" size="16">
+                                  <sdButton
+                                    @click="viewMatrix()"
+                                    size="small"
+                                    type="success"
+                                  >
                                     &nbsp;&nbsp;
                                     <router-link
                                       :to="{
                                         path: `/activity/matrix/${record.id}`,
-                                        query: { id: record.id, name: record.name},
+                                        query: {
+                                          id: record.id,
+                                          name: record.name,
+                                        },
                                       }"
-                                      class="btn-icon"
                                       type="info"
                                       shape="circle"
                                       @click="showModal = true"
-                                    >
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
+                                      >
+                                      <span class=""
                                         >&nbsp;&nbsp; Assign Matrix</span
                                       >
                                     </router-link>
+                                  </sdButton>
+
+                                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                                  <sdButton
+                                    @click="viewMatrix()"
+                                    size="small"
+                                    type="success"
+                                  >
+                                    <sdFeatherIcons type="eye" size="large" />
+                                    &nbsp;&nbsp;
+                                    <span class=""
+                                      >&nbsp;&nbsp; View Matrix</span
+                                    >
                                   </sdButton>
 
                                   <!-- Modal -->
@@ -154,6 +173,22 @@ export default defineComponent({
     };
   },
   methods: {
+    async viewMatrix() {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_BASE_URL}/payment_op`,
+          {
+            payroll_summary_id: 1,
+            payment_type: "Activity Matrix",
+          },
+          { headers: authHeader() }
+        );
+
+        console.log(response);
+      } catch (error) {
+        console.log(error);
+      }
+    },
     handleSearch(searchText) {
       const data = this.searchData.filter((item) =>
         item.title.toUpperCase().startsWith(searchText.toUpperCase())
@@ -261,4 +296,3 @@ export default defineComponent({
   cursor: pointer;
 }
 </style>
-

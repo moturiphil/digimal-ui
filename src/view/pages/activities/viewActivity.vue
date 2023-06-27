@@ -69,6 +69,20 @@
                             &nbsp;&nbsp; Pending
                           </router-link>
                         </sdButton>
+                        <!-- <sdButton>
+                          <router-link
+                            :to="{
+                              path: `/activity/pending-confirmation/${record.activity_list_id}`,
+                              query: { id: record.activity_list_id, code: record.activity_code},
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="pause" size="16" />
+                            &nbsp;&nbsp; Generate Payroll
+                          </router-link>
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>
