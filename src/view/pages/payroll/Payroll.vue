@@ -108,9 +108,7 @@
                                       shape="circle"
                                     >
                                       &nbsp;&nbsp;
-                                      <span
-                                        >&nbsp;&nbsp; Payroll Details</span
-                                      >
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
@@ -227,7 +225,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification, Modal } from "ant-design-vue";
+import { notification, Modal, Input } from "ant-design-vue";
 
 const columns = [
   {
@@ -292,6 +290,51 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    // async handlePay() {
+    //   try {
+    //     const response = await axios.post(
+    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
+    //       {
+    //         payroll_summary_id: 1,
+    //         payment_type: "Event",
+    //       },
+    //       { headers: authHeader() }
+    //     );
+
+    //     // console.log(response.data.OTP);
+    //     // const parser = new DOMParser();
+    //     const otp = response.data.OTP;
+    //     if (response.status === 200) {
+    //       const modalContent = `
+    //         <div>
+    //           <p>Payment transaction processing</p>
+    //           <input type="number" v-model="inputValue" />
+    //         </div>
+    //       `;
+
+    //       Modal.success({
+    //         title: "Payment OTP",
+    //         content: modalContent,
+    //         onOk: async () => {
+    //           try {
+    //             const response = await axios.get(
+    //               `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
+    //               { headers: authHeader() }
+    //             );
+    //             console.log(response);
+    //             // Handle the response or perform any further actions
+    //           } catch (error) {
+    //             console.log(error);
+    //             // Handle the error or display an error message
+    //           }
+    //         },
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // },
+
     async handlePay() {
       try {
         const response = await axios.post(
@@ -303,28 +346,28 @@ export default defineComponent({
           { headers: authHeader() }
         );
 
-        // console.log(response.data.OTP);
-        // const parser = new DOMParser();
-        const otp = response.data.OTP;
-        if (response.status === 200) {
-          const modalContent = `
-            <div>
-              <p>Payment transaction processing</p>
-              <input type="number" v-model="inputValue" />
-            </div>
-          `;
+        // ...
 
+        if (response.status === 200) {
           Modal.success({
-            title: "Success",
-            content: modalContent,
+            title: "Payment OTP",
+            content: {
+              template: `
+                <div>
+                  <p>Payment transaction processing</p>
+                  <a-input v-model:value="inputValue" type="number" />
+                </div>
+              `,
+              components: { Input },
+              data() {
+                return {
+                  inputValue: "",
+                };
+              },
+            },
             onOk: async () => {
               try {
-                const response = await axios.get(
-                  `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
-                  { headers: authHeader() }
-                );
-                console.log(response);
-                // Handle the response or perform any further actions
+                // ...
               } catch (error) {
                 console.log(error);
                 // Handle the error or display an error message
