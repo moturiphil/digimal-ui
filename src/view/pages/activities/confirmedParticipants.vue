@@ -15,6 +15,10 @@
       >
         Export Participants
       </sdButton>
+      &nbsp;&nbsp;
+      <sdButton class="btn-import" type="success" @click="generatePayroll">
+        Generate Payroll
+      </sdButton>
       <div v-if="!project" class="spin">
         <a-spin />
       </div>
@@ -38,11 +42,10 @@ import { Main } from "../../styled";
 import { useStore } from "vuex";
 
 import { reactive, computed, onMounted, defineComponent } from "vue";
-
+import { Modal } from "ant-design-vue";
 import { useRoute } from "vue-router";
 // import EventCampaignTable from "../campaigns/CampaignTable/EventCampaign.vue";
 import ActivityConfirmedParticipants from "./activityConfirmedParticipants.vue";
-import { Modal } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 
 const ProjectDetails = defineComponent({
@@ -57,7 +60,9 @@ const ProjectDetails = defineComponent({
     const { title, content } = computed(() => state.project.singData[0]);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/generateEventParticipantCSV?event=${query.id}`;
 
-    console.log(query.id);
+    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`;
+
+    console.log(query.code);
     const { facilitators } = reactive({ facilitators: [] });
 
     const columns = [
@@ -81,49 +86,6 @@ const ProjectDetails = defineComponent({
         key: "id_no",
       },
     ];
-    const getfacilitators = async () => {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      this.facilitators = data.data;
-      Modal.info({
-        title: "Facilitators",
-        content: (function () {
-          const div = document.createElement("div");
-          const table = document.createElement("table");
-          table.classList.add("ant-table");
-
-          const tbody = document.createElement("tbody");
-
-          for (let i = 0; i < data.data.length; i++) {
-            const row = document.createElement("tr");
-
-            for (let j = 0; j < columns.length; j++) {
-              const column = columns[j];
-              const cell = document.createElement("td");
-              cell.textContent = data.data[i][column.dataIndex];
-              row.appendChild(cell);
-            }
-
-            tbody.appendChild(row);
-          }
-
-          table.appendChild(tbody);
-          div.appendChild(table);
-
-          return div;
-        })(),
-        onOk() {},
-      });
-    };
     onMounted(() => {
       dispatch("eventCampaignData", parseInt(params.id, 10));
     });
@@ -154,14 +116,42 @@ const ProjectDetails = defineComponent({
       }
     };
 
+    const generatePayroll = async () => {
+      try {
+        const response = await fetch(genetatePayrollURL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+        console.log(response);
+        if (response.status == 200) {
+          Modal.success({
+            title: "Success",
+            content: "Payroll Generated Successfully",
+          });
+        } else {
+          Modal.error({
+            title: "Error",
+            content:
+              "Something went wrong, ensure you have assigned payroll matrix to the event",
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     return {
       title,
       content,
+      columns,
       project,
       params,
       matched,
       facilitators,
-      getfacilitators,
+      generatePayroll,
       exportActivityParticipants,
     };
   },

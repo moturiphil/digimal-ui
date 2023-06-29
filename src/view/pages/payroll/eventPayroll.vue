@@ -287,6 +287,7 @@ export default defineComponent({
       modalType: "primary",
       colorVisible: false,
       payroll: [],
+      inputValue: "",
     };
   },
   methods: {
@@ -303,54 +304,6 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
-    // handleInputChange(event) {
-    //   this.inputValue = event.target.value;
-    // },
-
-    // async handlePay() {
-    //   try {
-    //     const response = await axios.post(
-    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
-    //       {
-    //         payroll_summary_id: 1,
-    //         payment_type: "Event",
-    //       },
-    //       { headers: authHeader() }
-    //     );
-
-    //     console.log(response.data.OTP);
-    //     const otp = response.data.OTP;
-    //     if (response.status == 200) {
-    //       const modalContent = `
-    //     <div>
-    //       <p>Payment transaction processing</p>
-    //       <input type="number" onchange="handleInputChange(event)" />
-    //     </div>
-    //   `;
-
-    //       Modal.success({
-    //         title: "Success",
-    //         content: modalContent,
-    //         onOk: async () => {
-    //           // Define the handleOk method inline
-    //           try {
-    //             const response = await axios.get(
-    //               `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
-    //               { headers: authHeader() }
-    //             );
-    //             console.log(response);
-    //             // Handle the response or perform any further actions
-    //           } catch (error) {
-    //             console.log(error);
-    //             // Handle the error or display an error message
-    //           }
-    //         },
-    //       });
-    //     }
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
 
     async handlePay() {
       try {
@@ -364,7 +317,8 @@ export default defineComponent({
         );
 
         // console.log(response.data.OTP);
-        const otp = 315256;
+        // const parser = new DOMParser();
+        const otp = response.data.OTP;
         if (response.status === 200) {
           const modalContent = `
             <div>
@@ -395,6 +349,7 @@ export default defineComponent({
         console.log(error);
       }
     },
+
     handleInputChange(event) {
       const inputValue = event.target.value;
       // Handle the input value as needed

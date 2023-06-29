@@ -101,13 +101,67 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="venue" label="Event Venue">
+                    <a-form-item name="venue" label="venue">
                       <a-input
                         v-model:value="formState.venue"
-                        placeholder="Input Event Venue"
+                        placeholder="Input Venue"
                       />
                     </a-form-item>
-
+                    <a-form-item name="county_id" label="County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select County"
+                        v-on:change="getSubCounties($event)"
+                        v-model:value="formState.county_id"
+                        v-if="!loading"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="county in counties"
+                          :value="county.id"
+                          :key="county.id"
+                          :org_id="county.org_id"
+                        >
+                          {{ county.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+                    <!-- <a-form-item name="sub_county_id" label="Sub County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Sub-County"
+                        v-model:value="formState.sub_county_id"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="scounty in sub_counties"
+                          :value="scounty.org_id"
+                          :key="scounty.id"
+                          >{{ scounty.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item> -->
+                    <a-form-item label="Location Type">
+                      <a-select
+                        size="large"
+                        name="name"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Location Type"
+                        v-model:value="formState.location_type"
+                      >
+                        <a-select-option value="1">City</a-select-option>
+                        <a-select-option value="2">County HQ</a-select-option>
+                        <a-select-option value="3">Others</a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}
@@ -128,7 +182,7 @@
 import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed } from "vue";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
@@ -158,11 +212,14 @@ const AddNew = defineComponent({
 
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
-    const { campaigns, facilitators, loading } = reactive({
-      campaigns: "",
-      loading: true,
-      facilitators: [],
-    });
+    const { campaigns, facilitators, loading, counties, sub_counties } =
+      reactive({
+        campaigns: "",
+        loading: true,
+        facilitators: [],
+        counties: [],
+        sub_county_id: "",
+      });
 
     const fetchCampaigns = async () => {
       const response = await fetch(campaign_url, {
@@ -177,8 +234,6 @@ const AddNew = defineComponent({
       // console.log(this.campaigns);
       this.loading = false;
     };
-    fetchCampaigns();
-
     const fetchFacilitators = async () => {
       const response = await fetch(facilitator_url, {
         method: "GET",
@@ -192,8 +247,6 @@ const AddNew = defineComponent({
       // console.log(data.data);
       this.loading = false;
     };
-    fetchFacilitators();
-
     const fetchTrainer = async () => {
       const response = await fetch(trainer_url, {
         method: "GET",
@@ -207,16 +260,62 @@ const AddNew = defineComponent({
       // console.log(data.data);
       this.loading = false;
     };
-    fetchTrainer();
+
+    const getCounties = async () => {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+
+      const data = await response.json();
+      this.counties = data.map((county) => ({
+        ...county,
+        // org_id: county.org_id,
+      }));
+      // console.log(this.counties);
+      this.loading = false;
+    };
+
+    //get sub_counties
+    const getSubCounties = async (org_id) => {
+      // console.log(org_id);
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      // console.log(data);
+      this.sub_counties = data.message;
+    };
+
+    onMounted(() => {
+      getCounties();
+      getSubCounties();
+      fetchTrainer();
+      fetchFacilitators();
+      fetchCampaigns();
+    });
 
     const handleSubmit = () => {
+      console.log(formState);
       const data = {
         name: formState.name,
         venue: formState.venue,
-        location_id: 1,
+        location_id: formState.county_id,
         campaign_id: formState.campaign_id,
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
+        location_type_id: parseInt(formState.location_type),
+        event_list_id: 1,
       };
 
       console.log(data);
@@ -261,6 +360,7 @@ const AddNew = defineComponent({
       campaign_id: null,
       facilitator_id: "",
       trainer_id: [],
+      sub_counties: [],
     });
 
     // console.log(formState);
@@ -275,6 +375,9 @@ const AddNew = defineComponent({
       campaigns,
       facilitators,
       loading,
+      counties,
+      sub_counties,
+      getSubCounties,
     };
   },
   beforeRouteEnter(to, from, next) {
