@@ -11,13 +11,13 @@
         <sdButton class="btn-import" type="success">
           <router-link
             :to="{
-              path: `/create-role`,
+              path: `/assign-permission`,
             }"
             class="btn-icon"
             type="info"
             shape="circle"
           >
-            &nbsp;&nbsp; Create Role
+            &nbsp;&nbsp; Assign Role Permission
           </router-link>
         </sdButton>
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -50,7 +50,28 @@
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
-                />
+                >
+                <!-- <template #action="{ record }">
+                  <td>
+                    <div class="table-actions">
+                      
+                      <sdButton>
+                        <router-link
+                          :to="`/assign-permission/${record.orgtype_id}`"
+                          class="btn-icon"
+                          type="info"
+                          shape="circle"
+                        >
+                          <sdFeatherIcons type="eye" size="16" />
+                          &nbsp;&nbsp; View
+                        </router-link>
+                      </sdButton>
+                      
+                    </div>
+                  </td>
+                </template> -->
+              
+                </a-table>
               </TableWrapper>
             </div>
           </sdCards>
@@ -70,6 +91,8 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import UserService from "../../../services/user.service";
+import { useRouter } from "vue-router";
+
 
 const columns = [
   {
@@ -82,6 +105,11 @@ const columns = [
     dataIndex: "orgtype_id",
     key: "id",
   },
+  // {
+  //   title: 'Action',
+  //         dataIndex: 'action',
+  //         slots: { customRender: 'action' }
+  // },
 ];
 
 const DragAndDropTable = defineComponent({
@@ -94,6 +122,7 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
@@ -104,18 +133,31 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
+        const rls =[]
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
           headers: authHeader(),
         });
         const data = await response.json();
-        dataSource.value = data;
-        console.log(data);
+        for (let i = 1; i < data.length; i++) {
+          const element ={
+            id: i,
+            name: data[i].name,
+            orgtype_id: data[i].orgtype_id,
+          }
+          rls.push(element);
+        }
+        dataSource.value = rls;
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
     });
 
+     const handleRowClick = (row) => {
+      console.log(row);
+      router.push({ path: `/assign-permission/${row.id}` });
+     }
     const exportUserData = async () => {
       try {
         const response = await fetch(API_URL, {
@@ -179,6 +221,7 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
+      handleRowClick,
       exportUserData,
     };
   },
