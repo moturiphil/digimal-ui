@@ -1,6 +1,6 @@
 <template>
   <Main>
-    <sdPageHeader title="Create Role">
+    <sdPageHeader title="Assign Permission to Role">
       <sdButton class="btn-add_new" size="default" key="1" type="success">
         <router-link to="/crud/axios-view">View All</router-link>
       </sdButton>
@@ -10,7 +10,7 @@
         <RecordFormWrapper>
           <sdCards headless>
             <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24">
+              <a-col :xl="20" :md="20" :xs="24">
                 <BasicFormWrapper>
                   <a-form
                     class="add-record-form"

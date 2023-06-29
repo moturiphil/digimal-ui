@@ -17,7 +17,7 @@
             type="info"
             shape="circle"
           >
-            &nbsp;&nbsp; Create Role
+            &nbsp;&nbsp; Assign Role Permission
           </router-link>
         </sdButton>
         &nbsp;&nbsp;&nbsp;&nbsp;
