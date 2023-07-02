@@ -212,7 +212,7 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data);
+          // console.log(response.data.data);
           dataSource.value = response.data.data;
         })
         .catch((error) => {

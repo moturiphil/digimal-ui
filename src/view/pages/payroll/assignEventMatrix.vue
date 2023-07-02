@@ -189,7 +189,7 @@ const AddNew = defineComponent({
         .then(({ status }) => {
           console.log(status);
           notification["success"]({
-            message: "Matrix Assigned successfully",
+            message: "Event Matrix Assigned successfully",
             description: `Matrix Assigned successfully. You can now view the matrix`,
             duration: 5.5,
           });

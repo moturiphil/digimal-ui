@@ -186,23 +186,26 @@ const AddNew = defineComponent({
 
       console.log(JSON.stringify(data));
 
-      axios
-        .post(API_URL, data, {
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        })
-        .then((response) => {
-          // const { data } = response.data;
+      fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ response }) => {
           console.log(response);
-          if (response.status == 200) {
-            notification["success"]({
-              message: "Matrix applied successfully",
-              description: `Matrix Created successfully.`,
-              duration: 5.5,
-            });
-          } else {
+          notification["success"]({
+            message: "Activity Matrix Assigned successfully",
+            description: `Matrix Assigned successfully. You can now view the matrix`,
+            duration: 5.5,
+          });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          if (error) {
             notification["error"]({
               message: "Error",
               description: "Something went wrong",

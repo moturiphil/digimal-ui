@@ -108,14 +108,14 @@
                                       shape="circle"
                                     >
                                       &nbsp;&nbsp;
-                                      <span
-                                        >&nbsp;&nbsp; Payroll Details</span
-                                      >
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
+
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
                                   <sdButton
-                                    @click="handlePay()"
+                                    @click="handlePay(record.id)"
+
                                     size="small"
                                     type="success"
                                   >
@@ -292,13 +292,15 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
-    async handlePay() {
+    async handlePay(id) {
+      console.log("handlePay", id);
       try {
         const response = await axios.post(
           `${process.env.VUE_APP_BASE_URL}/payment_otp`,
           {
-            payroll_summary_id: 1,
-            payment_type: "Event",
+            payroll_summary_id: id,
+            payment_type: "Activity",
+
           },
           { headers: authHeader() }
         );
@@ -306,6 +308,8 @@ export default defineComponent({
         // console.log(response.data.OTP);
         // const parser = new DOMParser();
         const otp = response.data.OTP;
+
+        console.log(otp);
         if (response.status === 200) {
           const modalContent = `
             <div>
@@ -315,12 +319,13 @@ export default defineComponent({
           `;
 
           Modal.success({
-            title: "Success",
+            title: "Payment OTP",
+
             content: modalContent,
             onOk: async () => {
               try {
                 const response = await axios.get(
-                  `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=1&otp=${otp}`,
+                  `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${id}&otp=${otp}`,
                   { headers: authHeader() }
                 );
                 console.log(response);
