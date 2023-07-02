@@ -109,11 +109,13 @@
                                     >
                                       &nbsp;&nbsp;
                                       <span>&nbsp;&nbsp; Payroll Details</span>
+
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
                                   <sdButton
                                     @click="handlePay(record.id)"
+
                                     size="small"
                                     type="success"
                                   >
@@ -298,6 +300,7 @@ export default defineComponent({
           {
             payroll_summary_id: id,
             payment_type: "Activity",
+
           },
           { headers: authHeader() }
         );
@@ -317,6 +320,7 @@ export default defineComponent({
 
           Modal.success({
             title: "Payment OTP",
+
             content: modalContent,
             onOk: async () => {
               try {
@@ -337,8 +341,6 @@ export default defineComponent({
         console.log(error);
       }
     },
-
-
   },
   setup() {
     const { state } = useStore();
