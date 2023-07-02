@@ -82,6 +82,33 @@
                       </a-select>
                     </a-form-item>
 
+                    <a-form-item name="location_type_id" label="Location Type">
+                      <a-select
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Location Type"
+                        v-model:value="formState.location_type_id"
+                      >
+                        <a-select-option value="" disabled
+                          >Select a Location</a-select-option
+                        >
+                        <a-select-option value="1"
+                          >Cities</a-select-option
+                        >
+                        <a-select-option
+                          default-value="2"
+                          value="2"
+                          >County HQ</a-select-option
+                        >
+                        <a-select-option value="3"
+                          >Other Areas</a-select-option
+                        >
+                        <a-select-option value="4"
+                          >N/A</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
+
                     <a-form-item name="campaign_id" label="Campaign">
                       <a-select
                         name="basic-select"
@@ -240,6 +267,7 @@ const AddNew = defineComponent({
       campaign_id: "",
       start_date: "",
       end_date: "",
+      locatuin_type_id: "",
       payable_travel_days: "",
       number_of_officers: "",
       activity_facilitator: [],
@@ -326,7 +354,7 @@ const AddNew = defineComponent({
         // payable_travel_days: values.payable_travel_days,
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
-        location_type_id: 1,
+        location_type_id: values.location_type_id,
       };
       console.log({ values });
 
