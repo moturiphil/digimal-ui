@@ -15,8 +15,7 @@
             <sdFeatherIcons type="search" size="14" />
           </span>
           <a-input
-            @change="onHandleSearch"
-            v-model:value.trim="formState.searchItem"
+            v-model:value="searchItem"
             type="text"
             name="dataSource"
             placeholder="Search Here"
@@ -36,7 +35,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 50, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <template #events="{ record }">
@@ -159,7 +158,7 @@ import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
 import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { Modal } from "ant-design-vue";
 // import axios from "axios";
@@ -360,10 +359,10 @@ const ViewPage = defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const eventCode = ref("");
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
 
-    console.log(API_URL);
 
     onMounted(() => {
       axios
@@ -414,14 +413,27 @@ const ViewPage = defineComponent({
       return false;
     };
 
-    const formState = reactive({
-      searchItem: "",
-    });
-
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
 
+   const results = computed(() => {
+         const query = searchItem.value.toLowerCase();
+         const regex = new RegExp(query, 'i');
+         if(!query){
+          
+            return dataSource.value;
+         }else{
+
+           return dataSource.value.filter((event) =>{
+              return (
+              regex.test(event.event_code) ||
+              regex.test(event.name)
+              );
+            }
+           );
+         }
+    });
     const rowSelection = {
       selectedRowKeys,
       onChange: onSelectChange,
@@ -434,9 +446,10 @@ const ViewPage = defineComponent({
       handleDelete,
       rowSelection,
       onSelectChange,
+      results,
+      searchItem,
       dataSource,
       columns,
-      formState,
     };
   },
 });
