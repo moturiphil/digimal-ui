@@ -41,6 +41,7 @@
                         :style="{ width: '100%' }"
                         v-model:value="formState.endDate"
                         :format="dateFormat"
+                        :disabledDate="disabledDate"
                       />
                     </a-form-item>
 
