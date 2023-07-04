@@ -83,12 +83,22 @@
                       </a-select>
                     </a-form-item>
 
+
                     <a-form-item label="Facilitators">
                       <a-select
                         mode="multiple"
                         v-model:value="formState.trainer_id"
                         v-if="!loading"
                         placeholder="Select facilitators"
+                        :render="
+                          (facilitator) =>
+                            `${facilitator.first_name} ${facilitator.last_name} - ${facilitator.role_id}`
+                        "
+                        :filterOption="
+                          (inputValue, option) =>
+                            filterOption(inputValue, option, facilitator)
+                        "
+                        @change="handleChange"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
@@ -297,6 +307,23 @@ const AddNew = defineComponent({
       this.sub_counties = data.message;
     };
 
+    function handleChange(request, response, value) {
+      console.log(value);
+      getSubCounties(value);
+    }
+
+    function filterOption(inputValue, option, facilitator) {
+      console.log(facilitator);
+      console.log(option);
+      if (!facilitator) return false; // Return false if facilitator is undefined or null
+
+      const { first_name, last_name, role_id } = facilitator;
+      const fullName = `${first_name} ${last_name}`.toLowerCase();
+      const searchValue = inputValue.toLowerCase();
+
+      return fullName.includes(searchValue) || role_id.includes(searchValue);
+    }
+
     onMounted(() => {
       getCounties();
       getSubCounties();
@@ -378,6 +405,8 @@ const AddNew = defineComponent({
       counties,
       sub_counties,
       getSubCounties,
+      filterOption,
+      handleChange,
     };
   },
   beforeRouteEnter(to, from, next) {

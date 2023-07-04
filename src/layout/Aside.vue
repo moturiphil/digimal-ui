@@ -25,6 +25,12 @@
             List Campaigns
           </router-link>
         </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
+          <router-link to="/households/chv"> Campaign Users </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
+          <router-link to="/campaign/users"> List Campaign Users </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="events">
         <template v-slot:title>
@@ -102,12 +108,6 @@
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="house-hold-list">
           <router-link to="/hh-nets-distributed"> HouseHolds Nets </router-link>
-        </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
-          <router-link to="/households/chv"> Campaign Users </router-link>
-        </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
-          <router-link to="/campaign/users"> List Campaign Users </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="drop-off-point">
