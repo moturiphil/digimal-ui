@@ -18,7 +18,7 @@
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search Here"
+            placeholder="Search by name or code"
           />
         </div>
       </template>
