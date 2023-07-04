@@ -424,34 +424,24 @@ export default defineComponent({
       }
     };
 
-    const handleOk = (id, inputValue) => {
-      // console.log(id.value);
-      // console.log(inputValue);
+    const handleOk = async (id, inputValue) => {
       console.log(recordId.value);
       try {
-        const response = axios.get(
+        const response = await axios.get(
           `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
           { headers: authHeader() }
-        )
-        .then(responsePromise => {
-          return responsePromise.data;
-        })
-        .then(data => {
-          console.log(data);
-          notification.success({
-            message: "Success",
-            description: "Payment successful",
-          });
+        );
+        console.log(response.data);
+        notification.success({
+          message: "Success",
+          description: "Payment successful",
         });
-        console.log(response);
-        // Handle the response or perform any further actions
       } catch (error) {
         console.log(error);
-        // Handle the error or display an error 
         notification.error({
           message: "Error",
           description: "Payment failed",
-        })
+        });
       }
       isModalOpen.value = false;
     };
