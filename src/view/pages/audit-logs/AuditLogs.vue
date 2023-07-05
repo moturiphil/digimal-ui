@@ -1,6 +1,19 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Audit Logs" />
+    <sdPageHeader ghost title="Audit Logs">
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <sdFeatherIcons type="search" size="14" />
+          </span>
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name/village/chw"
+          /></div
+      ></template>
+    </sdPageHeader>
     <Main>
       <SearchResultWrapper>
         <a-row :gutter="25">
@@ -27,7 +40,7 @@
                               pageSize: 50,
                               showSizeChanger: true,
                             }"
-                            :dataSource="dataSource"
+                            :dataSource="results"
                             :columns="columns"
                           >
                             <template>
@@ -53,7 +66,7 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -145,6 +158,7 @@ export default defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("all");
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/logs`;
 
@@ -175,17 +189,31 @@ export default defineComponent({
         });
     });
 
-    const formState = reactive({
-      searchItem: "",
+    const results = computed(() => {
+         const query = searchItem.value.toLowerCase();
+         const regex = new RegExp(query, 'i');
+         if(!query){
+          
+            return dataSource.value;
+         }else{
+
+           return dataSource.value.filter((event) =>{
+              return (
+              regex.test(event.event) ||
+              regex.test(event.user_id)
+              );
+            }
+           );
+         }
     });
 
     return {
       crud,
       isLoading,
       selectedRowKeys,
-      dataSource,
+      results,
+      searchItem,
       columns,
-      formState,
       handleChange,
       activeClass,
       // handleVerify,
