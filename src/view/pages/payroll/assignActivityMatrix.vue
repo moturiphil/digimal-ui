@@ -25,30 +25,13 @@
                         v-if="!loading"
                         placeholder="Select Matrix to Assign"
                       >
-                        <a-select-option value="2"
-                          >Pardiem for National Officers -
-                          Cities</a-select-option
+                        <a-select-option
+                          v-for="matrix in matrix"
+                          :key="matrix.id"
+                          v-model:value="matrix.id"
                         >
-                        <a-select-option default-value="3" value="3"
-                          >Perdiem for National Driver</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Communication for Officers</a-select-option
-                        >
-                        <a-select-option value="5"
-                          >Perdiem for National Officers -
-                          Cities</a-select-option
-                        >
-                        <a-select-option value="6"
-                          >Perdiem for National Officers - Cities (JG
-                          P,Q,R)</a-select-option
-                        >
-                        <a-select-option value="7"
-                          >Lunch Allowance - Supervisors</a-select-option
-                        >
-                        <a-select-option value="8"
-                          >Lunch Allowance - Supervisors</a-select-option
-                        >
+                          {{ matrix.formula_name }}
+                        </a-select-option>
                       </a-select>
                     </a-form-item>
 
@@ -124,7 +107,7 @@ const AddNew = defineComponent({
 
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
-    const facilitator_url = `${process.env.VUE_APP_BASE_URL}/users`;
+    const pay_matrix_url = `${process.env.VUE_APP_BASE_URL}/list_pay_matrix`;
 
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
@@ -148,8 +131,8 @@ const AddNew = defineComponent({
     };
     fetchCampaigns();
 
-    const fetchFacilitators = async () => {
-      const response = await fetch(facilitator_url, {
+    const fetchMatrix = async () => {
+      const response = await fetch(pay_matrix_url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -157,11 +140,11 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      this.facilitators = data.data;
-      // console.log(data.data);
+      this.matrix = data.data;
+      console.log(data.data);
       this.loading = false;
     };
-    fetchFacilitators();
+    fetchMatrix();
 
     const fetchTrainer = async () => {
       const response = await fetch(trainer_url, {
@@ -184,7 +167,7 @@ const AddNew = defineComponent({
         pay_matrix: formState.matrix,
       };
 
-      console.log(JSON.stringify(data));
+      console.log(data);
 
       fetch(API_URL, {
         method: "POST",
@@ -192,7 +175,7 @@ const AddNew = defineComponent({
           "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(data),
+        body: data,
       })
         .then((response) => response.json())
         .then(({ response }) => {
