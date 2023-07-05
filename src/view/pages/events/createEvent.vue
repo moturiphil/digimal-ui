@@ -65,6 +65,42 @@
                         >
                       </a-select>
                     </a-form-item>
+                    <a-form-item name="county_id" label="County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select County"
+                        v-on:change="getSubCounties($event)"
+                        v-model:value="formState.county_id"
+                        v-if="!loading"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="county in counties"
+                          :value="county.id"
+                          :key="county.id"
+                          :org_id="county.org_id"
+                        >
+                          {{ county.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+                    <a-form-item label="Location Type">
+                      <a-select
+                        size="large"
+                        name="name"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Location Type"
+                        v-model:value="formState.location_type"
+                      >
+                        <a-select-option value="1">City</a-select-option>
+                        <a-select-option value="2">County HQ</a-select-option>
+                        <a-select-option value="3">Others</a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         placeholder="Selected Host"
@@ -89,6 +125,15 @@
                         v-model:value="formState.trainer_id"
                         v-if="!loading"
                         placeholder="Select facilitators"
+                        :render="
+                          (facilitator) =>
+                            `${facilitator.first_name} ${facilitator.last_name} - ${facilitator.role_id}`
+                        "
+                        :filterOption="
+                          (inputValue, option) =>
+                            filterOption(inputValue, option, facilitator)
+                        "
+                        @change="handleChange"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
@@ -101,66 +146,19 @@
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="venue" label="venue">
+                    <a-form-item name="no-of-days" label="No of Days">
+                      <a-input-number
+                        v-model:value="formState.no_of_days"
+                        placeholder="No of Days"
+                        :min="0"
+                      />
+                    </a-form-item>
+
+                    <a-form-item name="venue" label="Venue">
                       <a-input
                         v-model:value="formState.venue"
                         placeholder="Input Venue"
                       />
-                    </a-form-item>
-                    <a-form-item name="county_id" label="County">
-                      <a-select
-                        size="large"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select County"
-                        v-on:change="getSubCounties($event)"
-                        v-model:value="formState.county_id"
-                        v-if="!loading"
-                      >
-                        <a-select-option value=""
-                          >Select an option</a-select-option
-                        >
-                        <a-select-option
-                          v-for="county in counties"
-                          :value="county.id"
-                          :key="county.id"
-                          :org_id="county.org_id"
-                        >
-                          {{ county.name }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item>
-                    <!-- <a-form-item name="sub_county_id" label="Sub County">
-                      <a-select
-                        size="large"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Sub-County"
-                        v-model:value="formState.sub_county_id"
-                      >
-                        <a-select-option value=""
-                          >Select an option</a-select-option
-                        >
-                        <a-select-option
-                          v-for="scounty in sub_counties"
-                          :value="scounty.org_id"
-                          :key="scounty.id"
-                          >{{ scounty.name }}</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item> -->
-                    <a-form-item label="Location Type">
-                      <a-select
-                        size="large"
-                        name="name"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Location Type"
-                        v-model:value="formState.location_type"
-                      >
-                        <a-select-option value="1">City</a-select-option>
-                        <a-select-option value="2">County HQ</a-select-option>
-                        <a-select-option value="3">Others</a-select-option>
-                      </a-select>
                     </a-form-item>
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -297,6 +295,23 @@ const AddNew = defineComponent({
       this.sub_counties = data.message;
     };
 
+    function handleChange(request, response, value) {
+      console.log(value);
+      getSubCounties(value);
+    }
+
+    function filterOption(inputValue, option, facilitator) {
+      console.log(facilitator);
+      console.log(option);
+      if (!facilitator) return false; // Return false if facilitator is undefined or null
+
+      const { first_name, last_name, role_id } = facilitator;
+      const fullName = `${first_name} ${last_name}`.toLowerCase();
+      const searchValue = inputValue.toLowerCase();
+
+      return fullName.includes(searchValue) || role_id.includes(searchValue);
+    }
+
     onMounted(() => {
       getCounties();
       getSubCounties();
@@ -378,6 +393,8 @@ const AddNew = defineComponent({
       counties,
       sub_counties,
       getSubCounties,
+      filterOption,
+      handleChange,
     };
   },
   beforeRouteEnter(to, from, next) {

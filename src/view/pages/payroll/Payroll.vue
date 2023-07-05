@@ -109,13 +109,11 @@
                                     >
                                       &nbsp;&nbsp;
                                       <span>&nbsp;&nbsp; Payroll Details</span>
-
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
-                                  <sdButton
+                                  <!-- <sdButton
                                     @click="handlePay(record.id)"
-
                                     size="small"
                                     type="success"
                                   >
@@ -124,7 +122,28 @@
                                       size="large"
                                     />
                                     &nbsp;&nbsp; Pay
-                                  </sdButton>
+                                  </sdButton> -->
+                                  <sdButton
+                                    type="success"
+                                    size="small"
+                                    @click="handlePay(record.id)"
+                                    >Pay Activity</sdButton
+                                  >
+                                  <a-modal
+                                    title="Payment OTP"
+                                    :visible="isModalOpen"
+                                    @ok="handleOk(recordId, inputValue)"
+                                    @cancel="handleCancel"
+                                    class="title-success"
+                                  >
+                                    <div>
+                                      <p>Payment transaction processing</p>
+                                      <input
+                                        type="number"
+                                        v-model="inputValue"
+                                      />
+                                    </div>
+                                  </a-modal>
                                 </div>
                               </td>
                             </template>
@@ -227,7 +246,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification, Modal } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -292,55 +311,55 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
-    async handlePay(id) {
-      console.log("handlePay", id);
-      try {
-        const response = await axios.post(
-          `${process.env.VUE_APP_BASE_URL}/payment_otp`,
-          {
-            payroll_summary_id: id,
-            payment_type: "Activity",
+    // async handlePay(id) {
+    //   console.log("handlePay", id);
+    //   try {
+    //     const response = await axios.post(
+    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
+    //       {
+    //         payroll_summary_id: id,
+    //         payment_type: "Activity",
+    //       },
+    //       { headers: authHeader() }
+    //     );
 
-          },
-          { headers: authHeader() }
-        );
+    //     // console.log(response.data.OTP);
+    //     // const parser = new DOMParser();
+    //     const otp = response.data.OTP;
 
-        // console.log(response.data.OTP);
-        // const parser = new DOMParser();
-        const otp = response.data.OTP;
+    //     console.log(otp);
 
-        console.log(otp);
-        if (response.status === 200) {
-          const modalContent = `
-            <div>
-              <p>Payment transaction processing</p>
-              <input type="number" v-model="inputValue" />
-            </div>
-          `;
+    //     if (response.status === 200) {
+    //       const modalContent = `
+    //         <div>
+    //           <p>Payment transaction processing</p>
+    //           <input type="number" v-model="inputValue" />
+    //         </div>
+    //       `;
 
-          Modal.success({
-            title: "Payment OTP",
+    //       Modal.success({
+    //         title: "Payment OTP",
 
-            content: modalContent,
-            onOk: async () => {
-              try {
-                const response = await axios.get(
-                  `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${id}&otp=${otp}`,
-                  { headers: authHeader() }
-                );
-                console.log(response);
-                // Handle the response or perform any further actions
-              } catch (error) {
-                console.log(error);
-                // Handle the error or display an error message
-              }
-            },
-          });
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    },
+    //         content: modalContent,
+    //         onOk: async () => {
+    //           try {
+    //             const response = await axios.get(
+    //               `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${id}&otp=${otp}`,
+    //               { headers: authHeader() }
+    //             );
+    //             console.log(response);
+    //             // Handle the response or perform any further actions
+    //           } catch (error) {
+    //             console.log(error);
+    //             // Handle the error or display an error message
+    //           }
+    //         },
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // },
   },
   setup() {
     const { state } = useStore();
@@ -349,6 +368,7 @@ export default defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("all");
+    const recordId = ref(null);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
 
@@ -365,6 +385,69 @@ export default defineComponent({
 
     const handleChange = (tab) => {
       activeClass.value = tab;
+    };
+
+    const isModalOpen = ref(false);
+    const inputValue = ref("");
+
+    // const activity_id = ref("");
+
+    // const payment_otp_id = ref("");
+
+    const handlePay = (id) => {
+      isModalOpen.value = true;
+      console.log("handlePay", id);
+      recordId.value = id;
+      console.log("recordId", recordId.value);
+      try {
+        const response = axios
+          .post(
+            `${process.env.VUE_APP_BASE_URL}/payment_otp`,
+            {
+              payroll_summary_id: id,
+              payment_type: "Activity",
+            },
+            { headers: authHeader() }
+          )
+          .then((responsePromise) => {
+            return responsePromise.data;
+          })
+          .then((data) => {
+            console.log(data);
+          });
+
+        console.log(response);
+        // const parser = new DOMParser();
+        // const otp = response.data.OTP;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const handleOk = async (id, inputValue) => {
+      console.log(recordId.value);
+      try {
+        const response = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
+          { headers: authHeader() }
+        );
+        console.log(response.data);
+        notification.success({
+          message: "Success",
+          description: "Payment successful",
+        });
+      } catch (error) {
+        console.log(error);
+        notification.error({
+          message: "Error",
+          description: "Payment failed",
+        });
+      }
+      isModalOpen.value = false;
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
     };
 
     onMounted(() => {
@@ -430,6 +513,12 @@ export default defineComponent({
       handleChange,
       activeClass,
       handleVerify,
+      isModalOpen,
+      inputValue,
+      // showModal,
+      handlePay,
+      handleOk,
+      handleCancel,
     };
   },
   // computed: {
@@ -448,11 +537,7 @@ export default defineComponent({
 </style>
 
 <style>
-.badge-green {
-  background-color: #1ec997;
-  color: white;
-  padding: 4px;
-  margin-bottom: 18px;
-  border-radius: 3px;
+.title-success {
+  color: green;
 }
 </style>

@@ -13,29 +13,13 @@
             placeholder="Enter ID No"
           />
         </a-form-item>
-        <!-- <a-form-item name="password" initialValue="" label="Password">
-          <a-input
-            :type="showPassword ? 'text' : 'password'"
-            v-model:value="formState.password"
-            placeholder="Password"
-          />
-        </a-form-item> -->
         <a-form-item name="password" initialValue="" label="Password">
-          <a-input
-            :type="showPassword ? 'text' : 'password'"
+          <a-input-password
             v-model:value="formState.password"
             placeholder="Password"
-            :addon-after="getPasswordToggleIcon"
+            :iconRender="getPasswordToggleIcon"
           />
         </a-form-item>
-        <!-- <a-form-item name="password" initialValue="" label="Password">
-          <a-input
-            :type="showPassword ? 'text' : 'password'"
-            v-model:value="password"
-            placeholder="Password"
-            :addon-after="getPasswordToggleIcon()"
-          />
-        </a-form-item> -->
 
         <div class="auth-form-action">
           <a-checkbox v-model="checked" @change="onChange"
@@ -58,7 +42,7 @@
         </a-form-item>
         <p class="form-divider"></p>
       </a-form>
-      <!-- implement the notification if user is not authorized -->
+
       <a-notification
         v-if="isError"
         :message="errorMessage"
@@ -71,71 +55,60 @@
     </div>
   </AuthWrapper>
 </template>
+
 <script>
 import { computed, ref, reactive } from "vue";
-// import { mapState } from 'vuex'
 import AuthService from "../../services/auth.service";
 import { useRouter } from "vue-router";
-// import { useStore } from 'vuex';
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import { notification } from "ant-design-vue";
+
 export default {
-  name: "SignIn",
+  name: "SignInPage",
   components: { AuthWrapper },
-  // computed: {
-  //   getPasswordToggleIcon() {
-  //     return this.showPassword ? "eye-slash" : "eye";
-  //   },
-  // },
   setup() {
-    // console.log(store.state.auth);
     const isLoading = computed(() => store.state.auth.loading);
-    // console.log(isLoading);
     const checked = ref(null);
     const router = useRouter();
-    // console.log(store.state);
     const formState = reactive({
       id_no: "",
       password: "",
     });
     const showPassword = ref(false);
 
-    const getPasswordToggleIcon = computed(() => {
-      return showPassword.value ? "eye-slash" : "eye";
-    });
+    const getPasswordToggleIcon = (visible) => {
+      return visible ? "hide" : "show";
+    };
+    const toggleShowPassword = () => {
+      showPassword.value = !showPassword.value;
+    };
 
     const handleSubmit = async () => {
-      const response = await AuthService.login({
-        id_no: formState.id_no,
-        password: formState.password,
-      });
-      console.log(response.data.user);
-      sessionStorage.setItem("auth-user", response.data.user);
-      console.log(sessionStorage.getItem("user"));
-      if (response.status == 200) {
-        console.log(response.status);
-        console.log("response successful.................");
+      try {
+        const response = await AuthService.login({
+          id_no: formState.id_no,
+          password: formState.password,
+        });
+        sessionStorage.setItem("auth-user", response.data.user);
 
-        try {
+        if (response.status === 200) {
           store.commit("auth/setUser", response.data.user);
-          // console.log(store)
           router.push({ path: "/" });
-          console.log("...............auth-user................");
           notification.success({
             message: "Login Successful",
             description: "Welcome to Campaign Dashboard",
           });
-        } catch (e) {
-          console.log(e);
+        } else {
+          notification.error({
+            message: "Login Failed",
+            description: "Invalid Credentials",
+          });
         }
-      } else if (response.status == 401) {
-        // new code to display error notification
-        // console.log(response.status);
-        console.log("other error responses");
+      } catch (error) {
         notification.error({
-          message: "Login Failed",
-          description: "Invalid Credentials",
+          message: "Error",
+          description: error.response.data.message || "An error occurred.",
         });
       }
     };
@@ -147,10 +120,7 @@ export default {
       formState,
       showPassword,
       getPasswordToggleIcon,
-      // new computed properties to access the error state from the store
-      isError: computed(() => store.state.auth.isError),
-      errorMessage: computed(() => store.state.auth.errorMessage),
-      errorDescription: computed(() => store.state.auth.errorDescription),
+      toggleShowPassword,
     };
   },
 };
