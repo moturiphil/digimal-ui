@@ -18,6 +18,49 @@ const CardChartStyle = Styled.div`
       }
   }
 `;
+const RecordViewWrapper = Styled.div`
+    .btn-add_new{
+        ${({ theme }) => (theme.rtl ? 'margin-right' : 'margin-left')}: 10px;
+        a{
+            display: flex;
+            align-items: center;
+            svg,
+            img,
+            i{
+                ${({ theme }) => (!theme.rtl ? 'margin-right' : 'margin-left')}: 6px;
+            }
+        }
+    }
+    .search-box{
+        position: relative;
+        box-shadow: 0 5px 5px rgba(#9299B8,.3);
+        .search-icon{
+            position: absolute;
+            ${({ theme }) => (theme.rtl ? 'right' : 'left')}: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            svg,
+            img{
+                margin-top: 6px;
+                min-width: 16px;
+                color: #9299B8;
+            }
+        }
+        input{
+            border: 0 none;
+            height: 40px;
+            min-width: 280px;
+            padding: ${({ theme }) => (theme.rtl ? '0 45px 0 20px' : '0 20px 0 45px')};
+            border-radius: 6px;
+            &::placeholder{
+                color: #ADB4D2;
+            }
+            &:focus{
+                outline: none;
+            }
+        }
+    }
+`;
 const MixedCardWrap = Styled.div`
   .location-map >div{
     @media only screen and (max-width: 767px){
@@ -137,4 +180,4 @@ const RecordFormWrapper = Styled.div`
     }
 `;
 
-export { CardChartStyle, MixedCardWrap, RecordFormWrapper };
+export { CardChartStyle, MixedCardWrap, RecordFormWrapper, RecordViewWrapper };

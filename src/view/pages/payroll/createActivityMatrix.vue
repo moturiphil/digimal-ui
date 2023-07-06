@@ -1,10 +1,13 @@
 <template>
   <Main>
-    <sdPageHeader title="Create Activity Matrix">
-      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-        <!-- <router-link to="/crud/axios-view">View All</router-link> -->
-      </sdButton>
-    </sdPageHeader>
+    <sdPageHeader title="Create Activity Matrix"> </sdPageHeader>
+    <sdButton class="btn-import" type="success">
+      <router-link to="/list-activity/matrix">
+        <span class="btn-text"> List of Matrixes </span>
+      </router-link>
+    </sdButton>
+    <br>
+    <br>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -26,7 +29,22 @@
                         placeholder="Input Formula Name"
                       />
                     </a-form-item>
-                    
+                    <a-form-item name="matrix_type_id" label="Matrix Type">
+                      <a-select
+                        placeholder="Select Matrix Type"
+                        v-model:value="formState.matrix_type_id"
+                        v-if="!loading"
+                      >
+                        <a-select-option
+                          v-for="matrix_type in matrix_types"
+                          :key="matrix_type.id"
+                          v-model:value="matrix_type.id"
+                        >
+                          {{ matrix_type.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+
                     <a-form-item label="Level">
                       <a-select
                         size="large"
@@ -35,17 +53,9 @@
                         placeholder="Select Level"
                         v-model:value="formState.level"
                       >
-                        <a-select-option value="1"
-                          >National</a-select-option
-                        >
-                        <a-select-option
-                          default-value="2"
-                          value="2"
-                          >County</a-select-option
-                        >
-                        <a-select-option value="3"
-                          >Sub-County</a-select-option
-                        >
+                        <a-select-option value="1">National</a-select-option>
+                        <a-select-option value="2">County</a-select-option>
+                        <a-select-option value="3">Sub-County</a-select-option>
                       </a-select>
                     </a-form-item>
 
@@ -57,12 +67,8 @@
                         placeholder="Select Yes/No"
                         v-model:value="formState.is_driver"
                       >
-                        <a-select-option value="1"
-                          >Yes</a-select-option
-                        >
-                        <a-select-option
-                          default-value="0"
-                          value="0"
+                        <a-select-option value="1">Yes</a-select-option>
+                        <a-select-option default-value="0" value="0"
                           >No</a-select-option
                         >
                       </a-select>
@@ -74,19 +80,13 @@
                         name="name"
                         class="sDash_fullwidth-select"
                         placeholder="Select Yes/No"
-                        v-model:value="formState.matrix_type_id"
+                        v-model:value="formState.location_type_id"
                       >
-                        <a-select-option value="1"
-                          >City</a-select-option
-                        >
-                        <a-select-option
-                          default-value="2"
-                          value="2"
+                        <a-select-option value="1">City</a-select-option>
+                        <a-select-option default-value="2" value="2"
                           >County HQ</a-select-option
                         >
-                        <a-select-option
-                          default-value="3"
-                          value="3"
+                        <a-select-option default-value="3" value="3"
                           >Other</a-select-option
                         >
                       </a-select>
@@ -94,12 +94,11 @@
 
                     <a-form-item name="rate" label="Rate">
                       <a-input
-                      type="number"
+                        type="number"
                         v-model:value="formState.rate"
                         placeholder="Input Rate Applicable"
                       />
                     </a-form-item>
-                    
 
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -120,7 +119,7 @@
 import { RecordFormWrapper } from "./Style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed } from "vue";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
@@ -141,14 +140,41 @@ const AddNew = defineComponent({
 
     const router = useRouter();
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/createCampaign`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/create_pay_matrix`;
 
-    const handleSubmit = (values) => {
-      values = {
-        name: values.name,
-        start_date: new Date(values.startDate.$d).toISOString().substr(0, 10),
-        end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
+    const PayMatrixType = `${process.env.VUE_APP_BASE_URL}/pay_matrix_type`;
+
+    const matrix_types = ref([]);
+
+    const getMatrixType = async () => {
+      const response = await fetch(PayMatrixType, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      matrix_types.value = data.data;
+      console.log(matrix_types.value);
+    };
+
+    onMounted(() => {
+      getMatrixType();
+    });
+
+    const handleSubmit = () => {
+      const data = {
+        formula_name: formState.name,
+        level_id: formState.level,
+        is_driver: formState.is_driver,
+        matrix_type_id: formState.matrix_type_id,
+        rate: formState.rate,
+        location_type: formState.location_type_id,
       };
+
+      console.log("------------------------------------");
+      console.log(data);
 
       fetch(API_URL, {
         method: "POST",
@@ -156,39 +182,29 @@ const AddNew = defineComponent({
           "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
         .then(({ success }) => {
-          // console.log(data);
-          if (success) {
-            router.push("view-campaign");
-            notification["success"]({
-              message: "Campaign Created",
-              description: "Campaign Created successfully.",
-              duration: 4.5,
-            });
-          }
+          console.log(success);
+          router.push({ name: "activity-payroll-matrix" });
+          notification["success"]({
+            message: "Payroll Matrix Created",
+            description: "Payroll Matrix Created successfully.",
+            duration: 5.5,
+          });
         })
         .catch((error) => {
           console.error("Error:", error);
         });
     };
 
-    //   axios
-    //     .post(API_URL, values, { headers: authHeader() })
-    //     .then(function (response) {
-    //       console.log(response);
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error);
-    //     });
-    // };
-
     const formState = reactive({
       name: "",
-      startDate: "",
-      endDate: "",
+      level: "",
+      is_driver: "",
+      matrix_type_id: "",
+      rate: "",
     });
 
     return {
@@ -199,6 +215,7 @@ const AddNew = defineComponent({
       dateFormat,
       formState,
       join,
+      matrix_types,
     };
   },
   methods: {
