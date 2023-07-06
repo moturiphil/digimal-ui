@@ -38,18 +38,20 @@
 
                     <a-form-item label="CHVs">
                       <a-select
-                        mode="multiple"
-                        v-model:value="formState.chv_id"
-                        v-if="!loading"
-                        placeholder="Select facilitators"
+                          mode="multiple"
+                          v-model:value="formState.chv_id"
+                          v-if="!loading"
+                          placeholder="Select facilitators"
+                          show-search
+                          option-filter-prop="label"
                       >
                         <a-select-option
-                          v-for="chv in chvs"
-                          :key="chv.id"
-                          :value="chv.id"
+                            v-for="chv in chvs"
+                            :key="chv.id"
+                            :value="chv.id"
+                            :label="`${chv.first_name} ${chv.last_name} - ${chv.phone_no}`"
                         >
-                          {{ chv.first_name }}
-                          {{ chv.last_name }} - {{ chv.phone_no }}
+                          {{ chv.first_name }} {{ chv.last_name }} - {{ chv.phone_no }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
@@ -136,8 +138,13 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      this.chvs = data.data;
-      // console.log(data.data);
+
+      const transformedData = data.data.map(chv => ({
+        ...chv,
+        label: `${chv.first_name} ${chv.last_name} - ${chv.phone_no}`,
+      }));
+
+      this.chvs = transformedData;
       this.loading = false;
     };
     fetchCHV();
