@@ -309,6 +309,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/activityPayrollMatrix.vue'),
   },
   {
+    path: '/list-activity/matrix',
+    name: '/list-activity-matrix',
+    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/listActivityMatrix.vue'),
+  },
+  {
     path: '/event-payroll-matrix',
     name: 'event-payroll-matrix',
     component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventPayrollMatrix.vue'),
