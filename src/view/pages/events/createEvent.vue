@@ -70,11 +70,14 @@
                         placeholder="Selected Host"
                         v-model:value="formState.facilitator_id"
                         v-if="!loading"
+                        show-search
+                        option-filter-prop="label"
                       >
                         <a-select-option
                           v-for="facilitator in facilitators"
                           :key="facilitator.id"
                           v-model:value="facilitator.id"
+                          :label="`${facilitator.first_name} ${facilitator.last_name} -${facilitator.role_id } `"
                         >
                           {{ facilitator.first_name }}
                           {{ facilitator.last_name }} -
@@ -90,20 +93,16 @@
                         v-model:value="formState.trainer_id"
                         v-if="!loading"
                         placeholder="Select facilitators"
-                        :render="
-                          (facilitator) =>
-                            `${facilitator.first_name} ${facilitator.last_name} - ${facilitator.role_id}`
-                        "
-                        :filterOption="
-                          (inputValue, option) =>
-                            filterOption(inputValue, option, facilitator)
-                        "
+                        show-search
+                        option-filter-prop="label"
                         @change="handleChange"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
                           :key="trainer.id"
                           :value="trainer.id"
+                          :label="`${trainer.first_name} ${trainer.last_name} -${trainer.role_id } `"
+
                         >
                           {{ trainer.first_name }}
                           {{ trainer.last_name }} - {{ trainer.role_id }}
@@ -253,7 +252,11 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      this.facilitators = data.data;
+      const transformedData = data.data.map(fac => ({
+        ...fac,
+        label: `${fac.first_name} ${fac.last_name} - ${fac.role_id}`,
+      }));
+      this.facilitators = transformedData;
       // console.log(data.data);
       this.loading = false;
     };
@@ -310,18 +313,6 @@ const AddNew = defineComponent({
     function handleChange(request, response, value) {
       console.log(value);
       getSubCounties(value);
-    }
-
-    function filterOption(inputValue, option, facilitator) {
-      console.log(facilitator);
-      console.log(option);
-      if (!facilitator) return false; // Return false if facilitator is undefined or null
-
-      const { first_name, last_name, role_id } = facilitator;
-      const fullName = `${first_name} ${last_name}`.toLowerCase();
-      const searchValue = inputValue.toLowerCase();
-
-      return fullName.includes(searchValue) || role_id.includes(searchValue);
     }
 
     onMounted(() => {
@@ -405,7 +396,6 @@ const AddNew = defineComponent({
       counties,
       sub_counties,
       getSubCounties,
-      filterOption,
       handleChange,
     };
   },
