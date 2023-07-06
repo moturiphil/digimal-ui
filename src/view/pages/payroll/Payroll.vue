@@ -431,11 +431,13 @@ export default defineComponent({
           `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
           { headers: authHeader() }
         );
-        console.log(response.data);
-        notification.success({
-          message: "Success",
-          description: "Payment successful",
-        });
+        console.log(response);
+        if (response.status == 200) {
+          notification.success({
+            message: "Success",
+            description: "Payment processed successful",
+          });
+        }
       } catch (error) {
         console.log(error);
         notification.error({

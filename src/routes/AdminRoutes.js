@@ -284,6 +284,11 @@ const routes = [
     component: () => import("@/view/pages/payroll/assignActivityMatrix.vue"),
   },
   {
+    path: "/activity/matrix/create",
+    name: "create-activity-matrix",
+    component: () => import("@/view/pages/payroll/createActivityMatrix.vue"),
+  },
+  {
     path: "/event/matrix/:id",
     name: "assign-event-matrix",
     component: () => import("@/view/pages/payroll/assignEventMatrix.vue"),
