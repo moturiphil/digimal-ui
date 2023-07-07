@@ -167,7 +167,7 @@ const AddNew = defineComponent({
         pay_matrix: formState.matrix,
       };
 
-      console.log(data);
+      console.log(JSON.stringify(data));
 
       fetch(API_URL, {
         method: "POST",
@@ -175,11 +175,12 @@ const AddNew = defineComponent({
           "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: data,
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then(({ response }) => {
-          console.log(response);
+        .then(({ success, data }) => {
+          console.log(success);
+          console.log(data);
           notification["success"]({
             message: "Activity Matrix Assigned successfully",
             description: `Matrix Assigned successfully. You can now view the matrix`,
