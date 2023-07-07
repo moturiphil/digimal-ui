@@ -15,11 +15,10 @@
             <sdFeatherIcons type="search" size="14" />
           </span>
           <a-input
-            @change="onHandleSearch"
-            v-model:value.trim="formState.searchItem"
+            v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search Here"
+            placeholder="Search by name or code"
           /></div
       ></template>
     </sdPageHeader>
@@ -35,7 +34,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 50, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <template #activity="{ record }">
@@ -103,7 +102,7 @@ import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 
 const columns = [
   {
@@ -203,6 +202,7 @@ const ViewPage = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity`;
 
@@ -233,13 +233,27 @@ const ViewPage = defineComponent({
       return false;
     };
 
-    const formState = reactive({
-      searchItem: "",
-    });
-
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
+
+    const results = computed(() => {
+         const query = searchItem.value.toLowerCase();
+         const regex = new RegExp(query, 'i');
+         if(!query){
+          
+            return dataSource.value;
+         }else{
+
+           return dataSource.value.filter((event) =>{
+              return (
+              regex.test(event.activity_code) ||
+              regex.test(event.name)
+              );
+            }
+           );
+         }
+    });
 
     const rowSelection = {
       selectedRowKeys,
@@ -253,9 +267,9 @@ const ViewPage = defineComponent({
       handleDelete,
       rowSelection,
       onSelectChange,
-      dataSource,
+      searchItem,
+      results,
       columns,
-      formState,
     };
   },
 });

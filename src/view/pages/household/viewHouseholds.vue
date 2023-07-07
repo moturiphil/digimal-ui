@@ -8,11 +8,10 @@
             <sdFeatherIcons type="search" size="14" />
           </span>
           <a-input
-            @change="onHandleSearch"
-            v-model:value.trim="formState.searchItem"
+            v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search Here"
+            placeholder="Search by name/village/chw"
           /></div
       ></template>
     </sdPageHeader>
@@ -33,7 +32,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 50, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                 </a-table>
@@ -51,7 +50,7 @@ import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "../style";
 import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 // import { useRouter } from "vue-router";
 // import { Modal } from "ant-design-vue";
 
@@ -112,6 +111,7 @@ const ViewPage = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
 
@@ -159,18 +159,26 @@ const ViewPage = defineComponent({
       }
     };
 
-    const formState = reactive({
-      searchItem: "",
+    const results = computed(() => {
+         const query = searchItem.value.toLowerCase();
+         const regex = new RegExp(query, 'i');
+         if(!query){
+          
+            return dataSource.value;
+         }else{
+
+           return dataSource.value.filter((event) =>{
+              return (
+              regex.test(event.chw_id) ||
+              regex.test(event.first_name) ||
+              regex.test(event.last_name) ||
+              regex.test(event.location_id) ||
+              regex.test(event.phone_no) 
+              );
+            }
+           );
+         }
     });
-
-    // const onSelectChange = (selectedRowKey) => {
-    //   selectedRowKeys.value = selectedRowKey;
-    // };
-
-    // const rowSelection = {
-    //   selectedRowKeys,
-    //   onChange: onSelectChange,
-    // };
 
     return {
       crud,
@@ -181,7 +189,8 @@ const ViewPage = defineComponent({
       // onSelectChange,
       dataSource,
       columns,
-      formState,
+      searchItem,
+      results,
       exportHouseHoldData,
     };
   },
