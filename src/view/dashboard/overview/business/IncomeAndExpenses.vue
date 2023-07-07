@@ -14,13 +14,13 @@
             <div>
               <p>Bukengele Coverage Per Capita</p>
               <sdHeading as="h1">
-                <span>59.8 %</span>
+                <span></span>
               </sdHeading>
             </div>
             <div>
               <p>Mufungu Coverage Per Capita</p>
               <sdHeading as="h1">
-                <span>40.2 %</span>
+                <span></span>
               </sdHeading>
             </div>
           </ExList>

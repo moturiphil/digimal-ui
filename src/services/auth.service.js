@@ -12,10 +12,13 @@ class AuthService {
       })
       .then(response => {
         console.log(response);
+        sessionStorage.setItem('person', JSON.stringify(response));
         if (response.data.token) {
           sessionStorage.setItem('user', JSON.stringify(response.data.token));
         }
-        // console.log(localStorage.getItem('user'));
+        // console.log(sessionStorage.getItem('person'));
+        const person = sessionStorage.getItem('person');
+        console.log(person.data);
         return response;
       });
   }
