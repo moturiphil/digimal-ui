@@ -1,4 +1,5 @@
 <template>
+<Main>
   <sdPageHeader title="DigiMal KE Dashboard">
     <template v-slot:buttons>
       <div class="page-header-actions">
@@ -11,7 +12,6 @@
       </div>
     </template>
   </sdPageHeader>
-  <Main>
     <a-row :gutter="25">
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless>
@@ -212,7 +212,7 @@
             </div>
             <div class="card-chunk">
               <CardBarChart2>
-                <h2>1148</h2>
+                <h2>0</h2>
                 <span>Total Actual Nets Allocation </span>
               </CardBarChart2>
             </div>
