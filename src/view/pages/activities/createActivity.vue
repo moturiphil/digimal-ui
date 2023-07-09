@@ -137,13 +137,6 @@
                       />
                     </a-form-item>
 
-                    <!-- <a-form-item name="end_date" label="Activity End Date">
-                      <a-date-picker
-                        :style="{ width: '100%' }"
-                        v-model:value="formState.end_date"
-                        :format="dateFormat"
-                      />
-                    </a-form-item> -->
                     <a-form-item
                       name="payable_travel_days"
                       label="Payable Travel Days"
@@ -350,8 +343,6 @@ const AddNew = defineComponent({
         sub_county_id: values.sub_county_id,
         campaign_id: values.campaign_id,
         start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
-        // end_date: new Date(values.end_date.$d).toISOString().substr(0, 10),
-        // payable_travel_days: values.payable_travel_days,
         number_of_officers: values.number_of_officers,
         activity_facilitator: values.activity_facilitator,
         location_type_id: values.location_type_id,
@@ -415,12 +406,6 @@ const AddNew = defineComponent({
     };
   },
   methods: {
-    // disabledDate(date) {
-    //   // Get today's date
-    //   const today = new Date();
-    //   // Disable dates before today
-    //   return date && date >= today ? false : true ;
-    // },
 
     disabledDate(date) {
       // Get today's date at midnight
@@ -433,31 +418,6 @@ const AddNew = defineComponent({
     showModal() {
       this.visible = true;
     },
-    // showConfirmModal(activity_facilitator) {
-    //   // console.log(activity_facilitator);
-    //   Modal.success({
-    //     title: "Activity Officers",
-    //     content: (
-    //       <div>
-    //         <p>Confirm Officers Participating</p>
-    //         <ul>
-    //           {activity_facilitator.map((facilitator) => (
-    //             <li key={facilitator}>{facilitator}</li>
-    //           ))}
-    //         </ul>
-    //       </div>
-    //     ),
-    //     okText: "Register",
-    //     onOk: async () => {
-    //       // handle form submission here rk
-    //     },
-    //     style: {
-    //       float: "center",
-    //       display: "grid",
-    //       placeContent: "center",
-    //     },
-    //   });
-    // },
     handleOk() {
       this.confirmLoading = true;
       setTimeout(() => {
