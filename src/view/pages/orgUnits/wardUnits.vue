@@ -4,6 +4,18 @@
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <sdFeatherIcons type="search" size="14" />
+          </span>
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name"
+          /></div
+      ></template>
     </sdPageHeader>
     <Main>
       <a-row :gutter="15">
@@ -17,7 +29,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <template #units="{ record }">
@@ -56,7 +68,7 @@
 import { RecordViewWrapper } from "../style";
 import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
@@ -101,6 +113,7 @@ const DragAndDropTable = defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const { params, query } = useRoute();
+    const searchItem = ref("")
 
     //   const api_url = UserService;
     //   console.log(api_url);
@@ -139,10 +152,6 @@ const DragAndDropTable = defineComponent({
       return false;
     };
 
-    const formState = reactive({
-      searchItem: "",
-    });
-
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
@@ -152,6 +161,23 @@ const DragAndDropTable = defineComponent({
       onChange: onSelectChange,
     };
 
+    const results = computed(() => {
+         const query = searchItem.value.toLowerCase();
+         const regex = new RegExp(query, 'i');
+         if(!query){
+          
+            return dataSource.value;
+         }else{
+
+           return dataSource.value.filter((event) =>{
+              return (
+              regex.test(event.name)
+              );
+            }
+           );
+         }
+    });
+
     return {
       crud,
       isLoading,
@@ -159,9 +185,9 @@ const DragAndDropTable = defineComponent({
       handleDelete,
       rowSelection,
       onSelectChange,
-      dataSource,
+      results,
+      searchItem,
       columns,
-      formState,
     };
   },
 });
