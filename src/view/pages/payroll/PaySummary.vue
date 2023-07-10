@@ -16,10 +16,10 @@
       :onFinish="submitPromo"
     >
       <div class="promo-apply-form">
-        <a-form-item name="promoCode" label="Comments">
+        <!-- <a-form-item name="promoCode" label="Comments">
           <a-input v-model:value="promoCode" placeholder="Comment" />
-        </a-form-item>
-        <a-form-item>
+        </a-form-item> -->
+        <!-- <a-form-item>
           <sdButton htmlType="submit" size="default" type="success" outlined>
             Approve
           </sdButton>
@@ -27,10 +27,10 @@
           <sdButton htmlType="submit" size="default" type="danger" outlined>
             Decline
           </sdButton>
-        </a-form-item>
+        </a-form-item> -->
       </div>
     </a-form>
-    <sdButton
+    <!-- <sdButton
       v-if="current === 3"
       @click="onSubmit"
       class="btn-proceed"
@@ -38,7 +38,7 @@
       size="large"
     >
       <a to="#">Place Order</a>
-    </sdButton>
+    </sdButton> -->
   </div>
 </template>
 
@@ -56,12 +56,15 @@ export default {
       },
       promoCode: "",
       current: 1,
+      name: "",
     };
   },
   mounted() {
     const { params, query } = useRoute();
     console.log({ params, query });
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_detail?activity_payrollist_id=${query.id}`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_detail?payroll_list_id=${query.id}`;
+    const name =  query.name;
+    console.log(name);
     axios
       .get(API_URL, {
         headers: authHeader(),
