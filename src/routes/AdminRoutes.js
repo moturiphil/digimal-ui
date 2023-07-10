@@ -35,7 +35,7 @@ const routes = [
           ),
       },
       {
-        path: "assign-permission",
+        path: "assign-permission/:id",
         name: "assign-permission",
         component: () =>
           import(

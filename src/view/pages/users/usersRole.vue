@@ -51,26 +51,22 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                <!-- <template #action="{ record }">
-                  <td>
-                    <div class="table-actions">
-                      
-                      <sdButton>
-                        <router-link
-                          :to="`/assign-permission/${record.orgtype_id}`"
-                          class="btn-icon"
-                          type="info"
-                          shape="circle"
-                        >
-                          <sdFeatherIcons type="eye" size="16" />
-                          &nbsp;&nbsp; View
-                        </router-link>
-                      </sdButton>
-                      
-                    </div>
-                  </td>
-                </template> -->
-              
+                  <template #action="{ record }">
+                    <td>
+                      <div class="table-actions">
+                        <sdButton class="btn-import green" type="success">
+                          <router-link
+                            :to="`/assign-permission/${record.orgtype_id}`"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; Assign Role Permission
+                          </router-link>
+                        </sdButton>
+                      </div>
+                    </td>
+                  </template>
                 </a-table>
               </TableWrapper>
             </div>
@@ -93,7 +89,6 @@ import authHeader from "../../../services/auth-header";
 import UserService from "../../../services/user.service";
 import { useRouter } from "vue-router";
 
-
 const columns = [
   {
     title: "Name",
@@ -105,11 +100,11 @@ const columns = [
     dataIndex: "orgtype_id",
     key: "id",
   },
-  // {
-  //   title: 'Action',
-  //         dataIndex: 'action',
-  //         slots: { customRender: 'action' }
-  // },
+  {
+    title: "Action",
+    dataIndex: "action",
+    slots: { customRender: "action" },
+  },
 ];
 
 const DragAndDropTable = defineComponent({
@@ -133,18 +128,18 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const rls =[]
+        const rls = [];
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
           headers: authHeader(),
         });
         const data = await response.json();
         for (let i = 1; i < data.length; i++) {
-          const element ={
+          const element = {
             id: i,
             name: data[i].name,
             orgtype_id: data[i].orgtype_id,
-          }
+          };
           rls.push(element);
         }
         dataSource.value = rls;
@@ -154,10 +149,10 @@ const DragAndDropTable = defineComponent({
       }
     });
 
-     const handleRowClick = (row) => {
+    const handleRowClick = (row) => {
       console.log(row);
       router.push({ path: `/assign-permission/${row.id}` });
-     }
+    };
     const exportUserData = async () => {
       try {
         const response = await fetch(API_URL, {
@@ -234,5 +229,8 @@ export default DragAndDropTable;
 .search-row {
   display: flex;
   align-items: center;
+}
+.green {
+  background-color: green;
 }
 </style>

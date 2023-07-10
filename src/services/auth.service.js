@@ -11,14 +11,15 @@ class AuthService {
         password: user.password
       })
       .then(response => {
-        console.log(response);
-        sessionStorage.setItem('person', JSON.stringify(response));
+        // console.log(response);
+        // sessionStorage.setItem('person', JSON.stringify(response));
         if (response.data.token) {
-          sessionStorage.setItem('user', JSON.stringify(response.data.token));
+          sessionStorage.setItem('user-config-token', JSON.stringify(response.data.token));
+          sessionStorage.setItem('user', JSON.stringify(response.data));
         }
-        // console.log(sessionStorage.getItem('person'));
-        const person = sessionStorage.getItem('person');
-        console.log(person.data);
+        const user = sessionStorage.getItem('user');
+        // console.log(response.data.token);
+        console.log(user);
         return response;
       });
   }
@@ -45,7 +46,7 @@ class AuthService {
     );
   }
   getUser() {
-    const user = sessionStorage.getItem('user');
+    const user = sessionStorage.getItem('user-config-token');
     return user ? JSON.parse(user) : null;
   }
   hasPermission(permission) {

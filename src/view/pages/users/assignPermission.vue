@@ -20,7 +20,7 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="role" label="Role Name">
+                    <!-- <a-form-item name="role" label="Role Name">
                       <a-select
                         placeholder="Select"
                         v-model:value="formState.role_id"
@@ -34,7 +34,7 @@
                           {{ role.name }}
                         </a-select-option>
                       </a-select>
-                    </a-form-item>
+                    </a-form-item> -->
                     <!-- <a-form-item label="CHVs">
                       <a-select
                         mode="multiple"
@@ -119,6 +119,9 @@ const AssignPermissions = defineComponent({
     // const router = useRouter();
     const { query, params } = useRoute();
 
+    console.log(params.id);
+
+    const role_id = params.id;
     const parameters = { query };
     // const chv_url = `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=chv`;
 
@@ -132,7 +135,7 @@ const AssignPermissions = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-        role_id: formState.role_id,
+        role_id: role_id,
         permission_ids: toRaw(formState.permission_ids)
         // formState.permission_ids
       };
@@ -197,13 +200,15 @@ const AssignPermissions = defineComponent({
         });
         // console.log( await response.json());
         const data = await response.json();
-        for (let i = 0; i < data.length; i++) {
+        const permissions_data = data.data;
+        for (let i = 0; i < permissions_data.length; i++) {
           const element ={
-            key: i,
-            title: data[i],
+            key: permissions_data[i].id,
+            title: permissions_data[i].name,
           }
           perm.push(element);
         }
+        console.log( perm);
         permissions.value = perm
       } catch (error) {
         console.error(error);
