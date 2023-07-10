@@ -164,6 +164,7 @@ import { Modal } from "ant-design-vue";
 // import axios from "axios";
 
 const router = useRouter();
+const user = JSON.parse(sessionStorage.getItem("user"));
 
 const columns = [
   {
@@ -370,8 +371,14 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data);
-          dataSource.value = response.data.data;
+          if(user.user[0].level_id === 1){
+            dataSource.value = response.data.data;
+          }else{
+            const rs = response.data.data.filter((event) => {
+              return event.location_id === user.user[0].level_id;
+            });
+            dataSource.value = rs;
+          }
         })
         .catch((error) => {
           console.error(error);
