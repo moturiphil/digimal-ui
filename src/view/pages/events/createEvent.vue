@@ -43,27 +43,14 @@
                         placeholder="Select Event Type"
                         v-model:value="formState.name"
                       >
-                        <a-select-option value="Stakeholder meeting"
-                          >Stakeholder meeting</a-select-option
+                      <a-select-option
+                          v-for="event in events_list"
+                          :key="event.id"
+                          :value="event.id"
                         >
-                        <a-select-option
-                          default-value="2"
-                          value="Health Care Worker Training"
-                          >Health Care Worker Training</a-select-option
-                        >
-                        <a-select-option value="CHV mobilization"
-                          >CHV mobilization</a-select-option
-                        >
-                        <a-select-option value="Village Elder mobilization"
-                          >Village Elder mobilization</a-select-option
-                        >
-                        <a-select-option value="CHV/VE Training"
-                          >CHV/VE Training</a-select-option
-                        >
-                        <a-select-option value="Social mobilization"
-                          >Social mobilization</a-select-option
-                        >
-                      </a-select>
+                          {{ event.name }}
+                        </a-select-option>
+                      </a-select> 
                     </a-form-item>
                     <a-form-item name="county_id" label="County">
                       <a-select
@@ -209,14 +196,31 @@ const AddNew = defineComponent({
 
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
-    const { campaigns, facilitators, loading, counties, sub_counties } =
+    const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
+
+    const { campaigns, facilitators, loading, counties, sub_counties, events_list } =
       reactive({
         campaigns: "",
         loading: true,
         facilitators: [],
         counties: [],
         sub_county_id: "",
+        events_list: [],
       });
+
+    const fetchEvents= async () => {
+      const response = await fetch(events_url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      this.events_list = data.data;
+      console.log(this.events_list);
+      this.loading = false;
+    };
 
     const fetchCampaigns = async () => {
       const response = await fetch(campaign_url, {
@@ -309,6 +313,7 @@ const AddNew = defineComponent({
       fetchTrainer();
       fetchFacilitators();
       fetchCampaigns();
+      fetchEvents();
     });
 
     const handleSubmit = () => {
@@ -385,6 +390,7 @@ const AddNew = defineComponent({
       sub_counties,
       getSubCounties,
       handleChange,
+      events_list,
     };
   },
   beforeRouteEnter(to, from, next) {

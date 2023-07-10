@@ -156,7 +156,7 @@
           ><sdFeatherIcons type="bar-chart-2" />&nbsp; &nbsp; Stock Status
         </router-link>
       </a-menu-item>
-      <a-sub-menu key="payroll">
+      <a-sub-menu  v-if="isLevelOne" key="payroll">
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Payroll</span>
         </template>
@@ -164,7 +164,9 @@
           <router-link to="/view-payroll">Payroll Details </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="transaction-details">
-          <router-link to="/view-transactions">Transaction Details </router-link>
+          <router-link to="/view-transactions"
+            >Transaction Details
+          </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="user-management">
@@ -200,11 +202,13 @@ import {
   watch,
   watchEffect,
   defineComponent,
+  onMounted,
 } from "vue";
 import VueTypes from "vue-types";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import versions from "../demoData/changelog.json";
+// import authHeader from "../services/auth-header";
 // import { AuthService } from "../services/auth.service";
 
 export default defineComponent({
@@ -226,6 +230,19 @@ export default defineComponent({
       modeChangeTopNav,
       modeChangeSideNav,
     } = events.value;
+
+    const level_id = ref("");
+    const role_id = ref("");
+
+    onMounted(() => {
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      level_id.value = user.user[0].level_id;
+      console.log(level_id.value);
+    });
+
+     const isLevelOne = computed(() => {
+      return level_id.value === 1;
+    });
 
     const router = computed(() => useRoute());
     const state = reactive({
@@ -276,6 +293,9 @@ export default defineComponent({
       modeChangeTopNav,
       modeChangeSideNav,
       versions,
+      level_id,
+      role_id,
+      isLevelOne
     };
   },
 });

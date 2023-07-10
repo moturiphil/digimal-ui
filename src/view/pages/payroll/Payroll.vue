@@ -311,55 +311,6 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
-    // async handlePay(id) {
-    //   console.log("handlePay", id);
-    //   try {
-    //     const response = await axios.post(
-    //       `${process.env.VUE_APP_BASE_URL}/payment_otp`,
-    //       {
-    //         payroll_summary_id: id,
-    //         payment_type: "Activity",
-    //       },
-    //       { headers: authHeader() }
-    //     );
-
-    //     // console.log(response.data.OTP);
-    //     // const parser = new DOMParser();
-    //     const otp = response.data.OTP;
-
-    //     console.log(otp);
-
-    //     if (response.status === 200) {
-    //       const modalContent = `
-    //         <div>
-    //           <p>Payment transaction processing</p>
-    //           <input type="number" v-model="inputValue" />
-    //         </div>
-    //       `;
-
-    //       Modal.success({
-    //         title: "Payment OTP",
-
-    //         content: modalContent,
-    //         onOk: async () => {
-    //           try {
-    //             const response = await axios.get(
-    //               `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${id}&otp=${otp}`,
-    //               { headers: authHeader() }
-    //             );
-    //             console.log(response);
-    //             // Handle the response or perform any further actions
-    //           } catch (error) {
-    //             console.log(error);
-    //             // Handle the error or display an error message
-    //           }
-    //         },
-    //       });
-    //     }
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
   },
   setup() {
     const { state } = useStore();
@@ -382,6 +333,8 @@ export default defineComponent({
         return dataSource.value;
       }
     });
+
+    
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -459,7 +412,10 @@ export default defineComponent({
         })
         .then((response) => {
           dataSource.value = response.data.data;
-          // households.value = response.data.data;
+          // transform approval status to boolean
+          dataSource.value.forEach((item) => {
+            item.approval_status = item.approval_status === 1 ? 'Approved' : 'Not Approved';
+          });
           console.log(dataSource.value);
         })
         .catch((error) => {
