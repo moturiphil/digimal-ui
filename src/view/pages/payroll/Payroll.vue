@@ -24,15 +24,28 @@
                     @click="handleChange('all')"
                     href="#"
                   >
-                    Pending validation
+                    All Payroll
                   </a>
                 </li>
                 <li>
                   <a
                     :class="
-                      activeClass === 'approved' ? 'active' : 'deactivate'
+                      activeClass === 'not_validated' ? 'active' : 'deactivate'
                     "
-                    @click="handleChange('approved')"
+                    @click="handleChange('not_validated')"
+                    href="#"
+                  >
+                    Pending Validation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
+                      activeClass === 'pending_approval'
+                        ? 'active'
+                        : 'deactivate'
+                    "
+                    @click="handleChange('pending_approval')"
                     href="#"
                   >
                     Pending Approval
@@ -41,9 +54,11 @@
                 <li>
                   <a
                     :class="
-                      activeClass === 'outliers' ? 'active' : 'deactivate'
+                      activeClass === 'pending_payment'
+                        ? 'active'
+                        : 'deactivate'
                     "
-                    @click="handleChange('outliers')"
+                    @click="handleChange('pending_payment')"
                     href="#"
                   >
                     Pending Payment
@@ -123,12 +138,6 @@
                                     />
                                     &nbsp;&nbsp; Pay
                                   </sdButton> -->
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handlePay(record.id)"
-                                    >Pay Activity</sdButton
-                                  >
                                   <a-modal
                                     title="Payment OTP"
                                     :visible="isModalOpen"
@@ -152,22 +161,7 @@
 
                         <TableWrapper
                           class="table-data-view table-responsive"
-                          v-show="activeClass === 'approved'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'outliers'"
+                          v-show="activeClass === 'not_validated'"
                         >
                           <a-table
                             :pagination="{
@@ -181,15 +175,124 @@
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
                                   <sdButton
-                                    type="check"
-                                    size="16"
+                                    size="small"
+                                    type="success"
                                     @click="handleVerify(record.id)"
                                   >
                                     &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
+                                    <router-link
+                                      :to="{
+                                        path: `/payroll/view/${record.id}`,
+                                        query: { id: record.id },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
                                     >
+                                      &nbsp;&nbsp;
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                    </router-link>
                                   </sdButton>
+                                  <sdButton
+                                    type="success"
+                                    size="small"
+                                    @click="handleValidation(record.id)"
+                                    >Validate</sdButton
+                                  >
+                                </div>
+                              </td>
+                            </template>
+                          </a-table>
+                        </TableWrapper>
+
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'pending_approval'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 40,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                            <template #payroll="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <sdButton
+                                    size="small"
+                                    type="success"
+                                    @click="handleVerify(record.id)"
+                                  >
+                                    &nbsp;&nbsp;
+                                    <router-link
+                                      :to="{
+                                        path: `/payroll/view/${record.id}`,
+                                        query: { id: record.id },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
+                                    >
+                                      &nbsp;&nbsp;
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                    </router-link>
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    type="success"
+                                    size="small"
+                                    @click="handleApproval(record.id)"
+                                    >Approve</sdButton
+                                  >
+                                </div>
+                              </td>
+                            </template>
+                          </a-table>
+                        </TableWrapper>
+
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'pending_payment'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 40,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                            <template #payroll="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <sdButton
+                                    size="small"
+                                    type="success"
+                                    @click="handleVerify(record.id)"
+                                  >
+                                    &nbsp;&nbsp;
+                                    <router-link
+                                      :to="{
+                                        path: `/payroll/view/${record.id}`,
+                                        query: { id: record.id },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
+                                    >
+                                      &nbsp;&nbsp;
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                    </router-link>
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    type="success"
+                                    size="small"
+                                    @click="handlePay(record.id)"
+                                    >Pay Activity</sdButton
+                                  >
                                 </div>
                               </td>
                             </template>
@@ -208,10 +311,10 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
-                            <template #payroll="{ record }">
+                            <template>
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <sdButton
+                                  <!-- <sdButton
                                     type="check"
                                     size="16"
                                     @click="handleVerify(record.id)"
@@ -220,7 +323,7 @@
                                     <span class="badge badge-green"
                                       >&nbsp;&nbsp; Verify</span
                                     >
-                                  </sdButton>
+                                  </sdButton> -->
                                 </div>
                               </td>
                             </template>
@@ -260,8 +363,18 @@ const columns = [
     key: "id",
   },
   {
-    title: "Status",
+    title: "Validated",
     dataIndex: "status",
+    key: "id",
+  },
+  {
+    title: "Approved",
+    dataIndex: "approval_status",
+    key: "id",
+  },
+  {
+    title: "Paid",
+    dataIndex: "payment_status",
     key: "id",
   },
   {
@@ -324,17 +437,38 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
 
     const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
+      if (activeClass.value === "all") {
         console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
+        return dataSource.value;
+      } else if (activeClass.value === "not_validated") {
+        return dataSource.value.filter(
+          (item) => item.status === "Not Validated"
+        );
+      } else if (activeClass.value === "not_approved") {
+        return dataSource.value.filter(
+          (item) => item.status === "Validated" && item.approval_status === 0
+        );
+      } else if (activeClass.value === "pending_approval") {
+        return dataSource.value.filter(
+          (item) => item.approval_status === "Not Approved"
+        );
+      } else if (activeClass.value === "pending_payment") {
+        return dataSource.value.filter(
+          (item) =>
+            item.approval_status === "Approved" &&
+            item.payment_status === "Not Paid"
+        );
+      } else if (activeClass.value === "paid") {
+        return dataSource.value.filter(
+          (item) =>
+            item.payment_status === 'Paid' &&
+            item.approval_status === 'Approved' &&
+            item.status === "Validated"
+        );
       } else {
         return dataSource.value;
       }
     });
-
-    
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -359,6 +493,61 @@ export default defineComponent({
             {
               payroll_summary_id: id,
               payment_type: "Activity",
+            },
+            { headers: authHeader() }
+          )
+          .then((responsePromise) => {
+            return responsePromise.data;
+          })
+          .then((data) => {
+            console.log(data);
+            if (data.success == true) {
+              notification.success({
+                message: "Success",
+                description: "OTP Sent Successfully",
+              });
+            }
+            const approve_pay = axios
+              .post(
+                `${process.env.VUE_APP_BASE_URL}/payroll_payment`,
+                {
+                  payroll_id: id,
+                },
+                { headers: authHeader() }
+              )
+              .then((responsePromise) => {
+                return responsePromise.data;
+              })
+              .then((data) => {
+                console.log(data);
+                if (data.success == true) {
+                  notification.success({
+                    message: "Success",
+                    description:
+                      "Payment Approved Successfully, Enter OTP to complete payment",
+                  });
+                }
+              });
+            console.log(approve_pay);
+          });
+
+        console.log(response);
+        // const parser = new DOMParser();
+        // const otp = response.data.OTP;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const handleApproval = (id) => {
+      console.log("handleApprove", id);
+      console.log(id);
+      try {
+        const response = axios
+          .post(
+            `${process.env.VUE_APP_BASE_URL}/payroll_approval`,
+            {
+              payroll_id: id,
             },
             { headers: authHeader() }
           )
@@ -411,10 +600,19 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
+          console.log(response.data.data[0]);
           dataSource.value = response.data.data;
           // transform approval status to boolean
           dataSource.value.forEach((item) => {
-            item.approval_status = item.approval_status === 1 ? 'Approved' : 'Not Approved';
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
+          });
+          dataSource.value.forEach((item) => {
+            item.status = item.status === 1 ? "Validated" : "Not Validated";
+          });
+          dataSource.value.forEach((item) => {
+            item.payment_status =
+              item.payment_status === 1 ? "Paid" : "Not Paid";
           });
           console.log(dataSource.value);
         })
@@ -424,25 +622,6 @@ export default defineComponent({
     });
     const handleVerify = (record) => {
       console.log(record);
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-          headers: authHeader(),
-        })
-        .then(({ status }) => {
-          console.log(status);
-          if (status == 200) {
-            location.reload();
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
     };
 
     // handleChange(tab) {
@@ -475,6 +654,7 @@ export default defineComponent({
       inputValue,
       // showModal,
       handlePay,
+      handleApproval,
       handleOk,
       handleCancel,
     };

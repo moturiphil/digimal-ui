@@ -37,26 +37,24 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton type="check" size="16">
-                                    &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                            >&nbsp;&nbsp; Payroll Details</span
-                                          > -->
-                                    <router-link
+                                  <sdButton
+                                    type="success"
+                                    size="small"
+                                    ><router-link
                                       :to="{
                                         path: `/activity/breakdown/${record.id}`,
-                                        query: { id: record.id },
+                                        query: { id: record.id, name: record.user_id },
                                       }"
                                       class="btn-icon"
                                       type="info"
                                       shape="circle"
                                     >
                                       &nbsp;&nbsp;
-                                      <span class="badge badge-green"
+                                      <span class=""
                                         >&nbsp;&nbsp; Breakdown</span
                                       >
-                                    </router-link>
-                                  </sdButton>
+                                    </router-link></sdButton
+                                  >
                                 </div>
                               </td>
                             </template>
@@ -166,10 +164,16 @@ import { notification } from "ant-design-vue";
 // const households = ref([]);
 
 const columns = [
+  // {
+  //   title: "#",
+  //   dataIndex: "id",
+  //   key: "id",
+  // },
   {
-    title: "Name",
-    dataIndex: "id",
-    key: "id",
+    title: "#",
+    dataIndex: null,
+    key: "index",
+    render: (text, record, index) => index + 1,
   },
   {
     title: "Name",
