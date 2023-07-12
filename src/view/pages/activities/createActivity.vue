@@ -136,19 +136,6 @@
                         :disabledDate="disabledDate"
                       />
                     </a-form-item>
-
-                    <a-form-item
-                      name="payable_travel_days"
-                      label="Payable Travel Days"
-                    >
-                      <a-input
-                        v-model:value="formState.payable_travel_days"
-                        placeholder="Payable Travel Days"
-                        type="number"
-                        default-value="1"
-                        min="0"
-                      />
-                    </a-form-item>
                     <!-- no of officers as number -->
                     <a-form-item
                       name="number_of_officers"

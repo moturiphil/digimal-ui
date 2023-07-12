@@ -5,8 +5,7 @@
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
-            <div class="search-filter-menu">
-            </div>
+            <div class="search-filter-menu"></div>
           </a-col>
           <a-col :xs="24">
             <sdCards headless>
@@ -158,7 +157,6 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 
-
 const columns = [
   {
     title: "id",
@@ -166,38 +164,23 @@ const columns = [
     key: "id",
   },
   {
-    title: "Event",
-    dataIndex: "payroll_summary_id",
+    title: "Name",
+    dataIndex: "receiver_party",
     key: "id",
   },
   {
-    title: "Summary",
-    dataIndex: "payroll_list_id",
+    title: "Transaction Code",
+    dataIndex: "transaction_code",
     key: "id",
   },
   {
-    title: "Type",
-    dataIndex: "payment_type",
+    title: "Amount",
+    dataIndex: "transaction_amount",
     key: "id",
   },
   {
-    title: "Conversation Id",
-    dataIndex: "ConversationID",
-    key: "id",
-  },
-  {
-    title: "Result Code",
-    dataIndex: "ResultCode",
-    key: "id",
-  },
-  {
-    title: "Description",
-    dataIndex: "ResultDesc",
-    key: "id",
-  },
-  {
-    title: "Updated At",
-    dataIndex: "updated_at",
+    title: "Transaction Time",
+    dataIndex: "transaction_completed_datetime",
     key: "id",
   },
 ];
@@ -249,7 +232,7 @@ export default defineComponent({
     console.log({ params, query });
 
     console.log(query.id);
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/events_b2c_responses`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_transactions`;
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
@@ -272,8 +255,8 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          dataSource.value = response.data;
-          console.log(response);
+          dataSource.value = response.data.data;
+          console.log(response.data.data);
         })
         .catch((error) => {
           console.error(error);
