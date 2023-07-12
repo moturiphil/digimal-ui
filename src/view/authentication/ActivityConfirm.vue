@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader
-    class="header-boxed"
-    title="ACTIVITY PARTICIPATION CONFIRMATION"
-  >
-  </sdPageHeader>
   <Main class="grid-boxed">
+    <sdPageHeader
+      class="header-boxed"
+      title="ACTIVITY PARTICIPATION CONFIRMATION"
+    >
+    </sdPageHeader>
     <a-row :gutter="25">
       <a-col :lg="24" :xs="24">
         <sdCards headless>
@@ -66,7 +66,6 @@ import { Main } from "../styled";
 import SvgConverter from "@/components/utilities/SvgConverter.vue";
 import { notification } from "ant-design-vue";
 
-
 import authHeader from "../../services/auth-header";
 
 const Sales = {
@@ -98,34 +97,48 @@ const Sales = {
     };
   },
   mounted() {
+    const user = JSON.parse(sessionStorage.getItem("user"));
     this.currentUrl = this.$route.fullPath;
-    let newUrl = this.currentUrl.replace(
-      "/auth/activity-confirm?",
-      "act_part?"
+    this.participantUrl = `${process.env.VUE_APP_URL}${this.currentUrl}`;
+    console.log(this.currentUrl);
+    let newUrl = this.participantUrl.replace(
+      `${process.env.VUE_APP_URL}/auth/activity-confirm?`,
+      `${process.env.VUE_APP_BASE_URL}/act_part?`
     );
-    // console.log(this.currentUrl);
-
-    const response = fetch(`${process.env.VUE_APP_BASE_URL}/${newUrl}`, {
-      method: "GET",
-      headers: authHeader(),
-    });
     console.log(newUrl);
-
-    response
-      .then((res) => {
-        console.log(res);
-        return res.json();
-      })
-      .then((data) => {
-        console.log(data); // This should log the "id" property from the response data
-        this.participant_name = data.user_id;
-        this.activity_name = data.activity_id;
-        this.activity_date = data.activity_date;
-      })
-      .catch((error) => {
-        console.log(error);
+    console.log(user);
+    if (user && user.token) {
+      console.log(newUrl);
+      const response = fetch(newUrl, {
+        method: "GET",
+        headers: authHeader(),
       });
+      console.log(response);
+
+      response
+        .then((res) => {
+          console.log(res);
+          if (!res.ok) {
+            throw new Error("Response not OK");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          console.log(data); // This should log the parsed JSON data
+          this.participant_name = data.user_id;
+          this.activity_name = data.activity_id;
+          this.activity_date = data.activity_date;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      sessionStorage.setItem("redirectUrl", this.currentUrl); // Store the currentUrl in sessionStorage
+      console.log(sessionStorage.getItem("redirectUrl"));
+      this.$router.push("/auth/login");
+    }
   },
+
   methods: {
     confirm() {
       let newUrl = this.currentUrl.replace(
@@ -133,24 +146,28 @@ const Sales = {
         "act_part_cfm?"
       );
       console.log(newUrl);
-      const confirm_response = fetch(`${process.env.VUE_APP_BASE_URL}/${newUrl}`, {
-        method: "GET",
-        headers: authHeader(),
-      });
+      const confirm_response = fetch(
+        `${process.env.VUE_APP_BASE_URL}/${newUrl}`,
+        {
+          method: "GET",
+          headers: authHeader(),
+        }
+      );
       // console.log(confirm_response);
       confirm_response.then((res) => {
         console.log(res);
         // return res.json();
+        console.log(res);
         if (res.status == 200) {
           notification.success({
             message: "Success",
-            description: "Activity Participation Confirmed",
+            description: res.statusText,
           });
           this.$router.push("/");
         } else {
           notification.error({
             message: "Error",
-            description: "Activity Participation Not Confirmed",
+            description: res.statusText,
           });
         }
       });

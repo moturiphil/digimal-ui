@@ -66,7 +66,8 @@ const routes = [
       {
         path: "/assign-worker/:id",
         name: "post-worker",
-        component: () => import("@/view/pages/net-distribution/AssignWorker.vue"),
+        component: () =>
+          import("@/view/pages/net-distribution/AssignWorker.vue"),
       },
       {
         path: "/campaigns/create-campaign",
@@ -101,12 +102,14 @@ const routes = [
       {
         path: "/activity/pending-confirmation/:id",
         name: "pending-confirmation-activity",
-        component: () => import("@/view/pages/activities/pendingConfirmation.vue"),
+        component: () =>
+          import("@/view/pages/activities/pendingConfirmation.vue"),
       },
       {
         path: "/activity/confirmed-participants/:id",
         name: "activity-confirmed-participants",
-        component: () => import("@/view/pages/activities/confirmedParticipants.vue"),
+        component: () =>
+          import("@/view/pages/activities/confirmedParticipants.vue"),
       },
       {
         path: "/payroll/view/:id",
@@ -264,19 +267,28 @@ const routes = [
     ],
   },
   {
-    path: '/household/validation',
-    name: 'hh-validation',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/HouseHoldValidation.vue'),
+    path: "/household/validation",
+    name: "hh-validation",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/HouseHoldValidation.vue"
+      ),
   },
   {
-    path: '/activity-payroll',
-    name: 'activity-payroll',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/Payroll.vue'),
+    path: "/activity-payroll",
+    name: "activity-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/Payroll.vue"
+      ),
   },
   {
-    path: '/event-payroll',
-    name: 'event-payroll',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventPayroll.vue'),
+    path: "/event-payroll",
+    name: "event-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/eventPayroll.vue"
+      ),
   },
   {
     path: "/activity/matrix/:id",
@@ -294,34 +306,52 @@ const routes = [
     component: () => import("@/view/pages/payroll/assignEventMatrix.vue"),
   },
   {
-    path: '/view-payroll',
-    name: 'view-payroll',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/PayrollView.vue'),
+    path: "/view-payroll",
+    name: "view-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/PayrollView.vue"
+      ),
   },
   {
-    path: '/view-transactions',
-    name: 'view-transactions',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventTransactionDetails.vue'),
+    path: "/view-transactions",
+    name: "view-transactions",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/eventTransactionDetails.vue"
+      ),
   },
   {
-    path: '/activity-payroll-matrix',
-    name: 'activity-payroll-matrix',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/activityPayrollMatrix.vue'),
+    path: "/activity-payroll-matrix",
+    name: "activity-payroll-matrix",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue"
+      ),
   },
   {
-    path: '/list-activity/matrix',
-    name: '/list-activity-matrix',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/listActivityMatrix.vue'),
+    path: "/list-activity/matrix",
+    name: "/list-activity-matrix",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/listActivityMatrix.vue"
+      ),
   },
   {
-    path: '/event-payroll-matrix',
-    name: 'event-payroll-matrix',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/payroll/eventPayrollMatrix.vue'),
+    path: "/event-payroll-matrix",
+    name: "event-payroll-matrix",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/eventPayrollMatrix.vue"
+      ),
   },
   {
-    path: '/logs',
-    name: 'logs',
-    component: () => import(/* webpackChunkName: "Search" */ '@/view/pages/audit-logs/AuditLogs.vue'),
+    path: "/logs",
+    name: "logs",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/audit-logs/AuditLogs.vue"
+      ),
   },
   ...PageRoutes,
   ...FeaturesRoutes,

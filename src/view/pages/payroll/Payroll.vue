@@ -27,7 +27,7 @@
                     All Payroll
                   </a>
                 </li>
-                <li>
+                <li v-if="isValidator">
                   <a
                     :class="
                       activeClass === 'not_validated' ? 'active' : 'deactivate'
@@ -38,7 +38,7 @@
                     Pending Validation
                   </a>
                 </li>
-                <li>
+                <li v-if="isApprover">
                   <a
                     :class="
                       activeClass === 'pending_approval'
@@ -51,7 +51,7 @@
                     Pending Approval
                   </a>
                 </li>
-                <li>
+                <li v-if="isAdminAccountant">
                   <a
                     :class="
                       activeClass === 'pending_payment'
@@ -193,6 +193,8 @@
                                       <span>&nbsp;&nbsp; Payroll Details</span>
                                     </router-link>
                                   </sdButton>
+                                  &nbsp;&nbsp;
+
                                   <sdButton
                                     type="success"
                                     size="small"
@@ -461,8 +463,8 @@ export default defineComponent({
       } else if (activeClass.value === "paid") {
         return dataSource.value.filter(
           (item) =>
-            item.payment_status === 'Paid' &&
-            item.approval_status === 'Approved' &&
+            item.payment_status === "Paid" &&
+            item.approval_status === "Approved" &&
             item.status === "Validated"
         );
       } else {
@@ -539,6 +541,45 @@ export default defineComponent({
       }
     };
 
+    const handleValidation = (id) => {
+      console.log("handleApprove", id);
+      console.log(id);
+      try {
+        const response = axios
+          .post(
+            `${process.env.VUE_APP_BASE_URL}/payroll_validation`,
+            {
+              payroll_id: id,
+            },
+            { headers: authHeader() }
+          )
+          .then((responsePromise) => {
+            return responsePromise.data;
+          })
+          .then((data) => {
+            console.log(data);
+            if (data.success == true) {
+              notification.success({
+                message: "Success",
+                description: "Payroll Validated Successfully",
+              });
+            }
+            else {
+              notification.error({
+                message: "Error",
+                description: "Payroll Validation Failed",
+              });
+            }
+          });
+
+        console.log(response);
+        // const parser = new DOMParser();
+        // const otp = response.data.OTP;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     const handleApproval = (id) => {
       console.log("handleApprove", id);
       console.log(id);
@@ -556,6 +597,18 @@ export default defineComponent({
           })
           .then((data) => {
             console.log(data);
+            if (data.success == true) {
+              notification.success({
+                message: "Success",
+                description: "Payroll Validated Successfully",
+              });
+            }
+            else {
+              notification.error({
+                message: "Error",
+                description: "Payroll Validation Failed",
+              });
+            }
           });
 
         console.log(response);
@@ -624,6 +677,27 @@ export default defineComponent({
       console.log(record);
     };
 
+    // const level_id = ref("");
+    const role_id = ref("");
+    // const admin_role_id = ref("");
+
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    console.log(user);
+      console.log(user.user[0].role_id);
+      role_id.value = user.user[0].role_id;
+
+    const isValidator = computed(() => {
+      return role_id.value === 28 || role_id.value === 1;
+    });
+
+    const isApprover = computed(() => {
+      return role_id.value === 29 || role_id.value === 1;
+    });
+
+    const isAdminAccountant = computed(() => {
+      return role_id.value === 30 || role_id.value === 1;
+    });
+
     // handleChange(tab) {
     //   if (tab === 'all') {
     //     filteredData.value = dataSource.value;
@@ -654,9 +728,13 @@ export default defineComponent({
       inputValue,
       // showModal,
       handlePay,
+      handleValidation,
       handleApproval,
       handleOk,
       handleCancel,
+      isValidator,
+      isApprover,
+      isAdminAccountant,
     };
   },
   // computed: {

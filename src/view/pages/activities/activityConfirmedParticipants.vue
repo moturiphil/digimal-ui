@@ -70,6 +70,16 @@ const columns = [
     key: "id",
   },
   {
+    title: "Location",
+    dataIndex: "location_id",
+    key: "id",
+  },
+  {
+    title: "Level",
+    dataIndex: "level_id",
+    key: "id",
+  },
+  {
     title: "Organization",
     dataIndex: "org_types_id",
     key: "id",
@@ -108,7 +118,7 @@ const EventCampaignTable = defineComponent({
             headers: authHeader(),
           }
         );
-        // console.log(response.data.data);
+        console.log(response.data.data);
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;

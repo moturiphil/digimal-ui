@@ -5,13 +5,15 @@ const API_URL = `${process.env.VUE_APP_BASE_URL}/`;
 
 class AuthService {
   login(user) {
+    console.log(`user:`, user);
+
     return axios
       .post(API_URL + 'login', {
         id_no: user.id_no,
         password: user.password
       })
       .then(response => {
-        // console.log(response);
+        console.log(response);
         // sessionStorage.setItem('person', JSON.stringify(response));
         if (response.data.token) {
           sessionStorage.setItem('user-config-token', JSON.stringify(response.data.token));
