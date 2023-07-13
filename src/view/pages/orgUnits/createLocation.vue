@@ -84,7 +84,8 @@
 
                     <a-form-item name="name" label="Location Name">
                       <a-input
-                        v-model:value="formState.name"
+                        type="file"
+                        @change="handleFileUpload"
                         placeholder="Enter Location name"
                       />
                     </a-form-item>
@@ -124,12 +125,13 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation?unit=location`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation`;
 
     const formState = reactive({
       name: "",
       ward_id: "",
     });
+     let formData = new FormData();
 
     const { counties, loading, sub_counties, wards } = reactive({
       counties: [],
@@ -200,28 +202,22 @@ const AddNew = defineComponent({
       this.wards = data.message;
     };
 
+    const handleFileUpload=(event)=> {
+      this.file = event.target.files[0];
+    };
+
     const handleSubmit = (values) => {
 
-      console.log(values.ward_id);
-      console.log(values.name);
-
-      const data = {
-        parent_id: values.ward_id,
-        data: [
-          {
-            name: values.name,
-          },
-        ],
-      };
-      console.log(API_URL);
+      formData.append("parent_id", values.ward_id);
+      formData.append("file", this.file);
+      formData.append("unit", 'location');
 
       fetch(API_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(data),
+        body: formData,
       })
         .then((response) => response.json())
         .then(({ success }) => {
@@ -251,6 +247,7 @@ const AddNew = defineComponent({
       counties,
       sub_counties,
       wards,
+      handleFileUpload,
       getSubCounties,
       getWards,
     };
