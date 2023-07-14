@@ -237,11 +237,12 @@ export default defineComponent({
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
       level_id.value = user.user[0].level_id;
+      role_id.value = user.user[0].role_id; 
       console.log(level_id.value);
     });
 
      const isLevelOne = computed(() => {
-      return level_id.value === 1;
+      return level_id.value === 1 || role_id.value === 27;
     });
 
     const router = computed(() => useRoute());

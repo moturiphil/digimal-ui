@@ -1,0 +1,194 @@
+<template>
+  <div>
+    <sdPageHeader
+      :title="`Assign Activity Payroll - ${activity_name}`"
+    ></sdPageHeader>
+    <Main>
+      <!-- <sdButton class="btn-import" type="success" size="small">
+        <router-link to="/activity/matrix/create">
+          <span class="btn-text"> Create Payroll Matrix </span>
+        </router-link>
+      </sdButton> -->
+      <br />
+      <br />
+      <!-- <br> -->
+      <SearchResultWrapper>
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <sdCards headless>
+              <div class="result-list-content">
+                <a-row :gutter="15">
+                  <a-col class="w-100" :md="24">
+                    <sdCards headless>
+                      <div v-if="isLoading" class="spin">
+                        <a-spin />
+                      </div>
+
+                      <div v-else>
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'all'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 50,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="dataSource"
+                            :columns="columns"
+                          >
+                          </a-table>
+                        </TableWrapper>
+                      </div>
+                    </sdCards>
+                  </a-col>
+                </a-row>
+              </div>
+            </sdCards>
+          </a-col>
+        </a-row>
+      </SearchResultWrapper>
+    </Main>
+  </div>
+</template>
+
+<script>
+import { Main } from "../../styled";
+import { SearchResultWrapper } from "../style";
+import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import authHeader from "../../../services/auth-header";
+import axios from "axios";
+import { useStore } from "vuex";
+import { useRoute } from "vue-router";
+
+// const households = ref([]);
+
+const columns = [
+  {
+    title: "",
+    dataIndex: "activity_list_id",
+    key: "id",
+  },
+  {
+    title: "Assigned Payroll Matrix",
+    dataIndex: "pay_matrix_id",
+    key: "id",
+  },
+  //   {
+  //     title: "No of Officers",
+  //     dataIndex: "no_of_officers",
+  //     key: "id",
+  //   },
+  //   {
+  //     title: "",
+  //     dataIndex: "Assign Matrix",
+  //     key: "payroll",
+  //     slots: { customRender: "payroll" },
+  //   },
+];
+export default defineComponent({
+  name: "MatrixPerActivity",
+  components: {
+    Main,
+    SearchResultWrapper,
+  },
+  data() {
+    return {
+      notData: this.searchData,
+      current: 0,
+      pageSize: 0,
+      visible: false,
+      confirmLoading: false,
+    };
+  },
+  methods: {},
+  setup() {
+    const { state } = useStore();
+    const crud = computed(() => state.crud.data);
+    const isLoading = computed(() => state.crud.loading);
+    const selectedRowKeys = ref([]);
+    const dataSource = ref([]);
+    const activeClass = ref("all");
+
+    const { params, query } = useRoute();
+
+    console.log({ query, params });
+    const matrix_id = query.id;
+    console.log(matrix_id);
+    const activity_name = query.name;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/view_activity_matrix?activity_list_id=${matrix_id}`;
+
+    const handleChange = (tab) => {
+      activeClass.value = tab;
+    };
+
+    onMounted(() => {
+      axios
+        .get(API_URL, {
+          headers: authHeader(),
+        })
+        .then((response) => {
+          dataSource.value = response.data.data;
+          console.log(dataSource.value);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+    const formState = reactive({
+      searchItem: "",
+    });
+
+    return {
+      crud,
+      isLoading,
+      selectedRowKeys,
+      dataSource,
+      columns,
+      formState,
+      // exportHouseHoldData,
+      handleChange,
+      activeClass,
+      activity_name,
+    };
+  },
+  // computed: {
+  // },
+});
+</script>
+<style>
+.badge-green {
+  background-color: #1ec997;
+  /* color: white; */
+  /* padding: 2px;
+    border-radius: 3px; */
+  /* size */
+  font-size: 12px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 1rem;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+</style>

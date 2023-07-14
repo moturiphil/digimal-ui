@@ -1,18 +1,18 @@
 <template>
-  <sdPageHeader title="Import">
-    <template v-slot:buttons>
-      <div class="page-header-actions">
-        <sdCalendarButton />
-        <sdExportButton />
-        <sdShareButton />
-        <sdButton size="small" type="primary">
-          <sdFeatherIcons type="plus" size="14" />
-          Add New
-        </sdButton>
-      </div>
-    </template>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Import">
+      <template v-slot:buttons>
+        <div class="page-header-actions">
+          <sdCalendarButton />
+          <sdExportButton />
+          <sdShareButton />
+          <sdButton size="small" type="primary">
+            <sdFeatherIcons type="plus" size="14" />
+            Add New
+          </sdButton>
+        </div>
+      </template>
+    </sdPageHeader>
     <a-row :gutter="25">
       <a-col :sm="24" :xs="24">
         <ImportStyleWrap>
@@ -26,7 +26,9 @@
                     </p>
                     <sdHeading as="h4" class="ant-upload-text">
                       <span> Drop File</span>
-                      <span class="ant-upload-hint"> or <span>Browse</span> </span>
+                      <span class="ant-upload-hint">
+                        or <span>Browse</span>
+                      </span>
                     </sdHeading>
                   </a-upload-dragger>
                 </div>
@@ -39,34 +41,35 @@
   </Main>
 </template>
 <script lang="jsx">
-import { Main, ImportStyleWrap } from '../../styled';
-import { message } from 'ant-design-vue';
-import { ref, defineComponent } from 'vue';
+import { Main, ImportStyleWrap } from "../../styled";
+import { message } from "ant-design-vue";
+import { ref, defineComponent } from "vue";
 
 const Import = defineComponent({
-  name: 'Import',
+  name: "Import",
   components: { Main, ImportStyleWrap },
   setup() {
     const file = ref(null);
     const list = ref(null);
     const submitValues = ref({});
     const fileUploadProps = {
-      name: 'file',
+      name: "file",
       multiple: true,
-      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      action: "https://www.mocky.io/v2/5cc8019d300000980a055e76",
       onChange(info) {
         const { status } = info.file;
-        if (status !== 'uploading') {
+        console.log(status);
+        if (status !== "uploading") {
           file.value = info.file;
           list.value = info.fileList;
         }
-        if (status === 'done') {
+        if (status === "done") {
           message.success(`${info.file.name} file uploaded successfully.`);
-        } else if (status === 'error') {
+        } else if (status === "error") {
           message.error(`${info.file.name} file upload failed.`);
         }
       },
-      listType: 'picture',
+      listType: "picture",
       defaultFileList: [],
       showUploadList: {
         showRemoveIcon: true,

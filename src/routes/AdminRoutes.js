@@ -326,7 +326,15 @@ const routes = [
     name: "activity-payroll-matrix",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue"   // activity/view-matrix/
+      ),
+  },
+  {
+    path: "/activity/view-matrix/:id",
+    name: "assigned-activity-matrix",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/matrixPerActivity.vue"
       ),
   },
   {
