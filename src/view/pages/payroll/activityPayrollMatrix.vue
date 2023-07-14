@@ -4,13 +4,11 @@
     <Main>
       <sdButton class="btn-import" type="success" size="small">
         <router-link to="/activity/matrix/create">
-          <span class="btn-text">
-        Create Payroll Matrix
-          </span>
+          <span class="btn-text"> Create Payroll Matrix </span>
         </router-link>
       </sdButton>
-      <br>
-      <br>
+      <br />
+      <br />
       <!-- <br> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
@@ -57,7 +55,7 @@
                                       type="info"
                                       shape="circle"
                                       @click="showModal = true"
-                                      >
+                                    >
                                       <span class=""
                                         >&nbsp;&nbsp; Assign Matrix</span
                                       >
@@ -71,11 +69,21 @@
                                     size="small"
                                     type="success"
                                   >
-                                    <sdFeatherIcons type="eye" size="large" />
-                                    &nbsp;&nbsp;
-                                    <span class=""
-                                      >&nbsp;&nbsp; View Matrix</span
+                                    <router-link
+                                      :to="{
+                                        path: `/activity/view-matrix/${record.id}`,
+                                        query: {
+                                          id: record.id,
+                                          name: record.name,
+                                        },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
                                     >
+                                      <sdFeatherIcons type="eye" size="16" />
+                                      &nbsp;&nbsp; View Matrix
+                                    </router-link>
                                   </sdButton>
 
                                   <!-- Modal -->
