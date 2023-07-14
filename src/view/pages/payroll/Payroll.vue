@@ -687,15 +687,15 @@ export default defineComponent({
       role_id.value = user.user[0].role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 27 || role_id.value === 1;
+      return role_id.value === 4 || role_id.value === 1;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 28 || role_id.value === 1;
+      return role_id.value === 3 || role_id.value === 1;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 29 || role_id.value === 1;
+      return role_id.value === 2 || role_id.value === 1;
     });
 
     // handleChange(tab) {
