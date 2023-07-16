@@ -105,7 +105,8 @@
 
                     <a-form-item name="name" label="Sub Location Name">
                       <a-input
-                        v-model:value="formState.name"
+                        type="file"
+                        @change="handleFileUpload"
                         placeholder="Enter Sub Location name"
                       />
                     </a-form-item>
@@ -145,7 +146,8 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation?unit=sub-location`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/ouCreation`;
+    let formData = new FormData();
 
     const formState = reactive({
       name: "",
@@ -236,28 +238,22 @@ const AddNew = defineComponent({
       this.locations = data.message;
     };
 
+    const handleFileUpload=(event)=> {
+      this.file = event.target.files[0];
+    };
+
     const handleSubmit = (values) => {
 
-      console.log(values.location_id);
-      console.log(values);
-
-      const data = {
-        parent_id: values.location_id,
-        data: [
-          {
-            name: values.name,
-          },
-        ],
-      };
-      console.log(API_URL);
+      formData.append("parent_id", values.location_id);
+      formData.append("file", this.file);
+      formData.append("unit", 'sub-location');
 
       fetch(API_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           ...authHeader(),
         },
-        body: JSON.stringify(data),
+        body: formData,
       })
         .then((response) => response.json())
         .then(({ success }) => {
@@ -288,6 +284,7 @@ const AddNew = defineComponent({
       sub_counties,
       locations,
       wards,
+      handleFileUpload,
       getSubCounties,
       getLocations,
       getWards,
