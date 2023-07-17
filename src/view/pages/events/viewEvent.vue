@@ -54,7 +54,6 @@
                           </span>
                         </sdButton>
 
-
                         <!-- <sdButton
                           size="small"
                           type="success"
@@ -83,7 +82,7 @@
                         </sdButton>
 
                         <sdButton
-                          @click="showSuccessModal(record.event_code)"
+                          @click="handleRegistration(record.event_code)"
                           size="small"
                           type="success"
                         >
@@ -102,7 +101,11 @@
                           <router-link
                             :to="{
                               path: `/event/details/${record.id}`,
-                              query: { id: record.id, name: record.name, event_code: record.event_code},
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                                event_code: record.event_code,
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -112,34 +115,18 @@
                             &nbsp;&nbsp; View Event
                           </router-link>
                         </sdButton>
-                        <!-- <sdButton>
-                          <router-link
-                            :to="{
-                              path: `/event/view/${record.id}`,
-                              query: { id: record.event_code },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="check" size="16" />
-                            &nbsp;&nbsp; Confirmed Participants
-                          </router-link>
-                        </sdButton>
-                        <sdButton>
-                          <router-link
-                            :to="{
-                              path: `/event/pending-confirmation/${record.id}`,
-                              query: { id: record.event_code },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="pause" size="16" />
-                            &nbsp;&nbsp; Pending Confirmation
-                          </router-link>
-                        </sdButton> -->
+                        <a-modal
+                          title="Event Confirmation"
+                          :visible="isModalOpen"
+                          @ok="handleOk(recordId, inputValue)"
+                          @cancel="handleCancel"
+                          class="title-success"
+                        >
+                          <div>
+                            <p>Registration Confirmation processing</p>
+                            <input type="number" v-model="inputValue" />
+                          </div>
+                        </a-modal>
                       </div>
                     </td>
                   </template>
@@ -160,7 +147,7 @@ import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import { useRouter } from "vue-router";
-import { Modal } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 // import axios from "axios";
 
 const router = useRouter();
@@ -253,13 +240,8 @@ const ViewPage = defineComponent({
         const data = await response.json();
         console.log(data);
         if (data.status === true) {
-          // this.$set(this.eventStatus, id, true); // update the eventStatus object for this event
-          // Vue.set(this.eventStatus, id, true); // update the eventStatus object for this event
           this.eventStatus[id] = true;
-          // this.$router.go();
-          // console.log(this.eventStatus[1])
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          // console.log(localStorage.getItem("eventStatus"));
         }
         location.reload();
       } catch (error) {
@@ -268,70 +250,71 @@ const ViewPage = defineComponent({
         this.isStarting = false;
       }
     },
-    showModal() {
-      this.visible = true;
-    },
+    // showModal() {
+    //   this.visible = true;
+    // },
 
-    showSuccessModal(record) {
-      console.log(record);
-      const input = document.createElement("input");
-      input.id = "regCode";
-      input.placeholder = "Enter Registration code";
+    // showSuccessModal(record) {
+    //   console.log(record);
+    //   const input = document.createElement("input");
+    //   input.id = "regCode";
+    //   input.placeholder = "Enter Registration code";
 
-      const div = document.createElement("div");
-      div.innerHTML = "<p>Enter Registration Code to Register</p>";
-      div.appendChild(input);
+    //   const div = document.createElement("div");
+    //   div.innerHTML = "<p>Enter Registration Code to Register</p>";
+    //   div.appendChild(input);
 
-      // const self = this;
+    //   // const self = this;
 
-      Modal.success({
-        title: "Event Registration",
-        content: div,
-        okText: "Register",
-        onOk: async function () {
-          try {
-            const userRegCode = document.getElementById("regCode").value;
-            console.log(userRegCode);
+    //   Modal.success({
+    //     title: "Event Registration",
+    //     content: div,
+    //     okText: "Register",
+    //     onOk: async function () {
+    //       try {
+    //         const userRegCode = document.getElementById("regCode").value;
+    //         console.log(userRegCode);
 
-            const response = await axios.get(
-              `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
-              { headers: authHeader() }
-            );
+    //         const response = await axios.get(
+    //           `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
+    //           { headers: authHeader() }
+    //         );
 
-            if (response.status !== 200) {
-              throw new Error("Failed to Register Participant to event");
-            } else {
-              console.log("Participant Registered");
-            }
+    //         if (response.status !== 200) {
+    //           throw new Error("Failed to Register Participant to event");
+    //         } else {
+    //           console.log("Participant Registered");
+    //         }
 
-            Modal.success({
-              title: "Success",
-              content: "You have been registered for the event",
-            });
-          } catch (error) {
-            Modal.error({
-              title: "Error",
-              content: error.message,
-            });
-          }
-        },
-        style: {
-          float: "center",
-          display: "grid",
-          placeContent: "center",
-        },
-      });
-    },
+    //         Modal.success({
+    //           title: "Success",
+    //           content: "You have been registered for the event",
+    //         });
+    //       } catch (error) {
+    //         Modal.error({
+    //           title: "Error",
+    //           content: error.message,
+    //         });
+    //       }
+    //     },
+    //     style: {
+    //       float: "center",
+    //       display: "grid",
+    //       placeContent: "center",
+    //     },
+    //   });
+    // },
 
-    handleOk() {
-      this.confirmLoading = true;
-      setTimeout(() => {
-        this.visible = false;
-        this.colorVisible = false;
-        this.confirmLoading = false;
-      }, 2000);
-    },
+    // handleOk() {
+    //   this.confirmLoading = true;
+    //   setTimeout(() => {
+    //     this.visible = false;
+    //     this.colorVisible = false;
+    //     this.confirmLoading = false;
+    //   }, 2000);
+    // },
     handleCancel() {
+      this.isModalOpen = false
       this.visible = false;
       this.colorVisible = false;
     },
@@ -361,9 +344,47 @@ const ViewPage = defineComponent({
     const dataSource = ref([]);
     const eventCode = ref("");
     const searchItem = ref("");
+    const isModalOpen = ref(false);
+    const recordId = ref(null);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
 
+    const handleRegistration = (id) => {
+      isModalOpen.value = true;
+      console.log("handlePay", id);
+      recordId.value = id;
+      console.log("recordId", recordId.value);
+      try {
+        console.log("register");
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    const handleOk = async (id, inputValue) => {
+      console.log(recordId.value);
+      console.log(inputValue);
+      try {
+        const response = await axios.get(
+              `${process.env.VUE_APP_BASE_URL}/event/${recordId.value}/participant/${inputValue}/assign`,
+          // `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
+          { headers: authHeader() }
+        );
+        console.log(response);
+        if (response.status == 200) {
+          notification.success({
+            message: "Success",
+            description: "Event Registration Successful",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        notification.error({
+          message: "Error",
+          description: "Participant Registration Failed",
+        });
+      }
+      isModalOpen.value = false;
+    };
 
     onMounted(() => {
       axios
@@ -371,9 +392,9 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          if(user.user[0].level_id === 1){
+          if (user.user[0].level_id === 1) {
             dataSource.value = response.data.data;
-          }else{
+          } else {
             const rs = response.data.data.filter((event) => {
               return event.location_id === user.user[0].level_id;
             });
@@ -424,22 +445,16 @@ const ViewPage = defineComponent({
       selectedRowKeys.value = selectedRowKey;
     };
 
-   const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.event_code) ||
-              regex.test(event.name)
-              );
-            }
-           );
-         }
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return regex.test(event.event_code) || regex.test(event.name);
+        });
+      }
     });
     const rowSelection = {
       selectedRowKeys,
@@ -457,6 +472,9 @@ const ViewPage = defineComponent({
       searchItem,
       dataSource,
       columns,
+      handleRegistration,
+      handleOk,
+      isModalOpen,
     };
   },
 });
