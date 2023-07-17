@@ -12,37 +12,28 @@
             <a-row justify="center">
               <a-col :xl="10" :md="16" :xs="24">
                 <BasicFormWrapper>
-                  <a-form
+                  <Form
                     class="add-record-form"
                     :style="{ width: '100%' }"
                     layout="vertical"
                     name="addnew"
                     :model="formState"
-                    @finish="handleSubmit"
+                    @submit="handleSubmit"
                   >
-                    <a-form-item name="name" label="Campaign Name">
-                      <a-input
-                        v-model:value="formState.name"
-                        placeholder="Input Campaign Name"
-                      />
-                    </a-form-item>
+
+                      <a-form-item name="name" label="Campaign Name">
+                        <Field name="name" class="ant-input" v-model:value="formState.name" type="text" placeholder="Input Campaign Name"  :rules="validate" />
+                        <ErrorMessage name="name" style="color: red;" />
+                      </a-form-item>
 
                     <a-form-item name="startDate" label="Campaign Start Date">
-                      <a-date-picker
-                        :style="{ width: '100%' }"
-                        v-model:value="formState.startDate"
-                        :format="dateFormat"
-                        :disabledDate="disabledDate"
-                      />
+                        <Field name="startDate" class="ant-input" v-model:value="formState.startDate" type="date" :min="minDate" :format="dateFormat" :rules="validate" />
+                        <ErrorMessage name="startDate" style="color: red;" />
                     </a-form-item>
 
                     <a-form-item name="endDate" label="Campaign End Date">
-                      <a-date-picker
-                        :style="{ width: '100%' }"
-                        v-model:value="formState.endDate"
-                        :format="dateFormat"
-                        :disabledDate="disabledDate"
-                      />
+                      <Field name="endDate" class="ant-input" v-model:value="formState.endDate" type="date" :format="dateFormat" :min="minDate" :rules="validate" />
+                      <ErrorMessage name="endDate" style="color: red;"/>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -50,7 +41,7 @@
                         {{ isLoading ? "Loading..." : "Submit" }}
                       </sdButton>
                     </div>
-                  </a-form>
+                  </Form>
                 </BasicFormWrapper>
               </a-col>
             </a-row>
@@ -66,15 +57,16 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
 // import axios from "axios";
+import {  Field, Form, ErrorMessage } from 'vee-validate';
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
+import dayjs from "dayjs";
 
 const dateFormat = "YYYY-MM-DD";
-
 const AddNew = defineComponent({
   name: "AddNew",
-  components: { RecordFormWrapper, Main, BasicFormWrapper },
+  components: { RecordFormWrapper, Main, BasicFormWrapper, Field, Form, ErrorMessage },
   setup() {
     const { state } = useStore();
 
@@ -90,8 +82,8 @@ const AddNew = defineComponent({
     const handleSubmit = (values) => {
       values = {
         name: values.name,
-        start_date: new Date(values.startDate.$d).toISOString().substr(0, 10),
-        end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
+        start_date: values.startDate,
+        end_date: values.endDate
       };
 
       fetch(API_URL, {
@@ -135,12 +127,21 @@ const AddNew = defineComponent({
       endDate: "",
     });
 
+    const validate =(value)=> {
+      if (!value) {
+        return 'This field is required';
+      }
+      return true;
+    };
+
     return {
       isLoading,
       apiUrl,
       isFileLoading,
       handleSubmit,
+      validate,
       dateFormat,
+      minDate: dayjs().format("YYYY-MM-DD"),
       formState,
       join,
     };

@@ -40,6 +40,7 @@
     "mitt": "^3.0.0",
     "svgmap": "^2.7.1",
     "v-calendar": "^3.0.0-alpha.8",
+    "vee-validate": "^4.10.6",
     "vue": "^3.2.45",
     "vue-draggable-next": "^2.0.1",
     "vue-inline-svg": "^3.0.0-beta.2",
