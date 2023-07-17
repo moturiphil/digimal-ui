@@ -46,7 +46,7 @@
                       <a-select-option
                           v-for="event in events_list"
                           :key="event.id"
-                          :value="event.id"
+                          :value="event.name"
                         >
                           {{ event.name }}
                         </a-select-option>
@@ -325,6 +325,7 @@ const AddNew = defineComponent({
         campaign_id: formState.campaign_id,
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
+        number_of_days: formState.no_of_days,
         location_type_id: parseInt(formState.location_type),
         event_list_id: 1,
       };
