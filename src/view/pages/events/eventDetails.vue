@@ -2,16 +2,16 @@
   <ProjectDetailsWrapper>
     <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
         Generate Payroll
-      </sdButton>
+      </sdButton> -->
       <br />
       <br />
       <div v-if="!project" class="spin">
         <a-spin />
       </div>
       <a-row v-else :gutter="25">
-        <a-col :xxl="6" :xl="8" :md="24" :xs="24">
+        <!-- <a-col :xxl="6" :xl="8" :md="24" :xs="24">
           <div class="project-progress">
             <h3>Progress</h3>
             <a-progress :percent="65" :stroke-width="5" status="active" />
@@ -62,8 +62,8 @@
               </div>
             </div>
           </sdCards>
-        </a-col>
-        <a-col :xxl="9" :lg="9" :xs="24">
+        </a-col> -->
+        <a-col :xxl="12" :lg="12" :xs="16">
           <div class="project-users-wrapper">
             <sdCards title="Confirmed Participants">
               <template #button>
@@ -85,7 +85,7 @@
             </sdCards>
           </div>
         </a-col>
-        <a-col :xxl="9" :lg="9" :xs="24">
+        <a-col :xxl="12" :lg="12" :xs="16">
           <div class="project-users-wrapper">
             <sdCards title="Pending Participants">
               <template #button>
