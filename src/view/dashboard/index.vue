@@ -6,7 +6,7 @@
         <router-link v-bind:to="'campaigns/create'">
           <sdButton size="small" type="success">
             <sdFeatherIcons type="plus" size="14" />
-            Start Campaign
+            Create Campaign
           </sdButton>
         </router-link>
       </div>

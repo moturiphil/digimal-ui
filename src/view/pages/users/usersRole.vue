@@ -14,8 +14,8 @@
               path: `/assign-permission`,
             }"
             class="btn-icon"
-            type="info"
-            shape="circle"
+            type="success"
+            size="small"
           >
             &nbsp;&nbsp; Assign Role Permission
           </router-link>
@@ -97,7 +97,7 @@ const columns = [
   },
   {
     title: "Organization",
-    dataIndex: "orgtype_id",
+    dataIndex: "orgtype_name",
     key: "id",
   },
   {
@@ -139,6 +139,7 @@ const DragAndDropTable = defineComponent({
             id: i,
             name: data[i].name,
             orgtype_id: data[i].orgtype_id,
+            orgtype_name: data[i].orgtype_name
           };
           rls.push(element);
         }
