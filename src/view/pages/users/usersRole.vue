@@ -56,7 +56,7 @@
                       <div class="table-actions">
                         <sdButton class="btn-import green" type="success">
                           <router-link
-                            :to="`/assign-permission/${record.orgtype_id}`"
+                            :to="`/assign-permission/${record.id}`"
                             class="btn-icon"
                             type="info"
                             shape="circle"
@@ -128,21 +128,12 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const rls = [];
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
           headers: authHeader(),
         });
-        const data = await response.json();
-        for (let i = 1; i < data.length; i++) {
-          const element = {
-            id: i,
-            name: data[i].name,
-            orgtype_id: data[i].orgtype_id,
-          };
-          rls.push(element);
-        }
-        dataSource.value = rls;
+        const data = await response.json();        
+        dataSource.value = data;
         console.log(dataSource.value);
       } catch (error) {
         console.error(error);
