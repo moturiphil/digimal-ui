@@ -56,7 +56,7 @@
                       <div class="table-actions">
                         <sdButton class="btn-import green" type="success">
                           <router-link
-                            :to="`/assign-permission/${record.orgtype_id}`"
+                            :to="`/assign-permission/${record.id}`"
                             class="btn-icon"
                             type="info"
                             shape="circle"
@@ -143,7 +143,8 @@ const DragAndDropTable = defineComponent({
           };
           rls.push(element);
         }
-        dataSource.value = rls;
+        console.log(data);
+        dataSource.value = data;
         console.log(dataSource.value);
       } catch (error) {
         console.error(error);
