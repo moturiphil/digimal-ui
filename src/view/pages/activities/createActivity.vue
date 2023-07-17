@@ -18,7 +18,7 @@
                     layout="vertical"
                     name="addnew"
                     :model="formState"
-                    @finish="handleSubmit"
+                    @finish="onSubmit"
                   >
                     <a-form-item name="activity_id" label="Activity Name">
                       <a-select
@@ -26,6 +26,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Activity"
                         v-model:value="formState.activity_id"
+                        @blur="validate('activity_id')" 
+                        @keypress="validate('activity_id')"
                       >
                         <a-select-option value=""
                           >Select an Activity</a-select-option
@@ -37,6 +39,7 @@
                           >{{ activity.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.activity_id" >{{errors.activity_id}}</p>
                     </a-form-item>
 
                     <a-form-item name="county_id" label="County">
@@ -48,6 +51,8 @@
                         v-on:change="getSubCounties($event)"
                         v-model:value="formState.county_id"
                         v-if="!loading"
+                        @blur="validate('county_id')" 
+                        @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -61,6 +66,7 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.county_id" >{{errors.county_id}}</p>
                     </a-form-item>
                     <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
@@ -69,6 +75,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
                         v-model:value="formState.sub_county_id"
+                        @blur="validate('sub_county_id')" 
+                        @keypress="validate('sub_county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -80,6 +88,7 @@
                           >{{ scounty.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.sub_county_id" >{{errors.sub_county_id}}</p>
                     </a-form-item>
 
                     <a-form-item name="location_type_id" label="Location Type">
@@ -88,6 +97,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Location Type"
                         v-model:value="formState.location_type_id"
+                        @blur="validate('location_type_id')" 
+                        @keypress="validate('location_type_id')"
                       >
                         <a-select-option value="" disabled
                           >Select a Location</a-select-option
@@ -107,6 +118,7 @@
                           >N/A</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.location_type_id" >{{errors.location_type_id}}</p>
                     </a-form-item>
 
                     <a-form-item name="campaign_id" label="Campaign">
@@ -115,6 +127,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Campaign"
                         v-model:value="formState.campaign_id"
+                        @blur="validate('campaign_id')" 
+                        @keypress="validate('campaign_id')"
                       >
                         <a-select-option value="" disabled
                           >Select a campaign</a-select-option
@@ -126,6 +140,7 @@
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
                     </a-form-item>
 
                     <a-form-item name="start_date" label="Activity Start Date">
@@ -134,7 +149,10 @@
                         v-model:value="formState.start_date"
                         :format="dateFormat"
                         :disabledDate="disabledDate"
+                        @blur="validate('start_date')" 
+                        @keypress="validate('start_date')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.start_date" >{{errors.start_date}}</p>
                     </a-form-item>
                     <!-- no of officers as number -->
                     <a-form-item
@@ -147,7 +165,10 @@
                         type="number"
                         min="0"
                         :value="computedPayableTravelDays"
+                        @blur="validate('number_of_officers')" 
+                        @keypress="validate('number_of_officers')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.number_of_officers" >{{errors.number_of_officers}}</p>
                     </a-form-item>
 
                     <a-form-item name="activity_facilitator" label="Officers">
@@ -156,6 +177,8 @@
                         v-model:value="formState.activity_facilitator"
                         placeholder="Please select"
                         :disabled="isOfficerSelectionDisabled"
+                        @blur="validate('activity_facilitator')" 
+                        @keypress="validate('activity_facilitator')"
                         :options="
                           (() => {
                             return users.map(
@@ -168,6 +191,7 @@
                         "
                       >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.activity_facilitator" >{{errors.activity_facilitator}}</p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -205,7 +229,9 @@ import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
-// import { Modal } from "ant-design-vue";
+import dayjs from "dayjs";
+import * as Yup from "yup";
+
 const dateFormat = "YYYY-MM-DD";
 const AddNew = defineComponent({
   name: "AddNew",
@@ -246,12 +272,28 @@ const AddNew = defineComponent({
       sub_county_id: "",
       campaign_id: "",
       start_date: "",
-      end_date: "",
-      locatuin_type_id: "",
-      payable_travel_days: "",
-      number_of_officers: "",
+      location_type_id: "",
+      number_of_officers: 0,
       activity_facilitator: [],
     });
+    const ArticleSchema = Yup.object().shape({
+      activity_id: Yup.string().required("Name is required"),
+      county_id: Yup.string().required("County is required"),
+      sub_county_id: Yup.string().required("Sub County is required"),
+      campaign_id: Yup.string().required("Campaign is required"),
+      start_date: Yup.string().required("Start Date is required"),
+      location_type_id: Yup.string().required("Location Type is required"),
+      number_of_officers: Yup.number().required("Officers is required"),
+      activity_facilitator: Yup.array().min(1, "At least 1 facilitator required").required(),
+     });
+
+    const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
 
     //get activities list
 
@@ -323,42 +365,54 @@ const AddNew = defineComponent({
       this.campaigns = data.data;
     };
     // const handleSelect = (values)
-    const handleSubmit = (values) => {
-      values = {
-        activity_list_id: values.activity_id,
-        county_id: values.county_id,
-        sub_county_id: values.sub_county_id,
-        campaign_id: values.campaign_id,
-        start_date: new Date(values.start_date.$d).toISOString().substr(0, 10),
-        number_of_officers: values.number_of_officers,
-        activity_facilitator: values.activity_facilitator,
-        location_type_id: values.location_type_id,
-      };
-      console.log({ values });
+    const onSubmit = ()=> {
+      const  values = {
+          activity_list_id: formState.activity_id,
+          county_id: formState.county_id,
+          sub_county_id: formState.sub_county_id,
+          campaign_id: formState.campaign_id,
+          start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
+          number_of_officers: formState.number_of_officers,
+          activity_facilitator: formState.activity_facilitator,
+          location_type_id: formState.location_type_id,
+        };
+      
 
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(values),
+     ArticleSchema.validate(this.formState, { abortEarly: false })
+      .then(() => {
+        this.errors = {};
+          fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(values),
+           })
+          .then((response) => response.json())
+          .then(({ success, data }) => {
+            // console.log(data);
+            if (success) {
+              router.push("activity-view");
+              notification["success"]({
+                message: "Activity Created",
+                description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+                duration: 5.5,
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
       })
-        .then((response) => response.json())
-        .then(({ success, data }) => {
-          // console.log(data);
-          if (success) {
-            router.push("activity-view");
-            notification["success"]({
-              message: "Activity Created",
-              description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
+      .catch((err) => {
+        err.inner.forEach((e) => {
+          this.errors[e.path] = e.message;
         });
+      });
+
+
+      
     };
     onMounted(() => {
       axios
@@ -385,11 +439,22 @@ const AddNew = defineComponent({
       counties,
       sub_counties,
       campaigns,
-      handleSubmit,
+      onSubmit,
       dateFormat,
       formState,
       join,
       participants: [],
+      validate,
+      errors: {
+        activity_id: "",
+        county_id: "",
+        sub_county_id: "",
+        campaign_id: "",
+        start_date: "",
+        location_type_id: "",
+        number_of_officers: "",
+        activity_facilitator: "",
+      },
     };
   },
   methods: {
