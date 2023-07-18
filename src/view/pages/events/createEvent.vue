@@ -41,9 +41,10 @@
                     <a-form-item label="Event Type">
                       <a-select
                         size="large"
-                        name="name"
+                        name="event_list_id"
                         class="sDash_fullwidth-select"
                         placeholder="Select Event Type"
+
                         v-model:value="formState.name"
                         @blur="validate('name')" 
                         @keypress="validate('name')"
@@ -51,7 +52,7 @@
                       <a-select-option
                           v-for="event in events_list"
                           :key="event.id"
-                          :value="event.name"
+                          :value="event.id"
                         >
                           {{ event.name }}
                         </a-select-option>
@@ -377,17 +378,19 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       const data = {
+
+        // name: formState.name,
         campaign_id: formState.campaign_id,
-        name: formState.name,
+        venue: formState.venue,
         location_id: formState.county_id,
         location_type_id: parseInt(formState.location_type),
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         no_of_days: formState.no_of_days,
-        venue: formState.venue,
-        event_list_id: 1,
+        event_list_id: formState.name,
       };
 
+      console.log(data);
       ArticleSchema.validate(this.formState, { abortEarly: false })
         .then(() => {
           fetch(API_URL, {

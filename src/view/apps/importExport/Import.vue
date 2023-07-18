@@ -1,8 +1,8 @@
 <template>
   <Main>
-    <sdPageHeader title="Import">
+    <sdPageHeader title="Import Master List">
       <template v-slot:buttons>
-        <div class="page-header-actions">
+        <!-- <div class="page-header-actions">
           <sdCalendarButton />
           <sdExportButton />
           <sdShareButton />
@@ -10,7 +10,7 @@
             <sdFeatherIcons type="plus" size="14" />
             Add New
           </sdButton>
-        </div>
+        </div> -->
       </template>
     </sdPageHeader>
     <a-row :gutter="25">
@@ -55,7 +55,7 @@ const Import = defineComponent({
     const fileUploadProps = {
       name: "file",
       multiple: true,
-      action: "https://www.mocky.io/v2/5cc8019d300000980a055e76",
+      action: `${process.env.VUE_APP_BASE_URL}/master-import`,
       onChange(info) {
         const { status } = info.file;
         console.log(status);
@@ -73,7 +73,6 @@ const Import = defineComponent({
       defaultFileList: [],
       showUploadList: {
         showRemoveIcon: true,
-        // removeIcon: <sdFeatherIcons type="trash-2" onClick={(e) => console.log(e, 'custom removeIcon event')} />,
       },
     };
 
