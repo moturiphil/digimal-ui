@@ -50,34 +50,23 @@
                         >
                           <span>
                             <sdFeatherIcons type="clock" size="16" />
-                            &nbsp;&nbsp; Start Events
+                            &nbsp;&nbsp; Start Event
                           </span>
                         </sdButton>
 
-                        <!-- <sdButton
-                          size="small"
-                          type="success"
-                          :disabled="isStarting"
-                          @click="startEvent(record.id)"
-                          v-if="!record.status"
-                        >
-                          <span>
-                            <sdFeatherIcons type="clock" size="16" />
-                            &nbsp;&nbsp; Start Events
-                          </span>
-                        </sdButton> -->
                         <sdButton
                           size="small"
                           type="success"
                           :disabled="isStarting"
                           v-else
+                          @click="closeEvent(record.id)"
                         >
                           <span v-if="!record.status">
                             <sdFeatherIcons type="clock" size="16" />
                             &nbsp;&nbsp; Start Event
                           </span>
-                          <span class="badge badge-green">
-                            &nbsp;&nbsp; Started
+                          <span class="badge badge-red">
+                            &nbsp;&nbsp; Close Event
                           </span>
                         </sdButton>
 
@@ -242,79 +231,76 @@ const ViewPage = defineComponent({
         if (data.status === true) {
           this.eventStatus[id] = true;
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.success({
+            message: "Event Started",
+            description: "Event has been started successfully",
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          this.eventStatus[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Event Not Started",
+            description: "Only event host or facilitator can start event",
+          });
+          // await new Promise((resolve) => {
+          //   setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          // });
+          // location.reload();
         }
-        location.reload();
       } catch (error) {
         console.error(error);
       } finally {
         this.isStarting = false;
       }
     },
-    // showModal() {
-    //   this.visible = true;
-    // },
-
-    // showSuccessModal(record) {
-    //   console.log(record);
-    //   const input = document.createElement("input");
-    //   input.id = "regCode";
-    //   input.placeholder = "Enter Registration code";
-
-    //   const div = document.createElement("div");
-    //   div.innerHTML = "<p>Enter Registration Code to Register</p>";
-    //   div.appendChild(input);
-
-    //   // const self = this;
-
-    //   Modal.success({
-    //     title: "Event Registration",
-    //     content: div,
-    //     okText: "Register",
-    //     onOk: async function () {
-    //       try {
-    //         const userRegCode = document.getElementById("regCode").value;
-    //         console.log(userRegCode);
-
-    //         const response = await axios.get(
-    //           `${process.env.VUE_APP_BASE_URL}/event/${record}/participant/${userRegCode}/assign`,
-    //           { headers: authHeader() }
-    //         );
-
-    //         if (response.status !== 200) {
-    //           throw new Error("Failed to Register Participant to event");
-    //         } else {
-    //           console.log("Participant Registered");
-    //         }
-
-    //         Modal.success({
-    //           title: "Success",
-    //           content: "You have been registered for the event",
-    //         });
-    //       } catch (error) {
-    //         Modal.error({
-    //           title: "Error",
-    //           content: error.message,
-    //         });
-    //       }
-    //     },
-    //     style: {
-    //       float: "center",
-    //       display: "grid",
-    //       placeContent: "center",
-    //     },
-    //   });
-    // },
-
-    // handleOk() {
-    //   this.confirmLoading = true;
-    //   setTimeout(() => {
-    //     this.visible = false;
-    //     this.colorVisible = false;
-    //     this.confirmLoading = false;
-    //   }, 2000);
-    // },
+    async closeEvent(id) {
+      try {
+        this.isStarting = true;
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/event_close_trigger/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status === true) {
+          this.eventStatus[id] = true;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          // notify the user
+          notification.success({
+            message: "Event Closed",
+            description: "Event has been closed successfully",
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          this.eventStatus[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Event Not Closed",
+            description: "Only event host or facilitator can close event",
+          });
+          // await new Promise((resolve) => {
+          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          // });
+        }
+        // location.reload();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = true;
+      }
+    },
     handleCancel() {
-      this.isModalOpen = false
+      this.isModalOpen = false;
       this.visible = false;
       this.colorVisible = false;
     },
@@ -365,7 +351,7 @@ const ViewPage = defineComponent({
       console.log(inputValue);
       try {
         const response = await axios.get(
-              `${process.env.VUE_APP_BASE_URL}/event/${recordId.value}/participant/${inputValue}/assign`,
+          `${process.env.VUE_APP_BASE_URL}/event/${recordId.value}/participant/${inputValue}/assign`,
           // `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
           { headers: authHeader() }
         );
@@ -485,6 +471,12 @@ export default ViewPage;
 <style>
 .badge-green {
   background-color: #1ec997;
+  color: white;
+  padding: 4px;
+  border-radius: 3px;
+}
+.badge-red {
+  background-color: #f64e60;
   color: white;
   padding: 4px;
   border-radius: 3px;

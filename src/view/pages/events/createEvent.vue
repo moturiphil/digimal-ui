@@ -38,15 +38,15 @@
                     <a-form-item label="Event Type">
                       <a-select
                         size="large"
-                        name="name"
+                        name="event_list_id"
                         class="sDash_fullwidth-select"
                         placeholder="Select Event Type"
-                        v-model:value="formState.name"
+                        v-model:value="formState.event_list_id"
                       >
                       <a-select-option
                           v-for="event in events_list"
                           :key="event.id"
-                          :value="event.name"
+                          :value="event.id"
                         >
                           {{ event.name }}
                         </a-select-option>
@@ -319,7 +319,7 @@ const AddNew = defineComponent({
     const handleSubmit = () => {
       console.log(formState);
       const data = {
-        name: formState.name,
+        // name: formState.name,
         venue: formState.venue,
         location_id: formState.county_id,
         campaign_id: formState.campaign_id,
@@ -327,10 +327,11 @@ const AddNew = defineComponent({
         trainers: formState.trainer_id,
         number_of_days: formState.no_of_days,
         location_type_id: parseInt(formState.location_type),
-        event_list_id: 1,
+        event_list_id: formState.event_list_id,
       };
 
       console.log(data);
+
 
       fetch(API_URL, {
         method: "POST",
@@ -373,6 +374,7 @@ const AddNew = defineComponent({
       facilitator_id: "",
       trainer_id: [],
       sub_counties: [],
+      event_list_id: null,
     });
 
     // console.log(formState);
