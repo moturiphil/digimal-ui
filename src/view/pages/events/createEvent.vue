@@ -343,27 +343,27 @@ const AddNew = defineComponent({
     });
 
     const formState = reactive({
-      name: null,
-      user_id: null,
-      venue: "",
-      location_type: null,
       campaign_id: null,
+      name: null,
+      county_id: "",
+      location_type: null,
       facilitator_id: "",
       trainer_id: [],
-      county_id: "",
       no_of_days: null,
+      venue: "",
+
     });
 
     const ArticleSchema = Yup.object().shape({
-      name: Yup.string().required("Name is required"),
-      user_id: Yup.string().required("User is required"),
-      venue: Yup.string().required("Venue is required"),
-      location_type: Yup.string().required("Location is required"),
       campaign_id: Yup.string().required("Campaign is required"),
+      name: Yup.string().required("Name is required"),
+      county_id: Yup.string().required(),
+      location_type: Yup.string().required("Location is required"),
       facilitator_id: Yup.string().required("Host is required"),
       trainer_id: Yup.array().min(1, "At least 1 facilitator required").required(),
-      county_id: Yup.string().required(),
       no_of_days: Yup.number().required("No of days is required"),
+      venue: Yup.string().required("Venue is required"),
+
      });
     // console.log(formState);
 
@@ -377,14 +377,14 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-        name: formState.name,
-        venue: formState.venue,
-        location_id: formState.county_id,
         campaign_id: formState.campaign_id,
+        name: formState.name,
+        location_id: formState.county_id,
+        location_type_id: parseInt(formState.location_type),
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
-        number_of_days: formState.no_of_days,
-        location_type_id: parseInt(formState.location_type),
+        no_of_days: formState.no_of_days,
+        venue: formState.venue,
         event_list_id: 1,
       };
 
@@ -445,14 +445,15 @@ const AddNew = defineComponent({
       events_list,
       validate,
       errors:{
-        name: null,
-        user_id: null,
-        venue: "",
-        location_id: null,
+
         campaign_id: null,
+        name: null,
+        county_id: "",
+        location_type: null,
         facilitator_id: "",
         trainer_id: [],
-        sub_counties: []
+        no_of_days: null,
+        venue: "",
       }
     };
   },
