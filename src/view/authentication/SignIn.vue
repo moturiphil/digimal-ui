@@ -189,7 +189,6 @@ export default {
         if (response.status === 200) {
           store.commit("auth/setUser", response.data.user);
           const redirectUrl = sessionStorage.getItem("redirectUrl");
-          console.log(redirectUrl);
           if (redirectUrl) {
             const url = redirectUrl.replace(/http:\/\/127\.0\.0\.1:8080\/auth\//, '');
             router.push(url);
@@ -197,7 +196,6 @@ export default {
             // Default redirect if there is no stored redirectUrl
             router.push("/");
           }
-          // router.push({ path: "/" });
           notification.success({
             message: "Login Successful",
             description: "Welcome to Campaign Dashboard",
@@ -210,8 +208,8 @@ export default {
         }
       } catch (error) {
         notification.error({
-          message: "Error",
-          description: "An error occurred.",
+          message: "Login Failed!",
+          description: "Wrong username or password",
         });
       }
     };

@@ -387,7 +387,7 @@ const AddNew = defineComponent({
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         no_of_days: formState.no_of_days,
-        event_list_id: formState.name,
+        event_list_id: formState.event_list,
       };
 
       console.log(data);
@@ -403,6 +403,7 @@ const AddNew = defineComponent({
             })
               .then((response) => response.json())
               .then(({ success, data }) => {
+                
                 if (success) {
                   router.push("event-view");
                   notification["success"]({
@@ -414,14 +415,18 @@ const AddNew = defineComponent({
                 // show error message from the api response
                 else {
                   notification["error"]({
-                    message: "Error",
-                    description: "Something went wrong",
+                    message: "Error!",
+                    description: "Fail to create event",
                     duration: 5.5,
                   });
                 }
               })
               .catch((error) => {
-                console.error("Error:", error);
+                notification["error"]({
+                  message: "Error!",
+                  description: `${error}`,
+                  duration: 5.5,
+                });
               });
         })
         .catch((err) => {
