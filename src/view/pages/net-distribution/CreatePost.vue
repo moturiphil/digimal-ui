@@ -28,6 +28,8 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign"
+                        @blur="validate('campaign_id')" 
+                        @keypress="validate('campaign_id')"
                       >
                         <a-select-option
                           v-for="campaign in campaigns"
@@ -36,12 +38,16 @@
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
                     </a-form-item>
                     <a-form-item name="name" label="Post Name">
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Enter post name"
+                        @blur="validate('name')" 
+                        @keypress="validate('name')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
                     </a-form-item>
                     <!-- <a-form-item
                       name="distribution_start_date"
@@ -70,6 +76,8 @@
                         class="sDash_fullwidth-select"
                         v-model:value="formState.post_supervisor_user_id"
                         placeholder="Select Post Admin"
+                        @blur="validate('post_supervisor_user_id')" 
+                        @keypress="validate('post_supervisor_user_id')"
                       >
                         <a-select-option
                           v-for="user in users"
@@ -80,6 +88,7 @@
                           }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.post_supervisor_user_id" >{{errors.post_supervisor_user_id}}</p>
                     </a-form-item>
                     <a-form-item name="villages" label="Select villages">
                       <a-select
@@ -90,6 +99,8 @@
                         v-model:value="formState.villages"
                         v-if="!loading"
                         placeholder="Select villages"
+                        @blur="validate('villages')" 
+                        @keypress="validate('villages')"
                       >
                         <a-select-option
                           v-for="village in villages"
@@ -98,11 +109,14 @@
                           >{{ village.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.villages" >{{errors.villages}}</p>
                     </a-form-item>
                     <a-form-item name="isFacility">
                       <a-checkbox v-model:checked="isFacility"
-                        >Is Post a Facility?</a-checkbox
-                      >
+                      @blur="validate('isFacility')" 
+                        @keypress="validate('isFacility')"
+                        >Is Post a Facility?</a-checkbox>
+                      <p class="errors" style="color: red;" v-if="!!errors.isFacility" >{{errors.isFacility}}</p>
                     </a-form-item>
                     <!-- label = {{ !isFacility ? `fyufuyfuy`: `jjkhkjhkj` }} -->
                     <a-form-item name="post_code">
@@ -114,7 +128,10 @@
                         v-if="isFacility"
                         v-model:value="formState.post_code"
                         placeholder="Enter facility mfl code"
+                        @blur="validate('post_code')" 
+                        @keypress="validate('post_code')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.post_code" >{{errors.post_code}}</p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -140,6 +157,8 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
+import * as Yup from "yup";
+
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -173,6 +192,23 @@ const AddNew = defineComponent({
       isFacility: false,
     });
 
+    const ArticleSchema = Yup.object().shape({
+      campaign_id: Yup.string().required("Campaign name is required"),
+      name: Yup.string().required("Name is required"),
+      post_supervisor_user_id: Yup.string().required("Post Supervisor is required"),
+      post_code: Yup.string().nullable(),
+      isFacility: Yup.string().required("IsFacility is required"),
+      villages: Yup.array().min(1, "At least 1 facilitator required").required(),
+     });
+
+    const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
+
     //campaigns
     const fetchCampaigns = async () => {
       const response = await fetch(campaign_url, {
@@ -184,7 +220,6 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.campaigns = data.data;
-      console.log(this.campaigns);
       this.loading = false;
     };
     fetchCampaigns();
@@ -202,7 +237,6 @@ const AddNew = defineComponent({
           },
         }
       );
-      console.log(response);
       const data = await response.json();
       this.villages = data.data;
       this.loading = false;
@@ -259,6 +293,11 @@ const AddNew = defineComponent({
       if (post_code) {
         values.post_code = post_code;
       }
+
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+      .then(() => {
+        this.errors = {};
+          
       fetch(API_URL, {
         method: "POST",
         headers: {
@@ -269,9 +308,6 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-          console.log(".......... ");
-          console.log(API_URL);
           if (data.success == true) {
             router.push("/nets/distribution");
             notification["success"]({
@@ -290,6 +326,13 @@ const AddNew = defineComponent({
         .catch((error) => {
           console.error("Error:", error);
         });
+      })
+      .catch((err) => {
+        err.inner.forEach((e) => {
+          this.errors[e.path] = e.message;
+        });
+      });
+
     };
 
     return {
@@ -304,6 +347,15 @@ const AddNew = defineComponent({
       join,
       villages,
       users,
+      validate,
+      errors: {
+        campaign_id: "",
+        name: "",
+        post_supervisor_user_id: "",
+        villages: [],
+        post_code: "",
+        isFacility: 0,
+      }
     };
   },
   beforeRouteEnter(to, from, next) {

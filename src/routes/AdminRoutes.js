@@ -64,7 +64,7 @@ const routes = [
         component: () => import("@/view/pages/campaigns/showCampaign.vue"),
       },
       {
-        path: "/assign-worker/:id",
+        path: "/assign-worker",
         name: "post-worker",
         component: () =>
           import("@/view/pages/net-distribution/AssignWorker.vue"),

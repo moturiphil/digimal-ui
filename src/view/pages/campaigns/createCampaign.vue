@@ -24,7 +24,10 @@
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Input Campaign Name"
+                        @blur="validate('name')" 
+                        @keypress="validate('name')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
                     </a-form-item>
 
                     <a-form-item name="startDate" label="Campaign Start Date">
@@ -33,7 +36,10 @@
                         v-model:value="formState.startDate"
                         :format="dateFormat"
                         :disabledDate="disabledDate"
+                        @blur="validate('startDate')" 
+                        @keypress="validate('startDate')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.startDate" >{{errors.startDate}}</p>
                     </a-form-item>
 
                     <a-form-item name="endDate" label="Campaign End Date">
@@ -42,7 +48,10 @@
                         v-model:value="formState.endDate"
                         :format="dateFormat"
                         :disabledDate="disabledDate"
+                        @blur="validate('endDate')" 
+                        @keypress="validate('endDate')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.endDate" >{{errors.endDate}}</p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -69,13 +78,15 @@ import { reactive, ref, defineComponent, computed } from "vue";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
+import * as Yup from "yup";
+import dayjs from "dayjs";
 
 const dateFormat = "YYYY-MM-DD";
 
 const AddNew = defineComponent({
   name: "AddNew",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
-  setup() {
+  data() {
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
@@ -87,21 +98,44 @@ const AddNew = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/createCampaign`;
 
-    const handleSubmit = (values) => {
-      values = {
-        name: values.name,
-        start_date: new Date(values.startDate.$d).toISOString().substr(0, 10),
-        end_date: new Date(values.endDate.$d).toISOString().substr(0, 10),
+    const formState = reactive({
+      name: "",
+      startDate: "",
+      endDate: "",
+    });
+
+    const ArticleSchema = Yup.object().shape({
+      name: Yup.string().required("Name is required"),
+      startDate: Yup.string().required("Start Date is required"),
+      endDate: Yup.string().required("End Date is required"),
+     });
+    
+    const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
+
+    const handleSubmit = () => {
+      const values = {
+        name: formState.name,
+        start_date: dayjs(formState.startDate).format("YYYY-MM-DD"),
+        end_date: dayjs(formState.endDate).format("YYYY-MM-DD"),
       };
 
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(values),
-      })
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+      .then(() => {
+        this.errors = {};
+        fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(values),
+        })
         .then((response) => response.json())
         .then(({ success }) => {
           // console.log(data);
@@ -117,23 +151,15 @@ const AddNew = defineComponent({
         .catch((error) => {
           console.error("Error:", error);
         });
+      })
+      .catch((err) => {
+        err.inner.forEach((e) => {
+          this.errors[e.path] = e.message;
+        });
+      });
+
+       
     };
-
-    //   axios
-    //     .post(API_URL, values, { headers: authHeader() })
-    //     .then(function (response) {
-    //       console.log(response);
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error);
-    //     });
-    // };
-
-    const formState = reactive({
-      name: "",
-      startDate: "",
-      endDate: "",
-    });
 
     return {
       isLoading,
@@ -142,7 +168,13 @@ const AddNew = defineComponent({
       handleSubmit,
       dateFormat,
       formState,
+      validate,
       join,
+      errors: {
+        name: "",
+        startDate: "",
+        endDate: "",
+      },
     };
   },
   methods: {
