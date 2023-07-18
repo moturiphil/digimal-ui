@@ -38,7 +38,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/assign-worker/${record.id}`,
+                              path: `/assign-worker`,
                               query: { id: record.id },
                             }"
                             class="btn-icon"
@@ -129,8 +129,6 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const searchItem = ref("");
 
-    console.log(authHeader());
-
     //   const api_url = UserService;
     //   console.log(api_url);
 
@@ -143,11 +141,8 @@ const DragAndDropTable = defineComponent({
             headers: authHeader(),
           }
         );
-        console.log(response);
         const data = await response.json();
         dataSource.value = data.data;
-        console.log(data.data);
-        // console.log($route.params.id)
       } catch (error) {
         console.error(error);
       }

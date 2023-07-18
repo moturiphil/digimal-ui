@@ -25,6 +25,8 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign Name"
+                        @blur="validate('campaign_id')" 
+                        @keypress="validate('campaign_id')"
                       >
                         <a-select-option
                           v-for="campaign in campaigns"
@@ -34,6 +36,7 @@
                           {{ campaign.name }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
                     </a-form-item>
 
                     <a-form-item label="CHVs">
@@ -44,6 +47,8 @@
                           placeholder="Select facilitators"
                           show-search
                           option-filter-prop="label"
+                          @blur="validate('chv_id')" 
+                          @keypress="validate('chv_id')"
                       >
                         <a-select-option
                             v-for="chv in chvs"
@@ -54,6 +59,7 @@
                           {{ chv.first_name }} {{ chv.last_name }} - {{ chv.phone_no }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.chv_id" >{{errors.chv_id}}</p>
                     </a-form-item>
 
 
@@ -81,6 +87,7 @@ import { reactive, ref, defineComponent, computed } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
+import * as Yup from "yup";
 // import { useRouter } from "vue-router";
 
 // testing app
@@ -112,6 +119,23 @@ const AddNew = defineComponent({
       loading: true,
       chvs: [],
     });
+    const formState = reactive({
+      campaign_id: null,
+      user_id: [],
+    });
+
+    const ArticleSchema = Yup.object().shape({
+      campaign_id: Yup.string().required("Campaign name is required"),
+      chv_id: Yup.array().min(1, "At least 1 CHV is required").required(),
+     });
+
+     const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
 
     const fetchCampaigns = async () => {
       const response = await fetch(campaign_url, {
@@ -155,65 +179,51 @@ const AddNew = defineComponent({
         user_ids: formState.chv_id,
       };
 
-      console.log(JSON.stringify(data));
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ success, message, occupied_users }) => {
-          if (success) {
-            // router.push("event-view");
-            console.log(success,message, occupied_users);
-            if(occupied_users == null ){
-              notification["success"]({
-                message: message,
-                description: "Users successfully assigned to a campaign",
-                duration: 10.5,
-              });
-            }
-            // output notification for each user
-            else if (occupied_users.length > 0) {
-              for (var i = 0; i < occupied_users.length; i++) {
-                notification["error"]({
-                  message: message,
-                  description: `User ${occupied_users[i].user} already assigned to a campaign`,
-                  duration: 10.5,
-                });
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+      .then(() => {
+        this.errors = {};
+            fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+            })
+            .then((response) => response.json())
+            .then(({ success, message, occupied_users }) => {
+              if (success) {
+                // router.push("event-view");
+                console.log(success,message, occupied_users);
+                if(occupied_users == null ){
+                  notification["success"]({
+                    message: message,
+                    description: "Users successfully assigned to a campaign",
+                    duration: 10.5,
+                  });
+                }
+                // output notification for each user
+                else if (occupied_users.length > 0) {
+                  for (var i = 0; i < occupied_users.length; i++) {
+                    notification["error"]({
+                      message: message,
+                      description: `User ${occupied_users[i].user} already assigned to a campaign`,
+                      duration: 10.5,
+                    });
+                  }
+                }
               }
-            }
-            
-
-
-
-            // for (var i = 0; i < occupied_users.length; i++) {
-            //   notification["success"]({
-            //     message: message,
-            //     description: `User ${occupied_users[i].user} already assigned to a campaign`,
-            //     duration: 10.5,
-            //   });
-            // }
-            // notification["success"]({
-            //   message: message,
-            //   description: `Users ${occupied_users} already assigned to a campaign`,
-            //   duration: 5.5,
-            // });
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+      })
+      .catch((err) => {
+        err.inner.forEach((e) => {
+          this.errors[e.path] = e.message;
+        });})
+      
     };
-
-    const formState = reactive({
-      campaign_id: null,
-      user_id: [],
-    });
 
     // console.log(formState);
 
@@ -225,6 +235,11 @@ const AddNew = defineComponent({
       handleSubmit,
       formState,
       campaigns,
+      validate,
+      errors:{
+        campaign_id: "",
+        user_id: "",
+      },
       chvs,
       loading,
     };

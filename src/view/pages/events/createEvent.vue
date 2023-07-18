@@ -25,6 +25,8 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign Name"
+                        @blur="validate('campaign_id')" 
+                        @keypress="validate('campaign_id')"
                       >
                         <a-select-option
                           v-for="campaign in campaigns"
@@ -34,6 +36,7 @@
                           {{ campaign.name }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
                     </a-form-item>
                     <a-form-item label="Event Type">
                       <a-select
@@ -42,6 +45,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Event Type"
                         v-model:value="formState.name"
+                        @blur="validate('name')" 
+                        @keypress="validate('name')"
                       >
                       <a-select-option
                           v-for="event in events_list"
@@ -51,6 +56,7 @@
                           {{ event.name }}
                         </a-select-option>
                       </a-select> 
+                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
                     </a-form-item>
                     <a-form-item name="county_id" label="County">
                       <a-select
@@ -61,6 +67,8 @@
                         v-on:change="getSubCounties($event)"
                         v-model:value="formState.county_id"
                         v-if="!loading"
+                        @blur="validate('county_id')" 
+                        @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -74,6 +82,8 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.county_id" >{{errors.county_id}}</p>
+
                     </a-form-item>
                     <a-form-item label="Location Type">
                       <a-select
@@ -82,11 +92,14 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Location Type"
                         v-model:value="formState.location_type"
+                        @blur="validate('location_type')" 
+                        @keypress="validate('location_type')"
                       >
                         <a-select-option value="1">City</a-select-option>
                         <a-select-option value="2">County HQ</a-select-option>
                         <a-select-option value="3">Others</a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.location_type" >{{errors.location_type}}</p>
                     </a-form-item>
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
@@ -95,6 +108,8 @@
                         v-if="!loading"
                         show-search
                         option-filter-prop="label"
+                        @blur="validate('facilitator_id')" 
+                        @keypress="validate('facilitator_id')"
                       >
                         <a-select-option
                           v-for="facilitator in facilitators"
@@ -107,6 +122,7 @@
                           {{ facilitator.role_id }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.facilitator_id" >{{errors.facilitator_id}}</p>
                     </a-form-item>
 
                     <a-form-item label="Facilitators">
@@ -118,6 +134,8 @@
                         show-search
                         option-filter-prop="label"
                         @change="handleChange"
+                        @blur="validate('trainer_id')" 
+                        @keypress="validate('trainer_id')"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
@@ -130,6 +148,7 @@
                           {{ trainer.last_name }} - {{ trainer.role_id }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.trainer_id" >{{errors.trainer_id}}</p>
                     </a-form-item>
 
                     <a-form-item name="no-of-days" label="No of Days">
@@ -137,14 +156,20 @@
                         v-model:value="formState.no_of_days"
                         placeholder="No of Days"
                         :min="0"
+                        @blur="validate('no_of_days')" 
+                        @keypress="validate('no_of_days')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.no_of_days" >{{errors.no_of_days}}</p>
                     </a-form-item>
 
                     <a-form-item name="venue" label="Venue">
                       <a-input
                         v-model:value="formState.venue"
                         placeholder="Input Venue"
+                        @blur="validate('venue')" 
+                        @keypress="validate('venue')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.venue" >{{errors.venue}}</p>
                     </a-form-item>
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -171,6 +196,7 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
+import * as Yup from "yup";
 
 // testing app
 
@@ -316,8 +342,40 @@ const AddNew = defineComponent({
       fetchEvents();
     });
 
+    const formState = reactive({
+      name: null,
+      user_id: null,
+      venue: "",
+      location_type: null,
+      campaign_id: null,
+      facilitator_id: "",
+      trainer_id: [],
+      county_id: "",
+      no_of_days: null,
+    });
+
+    const ArticleSchema = Yup.object().shape({
+      name: Yup.string().required("Name is required"),
+      user_id: Yup.string().required("User is required"),
+      venue: Yup.string().required("Venue is required"),
+      location_type: Yup.string().required("Location is required"),
+      campaign_id: Yup.string().required("Campaign is required"),
+      facilitator_id: Yup.string().required("Host is required"),
+      trainer_id: Yup.array().min(1, "At least 1 facilitator required").required(),
+      county_id: Yup.string().required(),
+      no_of_days: Yup.number().required("No of days is required"),
+     });
+    // console.log(formState);
+
+    const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
+
     const handleSubmit = () => {
-      console.log(formState);
       const data = {
         name: formState.name,
         venue: formState.venue,
@@ -330,52 +388,45 @@ const AddNew = defineComponent({
         event_list_id: 1,
       };
 
-      console.log(data);
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ success, data }) => {
-          if (success) {
-            router.push("event-view");
-            notification["success"]({
-              message: "Event Created",
-              description: `Event Created successfully. Your event code is ${data.event.event_code}`,
-              duration: 5.5,
-            });
-          }
-          // show error message from the api response
-          else {
-            notification["error"]({
-              message: "Error",
-              description: "Something went wrong",
-              duration: 5.5,
-            });
-          }
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+        .then(() => {
+          fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(data),
+            })
+              .then((response) => response.json())
+              .then(({ success, data }) => {
+                if (success) {
+                  router.push("event-view");
+                  notification["success"]({
+                    message: "Event Created",
+                    description: `Event Created successfully. Your event code is ${data.event.event_code}`,
+                    duration: 5.5,
+                  });
+                }
+                // show error message from the api response
+                else {
+                  notification["error"]({
+                    message: "Error",
+                    description: "Something went wrong",
+                    duration: 5.5,
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
         })
-        .catch((error) => {
-          console.error("Error:", error);
+        .catch((err) => {
+          err.inner.forEach((e) => {
+          this.errors[e.path] = e.message;
+        });
         });
     };
-
-    const formState = reactive({
-      name: null,
-      user_id: null,
-      venue: "",
-      location_id: null,
-      campaign_id: null,
-      facilitator_id: "",
-      trainer_id: [],
-      sub_counties: [],
-    });
-
-    // console.log(formState);
 
     return {
       isLoading,
@@ -392,6 +443,17 @@ const AddNew = defineComponent({
       getSubCounties,
       handleChange,
       events_list,
+      validate,
+      errors:{
+        name: null,
+        user_id: null,
+        venue: "",
+        location_id: null,
+        campaign_id: null,
+        facilitator_id: "",
+        trainer_id: [],
+        sub_counties: []
+      }
     };
   },
   beforeRouteEnter(to, from, next) {

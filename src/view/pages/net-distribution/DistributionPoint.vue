@@ -28,6 +28,8 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign"
+                        @blur="validate('campaign_id')" 
+                        @keypress="validate('campaign_id')"
                       >
                       <a-select-option value="" disabled
                           >Select a campaign</a-select-option
@@ -39,12 +41,16 @@
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
                     </a-form-item>
                     <a-form-item name="name" label="Distribution Point Name">
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Enter name of the distribution point"
+                        @blur="validate('name')" 
+                        @keypress="validate('name')"
                       />
+                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
                     </a-form-item>
                     <a-form-item name="county_id" label="County">
                       <a-select
@@ -55,6 +61,8 @@
                         v-on:change="getSubCounties($event)"
                         v-model:value="formState.county_id"
                         v-if="!loading"
+                        @blur="validate('county_id')" 
+                        @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -68,6 +76,7 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.county_id" >{{errors.county_id}}</p>
                     </a-form-item>
                     <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
@@ -75,7 +84,9 @@
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
-                        v-model:value="formState.sub_county_id"
+                        v-model:value="formState.sub_county"
+                        @blur="validate('sub_county')" 
+                        @keypress="validate('sub_county')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -87,6 +98,7 @@
                           >{{ scounty.name }}</a-select-option
                         >
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.sub_county" >{{errors.sub_county}}</p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -112,6 +124,7 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
+import * as Yup from "yup";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -142,7 +155,20 @@ const AddNew = defineComponent({
       sub_county: "",
     });
 
-    console.log(formState);
+    const ArticleSchema = Yup.object().shape({
+      name: Yup.string().required("Name is required"),
+      campaign_id: Yup.string().required("Campaign name is required"),
+      county_id: Yup.string().required("County is required"),
+      sub_county: Yup.string().required("Sub County is required"),
+     });
+    
+    const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
 
     //campaigns
     const getCampaigns = async () => {
@@ -155,7 +181,6 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.campaigns = data.data;
-      console.log(data.data);
       this.loading = false;
     };
 
@@ -174,7 +199,6 @@ const AddNew = defineComponent({
         ...county,
         // org_id: county.org_id,
       }));
-      console.log(this.counties);
       this.loading = false;
     };
 
@@ -199,19 +223,19 @@ const AddNew = defineComponent({
       getCounties();
       getCampaigns();
       getSubCounties();
-      console.log(getCounties());
     });
 
     const handleSubmit = (values) => {
-      console.log(values);
       values = {
-        name: values.name,
-        campaign_id: values.campaign_id,
-        ou_sub_county: values.sub_county_id,
+        name: formState.name,
+        campaign_id: formState.campaign_id,
+        ou_sub_county: formState.sub_county,
       };
-      console.log(values);
 
-      fetch(API_URL, {
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+      .then(() => {
+        this.errors = {};
+        fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -221,9 +245,6 @@ const AddNew = defineComponent({
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-          console.log(".......... ");
-          console.log(API_URL);
           if (data.status == true) {
             router.push("/nets/distribution-points");
             notification["success"]({
@@ -242,6 +263,13 @@ const AddNew = defineComponent({
         .catch((error) => {
           console.error("Error:", error);
         });
+      }).catch((err)=>{
+        err.inner.forEach((e) => {
+          this.errors[e.path] = e.message;
+        });
+      })
+
+      
     };
 
     return {
@@ -257,6 +285,13 @@ const AddNew = defineComponent({
       sub_counties,
       campaigns,
       counties,
+      validate, 
+      errors: {
+        name: "",
+        campaign_id: "",
+        county_id: "",
+        sub_county: "",
+      }
     };
   },
   beforeRouteEnter(to, from, next) {

@@ -42,6 +42,8 @@
                         v-model:value="formState.received_by"
                         v-if="!loading"
                         placeholder="Select post workers"
+                        @blur="validate('received_by')" 
+                        @keypress="validate('received_by')"
                       >
                         <a-select-option
                           v-for="worker in users"
@@ -52,6 +54,7 @@
                           {{ worker.last_name }} - {{ worker.role_id }}
                         </a-select-option>
                       </a-select>
+                      <p class="errors" style="color: red;" v-if="!!errors.received_by" >{{errors.received_by}}</p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -79,6 +82,7 @@ import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
+import * as Yup from "yup";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -99,9 +103,6 @@ const AddNew = defineComponent({
 
     const post_id = parameters.query.id;
 
-    // console.log(parameters);
-    console.log(post_id);
-
     const formState = reactive({
       post_id: "",
       number_of_nets: "",
@@ -118,6 +119,17 @@ const AddNew = defineComponent({
       posts: [],
     });
 
+    const ArticleSchema = Yup.object().shape({
+      received_by: Yup.array().min(1, "At least 1 post worker is required").required(),
+     });
+
+     const validate=(field)=> {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
     //get posts
     const getPosts = async () => {
       const response = await fetch(
@@ -184,16 +196,13 @@ const AddNew = defineComponent({
 
       values.post_id = post_id;
 
-      const workersProxy = values.workers;
-      const workersArray = Object.values(workersProxy); // [2, 4]
+      // const workersProxy = values.workers;
+      // const workersArray = Object.values(workersProxy); // [2, 4]
 
-      console.log(workersArray);
-
-      values.workers = workersArray;
-
-      console.log(values);
-
-      fetch(API_URL, {
+      ArticleSchema.validate(this.formState, {abortEarly: false})
+      .then(()=>{
+        this.errors = {};
+        fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -216,6 +225,14 @@ const AddNew = defineComponent({
         .catch((error) => {
           console.error("Error:", error);
         });
+      })
+      .catch((err) => {
+        const errors = {};
+        err.inner.forEach((e) => {
+          errors[e.path] = e.message;
+        });
+        this.errors = errors;
+      });
     };
 
     return {
@@ -227,6 +244,10 @@ const AddNew = defineComponent({
       handleSubmit,
       dateFormat,
       formState,
+      validate,
+      errors: {
+        received_by: "",
+      },
       join,
       villages,
       posts,

@@ -128,22 +128,11 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const rls = [];
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
           headers: authHeader(),
         });
-        const data = await response.json();
-        for (let i = 1; i < data.length; i++) {
-          const element = {
-            id: i,
-            name: data[i].name,
-            orgtype_id: data[i].orgtype_id,
-            orgtype_name: data[i].orgtype_name
-          };
-          rls.push(element);
-        }
-        console.log(data);
+        const data = await response.json();        
         dataSource.value = data;
         console.log(dataSource.value);
       } catch (error) {
