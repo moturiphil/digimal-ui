@@ -8,7 +8,7 @@
 
     <Main>
       <a-row :gutter="16" class="search-row">
-        <sdButton class="btn-import" type="success">
+        <!-- <sdButton class="btn-import" type="success">
           <router-link
             :to="{
               path: `/assign-permission`,
@@ -19,7 +19,7 @@
           >
             &nbsp;&nbsp; Assign Role Permission
           </router-link>
-        </sdButton>
+        </sdButton> -->
         &nbsp;&nbsp;&nbsp;&nbsp;
         <!-- <sdButton class="btn-import" type="success" @click="exportUserData">
           Export Users
