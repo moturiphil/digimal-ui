@@ -242,6 +242,10 @@ const AddNew = defineComponent({
             })
             .catch((error) => {
               this.isSubmitting = false;
+              notification.error({
+                message: "Could not submit!",
+                description: "An error has occured. Please try again later.",
+              });
               console.error("Error:", error);
             });
         })
