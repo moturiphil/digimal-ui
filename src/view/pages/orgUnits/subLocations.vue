@@ -15,6 +15,20 @@
       ></template>
       </sdPageHeader>
       <Main>
+        <sdButton class="btn-import" type="success">
+        <router-link
+          :to="{
+            path: `/org-units/import-orgunit/${params.id}`,
+            query: { orgtype: 'sub-location' },
+          }"
+          class="btn-icon"
+          type="info"
+          shape="circle"
+        >
+          &nbsp;&nbsp; Import Sub locations
+        </router-link>
+      </sdButton>
+      <br />
         <a-row :gutter="15">
           <a-col class="w-100" :md="24">
             <sdCards headless>
@@ -35,8 +49,7 @@
                           <sdButton>
                             <router-link
                               :to="{
-                                path: `/org-units${record.id}/villages`,
-                                query: { id: record.org_id },
+                                path: `/org-units/villages/${record.org_id}`,
                               }"
                               class="btn-icon"
                               type="info"
@@ -121,7 +134,7 @@
       onMounted(async () => {
         try {
           const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${query.id}`,
+            `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
             {
               method: "GET",
               headers: authHeader(),
@@ -185,6 +198,7 @@
         dataSource,
         results,
         searchItem,
+        params,
         columns,
         
       };

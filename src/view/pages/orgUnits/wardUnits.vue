@@ -38,8 +38,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/org-units${record.id}/locations`,
-                              query: { id: record.org_id },
+                              path: `/org-units/locations/${record.org_id}`,
                             }"
                             class="btn-icon"
                             type="info"
@@ -112,19 +111,12 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-    const { params, query } = useRoute();
+    const { params } = useRoute();
     const searchItem = ref("")
-
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
-    console.log({ query, params });
-    console.log(query.id);
-
     onMounted(async () => {
       try {
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${query.id}`,
+          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
           {
             method: "GET",
             headers: authHeader(),
