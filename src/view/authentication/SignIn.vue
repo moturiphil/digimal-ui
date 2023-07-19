@@ -11,6 +11,8 @@
             type="number"
             v-model:value="formState.id_no"
             placeholder="Enter ID No"
+            required
+            max="15"
           />
         </a-form-item>
         <a-form-item name="password" initialValue="" label="Password">
@@ -18,6 +20,7 @@
             v-model:value="formState.password"
             placeholder="Password"
             :iconRender="getPasswordToggleIcon"
+            required
           />
         </a-form-item>
 
