@@ -11,7 +11,8 @@
           <a-input
             type="number"
             v-model:value="formState.id_no"
-            placeholder="34567890"
+            placeholder="Enter ID number"
+            required
           />
         </a-form-item>
         <a-form-item v-if="showOtpInput" label="OTP" name="otp">
@@ -19,6 +20,7 @@
             type="text"
             v-model:value="formState.otp"
             placeholder="Enter OTP"
+            required
           />
         </a-form-item>
         <a-form-item>
@@ -44,11 +46,13 @@ import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { notification } from "ant-design-vue";
+
 
 export default {
   name: "Register",
   components: { AuthWrapper },
-  setup() {
+  data() {
     const isLoading = computed(() => store.state.auth.loading);
     const checked = ref(null);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/generate_otp`;
@@ -61,29 +65,34 @@ export default {
 
     const handleSubmit = async () => {
       if (!showOtpInput.value) {
-        // Send request to backend to generate OTP
         const values = {
           id_no: formState.id_no,
         };
 
-        console.log(sessionStorage.getItem("id_no"));
+        try {
+          const response = await axios.post(API_URL, values);
+    
+          if (response.status === 200 || response.status === 226 || response.status === 201) {
+            sessionStorage.removeItem("id_no", values.id_no);
+            sessionStorage.removeItem("otp", response.data.OTP);
+            sessionStorage.setItem("otp", response.data.OTP);
+            sessionStorage.setItem("id_no", values.id_no);
+          } else {
+            notification.error({
+              message: "Error",
+              description: response.data.message,
+            });
+            throw new Error("Network response was not ok.");
+          }
+          showOtpInput.value = true;
 
-        const response = await axios.post(API_URL, values);
-
-        console.log(response);
-
-        if (response.status === 200 || response.status === 226 || response.status === 201) {
-          // Remove id_no and otp then store generated OTP and id_no in session storage
-          sessionStorage.removeItem("id_no", values.id_no);
-          sessionStorage.removeItem("otp", response.data.OTP);
-
-          sessionStorage.setItem("otp", response.data.OTP);
-          sessionStorage.setItem("id_no", values.id_no);
-          console.log(response.data);
-        } else {
-          throw new Error("Network response was not ok.");
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: "Failed! please contact admin for assistance.",
+          });
         }
-        showOtpInput.value = true;
+
       } else {
         // Verify user input against sessionly stored OTP
         const generatedOTP = sessionStorage.getItem("otp");
