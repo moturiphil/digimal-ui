@@ -58,6 +58,7 @@
                         :disabledDate="disabledDate"
                         @blur="validate('endDate')"
                         @keypress="validate('endDate')"
+                        onchange="validateDate()"
                       />
                       <p
                         class="errors"
@@ -217,6 +218,13 @@ const AddNew = defineComponent({
         return current && current < new Date(this.formState.startDate);
       }
       return current && current < Date.now();
+    },
+    validateDate() {
+      if (this.formState.startDate && this.formState.endDate) {
+        if (this.formState.startDate > this.formState.endDate) {
+          this.formState.endDate = "";
+        }
+      }
     },
   },
   beforeRouteEnter(to, from, next) {
