@@ -355,11 +355,11 @@ const columns = [
     dataIndex: "name",
     key: "id",
   },
-  {
-    title: "Event",
-    dataIndex: "event_id",
-    key: "id",
-  },
+  // {
+  //   title: "Event",
+  //   dataIndex: "event_id",
+  //   key: "id",
+  // },
   {
     title: "Validated",
     dataIndex: "status",
@@ -377,7 +377,7 @@ const columns = [
   },
   {
     title: "Amount",
-    dataIndex: "total_ammount",
+    dataIndex: "total_amount",
     key: "id",
   },
   {
