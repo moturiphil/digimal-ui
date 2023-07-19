@@ -28,7 +28,7 @@
                         v-model:value="formState.activity_id"
                         show-search
                         option-filter-prop="label"
-                        @blur="validate('activity_id')" 
+                        @blur="validate('activity_id')"
                         @keypress="validate('activity_id')"
                       >
                         <a-select-option value=""
@@ -42,7 +42,13 @@
                           >{{ activity.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.activity_id" >{{errors.activity_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.activity_id"
+                      >
+                        {{ errors.activity_id }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="county_id" label="County">
@@ -56,7 +62,7 @@
                         v-if="!loading"
                         show-search
                         option-filter-prop="label"
-                        @blur="validate('county_id')" 
+                        @blur="validate('county_id')"
                         @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
@@ -72,7 +78,13 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.county_id" >{{errors.county_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.county_id"
+                      >
+                        {{ errors.county_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
@@ -83,7 +95,7 @@
                         v-model:value="formState.sub_county_id"
                         show-search
                         option-filter-prop="label"
-                        @blur="validate('sub_county_id')" 
+                        @blur="validate('sub_county_id')"
                         @keypress="validate('sub_county_id')"
                       >
                         <a-select-option value=""
@@ -97,7 +109,13 @@
                           >{{ scounty.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.sub_county_id" >{{errors.sub_county_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.sub_county_id"
+                      >
+                        {{ errors.sub_county_id }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="location_type_id" label="Location Type">
@@ -106,28 +124,26 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Location Type"
                         v-model:value="formState.location_type_id"
-                        @blur="validate('location_type_id')" 
+                        @blur="validate('location_type_id')"
                         @keypress="validate('location_type_id')"
                       >
                         <a-select-option value="" disabled
                           >Select a Location</a-select-option
                         >
-                        <a-select-option value="1"
-                          >Cities</a-select-option
-                        >
-                        <a-select-option
-                          default-value="2"
-                          value="2"
+                        <a-select-option value="1">Cities</a-select-option>
+                        <a-select-option default-value="2" value="2"
                           >County HQ</a-select-option
                         >
-                        <a-select-option value="3"
-                          >Other Areas</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >N/A</a-select-option
-                        >
+                        <a-select-option value="3">Other Areas</a-select-option>
+                        <a-select-option value="4">N/A</a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.location_type_id" >{{errors.location_type_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.location_type_id"
+                      >
+                        {{ errors.location_type_id }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="campaign_id" label="Campaign">
@@ -136,7 +152,7 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Campaign"
                         v-model:value="formState.campaign_id"
-                        @blur="validate('campaign_id')" 
+                        @blur="validate('campaign_id')"
                         @keypress="validate('campaign_id')"
                         show-search
                         option-filter-prop="label"
@@ -152,7 +168,13 @@
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="start_date" label="Activity Start Date">
@@ -161,10 +183,16 @@
                         v-model:value="formState.start_date"
                         :format="dateFormat"
                         :disabledDate="disabledDate"
-                        @blur="validate('start_date')" 
+                        @blur="validate('start_date')"
                         @keypress="validate('start_date')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.start_date" >{{errors.start_date}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.start_date"
+                      >
+                        {{ errors.start_date }}
+                      </p>
                     </a-form-item>
                     <!-- no of officers as number -->
                     <a-form-item
@@ -177,10 +205,16 @@
                         type="number"
                         min="0"
                         :value="computedPayableTravelDays"
-                        @blur="validate('number_of_officers')" 
+                        @blur="validate('number_of_officers')"
                         @keypress="validate('number_of_officers')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.number_of_officers" >{{errors.number_of_officers}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.number_of_officers"
+                      >
+                        {{ errors.number_of_officers }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="activity_facilitator" label="Officers">
@@ -189,7 +223,7 @@
                         v-model:value="formState.activity_facilitator"
                         placeholder="Please select"
                         :disabled="isOfficerSelectionDisabled"
-                        @blur="validate('activity_facilitator')" 
+                        @blur="validate('activity_facilitator')"
                         @keypress="validate('activity_facilitator')"
                         show-search
                         option-filter-prop="label"
@@ -205,7 +239,13 @@
                         "
                       >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.activity_facilitator" >{{errors.activity_facilitator}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.activity_facilitator"
+                      >
+                        {{ errors.activity_facilitator }}
+                      </p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -220,8 +260,19 @@
                         &nbsp;&nbsp; Confirm Officers
                       </sdButton> -->
                       &nbsp;&nbsp;&nbsp;
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
+                        }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -298,10 +349,12 @@ const AddNew = defineComponent({
       start_date: Yup.string().required("Start Date is required"),
       location_type_id: Yup.string().required("Location Type is required"),
       number_of_officers: Yup.number().required("Officers is required"),
-      activity_facilitator: Yup.array().min(1, "At least 1 facilitator required").required(),
-     });
+      activity_facilitator: Yup.array()
+        .min(1, "At least 1 facilitator required")
+        .required(),
+    });
 
-    const validate=(field)=> {
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -379,22 +432,22 @@ const AddNew = defineComponent({
       this.campaigns = data.data;
     };
     // const handleSelect = (values)
-    const onSubmit = ()=> {
-      const  values = {
-          activity_list_id: formState.activity_id,
-          county_id: formState.county_id,
-          sub_county_id: formState.sub_county_id,
-          campaign_id: formState.campaign_id,
-          start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
-          number_of_officers: formState.number_of_officers,
-          activity_facilitator: formState.activity_facilitator,
-          location_type_id: formState.location_type_id,
-        };
-      
+    const onSubmit = () => {
+      this.isSubmitting = true;
+      const values = {
+        activity_list_id: formState.activity_id,
+        county_id: formState.county_id,
+        sub_county_id: formState.sub_county_id,
+        campaign_id: formState.campaign_id,
+        start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
+        number_of_officers: formState.number_of_officers,
+        activity_facilitator: formState.activity_facilitator,
+        location_type_id: formState.location_type_id,
+      };
 
-     ArticleSchema.validate(this.formState, { abortEarly: false })
-      .then(() => {
-        this.errors = {};
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+        .then(() => {
+          this.errors = {};
           fetch(API_URL, {
             method: "POST",
             headers: {
@@ -402,31 +455,35 @@ const AddNew = defineComponent({
               ...authHeader(),
             },
             body: JSON.stringify(values),
-           })
-          .then((response) => response.json())
-          .then(({ success, data }) => {
-            // console.log(data);
-            if (success) {
-              router.push("activity-view");
-              notification["success"]({
-                message: "Activity Created",
-                description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
-                duration: 5.5,
-              });
-            }
           })
-          .catch((error) => {
-            console.error("Error:", error);
+            .then((response) => response.json())
+            .then(({ success, data }) => {
+              // console.log(data);
+              if (success) {
+                this.isSubmitting = false;
+                router.push("activity-view");
+                notification["success"]({
+                  message: "Activity Created",
+                  description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+                  duration: 5.5,
+                });
+              }
+            })
+            .catch((error) => {
+              this.isSubmitting = false;
+              notification.error({
+                message: "Could not submit!",
+                description: "An error has occured. Please try again later.",
+              });
+              console.error("Error:", error);
+            });
+        })
+        .catch((err) => {
+          this.isSubmitting = false;
+          err.inner.forEach((e) => {
+            this.errors[e.path] = e.message;
           });
-      })
-      .catch((err) => {
-        err.inner.forEach((e) => {
-          this.errors[e.path] = e.message;
         });
-      });
-
-
-      
     };
     onMounted(() => {
       axios
@@ -445,6 +502,7 @@ const AddNew = defineComponent({
     });
     return {
       isLoading,
+      isSubmitting: false,
       apiUrl,
       users,
       isFileLoading,
@@ -472,7 +530,6 @@ const AddNew = defineComponent({
     };
   },
   methods: {
-
     disabledDate(date) {
       // Get today's date at midnight
       const today = new Date();
