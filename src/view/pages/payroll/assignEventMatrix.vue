@@ -23,32 +23,22 @@
                         v-if="!loading"
                         placeholder="Select Matrix to Assign"
                       >
-                        <a-select-option value="2"
-                          >Pardiem for National Officers -
-                          Cities</a-select-option
+                        <a-select-option
+                          v-for="matrix in matrix"
+                          :key="matrix.id"
+                          v-model:value="matrix.id"
                         >
-                        <a-select-option default-value="3" value="3"
-                          >Perdiem for National Driver</a-select-option
-                        >
-                        <a-select-option value="4"
-                          >Communication for Officers</a-select-option
-                        >
-                        <a-select-option value="5"
-                          >Perdiem for National Officers -
-                          Cities</a-select-option
-                        >
-                        <a-select-option value="6"
-                          >Perdiem for National Officers - Cities (JG
-                          P,Q,R)</a-select-option
-                        >
-                        <a-select-option value="7"
-                          >Lunch Allowance - Supervisors</a-select-option
-                        >
-                        <a-select-option value="8"
-                          >Lunch Allowance - Supervisors</a-select-option
-                        >
+                          {{ matrix.formula_name }}
+                        </a-select-option>
                       </a-select>
                     </a-form-item>
+
+                    <!-- <a-form-item name="venue" label="Event Venue">
+                      <a-input
+                        v-model:value="formState.venue"
+                        placeholder="Input Event Venue"
+                      />
+                    </a-form-item> -->
 
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -119,6 +109,8 @@ const AddNew = defineComponent({
 
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
+    const pay_matrix_url = `${process.env.VUE_APP_BASE_URL}/list_pay_matrix`;
+
     const { matrix, loading } = reactive({
       loading: true,
       matrix: [],
@@ -138,6 +130,21 @@ const AddNew = defineComponent({
       this.loading = false;
     };
     fetchCampaigns();
+
+    const fetchMatrix = async () => {
+      const response = await fetch(pay_matrix_url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      });
+      const data = await response.json();
+      this.matrix = data.data;
+      console.log(data.data);
+      this.loading = false;
+    };
+    fetchMatrix();
 
     const fetchFacilitators = async () => {
       const response = await fetch(facilitator_url, {
@@ -206,42 +213,6 @@ const AddNew = defineComponent({
           }
         });
     };
-
-    // const handleSubmit = () => {
-    //   const data = {
-    //     activity_id: act_id,
-    //     matrix: formState.matrix,
-    //   };
-
-    //   console.log(data);
-
-    //   const urlParams = new URLSearchParams(data).toString();
-    //   console.log(urlParams);
-    //   const url = `${API_URL}?${urlParams}`;
-
-    //   fetch(url, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       ...authHeader(),
-    //     },
-    //   })
-    //     .then((response) => response.json())
-    //     .then(({ success }) => {
-    //       if (success) {
-    //         // router.push("event-view");
-    //         notification["success"]({
-    //           message: "Matrix Assigned successfully",
-    //           description:
-    //             "Matrix Assigned successfully. You can now view the matrix",
-    //           duration: 5.5,
-    //         });
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error:", error);
-    //     });
-    // };
 
     const formState = reactive({
       matrix: [],
