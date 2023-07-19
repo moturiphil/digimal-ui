@@ -164,11 +164,6 @@
   // const households = ref([]);
   
   const columns = [
-  {
-      title: "id",
-      dataIndex: "id",
-      key: "id",
-    },
     {
       title: "Name",
       dataIndex: "user_id",
