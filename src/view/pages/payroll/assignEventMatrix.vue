@@ -186,10 +186,11 @@ const AddNew = defineComponent({
         body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then(({ status }) => {
-          console.log(status);
+        .then(({ success, data }) => {
+          console.log(success);
+          console.log(data);
           notification["success"]({
-            message: "Event Matrix Assigned successfully",
+            message: " Matrix Assigned successfully",
             description: `Matrix Assigned successfully. You can now view the matrix`,
             duration: 5.5,
           });
