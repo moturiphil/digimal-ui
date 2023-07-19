@@ -3,7 +3,10 @@
     <sdPageHeader title="DigiMal KE">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
-          <router-link to="/campaigns/create"> <sdFeatherIcons type="plus" size="14" /> Start New Campaign</router-link>
+          <router-link to="/campaigns/create-campaign">
+            <sdFeatherIcons type="plus" size="14" /> Start New
+            Campaign</router-link
+          >
         </sdButton>
       </template>
       <template #buttons>
@@ -45,32 +48,32 @@
   </RecordViewWrapper>
 </template>
 <script>
-import { RecordViewWrapper } from './style';
-import { Main, TableWrapper } from '../../styled';
-import { useStore } from 'vuex';
-import { computed, onMounted, ref, reactive, defineComponent } from 'vue';
-import dayjs from 'dayjs';
+import { RecordViewWrapper } from "./style";
+import { Main, TableWrapper } from "../../styled";
+import { useStore } from "vuex";
+import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import dayjs from "dayjs";
 
 const columns = [
   {
-    title: 'Campaign Name',
-    dataIndex: 'name',
-    key: 'name',
+    title: "Campaign Name",
+    dataIndex: "name",
+    key: "name",
   },
   {
-    title: 'Campaign Start Date',
-    dataIndex: 'email',
-    key: 'email',
+    title: "Campaign Start Date",
+    dataIndex: "email",
+    key: "email",
   },
   {
-    title: 'Campaign End Date',
-    dataIndex: 'company',
-    key: 'company',
-  }
+    title: "Campaign End Date",
+    dataIndex: "company",
+    key: "company",
+  },
 ];
 
 const ViewPage = defineComponent({
-  name: 'ViewPage',
+  name: "ViewPage",
   components: { RecordViewWrapper, Main, TableWrapper },
   setup() {
     const { state, dispatch } = useStore();
@@ -79,16 +82,16 @@ const ViewPage = defineComponent({
     const selectedRowKeys = ref([]);
 
     onMounted(() => {
-      dispatch('axiosCrudGetData');
+      dispatch("axiosCrudGetData");
     });
 
     const handleDelete = (id) => {
-      const confirm = window.confirm('Are you sure delete this?');
+      const confirm = window.confirm("Are you sure delete this?");
       if (confirm) {
-        dispatch('axiosDataDelete', {
+        dispatch("axiosDataDelete", {
           id,
           getData: () => {
-            dispatch('axiosCrudGetData');
+            dispatch("axiosCrudGetData");
           },
         });
       }
@@ -96,24 +99,39 @@ const ViewPage = defineComponent({
     };
 
     const formState = reactive({
-      searchItem: '',
+      searchItem: "",
     });
 
     const onHandleSearch = () => {
-      dispatch('axiosDataSearch', formState.searchItem);
+      dispatch("axiosDataSearch", formState.searchItem);
     };
 
     const dataSource = computed(() =>
       crud.value.length
         ? crud.value.map((person, key) => {
-            const { id, name, email, company, position, join, status, city, country, image } = person;
+            const {
+              id,
+              name,
+              email,
+              company,
+              position,
+              join,
+              status,
+              city,
+              country,
+              image,
+            } = person;
 
             return {
               key: key + 1,
               name: (
                 <div class="record-img align-center-v">
                   <img
-                    src={image ? process.env.VUE_APP_BASE_URL + image : require('@/static/img/avatar/profileImage.png')}
+                    src={
+                      image
+                        ? process.env.VUE_APP_BASE_URL + image
+                        : require("@/static/img/avatar/profileImage.png")
+                    }
                     alt={id}
                   />
                   <span>
@@ -127,7 +145,7 @@ const ViewPage = defineComponent({
               email,
               company,
               position,
-              jdate: dayjs(join).format('YYYY-MM-DD'),
+              jdate: dayjs(join).format("YYYY-MM-DD"),
               status: <span class={`status ${status}`}>{status}</span>,
               action: (
                 <div class="table-actions">
@@ -135,14 +153,18 @@ const ViewPage = defineComponent({
                     <sdFeatherIcons type="edit" size={14} />
                   </router-link>
                   &nbsp;&nbsp;&nbsp;
-                  <router-link class="delete" onClick={() => handleDelete(id)} to="#">
+                  <router-link
+                    class="delete"
+                    onClick={() => handleDelete(id)}
+                    to="#"
+                  >
                     <sdFeatherIcons type="trash-2" size={14} />
                   </router-link>
                 </div>
               ),
             };
           })
-        : [],
+        : []
     );
 
     const onSelectChange = (selectedRowKey) => {

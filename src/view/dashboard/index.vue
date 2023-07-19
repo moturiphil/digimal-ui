@@ -1,17 +1,17 @@
 <template>
-<Main>
-  <sdPageHeader title="DigiMal KE Dashboard">
-    <template v-slot:buttons>
-      <div class="page-header-actions">
-        <router-link v-bind:to="'campaigns/create'">
-          <sdButton size="small" type="success">
-            <sdFeatherIcons type="plus" size="14" />
-            Create Campaign
-          </sdButton>
-        </router-link>
-      </div>
-    </template>
-  </sdPageHeader>
+  <Main>
+    <sdPageHeader title="DigiMal KE Dashboard">
+      <template v-slot:buttons>
+        <div class="page-header-actions">
+          <router-link v-bind:to="'campaigns/create-campaign'">
+            <sdButton size="small" type="success">
+              <sdFeatherIcons type="plus" size="14" class="icon-color-white" />
+              Create Campaign
+            </sdButton>
+          </router-link>
+        </div>
+      </template>
+    </sdPageHeader>
     <a-row :gutter="25">
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless>
@@ -20,8 +20,7 @@
               <CardBarChart2>
                 <sdHeading as="h1">{{ nets_distributed }}</sdHeading>
                 <span>Nets Distributed</span>
-                <p>
-                </p>
+                <p></p>
               </CardBarChart2>
             </div>
             <div class="card-chunk">
@@ -238,15 +237,17 @@
 import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
-import {  onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { defineComponent, defineAsyncComponent } from "vue";
 import authHeader from "../../services/auth-header";
 
+const IncomeAndExpenses = defineAsyncComponent(() =>
+  import("./overview/business/IncomeAndExpenses")
+);
 
-const IncomeAndExpenses = defineAsyncComponent(() => import('./overview/business/IncomeAndExpenses'));
-
-const WebsitePerformance = defineAsyncComponent(() => import('./overview/performance/WebsitePerformance'));
-
+const WebsitePerformance = defineAsyncComponent(() =>
+  import("./overview/performance/WebsitePerformance")
+);
 
 const chartOptions = {
   legend: {
@@ -351,5 +352,8 @@ export default defineComponent({
   },
 });
 </script>
-
-
+<style scoped>
+.icon-color-white {
+  color: white;
+}
+</style>
