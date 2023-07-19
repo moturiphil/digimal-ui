@@ -223,8 +223,19 @@
                       </p>
                     </a-form-item>
                     <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
+                        }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -433,6 +444,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = () => {
+      this.isSubmitting = true;
       const data = {
         // name: formState.name,
         campaign_id: formState.campaign_id,
@@ -459,6 +471,7 @@ const AddNew = defineComponent({
             .then((response) => response.json())
             .then(({ success, data }) => {
               if (success) {
+                this.isSubmitting = false;
                 router.push("event-view");
                 notification["success"]({
                   message: "Event Created",
@@ -468,6 +481,7 @@ const AddNew = defineComponent({
               }
               // show error message from the api response
               else {
+                this.isSubmitting = false;
                 notification["error"]({
                   message: "Error!",
                   description: "Fail to create event",
@@ -476,6 +490,7 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
+              this.isSubmitting = false;
               notification["error"]({
                 message: "Error!",
                 description: `${error}`,
@@ -484,6 +499,11 @@ const AddNew = defineComponent({
             });
         })
         .catch((err) => {
+          this.isSubmitting = false;
+          notification.error({
+            message: "Could not submit!",
+            description: "An error has occured. Please try again later.",
+          });
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -492,6 +512,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
+      isSubmitting: false,
       apiUrl,
       isFileLoading,
       join,
