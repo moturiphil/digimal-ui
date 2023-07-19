@@ -103,9 +103,6 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-// import { useRoute } from "vue-router";
-
-// const households = ref([]);
 
 const columns = [
   {
