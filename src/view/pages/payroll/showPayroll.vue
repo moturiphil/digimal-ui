@@ -2,9 +2,6 @@
   <div>
     <sdPageHeader ghost title="Activity Payroll" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="handleVerify(id)">
-        Pay
-      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">

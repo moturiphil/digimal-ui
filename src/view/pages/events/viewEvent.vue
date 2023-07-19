@@ -39,7 +39,7 @@
                   :columns="columns"
                 >
                   <template #events="{ record }">
-                    <td>
+                    <td :style="{ 'margin-left': '4px' }">
                       <div class="table-actions">
                         <sdButton
                           size="small"
@@ -68,15 +68,6 @@
                           <span class="badge badge-red">
                             &nbsp;&nbsp; Close Event
                           </span>
-                        </sdButton>
-
-                        <sdButton
-                          @click="handleRegistration(record.event_code)"
-                          size="small"
-                          type="success"
-                        >
-                          <sdFeatherIcons type="user-plus" size="17" />
-                          &nbsp;&nbsp; Register
                         </sdButton>
                         <!-- <sdButton
                           @click="startEvent(record.id)"
