@@ -25,7 +25,7 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign Name"
-                        @blur="validate('campaign_id')" 
+                        @blur="validate('campaign_id')"
                         @keypress="validate('campaign_id')"
                         show-search
                         option-filter-prop="label"
@@ -39,7 +39,13 @@
                           {{ campaign.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item label="Event Type">
                       <a-select
@@ -50,21 +56,21 @@
                         show-search
                         option-filter-prop="label"
                         v-model:value="formState.name"
-                        @blur="validate('name')" 
+                        @blur="validate('name')"
                         @keypress="validate('name')"
-
                       >
-                      <a-select-option
+                        <a-select-option
                           v-for="event in events_list"
                           :key="event.id"
                           :value="event.id"
-                          :label="`${event.name } `"
-
+                          :label="`${event.name} `"
                         >
                           {{ event.name }}
                         </a-select-option>
-                      </a-select> 
-                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
+                      </a-select>
+                      <p class="errors" style="color: red" v-if="!!errors.name">
+                        {{ errors.name }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="county_id" label="County">
                       <a-select
@@ -77,7 +83,7 @@
                         show-search
                         option-filter-prop="label"
                         v-if="!loading"
-                        @blur="validate('county_id')" 
+                        @blur="validate('county_id')"
                         @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
@@ -93,8 +99,13 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.county_id" >{{errors.county_id}}</p>
-
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.county_id"
+                      >
+                        {{ errors.county_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item label="Location Type">
                       <a-select
@@ -103,14 +114,20 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Location Type"
                         v-model:value="formState.location_type"
-                        @blur="validate('location_type')" 
+                        @blur="validate('location_type')"
                         @keypress="validate('location_type')"
                       >
                         <a-select-option value="1">City</a-select-option>
                         <a-select-option value="2">County HQ</a-select-option>
                         <a-select-option value="3">Others</a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.location_type" >{{errors.location_type}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.location_type"
+                      >
+                        {{ errors.location_type }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
@@ -119,21 +136,27 @@
                         v-if="!loading"
                         show-search
                         option-filter-prop="label"
-                        @blur="validate('facilitator_id')" 
+                        @blur="validate('facilitator_id')"
                         @keypress="validate('facilitator_id')"
                       >
                         <a-select-option
                           v-for="facilitator in facilitators"
                           :key="facilitator.id"
                           v-model:value="facilitator.id"
-                          :label="`${facilitator.first_name} ${facilitator.last_name} -${facilitator.role_id } `"
+                          :label="`${facilitator.first_name} ${facilitator.last_name} -${facilitator.role_id} `"
                         >
                           {{ facilitator.first_name }}
                           {{ facilitator.last_name }} -
                           {{ facilitator.role_id }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.facilitator_id" >{{errors.facilitator_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.facilitator_id"
+                      >
+                        {{ errors.facilitator_id }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item label="Facilitators">
@@ -145,21 +168,26 @@
                         show-search
                         option-filter-prop="label"
                         @change="handleChange"
-                        @blur="validate('trainer_id')" 
+                        @blur="validate('trainer_id')"
                         @keypress="validate('trainer_id')"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
                           :key="trainer.id"
                           :value="trainer.id"
-                          :label="`${trainer.first_name} ${trainer.last_name} -${trainer.role_id } `"
-
+                          :label="`${trainer.first_name} ${trainer.last_name} -${trainer.role_id} `"
                         >
                           {{ trainer.first_name }}
                           {{ trainer.last_name }} - {{ trainer.role_id }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.trainer_id" >{{errors.trainer_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.trainer_id"
+                      >
+                        {{ errors.trainer_id }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="no-of-days" label="No of Days">
@@ -167,20 +195,32 @@
                         v-model:value="formState.no_of_days"
                         placeholder="No of Days"
                         :min="0"
-                        @blur="validate('no_of_days')" 
+                        @blur="validate('no_of_days')"
                         @keypress="validate('no_of_days')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.no_of_days" >{{errors.no_of_days}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.no_of_days"
+                      >
+                        {{ errors.no_of_days }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="venue" label="Venue">
                       <a-input
                         v-model:value="formState.venue"
                         placeholder="Input Venue"
-                        @blur="validate('venue')" 
+                        @blur="validate('venue')"
                         @keypress="validate('venue')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.venue" >{{errors.venue}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.venue"
+                      >
+                        {{ errors.venue }}
+                      </p>
                     </a-form-item>
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -235,17 +275,23 @@ const AddNew = defineComponent({
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
-    const { campaigns, facilitators, loading, counties, sub_counties, events_list } =
-      reactive({
-        campaigns: "",
-        loading: true,
-        facilitators: [],
-        counties: [],
-        sub_county_id: "",
-        events_list: [],
-      });
+    const {
+      campaigns,
+      facilitators,
+      loading,
+      counties,
+      sub_counties,
+      events_list,
+    } = reactive({
+      campaigns: "",
+      loading: true,
+      facilitators: [],
+      counties: [],
+      sub_county_id: "",
+      events_list: [],
+    });
 
-    const fetchEvents= async () => {
+    const fetchEvents = async () => {
       const response = await fetch(events_url, {
         method: "GET",
         headers: {
@@ -281,7 +327,7 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      const transformedData = data.data.map(fac => ({
+      const transformedData = data.data.map((fac) => ({
         ...fac,
         label: `${fac.first_name} ${fac.last_name} - ${fac.role_id}`,
       }));
@@ -362,7 +408,6 @@ const AddNew = defineComponent({
       trainer_id: [],
       no_of_days: null,
       venue: "",
-
     });
 
     const ArticleSchema = Yup.object().shape({
@@ -371,14 +416,15 @@ const AddNew = defineComponent({
       county_id: Yup.string().required(),
       location_type: Yup.string().required("Location is required"),
       facilitator_id: Yup.string().required("Host is required"),
-      trainer_id: Yup.array().min(1, "At least 1 facilitator required").required(),
+      trainer_id: Yup.array()
+        .min(1, "At least 1 facilitator required")
+        .required(),
       no_of_days: Yup.number().required("No of days is required"),
       venue: Yup.string().required("Venue is required"),
-
-     });
+    });
     // console.log(formState);
 
-    const validate=(field)=> {
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -388,7 +434,6 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-
         // name: formState.name,
         campaign_id: formState.campaign_id,
         venue: formState.venue,
@@ -404,45 +449,44 @@ const AddNew = defineComponent({
       ArticleSchema.validate(this.formState, { abortEarly: false })
         .then(() => {
           fetch(API_URL, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...authHeader(),
-              },
-              body: JSON.stringify(data),
-            })
-              .then((response) => response.json())
-              .then(({ success, data }) => {
-                
-                if (success) {
-                  router.push("event-view");
-                  notification["success"]({
-                    message: "Event Created",
-                    description: `Event Created successfully. Your event code is ${data.event.event_code}`,
-                    duration: 5.5,
-                  });
-                }
-                // show error message from the api response
-                else {
-                  notification["error"]({
-                    message: "Error!",
-                    description: "Fail to create event",
-                    duration: 5.5,
-                  });
-                }
-              })
-              .catch((error) => {
-                notification["error"]({
-                  message: "Error!",
-                  description: `${error}`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          })
+            .then((response) => response.json())
+            .then(({ success, data }) => {
+              if (success) {
+                router.push("event-view");
+                notification["success"]({
+                  message: "Event Created",
+                  description: `Event Created successfully. Your event code is ${data.event.event_code}`,
                   duration: 5.5,
                 });
+              }
+              // show error message from the api response
+              else {
+                notification["error"]({
+                  message: "Error!",
+                  description: "Fail to create event",
+                  duration: 5.5,
+                });
+              }
+            })
+            .catch((error) => {
+              notification["error"]({
+                message: "Error!",
+                description: `${error}`,
+                duration: 5.5,
               });
+            });
         })
         .catch((err) => {
           err.inner.forEach((e) => {
-          this.errors[e.path] = e.message;
-        });
+            this.errors[e.path] = e.message;
+          });
         });
     };
 
@@ -462,17 +506,16 @@ const AddNew = defineComponent({
       handleChange,
       events_list,
       validate,
-      errors:{
-
+      errors: {
         campaign_id: null,
         name: null,
         county_id: "",
         location_type: null,
         facilitator_id: "",
-        trainer_id: [],
+        trainer_id: null,
         no_of_days: null,
         venue: "",
-      }
+      },
     };
   },
   beforeRouteEnter(to, from, next) {

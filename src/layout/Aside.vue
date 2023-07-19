@@ -8,7 +8,7 @@
     <a-menu-item-group key="pages">
       <a-menu-item @click="toggleCollapsed" key="widgetDashboard">
         <router-link to="/">
-          <sdFeatherIcons type="menu" />&nbsp; &nbsp; Dashboard
+          <sdFeatherIcons type="menu" /> <span>Dashboard</span>
         </router-link>
       </a-menu-item>
       <a-sub-menu key="campaigns">
@@ -153,10 +153,10 @@
 
       <a-menu-item @click="toggleCollapsed" key="">
         <router-link to="/stock-status"
-          ><sdFeatherIcons type="bar-chart-2" />&nbsp; &nbsp; Stock Status
+          ><sdFeatherIcons type="bar-chart-2" /><span>Stock Status</span>
         </router-link>
       </a-menu-item>
-      <a-sub-menu  v-if="isLevelOne" key="payroll">
+      <a-sub-menu v-if="isLevelOne" key="payroll">
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Payroll</span>
         </template>
@@ -193,7 +193,7 @@
       </a-menu-item> -->
       <a-menu-item @click="toggleCollapsed" key="logs">
         <router-link to="/logs">
-          <sdFeatherIcons type="clipboard" />&nbsp; &nbsp; Audit Logs
+          <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
         </router-link>
       </a-menu-item>
     </a-menu-item-group>
@@ -243,11 +243,11 @@ export default defineComponent({
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
       level_id.value = user.user[0].level_id;
-      role_id.value = user.user[0].role_id; 
+      role_id.value = user.user[0].role_id;
       console.log(level_id.value);
     });
 
-     const isLevelOne = computed(() => {
+    const isLevelOne = computed(() => {
       return level_id.value === 1 || role_id.value === 27;
     });
 
@@ -302,7 +302,7 @@ export default defineComponent({
       versions,
       level_id,
       role_id,
-      isLevelOne
+      isLevelOne,
     };
   },
 });

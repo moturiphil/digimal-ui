@@ -8,7 +8,7 @@
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'event-payroll-matrix'">
         <sdButton type="success">
-          <sdFeatherIcons size="" />
+          <sdFeatherIcons size="" class="icon-color-white" />
           Assign Payroll Matrix
         </sdButton>
       </router-link>
@@ -732,7 +732,7 @@ export default defineComponent({
   // },
 });
 </script>
-<style>
+<style scoped>
 .badge-green {
   background-color: #1ec997;
   /* color: white; */
@@ -741,10 +741,12 @@ export default defineComponent({
   /* size */
   font-size: 12px;
 }
-</style>
-
-<style>
 .title-success {
   color: green;
+}
+</style>
+<style scoped>
+.icon-color-white {
+  color: white;
 }
 </style>
