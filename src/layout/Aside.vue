@@ -160,8 +160,14 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Payroll</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="payroll-details">
+        <!-- <a-menu-item @click="toggleCollapsed" key="payroll-details">
           <router-link to="/view-payroll">Payroll Details </router-link>
+        </a-menu-item> -->
+        <a-menu-item @click="toggleCollapsed" key="activity-payroll">
+          <router-link to="/activity-payroll">Activity Payroll </router-link>
+        </a-menu-item>
+        <a-menu-item @click="toggleCollapsed" key="payroll-payroll">
+          <router-link to="/event-payroll">Event Payroll </router-link>
         </a-menu-item>
         <a-menu-item @click="toggleCollapsed" key="transaction-details">
           <router-link to="/view-transactions"

@@ -39,7 +39,7 @@
                   :columns="columns"
                 >
                   <template #events="{ record }">
-                    <td>
+                    <td :style="{ 'margin-left': '4px' }">
                       <div class="table-actions">
                         <sdButton
                           size="small"
@@ -69,7 +69,6 @@
                             &nbsp;&nbsp; Close Event
                           </span>
                         </sdButton>
-
                         <sdButton
                           @click="handleRegistration(record.event_code)"
                           size="small"

@@ -2,10 +2,6 @@
     <div>
       <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
       <Main>
-        <sdButton class="btn-import" type="success" @click="PayEvent">
-          Pay
-        </sdButton>
-        <!-- 197.136.123.129 -->
         <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
@@ -168,11 +164,6 @@
   // const households = ref([]);
   
   const columns = [
-  {
-      title: "id",
-      dataIndex: "id",
-      key: "id",
-    },
     {
       title: "Name",
       dataIndex: "user_id",

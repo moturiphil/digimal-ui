@@ -360,7 +360,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "Activity",
+    title: "Event",
     dataIndex: "activity_id",
     key: "id",
   },
@@ -684,15 +684,15 @@ export default defineComponent({
       role_id.value = user.user[0].role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 4 || role_id.value === 1;
+      return role_id.value === 4;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 3 || role_id.value === 1;
+      return role_id.value === 2;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 2 || role_id.value === 1;
+      return role_id.value === 1;
     });
 
     // handleChange(tab) {

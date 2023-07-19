@@ -187,7 +187,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
