@@ -27,11 +27,14 @@
                         placeholder="Select Campaign Name"
                         @blur="validate('campaign_id')" 
                         @keypress="validate('campaign_id')"
+                        show-search
+                        option-filter-prop="label"
                       >
                         <a-select-option
                           v-for="campaign in campaigns"
                           :key="campaign.id"
                           :value="campaign.id"
+                          :label="`${campaign.name}`"
                         >
                           {{ campaign.name }}
                         </a-select-option>
@@ -44,15 +47,19 @@
                         name="event_list_id"
                         class="sDash_fullwidth-select"
                         placeholder="Select Event Type"
-
+                        show-search
+                        option-filter-prop="label"
                         v-model:value="formState.name"
                         @blur="validate('name')" 
                         @keypress="validate('name')"
+
                       >
                       <a-select-option
                           v-for="event in events_list"
                           :key="event.id"
                           :value="event.id"
+                          :label="`${event.name } `"
+
                         >
                           {{ event.name }}
                         </a-select-option>
@@ -67,6 +74,8 @@
                         placeholder="Select County"
                         v-on:change="getSubCounties($event)"
                         v-model:value="formState.county_id"
+                        show-search
+                        option-filter-prop="label"
                         v-if="!loading"
                         @blur="validate('county_id')" 
                         @keypress="validate('county_id')"
@@ -79,6 +88,7 @@
                           :value="county.id"
                           :key="county.id"
                           :org_id="county.org_id"
+                          :label="`${county.name}`"
                         >
                           {{ county.name }}
                         </a-select-option>

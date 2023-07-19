@@ -26,6 +26,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Activity"
                         v-model:value="formState.activity_id"
+                        show-search
+                        option-filter-prop="label"
                         @blur="validate('activity_id')" 
                         @keypress="validate('activity_id')"
                       >
@@ -36,6 +38,7 @@
                           v-for="activity in activities"
                           :value="activity.id"
                           :key="activity.id"
+                          :label="activity.name"
                           >{{ activity.name }}</a-select-option
                         >
                       </a-select>
@@ -51,6 +54,8 @@
                         v-on:change="getSubCounties($event)"
                         v-model:value="formState.county_id"
                         v-if="!loading"
+                        show-search
+                        option-filter-prop="label"
                         @blur="validate('county_id')" 
                         @keypress="validate('county_id')"
                       >
@@ -62,6 +67,7 @@
                           :value="county.org_id"
                           :key="county.id"
                           :org_id="county.org_id"
+                          :label="county.name"
                         >
                           {{ county.name }}
                         </a-select-option>
@@ -75,6 +81,8 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
                         v-model:value="formState.sub_county_id"
+                        show-search
+                        option-filter-prop="label"
                         @blur="validate('sub_county_id')" 
                         @keypress="validate('sub_county_id')"
                       >
@@ -85,6 +93,7 @@
                           v-for="scounty in sub_counties"
                           :value="scounty.org_id"
                           :key="scounty.id"
+                          :label="scounty.name"
                           >{{ scounty.name }}</a-select-option
                         >
                       </a-select>
@@ -129,6 +138,8 @@
                         v-model:value="formState.campaign_id"
                         @blur="validate('campaign_id')" 
                         @keypress="validate('campaign_id')"
+                        show-search
+                        option-filter-prop="label"
                       >
                         <a-select-option value="" disabled
                           >Select a campaign</a-select-option
@@ -137,6 +148,7 @@
                           v-for="campaign in campaigns"
                           :value="campaign.id"
                           :key="campaign.id"
+                          :label="campaign.name"
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
@@ -179,6 +191,8 @@
                         :disabled="isOfficerSelectionDisabled"
                         @blur="validate('activity_facilitator')" 
                         @keypress="validate('activity_facilitator')"
+                        show-search
+                        option-filter-prop="label"
                         :options="
                           (() => {
                             return users.map(
