@@ -15,6 +15,20 @@
       ></template>
       </sdPageHeader>
       <Main>
+        <sdButton class="btn-import" type="success">
+        <router-link
+          :to="{
+            path: `/org-units/import-orgunit/${params.id}`,
+            query: { orgtype: 'village' },
+          }"
+          class="btn-icon"
+          type="info"
+          shape="circle"
+        >
+          &nbsp;&nbsp; Import Villages
+        </router-link>
+      </sdButton>
+        <br />
         <a-row :gutter="15">
           <a-col class="w-100" :md="24">
             <sdCards headless>
@@ -77,12 +91,12 @@
   //     key: "id",
   //   },
     {
-      title: "Ward Name",
+      title: "Village Name",
       dataIndex: "name",
       key: "id",
     },
     {
-      title: "Ward Code",
+      title: "Village Code",
       dataIndex: "code",
       key: "name",
     },
@@ -121,7 +135,7 @@
       onMounted(async () => {
         try {
           const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${query.id}`,
+            `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
             {
               method: "GET",
               headers: authHeader(),
@@ -183,6 +197,7 @@
         onSelectChange,
         results,
         searchItem,
+        params,
         columns,
       };
     },

@@ -215,53 +215,61 @@ const routes = [
             /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/viewUnits.vue"
           ),
       },
+      // {
+      //   path: "location-create",
+      //   name: "location-create",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createLocation.vue"
+      //     ),
+      // },
       {
-        path: "location-create",
-        name: "location-create",
+        path: "import-orgunit/:id",
+        name: "/org-units/import-orgunit",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createLocation.vue"
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/importOrgUnit.vue"
           ),
-      },
+      }, 
+      // {
+      //   path: "sub-location-create",
+      //   name: "sub-location-create",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createSubLocation.vue"
+      //     ),
+      // },
+      // {
+      //   path: "village-create",
+      //   name: "village-create",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
+      //     ),
+      // },
       {
-        path: "sub-location-create",
-        name: "sub-location-create",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createSubLocation.vue"
-          ),
-      },
-      {
-        path: "village-create",
-        name: "village-create",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
-          ),
-      },
-      {
-        path: "/:id/sub-counties",
-        name: "county-sub-counties",
+        path: "sub-counties/:id",
+        name: "/org-units/sub-counties",
         component: () => import("../view/pages/orgUnits/subCounties.vue"),
       },
       {
-        path: "/:id/wards",
-        name: "wards",
+        path: "wards/:id",
+        name: "/org-units",
         component: () => import("../view/pages/orgUnits/wardUnits.vue"),
       },
       {
-        path: "/:id/locations",
-        name: "locations",
+        path: "locations/:id",
+        name: "/org-units/locations",
         component: () => import("../view/pages/orgUnits/locationUnits.vue"),
       },
       {
-        path: "/:id/sub-locations",
-        name: "sub-locations",
+        path: "sub-locations/:id",
+        name: "/org-units/sub-locations",
         component: () => import("../view/pages/orgUnits/subLocations.vue"),
       },
       {
-        path: "/:id/villages",
-        name: "villages",
+        path: "villages/:id",
+        name: "/org-units/villages",
         component: () => import("../view/pages/orgUnits/villageUnits.vue"),
       },
     ],

@@ -38,8 +38,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/org-units${record.id}/sub-counties`,
-                              query: { id: record.org_id },
+                              path: `/org-units/sub-counties/${record.org_id}`,
                             }"
                             class="btn-icon"
                             type="info"

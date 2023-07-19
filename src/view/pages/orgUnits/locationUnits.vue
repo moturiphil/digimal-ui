@@ -1,7 +1,9 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Locations">
+      
       <template #buttons>
+        
         <div class="search-box">
           <span class="search-icon">
             <sdFeatherIcons type="search" size="14" />
@@ -15,6 +17,20 @@
       ></template>
     </sdPageHeader>
     <Main>
+      <sdButton class="btn-import" type="success">
+        <router-link
+          :to="{
+            path: `/org-units/import-orgunit/${params.id}`,
+            query: { orgtype: 'location' },
+          }"
+          class="btn-icon"
+          type="info"
+          shape="circle"
+        >
+          &nbsp;&nbsp; Import Locations
+        </router-link>
+      </sdButton>
+      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -35,8 +51,7 @@
                         <sdButton>
                           <router-link
                             :to="{
-                              path: `/org-units${record.id}/sub-locations`,
-                              query: { id: record.org_id },
+                              path: `/org-units/sub-locations/${record.org_id}`,
                             }"
                             class="btn-icon"
                             type="info"
@@ -112,16 +127,13 @@ const DragAndDropTable = defineComponent({
     const { params, query } = useRoute();
     const searchItem = ref("");
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
     console.log({ query, params });
     console.log(query.id);
 
     onMounted(async () => {
       try {
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${query.id}`,
+          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
           {
             method: "GET",
             headers: authHeader(),
@@ -183,6 +195,7 @@ const DragAndDropTable = defineComponent({
       rowSelection,
       onSelectChange,
       results,
+      params,
       searchItem,
       columns,
     };

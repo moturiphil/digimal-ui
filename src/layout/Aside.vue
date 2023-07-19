@@ -71,7 +71,7 @@
           </router-link>
         </a-menu-item>
 
-        <a-menu-item  key="widgetCreateLocation">
+        <!-- <a-menu-item  key="widgetCreateLocation">
           <router-link to="/org-units/location-create">
             Create Location
           </router-link>
@@ -86,7 +86,7 @@
           <router-link to="/org-units/village-create">
             Create Village
           </router-link>
-        </a-menu-item>
+        </a-menu-item>  -->
       </a-sub-menu>
 
       <a-sub-menu key="house-holds">

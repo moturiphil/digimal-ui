@@ -89,7 +89,7 @@ export default {
         } catch (error) {
           notification.error({
             message: "Error",
-            description: "Failed! please contact admin for assistance.",
+            description: "Account does not exist.Contact admin for assistance.",
           });
         }
 
