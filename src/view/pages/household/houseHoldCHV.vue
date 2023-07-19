@@ -25,7 +25,7 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign Name"
-                        @blur="validate('campaign_id')" 
+                        @blur="validate('campaign_id')"
                         @keypress="validate('campaign_id')"
                       >
                         <a-select-option
@@ -36,36 +36,59 @@
                           {{ campaign.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
+                      </p>
                     </a-form-item>
 
-                    <a-form-item label="CHVs">
+                    <a-form-item label="CHPs">
                       <a-select
-                          mode="multiple"
-                          v-model:value="formState.chv_id"
-                          v-if="!loading"
-                          placeholder="Select facilitators"
-                          show-search
-                          option-filter-prop="label"
-                          @blur="validate('chv_id')" 
-                          @keypress="validate('chv_id')"
+                        mode="multiple"
+                        v-model:value="formState.chv_id"
+                        v-if="!loading"
+                        placeholder="Select CHPs"
+                        show-search
+                        option-filter-prop="label"
+                        @blur="validate('chv_id')"
+                        @keypress="validate('chv_id')"
                       >
                         <a-select-option
-                            v-for="chv in chvs"
-                            :key="chv.id"
-                            :value="chv.id"
-                            :label="`${chv.first_name} ${chv.last_name} - ${chv.phone_no}`"
+                          v-for="chv in chvs"
+                          :key="chv.id"
+                          :value="chv.id"
+                          :label="`${chv.first_name} ${chv.last_name} - ${chv.phone_no}`"
                         >
-                          {{ chv.first_name }} {{ chv.last_name }} - {{ chv.phone_no }}
+                          {{ chv.first_name }} {{ chv.last_name }} -
+                          {{ chv.phone_no }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.chv_id" >{{errors.chv_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.chv_id"
+                      >
+                        {{ errors.chv_id }}
+                      </p>
                     </a-form-item>
 
-
                     <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
+                        }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -126,10 +149,12 @@ const AddNew = defineComponent({
 
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign name is required"),
-      chv_id: Yup.array().min(1, "At least 1 CHV is required").required(),
-     });
+      chv_id: Yup.array()
+        .min(1, "At least 1 CHP is required")
+        .required("At least 1 CHP is required"),
+    });
 
-     const validate=(field)=> {
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -152,7 +177,6 @@ const AddNew = defineComponent({
     };
     fetchCampaigns();
 
-
     const fetchCHV = async () => {
       const response = await fetch(chv_url, {
         method: "GET",
@@ -163,7 +187,7 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
 
-      const transformedData = data.data.map(chv => ({
+      const transformedData = data.data.map((chv) => ({
         ...chv,
         label: `${chv.first_name} ${chv.last_name} - ${chv.phone_no}`,
       }));
@@ -174,28 +198,30 @@ const AddNew = defineComponent({
     fetchCHV();
 
     const handleSubmit = () => {
+      this.isSubmitting = true;
       const data = {
         campaign_id: formState.campaign_id,
         user_ids: formState.chv_id,
       };
 
       ArticleSchema.validate(this.formState, { abortEarly: false })
-      .then(() => {
-        this.errors = {};
-            fetch(API_URL, {
+        .then(() => {
+          this.errors = {};
+          fetch(API_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               ...authHeader(),
             },
             body: JSON.stringify(data),
-            })
+          })
             .then((response) => response.json())
             .then(({ success, message, occupied_users }) => {
               if (success) {
                 // router.push("event-view");
-                console.log(success,message, occupied_users);
-                if(occupied_users == null ){
+                console.log(success, message, occupied_users);
+                this.isSubmitting = false;
+                if (occupied_users == null) {
                   notification["success"]({
                     message: message,
                     description: "Users successfully assigned to a campaign",
@@ -215,20 +241,23 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
+              this.isSubmitting = false;
               console.error("Error:", error);
             });
-      })
-      .catch((err) => {
-        err.inner.forEach((e) => {
-          this.errors[e.path] = e.message;
-        });})
-      
+        })
+        .catch((err) => {
+          this.isSubmitting = false;
+          err.inner.forEach((e) => {
+            this.errors[e.path] = e.message;
+          });
+        });
     };
 
     // console.log(formState);
 
     return {
       isLoading,
+      isSubmitting: false,
       apiUrl,
       isFileLoading,
       join,
@@ -236,7 +265,7 @@ const AddNew = defineComponent({
       formState,
       campaigns,
       validate,
-      errors:{
+      errors: {
         campaign_id: "",
         user_id: "",
       },

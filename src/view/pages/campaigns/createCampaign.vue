@@ -69,8 +69,19 @@
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
+                        }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -133,6 +144,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = () => {
+      this.isSubmitting = true;
       const values = {
         name: formState.name,
         start_date: dayjs(formState.startDate).format("YYYY-MM-DD"),
@@ -154,6 +166,7 @@ const AddNew = defineComponent({
             .then(({ success }) => {
               // console.log(data);
               if (success) {
+                this.isSubmitting = false;
                 router.push("view-campaign");
                 notification["success"]({
                   message: "Campaign Created",
@@ -163,10 +176,12 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
+              this.isSubmitting = false;
               console.error("Error:", error);
             });
         })
         .catch((err) => {
+          this.isSubmitting = false;
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -175,6 +190,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
+      isSubmitting: false,
       apiUrl,
       isFileLoading,
       handleSubmit,
