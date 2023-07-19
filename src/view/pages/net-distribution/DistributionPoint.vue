@@ -28,10 +28,10 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign"
-                        @blur="validate('campaign_id')" 
+                        @blur="validate('campaign_id')"
                         @keypress="validate('campaign_id')"
                       >
-                      <a-select-option value="" disabled
+                        <a-select-option value="" disabled
                           >Select a campaign</a-select-option
                         >
                         <a-select-option
@@ -41,16 +41,24 @@
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="name" label="Distribution Point Name">
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Enter name of the distribution point"
-                        @blur="validate('name')" 
+                        @blur="validate('name')"
                         @keypress="validate('name')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
+                      <p class="errors" style="color: red" v-if="!!errors.name">
+                        {{ errors.name }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="county_id" label="County">
                       <a-select
@@ -61,7 +69,7 @@
                         v-on:change="getSubCounties($event)"
                         v-model:value="formState.county_id"
                         v-if="!loading"
-                        @blur="validate('county_id')" 
+                        @blur="validate('county_id')"
                         @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
@@ -76,7 +84,13 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.county_id" >{{errors.county_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.county_id"
+                      >
+                        {{ errors.county_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="sub_county_id" label="Sub County">
                       <a-select
@@ -85,7 +99,7 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
                         v-model:value="formState.sub_county"
-                        @blur="validate('sub_county')" 
+                        @blur="validate('sub_county')"
                         @keypress="validate('sub_county')"
                       >
                         <a-select-option value=""
@@ -98,12 +112,29 @@
                           >{{ scounty.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.sub_county" >{{errors.sub_county}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.sub_county"
+                      >
+                        {{ errors.sub_county }}
+                      </p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
+                        }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -160,9 +191,9 @@ const AddNew = defineComponent({
       campaign_id: Yup.string().required("Campaign name is required"),
       county_id: Yup.string().required("County is required"),
       sub_county: Yup.string().required("Sub County is required"),
-     });
-    
-    const validate=(field)=> {
+    });
+
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -215,7 +246,7 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-    //   console.log(data.message);
+      //   console.log(data.message);
       this.sub_counties = data.message;
     };
 
@@ -226,6 +257,7 @@ const AddNew = defineComponent({
     });
 
     const handleSubmit = (values) => {
+      this.isSubmitting = true;
       values = {
         name: formState.name,
         campaign_id: formState.campaign_id,
@@ -233,47 +265,50 @@ const AddNew = defineComponent({
       };
 
       ArticleSchema.validate(this.formState, { abortEarly: false })
-      .then(() => {
-        this.errors = {};
-        fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(values),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status == true) {
-            router.push("/nets/distribution-points");
-            notification["success"]({
-              message: "Distribution Point Created",
-              description: `Distribution Point Created successfully.`,
-              duration: 5.5,
+        .then(() => {
+          this.errors = {};
+          fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(values),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status == true) {
+                router.push("/nets/distribution-points");
+                notification["success"]({
+                  message: "Distribution Point Created",
+                  description: `Distribution Point Created successfully.`,
+                  duration: 5.5,
+                });
+              } else {
+                notification["error"]({
+                  message: "Distribution Point Creation Failed",
+                  description: `Distribution Point Creation failed.`,
+                  duration: 5.5,
+                });
+              }
+              this.isSubmitting = false;
+            })
+            .catch((error) => {
+              this.isSubmitting = false;
+              console.error("Error:", error);
             });
-          } else {
-            notification["error"]({
-              message: "Distribution Point Creation Failed",
-              description: `Distribution Point Creation failed.`,
-              duration: 5.5,
-            });
-          }
         })
-        .catch((error) => {
-          console.error("Error:", error);
+        .catch((err) => {
+          this.isSubmitting = false;
+          err.inner.forEach((e) => {
+            this.errors[e.path] = e.message;
+          });
         });
-      }).catch((err)=>{
-        err.inner.forEach((e) => {
-          this.errors[e.path] = e.message;
-        });
-      })
-
-      
     };
 
     return {
       isLoading,
+      isSubmitting: false,
       loading,
       apiUrl,
       isFileLoading,
@@ -285,13 +320,13 @@ const AddNew = defineComponent({
       sub_counties,
       campaigns,
       counties,
-      validate, 
+      validate,
       errors: {
         name: "",
         campaign_id: "",
         county_id: "",
         sub_county: "",
-      }
+      },
     };
   },
   beforeRouteEnter(to, from, next) {
