@@ -24,10 +24,12 @@
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Input Campaign Name"
-                        @blur="validate('name')" 
+                        @blur="validate('name')"
                         @keypress="validate('name')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
+                      <p class="errors" style="color: red" v-if="!!errors.name">
+                        {{ errors.name }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="startDate" label="Campaign Start Date">
@@ -36,10 +38,16 @@
                         v-model:value="formState.startDate"
                         :format="dateFormat"
                         :disabledDate="disabledDate"
-                        @blur="validate('startDate')" 
+                        @blur="validate('startDate')"
                         @keypress="validate('startDate')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.startDate" >{{errors.startDate}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.startDate"
+                      >
+                        {{ errors.startDate }}
+                      </p>
                     </a-form-item>
 
                     <a-form-item name="endDate" label="Campaign End Date">
@@ -48,10 +56,16 @@
                         v-model:value="formState.endDate"
                         :format="dateFormat"
                         :disabledDate="disabledDate"
-                        @blur="validate('endDate')" 
+                        @blur="validate('endDate')"
                         @keypress="validate('endDate')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.endDate" >{{errors.endDate}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.endDate"
+                      >
+                        {{ errors.endDate }}
+                      </p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -108,9 +122,9 @@ const AddNew = defineComponent({
       name: Yup.string().required("Name is required"),
       startDate: Yup.string().required("Start Date is required"),
       endDate: Yup.string().required("End Date is required"),
-     });
-    
-    const validate=(field)=> {
+    });
+
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -126,39 +140,37 @@ const AddNew = defineComponent({
       };
 
       ArticleSchema.validate(this.formState, { abortEarly: false })
-      .then(() => {
-        this.errors = {};
-        fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(values),
-        })
-        .then((response) => response.json())
-        .then(({ success }) => {
-          // console.log(data);
-          if (success) {
-            router.push("view-campaign");
-            notification["success"]({
-              message: "Campaign Created",
-              description: "Campaign Created successfully.",
-              duration: 4.5,
+        .then(() => {
+          this.errors = {};
+          fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(values),
+          })
+            .then((response) => response.json())
+            .then(({ success }) => {
+              // console.log(data);
+              if (success) {
+                router.push("view-campaign");
+                notification["success"]({
+                  message: "Campaign Created",
+                  description: "Campaign Created successfully.",
+                  duration: 4.5,
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
             });
-          }
         })
-        .catch((error) => {
-          console.error("Error:", error);
+        .catch((err) => {
+          err.inner.forEach((e) => {
+            this.errors[e.path] = e.message;
+          });
         });
-      })
-      .catch((err) => {
-        err.inner.forEach((e) => {
-          this.errors[e.path] = e.message;
-        });
-      });
-
-       
     };
 
     return {
@@ -179,6 +191,9 @@ const AddNew = defineComponent({
   },
   methods: {
     disabledDate(current) {
+      if (this.formState.startDate) {
+        return current && current < new Date(this.formState.startDate);
+      }
       return current && current < Date.now();
     },
   },

@@ -8,7 +8,7 @@
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'activity-payroll-matrix'">
         <sdButton type="success">
-          <sdFeatherIcons size="" />
+          <sdFeatherIcons size="" class="icon-color-white" />
           Assign Payroll Matrix
         </sdButton>
       </router-link>
@@ -560,8 +560,7 @@ export default defineComponent({
                 message: "Success",
                 description: "Payroll Validated Successfully",
               });
-            }
-            else {
+            } else {
               notification.error({
                 message: "Error",
                 description: "Payroll Validation Failed",
@@ -599,8 +598,7 @@ export default defineComponent({
                 message: "Success",
                 description: "Payroll Validated Successfully",
               });
-            }
-            else {
+            } else {
               notification.error({
                 message: "Error",
                 description: "Payroll Validation Failed",
@@ -680,8 +678,8 @@ export default defineComponent({
 
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user);
-      console.log(user.user[0].role_id);
-      role_id.value = user.user[0].role_id;
+    console.log(user.user[0].role_id);
+    role_id.value = user.user[0].role_id;
 
     const isValidator = computed(() => {
       return role_id.value === 4;
@@ -747,10 +745,12 @@ export default defineComponent({
   /* size */
   font-size: 12px;
 }
-</style>
-
-<style>
 .title-success {
   color: green;
+}
+</style>
+<style scoped>
+.icon-color-white {
+  color: white;
 }
 </style>
