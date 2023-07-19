@@ -87,8 +87,8 @@ export default {
           showOtpInput.value = true;
 
         } catch (error) {
-          notification.error({
-            message: "Error",
+          notification.info({
+            message: "Info",
             description: "Account does not exist.Contact admin for assistance.",
           });
         }

@@ -456,7 +456,7 @@ const AddNew = defineComponent({
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         no_of_days: formState.no_of_days,
-        event_list_id: formState.event_list,
+        event_list_id: formState.name,
       };
 
       console.log(data);
