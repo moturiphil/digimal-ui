@@ -69,6 +69,14 @@
                             &nbsp;&nbsp; Close Event
                           </span>
                         </sdButton>
+                        <sdButton
+                          @click="handleRegistration(record.event_code)"
+                          size="small"
+                          type="success"
+                        >
+                          <sdFeatherIcons type="user-plus" size="17" />
+                          &nbsp;&nbsp; Register
+                        </sdButton>
                         <!-- <sdButton
                           @click="startEvent(record.id)"
                           size="small"
