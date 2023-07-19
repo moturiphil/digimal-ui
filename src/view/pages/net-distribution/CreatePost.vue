@@ -20,7 +20,7 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                  <a-form-item name="campaign_id" label="Select Campaign">
+                    <a-form-item name="campaign_id" label="Select Campaign">
                       <a-select
                         size="large"
                         name="basic-select"
@@ -28,7 +28,7 @@
                         v-model:value="formState.campaign_id"
                         v-if="!loading"
                         placeholder="Select Campaign"
-                        @blur="validate('campaign_id')" 
+                        @blur="validate('campaign_id')"
                         @keypress="validate('campaign_id')"
                       >
                         <a-select-option
@@ -38,16 +38,24 @@
                           >{{ campaign.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.campaign_id" >{{errors.campaign_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="name" label="Post Name">
                       <a-input
                         v-model:value="formState.name"
                         placeholder="Enter post name"
-                        @blur="validate('name')" 
+                        @blur="validate('name')"
                         @keypress="validate('name')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.name" >{{errors.name}}</p>
+                      <p class="errors" style="color: red" v-if="!!errors.name">
+                        {{ errors.name }}
+                      </p>
                     </a-form-item>
                     <!-- <a-form-item
                       name="distribution_start_date"
@@ -76,7 +84,7 @@
                         class="sDash_fullwidth-select"
                         v-model:value="formState.post_supervisor_user_id"
                         placeholder="Select Post Admin"
-                        @blur="validate('post_supervisor_user_id')" 
+                        @blur="validate('post_supervisor_user_id')"
                         @keypress="validate('post_supervisor_user_id')"
                       >
                         <a-select-option
@@ -84,11 +92,21 @@
                           :value="user.id"
                           :key="user.id"
                           >{{
-                            user.first_name + " " + user.last_name + "-" +  user.role_id
+                            user.first_name +
+                            " " +
+                            user.last_name +
+                            "-" +
+                            user.role_id
                           }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.post_supervisor_user_id" >{{errors.post_supervisor_user_id}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.post_supervisor_user_id"
+                      >
+                        {{ errors.post_supervisor_user_id }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="villages" label="Select villages">
                       <a-select
@@ -99,7 +117,7 @@
                         v-model:value="formState.villages"
                         v-if="!loading"
                         placeholder="Select villages"
-                        @blur="validate('villages')" 
+                        @blur="validate('villages')"
                         @keypress="validate('villages')"
                       >
                         <a-select-option
@@ -109,14 +127,28 @@
                           >{{ village.name }}</a-select-option
                         >
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.villages" >{{errors.villages}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.villages"
+                      >
+                        {{ errors.villages }}
+                      </p>
                     </a-form-item>
                     <a-form-item name="isFacility">
-                      <a-checkbox v-model:checked="isFacility"
-                      @blur="validate('isFacility')" 
+                      <a-checkbox
+                        v-model:checked="isFacility"
+                        @blur="validate('isFacility')"
                         @keypress="validate('isFacility')"
-                        >Is Post a Facility?</a-checkbox>
-                      <p class="errors" style="color: red;" v-if="!!errors.isFacility" >{{errors.isFacility}}</p>
+                        >Is Post a Facility?</a-checkbox
+                      >
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.isFacility"
+                      >
+                        {{ errors.isFacility }}
+                      </p>
                     </a-form-item>
                     <!-- label = {{ !isFacility ? `fyufuyfuy`: `jjkhkjhkj` }} -->
                     <a-form-item name="post_code">
@@ -128,10 +160,16 @@
                         v-if="isFacility"
                         v-model:value="formState.post_code"
                         placeholder="Enter facility mfl code"
-                        @blur="validate('post_code')" 
+                        @blur="validate('post_code')"
                         @keypress="validate('post_code')"
                       />
-                      <p class="errors" style="color: red;" v-if="!!errors.post_code" >{{errors.post_code}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.post_code"
+                      >
+                        {{ errors.post_code }}
+                      </p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -158,7 +196,6 @@ import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
 import * as Yup from "yup";
-
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -195,13 +232,17 @@ const AddNew = defineComponent({
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign name is required"),
       name: Yup.string().required("Name is required"),
-      post_supervisor_user_id: Yup.string().required("Post Supervisor is required"),
+      post_supervisor_user_id: Yup.string().required(
+        "Post Supervisor is required"
+      ),
       post_code: Yup.string().nullable(),
       isFacility: Yup.string().required("IsFacility is required"),
-      villages: Yup.array().min(1, "At least 1 facilitator required").required(),
-     });
+      villages: Yup.array()
+        .min(1, "At least 1 facilitator required")
+        .required(),
+    });
 
-    const validate=(field)=> {
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -223,7 +264,6 @@ const AddNew = defineComponent({
       this.loading = false;
     };
     fetchCampaigns();
-
 
     //counties
     const getVillages = async () => {
@@ -279,7 +319,7 @@ const AddNew = defineComponent({
     //       .substr(0, 10),
 
     const handleSubmit = (values) => {
-      console.log(JSON.stringify(values))
+      console.log(JSON.stringify(values));
       let post_code = values.post_code;
       values = {
         campaign_id: values.campaign_id,
@@ -295,44 +335,43 @@ const AddNew = defineComponent({
       }
 
       ArticleSchema.validate(this.formState, { abortEarly: false })
-      .then(() => {
-        this.errors = {};
-          
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(values),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success == true) {
-            router.push("/nets/distribution");
-            notification["success"]({
-              message: "Post Created",
-              description: `Post Created successfully.`,
-              duration: 5.5,
-            });
-          } else {
-            notification["error"]({
-              message: "Post Creation Failed",
-              description: `Post Creation failed.`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
-      })
-      .catch((err) => {
-        err.inner.forEach((e) => {
-          this.errors[e.path] = e.message;
-        });
-      });
+        .then(() => {
+          this.errors = {};
 
+          fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(values),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success == true) {
+                router.push("/nets/distribution");
+                notification["success"]({
+                  message: "Post Created",
+                  description: `Post Created successfully.`,
+                  duration: 5.5,
+                });
+              } else {
+                notification["error"]({
+                  message: "Post Creation Failed",
+                  description: `Post Creation failed.`,
+                  duration: 5.5,
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        })
+        .catch((err) => {
+          err.inner.forEach((e) => {
+            this.errors[e.path] = e.message;
+          });
+        });
     };
 
     return {
@@ -352,10 +391,10 @@ const AddNew = defineComponent({
         campaign_id: "",
         name: "",
         post_supervisor_user_id: "",
-        villages: [],
+        villages: null,
         post_code: "",
         isFacility: 0,
-      }
+      },
     };
   },
   beforeRouteEnter(to, from, next) {
