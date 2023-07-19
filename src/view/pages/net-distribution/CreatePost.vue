@@ -173,8 +173,19 @@
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
+                        }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -319,6 +330,7 @@ const AddNew = defineComponent({
     //       .substr(0, 10),
 
     const handleSubmit = (values) => {
+      this.isSubmitting = true;
       console.log(JSON.stringify(values));
       let post_code = values.post_code;
       values = {
@@ -348,6 +360,7 @@ const AddNew = defineComponent({
           })
             .then((response) => response.json())
             .then((data) => {
+              this.isSubmitting = false;
               if (data.success == true) {
                 router.push("/nets/distribution");
                 notification["success"]({
@@ -364,10 +377,12 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
+              this.isSubmitting = false;
               console.error("Error:", error);
             });
         })
         .catch((err) => {
+          this.isSubmitting = false;
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -376,6 +391,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
+      isSubmitting: false,
       loading,
       apiUrl,
       isFileLoading,
