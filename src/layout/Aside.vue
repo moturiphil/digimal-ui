@@ -1,12 +1,11 @@
 <template>
   <a-menu
-    v-model:openKeys="openKeys"
-    v-model:selectedKeys="selectedKeys"
+    v-model:selectedKeys="current"
     :mode="mode"
     :theme="darkMode ? 'dark' : 'light'"
   >
     <a-menu-item-group key="pages">
-      <a-menu-item @click="toggleCollapsed" key="widgetDashboard">
+      <a-menu-item  key="widgetDashboard" >
         <router-link to="/">
           <sdFeatherIcons type="menu" /> <span>Dashboard</span>
         </router-link>
@@ -15,20 +14,20 @@
         <template v-slot:title>
           <sdFeatherIcons type="globe" /><span>Campaigns</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="widgetCamp">
+        <a-menu-item  key="widgetCamp">
           <router-link to="/campaigns/create-campaign">
             Create Campaign
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetsList">
+        <a-menu-item  key="widgetsList">
           <router-link to="/campaigns/view-campaign">
             List Campaigns
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
+        <a-menu-item  key="widgetsCampaignUsers">
           <router-link to="/households/chv"> Campaign Users </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="house-hold-chv">
+        <a-menu-item  key="widgetlistCampaignUsers">
           <router-link to="/campaign/users"> List Campaign Users </router-link>
         </a-menu-item>
       </a-sub-menu>
@@ -36,10 +35,10 @@
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <a-menu-item  key="widgetCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetsCard">
+        <a-menu-item  key="widgetListevents">
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
@@ -47,12 +46,12 @@
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <a-menu-item  key="widgetCreateActivity">
           <router-link to="/activities/activity-create">
             Create Activity
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetsCard">
+        <a-menu-item  key="widgetsListActivity">
           <router-link to="/activities/activity-view">
             List Activity
           </router-link>
@@ -66,24 +65,24 @@
           <span>Organization Units</span></template
         >
 
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <a-menu-item  key="widgetListOrgUnits">
           <router-link to="/org-units/view">
             List Orgranization Units
           </router-link>
         </a-menu-item>
 
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <a-menu-item  key="widgetCreateLocation">
           <router-link to="/org-units/location-create">
             Create Location
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <a-menu-item  key="widgetCreateSubLocation">
           <router-link to="/org-units/sub-location-create">
             Create Sub-Location
           </router-link>
         </a-menu-item>
 
-        <a-menu-item @click="toggleCollapsed" key="widgetCharts">
+        <a-menu-item  key="widgetCreateVillage">
           <router-link to="/org-units/village-create">
             Create Village
           </router-link>
@@ -96,17 +95,17 @@
           <span>HouseHolds</span></template
         >
 
-        <a-menu-item @click="toggleCollapsed" key="house-hold-list">
+        <a-menu-item  key="widgetHouseholdReg">
           <router-link to="/households/list">
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="house-hold-list">
+        <a-menu-item  key="widgetHouseholdValidation">
           <router-link to="/household/validation">
             HouseHolds Validation
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="house-hold-list">
+        <a-menu-item  key="widgetHouseholdNets">
           <router-link to="/hh-nets-distributed"> HouseHolds Nets </router-link>
         </a-menu-item>
       </a-sub-menu>
@@ -114,17 +113,17 @@
         <template v-slot:title>
           <sdFeatherIcons type="map-pin" /><span>Dropoff Point</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
+        <a-menu-item  key="widgetDropOffPoint">
           <router-link to="/nets/distribution-point">
             Create Dropoff Point
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
+        <a-menu-item  key="widgetListDropOffPoint">
           <router-link to="/nets/distribution-points">
             List Dropoff Point
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
+        <a-menu-item  key="widgetNetsDropOff">
           <router-link to="/nets/distribution-point-nets">
             Nets at Dropoff
           </router-link>
@@ -135,23 +134,23 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Nets Distribution</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="post-create">
+        <a-menu-item  key="widgetCreatePost">
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="net-distribution">
+        <a-menu-item  key="widgetDistributionPost">
           <router-link to="/nets/distribution">
             Distribution Posts
           </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="receive-nets">
+        <a-menu-item  key="widgetReceiveNets">
           <router-link to="/nets/receive-nets"> Receive Nets </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="widgetChart">
+        <a-menu-item  key="widgetNetsReceived">
           <router-link to="/nets/delivered"> Nets Received </router-link>
         </a-menu-item>
       </a-sub-menu>
 
-      <a-menu-item @click="toggleCollapsed" key="">
+      <a-menu-item  key="">
         <router-link to="/stock-status"
           ><sdFeatherIcons type="bar-chart-2" /><span>Stock Status</span>
         </router-link>
@@ -160,16 +159,16 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Payroll</span>
         </template>
-        <!-- <a-menu-item @click="toggleCollapsed" key="payroll-details">
+        <a-menu-item  key="widgetPayrollDetails">
           <router-link to="/view-payroll">Payroll Details </router-link>
-        </a-menu-item> -->
-        <a-menu-item @click="toggleCollapsed" key="activity-payroll">
+        </a-menu-item> 
+        <a-menu-item  key="activity-payroll">
           <router-link to="/activity-payroll">Activity Payroll </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="payroll-payroll">
+        <a-menu-item  key="payroll-payroll">
           <router-link to="/event-payroll">Event Payroll </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="transaction-details">
+        <a-menu-item  key="widgetTransactionDetails">
           <router-link to="/view-transactions"
             >Transaction Details
           </router-link>
@@ -179,19 +178,19 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>User Management</span>
         </template>
-        <a-menu-item @click="toggleCollapsed" key="users">
+        <a-menu-item  key="widgetUsers" >
           <router-link to="/registered-users">Users </router-link>
         </a-menu-item>
-        <a-menu-item @click="toggleCollapsed" key="roles">
+        <a-menu-item  key="widgetRoles" >
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <!-- <a-menu-item @click="toggleCollapsed" key="registered-users">
+      <!-- <a-menu-item  key="registered-users">
         <router-link to="/registered-users">
           <sdFeatherIcons type="users" />&nbsp; &nbsp; Users
         </router-link>
       </a-menu-item> -->
-      <a-menu-item @click="toggleCollapsed" key="logs">
+      <a-menu-item  key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
         </router-link>
@@ -239,6 +238,7 @@ export default defineComponent({
 
     const level_id = ref("");
     const role_id = ref("");
+    const current = ref("");
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -301,9 +301,11 @@ export default defineComponent({
       modeChangeSideNav,
       versions,
       level_id,
+      current,
       role_id,
       isLevelOne,
     };
   },
 });
 </script>
+

@@ -11,6 +11,7 @@
             type="number"
             v-model:value="formState.id_no"
             placeholder="Enter ID No"
+            required
           />
         </a-form-item>
         <a-form-item name="password" initialValue="" label="Password">
@@ -18,6 +19,7 @@
             v-model:value="formState.password"
             placeholder="Password"
             :iconRender="getPasswordToggleIcon"
+            required
           />
         </a-form-item>
 
@@ -65,6 +67,7 @@
                 type="number"
                 v-model:value="formState.r_id_no"
                 placeholder="Enter ID No"
+                required
               />
             </a-form-item>
             <a-form-item v-if="proceed" name="reset_code" label="Code">
@@ -72,6 +75,7 @@
                 type="number"
                 v-model:value="formState.r_code"
                 placeholder="Enter Code"
+                required
               />
             </a-form-item>
             <a-form-item
@@ -81,10 +85,10 @@
               label="Password"
             >
               <a-input
-                :type="showPassword ? 'text' : 'password'"
                 v-model:value="formState.r_password"
                 placeholder="Password"
                 :iconRender="getPasswordToggleIcon"
+                required
               />
             </a-form-item>
             <a-form-item
@@ -94,10 +98,10 @@
               label="Confirm Password"
             >
               <a-input
-                :type="showPassword ? 'text' : 'password'"
                 v-model:value="formState.r_confPassword"
                 placeholder="Confirm Password"
                 :iconRender="getPasswordToggleIcon"
+                required
               />
             </a-form-item>
 
@@ -174,6 +178,12 @@ export default {
 
     const handleCancel = () => {
       visible.value = false;
+      formState.r_id_no="",
+      formState.r_code="",
+      formState.r_password= "",
+      formState.r_confPassword= ""
+      proceed.value = false;
+
     };
 
     const handleSubmit = async () => {
@@ -256,8 +266,8 @@ export default {
               visible.value = false;
             } else {
               notification.error({
-                message: data.message,
-                description: "Fail",
+                message: "Error",
+                description: "Password reset failed",
               });
             }
           }
