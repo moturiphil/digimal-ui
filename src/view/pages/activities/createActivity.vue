@@ -296,6 +296,7 @@ import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import dayjs from "dayjs";
 import * as Yup from "yup";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 const AddNew = defineComponent({
@@ -319,6 +320,7 @@ const AddNew = defineComponent({
   data() {
     const { state } = useStore();
     const isLoading = computed(() => state.crud.loading);
+    const isSubmitting = computed(() => state.isSubmitting);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const router = useRouter();
@@ -433,7 +435,7 @@ const AddNew = defineComponent({
     };
     // const handleSelect = (values)
     const onSubmit = () => {
-      this.isSubmitting = true;
+      store.commit("setIsSubmitting", true);
       const values = {
         activity_list_id: formState.activity_id,
         county_id: formState.county_id,
@@ -460,7 +462,7 @@ const AddNew = defineComponent({
             .then(({ success, data }) => {
               // console.log(data);
               if (success) {
-                this.isSubmitting = false;
+                store.commit("setIsSubmitting", false);
                 router.push("activity-view");
                 notification["success"]({
                   message: "Activity Created",
@@ -470,7 +472,7 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
-              this.isSubmitting = false;
+              store.commit("setIsSubmitting", false);
               notification.error({
                 message: "Could not submit!",
                 description: "An error has occured. Please try again later.",
@@ -479,7 +481,7 @@ const AddNew = defineComponent({
             });
         })
         .catch((err) => {
-          this.isSubmitting = false;
+          store.commit("setIsSubmitting", false);
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -502,7 +504,7 @@ const AddNew = defineComponent({
     });
     return {
       isLoading,
-      isSubmitting: false,
+      isSubmitting,
       apiUrl,
       users,
       isFileLoading,

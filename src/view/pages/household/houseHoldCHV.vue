@@ -111,6 +111,7 @@ import { reactive, ref, defineComponent, computed } from "vue";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import * as Yup from "yup";
+import store from "../../../vuex/store";
 // import { useRouter } from "vue-router";
 
 // testing app
@@ -123,6 +124,7 @@ const AddNew = defineComponent({
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
+    const isSubmitting = computed(() => state.isSubmitting);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
@@ -198,7 +200,7 @@ const AddNew = defineComponent({
     fetchCHV();
 
     const handleSubmit = () => {
-      this.isSubmitting = true;
+      store.commit("setIsSubmitting", true);
       const data = {
         campaign_id: formState.campaign_id,
         user_ids: formState.chv_id,
@@ -220,7 +222,7 @@ const AddNew = defineComponent({
               if (success) {
                 // router.push("event-view");
                 console.log(success, message, occupied_users);
-                this.isSubmitting = false;
+                store.commit("setIsSubmitting", false);
                 if (occupied_users == null) {
                   notification["success"]({
                     message: message,
@@ -241,7 +243,7 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
-              this.isSubmitting = false;
+              store.commit("setIsSubmitting", false);
               notification.error({
                 message: "Could not submit!",
                 description: "An error has occured. Please try again later.",
@@ -250,7 +252,7 @@ const AddNew = defineComponent({
             });
         })
         .catch((err) => {
-          this.isSubmitting = false;
+          store.commit("setIsSubmitting", false);
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -261,7 +263,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
-      isSubmitting: false,
+      isSubmitting,
       apiUrl,
       isFileLoading,
       join,

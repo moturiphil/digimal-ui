@@ -259,6 +259,7 @@ import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import * as Yup from "yup";
+import store from "../../../vuex/store";
 
 // testing app
 
@@ -270,6 +271,7 @@ const AddNew = defineComponent({
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
+    const isSubmitting = computed(() => state.isSubmitting);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
@@ -444,7 +446,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = () => {
-      this.isSubmitting = true;
+      store.commit("setIsSubmitting", true);
       const data = {
         // name: formState.name,
         campaign_id: formState.campaign_id,
@@ -471,7 +473,7 @@ const AddNew = defineComponent({
             .then((response) => response.json())
             .then(({ success, data }) => {
               if (success) {
-                this.isSubmitting = false;
+                store.commit("setIsSubmitting", false);
                 router.push("event-view");
                 notification["success"]({
                   message: "Event Created",
@@ -481,7 +483,7 @@ const AddNew = defineComponent({
               }
               // show error message from the api response
               else {
-                this.isSubmitting = false;
+                store.commit("setIsSubmitting", false);
                 notification["error"]({
                   message: "Error!",
                   description: "Fail to create event",
@@ -490,7 +492,7 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
-              this.isSubmitting = false;
+              store.commit("setIsSubmitting", false);
               notification["error"]({
                 message: "Error!",
                 description: `${error}`,
@@ -499,7 +501,7 @@ const AddNew = defineComponent({
             });
         })
         .catch((err) => {
-          this.isSubmitting = false;
+          store.commit("setIsSubmitting", false);
           notification.error({
             message: "Could not submit!",
             description: "An error has occured. Please try again later.",
@@ -512,7 +514,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
-      isSubmitting: false,
+      isSubmitting,
       apiUrl,
       isFileLoading,
       join,

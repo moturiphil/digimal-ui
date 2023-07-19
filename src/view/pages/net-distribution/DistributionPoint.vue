@@ -156,6 +156,7 @@ import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
 import * as Yup from "yup";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -165,6 +166,7 @@ const AddNew = defineComponent({
   data() {
     const { state } = useStore();
     const isLoading = computed(() => state.crud.loading);
+    const isSubmitting = computed(() => state.isSubmitting);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
@@ -257,7 +259,7 @@ const AddNew = defineComponent({
     });
 
     const handleSubmit = (values) => {
-      this.isSubmitting = true;
+      store.commit("setIsSubmitting", true);
       values = {
         name: formState.name,
         campaign_id: formState.campaign_id,
@@ -291,15 +293,15 @@ const AddNew = defineComponent({
                   duration: 5.5,
                 });
               }
-              this.isSubmitting = false;
+              store.commit("setIsSubmitting", false);
             })
             .catch((error) => {
-              this.isSubmitting = false;
+              store.commit("setIsSubmitting", false);
               console.error("Error:", error);
             });
         })
         .catch((err) => {
-          this.isSubmitting = false;
+          store.commit("setIsSubmitting", false);
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -308,7 +310,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
-      isSubmitting: false,
+      isSubmitting,
       loading,
       apiUrl,
       isFileLoading,

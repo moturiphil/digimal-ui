@@ -105,6 +105,7 @@ import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import dayjs from "dayjs";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -115,6 +116,7 @@ const AddNew = defineComponent({
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
+    const isSubmitting = computed(() => state.isSubmitting);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
@@ -144,7 +146,7 @@ const AddNew = defineComponent({
     };
 
     const handleSubmit = () => {
-      this.isSubmitting = true;
+      store.commit("setIsSubmitting", true);
       const values = {
         name: formState.name,
         start_date: dayjs(formState.startDate).format("YYYY-MM-DD"),
@@ -166,7 +168,7 @@ const AddNew = defineComponent({
             .then(({ success }) => {
               // console.log(data);
               if (success) {
-                this.isSubmitting = false;
+                store.commit("setIsSubmitting", false);
                 router.push("view-campaign");
                 notification["success"]({
                   message: "Campaign Created",
@@ -176,7 +178,7 @@ const AddNew = defineComponent({
               }
             })
             .catch((error) => {
-              this.isSubmitting = false;
+              store.commit("setIsSubmitting", false);
               notification.error({
                 message: "Could not submit!",
                 description: "An error has occured. Please try again later.",
@@ -185,7 +187,7 @@ const AddNew = defineComponent({
             });
         })
         .catch((err) => {
-          this.isSubmitting = false;
+          store.commit("setIsSubmitting", false);
           err.inner.forEach((e) => {
             this.errors[e.path] = e.message;
           });
@@ -194,7 +196,7 @@ const AddNew = defineComponent({
 
     return {
       isLoading,
-      isSubmitting: false,
+      isSubmitting,
       apiUrl,
       isFileLoading,
       handleSubmit,
