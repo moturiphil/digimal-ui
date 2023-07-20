@@ -159,9 +159,9 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Payroll</span>
         </template>
-        <a-menu-item  key="widgetPayrollDetails">
+        <!-- <a-menu-item  key="widgetPayrollDetails">
           <router-link to="/view-payroll">Payroll Details </router-link>
-        </a-menu-item> 
+        </a-menu-item>  -->
         <a-menu-item  key="activity-payroll">
           <router-link to="/activity-payroll">Activity Payroll </router-link>
         </a-menu-item>

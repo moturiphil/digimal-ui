@@ -3,17 +3,20 @@
     <sdPageHeader v-if="project">
       <template #title
         ><div key="1" class="project-header">
-          <sdHeading as="h2">Event Participants</sdHeading>
+          <!-- <sdHeading as="h2">Event Participants</sdHeading> -->
         </div>
       </template>
     </sdPageHeader>
     <Main>
-      <sdButton
+      <!-- <sdButton
         class="btn-import"
         type="success"
         @click="exportEventParticipants"
       >
         Export Participants
+      </sdButton> -->
+      <sdButton class="btn-import" type="success" @click="generatePayroll">
+        Generate Payroll
       </sdButton>
       <div v-if="!project" class="spin">
         <a-spin />
@@ -51,6 +54,8 @@ const ProjectDetails = defineComponent({
     const { params, matched, query } = useRoute();
     const { title, content } = computed(() => state.project.singData[0]);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/generateEventParticipantCSV?event=${query.id}`;
+    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.id}`;
+
 
     console.log(query.id);
     const { facilitators } = reactive({ facilitators: [] });
@@ -148,6 +153,32 @@ const ProjectDetails = defineComponent({
         console.error(error);
       }
     };
+    const generatePayroll = async () => {
+      try {
+        const response = await fetch(genetatePayrollURL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+        console.log(response);
+        if (response.status == 200) {
+          Modal.success({
+            title: "Success",
+            content: "Payroll Generated Successfully",
+          });
+        } else {
+          Modal.error({
+            title: "Error",
+            content:
+              "Something went wrong, ensure you have assigned payroll matrix to the event",
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     return {
       title,
@@ -158,6 +189,7 @@ const ProjectDetails = defineComponent({
       facilitators,
       getfacilitators,
       exportEventParticipants,
+      generatePayroll, 
     };
   },
 });
