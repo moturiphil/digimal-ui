@@ -455,7 +455,7 @@ const AddNew = defineComponent({
         location_type_id: parseInt(formState.location_type),
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
-        no_of_days: formState.no_of_days,
+        number_of_days: formState.no_of_days,
         event_list_id: formState.name,
       };
 
