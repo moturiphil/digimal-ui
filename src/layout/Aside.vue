@@ -211,7 +211,7 @@ import {
 } from "vue";
 import VueTypes from "vue-types";
 import { useStore } from "vuex";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import versions from "../demoData/changelog.json";
 // import authHeader from "../services/auth-header";
 // import { AuthService } from "../services/auth.service";
@@ -239,12 +239,18 @@ export default defineComponent({
     const level_id = ref("");
     const role_id = ref("");
     const current = ref("");
+    const rt = useRouter();
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
-      level_id.value = user.user[0].level_id;
-      role_id.value = user.user[0].role_id;
-      console.log(level_id.value);
+      if(!user){
+
+        rt.push({path:'/auth/login'});
+      }else{
+
+        level_id.value = user.user[0].level_id;
+        role_id.value = user.user[0].role_id;
+      }
     });
 
     const isLevelOne = computed(() => {
