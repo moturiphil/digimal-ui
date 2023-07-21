@@ -693,16 +693,6 @@ export default defineComponent({
       return role_id.value === 1;
     });
 
-    // handleChange(tab) {
-    //   if (tab === 'all') {
-    //     filteredData.value = dataSource.value;
-    //   } else if (tab === 'approved') {
-    //     filteredData.value = dataSource.value.filter(item => item.isVerified === 1);
-    //   } else if (tab === 'outliers') {
-    //     filteredData.value = dataSource.value.filter(item => item.hh_size > 5);
-    //   }
-    // }
-
     const formState = reactive({
       searchItem: "",
     });
