@@ -99,10 +99,10 @@ const Sales = {
   mounted() {
     const user = JSON.parse(sessionStorage.getItem("user"));
     this.currentUrl = this.$route.fullPath;
-    this.participantUrl = `${process.env.VUE_APP_URL}${this.currentUrl}`;
+    this.participantUrl = `${window.location.origin}${this.currentUrl}`;
     console.log(this.currentUrl);
     let newUrl = this.participantUrl.replace(
-      `${process.env.VUE_APP_URL}/auth/activity-confirm?`,
+      `${window.location.origin}/auth/activity-confirm?`,
       `${process.env.VUE_APP_BASE_URL}/act_part?`
     );
     console.log(newUrl);

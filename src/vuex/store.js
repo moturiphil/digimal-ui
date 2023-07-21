@@ -17,8 +17,8 @@ import contact from "./modules/contact/actionCreator";
 import note from "./modules/note/actionCreator";
 import todo from "./modules/todo/actionCreator";
 import task from "./modules/task/actionCreator";
-import fireStore from "./modules/crud/fireStore/actionCreator";
-import firebase from "./modules/authentication/firebase/actionCreator";
+// import fireStore from "./modules/crud/fireStore/actionCreator";
+// import firebase from "./modules/authentication/firebase/actionCreator";
 import crud from "./modules/crud/axios/actionCreator";
 import auth from "./modules/authentication/axios/actionCreator";
 import KanbanBoard from "./modules/kanban/actionCreator";
@@ -85,8 +85,8 @@ export default createStore({
     task,
     crud,
     auth,
-    fireStore,
-    firebase,
+    // fireStore,
+    // firebase,
     KanbanBoard,
   },
 });
