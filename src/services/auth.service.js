@@ -5,7 +5,7 @@ const API_URL = `${process.env.VUE_APP_BASE_URL}/`;
 
 class AuthService {
   login(user) {
-    console.log(`user:`, user);
+    // console.log(`user:`, user);
 
     return axios
       .post(API_URL + 'login', {
@@ -13,7 +13,7 @@ class AuthService {
         password: user.password
       })
       .then(response => {
-        console.log(response);
+        // console.log(response);
         // sessionStorage.setItem('person', JSON.stringify(response));
         if (response.data.token) {
           sessionStorage.setItem('user-config-token', JSON.stringify(response.data.token));
@@ -31,7 +31,7 @@ class AuthService {
   }
 
   register(user) {
-    console.log(user);
+    // console.log(user);
     return axios
     .patch(API_URL + 'set_users_password', {
       id_no: user.id_no,
