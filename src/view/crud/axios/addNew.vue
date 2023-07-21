@@ -45,7 +45,10 @@
                       </figcaption>
                     </figure> -->
                     <a-form-item name="campaign_name" label="Campaign Name">
-                      <a-input v-model:value="formState.name" placeholder="Input Campaign Name" />
+                      <a-input
+                        v-model:value="formState.name"
+                        placeholder="Input Campaign Name"
+                      />
                     </a-form-item>
                     <!-- <a-form-item name="email" label="Email">
                       <a-input v-model:value="formState.email" type="email" placeholder="example@gmail.com" />
@@ -75,10 +78,18 @@
                       <a-input v-model:value="formState.position" placeholder="Position" />
                     </a-form-item> -->
                     <a-form-item label="Campaign Start Date">
-                      <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
+                      <a-date-picker
+                        :style="{ width: '100%' }"
+                        v-model:value="join"
+                        :format="dateFormat"
+                      />
                     </a-form-item>
                     <a-form-item label="Campaign End Date">
-                      <a-date-picker :style="{ width: '100%' }" v-model:value="join" :format="dateFormat" />
+                      <a-date-picker
+                        :style="{ width: '100%' }"
+                        v-model:value="join"
+                        :format="dateFormat"
+                      />
                     </a-form-item>
                     <!-- <a-form-item name="status" label="Status">
                       <a-radio-group v-model:value="formState.status">
@@ -89,7 +100,7 @@
                     </a-form-item> -->
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? 'Loading...' : 'Submit' }}
+                        {{ isLoading ? "Loading..." : "Submit" }}
                       </sdButton>
                     </div>
                   </a-form>
@@ -103,15 +114,15 @@
   </Main>
 </template>
 <script>
-import { RecordFormWrapper } from './style';
-import { Main, BasicFormWrapper } from '../../styled';
-import { useStore } from 'vuex';
-import { computed, reactive, ref, defineComponent } from 'vue';
+import { RecordFormWrapper } from "./style";
+import { Main, BasicFormWrapper } from "../../styled";
+import { useStore } from "vuex";
+import { computed, reactive, ref, defineComponent } from "vue";
 
-const dateFormat = 'YYYY/MM/DD';
+const dateFormat = "YYYY/MM/DD";
 
 const AddNew = defineComponent({
-  name: 'AddNew',
+  name: "AddNew",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
   setup() {
     const { state, dispatch } = useStore();
@@ -119,41 +130,41 @@ const AddNew = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const url = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
-    const join = ref('');
+    const join = ref("");
 
     const handleSubmit = (values) => {
-      dispatch('axiosCrudSubmitData', {
+      dispatch("axiosCrudSubmitData", {
         ...values,
         image: url.value,
         join: join.value,
         id: new Date().getTime(),
       });
-      dispatch('axiosFileClear');
+      dispatch("axiosFileClear");
     };
 
     const props = {
-      name: 'file',
-      action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      name: "file",
+      action: "https://www.mocky.io/v2/5cc8019d300000980a055e76",
       multiple: false,
       showUploadList: false,
       headers: {
-        authorization: 'authorization-text',
+        authorization: "authorization-text",
       },
       onChange(info) {
-        if (info.file.status !== 'uploading') {
-          dispatch('axiosFileUploader', info.file.originFileObj);
+        if (info.file.status !== "uploading") {
+          dispatch("axiosFileUploader", info.file.originFileObj);
         }
       },
     };
 
     const formState = reactive({
-      name: '',
-      email: '',
-      country: '',
-      city: '',
-      company: '',
-      position: '',
-      status: '',
+      name: "",
+      email: "",
+      country: "",
+      city: "",
+      company: "",
+      position: "",
+      status: "",
     });
 
     return {
