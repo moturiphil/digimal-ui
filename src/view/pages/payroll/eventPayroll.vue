@@ -487,7 +487,7 @@ export default defineComponent({
             `${process.env.VUE_APP_BASE_URL}/payment_otp`,
             {
               payroll_summary_id: id,
-              payment_type: "Activity",
+              payment_type: "Event Payroll",
             },
             { headers: authHeader() }
           )
@@ -614,7 +614,7 @@ export default defineComponent({
       console.log(recordId.value);
       try {
         const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
+          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
           { headers: authHeader() }
         );
         console.log(response);

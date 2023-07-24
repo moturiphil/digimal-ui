@@ -74,7 +74,7 @@ import { useStore } from "vuex";
 const columns = [
   {
     title: "User",
-    dataIndex: "user_id",
+    dataIndex: "user",
     key: "id",
   },
   {
@@ -88,20 +88,10 @@ const columns = [
     key: "id",
   },
   {
-    title: "Old Values",
-    dataIndex: "old_values",
-    key: "id",
+    title: "User Agent",
+    dataIndex: "user_agent",
+    key: "",
   },
-  {
-    title: "New Values",
-    dataIndex: "new_values",
-    key: "id",
-  },
-  // {
-  //   title: "User Agent",
-  //   dataIndex: "user_agent",
-  //   key: "",
-  // },
   {
     title: "IP Address",
     dataIndex: "ip_address",
