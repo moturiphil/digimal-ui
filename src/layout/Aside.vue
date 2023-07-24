@@ -185,11 +185,11 @@
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <!-- <a-menu-item  key="registered-users">
-        <router-link to="/registered-users">
-          <sdFeatherIcons type="users" />&nbsp; &nbsp; Users
+      <a-menu-item  key="review_excel">
+        <router-link to="/review_excel">
+          <sdFeatherIcons type="users" />&nbsp; &nbsp; Review Excel
         </router-link>
-      </a-menu-item> -->
+      </a-menu-item>
       <a-menu-item  key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
