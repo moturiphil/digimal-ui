@@ -124,6 +124,28 @@
                                       <span>&nbsp;&nbsp; Payroll Details</span>
                                     </router-link>
                                   </sdButton>
+                                  <sdButton
+                                    size="small"
+                                    type="success"
+                                    @click="handleVerify(record.id)"
+                                  >
+                                    &nbsp;&nbsp;
+                                    <router-link
+                                      :to="{
+                                        path: `/payroll/event-view/${record.id}`,
+                                        query: {
+                                          id: record.id,
+                                          name: record.name,
+                                        },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
+                                    >
+                                      &nbsp;&nbsp;
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                    </router-link>
+                                  </sdButton>
                                   &nbsp;&nbsp;
                                   <a-modal
                                     title="Payment OTP"
@@ -289,7 +311,7 @@
                                     type="success"
                                     size="small"
                                     @click="handlePay(record.id)"
-                                    >Pay Activity</sdButton
+                                    >Pay Event</sdButton
                                   >
                                 </div>
                               </td>
@@ -487,7 +509,7 @@ export default defineComponent({
             `${process.env.VUE_APP_BASE_URL}/payment_otp`,
             {
               payroll_summary_id: id,
-              payment_type: "Event Payroll",
+              payment_type: "Event",
             },
             { headers: authHeader() }
           )
@@ -502,28 +524,6 @@ export default defineComponent({
                 description: "OTP Sent Successfully",
               });
             }
-            const approve_pay = axios
-              .post(
-                `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
-                {
-                  payroll_id: id,
-                },
-                { headers: authHeader() }
-              )
-              .then((responsePromise) => {
-                return responsePromise.data;
-              })
-              .then((data) => {
-                console.log(data);
-                if (data.success == true) {
-                  notification.success({
-                    message: "Success",
-                    description:
-                      "Payment Approved Successfully, Enter OTP to complete payment",
-                  });
-                }
-              });
-            console.log(approve_pay);
           });
 
         console.log(response);
@@ -623,6 +623,28 @@ export default defineComponent({
             message: "Success",
             description: "Payment processed successful",
           });
+          const approve_pay = axios
+            .post(
+              `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
+              {
+                payroll_id: recordId.value,
+              },
+              { headers: authHeader() }
+            )
+            .then((responsePromise) => {
+              return responsePromise.data;
+            })
+            .then((data) => {
+              console.log(data);
+              if (data.success == true) {
+                notification.success({
+                  message: "Success",
+                  description:
+                    "Payment Approved Successfully, Enter OTP to complete payment",
+                });
+              }
+            });
+          console.log(approve_pay);
         }
       } catch (error) {
         console.log(error);

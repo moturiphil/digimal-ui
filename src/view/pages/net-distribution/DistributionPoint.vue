@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Create Dropoff Point">
-    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Create Dropoff Point">
+      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -123,7 +123,7 @@
 
                     <div class="record-form-actions text-right">
                       <sdButton
-                        size="default"
+                        size="small"
                         htmlType="Save"
                         type="success"
                         :disabled="isSubmitting"
