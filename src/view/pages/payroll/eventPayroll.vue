@@ -124,6 +124,28 @@
                                       <span>&nbsp;&nbsp; Payroll Details</span>
                                     </router-link>
                                   </sdButton>
+                                  <sdButton
+                                    size="small"
+                                    type="success"
+                                    @click="handleVerify(record.id)"
+                                  >
+                                    &nbsp;&nbsp;
+                                    <router-link
+                                      :to="{
+                                        path: `/payroll/event-view/${record.id}`,
+                                        query: {
+                                          id: record.id,
+                                          name: record.name,
+                                        },
+                                      }"
+                                      class="btn-icon"
+                                      type="info"
+                                      shape="circle"
+                                    >
+                                      &nbsp;&nbsp;
+                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                    </router-link>
+                                  </sdButton>
                                   &nbsp;&nbsp;
                                   <a-modal
                                     title="Payment OTP"
