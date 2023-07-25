@@ -25,7 +25,32 @@
                             :pagination="{ pageSize: 100, showSizeChanger: true }"
                             :dataSource="dataSource"
                             :columns="columns"
-                            />
+                            >
+                            <template #bodyCell="{column, record }" >
+                                <template v-if="column.key=='Phone No.'">
+                                    <a>{{ record['Phone No.'] }}</a>
+                                </template>
+
+                            </template>
+                            <!-- <template #actions="{record}" >
+                                <td>
+                                <div class="table-actions">
+                                    <sdButton
+                                    >
+                                    <router-link
+                                        :to="`/campaigns/view/${record.id}`"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                    >
+                                        <sdFeatherIcons type="eye" size="16" />
+                                        &nbsp;&nbsp; View
+                                    </router-link>
+                                    </sdButton>
+                                    </div>
+                                </td> 
+                            </template> -->
+                            </a-table>
                         </TableWrapper>    
                     </div>
                 </a-col>
@@ -67,12 +92,34 @@ const excelReview = defineComponent({
         dataSource.value = passedData;
 
         const heads = parsedData.shift().map((item, index) => {
+            if(item == "Phone No."){
+                return {
+                    title: item,
+                    dataIndex: item,
+                    key: index,
+                }
+            }
                 return {
                         title: item,
                         dataIndex: item,
                         key: index,
                     }
                 })
+        const regex = /^(?:254|\+254)?((1|7)(?:(?:[1294][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/
+        passedData.map((item, index)=>{
+
+                if((`${item['Phone No.']}`.match(regex)) == null){
+                    return this.errors.push({ [index]: `${item['Phone No.']} + " is not a valid phone number"`});
+                }
+        })
+
+        console.log(this.errors)
+        heads.push({
+            title: "Actions",
+            dataIndex: "actions",
+            key: "actions",
+            slots: { customRender: "actions" },
+        });
         columns.value = heads;    
         // this.data = parsedData;
       };
@@ -84,6 +131,7 @@ const excelReview = defineComponent({
         handleFile,
         dataSource,
         columns,
+        errors:[]
     }
    }
 })
