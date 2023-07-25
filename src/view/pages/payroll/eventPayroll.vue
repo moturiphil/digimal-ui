@@ -601,28 +601,28 @@ export default defineComponent({
             message: "Success",
             description: "Payment processed successful",
           });
-          // const approve_pay = axios
-          //   .post(
-          //     `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
-          //     {
-          //       payroll_id: id,
-          //     },
-          //     { headers: authHeader() }
-          //   )
-          //   .then((responsePromise) => {
-          //     return responsePromise.data;
-          //   })
-          //   .then((data) => {
-          //     console.log(data);
-          //     if (data.success == true) {
-          //       notification.success({
-          //         message: "Success",
-          //         description:
-          //           "Payment Approved Successfully, Enter OTP to complete payment",
-          //       });
-          //     }
-          //   });
-          // console.log(approve_pay);
+          const approve_pay = axios
+            .post(
+              `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
+              {
+                payroll_id: recordId.value,
+              },
+              { headers: authHeader() }
+            )
+            .then((responsePromise) => {
+              return responsePromise.data;
+            })
+            .then((data) => {
+              console.log(data);
+              if (data.success == true) {
+                notification.success({
+                  message: "Success",
+                  description:
+                    "Payment Approved Successfully, Enter OTP to complete payment",
+                });
+              }
+            });
+          console.log(approve_pay);
         }
       } catch (error) {
         console.log(error);
