@@ -370,11 +370,12 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          if (user.user[0].level_id === 1) {
+          
+          if (user) {
             dataSource.value = response.data.data;
           } else {
             const rs = response.data.data.filter((event) => {
-              return event.location_id === user.user[0].level_id;
+              return event.location_id === user.user[2].level_id;
             });
             dataSource.value = rs;
           }
