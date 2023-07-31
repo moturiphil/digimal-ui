@@ -639,24 +639,20 @@ export default defineComponent({
         .get(API_URL, {
           headers: authHeader(),
         })
-        // .then((response) => {
-        //   console.log(response.data.data[0]);
-        //   dataSource.value = response.data.data;
-        //   // transform approval status to boolean
-
-        //   console.log(!response.data.data === 'No payroll summaries generated');
-
-        //   if (dataSource.value.length > 0) {
-        //     dataSource.value.forEach((item) => {
-        //       item.approval_status =
-        //         item.approval_status === 1 ? "Approved" : "Not Approved";
-        //       item.status = item.status === 1 ? "Validated" : "Not Validated";
-        //       item.payment_status =
-        //         item.payment_status === 1 ? "Paid" : "Not Paid";
-        //     });
-        //   }
-        //   console.log(dataSource.value);
-        // })
+        .then((response) => {
+          dataSource.value = response.data.data;
+          console.log(dataSource.value);
+          if (!response.data.data === 'No payroll summaries generated') {
+            dataSource.value.forEach((item) => {
+              item.approval_status =
+                item.approval_status === 1 ? "Approved" : "Not Approved";
+              item.status = item.status === 1 ? "Validated" : "Not Validated";
+              item.payment_status =
+                item.payment_status === 1 ? "Paid" : "Not Paid";
+            });
+          }
+          console.log(dataSource.value);
+        })
         .catch((error) => {
           console.error(error);
         });

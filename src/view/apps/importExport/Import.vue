@@ -44,6 +44,7 @@
 import { Main, ImportStyleWrap } from "../../styled";
 import { message } from "ant-design-vue";
 import { ref, defineComponent } from "vue";
+import authHeader from "../../../../src/services/auth-header.js";
 
 const Import = defineComponent({
   name: "Import",
@@ -56,6 +57,7 @@ const Import = defineComponent({
       name: "file",
       multiple: true,
       action: `${process.env.VUE_APP_BASE_URL}/master-import`,
+      headers: authHeader(),
       onChange(info) {
         const { status } = info.file;
         console.log(status);

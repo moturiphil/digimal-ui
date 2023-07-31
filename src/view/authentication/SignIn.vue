@@ -118,6 +118,7 @@
             </a-form-item>
             <p class="form-divider"></p>
           </a-form>
+          <template #footer></template>
         </a-modal>
       </div>
       <!-- implement the notification if user is not authorized -->
@@ -178,12 +179,11 @@ export default {
 
     const handleCancel = () => {
       visible.value = false;
-      formState.r_id_no="",
-      formState.r_code="",
-      formState.r_password= "",
-      formState.r_confPassword= ""
+      (formState.r_id_no = ""),
+        (formState.r_code = ""),
+        (formState.r_password = ""),
+        (formState.r_confPassword = "");
       proceed.value = false;
-
     };
 
     const handleSubmit = async () => {
@@ -200,7 +200,10 @@ export default {
           store.commit("auth/setUser", response.data.user);
           const redirectUrl = sessionStorage.getItem("redirectUrl");
           if (redirectUrl) {
-            const url = redirectUrl.replace(/http:\/\/127\.0\.0\.1:8080\/auth\//, '');
+            const url = redirectUrl.replace(
+              /http:\/\/127\.0\.0\.1:8080\/auth\//,
+              ""
+            );
             router.push(url);
           } else {
             // Default redirect if there is no stored redirectUrl
