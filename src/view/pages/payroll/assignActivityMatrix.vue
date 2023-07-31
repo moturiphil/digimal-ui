@@ -27,10 +27,10 @@
                       >
                         <a-select-option
                           v-for="matrix in matrix"
-                          :key="matrix.id"
-                          v-model:value="matrix.id"
+                          :key="matrix.category"
+                          v-model:value="matrix.category"
                         >
-                          {{ matrix.formula_name }}
+                          {{ matrix.category }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>

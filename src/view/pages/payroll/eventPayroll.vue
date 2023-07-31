@@ -2,10 +2,6 @@
   <div>
     <sdPageHeader ghost title="Event Payroll" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
-        Export Payroll Data
-      </sdButton>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'event-payroll-matrix'">
         <sdButton type="success">
           <sdFeatherIcons size="" class="icon-color-white" />
@@ -102,28 +98,6 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/event-view/${record.id}`,
-                                        query: {
-                                          id: record.id,
-                                          name: record.name,
-                                        },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
-                                    >
-                                      &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
                                   <sdButton
                                     size="small"
                                     type="success"
@@ -665,23 +639,24 @@ export default defineComponent({
         .get(API_URL, {
           headers: authHeader(),
         })
-        .then((response) => {
-          console.log(response.data.data[0]);
-          dataSource.value = response.data.data;
-          // transform approval status to boolean
-          dataSource.value.forEach((item) => {
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
-          dataSource.value.forEach((item) => {
-            item.status = item.status === 1 ? "Validated" : "Not Validated";
-          });
-          dataSource.value.forEach((item) => {
-            item.payment_status =
-              item.payment_status === 1 ? "Paid" : "Not Paid";
-          });
-          console.log(dataSource.value);
-        })
+        // .then((response) => {
+        //   console.log(response.data.data[0]);
+        //   dataSource.value = response.data.data;
+        //   // transform approval status to boolean
+
+        //   console.log(!response.data.data === 'No payroll summaries generated');
+
+        //   if (dataSource.value.length > 0) {
+        //     dataSource.value.forEach((item) => {
+        //       item.approval_status =
+        //         item.approval_status === 1 ? "Approved" : "Not Approved";
+        //       item.status = item.status === 1 ? "Validated" : "Not Validated";
+        //       item.payment_status =
+        //         item.payment_status === 1 ? "Paid" : "Not Paid";
+        //     });
+        //   }
+        //   console.log(dataSource.value);
+        // })
         .catch((error) => {
           console.error(error);
         });

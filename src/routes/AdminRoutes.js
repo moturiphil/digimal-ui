@@ -346,6 +346,14 @@ const routes = [
       ),
   },
   {
+    path: "/event/view-matrix/:id",
+    name: "assigned-event-matrix",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/matrixPerEvent.vue"
+      ),
+  },
+  {
     path: "/list-activity/matrix",
     name: "/list-activity-matrix",
     component: () =>

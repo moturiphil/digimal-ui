@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Create Post">
-    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Create Post">
+      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
