@@ -2,6 +2,10 @@
   <div>
     <sdPageHeader ghost title="Event Payroll" />
     <Main>
+      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
+        Export Payroll Data
+      </sdButton>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'event-payroll-matrix'">
         <sdButton type="success">
           <sdFeatherIcons size="" class="icon-color-white" />
@@ -441,7 +445,7 @@ export default defineComponent({
         );
       } else if (activeClass.value === "pending_approval") {
         return dataSource.value.filter(
-          (item) => item.approval_status === "Not Approved"
+          (item) => item.approval_status === "Not Approved" && item.status === "Validated"
         );
       } else if (activeClass.value === "pending_payment") {
         return dataSource.value.filter(
@@ -640,17 +644,19 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
+          console.log(response.data.data);
           dataSource.value = response.data.data;
-          console.log(dataSource.value);
-          if (!response.data.data === 'No payroll summaries generated') {
-            dataSource.value.forEach((item) => {
-              item.approval_status =
-                item.approval_status === 1 ? "Approved" : "Not Approved";
-              item.status = item.status === 1 ? "Validated" : "Not Validated";
-              item.payment_status =
-                item.payment_status === 1 ? "Paid" : "Not Paid";
-            });
-          }
+          dataSource.value.forEach((item) => {
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
+          });
+          dataSource.value.forEach((item) => {
+            item.status = item.status === 1 ? "Validated" : "Not Validated";
+          });
+          dataSource.value.forEach((item) => {
+            item.payment_status =
+              item.payment_status === 1 ? "Paid" : "Not Paid";
+          });
           console.log(dataSource.value);
         })
         .catch((error) => {
@@ -671,15 +677,15 @@ export default defineComponent({
     role_id.value = user.user[0].role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 4;
+      return role_id.value === 4 || role_id.value === 1;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 2;
+      return role_id.value === 2 || role_id.value === 1;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 1;
+      return role_id.value === 1 || role_id.value === 1;
     });
 
     // handleChange(tab) {

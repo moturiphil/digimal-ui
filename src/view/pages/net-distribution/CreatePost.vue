@@ -251,7 +251,7 @@ const AddNew = defineComponent({
       post_code: Yup.string().nullable(),
       isFacility: Yup.string().required("IsFacility is required"),
       villages: Yup.array()
-        .min(1, "At least 1 facilitator required")
+        .min(1, "At least 1 Village required")
         .required(),
     });
 
