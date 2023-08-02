@@ -26,14 +26,14 @@
             <div class="card-chunk">
               <Chart
                 class="growth"
-                :height="180"
-                :labels="['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']"
+                :height="0"
+                :labels="[]"
                 :style="{
                   marginBottom: '-5',
                 }"
                 :datasets="[
                   {
-                    data: [20, 60, 50, 45, 50, 60, 70],
+                    data: [],
                     backgroundColor: '#E8FAF4',
                     hoverBackgroundColor: '#20C997',
                     label: 'Orders',
@@ -62,14 +62,14 @@
             <div class="card-chunk">
               <Chart
                 class="downward"
-                :height="180"
-                :labels="['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']"
+                :height="0"
+                :labels="[]"
                 :style="{
                   marginBottom: '-5',
                 }"
                 :datasets="[
                   {
-                    data: [20, 60, 50, 45, 50, 60, 70],
+                    data: [],
                     backgroundColor: '#E8FAF4',
                     hoverBackgroundColor: '#20C997',
                     label: 'Nets Distributed',
@@ -99,14 +99,14 @@
             <div class="card-chunk">
               <Chart
                 class="upward"
-                :height="180"
-                :labels="['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']"
+                :height="0"
+                :labels="[]"
                 :style="{
                   marginBottom: '-5',
                 }"
                 :datasets="[
                   {
-                    data: [20, 60, 50, 45, 50, 60, 70],
+                    data: [],
                     backgroundColor: '#E8FAF4',
                     hoverBackgroundColor: '#20C997',
                     label: 'Avg Orders',
@@ -135,14 +135,14 @@
             <div class="card-chunk">
               <Chart
                 class="visitors"
-                :height="180"
-                :labels="['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']"
+                :height="0"
+                :labels="[]"
                 :style="{
                   marginBottom: '-5',
                 }"
                 :datasets="[
                   {
-                    data: [20, 60, 50, 45, 50, 60, 70],
+                    data: [],
                     backgroundColor: '#E8FAF4',
                     hoverBackgroundColor: '#20C997',
                     label: 'Visitors',
@@ -157,7 +157,7 @@
       </a-col>
     </a-row>
     <a-row :gutter="25">
-      <a-col :md="24">
+      <!-- <a-col :md="24">
         <Suspense>
           <template #default>
             <IncomeAndExpenses />
@@ -168,7 +168,7 @@
             </sdCards>
           </template>
         </Suspense>
-      </a-col>
+      </a-col> -->
       <a-col :lg="8" :xs="24">
         <sdCards headless>
           <OverviewSalesCard>
@@ -218,7 +218,7 @@
           </OverviewSalesCard>
         </sdCards>
       </a-col>
-      <a-col :lg="16" :xs="24">
+      <!-- <a-col :lg="16" :xs="24">
         <Suspense>
           <template #default>
             <WebsitePerformance />
@@ -229,7 +229,7 @@
             </sdCards>
           </template>
         </Suspense>
-      </a-col>
+      </a-col> -->
     </a-row>
   </Main>
 </template>
@@ -238,16 +238,16 @@ import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
-import { defineComponent, defineAsyncComponent } from "vue";
+import { defineComponent} from "vue";  //defineAsyncComponent 
 import authHeader from "../../services/auth-header";
 
-const IncomeAndExpenses = defineAsyncComponent(() =>
-  import("./overview/business/IncomeAndExpenses")
-);
+// const IncomeAndExpenses = defineAsyncComponent(() =>
+//   import("./overview/business/IncomeAndExpenses")
+// );
 
-const WebsitePerformance = defineAsyncComponent(() =>
-  import("./overview/performance/WebsitePerformance")
-);
+// const WebsitePerformance = defineAsyncComponent(() =>
+//   import("./overview/performance/WebsitePerformance")
+// );
 
 const chartOptions = {
   legend: {
@@ -289,8 +289,8 @@ export default defineComponent({
     CardBarChart2,
     EChartCard,
     Chart,
-    WebsitePerformance,
-    IncomeAndExpenses,
+    // WebsitePerformance,
+    // IncomeAndExpenses,
   },
   data() {
     return {};

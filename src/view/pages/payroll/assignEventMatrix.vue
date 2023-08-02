@@ -25,10 +25,10 @@
                       >
                         <a-select-option
                           v-for="matrix in matrix"
-                          :key="matrix.id"
-                          v-model:value="matrix.id"
+                          :key="matrix.category"
+                          v-model:value="matrix.category"
                         >
-                          {{ matrix.formula_name }}
+                          {{ matrix.category }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
@@ -141,7 +141,6 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.matrix = data.data;
-      console.log(data.data);
       this.loading = false;
     };
     fetchMatrix();
@@ -179,10 +178,10 @@ const AddNew = defineComponent({
     const handleSubmit = () => {
       const data = {
         event_list_id: act_id,
-        pay_matrix: formState.matrix,
+        category: formState.matrix,
       };
 
-      console.log(JSON.stringify(data));
+      console.log(data);
 
       fetch(API_URL, {
         method: "POST",

@@ -106,7 +106,7 @@
           </router-link>
         </a-menu-item>
         <a-menu-item  key="widgetHouseholdNets">
-          <router-link to="/hh-nets-distributed"> HouseHolds Nets </router-link>
+          <router-link to="/hh-nets-distributed"> Nets Distributed </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="drop-off-point">
