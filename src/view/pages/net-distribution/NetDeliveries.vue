@@ -56,6 +56,11 @@ const columns = [
     key: "date_received",
   },
   {
+    title: "Delivery Note Number",
+    dataIndex: "delivery_note_number",
+    key: "delivery_note_number",
+  },
+  {
     title: "Reveived From",
     dataIndex: "received_from",
     key: "received_from",
