@@ -27,6 +27,14 @@ const routes = [
           ),
       },
       {
+        path: "masterlist",
+        name: "masterlist",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/masterlist.vue"
+          ),
+      },
+      {
         path: "user-roles",
         name: "user-roles",
         component: () =>
