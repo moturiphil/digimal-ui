@@ -180,6 +180,9 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>User Management</span>
         </template>
+        <a-menu-item key="widgetMasterList">
+          <router-link to="/masterlist">Masterlist </router-link>
+        </a-menu-item>
         <a-menu-item key="widgetUsers">
           <router-link to="/registered-users">Users </router-link>
         </a-menu-item>

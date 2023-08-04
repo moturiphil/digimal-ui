@@ -150,11 +150,11 @@ const columns = [
     dataIndex: "user_id",
     key: "id",
   },
-  {
-    title: "Campaign",
-    dataIndex: "campaign_id",
-    key: "id",
-  },
+  // {
+  //   title: "County",
+  //   dataIndex: "campaign_id",
+  //   key: "id",
+  // },
   {
     title: "Venue",
     dataIndex: "venue",

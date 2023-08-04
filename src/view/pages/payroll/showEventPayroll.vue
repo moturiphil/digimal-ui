@@ -2,6 +2,9 @@
   <div>
     <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
     <Main>
+      <p class="detail-info">{{ `Location: ${venue    }` }} || {{ `Start Date: ${date}` }} || {{ `Duration: ${duration} days` }}</p>
+      <!-- <p class="detail-info">{{ `Start Date: ${date}` }}</p>
+      <p class="detail-info">{{ `Duration: ${duration} days` }}</p> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -239,6 +242,9 @@ export default defineComponent({
 
     console.log(query.id);
     const event_name = query.name;
+    const duration = query.duration;
+    const venue = query.venue;
+    const date = query.date;
     console.log(event_name);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
 
@@ -288,6 +294,9 @@ export default defineComponent({
       handleChange,
       activeClass,
       event_name,
+      duration,
+      venue,
+      date,
     };
   },
   // computed: {
@@ -312,5 +321,8 @@ export default defineComponent({
   padding: 4px;
   margin-bottom: 18px;
   border-radius: 3px;
+}
+sdPageHeader {
+  margin-bottom: 10px; /* Adjust the value as needed to control the vertical spacing */
 }
 </style>

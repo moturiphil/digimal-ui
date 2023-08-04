@@ -114,6 +114,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -173,6 +176,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -224,6 +230,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -274,6 +283,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
