@@ -26,13 +26,13 @@
         </sdButton> -->
         <br />
         <br />
-        <a-col :xs="24" :sm="24" :md="12">
+        <!-- <a-col :xs="24" :sm="24" :md="12">
           <sdAutoComplete
             @onSearch="handleSearch"
             placeholder="Search registered users"
             :style="{ width: '80%', marginRight: '80px', height: '40px' }"
           />
-        </a-col>
+        </a-col> -->
       </a-row>
       <a-row :gutter="16" class="search-row"> </a-row>
       <br />
@@ -51,34 +51,20 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <!-- <template #data="{ record }">
-                    <td :style="{ 'margin-left': '4px' }">
+                  <template #action="{ record }">
+                    <td>
                       <div class="table-actions">
                         <sdButton
-                          @click="handleDelete(record.id)"
+                          @click="handleDeletion(record.id)"
                           size="small"
                           type="danger"
-                          v-if="!record.status"
                         >
-                          <sdFeatherIcons type="user-plus" size="small" />
-                          &nbsp; Delete
+                          <sdFeatherIcons type="x-circle" size="small" />
+                          &nbsp; Delete Record
                         </sdButton>
-                        &nbsp;&nbsp;
-                        <a-modal
-                          title="Event Confirmation"
-                          :visible="isModalOpen"
-                          @ok="handleOk(recordId, inputValue)"
-                          @cancel="handleCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <p>Registration Confirmation processing</p>
-                            <input type="number" v-model="inputValue" />
-                          </div>
-                        </a-modal>
                       </div>
                     </td>
-                  </template> -->
+                  </template>
                 </a-table>
               </TableWrapper>
             </div>
@@ -98,6 +84,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import {notification } from "ant-design-vue";
 import UserService from "../../../services/user.service";
 
 const columns = [
@@ -137,10 +124,9 @@ const columns = [
     key: "id",
   },
   {
-    title: "",
-    dataIndex: "",
-    key: "data",
-    slots: { customRender: "data" },
+    title: "Action",
+    dataIndex: "action",
+    slots: { customRender: "action" },
   },
 ];
 
@@ -179,32 +165,35 @@ const DragAndDropTable = defineComponent({
       }
     });
 
-    // const exportUserData = async () => {
-    //   try {
-    //     const response = await fetch(API_URL, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
+    const handleDeletion = async (id) => {
+      try {
+        console.log(id);
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/delete_record?record_id=${id}`,
+          {
+            method: "DELETE",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status == "true") {
+          notification.success({
+            message: "Success",
+            description: data.message,
+          });
+          window.location.reload();
+        } else {
+          notification.error({
+            message: "Error",
+            description: data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "users.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -242,7 +231,7 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
-      // exportUserData,
+      handleDeletion,
     };
   },
 });
