@@ -84,6 +84,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import {notification } from "ant-design-vue";
 import UserService from "../../../services/user.service";
 
 const columns = [
@@ -176,11 +177,17 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         console.log(data);
-        if (data.status == "success") {
-          alert("Successfully deleted");
+        if (data.status == "true") {
+          notification.success({
+            message: "Success",
+            description: data.message,
+          });
           window.location.reload();
         } else {
-          alert("Failed to delete");
+          notification.error({
+            message: "Error",
+            description: data.message,
+          });
         }
       } catch (error) {
         console.error(error);
