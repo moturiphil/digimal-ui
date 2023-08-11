@@ -181,6 +181,7 @@ const AddNew = defineComponent({
     const handleSubmit = () => {
       const data = {
         activity_list_id: act_id,
+        org_type_ids: formState.organizations,
         pay_matrix: formState.matrix,
       };
 
