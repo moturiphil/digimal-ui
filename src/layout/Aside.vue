@@ -247,9 +247,9 @@ export default defineComponent({
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
-      level_id.value = user.user[0].level_id;
-      role_id.value = user.user[0].role_id;
-      console.log(level_id.value);
+      level_id.value = user.user.level_id;
+      role_id.value = user.user.role_id;
+      console.log(user.user);
     });
 
     const isLevelOne = computed(() => {

@@ -195,11 +195,11 @@ const AddNew = defineComponent({
     const handleSubmit = () => {
       const data = {
         event_list_id: act_id,
-        organizations: formState.organizations,
+        org_type_ids: formState.organizations,
         category: formState.matrix,
       };
 
-      console.log(data);
+      console.log(JSON.stringify(data));
 
       fetch(API_URL, {
         method: "POST",
@@ -213,11 +213,21 @@ const AddNew = defineComponent({
         .then(({ success, data }) => {
           console.log(success);
           console.log(data);
-          notification["success"]({
-            message: " Matrix Assigned successfully",
-            description: `Matrix Assigned successfully. You can now view the matrix`,
-            duration: 5.5,
-          });
+          if (success) {
+            notification["success"]({
+              message: "Event Matrix Assigned",
+              description: `Event Matrix assigned successfully.`,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to assign matrix to event",
+              duration: 5.5,
+            });
+          }
         })
         .catch((error) => {
           console.error("Error:", error);
