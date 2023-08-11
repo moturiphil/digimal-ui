@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Masterlist">
+    <sdPageHeader title="Masterlists">
       <template id="buttons"></template>
     </sdPageHeader>
 
@@ -177,7 +177,7 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         console.log(data);
-        if (data.status == "true") {
+        if (data.success == true) {
           notification.success({
             message: "Success",
             description: data.message,
