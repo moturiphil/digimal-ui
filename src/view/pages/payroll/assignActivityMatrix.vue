@@ -18,6 +18,22 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
+                    <a-form-item label="Payable Organizations">
+                      <a-select
+                        mode="multiple"
+                        v-model:value="formState.organizations"
+                        v-if="!loading"
+                        placeholder="Select Organizations"
+                      >
+                        <a-select-option
+                          v-for="organization in organizations"
+                          :key="organization.name"
+                          v-model:value="organization.id"
+                        >
+                          {{ organization.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
                     <a-form-item label="Assign Matrix">
                       <a-select
                         mode="multiple"
@@ -109,11 +125,12 @@ const AddNew = defineComponent({
 
     const pay_matrix_url = `${process.env.VUE_APP_BASE_URL}/list_pay_matrix`;
 
-    const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
+    const organization_url = `${process.env.VUE_APP_BASE_URL}/organizations`;
 
-    const { matrix, loading } = reactive({
+    const { matrix, loading, organizations } = reactive({
       loading: true,
       matrix: [],
+      organizations: [],
     });
 
     const fetchCampaigns = async () => {
@@ -146,8 +163,8 @@ const AddNew = defineComponent({
     };
     fetchMatrix();
 
-    const fetchTrainer = async () => {
-      const response = await fetch(trainer_url, {
+    const fetchOrganizations = async () => {
+      const response = await fetch(organization_url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -155,11 +172,11 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      this.facilitators = data.data;
+      this.organizations = data.data;
       // console.log(data.data);
       this.loading = false;
     };
-    fetchTrainer();
+    fetchOrganizations();
 
     const handleSubmit = () => {
       const data = {
@@ -218,6 +235,7 @@ const AddNew = defineComponent({
       matrix,
       loading,
       act_name,
+      organizations
     };
   },
   beforeRouteEnter(to, from, next) {
