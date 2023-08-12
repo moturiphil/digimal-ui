@@ -146,8 +146,8 @@ const columns = [
     key: "id",
   },
   {
-    title: "Created By",
-    dataIndex: "user_id",
+    title: "Location",
+    dataIndex: "location_id",
     key: "id",
   },
   // {
