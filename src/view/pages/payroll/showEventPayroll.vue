@@ -170,23 +170,33 @@ const columns = [
     key: "id",
   },
   {
-    title: "Job Group",
-    dataIndex: "job_group",
-    key: "id",
-  },
-  {
     title: "Level",
     dataIndex: "level",
     key: "id",
   },
   {
-    title: "Amount",
-    dataIndex: "amount",
+    title: "Organization",
+    dataIndex: "organization",
+    key: "id",
+  },
+  {
+    title: "Role",
+    dataIndex: "role",
+    key: "id",
+  },
+  {
+    title: "Job Group",
+    dataIndex: "job_group",
     key: "id",
   },
   {
     title: "Attendance Days",
     dataIndex: "no_of_days",
+    key: "id",
+  },
+  {
+    title: "Amount",
+    dataIndex: "amount",
     key: "id",
   },
   {
