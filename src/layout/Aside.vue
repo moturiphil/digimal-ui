@@ -140,7 +140,7 @@
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>
         <a-menu-item key="widgetDistributionPost">
-          <router-link to="/nets/distribution">
+          <router-link to="/nets/distribution-post">
             Distribution Posts
           </router-link>
         </a-menu-item>

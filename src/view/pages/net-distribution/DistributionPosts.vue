@@ -28,41 +28,30 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
+                  :pagination="{ pageSize: 200, showSizeChanger: true }"
                   :dataSource="results"
                   :columns="columns"
                 >
-                <template #activities="{ record }">
-                    <td :style="{ 'margin-left': '3px' }">
+                  <template #activities="{ record }">
+                    <td>
                       <div class="table-actions">
-                        <sdButton>
+                        <sdButton type="success" size="small">
                           <router-link
                             :to="{
                               path: `/assign-worker`,
                               query: { id: record.id },
                             }"
                             class="btn-icon"
-                            type="info"
+                            type="success"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="pen-tool" size="16" />
+                            <sdFeatherIcons type="mail" size="16" />
                             &nbsp;&nbsp; Assign Post Workers
                           </router-link>
                         </sdButton>
-                        <sdButton>
-                          <!-- <router-link
-                            :to="{
-                              path: `/inform-hh/${record.id}`,
-                              query: { id: record.event_code },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="send" size="16" />
-                            &nbsp;&nbsp; Inform HH Net Collection
-                          </router-link> -->
-                          <sdFeatherIcons type="send" size="16" />
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="small">
+                          <sdFeatherIcons type="mail" size="16" />
                           &nbsp;&nbsp; Inform HH Net Collection
                         </sdButton>
                       </div>
@@ -82,18 +71,18 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-  {
-    title: "Distribution Id",
-    dataIndex: "id",
-    key: "id",
-  },
+  // {
+  //   title: "Distribution Id",
+  //   dataIndex: "id",
+  //   key: "id",
+  // },
   {
     title: "Distribution Post",
     dataIndex: "name",
@@ -119,7 +108,7 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -171,22 +160,19 @@ const DragAndDropTable = defineComponent({
     };
 
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.name) ||
-              regex.test(event.post_code) ||
-              regex.test(event.post_supervisor_user_id) 
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return (
+            regex.test(event.name) ||
+            regex.test(event.post_code) ||
+            regex.test(event.post_supervisor_user_id)
+          );
+        });
+      }
     });
 
     return {
