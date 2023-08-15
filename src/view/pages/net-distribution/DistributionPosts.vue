@@ -35,7 +35,30 @@
                   <template #activities="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton type="success" size="small">
+                        <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                          v-if="!record.status"
+                        >
+                          <span>
+                            <sdFeatherIcons type="clock" size="small" />
+                            &nbsp;&nbsp; Start Distribution
+                          </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          size="small"
+                          type="danger"
+                          :disabled="isStarting"
+                          v-else
+                          @click="closeDistribution(record.id)"
+                        >
+                          <span> &nbsp;&nbsp; Close Distribution </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
                               path: `/assign-worker`,
@@ -45,14 +68,29 @@
                             type="success"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="mail" size="16" />
+                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
+                            &nbsp;&nbsp; Receive Nets
+                          </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/assign-worker`,
+                              query: { id: record.id },
+                            }"
+                            class="btn-icon"
+                            type="success"
+                            shape="circle"
+                          >
+                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
                             &nbsp;&nbsp; Assign Post Workers
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton type="success" size="small">
-                          <sdFeatherIcons type="mail" size="16" />
-                          &nbsp;&nbsp; Inform HH Net Collection
+                        <sdButton type="success" size="extra-small">
+                          <!-- <sdFeatherIcons type="mail"    /> -->
+                          &nbsp;&nbsp; Inform HH
                         </sdButton>
                       </div>
                     </td>
@@ -76,6 +114,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { notification } from "ant-design-vue";
 
 const columns = [
   // {
@@ -109,6 +148,98 @@ const columns = [
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
   components: { RecordViewWrapper, Main },
+
+  data() {
+    return{
+      isStarting: false,
+    }
+  },
+
+  methods: {
+    async startDistribution(id) {
+      try {
+        this.isStarting = true;
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/start_distribution/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status === true) {
+          this.eventStatus[id] = true;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.success({
+            message: "Event Started",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          this.eventStatus[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Event Not Started",
+            description: data.message,
+          });
+          // await new Promise((resolve) => {
+          //   setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          // });
+          // location.reload();
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = false;
+      }
+    },
+    async closeDistribution(id) {
+      try {
+        this.isStarting = true;
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/close_distribution/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status === true) {
+          this.eventStatus[id] = true;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          // notify the user
+          notification.success({
+            message: "Event Closed",
+            description: "Event has been closed successfully",
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          this.eventStatus[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Event Not Closed",
+            description: "Only event host or facilitator can close event",
+          });
+          // await new Promise((resolve) => {
+          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          // });
+        }
+        // location.reload();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = true;
+      }
+    },
+  },
 
   setup() {
     const { state, dispatch } = useStore();

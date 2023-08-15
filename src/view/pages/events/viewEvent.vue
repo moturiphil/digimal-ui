@@ -61,10 +61,6 @@
                           v-else
                           @click="closeEvent(record.id)"
                         >
-                          <span v-if="!record.status">
-                            <sdFeatherIcons type="clock" size="small" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
                           <span> &nbsp;&nbsp; Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
