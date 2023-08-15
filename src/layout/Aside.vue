@@ -248,8 +248,8 @@ export default defineComponent({
         rt.push({path:'/auth/login'});
       }else{
 
-        level_id.value = user.user[0].level_id;
-        role_id.value = user.user[0].role_id;
+        level_id.value = user.user.level_id;
+        role_id.value = user.user.role_id;
       }
     });
 
