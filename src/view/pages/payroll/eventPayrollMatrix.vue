@@ -61,7 +61,7 @@
                                   >
                                     <router-link
                                       :to="{
-                                        path: `/activity/view-matrix/${record.id}`,
+                                        path: `/event/view-matrix/${record.id}`,
                                         query: {
                                           id: record.id,
                                           name: record.name,

@@ -28,7 +28,9 @@
           &nbsp;&nbsp; Import Sub locations
         </router-link>
       </sdButton>
-      <br />
+      <br>
+      <br>
+      <br>
         <a-row :gutter="15">
           <a-col class="w-100" :md="24">
             <sdCards headless>
@@ -46,7 +48,9 @@
                     <template #units="{ record }">
                       <td>
                         <div class="table-actions">
-                          <sdButton>
+                          <sdButton
+                          size="small"
+                          type="success">
                             <router-link
                               :to="{
                                 path: `/org-units/villages/${record.org_id}`,
@@ -76,7 +80,7 @@
   </template>
   <script>
   import { RecordViewWrapper } from "../style";
-  import { Main, TableWrapper } from "../../styled";
+  import { Main } from "../../styled";
   import { useStore } from "vuex";
   import { computed, onMounted, ref, defineComponent } from "vue";
   // import axios from "axios";
@@ -114,7 +118,7 @@
   
   const DragAndDropTable = defineComponent({
     name: "ViewPage",
-    components: { RecordViewWrapper, Main, TableWrapper },
+    components: { RecordViewWrapper, Main },
   
     setup() {
       const { state, dispatch } = useStore();

@@ -15,7 +15,7 @@
       :model="formState"
       :onFinish="submitPromo"
     >
-      <div class="promo-apply-form">
+      <!-- <div class="promo-apply-form">
         <a-form-item name="promoCode" label="Comments">
           <a-input v-model:value="promoCode" placeholder="Comment" />
         </a-form-item>
@@ -28,7 +28,7 @@
             Decline
           </sdButton>
         </a-form-item>
-      </div>
+      </div> -->
     </a-form>
     <sdButton
       v-if="current === 3"

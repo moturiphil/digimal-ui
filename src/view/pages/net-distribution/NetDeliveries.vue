@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Nets Delivered">
+    <sdPageHeader title="Nets Received">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
@@ -54,6 +54,11 @@ const columns = [
     title: "Date Received",
     dataIndex: "date_received",
     key: "date_received",
+  },
+  {
+    title: "Delivery Note Number",
+    dataIndex: "delivery_note_number",
+    key: "delivery_note_number",
   },
   {
     title: "Reveived From",

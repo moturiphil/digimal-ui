@@ -114,6 +114,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -173,6 +176,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -224,6 +230,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -274,6 +283,9 @@
                                         query: {
                                           id: record.id,
                                           name: record.name,
+                                          duration: record.duration,
+                                          venue: record.venue,
+                                          date: record.start_date,
                                         },
                                       }"
                                       class="btn-icon"
@@ -289,7 +301,7 @@
                                     type="success"
                                     size="small"
                                     @click="handlePay(record.id)"
-                                    >Pay Activity</sdButton
+                                    >Pay Event</sdButton
                                   >
                                 </div>
                               </td>
@@ -445,7 +457,7 @@ export default defineComponent({
         );
       } else if (activeClass.value === "pending_approval") {
         return dataSource.value.filter(
-          (item) => item.approval_status === "Not Approved"
+          (item) => item.approval_status === "Not Approved" && item.status === "Validated"
         );
       } else if (activeClass.value === "pending_payment") {
         return dataSource.value.filter(
@@ -487,7 +499,7 @@ export default defineComponent({
             `${process.env.VUE_APP_BASE_URL}/payment_otp`,
             {
               payroll_summary_id: id,
-              payment_type: "Event Payroll",
+              payment_type: "Event",
             },
             { headers: authHeader() }
           )
@@ -502,28 +514,6 @@ export default defineComponent({
                 description: "OTP Sent Successfully",
               });
             }
-            const approve_pay = axios
-              .post(
-                `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
-                {
-                  payroll_id: id,
-                },
-                { headers: authHeader() }
-              )
-              .then((responsePromise) => {
-                return responsePromise.data;
-              })
-              .then((data) => {
-                console.log(data);
-                if (data.success == true) {
-                  notification.success({
-                    message: "Success",
-                    description:
-                      "Payment Approved Successfully, Enter OTP to complete payment",
-                  });
-                }
-              });
-            console.log(approve_pay);
           });
 
         console.log(response);
@@ -623,6 +613,28 @@ export default defineComponent({
             message: "Success",
             description: "Payment processed successful",
           });
+          const approve_pay = axios
+            .post(
+              `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
+              {
+                payroll_id: recordId.value,
+              },
+              { headers: authHeader() }
+            )
+            .then((responsePromise) => {
+              return responsePromise.data;
+            })
+            .then((data) => {
+              console.log(data);
+              if (data.success == true) {
+                notification.success({
+                  message: "Success",
+                  description:
+                    "Payment Approved Successfully, Enter OTP to complete payment",
+                });
+              }
+            });
+          console.log(approve_pay);
         }
       } catch (error) {
         console.log(error);
@@ -644,9 +656,8 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data[0]);
+          console.log(response.data.data);
           dataSource.value = response.data.data;
-          // transform approval status to boolean
           dataSource.value.forEach((item) => {
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
@@ -674,19 +685,19 @@ export default defineComponent({
 
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user);
-    console.log(user.user[0].role_id);
-    role_id.value = user.user[0].role_id;
+    // console.log(user.user[0].role_id);
+    role_id.value = user.user.role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 4;
+      return role_id.value === 4 || role_id.value === 1;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 2;
+      return role_id.value === 2 || role_id.value === 1;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 1;
+      return role_id.value === 1 || role_id.value === 1;
     });
 
     // handleChange(tab) {

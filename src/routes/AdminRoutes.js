@@ -27,6 +27,14 @@ const routes = [
           ),
       },
       {
+        path: "masterlist",
+        name: "masterlist",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/masterlist.vue"
+          ),
+      },
+      {
         path: "user-roles",
         name: "user-roles",
         component: () =>
@@ -343,6 +351,14 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/payroll/matrixPerActivity.vue"
+      ),
+  },
+  {
+    path: "/event/view-matrix/:id",
+    name: "assigned-event-matrix",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/matrixPerEvent.vue"
       ),
   },
   {

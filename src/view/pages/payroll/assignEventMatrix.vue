@@ -16,6 +16,23 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
+                    <a-form-item label="Payable Organizations">
+                      <a-select
+                        mode="multiple"
+                        v-model:value="formState.organizations"
+                        v-if="!loading"
+                        placeholder="Select Organizations"
+                      >
+                        <a-select-option
+                          v-for="organization in organizations"
+                          :key="organization.name"
+                          v-model:value="organization.id"
+                        >
+                          {{ organization.name }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+
                     <a-form-item label="Assign Matrix">
                       <a-select
                         mode="multiple"
@@ -25,14 +42,13 @@
                       >
                         <a-select-option
                           v-for="matrix in matrix"
-                          :key="matrix.id"
-                          v-model:value="matrix.id"
+                          :key="matrix.category"
+                          v-model:value="matrix.category"
                         >
-                          {{ matrix.formula_name }}
+                          {{ matrix.category }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
-
                     <!-- <a-form-item name="venue" label="Event Venue">
                       <a-input
                         v-model:value="formState.venue"
@@ -107,13 +123,14 @@ const AddNew = defineComponent({
 
     const facilitator_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
-    const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
+    const organization_url = `${process.env.VUE_APP_BASE_URL}/organizations`;
 
     const pay_matrix_url = `${process.env.VUE_APP_BASE_URL}/list_pay_matrix`;
 
-    const { matrix, loading } = reactive({
+    const { matrix, loading, organizations } = reactive({
       loading: true,
       matrix: [],
+      organizations: [],
     });
 
     const fetchCampaigns = async () => {
@@ -141,7 +158,6 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.matrix = data.data;
-      console.log(data.data);
       this.loading = false;
     };
     fetchMatrix();
@@ -161,8 +177,8 @@ const AddNew = defineComponent({
     };
     fetchFacilitators();
 
-    const fetchTrainer = async () => {
-      const response = await fetch(trainer_url, {
+    const fetchOrganizations = async () => {
+      const response = await fetch(organization_url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -170,16 +186,17 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      this.facilitators = data.data;
-      // console.log(data.data);
+      this.organizations = data.data;
+      console.log(data.data);
       this.loading = false;
     };
-    fetchTrainer();
+    fetchOrganizations();
 
     const handleSubmit = () => {
       const data = {
         event_list_id: act_id,
-        pay_matrix: formState.matrix,
+        org_type_ids: formState.organizations,
+        category: formState.matrix,
       };
 
       console.log(JSON.stringify(data));
@@ -196,11 +213,21 @@ const AddNew = defineComponent({
         .then(({ success, data }) => {
           console.log(success);
           console.log(data);
-          notification["success"]({
-            message: " Matrix Assigned successfully",
-            description: `Matrix Assigned successfully. You can now view the matrix`,
-            duration: 5.5,
-          });
+          if (success) {
+            notification["success"]({
+              message: "Event Matrix Assigned",
+              description: `Event Matrix assigned successfully.`,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to assign matrix to event",
+              duration: 5.5,
+            });
+          }
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -230,6 +257,7 @@ const AddNew = defineComponent({
       matrix,
       loading,
       act_name,
+      organizations,
     };
   },
   beforeRouteEnter(to, from, next) {

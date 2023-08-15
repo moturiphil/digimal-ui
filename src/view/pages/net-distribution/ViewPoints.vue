@@ -2,8 +2,7 @@
   <RecordViewWrapper>
     <sdPageHeader title="Drop Off Points">
       <template #subTitle>
-        <sdButton class="btn-add_new" size="default" type="success">
-        </sdButton>
+        <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
     </sdPageHeader>
     <Main>
@@ -21,14 +20,18 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                <template #point="{ record }">
+                  <template #point="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton>
+                        <sdButton size="small" type="success">
                           <router-link
                             :to="{
                               path: `/receive-nets/`,
-                              query: { id: record.id, name: record.name, campaign_id: record.campaign_id },
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                                campaign_id: record.campaign_id,
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -55,14 +58,14 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-{
+  {
     title: "Drop off Name",
     dataIndex: "name",
     key: "id",
@@ -90,10 +93,9 @@ const columns = [
   },
 ];
 
-
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
 
   setup() {
     const { state, dispatch } = useStore();

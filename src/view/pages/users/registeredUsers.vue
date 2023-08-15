@@ -20,10 +20,10 @@
             &nbsp;&nbsp; Import Master List
           </router-link>
         </sdButton>
-        &nbsp;&nbsp;&nbsp;&nbsp;
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;
         <sdButton class="btn-import" type="success" @click="exportUserData">
           Export Users
-        </sdButton>
+        </sdButton> -->
         <br />
         <br />
         <a-col :xs="24" :sm="24" :md="12">
@@ -120,7 +120,7 @@ const DragAndDropTable = defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
+    // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
     console.log(authHeader());
 
@@ -141,32 +141,32 @@ const DragAndDropTable = defineComponent({
       }
     });
 
-    const exportUserData = async () => {
-      try {
-        const response = await fetch(API_URL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
+    // const exportUserData = async () => {
+    //   try {
+    //     const response = await fetch(API_URL, {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         ...authHeader(),
+    //       },
+    //     });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
+    //     if (!response.ok) {
+    //       throw new Error("Failed to fetch export data");
+    //     }
 
-        const fileBlob = await response.blob();
-        const fileName = "users.csv";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    //     const fileBlob = await response.blob();
+    //     const fileName = "users.csv";
+    //     const link = document.createElement("a");
+    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+    //     link.setAttribute("download", fileName);
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     link.parentNode.removeChild(link);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -204,7 +204,7 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
-      exportUserData,
+      // exportUserData,
     };
   },
 });

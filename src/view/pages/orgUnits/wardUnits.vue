@@ -35,7 +35,7 @@
                   <template #units="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton>
+                        <sdButton size="small" type="success">
                           <router-link
                             :to="{
                               path: `/org-units/locations/${record.org_id}`,
@@ -65,7 +65,7 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
@@ -73,11 +73,11 @@ import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-//   {
-//     title: "Id",
-//     dataIndex: "id",
-//     key: "id",
-//   },
+  //   {
+  //     title: "Id",
+  //     dataIndex: "id",
+  //     key: "id",
+  //   },
   {
     title: "Ward Name",
     dataIndex: "name",
@@ -103,7 +103,7 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -112,7 +112,7 @@ const DragAndDropTable = defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const { params } = useRoute();
-    const searchItem = ref("")
+    const searchItem = ref("");
     onMounted(async () => {
       try {
         const response = await fetch(
@@ -154,20 +154,15 @@ const DragAndDropTable = defineComponent({
     };
 
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.name)
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return regex.test(event.name);
+        });
+      }
     });
 
     return {

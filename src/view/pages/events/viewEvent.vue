@@ -4,7 +4,7 @@
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
           <router-link to="/events/event-create">
-            <sdFeatherIcons type="plus" size="14" /> Start New
+            <sdFeatherIcons type="plus" size="small" /> Start New
             Event</router-link
           >
         </sdButton>
@@ -49,43 +49,36 @@
                           v-if="!record.status"
                         >
                           <span>
-                            <sdFeatherIcons type="clock" size="16" />
+                            <sdFeatherIcons type="clock" size="small" />
                             &nbsp;&nbsp; Start Event
                           </span>
                         </sdButton>
-
+                        &nbsp;&nbsp;
                         <sdButton
                           size="small"
-                          type="success"
+                          type="danger"
                           :disabled="isStarting"
                           v-else
                           @click="closeEvent(record.id)"
                         >
                           <span v-if="!record.status">
-                            <sdFeatherIcons type="clock" size="16" />
+                            <sdFeatherIcons type="clock" size="small" />
                             &nbsp;&nbsp; Start Event
                           </span>
-                          <span class="badge badge-red">
-                            &nbsp;&nbsp; Close Event
-                          </span>
+                          <span> &nbsp;&nbsp; Close Event </span>
                         </sdButton>
+                        &nbsp;&nbsp;
                         <sdButton
                           @click="handleRegistration(record.event_code)"
                           size="small"
                           type="success"
                         >
-                          <sdFeatherIcons type="user-plus" size="17" />
-                          &nbsp;&nbsp; Register
+                          <sdFeatherIcons type="user-plus" size="small" />
+                          &nbsp; Register
                         </sdButton>
-                        <!-- <sdButton
-                          @click="startEvent(record.id)"
-                          size="small"
-                          type="success"
-                        >
-                          <sdFeatherIcons type="clock" size="17" />
-                          &nbsp;&nbsp; Start Event
-                        </sdButton> -->
-                        <sdButton>
+                        &nbsp;&nbsp;
+
+                        <sdButton size="small" type="success">
                           <router-link
                             :to="{
                               path: `/event/details/${record.id}`,
@@ -99,7 +92,7 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
+                            <sdFeatherIcons type="eye" size="small" />
                             &nbsp;&nbsp; View Event
                           </router-link>
                         </sdButton>
@@ -131,7 +124,7 @@
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import { useRouter } from "vue-router";
@@ -153,15 +146,15 @@ const columns = [
     key: "id",
   },
   {
-    title: "Created By",
-    dataIndex: "user_id",
+    title: "Location",
+    dataIndex: "location_id",
     key: "id",
   },
-  {
-    title: "Campaign",
-    dataIndex: "campaign_id",
-    key: "id",
-  },
+  // {
+  //   title: "County",
+  //   dataIndex: "campaign_id",
+  //   key: "id",
+  // },
   {
     title: "Venue",
     dataIndex: "venue",
@@ -177,7 +170,7 @@ const columns = [
 
 const ViewPage = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
   props: {
     event: {
       type: Object,

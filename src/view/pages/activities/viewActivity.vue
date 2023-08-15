@@ -40,7 +40,10 @@
                   <template #activity="{ record }">
                     <td :style="{ 'margin-left': '3px' }">
                       <div class="table-actions">
-                        <sdButton>
+                        <sdButton
+                        size="small"
+                          type="success"
+                          >
                           <router-link
                             :to="{
                               path: `/activity/confirmed-participants/${record.activity_list_id}`,
@@ -54,7 +57,10 @@
                             &nbsp;&nbsp; Confirmed
                           </router-link>
                         </sdButton>
-                        <sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                        size="small"
+                          type="success">
                           <router-link
                             :to="{
                               path: `/activity/pending-confirmation/${record.activity_list_id}`,
@@ -98,7 +104,7 @@
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 
@@ -150,7 +156,7 @@ const columns = [
 
 const ViewPage = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
   methods: {
     showModal() {
       this.visible = true;
