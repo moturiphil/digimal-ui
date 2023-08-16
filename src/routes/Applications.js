@@ -90,8 +90,8 @@ export default [
     component: () => import(/* webpackChunkName: "ecommerce" */ '@/view/crud/fireStore/Index.vue'),
     children: [
       {
-        name: 'distribution',
-        path: 'distribution',
+        name: 'distribution-post',
+        path: 'distribution-post',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DistributionPosts.vue'),
       },
       {
