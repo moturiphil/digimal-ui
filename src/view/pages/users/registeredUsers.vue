@@ -50,7 +50,27 @@
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
-                />
+                >
+                  <!-- <template #users="{ record }">
+                    <td :style="{ 'margin-left': '4px' }">
+                      <div class="table-actions">
+                        <sdButton
+                          size="small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                          v-if="!record.status"
+                        >
+                          <span>
+                            <sdFeatherIcons type="clock" size="small" />
+                            &nbsp;&nbsp; Start Event
+                          </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                      </div>
+                    </td>
+                  </template> -->
+                </a-table>
               </TableWrapper>
             </div>
           </sdCards>
@@ -64,12 +84,13 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import UserService from "../../../services/user.service";
+// import { Switch } from "ant-design-vue";
 
 const columns = [
   {
@@ -107,11 +128,17 @@ const columns = [
     dataIndex: "phone_no",
     key: "id",
   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "users",
+    slots: { customRender: "users" },
+  },
 ];
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main},
 
   setup() {
     const { state, dispatch } = useStore();
@@ -140,33 +167,6 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     });
-
-    // const exportUserData = async () => {
-    //   try {
-    //     const response = await fetch(API_URL, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "users.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -204,7 +204,6 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
-      // exportUserData,
     };
   },
 });

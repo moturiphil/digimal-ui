@@ -61,10 +61,6 @@
                           v-else
                           @click="closeEvent(record.id)"
                         >
-                          <span v-if="!record.status">
-                            <sdFeatherIcons type="clock" size="small" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
                           <span> &nbsp;&nbsp; Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -143,6 +139,11 @@ const columns = [
   {
     title: "Event Code",
     dataIndex: "event_code",
+    key: "id",
+  },
+  {
+    title: "Host",
+    dataIndex: "event_host",
     key: "id",
   },
   {
@@ -225,7 +226,7 @@ const ViewPage = defineComponent({
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.success({
             message: "Event Started",
-            description: "Event has been started successfully",
+            description: data.message,
           });
           await new Promise((resolve) => {
             setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
@@ -236,7 +237,7 @@ const ViewPage = defineComponent({
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.error({
             message: "Event Not Started",
-            description: "Only event host or facilitator can start event",
+            description: data.message,
           });
           // await new Promise((resolve) => {
           //   setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
