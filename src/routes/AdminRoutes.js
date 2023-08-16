@@ -157,11 +157,6 @@ const routes = [
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewEvent.vue"
           ),
       },
-      //   {
-      //     path: 'fireStore-edit/:id',
-      //     name: 'fireStore-edit',
-      //     component: () => import(/* webpackChunkName: "fireStore-edit" */ '@/view/pages/events/createEvent.vue'),
-      //   },
       {
         path: "event-create",
         name: "event-create",

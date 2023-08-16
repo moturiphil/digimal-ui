@@ -371,7 +371,6 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          
           if (user) {
             dataSource.value = response.data.data;
           } else {
