@@ -50,14 +50,14 @@ const routes = [
             /* webpackChunkName: "Business" */ "@/view/pages/users/assignPermission.vue"
           ),
       },
-      // {
-      //   path: "assign-permission/:id",
-      //   name: "assign-permission",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "Business" */ "@/view/pages/users/assignPermission.vue"
-      //     ),
-      // },
+      {
+        path: "review_excel",
+        name: "review_excel",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/excelReview.vue"
+          ),
+      },
       {
         path: "stock-status",
         name: "stock-status",

@@ -82,7 +82,6 @@
           </EChartCard>
         </sdCards>
       </a-col>
-
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless>
           <EChartCard>
@@ -185,7 +184,6 @@
             </div>
           </OverviewSalesCard>
         </sdCards>
-
         <sdCards headless>
           <OverviewSalesCard>
             <div class="icon-box box-secondary">
@@ -201,7 +199,6 @@
             </div>
           </OverviewSalesCard>
         </sdCards>
-
         <sdCards headless>
           <OverviewSalesCard>
             <div class="icon-box box-secondary">
@@ -238,17 +235,14 @@ import { CardBarChart2, EChartCard } from "./style";
 import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
-import { defineComponent} from "vue";  //defineAsyncComponent 
+import { defineComponent} from "vue";  //defineAsyncComponent
 import authHeader from "../../services/auth-header";
-
 // const IncomeAndExpenses = defineAsyncComponent(() =>
 //   import("./overview/business/IncomeAndExpenses")
 // );
-
 // const WebsitePerformance = defineAsyncComponent(() =>
 //   import("./overview/performance/WebsitePerformance")
 // );
-
 const chartOptions = {
   legend: {
     display: false,
@@ -281,7 +275,6 @@ const chartOptions = {
     ],
   },
 };
-
 export default defineComponent({
   name: "CRM",
   components: {
@@ -305,7 +298,6 @@ export default defineComponent({
     const activities = ref(0);
     // const actual_allocation = ref(0);
     // const system_allocation = ref(0);
-
     // console.log(sessionStorage.getItem("user"));
     onMounted(async () => {
       try {
@@ -331,7 +323,6 @@ export default defineComponent({
         console.error(error);
       }
     });
-
     return {
       chartOptions,
       active_events,
@@ -357,3 +348,12 @@ export default defineComponent({
   color: white;
 }
 </style>
+
+
+
+
+
+
+
+
+

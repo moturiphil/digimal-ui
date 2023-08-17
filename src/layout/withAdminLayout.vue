@@ -216,7 +216,7 @@ import HeaderSearch from "../components/header-search/HeaderSearch";
 
 import AuthInfo from "../components/utilities/auth-info/info";
 import AsideItems from "./Aside";
-import TopMenu from "./TopMenuItems";
+// import TopMenu from "./TopMenuItems";
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 import "vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css";
 import { computed, ref, defineComponent } from "vue";
@@ -238,7 +238,7 @@ export default defineComponent({
     // TopMenuSearch,
     AuthInfo,
     AsideItems,
-    TopMenu,
+    // TopMenu,
     PerfectScrollbar,
   },
   setup() {

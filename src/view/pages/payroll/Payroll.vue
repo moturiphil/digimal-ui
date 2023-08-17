@@ -678,8 +678,8 @@ export default defineComponent({
 
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user);
-    console.log(user.user[0].role_id);
-    role_id.value = user.user[0].role_id;
+    // console.log(user.user[0].role_id);
+    role_id.value = user.user.role_id;
 
     const isValidator = computed(() => {
       return role_id.value === 4;
