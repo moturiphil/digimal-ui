@@ -63,7 +63,6 @@
 import { CardBarChart2, OverviewSalesCard } from "../dashboard/style";
 import { Main } from "../styled";
 // import { defineAsyncComponent } from 'vue';
-import SvgConverter from "@/components/utilities/SvgConverter.vue";
 import { notification } from "ant-design-vue";
 
 import authHeader from "../../services/auth-header";
@@ -74,7 +73,6 @@ const Sales = {
     Main,
     CardBarChart2,
     OverviewSalesCard,
-    SvgConverter,
   },
   data() {
     // let url = this.currentUrl.replace("/auth/activity-confirm?", "act_part_cfm?");
