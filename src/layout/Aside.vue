@@ -146,7 +146,7 @@
           <sdFeatherIcons type="layers" /><span>Inventory</span>
         </template>
         <a-menu-item key="widgetNetsReceived">
-          <router-link to="/nets/delivered"> Post Nets </router-link>
+          <router-link to="/nets/nets-delivered"> Post Nets </router-link>
         </a-menu-item>
         <a-menu-item key="widgetNetsDropOff">
           <router-link to="/nets/distribution-point-nets">

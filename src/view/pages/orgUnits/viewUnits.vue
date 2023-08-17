@@ -35,7 +35,7 @@
                   <template #units="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton size="small" type="success">
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/org-units/sub-counties/${record.org_id}`,

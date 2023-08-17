@@ -155,27 +155,6 @@ const AddNew = defineComponent({
       campaigns: [],
     });
 
-    //get posts
-    // const getPosts = async () => {
-    //   const response = await fetch(
-    //     `${process.env.VUE_APP_BASE_URL}/posts_data`,
-    //     {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     }
-    //   );
-    //   const data = await response.json();
-    //   console.log(data.data.data);
-    //   this.posts = data.data.data;
-    //   // this.posts = data.map((post) => ({
-    //   //   ...post,
-    //   // }));
-    //   this.loading = false;
-    // };
-
     //counties
     const getVillages = async () => {
       const response = await fetch(

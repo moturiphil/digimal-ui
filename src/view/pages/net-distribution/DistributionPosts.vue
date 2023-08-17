@@ -61,7 +61,7 @@
                         <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
-                              path: `/nets/receive-nets/`,
+                              path: `/nets/receive-post-nets`,
                               query: { id: record.id, name: record.name},
                             }"
                             class="btn-icon"
@@ -90,7 +90,7 @@
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
                           <!-- <sdFeatherIcons type="mail"    /> -->
-                          &nbsp;&nbsp; Inform HH
+                          &nbsp;&nbsp; Message HH's
                         </sdButton>
                       </div>
                     </td>

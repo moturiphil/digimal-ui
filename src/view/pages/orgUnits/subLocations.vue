@@ -49,7 +49,7 @@
                       <td>
                         <div class="table-actions">
                           <sdButton
-                          size="small"
+                          size="extra-small"
                           type="success">
                             <router-link
                               :to="{
