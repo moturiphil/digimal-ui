@@ -239,10 +239,6 @@ const ViewPage = defineComponent({
             message: "Event Not Started",
             description: data.message,
           });
-          // await new Promise((resolve) => {
-          //   setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
-          // location.reload();
         }
       } catch (error) {
         console.error(error);
@@ -281,9 +277,6 @@ const ViewPage = defineComponent({
             message: "Event Not Closed",
             description: "Only event host or facilitator can close event",
           });
-          // await new Promise((resolve) => {
-          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
         }
         // location.reload();
       } catch (error) {
@@ -400,10 +393,6 @@ const ViewPage = defineComponent({
         router.push(`/event/register/${eventId}`);
       } catch (error) {
         console.error(error);
-        // Modal.error({
-        //   title: "Registration failed",
-        //   content: "Invalid event code",
-        // });
       }
     };
 
