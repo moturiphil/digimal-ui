@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Create Post">
-    <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Create Post">
+      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -251,7 +251,7 @@ const AddNew = defineComponent({
       post_code: Yup.string().nullable(),
       isFacility: Yup.string().required("IsFacility is required"),
       villages: Yup.array()
-        .min(1, "At least 1 facilitator required")
+        .min(1, "At least 1 Village required")
         .required(),
     });
 

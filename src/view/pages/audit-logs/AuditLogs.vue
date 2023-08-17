@@ -83,7 +83,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "Auditable Type",
+    title: "Functionality",
     dataIndex: "auditable_type",
     key: "id",
   },

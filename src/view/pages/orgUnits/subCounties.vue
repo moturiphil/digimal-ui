@@ -14,7 +14,8 @@
             type="text"
             name="dataSource"
             placeholder="Search by name"
-          /></div>
+          />
+        </div>
       </template>
     </sdPageHeader>
     <Main>
@@ -29,13 +30,13 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
-                  :dataSource="results" 
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <template #units="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton>
+                        <sdButton size="small" type="success">
                           <router-link
                             :to="{
                               path: `/org-units/wards/${record.org_id}`,
@@ -65,7 +66,7 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
@@ -103,7 +104,7 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -153,20 +154,15 @@ const DragAndDropTable = defineComponent({
       onChange: onSelectChange,
     };
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.name)
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return regex.test(event.name);
+        });
+      }
     });
 
     return {

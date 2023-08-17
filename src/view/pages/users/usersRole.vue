@@ -54,7 +54,7 @@
                   <template #action="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton class="btn-import green" type="success">
+                        <sdButton type="success" size="small">
                           <router-link
                             :to="`/assign-permission/${record.id}`"
                             class="btn-icon"
@@ -81,7 +81,7 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";
@@ -109,7 +109,7 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main},
 
   setup() {
     const { state, dispatch } = useStore();
