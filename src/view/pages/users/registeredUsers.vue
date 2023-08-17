@@ -20,10 +20,6 @@
             &nbsp;&nbsp; Import Master List
           </router-link>
         </sdButton>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;
-        <sdButton class="btn-import" type="success" @click="exportUserData">
-          Export Users
-        </sdButton> -->
         <br />
         <br />
         <a-col :xs="24" :sm="24" :md="12">
