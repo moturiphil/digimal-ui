@@ -113,7 +113,6 @@
           <a-col :md="0" :sm="24" :xs="24">
             <div class="small-screen-headerRight">
               <SmallScreenSearch :hide="searchHide" :darkMode="darkMode">
-                <!-- <HeaderSearch /> -->
               </SmallScreenSearch>
               <SmallScreenAuthInfo :hide="hide" :darkMode="darkMode">
                 <AuthInfo :rtl="rtl" />
@@ -212,8 +211,6 @@ import {
   SmallScreenAuthInfo,
   // TopMenuSearch,
 } from "./style";
-// import HeaderSearch from "../components/header-search/HeaderSearch";
-
 import AuthInfo from "../components/utilities/auth-info/info";
 import AsideItems from "./Aside";
 // import TopMenu from "./TopMenuItems";
@@ -232,7 +229,6 @@ export default defineComponent({
     Footer,
     Sider,
     Content,
-    // HeaderSearch,
     SmallScreenSearch,
     SmallScreenAuthInfo,
     // TopMenuSearch,
