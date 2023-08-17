@@ -39,10 +39,10 @@
                   :columns="columns"
                 >
                   <template #events="{ record }">
-                    <td :style="{ 'margin-left': '4px' }">
+                    <td>
                       <div class="table-actions">
                         <sdButton
-                          size="small"
+                          size="extra-small"
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
@@ -55,22 +55,18 @@
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
-                          size="small"
+                          size="extra-small"
                           type="danger"
                           :disabled="isStarting"
                           v-else
                           @click="closeEvent(record.id)"
                         >
-                          <span v-if="!record.status">
-                            <sdFeatherIcons type="clock" size="small" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
                           <span> &nbsp;&nbsp; Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
                           @click="handleRegistration(record.event_code)"
-                          size="small"
+                          size="extra-small"
                           type="success"
                         >
                           <sdFeatherIcons type="user-plus" size="small" />
@@ -78,7 +74,7 @@
                         </sdButton>
                         &nbsp;&nbsp;
 
-                        <sdButton size="small" type="success">
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/event/details/${record.id}`,
@@ -146,8 +142,13 @@ const columns = [
     key: "id",
   },
   {
-    title: "Created By",
-    dataIndex: "user_id",
+    title: "Host",
+    dataIndex: "event_host",
+    key: "id",
+  },
+  {
+    title: "Location",
+    dataIndex: "location_id",
     key: "id",
   },
   // {
@@ -225,7 +226,7 @@ const ViewPage = defineComponent({
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.success({
             message: "Event Started",
-            description: "Event has been started successfully",
+            description: data.message,
           });
           await new Promise((resolve) => {
             setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
@@ -236,12 +237,8 @@ const ViewPage = defineComponent({
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.error({
             message: "Event Not Started",
-            description: "Only event host or facilitator can start event",
+            description: data.message,
           });
-          // await new Promise((resolve) => {
-          //   setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
-          // location.reload();
         }
       } catch (error) {
         console.error(error);
@@ -280,9 +277,6 @@ const ViewPage = defineComponent({
             message: "Event Not Closed",
             description: "Only event host or facilitator can close event",
           });
-          // await new Promise((resolve) => {
-          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
         }
         // location.reload();
       } catch (error) {
@@ -370,7 +364,6 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          
           if (user) {
             dataSource.value = response.data.data;
           } else {
@@ -400,10 +393,6 @@ const ViewPage = defineComponent({
         router.push(`/event/register/${eventId}`);
       } catch (error) {
         console.error(error);
-        // Modal.error({
-        //   title: "Registration failed",
-        //   content: "Invalid event code",
-        // });
       }
     };
 
@@ -460,18 +449,3 @@ const ViewPage = defineComponent({
 
 export default ViewPage;
 </script>
-
-<style>
-.badge-green {
-  background-color: #1ec997;
-  color: white;
-  padding: 4px;
-  border-radius: 3px;
-}
-.badge-red {
-  background-color: #f64e60;
-  color: white;
-  padding: 4px;
-  border-radius: 3px;
-}
-</style>

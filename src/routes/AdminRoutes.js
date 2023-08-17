@@ -157,11 +157,6 @@ const routes = [
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewEvent.vue"
           ),
       },
-      //   {
-      //     path: 'fireStore-edit/:id',
-      //     name: 'fireStore-edit',
-      //     component: () => import(/* webpackChunkName: "fireStore-edit" */ '@/view/pages/events/createEvent.vue'),
-      //   },
       {
         path: "event-create",
         name: "event-create",
@@ -238,7 +233,7 @@ const routes = [
           import(
             /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/importOrgUnit.vue"
           ),
-      }, 
+      },
       // {
       //   path: "sub-location-create",
       //   name: "sub-location-create",
@@ -342,7 +337,7 @@ const routes = [
     name: "activity-payroll-matrix",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue"   // activity/view-matrix/
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue" // activity/view-matrix/
       ),
   },
   {

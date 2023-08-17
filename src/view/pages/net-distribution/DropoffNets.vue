@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Received Nets at Drop Point">
-    <sdButton class="btn-add_new" size="default" key="1" type="success">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Received Nets at Drop Point">
+      <sdButton class="btn-add_new" size="default" key="1" type="success">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -155,27 +155,6 @@ const AddNew = defineComponent({
       campaigns: [],
     });
 
-    //get posts
-    // const getPosts = async () => {
-    //   const response = await fetch(
-    //     `${process.env.VUE_APP_BASE_URL}/posts_data`,
-    //     {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     }
-    //   );
-    //   const data = await response.json();
-    //   console.log(data.data.data);
-    //   this.posts = data.data.data;
-    //   // this.posts = data.map((post) => ({
-    //   //   ...post,
-    //   // }));
-    //   this.loading = false;
-    // };
-
     //counties
     const getVillages = async () => {
       const response = await fetch(
@@ -255,7 +234,7 @@ const AddNew = defineComponent({
         .then((response) => response.json())
         .then(({ status, data }) => {
           console.log(data);
-          if (status == true ) {
+          if (status == true) {
             router.push("/nets/drop-off");
             notification["success"]({
               message: "Nets Received",

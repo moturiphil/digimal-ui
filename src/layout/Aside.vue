@@ -125,11 +125,6 @@
             List Dropoff Point
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetNetsDropOff">
-          <router-link to="/nets/distribution-point-nets">
-            Nets at Dropoff
-          </router-link>
-        </a-menu-item>
       </a-sub-menu>
 
       <a-sub-menu key="nets-distribution">
@@ -140,26 +135,33 @@
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>
         <a-menu-item key="widgetDistributionPost">
-          <router-link to="/nets/distribution">
+          <router-link to="/nets/distribution-post">
             Distribution Posts
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetReceiveNets">
-          <router-link to="/nets/receive-nets"> Receive Nets </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetNetsReceived">
-          <router-link to="/nets/delivered"> Nets Received </router-link>
-        </a-menu-item>
       </a-sub-menu>
 
-      <a-menu-item key="">
-        <router-link to="/stock-status"
-          ><sdFeatherIcons type="bar-chart-2" /><span>Stock Status</span>
-        </router-link>
-      </a-menu-item>
+      <a-sub-menu key="inventory">
+        <template v-slot:title>
+          <sdFeatherIcons type="layers" /><span>Inventory</span>
+        </template>
+        <a-menu-item key="widgetNetsReceived">
+          <router-link to="/nets/nets-delivered"> Post Nets </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetNetsDropOff">
+          <router-link to="/nets/distribution-point-nets">
+            Dropoff-Point Nets
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="">
+          <router-link to="/stock-status"
+            >Stock Status
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-sub-menu v-if="isLevelOne" key="payroll">
         <template v-slot:title>
-          <sdFeatherIcons type="share-2" /><span>Payroll</span>
+          <sdFeatherIcons type="credit-card" /><span>Payroll</span>
         </template>
         <!-- <a-menu-item  key="widgetPayrollDetails">
           <router-link to="/view-payroll">Payroll Details </router-link>
@@ -178,7 +180,7 @@
       </a-sub-menu>
       <a-sub-menu key="user-management">
         <template v-slot:title>
-          <sdFeatherIcons type="share-2" /><span>User Management</span>
+          <sdFeatherIcons type="users" /><span>User Management</span>
         </template>
         <a-menu-item key="widgetMasterList">
           <router-link to="/masterlist">Masterlist </router-link>
@@ -319,7 +321,7 @@ export default defineComponent({
       current,
       role_id,
       isLevelOne,
-      isAdmin, 
+      isAdmin,
     };
   },
 });

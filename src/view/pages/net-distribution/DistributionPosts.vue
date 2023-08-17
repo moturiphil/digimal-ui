@@ -28,42 +28,69 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
+                  :pagination="{ pageSize: 200, showSizeChanger: true }"
                   :dataSource="results"
                   :columns="columns"
                 >
-                <template #activities="{ record }">
-                    <td :style="{ 'margin-left': '3px' }">
+                  <template #activities="{ record }">
+                    <td>
                       <div class="table-actions">
-                        <sdButton>
+                        <sdButton
+                          size="extra-small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startDistribution(record.id)"
+                          v-if="!record.status"
+                        >
+                          <span>
+                            <sdFeatherIcons type="clock" size="extra-small" />
+                            &nbsp;&nbsp; Start Distribution
+                          </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          size="small"
+                          type="danger"
+                          :disabled="isStarting"
+                          v-else
+                          @click="closeDistribution(record.id)"
+                        >
+                          <span> &nbsp;&nbsp; Close Distribution </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/nets/receive-post-nets`,
+                              query: { id: record.id, name: record.name},
+                            }"
+                            class="btn-icon"
+                            type="success"
+                            shape="circle"
+                          >
+                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
+                            &nbsp;&nbsp; Receive Nets
+                          </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
                               path: `/assign-worker`,
                               query: { id: record.id },
                             }"
                             class="btn-icon"
-                            type="info"
+                            type="success"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="pen-tool" size="16" />
+                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
                             &nbsp;&nbsp; Assign Post Workers
                           </router-link>
                         </sdButton>
-                        <sdButton>
-                          <!-- <router-link
-                            :to="{
-                              path: `/inform-hh/${record.id}`,
-                              query: { id: record.event_code },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="send" size="16" />
-                            &nbsp;&nbsp; Inform HH Net Collection
-                          </router-link> -->
-                          <sdFeatherIcons type="send" size="16" />
-                          &nbsp;&nbsp; Inform HH Net Collection
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small">
+                          <!-- <sdFeatherIcons type="mail"    /> -->
+                          &nbsp;&nbsp; Message HH's
                         </sdButton>
                       </div>
                     </td>
@@ -82,18 +109,19 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { notification } from "ant-design-vue";
 
 const columns = [
-  {
-    title: "Distribution Id",
-    dataIndex: "id",
-    key: "id",
-  },
+  // {
+  //   title: "Distribution Id",
+  //   dataIndex: "id",
+  //   key: "id",
+  // },
   {
     title: "Distribution Post",
     dataIndex: "name",
@@ -119,7 +147,15 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
+
+  data() {
+    return{
+      isStarting: false,
+      distributionStatus: {},
+      posts: [],
+    }
+  },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -143,6 +179,15 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
+        console.log('/*...................................*/');
+        console.log('******************************');
+        console.log(dataSource.value);
+        this.distributionStatus = {};
+        console.log(this.distributionStatus);
+        for(const post of dataSource.value) {
+          this.distributionStatus[post.id] = post.status
+          console.log(post.status);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -171,22 +216,19 @@ const DragAndDropTable = defineComponent({
     };
 
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.name) ||
-              regex.test(event.post_code) ||
-              regex.test(event.post_supervisor_user_id) 
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return (
+            regex.test(event.name) ||
+            regex.test(event.post_code) ||
+            regex.test(event.post_supervisor_user_id)
+          );
+        });
+      }
     });
 
     return {
@@ -201,6 +243,93 @@ const DragAndDropTable = defineComponent({
       columns,
     };
   },
+
+  methods: {
+    
+    async startDistribution(id) {
+      try {
+        this.isStarting = true;
+        console.log(id);
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/start_distribution/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status === true) {
+          // this.eventStatus[id] = true;
+          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.success({
+            message: "Distribution Started",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          // this.eventStatus[id] = false;
+          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Distribution Not Started",
+            description: data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = false;
+      }
+    },
+    async closeDistribution(id) {
+      try {
+        this.isStarting = true;
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/close_distribution/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log('******************************************');
+        console.log('******************************************');
+        console.log(data);
+        if (data.status === true) {
+          // this.eventStatus[id] = true;
+          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          // notify the user
+          notification.success({
+            message: "Distribution Closed",
+            description: "Event has been closed successfully",
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          this.eventStatus[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Event Not Closed",
+            description: "Only event host or facilitator can close event",
+          });
+          // await new Promise((resolve) => {
+          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          // });
+        }
+        // location.reload();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = true;
+      }
+    },
+  },
+
 });
 
 export default DragAndDropTable;
