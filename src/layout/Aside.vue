@@ -219,7 +219,7 @@ import {
 import VueTypes from "vue-types";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
-import versions from "../demoData/changelog.json";
+// import versions from "../demoData/changelog.json";
 // import authHeader from "../services/auth-header";
 // import { AuthService } from "../services/auth.service";
 
@@ -316,7 +316,7 @@ export default defineComponent({
       modeChangeLight,
       modeChangeTopNav,
       modeChangeSideNav,
-      versions,
+      // versions,
       level_id,
       current,
       role_id,

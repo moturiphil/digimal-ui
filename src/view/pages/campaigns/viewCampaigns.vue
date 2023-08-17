@@ -27,7 +27,6 @@
                   v-for="(item, index) in dataSource"
                   :key="index"
                 >
-                  <CardStyleWrapper>
                     <sdCards :border="false" :title="item.name">
                       <p>Start Date: {{ item.start_date }}</p>
                       <p>End Date: {{ item.end_date }}</p>
@@ -49,7 +48,6 @@
                         </td>
                       </template>
                     </sdCards>
-                  </CardStyleWrapper>
                 </a-col>
               </a-row>
             </div>
@@ -62,7 +60,6 @@
 
 <script>
 import { Main } from "../../styled";
-import { CardStyleWrapper } from "../../uiElements/ui-elements-styled";
 import { defineComponent, computed, onMounted, ref, reactive } from "vue";
 import { useStore } from "vuex";
 import authHeader from "../../../services/auth-header";
@@ -71,7 +68,6 @@ export default defineComponent({
   name: "Cards",
   components: {
     Main,
-    CardStyleWrapper,
   },
   data() {
     return {};
