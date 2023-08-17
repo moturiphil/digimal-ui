@@ -36,14 +36,14 @@
                     <td>
                       <div class="table-actions">
                         <sdButton
-                          size="small"
+                          size="extra-small"
                           type="success"
                           :disabled="isStarting"
                           @click="startDistribution(record.id)"
                           v-if="!record.status"
                         >
                           <span>
-                            <sdFeatherIcons type="clock" size="small" />
+                            <sdFeatherIcons type="clock" size="extra-small" />
                             &nbsp;&nbsp; Start Distribution
                           </span>
                         </sdButton>
@@ -61,8 +61,8 @@
                         <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
-                              path: `/assign-worker`,
-                              query: { id: record.id },
+                              path: `/nets/receive-nets/`,
+                              query: { id: record.id, name: record.name},
                             }"
                             class="btn-icon"
                             type="success"

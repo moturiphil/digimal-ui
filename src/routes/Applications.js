@@ -96,7 +96,7 @@ export default [
       },
       {
         name: 'delivered',
-        path: 'delivered',
+        path: 'nets-delivered',
         component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/NetDeliveries.vue'),
       },
       // {
@@ -143,7 +143,7 @@ export default [
   },
   {
     name: 'receive-nets/',
-    path: 'receive-nets',
+    path: 'receive-nets/:id',
     component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/DropoffNets.vue'),
   },
   {

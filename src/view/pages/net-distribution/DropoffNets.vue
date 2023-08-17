@@ -1,10 +1,10 @@
 <template>
-  <sdPageHeader title="Received Nets at Drop Point">
-    <sdButton class="btn-add_new" size="default" key="1" type="success">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Received Nets at Drop Point">
+      <sdButton class="btn-add_new" size="default" key="1" type="success">
+        <router-link to="/crud/axios-view">View All</router-link>
+      </sdButton>
+    </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -255,7 +255,7 @@ const AddNew = defineComponent({
         .then((response) => response.json())
         .then(({ status, data }) => {
           console.log(data);
-          if (status == true ) {
+          if (status == true) {
             router.push("/nets/drop-off");
             notification["success"]({
               message: "Nets Received",
