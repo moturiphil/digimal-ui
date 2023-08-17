@@ -36,14 +36,14 @@
                     <td>
                       <div class="table-actions">
                         <sdButton
-                          size="small"
+                          size="extra-small"
                           type="success"
                           :disabled="isStarting"
-                          @click="startEvent(record.id)"
+                          @click="startDistribution(record.id)"
                           v-if="!record.status"
                         >
                           <span>
-                            <sdFeatherIcons type="clock" size="small" />
+                            <sdFeatherIcons type="clock" size="extra-small" />
                             &nbsp;&nbsp; Start Distribution
                           </span>
                         </sdButton>
@@ -61,8 +61,8 @@
                         <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
-                              path: `/assign-worker`,
-                              query: { id: record.id },
+                              path: `/nets/receive-post-nets`,
+                              query: { id: record.id, name: record.name},
                             }"
                             class="btn-icon"
                             type="success"
@@ -90,7 +90,7 @@
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
                           <!-- <sdFeatherIcons type="mail"    /> -->
-                          &nbsp;&nbsp; Inform HH
+                          &nbsp;&nbsp; Message HH's
                         </sdButton>
                       </div>
                     </td>
@@ -152,93 +152,9 @@ const DragAndDropTable = defineComponent({
   data() {
     return{
       isStarting: false,
+      distributionStatus: {},
+      posts: [],
     }
-  },
-
-  methods: {
-    async startDistribution(id) {
-      try {
-        this.isStarting = true;
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/start_distribution/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.status === true) {
-          this.eventStatus[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          notification.success({
-            message: "Event Started",
-            description: data.message,
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          this.eventStatus[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          notification.error({
-            message: "Event Not Started",
-            description: data.message,
-          });
-          // await new Promise((resolve) => {
-          //   setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
-          // location.reload();
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.isStarting = false;
-      }
-    },
-    async closeDistribution(id) {
-      try {
-        this.isStarting = true;
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/close_distribution/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.status === true) {
-          this.eventStatus[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          // notify the user
-          notification.success({
-            message: "Event Closed",
-            description: "Event has been closed successfully",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          this.eventStatus[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          notification.error({
-            message: "Event Not Closed",
-            description: "Only event host or facilitator can close event",
-          });
-          // await new Promise((resolve) => {
-          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
-        }
-        // location.reload();
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.isStarting = true;
-      }
-    },
   },
 
   setup() {
@@ -263,6 +179,15 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
+        console.log('/*...................................*/');
+        console.log('******************************');
+        console.log(dataSource.value);
+        this.distributionStatus = {};
+        console.log(this.distributionStatus);
+        for(const post of dataSource.value) {
+          this.distributionStatus[post.id] = post.status
+          console.log(post.status);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -318,6 +243,93 @@ const DragAndDropTable = defineComponent({
       columns,
     };
   },
+
+  methods: {
+    
+    async startDistribution(id) {
+      try {
+        this.isStarting = true;
+        console.log(id);
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/start_distribution/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.status === true) {
+          // this.eventStatus[id] = true;
+          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.success({
+            message: "Distribution Started",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          // this.eventStatus[id] = false;
+          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Distribution Not Started",
+            description: data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = false;
+      }
+    },
+    async closeDistribution(id) {
+      try {
+        this.isStarting = true;
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/close_distribution/${id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log('******************************************');
+        console.log('******************************************');
+        console.log(data);
+        if (data.status === true) {
+          // this.eventStatus[id] = true;
+          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          // notify the user
+          notification.success({
+            message: "Distribution Closed",
+            description: "Event has been closed successfully",
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
+        } else {
+          this.eventStatus[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          notification.error({
+            message: "Event Not Closed",
+            description: "Only event host or facilitator can close event",
+          });
+          // await new Promise((resolve) => {
+          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          // });
+        }
+        // location.reload();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.isStarting = true;
+      }
+    },
+  },
+
 });
 
 export default DragAndDropTable;

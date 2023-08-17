@@ -364,7 +364,7 @@ const AddNew = defineComponent({
             .then((data) => {
               store.commit("setIsSubmitting", false);
               if (data.success == true) {
-                router.push("/nets/distribution");
+                router.push("/nets/distribution-post");
                 notification["success"]({
                   message: "Post Created",
                   description: `Post Created successfully.`,
