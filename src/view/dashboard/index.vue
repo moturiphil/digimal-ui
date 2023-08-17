@@ -232,7 +232,7 @@
 </template>
 <script>
 import { CardBarChart2, EChartCard } from "./style";
-import Chart from "../../components/utilities/chartjs";
+// import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
 import { defineComponent} from "vue";  //defineAsyncComponent
@@ -281,7 +281,7 @@ export default defineComponent({
     Main,
     CardBarChart2,
     EChartCard,
-    Chart,
+    // Chart,
     // WebsitePerformance,
     // IncomeAndExpenses,
   },
