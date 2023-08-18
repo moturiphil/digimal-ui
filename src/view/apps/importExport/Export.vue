@@ -1,18 +1,18 @@
 <template>
-  <sdPageHeader title="Export">
-    <template v-slot:buttons>
-      <div class="page-header-actions">
-        <sdCalendarButton />
-        <sdExportButton />
-        <sdShareButton />
-        <sdButton size="small" type="primary">
-          <sdFeatherIcons type="plus" size="14" />
-          Add New
-        </sdButton>
-      </div>
-    </template>
-  </sdPageHeader>
   <Main>
+    <sdPageHeader title="Export">
+      <template v-slot:buttons>
+        <div class="page-header-actions">
+          <sdCalendarButton />
+          <sdExportButton />
+          <sdShareButton />
+          <sdButton size="small" type="primary">
+            <sdFeatherIcons type="plus" size="14" />
+            Add New
+          </sdButton>
+        </div>
+      </template>
+    </sdPageHeader>
     <a-row :gutter="25">
       <a-col :sm="24" :xs="24">
         <ExportStyleWrap>

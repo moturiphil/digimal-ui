@@ -251,7 +251,7 @@ const AddNew = defineComponent({
       post_code: Yup.string().nullable(),
       isFacility: Yup.string().required("IsFacility is required"),
       villages: Yup.array()
-        .min(1, "At least 1 facilitator required")
+        .min(1, "At least 1 Village required")
         .required(),
     });
 
@@ -364,7 +364,7 @@ const AddNew = defineComponent({
             .then((data) => {
               store.commit("setIsSubmitting", false);
               if (data.success == true) {
-                router.push("/nets/distribution");
+                router.push("/nets/distribution-post");
                 notification["success"]({
                   message: "Post Created",
                   description: `Post Created successfully.`,

@@ -23,7 +23,7 @@
                   <template #point="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton size="small" type="success">
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/receive-nets/`,

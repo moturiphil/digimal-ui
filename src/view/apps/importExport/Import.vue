@@ -1,89 +1,171 @@
 <template>
-  <Main>
-    <sdPageHeader title="Import Master List">
-      <template v-slot:buttons>
-        <!-- <div class="page-header-actions">
-          <sdCalendarButton />
-          <sdExportButton />
-          <sdShareButton />
-          <sdButton size="small" type="primary">
-            <sdFeatherIcons type="plus" size="14" />
-            Add New
-          </sdButton>
-        </div> -->
-      </template>
-    </sdPageHeader>
-    <a-row :gutter="25">
-      <a-col :sm="24" :xs="24">
-        <ImportStyleWrap>
-          <div class="sDash_import-box">
-            <a-row :gutter="15">
-              <a-col :xs="24">
-                <div class="sDash_import-inner">
-                  <a-upload-dragger v-bind="fileUploadProps">
-                    <p class="ant-upload-drag-icon">
-                      <sdFeatherIcons type="upload" size="50" />
-                    </p>
-                    <sdHeading as="h4" class="ant-upload-text">
-                      <span> Drop File</span>
-                      <span class="ant-upload-hint">
-                        or <span>Browse</span>
-                      </span>
-                    </sdHeading>
-                  </a-upload-dragger>
-                </div>
-              </a-col>
-            </a-row>
-          </div>
-        </ImportStyleWrap>
-      </a-col>
-    </a-row>
-  </Main>
-</template>
-<script lang="jsx">
-import { Main, ImportStyleWrap } from "../../styled";
-import { message } from "ant-design-vue";
-import { ref, defineComponent } from "vue";
-import authHeader from "../../../../src/services/auth-header.js";
+  <RecordViewWrapper>
+      <sdPageHeader title="Review Excel">
+          <template id="buttons"></template>
+      </sdPageHeader>
+      <sdPageBody>
+          <Main>
+              <a-row :gutter="16">
+                  <a-col class="w-100" :md="24">
+                      <input type="file" @change="handleFile" /> 
+                      <div v-if="dataSource.length" >
+  
+                          <TableWrapper class="table-data-view table-responsive">
+                              <a-table
+                              :pagination="{ pageSize: 100, showSizeChanger: true }"
+                              :dataSource="dataSource"
+                              :columns="columns"
+                              >
+                              <template #bodyCell="{column, record}" >
+                                  <!-- <template v-if="column.key == 1">
 
-const Import = defineComponent({
-  name: "Import",
-  components: { Main, ImportStyleWrap },
-  setup() {
-    const file = ref(null);
-    const list = ref(null);
-    const submitValues = ref({});
-    const fileUploadProps = {
-      name: "file",
-      multiple: true,
-      action: `${process.env.VUE_APP_BASE_URL}/master-import`,
-      headers: authHeader(),
-      onChange(info) {
-        const { status } = info.file;
-        console.log(status);
-        if (status !== "uploading") {
-          file.value = info.file;
-          list.value = info.fileList;
-        }
-        if (status === "done") {
-          message.success(`${info.file.name} file uploaded successfully.`);
-        } else if (status === "error") {
-          message.error(`${info.file.name} file upload failed.`);
-        }
+                                      <template v-for="(error, index) in errors" :key="index">
+                                          <template v-if="error.key == record['ID']">
+                                              <p style="color: red">{{ record['Phone No.'] }}</p>
+                                          </template>
+                                      </template>
+
+                                  </template> -->
+                                  <template v-if="column.key == 0">
+                                  <template v-for="(error, index) in errors" :key="index">
+                                          <template v-if="error.key == record['ID']">
+                                              <p style="color: red">{{ record['ID'] }}</p>
+                                          </template>
+                                  </template>
+                                  </template>
+  
+                              </template>
+                              </a-table>
+                          </TableWrapper>    
+                      </div>
+                  </a-col>
+              </a-row>
+          </Main>
+      </sdPageBody>
+  </RecordViewWrapper>
+  </template>
+  <script>
+  import { notification } from "ant-design-vue";
+  import { RecordViewWrapper } from "../../pages/style";
+  import { Main, TableWrapper } from "../../styled";
+  import { defineComponent, ref } from "vue";
+  import * as XLSX from "xlsx";
+  import authHeader from "../../../services/auth-header";
+  const importExport = defineComponent({
+      name: "ReviewExcel", 
+      components: {
+          RecordViewWrapper,
+          Main,
+          TableWrapper
       },
-      listType: "picture",
-      defaultFileList: [],
-      showUploadList: {
-        showRemoveIcon: true,
-      },
-    };
+  
+     data(){
+      const dataSource = ref([]);
+      const columns = ref([]);
+      let formData = new FormData();    
+      const handleSubmit = (file) => {
+        formData.append("file", file);
 
-    return {
-      submitValues,
-      fileUploadProps,
-    };
-  },
-});
+        fetch(`${process.env.VUE_APP_BASE_URL}/master-import`, {
+        method: "POST",
+        headers: {
+            ...authHeader(),
+        },
+        body: formData,
+        })
+        .then((response) => response.json())
+        .then(({ success, message }) => {
+            if (success) {
+            notification["success"]({
+                message: "Success",
+                description: `${message}`, 
+                duration: 5.5,
+            });
+            }
+        })
+        .catch((error) => {
+            notification["error"]({
+                message: "Error",
+                description: `Error: ${error}`,
+            })
+        });
+        };
+  
+      const handleFile = (event)=>{
+        const file = event.target.files[0];
+        const reader = new FileReader();
+  
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          const passedData = XLSX.utils.sheet_to_json(worksheet);
+          dataSource.value = passedData;
+  
+          const heads = parsedData.shift().map((item, index) => {
+                  return {
+                          title: item,
+                          dataIndex: item,
+                          key: index,
+                      }
+                  })
 
-export default Import;
-</script>
+            const error = [];
+            const regex = /^(?:254|\+254)?((1|7)(?:(?:[1294][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
+
+            passedData.forEach((item) => {
+            if (`${item['Phone No.']}`.match(regex) == null) {
+                if (!error.find(entry => entry.key === item['ID'])) {
+                error.push({ key: item['ID'], value: [`${item['Phone No.']}` + " is not a valid phone number"] });
+                } else {
+                const existingEntry = error.find(entry => entry.key === item['ID']);
+                existingEntry.value.push(`${item['Phone No.']}` + " is not a valid phone number");
+                }
+            }
+            
+            if (
+                item['Level (National/County/Sub-county)'] == undefined ||
+                item['Gender'] == undefined ||
+                item['Organization'] == undefined
+            ) {
+                if (!error.find(entry => entry.key === item['ID'])) {
+                error.push({ key: item['ID'], value: ["Fill all the required columns"] });
+                } else {
+                const existingEntry = error.find(entry => entry.key === item['ID']);
+                existingEntry.value.push("Fill all the required columns");
+                }
+            }
+            });
+            this.errors = error;
+
+          columns.value = heads;    
+          if(this.errors.length == 0){
+            handleSubmit(file)
+          }
+          this.errors.map((item)=>{
+            const rawObject = Object.assign({}, item);
+            notification.error({
+              message: 'Error',
+              description: "Error on ID Number: " +`${Object.keys(rawObject).map((key)=>{return rawObject[key]})}`,
+              duration: 0
+            });
+          })
+        };
+  
+        reader.readAsArrayBuffer(file);
+      }
+
+      return {
+          handleFile,
+          dataSource,
+          columns,
+          errors:[]
+      }
+     }
+  })
+  
+  export default importExport;
+  
+  </script>

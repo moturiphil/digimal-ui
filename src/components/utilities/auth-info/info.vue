@@ -50,61 +50,21 @@
         action="click"
         :class="rtl ? 'ant-popover-rtl' : ''"
       >
-        <template v-slot:content>
-          <UserDropDwon>
-            <div class="user-dropdwon">
-              <figure class="user-dropdwon__info">
-                <!-- <img
-                  :src="require('../../../static/img/avatar/chat-auth.png')"
-                  alt=""
-                /> -->
-                <figcaption>
-                  <sdHeading as="h5">User Action</sdHeading>
-                  <p>
-                    
-                  </p>
-                </figcaption>
-                <br>
-              </figure>
-              <ul class="user-dropdwon__links">
-                <!-- <router-link to="/user/profile"
-                      ><sdFeatherIcons type="user" />Profile</router-link
-                    > -->
-                <!-- <li>
-                  <a to="#"> <sdFeatherIcons type="settings" /> Settings </a>
-                </li>
-                <li>
-                  <a to="#"> <sdFeatherIcons type="dollar-sign" /> Billing </a>
-                </li>
-                <li>
-                  <a to="#"> <sdFeatherIcons type="users" /> Activity </a>
-                </li>
-                <li>
-                  <a to="#"> <sdFeatherIcons type="bell" /> Help </a>
-                </li> -->
-              </ul>
-              <a @click="SignOut" class="user-dropdwon__bottomAction" href="#">
-                <LogoutOutlined /> Sign Out
-              </a>
-            </div>
-          </UserDropDwon>
-        </template>
-        <a to="#" class="head-example">
-          <a-avatar
-            src="https://cdn0.iconfinder.com/data/icons/user-pictures/100/matureman1-512.png"
-          />
+        <a @click="SignOut" class="user-dropdwon__bottomAction" href="#">
+          <LogoutOutlined /> Sign Out
         </a>
+        <template>
+          <a @click="signOut" class="user-dropdown__bottomAction" href="#">
+            <i class="logout-icon"><LogoutOutlined /></i> Sign Out
+          </a>
+        </template>
       </sdPopover>
     </div>
   </InfoWraper>
 </template>
 
 <script>
-import { InfoWraper, UserDropDwon } from "./auth-info-style";
-// import Support from "./Support";
-// import Settings from "./Settings";
-// import Notification from "./Notification";
-// import Message from "./Message";
+import { InfoWraper } from "./auth-info-style";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { LogoutOutlined } from "@ant-design/icons-vue";
@@ -115,7 +75,6 @@ export default defineComponent({
   name: "AuthInfo",
   components: {
     InfoWraper,
-    UserDropDwon,
     // Notification,
     LogoutOutlined,
   },
@@ -146,7 +105,7 @@ export default defineComponent({
     return {
       SignOut,
       isLoading,
-      rtl
+      rtl,
     };
   },
   methods: {

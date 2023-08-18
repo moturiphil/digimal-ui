@@ -38,10 +38,10 @@
                   :columns="columns"
                 >
                   <template #activity="{ record }">
-                    <td :style="{ 'margin-left': '3px' }">
+                    <td>
                       <div class="table-actions">
                         <sdButton
-                        size="small"
+                        size="extra-small"
                           type="success"
                           >
                           <router-link
@@ -59,7 +59,7 @@
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
-                        size="small"
+                        size="extra-small"
                           type="success">
                           <router-link
                             :to="{

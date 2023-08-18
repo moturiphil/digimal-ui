@@ -1,6 +1,6 @@
 <template>
   <Main>
-    <sdPageHeader title="Receive Nets">
+    <sdPageHeader :title="`Receive Nets at ${post_name}`">
       <sdButton class="btn-add_new" size="default" key="1" type="sucess">
         <router-link to="/crud/axios-view">View All</router-link>
       </sdButton>
@@ -20,7 +20,7 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="post_id" label="Post Name">
+                    <!-- <a-form-item name="post_id" label="Post Name">
                       <a-select
                         size="large"
                         name="basic-select"
@@ -44,7 +44,7 @@
                       >
                         {{ errors.post_id }}
                       </p>
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item name="bale_size" label="Bale Size">
                       <a-input
                         v-model:value="formState.bale_size"
@@ -76,22 +76,6 @@
                         v-if="!!errors.number_of_nets"
                       >
                         {{ errors.number_of_nets }}
-                      </p>
-                    </a-form-item>
-                    <a-form-item name="nets_remaining" label="Nets remaining">
-                      <a-input
-                        v-model:value="formState.nets_remaining"
-                        placeholder="Enter number of nets remaining"
-                        type="number"
-                        @blur="validate('nets_remaining')"
-                        @keypress="validate('nets_remaining')"
-                      />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.nets_remaining"
-                      >
-                        {{ errors.nets_remaining }}
                       </p>
                     </a-form-item>
                     <a-form-item name="delivery_no" label="Delivery Note No.">
@@ -196,6 +180,9 @@ import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
 import * as Yup from "yup";
+import dayjs from "dayjs";
+import { useRoute } from "vue-router";
+
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -211,14 +198,22 @@ const AddNew = defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/net_deliveries`;
     const router = useRouter();
 
+    const { query } = useRoute();
+
+    const post_name = query.name;
+    const post_id = query.id;
+
+    console.log (post_name, post_id);
+
+
     const formState = reactive({
-      post_id: "",
       number_of_nets: 0,
       date_received: "",
       received_from: "",
       received_by: "",
       delivery_no: "",
-      nets_remaining: "",
+      // nets_remaining: "",
+      bale_size: "",
     });
 
     const { villages, loading, isFacility, users, posts } = reactive({
@@ -230,16 +225,12 @@ const AddNew = defineComponent({
     });
 
     const ArticleSchema = Yup.object().shape({
-      post_id: Yup.string().required("Name is required"),
       number_of_nets: Yup.number().required("Bale size is required"),
       bale_size: Yup.number().required("Bale size is required"),
       date_received: Yup.string().required("Date received is required"),
       received_from: Yup.string().required("Received from is required"),
       received_by: Yup.string().required("Received by is required"),
       delivery_no: Yup.string().required("Delivery no is required"),
-      nets_remaining: Yup.number().required(
-        "Number of nets remaining is required"
-      ),
     });
 
     const validate = (field) => {
@@ -308,17 +299,17 @@ const AddNew = defineComponent({
     });
     // console.log(formState.isFacility)
     const handleSubmit = () => {
-      console.log("jhjkkjgkjgkghghghjjh");
       const values = {
-        post_id: formState.post_id,
+        post_id: post_id,
         no_of_bales: formState.number_of_nets,
         bale_size: formState.number_of_nets,
-        date_received: formState.date_received,
+        date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
         received_from: formState.received_from,
         received_by: formState.received_by,
         delivery_note_number: formState.delivery_no,
-        nets_remaining: formState.nets_remaining,
+        // nets_remaining: formState.nets_remaining,
       };
+      console.log(JSON.stringify(values));
 
       ArticleSchema.validate(this.formState, { abortEarly: false })
         .then(() => {
@@ -339,9 +330,10 @@ const AddNew = defineComponent({
                 router.push("delivered");
                 notification["success"]({
                   message: "Nets Received",
-                  description: "Nets have been successfully delivered",
+                  description: "Nets have been successfully delivered to post",
                   duration: 5.5,
                 });
+                router.push("/nets/nets-delivered");
               }
             })
             .catch((error) => {
@@ -359,6 +351,7 @@ const AddNew = defineComponent({
       isLoading,
       loading,
       apiUrl,
+      post_name,
       isFileLoading,
       isFacility,
       handleSubmit,
@@ -374,7 +367,7 @@ const AddNew = defineComponent({
         received_by: "",
         delivery_no: "",
         bale_size: "",
-        nets_remaining: "",
+        // nets_remaining: "",
       },
       villages,
       posts,

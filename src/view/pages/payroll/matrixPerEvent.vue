@@ -4,11 +4,6 @@
       :title="`Assign Event Payroll - ${event_name}`"
     ></sdPageHeader>
     <Main>
-      <!-- <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/activity/matrix/create">
-          <span class="btn-text"> Create Payroll Matrix </span>
-        </router-link>
-      </sdButton> -->
       <br />
       <br />
       <!-- <br> -->
@@ -37,6 +32,27 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
+                            <template #matrix="{ record }">
+                              <td>
+                                <div class="table-actions">
+                                  <sdButton
+                                    size="extra-small"
+                                    type="danger"
+                                    :disabled="isStarting"
+                                    @click="removeMatrix(record.id)"
+                                    v-if="!record.status"
+                                  >
+                                    <span>
+                                      <sdFeatherIcons
+                                        type="trash"
+                                        size="small"
+                                      />
+                                      &nbsp;&nbsp; Remove Matrix
+                                    </span>
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -60,6 +76,7 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
+import { notification } from "ant-design-vue";
 
 // const households = ref([]);
 
@@ -74,17 +91,12 @@ const columns = [
     dataIndex: "pay_matrix_id",
     key: "id",
   },
-  //   {
-  //     title: "No of Officers",
-  //     dataIndex: "no_of_officers",
-  //     key: "id",
-  //   },
-  //   {
-  //     title: "",
-  //     dataIndex: "Assign Matrix",
-  //     key: "payroll",
-  //     slots: { customRender: "payroll" },
-  //   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "matrix",
+    slots: { customRender: "matrix" },
+  },
 ];
 export default defineComponent({
   name: "MatrixPerActivity",
@@ -136,6 +148,33 @@ export default defineComponent({
         });
     });
 
+    const removeMatrix = (id) => {
+      const removeMatrix = `${process.env.VUE_APP_BASE_URL}/delete_event_matrix?matrix_id=${id}`;
+      console.log(id);
+      axios
+        .delete(removeMatrix, {
+          headers: authHeader(),
+        })
+        .then((response) => {
+          console.log(response.data);
+          if (response.data.success) {
+            notification.success({
+              message: "Success",
+              description: response.data.message,
+            });
+          }
+          else {
+            notification.error({
+              message: "Error",
+              description: response.data.message,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
+
     const formState = reactive({
       searchItem: "",
     });
@@ -151,6 +190,7 @@ export default defineComponent({
       handleChange,
       activeClass,
       event_name,
+      removeMatrix,
     };
   },
   // computed: {

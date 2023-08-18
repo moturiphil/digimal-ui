@@ -1,6 +1,6 @@
 import FeaturesRoutes from "./FeaturesRoutes";
 import PageRoutes from "./PageRoutes";
-import Components from "./Components";
+// import Components from "./Components";
 import Apps from "./Applications";
 
 const routes = [
@@ -27,6 +27,14 @@ const routes = [
           ),
       },
       {
+        path: "masterlist",
+        name: "masterlist",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/masterlist.vue"
+          ),
+      },
+      {
         path: "user-roles",
         name: "user-roles",
         component: () =>
@@ -42,14 +50,14 @@ const routes = [
             /* webpackChunkName: "Business" */ "@/view/pages/users/assignPermission.vue"
           ),
       },
-      // {
-      //   path: "assign-permission/:id",
-      //   name: "assign-permission",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "Business" */ "@/view/pages/users/assignPermission.vue"
-      //     ),
-      // },
+      {
+        path: "review_excel",
+        name: "review_excel",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/excelReview.vue"
+          ),
+      },
       {
         path: "stock-status",
         name: "stock-status",
@@ -149,11 +157,6 @@ const routes = [
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewEvent.vue"
           ),
       },
-      //   {
-      //     path: 'fireStore-edit/:id',
-      //     name: 'fireStore-edit',
-      //     component: () => import(/* webpackChunkName: "fireStore-edit" */ '@/view/pages/events/createEvent.vue'),
-      //   },
       {
         path: "event-create",
         name: "event-create",
@@ -230,7 +233,7 @@ const routes = [
           import(
             /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/importOrgUnit.vue"
           ),
-      }, 
+      },
       // {
       //   path: "sub-location-create",
       //   name: "sub-location-create",
@@ -334,7 +337,7 @@ const routes = [
     name: "activity-payroll-matrix",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue"   // activity/view-matrix/
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activityPayrollMatrix.vue" // activity/view-matrix/
       ),
   },
   {
@@ -379,7 +382,6 @@ const routes = [
   },
   ...PageRoutes,
   ...FeaturesRoutes,
-  ...Components,
   ...Apps,
 ];
 

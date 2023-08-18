@@ -123,7 +123,7 @@
 
                     <div class="record-form-actions text-right">
                       <sdButton
-                        size="small"
+                        size="extra-small"
                         htmlType="Save"
                         type="success"
                         :disabled="isSubmitting"
