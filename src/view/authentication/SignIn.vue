@@ -270,7 +270,7 @@ export default {
             } else {
               notification.error({
                 message: "Error",
-                description: "Password reset failed",
+                description: data.message,
               });
             }
           }
