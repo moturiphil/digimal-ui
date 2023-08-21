@@ -1,196 +1,352 @@
 <template>
-  <ProjectDetailsWrapper>
-    <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
+  <div>
+    <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
-        Generate Payroll
+      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
+        Export HouseHolds Data
       </sdButton> -->
-      <br />
-      <br />
-      <div v-if="!project" class="spin">
-        <a-spin />
-      </div>
-      <a-row v-else :gutter="25">
-        <!-- <a-col :xxl="6" :xl="8" :md="24" :xs="24">
-          <div class="project-progress">
-            <h3>Progress</h3>
-            <a-progress :percent="65" :stroke-width="5" status="active" />
-          </div>
-          <sdCards headless>
-            <div class="state-single">
-              <div class="color-success">
-                <a to="#">
-                  <sdFeatherIcons type="list" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">47</sdHeading>
-                <p>Total Participants</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-secondary">
-                <a to="#">
-                  <sdFeatherIcons type="pie-chart" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">13</sdHeading>
-                <p>Confirmed participants</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-warning">
-                <a to="#">
-                  <sdFeatherIcons type="clock" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">250</sdHeading>
-                <p>Pending Participants</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-success">
-                <a to="#">
-                  <sdFeatherIcons type="layout" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">Ksh 27,500</sdHeading>
-                <p>Amount Payable</p>
-              </div>
-            </div>
-          </sdCards>
-        </a-col> -->
-        <a-col :xxl="12" :lg="12" :xs="16">
-          <div class="project-users-wrapper">
-            <sdCards title="Confirmed Participants">
-              <template #button>
-                <sdButton>
-                  <router-link
-                    :to="{
-                      path: `/event/view/${event_id}?id=${event_code}`,
-                      query: { id: event_code },
-                    }"
-                    class="btn-icon"
-                    type="info"
-                    shape="circle"
+      <SearchResultWrapper>
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <div class="search-filter-menu">
+              <ul>
+                <li>
+                  <a
+                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
+                    @click="handleChange('all')"
+                    href="#"
                   >
-                    <sdFeatherIcons type="check" size="16" />
-                    &nbsp;&nbsp; Confirmed Participants
-                  </router-link>
-                </sdButton>
-              </template>
-            </sdCards>
-          </div>
-        </a-col>
-        <a-col :xxl="12" :lg="12" :xs="16">
-          <div class="project-users-wrapper">
-            <sdCards title="Pending Participants">
-              <template #button>
-                <sdButton>
-                  <router-link
-                    :to="{
-                      path: `/event/pending-confirmation/${event_id}?id=${event_code}`,
-                      query: { id: event_code },
-                    }"
-                    class="btn-icon"
-                    type="info"
-                    shape="circle"
+                    All Participants
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
+                      activeClass === 'approved' ? 'active' : 'deactivate'
+                    "
+                    @click="handleChange('approved')"
+                    href="#"
                   >
-                    <sdFeatherIcons type="pause" size="16" />
-                    &nbsp;&nbsp; Pending Participants
-                  </router-link>
-                </sdButton>
-              </template>
+                    Confirmed Participants
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
+                      activeClass === 'outliers' ? 'active' : 'deactivate'
+                    "
+                    @click="handleChange('outliers')"
+                    href="#"
+                  >
+                    Pending Participants
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </a-col>
+          <a-col :xs="24">
+            <sdCards headless>
+              <div class="result-list-content">
+                <a-row :gutter="15">
+                  <a-col class="w-100" :md="24">
+                    <sdCards headless>
+                      <div v-if="isLoading" class="spin">
+                        <a-spin />
+                      </div>
+
+                      <div v-else>
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'all'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 50,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                          </a-table>
+                        </TableWrapper>
+
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'approved'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 40,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                          </a-table>
+                        </TableWrapper>
+
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'outliers'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 40,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                            <template #households="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <sdButton
+                                    type="check"
+                                    size="16"
+                                    @click="handleVerify(record.id)"
+                                  >
+                                    &nbsp;&nbsp;
+                                    <span class="badge badge-green"
+                                      >&nbsp;&nbsp; Verify</span
+                                    >
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
+                          </a-table>
+                        </TableWrapper>
+                      </div>
+                    </sdCards>
+                  </a-col>
+                </a-row>
+              </div>
+              <!-- <a-pagination
+                show-size-changer
+                :default-current="3"
+                :total="40"
+                @showSizeChange="onShowSizeChange"
+              /> -->
             </sdCards>
-          </div>
-        </a-col>
-      </a-row>
+          </a-col>
+        </a-row>
+      </SearchResultWrapper>
     </Main>
-  </ProjectDetailsWrapper>
+  </div>
 </template>
+
 <script>
-import { ProjectDetailsWrapper } from "./overview/style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { reactive, computed, defineComponent } from "vue";
-import { useRoute } from "vue-router";
-import { Modal } from "ant-design-vue";
+import { SearchResultWrapper } from "./style";
+import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
+import axios from "axios";
+import { useStore } from "vuex";
+import { notification } from "ant-design-vue";
+import { useRoute } from "vue-router";
 
-const ProjectDetails = defineComponent({
-  name: "ProjectDetails",
-  components: { ProjectDetailsWrapper, Main },
+// const households = ref([]);
 
+const columns = [
+  {
+    title: "Participant Name",
+    dataIndex: "fullName",
+    key: "id",
+    // render: (text, record) => `${record.first_name} ${record.last_name}`,
+  },
+  {
+    title: "Participant Phone",
+    dataIndex: "phone_no",
+    key: "id",
+  },
+  {
+    title: "Organization",
+    dataIndex: "org_types_id",
+    key: "id",
+  },
+  {
+    title: "Role",
+    dataIndex: "role_id",
+    key: "id",
+  },
+];
+export default defineComponent({
+  name: "Events Participants",
+  components: {
+    Main,
+    SearchResultWrapper,
+  },
   data() {
-    const { state } = useStore();
+    const { query } = useRoute();
 
-    const project = computed(() => state.project.singData);
-    const { params, matched, query } = useRoute();
-    const { title, content } = computed(() => state.project.singData[0]);
-    // generate_events_pay_roll?status=1&event_code=M718363
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateEventParticipantCSV?event=${query.id}`;
-
-    console.log(API_URL);
-    // console.log(query.name);
     const event_name = query.name;
-    const event_id = query.id;
+    // const event_id = query.id;
     const event_code = query.event_code;
-    console.log(event_id);
-    const { facilitators } = reactive({ facilitators: [] });
+    console.log(event_code);
+    return {
+      notData: this.searchData,
+      current: 0,
+      pageSize: 0,
+      visible: false,
+      confirmLoading: false,
+      modalType: "primary",
+      colorVisible: false,
+      households: [],
+      event_name,
+    };
+  },
+  methods: {
+    handleSearch(searchText) {
+      const data = this.searchData.filter((item) =>
+        item.title.toUpperCase().startsWith(searchText.toUpperCase())
+      );
+      this.notData = data;
+    },
+    // handleChange(value) {
+    //   this.activeClass = value;
+    // },
+    onShowSizeChange(current, pageSize) {
+      this.current = current;
+      this.pageSize = pageSize;
+    },
+    searchData() {
+      return this.$store.state.headerSearch.data;
+    },
+  },
+  setup() {
+    const { state } = useStore();
+    const crud = computed(() => state.crud.data);
+    const isLoading = computed(() => state.crud.loading);
+    const selectedRowKeys = ref([]);
+    const dataSource = ref([]);
+    const activeClass = ref("all");
+    const { query } = useRoute();
 
-    // onMounted(() => {
-    //   dispatch("eventCampaignData", parseInt(params.id, 10));
-    // });
-    const generatePayroll = async () => {
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+
+    const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
+
+    const exportHouseHoldData = async () => {
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(households_url, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
         });
-        console.log(response.status == 200);
-        if (response.status == 200) {
-          Modal.success({
-            title: "Success",
-            content: "Payroll Generated Successfully",
-          });
-        } else {
-          Modal.error({
-            title: "Error",
-            content:
-              "Something went wrong, ensure you have assigned payroll matrix to the event",
-          });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
         }
+
+        const fileBlob = await response.blob();
+        const fileName = "households.csv";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
       } catch (error) {
         console.error(error);
       }
     };
 
+    const filteredData = computed(() => {
+      if (activeClass.value === "approved") {
+        console.log(dataSource.value);
+        return dataSource.value.filter((item) => item.isVerified === 1);
+      } else if (activeClass.value === "outliers") {
+        return dataSource.value.filter((item) => item.isVerified === 0);
+      } else {
+        return dataSource.value;
+      }
+    });
+
+    const handleChange = (tab) => {
+      activeClass.value = tab;
+    };
+
+    onMounted(async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/events/${query.event_code}/participants`,
+          {
+            headers: authHeader(),
+          }
+        );
+        console.log(response.data.data);
+
+        const updatedData = response.data.data.map((record) => {
+          let fullName = `${record.first_name} ${record.last_name}`;
+          // fullName = fullName.toUpperCase();
+          return {
+            ...record,
+            fullName,
+          };
+        });
+
+        dataSource.value = response.data.data;
+        console.log(updatedData);
+        dataSource.value = updatedData;
+
+        console.log(dataSource.value);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    const handleVerify = (record) => {
+      console.log(record);
+      axios
+        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
+          headers: authHeader(),
+        })
+        .then(({ status }) => {
+          console.log(status);
+          if (status == 200) {
+            location.reload();
+            notification["success"]({
+              message: "HouseHold Verified",
+              description: `HouseHold has been verified successfully`,
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
+        });
+    };
+
+    const formState = reactive({
+      searchItem: "",
+    });
+
     return {
-      title,
-      content,
-      project,
-      params,
-      matched,
-      event_name,
-      facilitators,
-      generatePayroll,
-      event_id,
-      event_code,
+      crud,
+      isLoading,
+      selectedRowKeys,
+      dataSource,
+      columns,
+      formState,
+      exportHouseHoldData,
+      filteredData,
+      handleChange,
+      activeClass,
+      handleVerify,
     };
   },
+  // computed: {
+  // },
 });
-
-export default ProjectDetails;
 </script>
 <style>
-.page-header-actions {
-  float: right;
+.badge-green {
+  background-color: #1ec997;
+  /* color: white; */
+  /* padding: 2px;
+  border-radius: 3px; */
+  /* size */
+  font-size: 12px;
 }
 </style>
