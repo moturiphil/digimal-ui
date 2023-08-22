@@ -44,6 +44,71 @@ const RecordViewWrapper = Styled.div`
     }
 `;
 
+const SearchResultWrapper = Styled.div`
+  .ant-select{
+    @media only screen and (max-width: 575px){
+      width: 100% !important;
+    }
+  }
+  .ant-select-selector{
+    height: 48px !important;
+    .ant-select-selection-search{
+      height: 48px;
+      width: 100% !important;
+      input{
+        height: 46px !important;
+      }
+    }
+    .ant-input-affix-wrapper{
+      border: 0 none;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    .ant-select-selection-search-input {
+      border-radius: 100px;
+    }
+  }
+  .ant-input-suffix{
+    i{
+      font-size: 14px;
+      top: 0 !important;
+    }
+    svg{
+      width: 14px;
+      height: 14px;
+    }
+  }
+  .search-filter-menu{
+    margin: 22px 0 20px;
+    @media only screen and (max-width: 575px){
+      text-align: center;
+    }
+    ul{
+      li{
+        display: inline-block;
+        margin-bottom: 10px;
+        &:not(:last-child){
+          ${({ theme }) => (!theme.rtl ? 'margin-right' : 'margin-left')}: 10px;
+        }
+        a{
+          font-size: 13px;
+          font-weight: 500;
+          display: block;
+          padding: 5px 15px;
+          border-radius: 5px;
+          color: ${({ theme }) => theme['light-color']};
+          box-shadow: 0 3px 6px ${({ theme }) => theme['light-color']}05;
+          background: #fff;
+          &.active{
+            color: #fff;
+            background: ${({ theme }) => theme['success-color']};
+          }
+        }
+      }
+    }
+  }
+`;
+
 const RecordFormWrapper = Styled.div`
     .pro-image{
         position: relative;
@@ -155,4 +220,4 @@ const RecordFormWrapper = Styled.div`
         justify-content: center;
     }
 `;
-export { RecordViewWrapper, RecordFormWrapper };
+export { RecordViewWrapper, RecordFormWrapper, SearchResultWrapper };
