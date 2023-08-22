@@ -221,8 +221,12 @@ export default defineComponent({
     const activeClass = ref("all");
     const { query } = useRoute();
 
+    console.log(query.event_code);
+
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
+
+    console.log(genetatePayrollURL);
 
 
 
