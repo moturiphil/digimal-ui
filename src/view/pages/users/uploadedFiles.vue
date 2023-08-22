@@ -29,18 +29,18 @@
                             size="small"
                             type="success"
                           >
-                            <sdFeatherIcons type="eye" size="small" />
+                            <sdFeatherIcons type="eye" size="small" /> 
                             <router-link
                               :to="{
                                 path: `/approve_masterlist/${record.id}`,
                                 query: { status: record.status, file_name: record.name },
                               }"
-                              class="btn-icon"
+                              class="btn-icon router_link"
                               type="info"
                               shape="circle"
-                            >
-                              &nbsp;&nbsp; View
-                            </router-link>
+
+                            > View
+                          </router-link>
                             &nbsp; 
                           </sdButton>
                         </div>
@@ -62,9 +62,8 @@
   import { RecordViewWrapper } from "../style";
   import { Main } from "../../styled";
   import { useStore } from "vuex";
-  import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+  import { computed, onMounted, ref, defineComponent } from "vue";
   import authHeader from "../../../services/auth-header";
-  import {notification } from "ant-design-vue";
   
   const columns = [
         {
@@ -104,7 +103,7 @@
     components: { RecordViewWrapper, Main },
   
     setup() {
-      const { state, dispatch } = useStore();
+      const { state } = useStore();
       const crud = computed(() => state.crud.data);
       const isLoading = computed(() => state.crud.loading);
       const selectedRowKeys = ref([]);
@@ -126,73 +125,12 @@
         }
       });
   
-      const handleDeletion = async (id) => {
-        try {
-          console.log(id);
-          const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/delete_record?record_id=${id}`,
-            {
-              method: "DELETE",
-              headers: authHeader(),
-            }
-          );
-          const data = await response.json();
-          console.log(data);
-          if (data.success == true) {
-            notification.success({
-              message: "Success",
-              description: data.message,
-            });
-            window.location.reload();
-          } else {
-            notification.error({
-              message: "Error",
-              description: data.message,
-            });
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-  
-  
-      const handleDelete = (id) => {
-        const confirm = window.confirm("Are you sure delete this?");
-        if (confirm) {
-          dispatch("axiosDataDelete", {
-            id,
-            getData: () => {
-              dispatch("axiosCrudGetData");
-            },
-          });
-        }
-        return false;
-      };
-  
-      const formState = reactive({
-        searchItem: "",
-      });
-  
-      const onSelectChange = (selectedRowKey) => {
-        selectedRowKeys.value = selectedRowKey;
-      };
-  
-      const rowSelection = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-      };
-  
       return {
         crud,
         isLoading,
         selectedRowKeys,
-        handleDelete,
-        rowSelection,
-        onSelectChange,
         dataSource,
         columns,
-        formState,
-        handleDeletion,
       };
     },
   });
@@ -204,6 +142,12 @@
   .search-row {
     display: flex;
     align-items: center;
+  }
+  .router_link {
+    color: #fff;
+  }
+  .router_link:hover {
+    color: #fff;
   }
   </style>
   

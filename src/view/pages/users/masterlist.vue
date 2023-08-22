@@ -27,11 +27,10 @@
               :to="{
                 path: `/uploads`,
               }"
-              class="btn-icon"
+              class="btn-icon router_link"
               type="info"
               shape="circle"
-            >
-              &nbsp;&nbsp; Uploads
+            > Uploads
             </router-link>
         </sdButton>
         <br />
@@ -255,4 +254,10 @@ export default DragAndDropTable;
   display: flex;
   align-items: center;
 }
+.router_link {
+    color: #fff;
+  }
+  .router_link:hover {
+    color: #fff;
+  }
 </style>
