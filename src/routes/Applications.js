@@ -107,14 +107,14 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/household/viewHouseholds.vue"
           ),
       },
-      {
-        name: "chv",
-        path: "chv",
-        component: () =>
-          import(
-            /* webpackChunkName: "Orders" */ "../view/pages/household/houseHoldCHV.vue"
-          ),
-      },
+      // {
+      //   name: "chv",
+      //   path: "chv",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "Orders" */ "../view/pages/household/houseHoldCHV.vue"
+      //     ),
+      // },
     ],
   },
   {
