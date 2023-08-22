@@ -20,13 +20,23 @@
             &nbsp;&nbsp; Import Master List
           </router-link>
         </sdButton>
-        <!-- &nbsp;&nbsp;&nbsp;&nbsp;
-        <sdButton class="btn-import" type="success" @click="exportUserData">
-          Export Users
-        </sdButton> -->
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <sdButton class="btn-import" type="success" >
+          <sdFeatherIcons type="file" size="14" /> 
+          <router-link
+              :to="{
+                path: `/uploads`,
+              }"
+              class="btn-icon"
+              type="info"
+              shape="circle"
+            >
+              &nbsp;&nbsp; Uploads
+            </router-link>
+        </sdButton>
         <br />
         <br />
-        <!-- <a-col :xs="24" :sm="24" :md="12">
+        <!-- <a-col :xs="24" :sm="24" :md="12"> 
           <sdAutoComplete
             @onSearch="handleSearch"
             placeholder="Search registered users"
@@ -82,6 +92,7 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+// import { UploadOutlined } from '@ant-design/icons';
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import {notification } from "ant-design-vue";
