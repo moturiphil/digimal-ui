@@ -10,7 +10,7 @@
 
 ## Flow for User Registration and User Login
 
-![vue-3-authentication-jwt-example-flow](vue-3-authentication-jwt-example-flow.png)
+![vue-3-authentication-jwt-example-flow](vue-3-authentication-jwt-flow.png)
 
 ```bash
 git clone https://github.com/uonafya/MassNetCampaignFrontend
@@ -25,12 +25,15 @@ cd MassNetCampaignFrontend
 yarn install
 
 ```
-# Launch the app.
+## Launch the app.
 ```shell
 
 yarn serve
 
-    
+## Setup Backend.
+
+See [Repo Reference](https://github.com/uonafya/MassNetCampaignBackend)
+
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
