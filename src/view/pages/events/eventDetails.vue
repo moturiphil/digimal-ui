@@ -2,9 +2,9 @@
   <div>
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
-        Export HouseHolds Data
-      </sdButton> -->
+      <sdButton class="btn-import" type="success" @click="generatePayroll">
+        Generate Payroll
+      </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -141,7 +141,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { useRoute } from "vue-router";
 
 // const households = ref([]);
@@ -222,31 +222,31 @@ export default defineComponent({
     const { query } = useRoute();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`;
 
-    const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
-    const exportHouseHoldData = async () => {
+    const generatePayroll = async () => {
       try {
-        const response = await fetch(households_url, {
+        const response = await fetch(genetatePayrollURL, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
+        console.log(response);
+        if (response.status == 200) {
+          Modal.success({
+            title: "Success",
+            content: "Payroll Generated Successfully",
+          });
+        } else {
+          Modal.error({
+            title: "Error",
+            content:
+              "Something went wrong, ensure you have assigned payroll matrix to the event",
+          });
         }
-
-        const fileBlob = await response.blob();
-        const fileName = "households.csv";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
       } catch (error) {
         console.error(error);
       }
@@ -329,11 +329,11 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      exportHouseHoldData,
       filteredData,
       handleChange,
       activeClass,
       handleVerify,
+      generatePayroll,
     };
   },
   // computed: {

@@ -2,9 +2,9 @@
   <ProjectDetailsWrapper>
     <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <sdButton class="btn-import" type="success" @click="generatePayroll">
         Generate Payroll
-      </sdButton> -->
+      </sdButton>
       <br />
       <br />
       <div v-if="!project" class="spin">
