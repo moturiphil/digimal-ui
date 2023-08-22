@@ -1,23 +1,41 @@
 <template>
     <RecordViewWrapper>
         <sdPageHeader title="Approve">
-            <template id="buttons"></template>
         </sdPageHeader>
         <sdPageBody>
             <Main>
+                <div class="flex-container">
+
+                    <h3>{{ query.file_name}}</h3> |
+                    <h3 :style="{'background-color': query.status == 'Pending' ? '#FFBF00' : '#50C878' }" class="status">{{ query.status}}</h3> |
+                    <sdButton
+                    size="small"
+                    type="success"
+                    @click="approve"
+                    :hidden="query.status == 'Approved'"
+                    >
+                    Approve
+                    &nbsp; 
+                    </sdButton>
+                </div>
+                <br/> 
+                <br/>
+                <a-modal
+                    title="Master List Approval"
+                    :visible="isModalOpen"
+                    centered
+                    @ok="handleOk(recordId, inputValue)"
+                    @cancel="handleCancel"
+                    class="title-success"
+                    okText="Submit"
+                >
+                    <div>
+                    <p>By submitting this I confirm that the information provided in this master list is accurate and verified based on the 2023 LLIN policy guideline</p>
+                    <!-- <input type="text" v-model="inputValue" /> -->
+                    </div>
+                </a-modal>
                 <a-row :gutter="16">
                     <a-col class="w-100" :md="24">
-                        <!-- <input type="file" @change="handleFile" /> -->
-    
-                        <!-- <div v-if="data.length > 0">
-                            <table>
-                                <tr v-for="(row, index) in data" :key="index">
-                                <td v-for="(cell, cellIndex) in row" :key="cellIndex">
-                                    {{ cell }}
-                                </td>
-                                </tr>
-                            </table>
-                        </div> -->
                         <div v-if="dataSource.length" >
     
                             <TableWrapper class="table-data-view table-responsive">
@@ -41,13 +59,9 @@
     import { Main, TableWrapper } from "../../styled";
     import { defineComponent, ref, onMounted } from "vue";
     import authHeader from "../../../services/auth-header";
-
-    // import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-
-    // import * as XLSX from "xlsx";
     import { useRoute } from "vue-router";
+    import { notification } from "ant-design-vue";
 
-    // import authHeader from "../../../services/auth-header";
     const excelReview = defineComponent({
         name: "ReviewExcel", 
         components: {
@@ -59,8 +73,8 @@
        data(){
         const dataSource = ref([]);
         const { query, params } = useRoute();
+        const isModalOpen = ref(false);
 
-        console.log(params.id, query.id)
         const columns = [
             {
                 title: "ID",
@@ -135,50 +149,48 @@
             console.error(error);
         }
         });
+        const approve = ()=>{
+            isModalOpen.value = true;
+        }
+        const handleCancel = () => {
+            isModalOpen.value = false;
+        };
+        const handleOk = async () => {
+            try {
+                const response = await fetch(
+                `${process.env.VUE_APP_BASE_URL}/approve-master-list/${params.id}`,
+                {
+                    method: "POST",
+                    headers: authHeader(),
+                    body: null
 
-        // const handleFile = (event)=>{
-        //   const file = event.target.files[0];
-        //   const reader = new FileReader();
-    
-        //   reader.onload = (e) => {
-        //     const data = new Uint8Array(e.target.result);
-        //     const workbook = XLSX.read(data, { type: 'array' });
-        //     const firstSheetName = workbook.SheetNames[0];
-        //     const worksheet = workbook.Sheets[firstSheetName];
-        //     const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        //     const passedData = XLSX.utils.sheet_to_json(worksheet);
-        //     dataSource.value = passedData;
-    
-        //     const heads = parsedData.shift().map((item, index) => {
-        //             return {
-        //                     title: item,
-        //                     dataIndex: item,
-        //                     key: index,
-        //                 }
-        //             })
-        //     const regex = /^(?:254|\+254)?((1|7)(?:(?:[1294][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/
-        //     passedData.map((item)=>{
-    
-        //             if((`${item['Phone No.']}`.match(regex)) == null){
-        //                 return this.errors.push({ [item['ID']]: `${item['Phone No.']}` + " is not a valid phone number"});
-        //             }
-        //     })
-    
-        //     heads.push({
-        //         title: "Actions",
-        //         dataIndex: "actions",
-        //         key: "actions",
-        //         slots: { customRender: "actions" },
-        //     });
-        //     columns.value = heads;    
-        //     // this.data = parsedData;
-        //   };
-    
-        //   reader.readAsArrayBuffer(file);
-        // }
+                }
+                );
+                const data = await response.json();
+                if (data.success == true) {
+                    notification.success({
+                    message: "Success",
+                    description: data.message,
+                    });
+                    window.location.reload();
+                } else {
+                    notification.error({
+                    message: "Error",
+                    description: data.message,
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            isModalOpen.value = false;
+        };
+
         return {
-            // data: [],
-            // handleFile,
+            approve,
+            isModalOpen,
+            handleOk,
+            handleCancel,
+            query,
             dataSource,
             columns,
             errors:[]
@@ -189,3 +201,17 @@
     export default excelReview;
     
     </script>
+
+    <style>
+       
+    .flex-container {
+        display: flex;
+        align-items: center; 
+        gap: 10px; 
+        }
+        .status {
+            padding: 5px 10px; 
+            border-radius: 5px; 
+            color: white; 
+        }
+    </style>
