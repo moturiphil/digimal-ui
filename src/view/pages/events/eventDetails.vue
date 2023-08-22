@@ -222,7 +222,8 @@ export default defineComponent({
     const { query } = useRoute();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
-    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`;
+    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
+
 
 
     const generatePayroll = async () => {
@@ -234,7 +235,7 @@ export default defineComponent({
             ...authHeader(),
           },
         });
-        console.log(response);
+        console.log(response.status == 200);
         if (response.status == 200) {
           Modal.success({
             title: "Success",
