@@ -20,39 +20,6 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <!-- <a-form-item name="role" label="Role Name">
-                      <a-select
-                        placeholder="Select"
-                        v-model:value="formState.role_id"
-                        v-if="!loading"
-                      >
-                        <a-select-option
-                          v-for="role in roles"
-                          :key="role.id"
-                          :value="role.id"
-                        >
-                          {{ role.name }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item> -->
-                    <!-- <a-form-item label="CHVs">
-                      <a-select
-                        mode="multiple"
-                        v-model:value="formState.chv_id"
-                        v-if="!loading"
-                        placeholder="Select facilitators"
-                      >
-                        <a-select-option
-                          v-for="chv in chvs"
-                          :key="chv.id"
-                          :value="chv.id"
-                        >
-                          {{ chv.first_name }}
-                          {{ chv.last_name }} - {{ chv.phone_no }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item> -->
-
                     <a-form-item label="Permission">
 
                       <a-transfer
@@ -93,13 +60,12 @@
 import { RecordFormWrapper } from "../style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed } from "vue";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { Transfer } from 'ant-design-vue';
 import authHeader from "../../../services/auth-header";
 import {  toRaw } from 'vue';
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
-
 
 
 const AssignPermissions = defineComponent({
@@ -116,80 +82,65 @@ const AssignPermissions = defineComponent({
     const join = ref("");
     const permissions = ref([])
     const roles = ref([]);
-    // const router = useRouter();
-    const { query, params } = useRoute();
-
-    console.log(params.id);
-
+    const user_perm = []
+    const { params } = useRoute();
     const role_id = params.id;
-    const parameters = { query };
-    // const chv_url = `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=chv`;
-
-    const post_id = parameters.query.id;
-    console.log(post_id, parameters, params);
+    const perm_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${role_id}`;
 
     const { campaigns,  loading } = reactive({
       campaigns: "",
       loading: true,
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = async() => {
       const data = {
         role_id: role_id,
         permission_ids: toRaw(formState.permission_ids)
-        // formState.permission_ids
       };
-       const rawObjectOrArray = toRaw(formState.permission_ids)
-
-      console.log(rawObjectOrArray, data);
-     console.log(JSON.stringify(data));
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      }).then((res)=>res.json())
-      .then((response) => {
-        console.log(response);
-        if (response.message) {
-            // router.push("event-view");
-              notification["success"]({
-                message: response.message,
-                // description: "Users successfully assigned to a campaign",
-                duration: 10.5,
-              });
-            }
-            // output notification for each user
-            else if (response.error) {
-              // for (var i = 0; i < occupied_users.length; i++) {
-                notification["error"]({
-                  message: response.error,
-                  // description: `User ${occupied_users[i].user} already assigned to a campaign`,
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
+        .then((res)=>res.json())
+        .then((response) => {
+          if (response.message) {
+                notification["success"]({
+                  message: response.message,
                   duration: 10.5,
                 });
               }
-            
-      });
-
-
-      // console.log(formState.permission_ids,data, );
-
+              else if (response.error) {
+                  notification["error"]({
+                    message: response.error,
+                    duration: 10.5,
+                  });
+                }
+              
+        });
+        
+      } catch (error) {
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
     };
 
     const formState = reactive({
       role_id:"",
       permission_ids:[]
     });
+    onMounted(()=>{
+      fetchPermissions();
+      fetchRoles();
+      fetchRolePerm();
+    })
 
-    // onMounted(() => {
-    //   fetchPermissions();
-    //   fetchRoles();
-    //   // fetchPerm()
-    // });
-    console.log(`${process.env.VUE_APP_BASE_URL}/permissionsList`)
 
     const fetchPermissions = async() =>{
       try {
@@ -198,7 +149,6 @@ const AssignPermissions = defineComponent({
           method: "GET",
           headers: authHeader(),
         });
-        // console.log( await response.json());
         const data = await response.json();
         const permissions_data = data.data;
         for (let i = 0; i < permissions_data.length; i++) {
@@ -208,13 +158,14 @@ const AssignPermissions = defineComponent({
           }
           perm.push(element);
         }
-        console.log( perm);
         permissions.value = perm
       } catch (error) {
-        console.error(error);
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
       }
     } 
-    fetchPermissions();
 
     const fetchRoles =async()=>{
       try {
@@ -227,7 +178,6 @@ const AssignPermissions = defineComponent({
         }, 
         });
         const data = await response.json();
-        console.log(data);
         for (let i = 1; i < data.length; i++) {
           const element ={
             id: i,
@@ -236,32 +186,40 @@ const AssignPermissions = defineComponent({
           }
           rls.push(element);
         }
-        // console.log(rls)
         this.roles = rls;
         this.loading = false;
       } catch (error) {
-        console.error(error);
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
       }
     }
-    fetchRoles();
 
-    const fetchCHV = async () => {
-      // const response = await fetch(chv_url, {
-      //   method: "GET",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     ...authHeader(),
-      //   }, 
-      // });
-      // const data = await response.json();
-      // this.chvs = data.data;
-      // // console.log(data.data);
-      // this.loading = false;
+    const fetchRolePerm = async () => {
+      try {
+        
+        const response = await fetch(perm_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          }, 
+        });
+        const data = await response.json();
+        data.roles['permissions'].forEach((element) => {
+            user_perm.push(element.id);
+        });
+        this.targetKeys = user_perm;
+      } catch (error) {
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
     };
-    fetchCHV();
 
     const handleChange=(targetKeys)=> {
-      console.log(targetKeys);
       this.targetKeys = targetKeys;
       this.formState.permission_ids = targetKeys;
     }
@@ -270,7 +228,6 @@ const AssignPermissions = defineComponent({
       return option.title.indexOf(inputValue) > -1;
     }
 
-    
 
     return {
       isLoading,
