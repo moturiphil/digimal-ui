@@ -35,6 +35,14 @@ const routes = [
           ),
       },
       {
+        path: "uploads",
+        name: "uploads",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/uploadedFiles.vue"
+          ),
+      },
+      {
         path: "user-roles",
         name: "user-roles",
         component: () =>
@@ -56,6 +64,14 @@ const routes = [
         component: () =>
           import(
             /* webpackChunkName: "Business" */ "@/view/pages/users/excelReview.vue"
+          ),
+      },
+      {
+        path: "approve_masterlist/:id",
+        name: "approve_masterlist",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/approval.vue"
           ),
       },
       {
