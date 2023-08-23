@@ -19,7 +19,24 @@
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
-                />
+                >
+                 <template #action="{ record }">
+                  <td>
+                    <div class="table-actions">
+                      <sdButton 
+                      type="success" 
+                      size="default" 
+                      @click="goToBaleVerification(record.post_id, record.post_name )"
+                      >
+                      Verify
+                        </sdButton>
+                      </div>
+                    </td>
+                  </template>
+              
+              
+              </a-table>
+
               </TableWrapper>
             </div>
           </sdCards>
@@ -36,14 +53,14 @@ import { RecordViewWrapper } from "../style";
 import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-// import axios from "axios";
+import { useRouter } from "vue-router";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
   {
     title: "Distribution Post",
-    dataIndex: "post_id",
-    key: "id",
+    dataIndex: "post_name",
+    key: "post_id",
   },
   {
     title: "No of Nets",
@@ -61,7 +78,7 @@ const columns = [
     key: "delivery_note_number",
   },
   {
-    title: "Reveived From",
+    title: "Received From",
     dataIndex: "received_from",
     key: "received_from",
   },
@@ -70,6 +87,13 @@ const columns = [
     dataIndex: "received_by",
     key: "received_by",
   },
+  {
+    title: "Action",
+    dataIndex: "action",  
+    key: "action",
+    slots: { customRender: "action" },
+  },
+  
 ];
 
 const DragAndDropTable = defineComponent({
@@ -82,11 +106,9 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const router = useRouter();
 
-    console.log(authHeader());
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
 
     onMounted(async () => {
       try {
@@ -131,8 +153,15 @@ const DragAndDropTable = defineComponent({
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    const goToBaleVerification = (id, name) => {
+      router.push({
+        path: `/nets/verify-post-nets`,
+        query: { id: id, name: name}
+      });
+    };
 
     return {
+      goToBaleVerification,
       crud,
       isLoading,
       selectedRowKeys,
