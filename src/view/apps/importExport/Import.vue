@@ -7,7 +7,7 @@
           <Main>
               <a-row :gutter="16">
                   <a-col class="w-100" :md="24">
-                      <input type="file" @change="handleFile" /> 
+                      <input type="file" @change="handleFile"  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/> 
                       <div v-if="dataSource.length" >
   
                           <TableWrapper class="table-data-view table-responsive">
@@ -17,15 +17,6 @@
                               :columns="columns"
                               >
                               <template #bodyCell="{column, record}" >
-                                  <!-- <template v-if="column.key == 1">
-
-                                      <template v-for="(error, index) in errors" :key="index">
-                                          <template v-if="error.key == record['ID']">
-                                              <p style="color: red">{{ record['Phone No.'] }}</p>
-                                          </template>
-                                      </template>
-
-                                  </template> -->
                                   <template v-if="column.key == 0">
                                   <template v-for="(error, index) in errors" :key="index">
                                           <template v-if="error.key == record['ID']">
@@ -74,12 +65,24 @@
         body: formData,
         })
         .then((response) => response.json())
-        .then(({ success, message }) => {
+        .then(({ success, message, data}) => {
+            const rs = data.map((item) => {
+               return  `Row No: ${item.row_id} "\n" ${Object.keys(item.row_errors).map((key) => item.row_errors[key]).join("||") }`
+            });
             if (success) {
             notification["success"]({
                 message: "Success",
                 description: `${message}`, 
                 duration: 5.5,
+            });
+            }else{
+            notification["error"]({
+                message: `${message}`,
+                description: `${rs}`,
+                duration: 0,
+                style: {
+                width: '600px',
+                }
             });
             }
         })
@@ -143,15 +146,20 @@
           columns.value = heads;    
           if(this.errors.length == 0){
             handleSubmit(file)
-          }
-          this.errors.map((item)=>{
+          }else{
+          const errorDescriptions = this.errors.map((item) => {
             const rawObject = Object.assign({}, item);
+            return `${Object.keys(rawObject).map((key) => rawObject[key]).join("||") }`;
+            });
+
             notification.error({
               message: 'Error',
-              description: "Error on ID Number: " +`${Object.keys(rawObject).map((key)=>{return rawObject[key]})}`,
-              duration: 0
-            });
-          })
+              description: "Error on ID Number:\n" + errorDescriptions.join("\n \n"),
+              duration: 0,
+              style: {
+                width: '600px',
+              },
+            });}
         };
   
         reader.readAsArrayBuffer(file);
