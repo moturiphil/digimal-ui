@@ -78,7 +78,6 @@ const AssignPermissions = defineComponent({
 
     const { state } = useStore();
     const API_URL = `${process.env.VUE_APP_BASE_URL}/assignPermissionsToRole/`;
-    const role_permission_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${params.id}`;
     const isLoading = computed(() => state.crud.loading);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
@@ -86,7 +85,6 @@ const AssignPermissions = defineComponent({
     const permissions = ref([]);
     const roles = ref([]);
     const user_perm = []
-    const { params } = useRoute();
     const role_id = params.id;
     const perm_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${role_id}`;
 
