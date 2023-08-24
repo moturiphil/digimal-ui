@@ -24,7 +24,7 @@
                     :class="
                       activeClass === 'approved' ? 'active' : 'deactivate'
                     "
-                    @click="handleChange('approved')"
+                    @click="handleChange('confirmed')"
                     href="#"
                   >
                     Confirmed Participants
@@ -35,7 +35,7 @@
                     :class="
                       activeClass === 'outliers' ? 'active' : 'deactivate'
                     "
-                    @click="handleChange('outliers')"
+                    @click="handleChange('pending')"
                     href="#"
                   >
                     Pending Participants
@@ -72,7 +72,7 @@
 
                         <TableWrapper
                           class="table-data-view table-responsive"
-                          v-show="activeClass === 'approved'"
+                          v-show="activeClass === 'confirmed'"
                         >
                           <a-table
                             :pagination="{
@@ -87,7 +87,7 @@
 
                         <TableWrapper
                           class="table-data-view table-responsive"
-                          v-show="activeClass === 'outliers'"
+                          v-show="activeClass === 'pending'"
                         >
                           <a-table
                             :pagination="{
@@ -97,22 +97,6 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
-                            <template #households="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton>
-                                </div>
-                              </td>
-                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -120,12 +104,6 @@
                   </a-col>
                 </a-row>
               </div>
-              <!-- <a-pagination
-                show-size-changer
-                :default-current="3"
-                :total="40"
-                @showSizeChange="onShowSizeChange"
-              /> -->
             </sdCards>
           </a-col>
         </a-row>
@@ -141,7 +119,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification, Modal } from "ant-design-vue";
+import {  Modal } from "ant-design-vue";
 import { useRoute } from "vue-router";
 
 // const households = ref([]);
@@ -221,8 +199,13 @@ export default defineComponent({
     const activeClass = ref("all");
     const { query } = useRoute();
 
+    console.log(query.event_code);
+
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
-    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`;
+    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
+
+    console.log(genetatePayrollURL);
+
 
 
     const generatePayroll = async () => {
@@ -234,7 +217,7 @@ export default defineComponent({
             ...authHeader(),
           },
         });
-        console.log(response);
+        console.log(response.status == 200);
         if (response.status == 200) {
           Modal.success({
             title: "Success",
@@ -253,10 +236,10 @@ export default defineComponent({
     };
 
     const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
+      if (activeClass.value === "confirmed") {
         console.log(dataSource.value);
         return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
+      } else if (activeClass.value === "pending") {
         return dataSource.value.filter((item) => item.isVerified === 0);
       } else {
         return dataSource.value;
@@ -295,28 +278,6 @@ export default defineComponent({
         console.error(error);
       }
     });
-    const handleVerify = (record) => {
-      console.log(record);
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-          headers: authHeader(),
-        })
-        .then(({ status }) => {
-          console.log(status);
-          if (status == 200) {
-            location.reload();
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
-    };
 
     const formState = reactive({
       searchItem: "",
@@ -332,7 +293,6 @@ export default defineComponent({
       filteredData,
       handleChange,
       activeClass,
-      handleVerify,
       generatePayroll,
     };
   },

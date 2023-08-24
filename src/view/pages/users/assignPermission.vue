@@ -20,24 +20,21 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item label="Permission">
-
+                    <a-form-item label="Permissions">
                       <a-transfer
                         :dataSource="permissions"
                         showSearch
                         v-model="targetKeys"
                         :targetKeys="targetKeys"
-                        :render="item=>item.title"
-                        :filterOption="filterOption"  
+                        :render="(item) => item.title"
+                        :filterOption="filterOption"
                         @change="handleChange"
                         :listStyle="{
                           width: '500px',
-                          height: '500px'
+                          height: '500px',
                         }"
                       >
                       </a-transfer>
-
-
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -63,31 +60,37 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { Transfer } from 'ant-design-vue';
 import authHeader from "../../../services/auth-header";
-import {  toRaw } from 'vue';
+import { toRaw } from "vue";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 
-
 const AssignPermissions = defineComponent({
   name: "CreateRole",
-  components: { RecordFormWrapper, Main, BasicFormWrapper, 'a-transfer': Transfer },
+  components: {
+    RecordFormWrapper,
+    Main,
+    BasicFormWrapper,
+    "a-transfer": Transfer,
+  },
 
   data() {
+    const { params } = useRoute();
+
     const { state } = useStore();
     const API_URL = `${process.env.VUE_APP_BASE_URL}/assignPermissionsToRole/`;
-
+    const role_permission_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${params.id}`;
     const isLoading = computed(() => state.crud.loading);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
-    const permissions = ref([])
+    const permissions = ref([]);
     const roles = ref([]);
     const user_perm = []
     const { params } = useRoute();
     const role_id = params.id;
     const perm_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${role_id}`;
 
-    const { campaigns,  loading } = reactive({
+    const { campaigns, loading } = reactive({
       campaigns: "",
       loading: true,
     });
@@ -132,8 +135,8 @@ const AssignPermissions = defineComponent({
     };
 
     const formState = reactive({
-      role_id:"",
-      permission_ids:[]
+      role_id: "",
+      permission_ids: [],
     });
     onMounted(()=>{
       fetchPermissions();
@@ -141,21 +144,21 @@ const AssignPermissions = defineComponent({
       fetchRolePerm();
     })
 
-
-    const fetchPermissions = async() =>{
+    const fetchPermissions = async () => {
       try {
         const perm = []
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/permissionsList`, {
           method: "GET",
           headers: authHeader(),
         });
+
         const data = await response.json();
         const permissions_data = data.data;
         for (let i = 0; i < permissions_data.length; i++) {
-          const element ={
+          const element = {
             key: permissions_data[i].id,
             title: permissions_data[i].name,
-          }
+          };
           perm.push(element);
         }
         permissions.value = perm
@@ -167,23 +170,23 @@ const AssignPermissions = defineComponent({
       }
     } 
 
-    const fetchRoles =async()=>{
+    const fetchRoles = async () => {
       try {
-        const rls =[]
+        const rls = [];
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
           headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        }, 
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
         });
         const data = await response.json();
         for (let i = 1; i < data.length; i++) {
-          const element ={
+          const element = {
             id: i,
             name: data[i].name,
             orgtype_id: data[i].orgtype_id,
-          }
+          };
           rls.push(element);
         }
         this.roles = rls;
@@ -222,12 +225,11 @@ const AssignPermissions = defineComponent({
     const handleChange=(targetKeys)=> {
       this.targetKeys = targetKeys;
       this.formState.permission_ids = targetKeys;
-    }
+    };
 
     function filterOption(inputValue, option) {
       return option.title.indexOf(inputValue) > -1;
     }
-
 
     return {
       isLoading,
