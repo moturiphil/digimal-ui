@@ -68,7 +68,6 @@
                             type="success"
                             shape="circle"
                           >
-                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
                             &nbsp;&nbsp; Receive Nets
                           </router-link>
                         </sdButton>
@@ -83,14 +82,26 @@
                             type="success"
                             shape="circle"
                           >
-                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
                             &nbsp;&nbsp; Assign Post Workers
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
-                          <!-- <sdFeatherIcons type="mail"    /> -->
                           &nbsp;&nbsp; Message HH's
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="warning" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/nets/net-transfers`,
+                              query: { id: record.id },
+                            }"
+                            class="btn-icon"
+                            type="success"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; Net Transfers
+                          </router-link>
                         </sdButton>
                       </div>
                     </td>
@@ -112,16 +123,10 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
-// import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 
 const columns = [
-  // {
-  //   title: "Distribution Id",
-  //   dataIndex: "id",
-  //   key: "id",
-  // },
   {
     title: "Distribution Post",
     dataIndex: "name",
@@ -165,9 +170,6 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const searchItem = ref("");
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
     onMounted(async () => {
       try {
         const response = await fetch(
@@ -179,14 +181,9 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
-        console.log('/*...................................*/');
-        console.log('******************************');
-        console.log(dataSource.value);
         this.distributionStatus = {};
-        console.log(this.distributionStatus);
         for(const post of dataSource.value) {
           this.distributionStatus[post.id] = post.status
-          console.log(post.status);
         }
       } catch (error) {
         console.error(error);
@@ -258,21 +255,16 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        console.log(data);
         if (data.status === true) {
-          // this.eventStatus[id] = true;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.success({
             message: "Distribution Started",
             description: data.message,
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 2000); 
           });
           location.reload();
         } else {
-          // this.eventStatus[id] = false;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.error({
             message: "Distribution Not Started",
             description: data.message,
@@ -295,19 +287,13 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        console.log('******************************************');
-        console.log('******************************************');
-        console.log(data);
         if (data.status === true) {
-          // this.eventStatus[id] = true;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          // notify the user
           notification.success({
             message: "Distribution Closed",
             description: "Event has been closed successfully",
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 2000); 
           });
           location.reload();
         } else {
@@ -317,11 +303,7 @@ const DragAndDropTable = defineComponent({
             message: "Event Not Closed",
             description: "Only event host or facilitator can close event",
           });
-          // await new Promise((resolve) => {
-          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
         }
-        // location.reload();
       } catch (error) {
         console.error(error);
       } finally {

@@ -73,6 +73,14 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetsDropoff.vue"
           ),
       },
+      {
+        name: "net-transfers",
+        path: "net-transfers",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfers.vue"
+          ),
+      },
     ],
   },
   {
