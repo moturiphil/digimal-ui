@@ -440,46 +440,44 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const recordId = ref(null);
-    const filteredData = ref([]);
+    // const filteredData = ref([]);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
-    if (dataSource.value !== "No payroll summaries generated") {
-      this.filteredData = computed(() => {
-        if (activeClass.value === "all") {
-          console.log();
-          return dataSource.value;
-        } else if (activeClass.value === "not_validated") {
-          return dataSource.value.filter(
-            (item) => item.status === "Not Validated"
-          );
-        } else if (activeClass.value === "not_approved") {
-          return dataSource.value.filter(
-            (item) => item.status === "Validated" && item.approval_status === 0
-          );
-        } else if (activeClass.value === "pending_approval") {
-          return dataSource.value.filter(
-            (item) =>
-              item.approval_status === "Not Approved" &&
-              item.status === "Validated"
-          );
-        } else if (activeClass.value === "pending_payment") {
-          return dataSource.value.filter(
-            (item) =>
-              item.approval_status === "Approved" &&
-              item.payment_status === "Not Paid"
-          );
-        } else if (activeClass.value === "paid") {
-          return dataSource.value.filter(
-            (item) =>
-              item.payment_status === "Paid" &&
-              item.approval_status === "Approved" &&
-              item.status === "Validated"
-          );
-        } else {
-          return dataSource.value;
-        }
-      });
-    }
+    const filteredData = computed(() => {
+      if (activeClass.value === "all") {
+        console.log();
+        return dataSource.value;
+      } else if (activeClass.value === "not_validated") {
+        return dataSource.value.filter(
+          (item) => item.status === "Not Validated"
+        );
+      } else if (activeClass.value === "not_approved") {
+        return dataSource.value.filter(
+          (item) => item.status === "Validated" && item.approval_status === 0
+        );
+      } else if (activeClass.value === "pending_approval") {
+        return dataSource.value.filter(
+          (item) =>
+            item.approval_status === "Not Approved" &&
+            item.status === "Validated"
+        );
+      } else if (activeClass.value === "pending_payment") {
+        return dataSource.value.filter(
+          (item) =>
+            item.approval_status === "Approved" &&
+            item.payment_status === "Not Paid"
+        );
+      } else if (activeClass.value === "paid") {
+        return dataSource.value.filter(
+          (item) =>
+            item.payment_status === "Paid" &&
+            item.approval_status === "Approved" &&
+            item.status === "Validated"
+        );
+      } else {
+        return dataSource.value;
+      }
+    });
 
     const handleChange = (tab) => {
       activeClass.value = tab;

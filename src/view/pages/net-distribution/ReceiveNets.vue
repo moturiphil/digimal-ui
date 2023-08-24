@@ -302,7 +302,7 @@ const AddNew = defineComponent({
       const values = {
         post_id: post_id,
         no_of_bales: formState.number_of_nets,
-        bale_size: formState.number_of_nets,
+        bale_size: formState.bale_size,
         date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
         received_from: formState.received_from,
         received_by: formState.received_by,
