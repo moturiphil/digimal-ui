@@ -14,7 +14,6 @@
             </div>
 
             <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
@@ -26,10 +25,10 @@
                       <sdButton 
                       type="success" 
                       size="default" 
-                      @click="goToBaleVerification(record.post_id, record.post_name )"
+                      @click="goToBaleVerification(record.post_id, record.post_name, record.delivery_note_number, record.date_received, record.received_from, record.received_by )"
                       >
                       Verify
-                        </sdButton>
+                      </sdButton>
                       </div>
                     </td>
                   </template>
@@ -37,7 +36,6 @@
               
               </a-table>
 
-              </TableWrapper>
             </div>
           </sdCards>
         </a-col>
@@ -50,7 +48,7 @@
 </template>
 <script>
 import { RecordViewWrapper } from "../style";
-import { Main, TableWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import { useRouter } from "vue-router";
@@ -98,7 +96,7 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+  components: { RecordViewWrapper, Main },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -153,10 +151,11 @@ const DragAndDropTable = defineComponent({
       selectedRowKeys,
       onChange: onSelectChange,
     };
-    const goToBaleVerification = (id, name) => {
+    // (record.post_id, record.post_name, record.delivery_note_number, record.date_received, record.received_from, record.received_by )
+    const goToBaleVerification = (id, name, delivery_no, date_received,received_from, received_by ) => {
       router.push({
         path: `/nets/verify-post-nets`,
-        query: { id: id, name: name}
+        query: { id: id, name: name,  delivery_no, date_received, received_from, received_by },
       });
     };
 

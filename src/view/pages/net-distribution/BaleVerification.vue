@@ -60,6 +60,7 @@
                           :format="dateFormat"
                           @blur="validate('date_received')"
                           @keypress="validate('date_received')"
+                          disabled
                         />
                         <p
                           class="errors"
@@ -71,12 +72,13 @@
                       </a-form-item>
                       <a-form-item name="received_from" label="Received From">
                         <a-select
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
                           v-model:value="formState.received_from"
                           placeholder="Select Received By"
                           @blur="validate('received_from')"
                           @keypress="validate('received_from')"
+                          disabled
                         >
                           <a-select-option value="KEMSA">KEMSA</a-select-option>
                           <a-select-option value="MEDS">MEDS</a-select-option>
@@ -95,6 +97,7 @@
                           placeholder="Delivery Note No."
                           @blur="validate('delivery_note_number')"
                           @keypress="validate('delivery_note_number')"
+                          disabled
                         />
                         <p
                           class="errors"
@@ -112,6 +115,7 @@
                           placeholder="Select Received By"
                           @blur="validate('received_by')"
                           @keypress="validate('received_by')"
+                          disabled
                         >
                           <a-select-option
                             v-for="user in users"
@@ -177,15 +181,20 @@
       const { query } = useRoute();
       const post_id = Number(query.id);
       const post_name = query.name;
+      const d_no = query.delivery_no;
+      const date_received = dayjs(query.date_received, dateFormat);
+      const received_from = query.received_from;
+      const received_by = query.received_by;
+      console.log(date_received)
   
       const formState = reactive({
         post_id: post_id,
         bale_batch_no: "",
         counted_no_of_nets:"",
-        date_received: "",
-        received_from: "",
-        delivery_note_number: "",
-        received_by: "",
+        date_received: date_received,
+        received_from: received_from,
+        delivery_note_number: d_no,
+        received_by: received_by,
       });
   
       const {  loading, isFacility, users } = reactive({
@@ -234,7 +243,7 @@
           post_id: post_id,
           bale_batch_no: formState.bale_batch_no,
           counted_no_of_nets: formState.counted_no_of_nets,
-          date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+          date_received: formState.date_received,
           received_from: formState.received_from,
           delivery_note_number: formState.delivery_note_number,
           received_by:  formState.received_by,
