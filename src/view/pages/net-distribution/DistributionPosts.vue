@@ -93,7 +93,7 @@
                         <sdButton type="warning" size="extra-small">
                           <router-link
                             :to="{
-                              path: `/nets/net-transfers`,
+                              path: `/nets/net-transfers-post`,
                               query: { id: record.id },
                             }"
                             class="btn-icon"

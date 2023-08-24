@@ -66,6 +66,14 @@ export default [
           ),
       },
       {
+        name: "nets-transfer-dropoff",
+        path: "nets-transfer-dropoff",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfersDropOff.vue"
+          ),
+      },
+      {
         name: "drop-off",
         path: "drop-off",
         component: () =>
@@ -74,11 +82,11 @@ export default [
           ),
       },
       {
-        name: "net-transfers",
-        path: "net-transfers",
+        name: "net-transfers-post",
+        path: "net-transfers-post",
         component: () =>
           import(
-            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfers.vue"
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfersPosts.vue"
           ),
       },
     ],

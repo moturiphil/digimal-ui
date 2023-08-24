@@ -1,11 +1,20 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Net Transfers" />
+    <sdPageHeader ghost title="Net Transfers at Drop off" />
     <Main>
 
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
+            <sdButton
+                size="extra-small"
+                type="success"
+                @click="openmodal"
+              >
+                <sdFeatherIcons type="plus" size="16" /> 
+                New Transfer
+              </sdButton>
+              <br/>
             <div class="search-filter-menu">
               <ul>
                 <li>
@@ -28,14 +37,7 @@
                     Transfer Out's
                   </a>
                 </li>
-                <sdButton
-                  size="extra-small"
-                  type="success"
-                  @click="openmodal"
-                >
-                  <sdFeatherIcons type="plus" size="16" /> 
-                  New Transfer
-                </sdButton>
+               
                
               </ul>
             </div>
@@ -63,10 +65,13 @@
                             :dataSource="transferIns"
                             :columns="columns"
                           >
-                            <template #payroll="{  }">
+                            <template #action="{  }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
                                   &nbsp;&nbsp;
+                                  <sdButton
+                                    type="success"
+                                    size="extra-small">Receive</sdButton>
                                 </div>
                               </td>
                             </template>
@@ -88,40 +93,47 @@
                             :model="formState"
                             @finish="handleTransfer"
                             >
-                            <a-form-item name="from_post_id" label="From Post">
+                            <a-form-item name="from_dropoff_id" label="From DropOff">
                               <a-select
-                                placeholder="Select  Post "
-                                v-model:value="formState.from_post_id"
+                                placeholder="Select DropOff "
+                                v-model:value="formState.from_dropoff_id"
                                 disabled
                               >
                                 <a-select-option
-                                  v-for="post in postdata"
-                                  :key="post.id"
-                                  v-model:value="post.id"
+                                  v-for="dropoff in dropoffdata"
+                                  :key="dropoff.id"
+                                  v-model:value="dropoff.id"
                                 >
-                                  {{ post.name }}
+                                  {{ dropoff.name }}
                                 </a-select-option>
                               </a-select>
                               </a-form-item>
-                            <a-form-item name="to_post" label="To Post">
+                            <a-form-item name="to_droppoff_id" label="To DropOff">
                               <a-select
-                                placeholder="Select  Post "
-                                v-model:value="formState.to_post_id"
+                                placeholder="Select Off "
+                                v-model:value="formState.to_dropoff_id"
                               >
                                 <a-select-option
-                                  v-for="post in postdata"
-                                  :key="post.id"
-                                  v-model:value="post.id"
+                                  v-for="dropoff in dropoffdata"
+                                  :key="dropoff.id"
+                                  v-model:value="dropoff.id"
                                 >
-                                  {{ post.name }}
+                                  {{ dropoff.name }}
                                 </a-select-option>
                               </a-select>
                               </a-form-item>
-                              <a-form-item name="no_of_nets" label="Number of nets">
+                              <a-form-item name="number_of_nets" label="Number of nets">
                                 <a-input
                                   v-model:value="formState.number_of_nets"
                                   placeholder="Number of nets"
                                   type="number"
+                                />
+                              </a-form-item>
+                              <a-form-item name="date_issued" label="Date Issued">
+                                <a-date-picker
+                                  :style="{ width: '100%' }"
+                                  v-model:value="formState.date_issued"
+                                  :format="dateFormat"
                                 />
                               </a-form-item>
                               <a-form-item name="comment" label="Comment">
@@ -151,9 +163,12 @@
                             :dataSource="transferOuts"
                             :columns="columns"
                           >
-                            <template #payroll="{  }">
+                            <template #action="{  }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
+                                  <sdButton
+                                    type="success"
+                                    size="extra-small">Cancel</sdButton>
                                 </div>
                               </td>
                             </template>
@@ -180,16 +195,19 @@ import authHeader from "../../../services/auth-header";
 // import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
+import dayjs from "dayjs";  
+
+const dateFormat = "YYYY-MM-DD";
 
 const columns = [
   {
-    title: "From Post",
-    dataIndex: "from_post_name",
+    title: "From DropOff",
+    dataIndex: "from_drop_off_point_name",
     key: "id",
   },
   {
-    title: "To Post",
-    dataIndex: "to_post_name",
+    title: "To DropOff",
+    dataIndex: "to_drop_off_point_name",
     key: "id",
   },
   {
@@ -211,7 +229,14 @@ const columns = [
     title: "Status",
     dataIndex: "status",
     key: "id",
+  },
+  {
+    title: "Action",
+    dataIndex: "action",
+    key: "id",
+    slots: { customRender: "action" },
   }
+
 ];
 export default defineComponent({
   name: "Payroll",
@@ -227,7 +252,7 @@ export default defineComponent({
     // const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("transfer_ins");
-    const postdata = ref([]);
+    const dropoffdata = ref([]);
     const transferOuts = ref([]);
     const transferIns = ref([]);
     const { query } = useRoute();
@@ -244,14 +269,14 @@ export default defineComponent({
 
     const fetchPosts = async()=>{
       try {
-         await fetch(`${process.env.VUE_APP_BASE_URL}/posts_data`,
+         await fetch(`${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`,
           {
             method: "GET",
             headers: authHeader(),
           })
           .then((response) => response.json())
           .then((data) => {
-            postdata.value = data.data;
+            dropoffdata.value = data.data;
           });
         
       } catch (error) {
@@ -263,21 +288,23 @@ export default defineComponent({
     }
     
     const formState = reactive({
-      from_post_id: Number(query.id),
-      to_post_id: "",
+      from_dropoff_id: Number(query.id),
+      to_dropoff_id: "",
       number_of_nets: "",
+      date_issued: "",
       comment: "",
     });
 
     const handleTransfer =  ()=>{
       const data = {
-        from_post_id: formState.from_post_id,
-        to_post_id: formState.to_post_id,
+        from_drop_off_point_id: formState.from_dropoff_id,
+        to_drop_off_point_id: formState.to_dropoff_id,
         number_of_nets: Number(formState.number_of_nets),
+        date_issued: dayjs(formState.date_issued).format("YYYY-MM-DD"),
         comment: formState.comment
       };
       try {
-          fetch(`${process.env.VUE_APP_BASE_URL}/transfer-nets`,
+          fetch(`${process.env.VUE_APP_BASE_URL}/transfer_nets_from_drop_off_to_drop_off`,
           {
             method: "POST",
             headers: {
@@ -287,16 +314,16 @@ export default defineComponent({
             body: JSON.stringify(data),
           })
           .then((response) => response.json())
-          .then(({success,message}) => {
+          .then(({success,data}) => {
             if(success){
               notification.success({
                 message: "Success",
-                description: `${message}`
+                description: `Transfer Successful`
               });
             }else{
               notification.error({
                 message: "Error",
-                description: `${message}`
+                description: `${data}`
               });
             }
           }).catch((error)=>{
@@ -316,7 +343,7 @@ export default defineComponent({
 
     const fetchTransferOuts = async()=>{
       try {
-        await fetch(`${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/1`,
+        await fetch(`${process.env.VUE_APP_BASE_URL}/transfer_nets_from_drop_off_to_drop_off_list/${query.id}/1`,
         {
           method: "GET",
           headers: authHeader(),
@@ -342,7 +369,7 @@ export default defineComponent({
 
     const fetchTransferIns = async()=>{
       try {
-        await fetch(`${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/2`,
+        await fetch(`${process.env.VUE_APP_BASE_URL}/transfer_nets_from_drop_off_to_drop_off_list/${query.id}/2`,
         {
           method: "GET",
           headers: authHeader(),
@@ -380,10 +407,11 @@ export default defineComponent({
       fetchTransferIns();
     });
     return {
+      dateFormat,
       handleTransfer,
       transferOuts,
       transferIns,
-      postdata,
+      dropoffdata,
       dataSource,
       columns,
       formState,
