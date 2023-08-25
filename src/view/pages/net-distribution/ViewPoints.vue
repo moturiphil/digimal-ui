@@ -41,6 +41,22 @@
                             &nbsp;&nbsp; Receive Nets
                           </router-link>
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton>
+                          <router-link
+                            :to="{
+                              path: `/nets/nets-transfer-dropoff`,
+                              query: {
+                                id: record.id
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; Net Transfers
+                          </router-link>
+                        </sdButton>
                       </div>
                     </td>
                   </template>

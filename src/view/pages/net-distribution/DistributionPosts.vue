@@ -26,6 +26,72 @@
             </div>
 
             <div v-else>
+              <!-- modal -->
+              <a-modal
+                title="Receive Nets"
+                :visible="isModalOpen"
+                @cancel="handleCancel"
+                width="50%"
+              >
+                <BasicFormWrapper>
+                  <a-form
+                  class="add-transfer-form"
+                  :style="{ width: '100%' }"
+                  layout="vertical"
+                  name="addnew"
+                  :model="formState"
+                  @finish="handleTransfer"
+                  >
+                  <a-form-item name="from_post_id" label="From Post">
+                    <a-select
+                      placeholder="Select  Post "
+                      v-model:value="formState.from_post_id"
+                      disabled
+                    >
+                      <a-select-option
+                        v-for="post in postdata"
+                        :key="post.id"
+                        v-model:value="post.id"
+                      >
+                        {{ post.name }}
+                      </a-select-option>
+                    </a-select>
+                    </a-form-item>
+                  <a-form-item name="to_post" label="To Post">
+                    <a-select
+                      placeholder="Select  Post "
+                      v-model:value="formState.to_post_id"
+                    >
+                      <a-select-option
+                        v-for="post in postdata"
+                        :key="post.id"
+                        v-model:value="post.id"
+                      >
+                        {{ post.name }}
+                      </a-select-option>
+                    </a-select>
+                    </a-form-item>
+                    <a-form-item name="no_of_nets" label="Number of nets">
+                      <a-input
+                        v-model:value="formState.number_of_nets"
+                        placeholder="Number of nets"
+                        type="number"
+                      />
+                    </a-form-item>
+                    <a-form-item name="comment" label="Comment">
+                      <a-input
+                        v-model:value="formState.comment"
+                        placeholder="Comment"
+                      />
+                    </a-form-item>
+                    <div class="record-form-actions text-right">
+                      <sdButton size="default" htmlType="Save" type="success">
+                        {{ isLoading ? "Loading..." : "Submit" }}
+                      </sdButton>
+                    </div>
+                  </a-form>
+                </BasicFormWrapper>
+              </a-modal>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 200, showSizeChanger: true }"
@@ -68,7 +134,6 @@
                             type="success"
                             shape="circle"
                           >
-                            <!-- <sdFeatherIcons type="mail" size="16" /> -->
                             &nbsp;&nbsp; Receive Nets
                           </router-link>
                         </sdButton>
@@ -87,9 +152,24 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
+
                         <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
                           <!-- <sdFeatherIcons type="mail"    /> -->
                           &nbsp;&nbsp; Message HH's
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="warning" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/nets/net-transfers-post`,
+                              query: { id: record.id },
+                            }"
+                            class="btn-icon"
+                            type="success"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; Net Transfers
+                          </router-link>
                         </sdButton>
                       </div>
                     </td>
@@ -111,16 +191,10 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
-// import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 
 const columns = [
-  // {
-  //   title: "Distribution Id",
-  //   dataIndex: "id",
-  //   key: "id",
-  // },
   {
     title: "Distribution Post",
     dataIndex: "name",
@@ -164,9 +238,6 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const searchItem = ref("");
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
     onMounted(async () => {
       try {
         const response = await fetch(
@@ -178,14 +249,9 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
-        console.log('/*...................................*/');
-        console.log('******************************');
-        console.log(dataSource.value);
         this.distributionStatus = {};
-        console.log(this.distributionStatus);
         for(const post of dataSource.value) {
           this.distributionStatus[post.id] = post.status
-          console.log(post.status);
         }
       } catch (error) {
         console.error(error);
@@ -287,21 +353,16 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        console.log(data);
         if (data.status === true) {
-          // this.eventStatus[id] = true;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.success({
             message: "Distribution Started",
             description: data.message,
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 2000); 
           });
           location.reload();
         } else {
-          // this.eventStatus[id] = false;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.error({
             message: "Distribution Not Started",
             description: data.message,
@@ -324,19 +385,13 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        console.log('******************************************');
-        console.log('******************************************');
-        console.log(data);
         if (data.status === true) {
-          // this.eventStatus[id] = true;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          // notify the user
           notification.success({
             message: "Distribution Closed",
             description: "Event has been closed successfully",
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 2000); 
           });
           location.reload();
         } else {
@@ -346,11 +401,7 @@ const DragAndDropTable = defineComponent({
             message: "Event Not Closed",
             description: "Only event host or facilitator can close event",
           });
-          // await new Promise((resolve) => {
-          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
         }
-        // location.reload();
       } catch (error) {
         console.error(error);
       } finally {

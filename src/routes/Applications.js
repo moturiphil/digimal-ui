@@ -71,11 +71,27 @@ export default [
           ),
       },
       {
+        name: "nets-transfer-dropoff",
+        path: "nets-transfer-dropoff",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfersDropOff.vue"
+          ),
+      },
+      {
         name: "drop-off",
         path: "drop-off",
         component: () =>
           import(
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetsDropoff.vue"
+          ),
+      },
+      {
+        name: "net-transfers-post",
+        path: "net-transfers-post",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfersPosts.vue"
           ),
       },
     ],
