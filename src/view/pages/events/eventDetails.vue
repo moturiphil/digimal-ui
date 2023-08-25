@@ -22,7 +22,7 @@
                 <li>
                   <a
                     :class="
-                      activeClass === 'approved' ? 'active' : 'deactivate'
+                      activeClass === 'confirmed' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('confirmed')"
                     href="#"
@@ -32,9 +32,7 @@
                 </li>
                 <li>
                   <a
-                    :class="
-                      activeClass === 'outliers' ? 'active' : 'deactivate'
-                    "
+                    :class="activeClass === 'pending' ? 'active' : 'deactivate'"
                     @click="handleChange('pending')"
                     href="#"
                   >
@@ -61,7 +59,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -76,7 +74,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -91,7 +89,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -119,7 +117,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import {  Modal } from "ant-design-vue";
+import { Modal } from "ant-design-vue";
 import { useRoute } from "vue-router";
 
 // const households = ref([]);
@@ -196,17 +194,17 @@ export default defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const confirmed = ref([]);
+    const pending = ref([]);
     const activeClass = ref("all");
     const { query } = useRoute();
 
     console.log(query.event_code);
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
 
     console.log(genetatePayrollURL);
-
-
 
     const generatePayroll = async () => {
       try {
@@ -235,29 +233,15 @@ export default defineComponent({
       }
     };
 
-    const filteredData = computed(() => {
-      if (activeClass.value === "confirmed") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "pending") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
-      } else {
-        return dataSource.value;
-      }
-    });
-
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
 
     onMounted(async () => {
       try {
-        const response = await axios.get(
-          `${API_URL}/events/${query.event_code}/participants`,
-          {
-            headers: authHeader(),
-          }
-        );
+        const response = await axios.get(API_URL, {
+          headers: authHeader(),
+        });
         console.log(response.data.data);
 
         const updatedData = response.data.data.map((record) => {
@@ -269,13 +253,67 @@ export default defineComponent({
           };
         });
 
-        dataSource.value = response.data.data;
-        console.log(updatedData);
         dataSource.value = updatedData;
 
         console.log(dataSource.value);
       } catch (error) {
         console.error(error);
+      }
+      try {
+        const response = await axios.get(API_URL+"?status=1", {
+          headers: authHeader(),
+        });
+        console.log(API_URL+"?status=1");
+
+        const updatedData = response.data.data.map((record) => {
+          let fullName = `${record.first_name} ${record.last_name}`;
+          // fullName = fullName.toUpperCase();
+          return {
+            ...record,
+            fullName,
+          };
+        });
+
+        confirmed.value = updatedData;
+
+        console.log(confirmed.value.toRaw());
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const response = await axios.get(API_URL+"?status=0", {
+          headers: authHeader(),
+        });
+        console.log(API_URL+"?status=0");
+        console.log(response.data.data);
+
+        const updatedData = response.data.data.map((record) => {
+          let fullName = `${record.first_name} ${record.last_name}`;
+          // fullName = fullName.toUpperCase();
+          return {
+            ...record,
+            fullName,
+          };
+        });
+
+
+        pending.value = updatedData;
+
+        console.log(pending.value);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    const filteredData = computed(() => {
+      if (activeClass.value === "confirmed") {
+        console.log(confirmed.value);
+        return confirmed.value;
+      } else if (activeClass.value === "pending") {
+        console.log(dataSource.value);
+        return pending.value;
+      } else {
+        return dataSource.value;
       }
     });
 
@@ -288,6 +326,8 @@ export default defineComponent({
       isLoading,
       selectedRowKeys,
       dataSource,
+      confirmed,
+      pending,
       columns,
       formState,
       filteredData,
@@ -300,13 +340,3 @@ export default defineComponent({
   // },
 });
 </script>
-<style>
-.badge-green {
-  background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-  border-radius: 3px; */
-  /* size */
-  font-size: 12px;
-}
-</style>

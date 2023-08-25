@@ -8,7 +8,7 @@
 
     <Main>
       <a-row :gutter="16" class="search-row">
-        <sdButton class="btn-import" type="success">
+        <sdButton class="btn-import" type="success" size="extra-small">
           <router-link
             :to="{
               path: `/users/import`,
@@ -21,18 +21,29 @@
           </router-link>
         </sdButton>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <sdButton class="btn-import" type="success" >
-          <sdFeatherIcons type="file" size="14" /> 
-          <router-link
-              :to="{
-                path: `/uploads`,
-              }"
-              class="btn-icon router_link"
-              type="info"
-              shape="circle"
-            > Uploads
-            </router-link>
+        <sdButton
+          class="btn-import"
+          type="success"
+          @click="validateMasterlist"
+          size="extra-small"
+        >
+          Validate Masterlist
         </sdButton>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        <sdButton class="btn-import" type="success" size="extra-small">
+          <router-link
+            :to="{
+              path: `/uploads`,
+            }"
+            class="btn-icon router_link"
+            type="info"
+            shape="circle"
+          >
+            Uploads
+          </router-link>
+        </sdButton>
+
         <br />
         <br />
         <!-- <a-col :xs="24" :sm="24" :md="12"> 
@@ -94,43 +105,38 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import { UploadOutlined } from '@ant-design/icons';
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import {notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import UserService from "../../../services/user.service";
 
 const columns = [
   {
     title: "First Name",
-    dataIndex: "first_name",
+    dataIndex: "fullName",
     key: "id",
   },
   {
-    title: "Middle Name",
-    dataIndex: "middle_name",
+    title: "Level",
+    dataIndex: "level",
     key: "id",
   },
   {
-    title: "Last Name",
-    dataIndex: "last_name",
+    title: "Organization",
+    dataIndex: "organization",
     key: "id",
   },
-  //   {
-  //     title: "Level",
-  //     dataIndex: "level_id",
-  //     key: "id",
-  //   },
-  //   {
-  //     title: "Organization",
-  //     dataIndex: "org_types_id",
-  //     key: "id",
-  //   },
-  //   {
-  //     title: "Role",
-  //     dataIndex: "role_id",
-  //     key: "id",
-  //   },
+  {
+    title: "Role",
+    dataIndex: "role",
+    key: "id",
+  },
   {
     title: "Phone Number",
     dataIndex: "phone_no",
+    key: "id",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
     key: "id",
   },
   {
@@ -150,6 +156,7 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const masterlist_validation_url = `${process.env.VUE_APP_BASE_URL}/mpesa-list-export`
 
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
@@ -168,12 +175,49 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        dataSource.value = data.data;
+        const updatedData = data.data.map((record) => {
+          let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
+          let status = record.status == 1 ? "validated" : "Not Validated";
+          return {
+            ...record,
+            fullName,
+            status,
+          };
+        });
+        dataSource.value = updatedData;
         console.log(data.data);
       } catch (error) {
         console.error(error);
       }
     });
+
+
+     const validateMasterlist = async () => {
+      try {
+        const response = await fetch(masterlist_validation_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "master_list.xlsx";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const handleDeletion = async (id) => {
       try {
@@ -203,7 +247,6 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     };
-
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -242,6 +285,7 @@ const DragAndDropTable = defineComponent({
       columns,
       formState,
       handleDeletion,
+      validateMasterlist,
     };
   },
 });
@@ -255,9 +299,9 @@ export default DragAndDropTable;
   align-items: center;
 }
 .router_link {
-    color: #fff;
-  }
-  .router_link:hover {
-    color: #fff;
-  }
+  color: #fff;
+}
+.router_link:hover {
+  color: #fff;
+}
 </style>

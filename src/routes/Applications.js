@@ -34,6 +34,11 @@ export default [
         component: () =>import("../view/pages/net-distribution/ReceiveNets.vue"),
       },
       {
+        path: "verify-post-nets/",
+        name: "verify-post-net",
+        component: () =>import("../view/pages/net-distribution/BaleVerification.vue"),
+      },
+      {
         name: "post-create",
         path: "post-create",
         component: () =>

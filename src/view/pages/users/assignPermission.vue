@@ -57,8 +57,8 @@
 import { RecordFormWrapper } from "../style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed } from "vue";
-import { Transfer } from "ant-design-vue";
+import { reactive, ref, defineComponent, computed, onMounted } from "vue";
+import { Transfer } from 'ant-design-vue';
 import authHeader from "../../../services/auth-header";
 import { toRaw } from "vue";
 import { notification } from "ant-design-vue";
@@ -78,93 +78,78 @@ const AssignPermissions = defineComponent({
 
     const { state } = useStore();
     const API_URL = `${process.env.VUE_APP_BASE_URL}/assignPermissionsToRole/`;
-    const role_permission_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${params.id}`;
     const isLoading = computed(() => state.crud.loading);
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
     const permissions = ref([]);
     const roles = ref([]);
-    console.log(params.id);
-
+    const user_perm = []
     const role_id = params.id;
-
-    // const chv_url = `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=chv`;
-
-    console.log(params.id);
+    const perm_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${role_id}`;
 
     const { campaigns, loading } = reactive({
       campaigns: "",
       loading: true,
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = async() => {
       const data = {
         role_id: role_id,
-        permission_ids: toRaw(formState.permission_ids),
-        // formState.permission_ids
+        permission_ids: toRaw(formState.permission_ids)
       };
-      const rawObjectOrArray = toRaw(formState.permission_ids);
-
-      console.log(rawObjectOrArray, data);
-      console.log(JSON.stringify(data));
-
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((res) => res.json())
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
+        .then((res)=>res.json())
         .then((response) => {
-          console.log(response);
           if (response.message) {
-            // router.push("event-view");
-            notification["success"]({
-              message: response.message,
-              // description: "Users successfully assigned to a campaign",
-              duration: 10.5,
-            });
-          }
-          // output notification for each user
-          else if (response.error) {
-            // for (var i = 0; i < occupied_users.length; i++) {
-            notification["error"]({
-              message: response.error,
-              // description: `User ${occupied_users[i].user} already assigned to a campaign`,
-              duration: 10.5,
-            });
-          }
+                notification["success"]({
+                  message: response.message,
+                  duration: 10.5,
+                });
+              }
+              else if (response.error) {
+                  notification["error"]({
+                    message: response.error,
+                    duration: 10.5,
+                  });
+                }
+              
         });
-
-      // console.log(formState.permission_ids,data, );
+        
+      } catch (error) {
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
     };
 
     const formState = reactive({
       role_id: "",
       permission_ids: [],
     });
-
-    // onMounted(() => {
-    //   fetchPermissions();
-    //   fetchRoles();
-    //   // fetchPerm()
-    // });
-    console.log(`${process.env.VUE_APP_BASE_URL}/permissionsList`);
+    onMounted(()=>{
+      fetchPermissions();
+      fetchRoles();
+      fetchRolePerm();
+    })
 
     const fetchPermissions = async () => {
       try {
-        const perm = [];
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/permissionsList`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        // console.log( await response.json());
+        const perm = []
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/permissionsList`, {
+          method: "GET",
+          headers: authHeader(),
+        });
+
         const data = await response.json();
         const permissions_data = data.data;
         for (let i = 0; i < permissions_data.length; i++) {
@@ -174,13 +159,14 @@ const AssignPermissions = defineComponent({
           };
           perm.push(element);
         }
-        console.log(perm);
-        permissions.value = perm;
+        permissions.value = perm
       } catch (error) {
-        console.error(error);
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
       }
-    };
-    fetchPermissions();
+    } 
 
     const fetchRoles = async () => {
       try {
@@ -193,7 +179,6 @@ const AssignPermissions = defineComponent({
           },
         });
         const data = await response.json();
-        console.log(data);
         for (let i = 1; i < data.length; i++) {
           const element = {
             id: i,
@@ -202,37 +187,40 @@ const AssignPermissions = defineComponent({
           };
           rls.push(element);
         }
-        // console.log(rls)
         this.roles = rls;
         this.loading = false;
       } catch (error) {
-        console.error(error);
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
+    }
+
+    const fetchRolePerm = async () => {
+      try {
+        
+        const response = await fetch(perm_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          }, 
+        });
+        const data = await response.json();
+        data.roles['permissions'].forEach((element) => {
+            user_perm.push(element.id);
+        });
+        this.targetKeys = user_perm;
+      } catch (error) {
+        notification["error"]({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
       }
     };
-    fetchRoles();
 
-    const fetchRolePermission = async () => {
-      const response = await fetch(role_permission_url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
-      const data = await response.json();
-      console.log(data.roles);
-      const permissions = data.roles.permissions
-      // const assigned_permissions = [];
-      permissions.forEach(permission => {
-        this.assigned_permissions = permission.id;
-      });
-      // console.log(data.data);
-      this.loading = false;
-    };
-    fetchRolePermission();
-
-    const handleChange = (targetKeys) => {
-      console.log(targetKeys);
+    const handleChange=(targetKeys)=> {
       this.targetKeys = targetKeys;
       this.formState.permission_ids = targetKeys;
     };

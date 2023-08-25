@@ -152,7 +152,9 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton type="success" size="extra-small">
+
+                        <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
+                          <!-- <sdFeatherIcons type="mail"    /> -->
                           &nbsp;&nbsp; Message HH's
                         </sdButton>
                         &nbsp;&nbsp;
@@ -269,6 +271,35 @@ const DragAndDropTable = defineComponent({
       return false;
     };
 
+    const notifyHH = async (id) => {
+      console.log(id);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/notify_households?post_id=${id}`,
+          {
+            method: "POST",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        if (data.success == true) {
+          notification.success({
+            message: "Success",
+            description: data.message,
+          });
+          window.location.reload();
+        } else {
+          notification.error({
+            message: "Error",
+            description: data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
@@ -304,6 +335,7 @@ const DragAndDropTable = defineComponent({
       results,
       searchItem,
       columns,
+      notifyHH,
     };
   },
 
