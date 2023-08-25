@@ -65,11 +65,12 @@
                             :dataSource="transferIns"
                             :columns="columns"
                           >
-                            <template #action="{  }">
+                            <template #action="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
                                   &nbsp;&nbsp;
                                   <sdButton
+                                    @click="openReceiveModal(record.id)"
                                     type="success"
                                     size="extra-small">Receive</sdButton>
                                 </div>
@@ -78,6 +79,7 @@
                           </a-table>
                         </TableWrapper>
                         &nbsp;&nbsp;
+                        <!-- Transfer modal -->
                         <a-modal
                           title="New Transfer"
                           :visible="isModalOpen"
@@ -143,6 +145,42 @@
                             </a-form>
                           </BasicFormWrapper>
                         </a-modal>
+                        <!-- End of Transfer modal -->
+
+                         <!-- receive nets modal -->
+                         <a-modal
+                            title="Receive Nets"
+                            :visible="isOpen"
+                            @cancel="handleCancelReceive"
+                            width="50%"
+                          >
+                            <BasicFormWrapper>
+                              <a-form
+                              class="add-transfer-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="addnew"
+                              :model="formState"
+                              @finish="receiveNets"
+                              >
+                              
+                              
+                              <a-form-item name="date_received" label="Date Received">
+                                <a-date-picker
+                                  :style="{ width: '100%' }"
+                                  v-model:value="formState.date_received"
+                                  :format="dateFormat"
+                                />
+                              </a-form-item>
+                                <div class="record-form-actions text-right">
+                                  <sdButton size="default" htmlType="Save" type="success">
+                                    {{ isLoading ? "Loading..." : "Submit" }}
+                                  </sdButton>
+                                </div>
+                              </a-form>
+                            </BasicFormWrapper>
+                          </a-modal>
+                        <!-- end of receive modal -->
 
                         <TableWrapper
                           class="table-data-view table-responsive"
@@ -188,6 +226,9 @@ import authHeader from "../../../services/auth-header";
 // import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
+import dayjs from "dayjs";
+
+const dateFormat = "YYYY-MM-DD";
 
 const columns = [
   {
@@ -246,6 +287,7 @@ export default defineComponent({
     const transferOuts = ref([]);
     const transferIns = ref([]);
     const { query } = useRoute();
+    const isOpen = ref(false);
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -255,6 +297,12 @@ export default defineComponent({
 
     const openmodal = () => {
       isModalOpen.value = true;
+    };
+
+    const openReceiveModal = (id) => {
+      console.log(id)
+      formState.transfer_id = id;
+      isOpen.value = true;
     };
 
     const fetchPosts = async()=>{
@@ -282,6 +330,8 @@ export default defineComponent({
       to_post_id: "",
       number_of_nets: "",
       comment: "",
+      date_received:"",
+      transfer_id: "",
     });
 
     const handleTransfer =  ()=>{
@@ -388,6 +438,57 @@ export default defineComponent({
     const handleCancel = () => {
       isModalOpen.value = false;
     };
+   
+    const handleCancelReceive = () => {
+      isOpen.value = false;
+    };
+
+    const receiveNets = async()=>{
+      const data = {
+        transfer_id: formState.transfer_id,
+        date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+        status: 1
+      };
+
+      try {
+        fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_post`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          })
+          .then((response) => response.json())
+          .then(({success,message}) => {
+            if(success){
+              notification.success({
+                message: "Success",
+                description: `Received successfully`
+              });
+            }else{
+              notification.error({
+                message: "Error",
+                description: `${message}`
+              });
+            }
+          }).catch((error)=>{
+            console.log(error)
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            });
+          });
+
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`
+        });
+      }
+
+    }
 
     onMounted(() => {
       fetchPosts();
@@ -395,6 +496,11 @@ export default defineComponent({
       fetchTransferIns();
     });
     return {
+      receiveNets,
+      handleCancelReceive,
+      dateFormat,
+      openReceiveModal,
+      isOpen,
       handleTransfer,
       transferOuts,
       transferIns,
