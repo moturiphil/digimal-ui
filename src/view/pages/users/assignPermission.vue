@@ -1,10 +1,6 @@
 <template>
   <Main>
-    <sdPageHeader title="Assign Permission to Role">
-      <sdButton class="btn-add_new" size="default" key="1" type="success">
-        <router-link to="/crud/axios-view">View All</router-link>
-      </sdButton>
-    </sdPageHeader>
+    <sdPageHeader ghost :title="`Assign Permissions to ${role_name}`" />
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -74,7 +70,7 @@ const AssignPermissions = defineComponent({
   },
 
   data() {
-    const { params } = useRoute();
+    const { params, query } = useRoute();
 
     const { state } = useStore();
     const API_URL = `${process.env.VUE_APP_BASE_URL}/assignPermissionsToRole/`;
@@ -86,7 +82,10 @@ const AssignPermissions = defineComponent({
     const roles = ref([]);
     const user_perm = []
     const role_id = params.id;
+    const role_name = query.name;
     const perm_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${role_id}`;
+    console.log(role_name);
+
 
     const { campaigns, loading } = reactive({
       campaigns: "",
@@ -243,6 +242,7 @@ const AssignPermissions = defineComponent({
       filterOption,
       permissions,
       targetKeys: [],
+      role_name,
     };
   },
   beforeRouteEnter(to, from, next) {
