@@ -72,6 +72,7 @@
                                   <sdButton
                                     @click="openReceiveModal(record.id)"
                                     type="success"
+                                    :disabled = "record.status == 1"
                                     size="extra-small">Receive</sdButton>
                                 </div>
                               </td>
@@ -256,11 +257,11 @@ const columns = [
     dataIndex: "issued_by",
     key: "id",
   },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "id",
-  },
+  // {
+  //   title: "Status",
+  //   dataIndex: "status",
+  //   key: "id",
+  // },
   {
     title: "Action",
     dataIndex: "action",
@@ -364,18 +365,21 @@ export default defineComponent({
                 description: `${message}`
               });
             }
+           isModalOpen.value = false;
+           window.location.reload();
           }).catch((error)=>{
-            console.log(error)
             notification.error({
               message: "Error",
               description: `${error}`
             });
+            isModalOpen.value = false;
           });
       } catch (error) {
         notification.error({
           message: "Error",
           description: `${error}`
         });
+
       }
     }
 
@@ -396,7 +400,14 @@ export default defineComponent({
               description: `${data.message}`
             });
           }
-        });
+        })
+        .catch((error)=>{
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+          isModalOpen.value = false;
+        })
       } catch (error) {
         notification.error({
           message: "Error",
@@ -422,7 +433,14 @@ export default defineComponent({
               description: `${data.message}`
             });
           }
-        });
+        })
+        .catch((error)=>{
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+          isModalOpen.value = false;
+        })
       } catch (error) {
         notification.error({
           message: "Error",
@@ -473,12 +491,14 @@ export default defineComponent({
                 description: `${message}`
               });
             }
+            isModalOpen.value = false;
+           window.location.reload();
           }).catch((error)=>{
-            console.log(error)
             notification.error({
               message: "Error",
               description: `${error}`
             });
+            isModalOpen.value = false;
           });
 
       } catch (error) {

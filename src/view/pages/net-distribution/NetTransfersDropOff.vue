@@ -65,12 +65,12 @@
                             :dataSource="transferIns"
                             :columns="columns"
                           >
-                            <template #action="{  }">
+                            <template #action="{ record  }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
                                   &nbsp;&nbsp;
                                   <sdButton
-                                    @click="openReceiveModal"
+                                    @click="openReceiveModal(record.id)"
                                     type="success"
                                     size="extra-small">Receive</sdButton>
                                 </div>
@@ -154,8 +154,8 @@
                         </a-modal>
                         <!-- end of modal -->
 
-                        <!-- receive nets modal -->
-                        <a-modal
+                       <!-- receive nets modal -->
+                       <a-modal
                             title="Receive Nets"
                             :visible="isOpen"
                             @cancel="handleCancelReceive"
@@ -168,50 +168,17 @@
                               layout="vertical"
                               name="addnew"
                               :model="formState"
-                              @finish="handleTransfer"
+                              @finish="receiveNets"
                               >
-                              <a-form-item name="from_post_id" label="From Post">
-                                <a-select
-                                  placeholder="Select  Post "
-                                  v-model:value="formState.from_post_id"
-                                  disabled
-                                >
-                                  <a-select-option
-                                    v-for="post in postdata"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
-                                </a-select>
-                                </a-form-item>
-                              <a-form-item name="to_post" label="To Post">
-                                <a-select
-                                  placeholder="Select  Post "
-                                  v-model:value="formState.to_post_id"
-                                >
-                                  <a-select-option
-                                    v-for="post in postdata"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
-                                </a-select>
-                                </a-form-item>
-                                <a-form-item name="no_of_nets" label="Number of nets">
-                                  <a-input
-                                    v-model:value="formState.number_of_nets"
-                                    placeholder="Number of nets"
-                                    type="number"
-                                  />
-                                </a-form-item>
-                                <a-form-item name="comment" label="Comment">
-                                  <a-input
-                                    v-model:value="formState.comment"
-                                    placeholder="Comment"
-                                  />
-                                </a-form-item>
+                              
+                              
+                              <a-form-item name="date_received" label="Date Received">
+                                <a-date-picker
+                                  :style="{ width: '100%' }"
+                                  v-model:value="formState.date_received"
+                                  :format="dateFormat"
+                                />
+                              </a-form-item>
                                 <div class="record-form-actions text-right">
                                   <sdButton size="default" htmlType="Save" type="success">
                                     {{ isLoading ? "Loading..." : "Submit" }}
@@ -219,7 +186,7 @@
                                 </div>
                               </a-form>
                             </BasicFormWrapper>
-                          </a-modal>
+                        </a-modal>
                         <!-- end of receive modal -->
                         <TableWrapper
                           class="table-data-view table-responsive"
@@ -337,7 +304,8 @@ export default defineComponent({
     const openmodal = () => {
       isModalOpen.value = true;
     };
-    const openReceiveModal = () => {
+    const openReceiveModal = (id) => {
+      formState.transfer_id = id;
       isOpen.value = true;
     };
 
@@ -371,6 +339,8 @@ export default defineComponent({
       number_of_nets: "",
       date_issued: "",
       comment: "",
+      date_received: "",
+      transfer_id: "",
     });
 
     const handleTransfer =  ()=>{
@@ -471,6 +441,54 @@ export default defineComponent({
       }
     }
 
+    const receiveNets = async()=>{
+      const data = {
+        transfer_id: formState.transfer_id,
+        date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+      };
+
+      try {
+        fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_drop_off_point`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          })
+          .then((response) => response.json())
+          .then(({success,message}) => {
+            if(success){
+              notification.success({
+                message: "Success",
+                description: `Received successfully`
+              });
+            }else{
+              notification.error({
+                message: "Error",
+                description: `${message}`
+              });
+            }
+            isModalOpen.value = false;
+           window.location.reload();
+          }).catch((error)=>{
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            });
+            isModalOpen.value = false;
+          });
+
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`
+        });
+      }
+
+    }
+
     const handleOk = async () => {
       isModalOpen.value = false;
     };
@@ -485,6 +503,7 @@ export default defineComponent({
       fetchTransferIns();
     });
     return {
+      receiveNets,
       handleCancelReceive,
       openReceiveModal,
       isOpen,
