@@ -1,6 +1,3 @@
-import FeaturesRoutes from "./FeaturesRoutes";
-import PageRoutes from "./PageRoutes";
-// import Components from "./Components";
 import Apps from "./Applications";
 
 const routes = [
@@ -396,8 +393,6 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/audit-logs/AuditLogs.vue"
       ),
   },
-  ...PageRoutes,
-  ...FeaturesRoutes,
   ...Apps,
 ];
 

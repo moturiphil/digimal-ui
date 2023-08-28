@@ -24,7 +24,7 @@
                     <div class="table-actions">
                       <sdButton 
                       type="success" 
-                      size="default" 
+                      size="extra-small" 
                       @click="goToBaleVerification(record.post_id, record.post_name, record.delivery_note_number, record.date_received, record.received_from, record.received_by )"
                       >
                       Verify
