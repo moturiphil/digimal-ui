@@ -192,6 +192,7 @@
 
                     <a-form-item name="no-of-days" label="No of Days">
                       <a-input-number
+                       type="number"
                         v-model:value="formState.no_of_days"
                         placeholder="No of Days"
                         :min="0"
@@ -209,7 +210,6 @@
 
                     <a-form-item name="venue" label="Venue">
                       <a-input
-                        type="number"
                         v-model:value="formState.venue"
                         placeholder="Input Venue"
                         @blur="validate('venue')"
