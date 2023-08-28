@@ -72,6 +72,7 @@
                                   <sdButton
                                     @click="openReceiveModal(record.id)"
                                     type="success"
+                                    :disabled="record.status === 1"
                                     size="extra-small">Receive</sdButton>
                                 </div>
                               </td>
@@ -200,11 +201,12 @@
                             :dataSource="transferOuts"
                             :columns="columns"
                           >
-                            <template #action="{  }">
+                            <template #action="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
                                   <sdButton
                                     type="success"
+                                    :disabled="record.status === 1"
                                     size="extra-small">Cancel</sdButton>
                                 </div>
                               </td>
@@ -262,11 +264,11 @@ const columns = [
     dataIndex: "issued_by",
     key: "id",
   },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "id",
-  },
+  // {
+  //   title: "Status",
+  //   dataIndex: "status",
+  //   key: "id",
+  // },
   {
     title: "Action",
     dataIndex: "action",
@@ -374,18 +376,21 @@ export default defineComponent({
                 description: `${data}`
               });
             }
+            isModalOpen.value = false;
           }).catch((error)=>{
-            console.log(error)
             notification.error({
               message: "Error",
               description: `${error}`
             });
+            isModalOpen.value = false;
+
           });
       } catch (error) {
         notification.error({
           message: "Error",
           description: `${error}`
         });
+        isModalOpen.value = false;
       }
     }
 
@@ -471,7 +476,7 @@ export default defineComponent({
               });
             }
             isModalOpen.value = false;
-           window.location.reload();
+          //  window.location.reload();
           }).catch((error)=>{
             notification.error({
               message: "Error",

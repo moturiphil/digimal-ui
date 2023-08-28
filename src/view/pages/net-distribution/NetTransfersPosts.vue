@@ -195,11 +195,12 @@
                             :dataSource="transferOuts"
                             :columns="columns"
                           >
-                            <template #action="{  }">
+                            <template #action="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
                                   <sdButton
                                     type="success"
+                                    :disabled = "record.status == 1"
                                     size="extra-small">Cancel</sdButton>
                                 </div>
                               </td>
