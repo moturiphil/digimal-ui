@@ -393,6 +393,12 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/audit-logs/AuditLogs.vue"
       ),
   },
+  {
+    path: "/404", // Use an absolute path
+    name: "404",
+    component: () =>
+      import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
+  },
   ...Apps,
 ];
 

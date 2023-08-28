@@ -34,10 +34,14 @@ const router = createRouter({
   routes,
 });
 
-
 router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
+
+  if (user_object && user_object.token && to.matched.length === 0) {
+    // User is logged in but the route is not defined, redirect to 404
+    next({ path: "/404" });
+  }
 
   if (user_object && user_object.token) {
     // User has a token, allow navigation
@@ -45,39 +49,15 @@ router.beforeEach((to, from, next) => {
   } else if (!user_object && to.name !== "login") {
     // User is not logged in and trying to access other route, redirect to login
     next({ name: "login" });
-  } else {
+  } 
+  else {
     // User is not logged in but is on the login page, allow navigation
     next();
   }
 
+
   window.scrollTo(0, 0);
 });
-
-// router.beforeEach((to, from, next) => {
-//   const user = sessionStorage.getItem("user");
-//   const user_object = JSON.parse(user);
-
-//   if (user_object && user_object.token) {
-//     // User has a token, check if the route exists
-//     const matchedRoute = router.resolve(to.path).route;
-    
-//     if (matchedRoute) {
-//       // The route exists, proceed with navigation
-//       next();
-//     } else {
-//       // Redirect to the 404 page for undefined routes
-//       next({ name: "404" });
-//     }
-//   } else if (!user_object && to.name !== "login") {
-//     // User is not logged in and trying to access other route, redirect to login
-//     next({ name: "login" });
-//   } else {
-//     // User is not logged in but is on the login page or has a token, allow navigation
-//     next();
-//   }
-
-//   window.scrollTo(0, 0);
-// });
 
 
 export default router;

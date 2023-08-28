@@ -23,11 +23,6 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetDeliveries.vue"
           ),
       },
-      // {
-      //   name: 'distribution-post',
-      //   path: 'distribution/post',
-      //   component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
-      // },
       {
         path: "receive-post-nets/",
         name: "receive-post-net",
@@ -133,14 +128,6 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/household/viewHouseholds.vue"
           ),
       },
-      // {
-      //   name: "chv",
-      //   path: "chv",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "Orders" */ "../view/pages/household/houseHoldCHV.vue"
-      //     ),
-      // },
     ],
   },
   {

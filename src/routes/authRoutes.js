@@ -8,12 +8,6 @@ const routes = [
       ),
   },
   {
-    path: "/404", // Use an absolute path
-    name: "404",
-    component: () =>
-      import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
-  },
-  {
     path: "set-password",
     name: "set-password",
     component: () =>
