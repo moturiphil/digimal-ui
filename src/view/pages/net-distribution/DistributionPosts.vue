@@ -127,8 +127,9 @@
                         <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
-                              path: `/nets/receive-post-nets`,
-                              query: { id: record.id, name: record.name},
+                              // path: `/nets/receive-post-nets`,
+                              path: `/nets/receive-nets-summary`,
+                              query: { id: record.id, name},
                             }"
                             class="btn-icon"
                             type="success"
