@@ -23,15 +23,15 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetDeliveries.vue"
           ),
       },
-      // {
-      //   name: 'distribution-post',
-      //   path: 'distribution/post',
-      //   component: () => import(/* webpackChunkName: "Orders" */ '../view/pages/net-distribution/CreatePost.vue'),
-      // },
       {
         path: "receive-post-nets/",
         name: "receive-post-net",
         component: () =>import("../view/pages/net-distribution/ReceiveNets.vue"),
+      },
+      {
+        path: "receive-nets-summary/",
+        name: "receive-nets-summary",
+        component: () =>import("../view/pages/net-distribution/ReceiveNetsSummary.vue"),
       },
       {
         path: "verify-post-nets/",
@@ -71,11 +71,27 @@ export default [
           ),
       },
       {
+        name: "nets-transfer-dropoff",
+        path: "nets-transfer-dropoff",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfersDropOff.vue"
+          ),
+      },
+      {
         name: "drop-off",
         path: "drop-off",
         component: () =>
           import(
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetsDropoff.vue"
+          ),
+      },
+      {
+        name: "net-transfers-post",
+        path: "net-transfers-post",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetTransfersPosts.vue"
           ),
       },
     ],
@@ -112,14 +128,6 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/household/viewHouseholds.vue"
           ),
       },
-      // {
-      //   name: "chv",
-      //   path: "chv",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "Orders" */ "../view/pages/household/houseHoldCHV.vue"
-      //     ),
-      // },
     ],
   },
   {

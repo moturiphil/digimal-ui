@@ -199,7 +199,7 @@
             </div>
           </OverviewSalesCard>
         </sdCards>
-        <sdCards headless>
+        <!-- <sdCards headless>
           <OverviewSalesCard>
             <div class="icon-box box-secondary">
               <SvgConverter
@@ -213,7 +213,7 @@
               </CardBarChart2>
             </div>
           </OverviewSalesCard>
-        </sdCards>
+        </sdCards> -->
       </a-col>
       <!-- <a-col :lg="16" :xs="24">
         <Suspense>

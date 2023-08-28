@@ -209,6 +209,7 @@
 
                     <a-form-item name="venue" label="Venue">
                       <a-input
+                        type="number"
                         v-model:value="formState.venue"
                         placeholder="Input Venue"
                         @blur="validate('venue')"

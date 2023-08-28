@@ -3,40 +3,8 @@
     <sdPageHeader title="User Roles">
       <template id="buttons"></template>
     </sdPageHeader>
-
-    <!-- sdPageBody -->
-
     <Main>
-      <a-row :gutter="16" class="search-row">
-        <!-- <sdButton class="btn-import" type="success">
-          <router-link
-            :to="{
-              path: `/assign-permission`,
-            }"
-            class="btn-icon"
-            type="success"
-            size="small"
-          >
-            &nbsp;&nbsp; Assign Role Permission
-          </router-link>
-        </sdButton> -->
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <!-- <sdButton class="btn-import" type="success" @click="exportUserData">
-          Export Users
-        </sdButton> -->
-        <br />
-        <br />
-        <a-col :xs="24" :sm="24" :md="12">
-          <sdAutoComplete
-            @onSearch="handleSearch"
-            placeholder="Search role"
-            :style="{ width: '80%', marginRight: '80px', height: '40px' }"
-          />
-        </a-col>
-      </a-row>
       <a-row :gutter="16" class="search-row"> </a-row>
-      <br />
-      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -56,7 +24,13 @@
                       <div class="table-actions">
                         <sdButton type="success" size="small">
                           <router-link
-                            :to="`/assign-permission/${record.id}`"
+                            :to="{
+                              path: `/assign-permission/${record.id}`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
+                            }"
                             class="btn-icon"
                             type="info"
                             shape="circle"
@@ -109,7 +83,7 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main},
+  components: { RecordViewWrapper, Main },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -132,7 +106,7 @@ const DragAndDropTable = defineComponent({
           method: "GET",
           headers: authHeader(),
         });
-        const data = await response.json();        
+        const data = await response.json();
         dataSource.value = data;
         console.log(dataSource.value);
       } catch (error) {

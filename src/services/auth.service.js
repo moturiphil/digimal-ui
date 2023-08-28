@@ -13,14 +13,11 @@ class AuthService {
         password: user.password
       })
       .then(response => {
-        // console.log(response);
-        // sessionStorage.setItem('person', JSON.stringify(response));
         if (response.data.token) {
           sessionStorage.setItem('user-config-token', JSON.stringify(response.data.token));
           sessionStorage.setItem('user', JSON.stringify(response.data));
         }
         const user = sessionStorage.getItem('user');
-        // console.log(response.data.token);
         console.log(user);
         return response;
       });
