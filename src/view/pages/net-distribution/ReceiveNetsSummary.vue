@@ -6,7 +6,7 @@
         <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
-              <sdButton
+              <!-- <sdButton
                   size="extra-small"
                   type="success"
                   @click="openmodal"
@@ -14,7 +14,7 @@
                   <sdFeatherIcons type="plus" size="16" /> 
                   Receive Nets
                 </sdButton>
-                <br/>
+                <br/> -->
               <div class="search-filter-menu">
                 <ul>
                   <li>
@@ -69,8 +69,9 @@
                                   <div class="table-actions">
                                     &nbsp;&nbsp;
                                     <sdButton
-                                      @click="openReceiveModal(record.id)"
+                                      @click="openReceiveModal(record.distribution_id)"
                                       type="success"
+                                      :disabled="record.status === 1"
                                       size="extra-small">Receive</sdButton>
                                   </div>
                                 </td>
@@ -79,7 +80,7 @@
                           </TableWrapper>
                           &nbsp;&nbsp;
                           <!-- Transfer modal -->
-                          <a-modal
+                          <!-- <a-modal
                             title="New Transfer"
                             :visible="isModalOpen"
                             @cancel="handleCancel"
@@ -143,7 +144,7 @@
                                 </div>
                               </a-form>
                             </BasicFormWrapper>
-                          </a-modal>
+                          </a-modal> -->
                           <!-- End of Transfer modal -->
   
                            <!-- receive nets modal -->
@@ -250,12 +251,12 @@
             dataIndex: "issued_by",
             key: "id",
         },
-        // {
-        //     title: "Action",
-        //     dataIndex: "action",
-        //     key: "id",
-        //     slots: { customRender: "action" },
-        // }
+        {
+            title: "Action",
+            dataIndex: "action",
+            key: "id",
+            slots: { customRender: "action" },
+        }
   ]
   
   const columns = [
@@ -316,6 +317,7 @@
       const fromDropoffpoint = ref([]);
       const { query } = useRoute();
       const isOpen = ref(false);
+      const post_id= query.id;
   
       const handleChange = (tab) => {
         activeClass.value = tab;
@@ -327,9 +329,8 @@
         isModalOpen.value = true;
       };
   
-      const openReceiveModal = (id) => {
-        console.log(id)
-        formState.transfer_id = id;
+      const openReceiveModal = (distribution_id) => {
+        formState.distribution_id = distribution_id;
         isOpen.value = true;
       };
   
@@ -354,20 +355,16 @@
       }
       
       const formState = reactive({
-        from_post_id: Number(query.id),
-        to_post_id: "",
-        number_of_nets: "",
-        comment: "",
         date_received:"",
-        transfer_id: "",
+        distribution_id:"",
       });
   
       const handleTransfer =  ()=>{
         const data = {
           from_post_id: formState.from_post_id,
           to_post_id: formState.to_post_id,
-          number_of_nets: Number(formState.number_of_nets),
-          comment: formState.comment
+          number_of_nets: formState.number_of_nets,
+          comment: formState.comment,
         };
         try {
             fetch(`${process.env.VUE_APP_BASE_URL}/transfer-nets`,
@@ -409,7 +406,7 @@
 
     //   const receiveFromWarehouse = async()=>{
     //     try {
-    //       await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${query.id}/2`,
+    //       await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/2`,
     //       {
     //         method: "GET",
     //         headers: authHeader(),
@@ -437,14 +434,13 @@
   
       const receiveFromDropOff = async()=>{
         try {
-          await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${query.id}/1`,
+          await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/1`,
           {
             method: "GET",
             headers: authHeader(),
           })
           .then((response) => response.json())
           .then(({success, data}) => {
-            console.log(data.length);
             if(success){
                 data.length > 0 ? fromDropoffpoint.value = data: fromDropoffpoint.value = [];
             }else{
@@ -477,13 +473,11 @@
   
       const receiveNets = async()=>{
         const data = {
-          transfer_id: formState.transfer_id,
           date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-          status: 1
         };
   
         try {
-          fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_post`,
+          fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_dropoff_point/${formState.distribution_id }/${post_id}`,
             {
               method: "POST",
               headers: {
@@ -505,12 +499,14 @@
                   description: `${message}`
                 });
               }
+              isOpen.value = false;
             }).catch((error)=>{
               console.log(error)
               notification.error({
                 message: "Error",
                 description: `${error}`
               });
+              isOpen.value = false;
             });
   
         } catch (error) {
@@ -518,6 +514,7 @@
             message: "Error",
             description: `${error}`
           });
+          isOpen.value = false;
         }
   
       }
