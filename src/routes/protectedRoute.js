@@ -1,20 +1,22 @@
-import { createWebHistory, createRouter } from 'vue-router';
-import adminRoutes from './AdminRoutes';
-import authRoutes from './authRoutes';
-import store from '@/vuex/store';
+import { createWebHistory, createRouter } from "vue-router";
+import adminRoutes from "./AdminRoutes";
+import authRoutes from "./authRoutes";
+// import store from "@/vuex/store";
 
 const routes = [
   {
-    name: 'Admin',
-    path: '/',
-    component: () => import(/* webpackChunkName: "admin" */ '@/layout/withAdminLayout.vue'),
+    name: "Admin",
+    path: "/",
+    component: () =>
+      import(/* webpackChunkName: "admin" */ "@/layout/withAdminLayout.vue"),
     children: [...adminRoutes],
     meta: { auth: false },
   },
   {
-    name: 'Auth',
-    path: '/auth',
-    component: () => import(/* webpackChunkName: "auth" */ '@/layout/withAuthLayout.vue'),
+    name: "Auth",
+    path: "/auth",
+    component: () =>
+      import(/* webpackChunkName: "auth" */ "@/layout/withAuthLayout.vue"),
     children: [...authRoutes],
     meta: { auth: true },
   },
@@ -22,41 +24,40 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(
-    process.env.NODE_ENV === 'production'
+    process.env.NODE_ENV === "production"
       ? process.env.VUE_APP_SUB_ROUTE
         ? process.env.VUE_APP_SUB_ROUTE
         : process.env.BASE_URL
-      : process.env.BASE_URL,
+      : process.env.BASE_URL
   ),
-  linkExactActiveClass: 'active',
+  linkExactActiveClass: "active",
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-  
-//   if (to.meta.auth && store.state.auth.login) {
-//     // next({ to: '/' });
-//     next('/');
-//   } else if (!to.meta.auth && !store.state.auth.login) {
-//     next({ name: 'login' });
-//   } else {    
-//     next();
-//   }
-
-//   window.scrollTo(0,0);
-// });
 router.beforeEach((to, from, next) => {
-  
-  // console.log(store.state.auth.login);
-  if (store) {
+  const user = sessionStorage.getItem("user");
+  const user_object = JSON.parse(user);
+
+  if (user_object && user_object.token && to.matched.length === 0) {
+    // User is logged in but the route is not defined, redirect to 404
+    next({ path: "/404" });
+  }
+
+  if (user_object && user_object.token) {
+    // User has a token, allow navigation
     next();
-  } else if (!to.meta.auth && !store.state.auth.login) {
-    next({ name: 'login' });
-  } else {    
+  } else if (!user_object && to.name !== "login") {
+    // User is not logged in and trying to access other route, redirect to login
+    next({ name: "login" });
+  } 
+  else {
+    // User is not logged in but is on the login page, allow navigation
     next();
   }
 
-  window.scrollTo(0,0);
+
+  window.scrollTo(0, 0);
 });
+
 
 export default router;
