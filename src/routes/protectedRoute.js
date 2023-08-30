@@ -49,10 +49,11 @@ router.beforeEach((to, from, next) => {
   if (user_object && user_object.token) {
     // User has a token, allow navigation
     next();
-  } else if (!user_object && to.name !== "login") {
-    // User is not logged in and trying to access other route, redirect to login
-    next({ name: "login" });
-  } 
+  }
+  // } else if (!user_object && to.name !== "login") {
+  //   // User is not logged in and trying to access other route, redirect to login
+  //   next({ name: "login" });
+  // } 
   else {
     // User is not logged in but is on the login page, allow navigation
     next();
