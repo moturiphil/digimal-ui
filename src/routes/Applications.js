@@ -63,6 +63,14 @@ export default [
           ),
       },
       {
+        name: "receive-nets-dropoff",
+        path: "receive-nets-dropoff",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/ReceiveNetsDropOff.vue"
+          ),
+      },
+      {
         name: "distribution-point-nets",
         path: "distribution-point-nets",
         component: () =>

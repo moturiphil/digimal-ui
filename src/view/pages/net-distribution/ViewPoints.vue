@@ -61,6 +61,24 @@
                         <sdButton size="extra-small" type="success" @click="openModal(record.id)">
                          Issue Nets
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/nets/receive-nets-dropoff`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; Returned Nets
+                          </router-link>
+                        </sdButton>
+
                       </div>
                     </td>
                   </template>
