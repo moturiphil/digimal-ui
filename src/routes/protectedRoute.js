@@ -38,6 +38,9 @@ router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
 
+  console.log(user_object);
+  
+
   if (user_object && user_object.token && to.matched.length === 0) {
     // User is logged in but the route is not defined, redirect to 404
     next({ path: "/404" });
