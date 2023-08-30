@@ -47,22 +47,38 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
+                  <template #users="{ record }">
+                    <td :style="{ 'margin-left': '4px' }">
+                      <div class="table-actions">
+                        <label class="switch">
+                          <input
+                            type="checkbox"
+                            :disabled="isDeactivated"
+                            @change="deactivateUser(record.id)"
+                            v-model="record.status"
+                          />
+                          <span class="slider round"></span>
+                        </label>
+                        <span v-if="record.status">Active</span>
+                        <span v-else>Inactive</span>
+                      </div>
+                    </td>
+                  </template>
+
                   <!-- <template #users="{ record }">
                     <td :style="{ 'margin-left': '4px' }">
                       <div class="table-actions">
-                        <sdButton
-                          size="small"
-                          type="success"
-                          :disabled="isStarting"
-                          @click="startEvent(record.id)"
-                          v-if="!record.status"
-                        >
-                          <span>
-                            <sdFeatherIcons type="clock" size="small" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
-                        </sdButton>
-                        &nbsp;&nbsp;
+                        <label class="switch">
+                          <input
+                            type="checkbox"
+                            :disabled="isStarting"
+                            @change="toggleUserStatus(record.id, record.status)"
+                            v-model="record.status"
+                          />
+                          <span class="slider round"></span>
+                        </label>
+                        <span v-if="record.status">Inactive</span>
+                        <span v-else>Active</span>
                       </div>
                     </td>
                   </template> -->
@@ -134,7 +150,43 @@ const columns = [
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
-  components: { RecordViewWrapper, Main},
+  components: { RecordViewWrapper, Main },
+
+  // data() {
+  //   return {
+  //     users: [], // This is where your users data should be stored
+  //     // Other data properties...
+  //   };
+  // },
+
+  // methods : {
+  //   toggleUserStatus(id, status) {
+  //     const confirmMessage = status
+  //       ? "Are you sure to activate this user?"
+  //       : "Are you sure to deactivate this user?";
+  //     const confirm = window.confirm(confirmMessage);
+
+  //     if (confirm) {
+  //       axios
+  //         .post( `${process.env.VUE_APP_BASE_URL}/users/${id}/toggleStatus`)
+  //         .then((response) => {
+  //           // Assuming the API returns a success response
+  //           console.log(response);
+  //           if (response.data.success) {
+  //             // Update the user's status in your data
+  //             // For example, assuming your data structure is an array called 'users'
+  //             // const user = users.find((user) => user.id === id);
+  //             // if (user) {
+  //             //   user.status = !user.status; // Toggle the status
+  //             // }
+  //           }
+  //         })
+  //         .catch((error) => {
+  //           console.error("Error toggling user status:", error);
+  //         });
+  //     }
+  //   },
+  // },
 
   setup() {
     const { state, dispatch } = useStore();
@@ -177,6 +229,23 @@ const DragAndDropTable = defineComponent({
       return false;
     };
 
+    const deactivateUser = async (id) => {
+      console.log(id);
+      const confirm = window.confirm("Are you sure to deactivate this user?");
+      if (confirm) {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/users/${id}/toggleStatus`,
+          {
+            method: "POST",
+            headers: authHeader(),
+          }
+        );
+        console.log(response);
+      }
+      return false;
+    };
+
+
     const formState = reactive({
       searchItem: "",
     });
@@ -200,6 +269,9 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
+      isDeactivated: false,
+      deactivateUser,
+      // toggleUserStatus /*, deactivate user */,
     };
   },
 });
@@ -208,8 +280,62 @@ export default DragAndDropTable;
 </script>
 
 <style>
-.search-row {
-  display: flex;
-  align-items: center;
+/* You can style the toggle switch as needed */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #1EC997;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #1EC997;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }
 </style>
