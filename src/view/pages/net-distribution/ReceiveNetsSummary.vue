@@ -277,6 +277,7 @@
                                   <sdButton
                                     type="success"
                                     :disabled = "record.status == 1"
+                                    @click="cancelTransfer(record.id)"
                                     size="extra-small">Cancel</sdButton>
                                 </div>
                               </td>
@@ -947,6 +948,40 @@
         });
       }
       }
+
+      const cancelTransfer = async(id)=>{
+
+          try {
+            await fetch(`${process.env.VUE_APP_BASE_URL}/cancel_post_net_transfer/${id}`,{
+              method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...authHeader(),
+                },
+                body: null,
+            })
+            .then(response =>response.json())
+            .then(({success, message})=>{
+              if(success){
+                  notification.success({
+                    message: "Success",
+                    description: `${message}`
+                  });
+                }else{
+                  notification.error({
+                    message: "Error",
+                    description: `${message}`
+                  });
+                }
+            })
+          } catch (error) {
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            })
+          }
+
+          }
   
       onMounted(() => {
         fetchPosts();
@@ -957,6 +992,7 @@
         fetchTransferOuts();
       });
       return {
+        cancelTransfer,
         handleReturns,
         post_name,
         returnsModalOpen,

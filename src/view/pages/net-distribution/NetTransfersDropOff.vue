@@ -468,7 +468,7 @@ export default defineComponent({
             if(success){
               notification.success({
                 message: "Success",
-                description: `${message}`
+                description: `Received successfully`
               });
             }else{
               notification.error({
@@ -519,7 +519,7 @@ export default defineComponent({
           if(success){
               notification.success({
                 message: "Success",
-                description: `Cancelled successfully`
+                description: `${message}`
               });
             }else{
               notification.error({
