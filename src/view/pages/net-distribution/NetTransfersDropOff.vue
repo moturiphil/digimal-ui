@@ -207,6 +207,7 @@
                                   <sdButton
                                     type="success"
                                     :disabled="record.status === 1"
+                                    @click="cancelTransfer(record.id)"
                                     size="extra-small">Cancel</sdButton>
                                 </div>
                               </td>
@@ -467,7 +468,7 @@ export default defineComponent({
             if(success){
               notification.success({
                 message: "Success",
-                description: `Received successfully`
+                description: `${message}`
               });
             }else{
               notification.error({
@@ -500,7 +501,41 @@ export default defineComponent({
 
     const handleCancel = () => {
       isModalOpen.value = false;
-    };
+    }; 
+
+    const cancelTransfer = async(id)=>{
+
+      try {
+        await fetch(`${process.env.VUE_APP_BASE_URL}/cancel_net_transfer_to_drop_off_point/${id}`,{
+          method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: null,
+        })
+        .then(response =>response.json())
+        .then(({success, message})=>{
+          if(success){
+              notification.success({
+                message: "Success",
+                description: `Cancelled successfully`
+              });
+            }else{
+              notification.error({
+                message: "Error",
+                description: `${message}`
+              });
+            }
+        })
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`
+        })
+      }
+
+    }
 
     onMounted(() => {
       fetchPosts();
@@ -508,6 +543,7 @@ export default defineComponent({
       fetchTransferIns();
     });
     return {
+      cancelTransfer,
       receiveNets,
       handleCancelReceive,
       openReceiveModal,
