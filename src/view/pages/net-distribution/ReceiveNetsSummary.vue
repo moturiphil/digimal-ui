@@ -1,6 +1,6 @@
 <template>
     <div>
-      <sdPageHeader ghost title="Nets Received Summary" />
+      <sdPageHeader ghost :title="`Nets Summary at ${post_name }`" />
       <Main>
   
         <SearchResultWrapper>
@@ -35,6 +35,15 @@
                       href="#"
                       >
                       Nets Transfer
+                      </a>
+                  </li>
+                  <li>
+                    <a
+                      :class="activeTransaction === 'return' ? 'active' : 'deactivate'"
+                      @click="handleTransactions('return')"
+                      href="#"
+                      >
+                      Return Nets to Drop Off Point
                       </a>
                   </li>
                 </ul>
@@ -378,6 +387,60 @@
                               </BasicFormWrapper>
                             </a-modal>
                           <!-- end of receive modal -->
+
+                          <!-- Return nets modal -->
+                          <a-modal
+                              title="Return Nets"
+                              :visible="returnsModalOpen"
+                              @cancel="handleReturnsCancel"
+                              width="50%"
+                            >
+                              <BasicFormWrapper>
+                                <a-form
+                                class="add-transfer-form"
+                                :style="{ width: '100%' }"
+                                layout="vertical"
+                                name="addnew"
+                                :model="returns_formState"
+                                @finish="handleReturns"
+                                >
+                                <a-form-item name="to_drop_off" label="To Drop Off Point">
+                                  <a-select
+                                    placeholder="Select Drop Off Point "
+                                    v-model:value="returns_formState.to_drop_off_point_id"
+                                  >
+                                    <a-select-option
+                                      v-for="dp in dropoffpoints"
+                                      :key="dp.id"
+                                      v-model:value="dp.id"
+                                    >
+                                      {{ dp.name }}
+                                    </a-select-option>
+                                  </a-select>
+                                  </a-form-item>
+                                  <a-form-item name="no_of_nets" label="Number of nets">
+                                    <a-input
+                                      v-model:value="returns_formState.number_of_nets"
+                                      placeholder="Number of nets"
+                                      type="number"
+                                    />
+                                  </a-form-item>
+                                  <a-form-item name="date_returned" label="Date Returned">
+                                  <a-date-picker
+                                    :style="{ width: '100%' }"
+                                    v-model:value="returns_formState.date_returned"
+                                    :format="dateFormat"
+                                  />
+                                </a-form-item>
+                                  <div class="record-form-actions text-right">
+                                    <sdButton size="default" htmlType="Save" type="success">
+                                      {{ isLoading ? "Loading..." : "Submit" }}
+                                    </sdButton>
+                                  </div>
+                                </a-form>
+                              </BasicFormWrapper>
+                            </a-modal>
+                          <!-- end of return nets modal -->
                           
                         </div>
                       </sdCards>
@@ -528,6 +591,7 @@
       const activeTransaction = ref("receive");
       const transaction_type = ref("");
       const postdata = ref([]);
+      const dropoffpoints = ref([]);
       const fromWarehouse = ref([]);
       const fromDropoffpoint = ref([]);
       const transferIns = ref([]);
@@ -536,19 +600,41 @@
       const isOpen = ref(false);
       const post_id= query.id;
       const isModalOpen = ref(false);
-  
-      const handleChange = (tab) => {
-        activeClass.value = tab;
-      };
+      const returnsModalOpen = ref(false);
+      const post_name = query.name;
+
+      const formState = reactive({
+        date_received:"",
+        distribution_id:"",
+      });
       
+      const trans_formState = reactive({
+        from_post_id: Number(query.id),
+        to_post_id: "",
+        number_of_nets: "",
+        comment: "",
+        date_received:"",
+        transfer_id: "",
+      });
+
+      const returns_formState = reactive({
+        from_post_id: Number(query.id),
+        to_drop_off_point_id: "",
+        number_of_nets: "",
+        date_returned:"",
+      });
+  
+      const handleChange = (tab) => activeClass.value = tab;
+      const openmodal = () => isModalOpen.value = true;
+      const openReturnsModal = () => returnsModalOpen.value = true;
+      const handleOk = async () => isModalOpen.value = false;
+      const handleCancel = () =>  isModalOpen.value = false;
+      const handleCancelReceive = () =>  isOpen.value = false;
+      const handleReturnsCancel = () =>returnsModalOpen.value = false;
+
       const handleTransactions = (tab) => {
         activeTransaction.value = tab;
-        tab === "receive" ? handleChange("do_point") : handleChange("transfer_ins");
-        // openmodal();
-      };
-  
-      const openmodal = () => {
-        isModalOpen.value = true;
+        tab === "receive" ? handleChange("do_point") : tab ==="transfer"? handleChange("transfer_ins"): tab ==="return"? openReturnsModal(): null;
       };
   
       const openReceiveModal = (type, id) => {
@@ -575,19 +661,26 @@
           });
         }
       }
-      
-      const formState = reactive({
-        date_received:"",
-        distribution_id:"",
-      });
-      const trans_formState = reactive({
-      from_post_id: Number(query.id),
-      to_post_id: "",
-      number_of_nets: "",
-      comment: "",
-      date_received:"",
-      transfer_id: "",
-    });
+
+      const fetchDropoff = async()=>{ 
+        try {
+           await fetch(`${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+              dropoffpoints.value = data.data;
+            });
+          
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
   
       const handleTransfer =  ()=>{
         const data = {
@@ -619,6 +712,52 @@
                   description: `${message}`
                 });
               }
+              isModalOpen.value = false;
+            }).catch((error)=>{
+              notification.error({
+                message: "Error",
+                description: `${error}`
+              });
+            });
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
+
+      const handleReturns =()=>{
+        const data = {
+          from_post_id: returns_formState.from_post_id,
+          to_drop_off_point_id: returns_formState.to_drop_off_point_id,
+          number_of_nets: returns_formState.number_of_nets,
+          date_returned: dayjs(returns_formState.date_returned).format("YYYY-MM-DD"),
+        };
+        try {
+            fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(data),
+            })
+            .then((response) => response.json())
+            .then(({success,message}) => {
+              if(success){
+                notification.success({
+                  message: "Success",
+                  description: `Successfully returned nets to drop off point`
+                });
+              }else{
+                notification.error({
+                  message: "Error",
+                  description: `${message}`
+                });
+              }
+              returnsModalOpen.value = false;
             }).catch((error)=>{
               console.log(error)
               notification.error({
@@ -635,58 +774,58 @@
       }
 
       const receiveNets = async()=>{
-      const data = {
-        transfer_id: trans_formState.transfer_id,
-        date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-        status: 1
-      };
-      const rec_data = {
-          date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-      };
-      const payload = transaction_type.value === "transfers" ? data : rec_data;
-      const url = transaction_type.value === "transfers" ? "receive_nets_from_post" : `receive_nets_from_dropoff_point/${formState.distribution_id }/${post_id}`
+          const data = {
+            transfer_id: trans_formState.transfer_id,
+            date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+            status: 1
+          };
+          const rec_data = {
+              date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+          };
+          const payload = transaction_type.value === "transfers" ? data : transaction_type.value === "receive"? rec_data: null
+          const url = transaction_type.value === "transfers" ? "receive_nets_from_post" : transaction_type.value === "receive" ?`receive_nets_from_dropoff_point/${formState.distribution_id }/${post_id}`: null
 
-      try {
-        fetch(`${process.env.VUE_APP_BASE_URL}/${url}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(payload),
-          })
-          .then((response) => response.json())
-          .then(({success,message}) => {
-            if(success){
-              notification.success({
-                message: "Success",
-                description: `Received successfully`
+          try {
+            fetch(`${process.env.VUE_APP_BASE_URL}/${url}`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...authHeader(),
+                },
+                body: JSON.stringify(payload),
+              })
+              .then((response) => response.json())
+              .then(({success,message}) => {
+                if(success){
+                  notification.success({
+                    message: "Success",
+                    description: `Received successfully`
+                  });
+                }else{
+                  notification.error({
+                    message: "Error",
+                    description: `${message}`
+                  });
+                }
+                isModalOpen.value = false;
+              //  window.location.reload();
+              }).catch((error)=>{
+                notification.error({
+                  message: "Error",
+                  description: `${error}`
+                });
+                isModalOpen.value = false;
               });
-            }else{
-              notification.error({
-                message: "Error",
-                description: `${message}`
-              });
-            }
-            isModalOpen.value = false;
-           window.location.reload();
-          }).catch((error)=>{
+
+          } catch (error) {
             notification.error({
               message: "Error",
               description: `${error}`
             });
-            isModalOpen.value = false;
-          });
+          }
 
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`
-        });
       }
-
-    }
 
     //   const receiveFromWarehouse = async()=>{
     //     try {
@@ -774,9 +913,9 @@
           description: `${error}`
         });
       }
-    }
+      }
 
-    const fetchTransferIns = async()=>{
+      const fetchTransferIns = async()=>{
       try {
         await fetch(`${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/2`,
         {
@@ -807,82 +946,29 @@
           description: `${error}`
         });
       }
-    }
-  
-      const handleOk = async () => {
-        isModalOpen.value = false;
-      };
-  
-      const handleCancel = () => {
-        isModalOpen.value = false;
-      };
-     
-      const handleCancelReceive = () => {
-        isOpen.value = false;
-      };
-  
-      // const receiveNets__ = async()=>{
-      //   const data = {
-      //     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-      //   };
-  
-      //   try {
-      //     fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_dropoff_point/${formState.distribution_id }/${post_id}`,
-      //       {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //           ...authHeader(),
-      //         },
-      //         body: JSON.stringify(data),
-      //       })
-      //       .then((response) => response.json())
-      //       .then(({success,message}) => {
-      //         if(success){
-      //           notification.success({
-      //             message: "Success",
-      //             description: `Received successfully`
-      //           });
-      //         }else{
-      //           notification.error({
-      //             message: "Error",
-      //             description: `${message}`
-      //           });
-      //         }
-      //         isOpen.value = false;
-      //       }).catch((error)=>{
-      //         console.log(error)
-      //         notification.error({
-      //           message: "Error",
-      //           description: `${error}`
-      //         });
-      //         isOpen.value = false;
-      //       });
-  
-      //   } catch (error) {
-      //     notification.error({
-      //       message: "Error",
-      //       description: `${error}`
-      //     });
-      //     isOpen.value = false;
-      //   }
-  
-      // }
+      }
   
       onMounted(() => {
         fetchPosts();
         // receiveFromWarehouse();
+        fetchDropoff();
         receiveFromDropOff();
         fetchTransferIns();
         fetchTransferOuts();
       });
       return {
+        handleReturns,
+        post_name,
+        returnsModalOpen,
+        returns_formState,
         activeTransaction,
         handleTransactions,
         transferscolumns,
+        dropoffpoints,
         do_columns,
         receiveNets,
         handleCancelReceive,
+        handleReturnsCancel,
         dateFormat,
         openReceiveModal,
         isOpen,
