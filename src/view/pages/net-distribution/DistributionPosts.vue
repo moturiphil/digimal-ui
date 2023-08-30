@@ -158,7 +158,7 @@
                           <!-- <sdFeatherIcons type="mail"    /> -->
                           &nbsp;&nbsp; Message HH's
                         </sdButton>
-                        &nbsp;&nbsp;
+                        <!-- &nbsp;&nbsp;
                         <sdButton type="warning" size="extra-small">
                           <router-link
                             :to="{
@@ -171,7 +171,7 @@
                           >
                             &nbsp;&nbsp; Net Transfers
                           </router-link>
-                        </sdButton>
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>
