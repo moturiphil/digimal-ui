@@ -80,8 +80,7 @@ import { reactive, ref, defineComponent, computed } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-// import { useRouter } from "vue-router";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 // testing app
 
@@ -97,7 +96,7 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    // const router = useRouter();
+    const router = useRouter();
 
     const { params, query } = useRoute();
 
@@ -214,6 +213,7 @@ const AddNew = defineComponent({
           console.log(success);
           console.log(data);
           if (success) {
+            router.push("/event-payroll-matrix");
             notification["success"]({
               message: "Event Matrix Assigned",
               description: `Event Matrix assigned successfully.`,

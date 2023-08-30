@@ -30,7 +30,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton type="success" size="small" @click="viewMatrix()">
+                                  <sdButton type="success" size="extra-small" @click="viewMatrix()">
                                     &nbsp;&nbsp;
                                     <router-link
                                       :to="{
@@ -56,7 +56,7 @@
 
                                   <sdButton
                                     @click="viewMatrix()"
-                                    size="small"
+                                    size="extra-small"
                                     type="success"
                                   >
                                     <router-link
@@ -300,12 +300,3 @@ export default defineComponent({
 }
 </style>
 
-<style>
-/* .badge-green {
-  background-color: #1ec997;
-  color: white;
-  padding: 4px;
-  margin-bottom: 18px;
-  border-radius: 3px;
-} */
-</style>
