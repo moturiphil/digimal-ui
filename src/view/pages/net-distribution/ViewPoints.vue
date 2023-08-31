@@ -91,6 +91,7 @@
               :visible="isModalOpen"
               @cancel="handleCancelReceive"
               width="50%"
+              footer=""
             >
               <BasicFormWrapper>
                 <a-form
@@ -115,12 +116,21 @@
                     </a-select-option>
                   </a-select>
                   </a-form-item>
-                  <a-form-item name="bale_size" label="Bale Size">
+                  <!-- <a-form-item name="bale_size" label="Bale Size">
                     <a-input
                       v-model:value="formState.bale_size"
                       placeholder="Bale size"
                       type="number"
                     />
+                  </a-form-item> -->
+                  <a-form-item name="bale_size" label="Bale Size">
+                      <a-select
+                        v-model:value="formState.bale_size"
+                        placeholder="Select Bale Size"
+                      >
+                        <a-select-option value=40 >40</a-select-option>
+                        <a-select-option value=50 >50</a-select-option>
+                      </a-select>
                   </a-form-item>
                   <a-form-item name="no_of_bales" label="Number of bales">
                     <a-input

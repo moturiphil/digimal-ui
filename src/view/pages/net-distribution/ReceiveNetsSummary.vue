@@ -37,15 +37,7 @@
                       Return Nets to Drop Off Point
                       </a>
                   </li>
-                  <li>
-                      <a
-                      :class="activeTransaction === 'message' ? 'active' : 'deactivate'"
-                      @click="notifyHH()"
-                      href="#"
-                      >
-                      Message HH's
-                      </a>
-                  </li>
+                  
                 </ul>
               
               </div>
@@ -252,6 +244,7 @@
                               :visible="isModalOpen"
                               @cancel="handleCancel"
                               width="50%"
+                              footer=""
                             >
                               <BasicFormWrapper>
                                 <a-form
@@ -320,6 +313,7 @@
                               :visible="isOpen"
                               @cancel="handleCancelReceive"
                               width="50%"
+                              footer=""
                             >
                               <BasicFormWrapper>
                                 <a-form
@@ -355,6 +349,7 @@
                               :visible="returnsModalOpen"
                               @cancel="handleReturnsCancel"
                               width="50%"
+                              footer=""
                             >
                               <BasicFormWrapper>
                                 <a-form
@@ -675,11 +670,15 @@
                 });
               }
               isModalOpen.value = false;
+              trans_formState.to_post_id =""
+              trans_formState.number_of_nets= ""
+              trans_formState.comment=""
             }).catch((error)=>{
               notification.error({
                 message: "Error",
                 description: `${error}`
               });
+              isModalOpen.value = false;
             });
         } catch (error) {
           notification.error({
@@ -720,6 +719,11 @@
                 });
               }
               returnsModalOpen.value = false;
+              
+              returns_formState.to_drop_off_point_id =""
+              returns_formState.number_of_nets= ""
+              returns_formState.date_returned=""
+
             }).catch((error)=>{
               console.log(error)
               notification.error({
@@ -789,35 +793,6 @@
 
       }
 
-      
-      const notifyHH = async () => {
-        handleTransactions('message')
-        try {
-          const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/notify_households?post_id=${query.id}`,
-            {
-              method: "POST",
-              headers: authHeader(),
-            }
-          );
-          const data = await response.json();
-          if (data.success == true) {
-            notification.success({
-              message: "Success",
-              description: data.message,
-            });
-            // window.location.reload();
-          } else {
-            notification.error({
-              message: "Error",
-              description: data.message,
-            });
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
     //   const receiveFromWarehouse = async()=>{
     //     try {
     //       await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/2`,
@@ -865,7 +840,6 @@
             }
           });
         } catch (error) {
-            console.log(error)
           notification.error({
             message: "Error",
             description: `${error}`
@@ -896,7 +870,6 @@
             message: "Error",
             description: `${error}`
           });
-          isModalOpen.value = false;
         })
       } catch (error) {
         notification.error({
@@ -971,7 +944,7 @@
             })
           }
 
-          }
+      }
   
       onMounted(() => {
         fetchPosts();
@@ -982,7 +955,6 @@
         fetchTransferOuts();
       });
       return {
-        notifyHH,
         cancelTransfer,
         handleReturns,
         post_name,

@@ -86,6 +86,7 @@
                           :visible="isModalOpen"
                           @cancel="handleCancel"
                           width="50%"
+                          footer=""
                         >
                           <BasicFormWrapper>
                             <a-form
@@ -161,6 +162,7 @@
                             :visible="isOpen"
                             @cancel="handleCancelReceive"
                             width="50%"
+                            footer=""
                           >
                             <BasicFormWrapper>
                               <a-form
@@ -297,24 +299,28 @@ export default defineComponent({
     const transferIns = ref([]);
     const { query } = useRoute();
     const isOpen= ref(false);
-
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-
     const isModalOpen = ref(false);
 
-    const openmodal = () => {
-      isModalOpen.value = true;
-    };
+
+    const handleChange = (tab) =>  activeClass.value = tab;
+    const openmodal = () => isModalOpen.value = true;
+    const handleCancelReceive = () => isOpen.value = false;
+    const handleOk = async () => isModalOpen.value = false;
+    const handleCancel = () => isModalOpen.value = false;
     const openReceiveModal = (id) => {
       formState.transfer_id = id;
       isOpen.value = true;
     };
 
-    const handleCancelReceive = () => {
-      isOpen.value = false;
-    };
+    const formState = reactive({
+      from_dropoff_id: Number(query.id),
+      to_dropoff_id: "",
+      number_of_nets: "",
+      date_issued: "",
+      comment: "",
+      date_received: "",
+      transfer_id: "",
+    });
 
     const fetchPosts = async()=>{
       try {
@@ -335,16 +341,6 @@ export default defineComponent({
         });
       }
     }
-    
-    const formState = reactive({
-      from_dropoff_id: Number(query.id),
-      to_dropoff_id: "",
-      number_of_nets: "",
-      date_issued: "",
-      comment: "",
-      date_received: "",
-      transfer_id: "",
-    });
 
     const handleTransfer =  ()=>{
       const data = {
@@ -378,6 +374,11 @@ export default defineComponent({
               });
             }
             isModalOpen.value = false;
+            
+            formState.to_dropoff_id = "";
+            formState.number_of_nets = "";
+            formState.date_issued = "";
+            formState.comment = "";
           }).catch((error)=>{
             notification.error({
               message: "Error",
@@ -476,14 +477,14 @@ export default defineComponent({
                 description: `${message}`
               });
             }
-            isModalOpen.value = false;
+            isOpen.value = false;
           //  window.location.reload();
           }).catch((error)=>{
             notification.error({
               message: "Error",
               description: `${error}`
             });
-            isModalOpen.value = false;
+            isOpen.value = false;
           });
 
       } catch (error) {
@@ -494,14 +495,6 @@ export default defineComponent({
       }
 
     }
-
-    const handleOk = async () => {
-      isModalOpen.value = false;
-    };
-
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    }; 
 
     const cancelTransfer = async(id)=>{
 

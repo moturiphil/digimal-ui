@@ -65,6 +65,7 @@
                               :visible="isOpen"
                               @cancel="handleCancelReceive"
                               width="50%"
+                              footer=""
                             >
                               <BasicFormWrapper>
                                 <a-form
@@ -92,32 +93,7 @@
                                 </a-form>
                               </BasicFormWrapper>
                             </a-modal>
-                          <!-- end of receive modal -->
-  
-                          <!-- <TableWrapper
-                            class="table-data-view table-responsive"
-                            v-show="activeClass === 'transfer_outs'"
-                          >
-                            <a-table
-                              :pagination="{
-                                pageSize: 40,
-                                showSizeChanger: true,
-                              }"
-                              :dataSource="transferOuts"
-                              :columns="columns"
-                            >
-                              <template #action="{ record }">
-                                <td :style="{ 'margin-left': '3px' }">
-                                  <div class="table-actions">
-                                    <sdButton
-                                      type="success"
-                                      :disabled = "record.status == 1"
-                                      size="extra-small">Cancel</sdButton>
-                                  </div>
-                                </td>
-                              </template>
-                            </a-table>
-                          </TableWrapper> -->
+                        
                         </div>
                       </sdCards>
                     </a-col>
@@ -297,14 +273,14 @@
                   description: `${message}`
                 });
               }
-              isModalOpen.value = false;
+              isOpen.value = false;
              window.location.reload();
             }).catch((error)=>{
               notification.error({
                 message: "Error",
                 description: `${error}`
               });
-              isModalOpen.value = false;
+              isOpen.value = false;
             });
   
         } catch (error) {

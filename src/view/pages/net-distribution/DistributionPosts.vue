@@ -70,7 +70,7 @@
                             shape="circle"
                           >
                             <!-- <sdFeatherIcons type="mail" size="16" /> -->
-                            &nbsp;&nbsp; Receive Nets
+                            &nbsp;&nbsp; Manage Inventory
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -87,7 +87,11 @@
                             &nbsp;&nbsp; Assign Post Workers
                           </router-link>
                         </sdButton>
-                      
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
+                          <!-- <sdFeatherIcons type="mail"    /> -->
+                          &nbsp;&nbsp; Message HH's
+                        </sdButton>
                        
                       </div>
                     </td>
