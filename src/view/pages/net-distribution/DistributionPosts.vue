@@ -152,26 +152,8 @@
                             &nbsp;&nbsp; Assign Post Workers
                           </router-link>
                         </sdButton>
-                        &nbsp;&nbsp;
-
-                        <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
-                          <!-- <sdFeatherIcons type="mail"    /> -->
-                          &nbsp;&nbsp; Message HH's
-                        </sdButton>
-                        <!-- &nbsp;&nbsp;
-                        <sdButton type="warning" size="extra-small">
-                          <router-link
-                            :to="{
-                              path: `/nets/net-transfers-post`,
-                              query: { id: record.id },
-                            }"
-                            class="btn-icon"
-                            type="success"
-                            shape="circle"
-                          >
-                            &nbsp;&nbsp; Net Transfers
-                          </router-link>
-                        </sdButton> -->
+                      
+                       
                       </div>
                     </td>
                   </template>

@@ -6,15 +6,6 @@
         <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
-              <sdButton
-                size="extra-small"
-                type="success"
-                @click="openmodal"
-                :hidden="activeTransaction !== 'transfer'"
-              >
-                <sdFeatherIcons type="plus" size="16" /> 
-                New Transfer
-              </sdButton>
               <div class="search-filter-menu">
 
                 <ul>
@@ -44,6 +35,15 @@
                       href="#"
                       >
                       Return Nets to Drop Off Point
+                      </a>
+                  </li>
+                  <li>
+                      <a
+                      :class="activeTransaction === 'message' ? 'active' : 'deactivate'"
+                      @click="notifyHH()"
+                      href="#"
+                      >
+                      Message HH's
                       </a>
                   </li>
                 </ul>
@@ -95,6 +95,17 @@
                     Transfer Out's
                   </a>
                 </li>
+                <li>
+                  <sdButton
+                    size="extra-small"
+                    type="warning"
+                    @click="openmodal"
+                    :hidden="activeTransaction !== 'transfer'"
+                  >
+                    <sdFeatherIcons type="plus" size="14" /> &nbsp;
+                    New Transfer
+                  </sdButton>
+                </li>
                  
                 </ul>
               </div>
@@ -137,73 +148,6 @@
                             </a-table>
                           </TableWrapper>
                           &nbsp;&nbsp;
-                          <!-- Transfer modal -->
-                          <!-- <a-modal
-                            title="New Transfer"
-                            :visible="isModalOpen"
-                            @cancel="handleCancel"
-                            width="50%"
-                          >
-                            <BasicFormWrapper>
-                              <a-form
-                              class="add-transfer-form"
-                              :style="{ width: '100%' }"
-                              layout="vertical"
-                              name="addnew"
-                              :model="formState"
-                              @finish="handleTransfer"
-                              >
-                              <a-form-item name="from_post_id" label="From Post">
-                                <a-select
-                                  placeholder="Select  Post "
-                                  v-model:value="formState.from_post_id"
-                                  disabled
-                                >
-                                  <a-select-option
-                                    v-for="post in postdata"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
-                                </a-select>
-                                </a-form-item>
-                              <a-form-item name="to_post" label="To Post">
-                                <a-select
-                                  placeholder="Select  Post "
-                                  v-model:value="formState.to_post_id"
-                                >
-                                  <a-select-option
-                                    v-for="post in postdata"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
-                                </a-select>
-                                </a-form-item>
-                                <a-form-item name="no_of_nets" label="Number of nets">
-                                  <a-input
-                                    v-model:value="formState.number_of_nets"
-                                    placeholder="Number of nets"
-                                    type="number"
-                                  />
-                                </a-form-item>
-                                <a-form-item name="comment" label="Comment">
-                                  <a-input
-                                    v-model:value="formState.comment"
-                                    placeholder="Comment"
-                                  />
-                                </a-form-item>
-                                <div class="record-form-actions text-right">
-                                  <sdButton size="default" htmlType="Save" type="success">
-                                    {{ isLoading ? "Loading..." : "Submit" }}
-                                  </sdButton>
-                                </div>
-                              </a-form>
-                            </BasicFormWrapper>
-                          </a-modal> -->
-                          <!-- End of Transfer modal -->
   
                           <TableWrapper
                             class="table-data-view table-responsive"
@@ -505,7 +449,7 @@
     slots: { customRender: "action" },
   }
 
-];
+  ];
 
   const do_columns= [
         {
@@ -828,6 +772,35 @@
 
       }
 
+      
+      const notifyHH = async () => {
+        handleTransactions('message')
+        try {
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/notify_households?post_id=${query.id}`,
+            {
+              method: "POST",
+              headers: authHeader(),
+            }
+          );
+          const data = await response.json();
+          if (data.success == true) {
+            notification.success({
+              message: "Success",
+              description: data.message,
+            });
+            // window.location.reload();
+          } else {
+            notification.error({
+              message: "Error",
+              description: data.message,
+            });
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
     //   const receiveFromWarehouse = async()=>{
     //     try {
     //       await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/2`,
@@ -992,6 +965,7 @@
         fetchTransferOuts();
       });
       return {
+        notifyHH,
         cancelTransfer,
         handleReturns,
         post_name,
