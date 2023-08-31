@@ -186,6 +186,14 @@
                             :dataSource="transferIns"
                             :columns="transferscolumns"
                           >
+                          <template #status="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <span v-if="record.status == 1" class="badge badge-green">Received</span>
+                                  <span v-else-if="record.status == 2" class="badge badge-warning">Cancelled</span>
+                                </div>
+                              </td>
+                            </template>
                             <template #action="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
@@ -193,7 +201,7 @@
                                   <sdButton
                                     @click="openReceiveModal(`transfers`,record.id)"
                                     type="success"
-                                    :disabled = "record.status == 1"
+                                    :disabled = "record.status == 1 || record.status == 2"
                                     size="extra-small">Receive</sdButton>
                                 </div>
                               </td>
@@ -215,12 +223,20 @@
                             :dataSource="transferOuts"
                             :columns="transferscolumns"
                           >
+                          <template #status="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <span v-if="record.status == 1" class="badge badge-green">Received</span>
+                                  <span v-else-if="record.status == 2" class="badge badge-warning">Cancelled</span>
+                                </div>
+                              </td>
+                            </template>
                             <template #action="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
                                   <sdButton
                                     type="success"
-                                    :disabled = "record.status == 1"
+                                    :disabled = "record.status == 1 || record.status == 2"
                                     @click="cancelTransfer(record.id)"
                                     size="extra-small">Cancel</sdButton>
                                 </div>
@@ -437,11 +453,12 @@
     dataIndex: "issued_by",
     key: "id",
   },
-  // {
-  //   title: "Status",
-  //   dataIndex: "status",
-  //   key: "id",
-  // },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "id",
+    slots: { customRender: "status" },
+  },
   {
     title: "Action",
     dataIndex: "action",
@@ -1005,6 +1022,14 @@
   <style scoped>
   .badge-green {
     background-color: #1ec997;
+    /* color: white; */
+    /* padding: 2px;
+      border-radius: 3px; */
+    /* size */
+    font-size: 12px;
+  }
+  .badge-warning {
+    background-color: #f7b924;
     /* color: white; */
     /* padding: 2px;
       border-radius: 3px; */
