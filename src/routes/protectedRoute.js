@@ -38,6 +38,9 @@ router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
 
+  console.log(user_object);
+  
+
   if (user_object && user_object.token && to.matched.length === 0) {
     // User is logged in but the route is not defined, redirect to 404
     next({ path: "/404" });
@@ -46,10 +49,11 @@ router.beforeEach((to, from, next) => {
   if (user_object && user_object.token) {
     // User has a token, allow navigation
     next();
-  } else if (!user_object && to.name !== "login") {
-    // User is not logged in and trying to access other route, redirect to login
-    next({ name: "login" });
-  } 
+  }
+  // } else if (!user_object && to.name !== "login") {
+  //   // User is not logged in and trying to access other route, redirect to login
+  //   next({ name: "login" });
+  // } 
   else {
     // User is not logged in but is on the login page, allow navigation
     next();

@@ -192,6 +192,7 @@
 
                     <a-form-item name="no-of-days" label="No of Days">
                       <a-input-number
+                       type="number"
                         v-model:value="formState.no_of_days"
                         placeholder="No of Days"
                         :min="0"
