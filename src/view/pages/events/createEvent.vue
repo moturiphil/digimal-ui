@@ -107,7 +107,7 @@
                         {{ errors.county_id }}
                       </p>
                     </a-form-item>
-                    <a-form-item label="Location Type">
+                    <!-- <a-form-item label="Location Type">
                       <a-select
                         size="large"
                         name="name"
@@ -128,7 +128,7 @@
                       >
                         {{ errors.location_type }}
                       </p>
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         placeholder="Selected Host"
