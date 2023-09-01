@@ -417,7 +417,7 @@ const AddNew = defineComponent({
       campaign_id: null,
       name: null,
       county_id: "",
-      location_type: null,
+      // location_type: null,
       facilitator_id: "",
       trainer_id: [],
       no_of_days: null,
@@ -428,7 +428,7 @@ const AddNew = defineComponent({
       campaign_id: Yup.string().required("Campaign is required"),
       name: Yup.string().required("Name is required"),
       county_id: Yup.string().required(),
-      location_type: Yup.string().required("Location is required"),
+      // location_type: Yup.string().required("Location is required"),
       facilitator_id: Yup.string().required("Host is required"),
       trainer_id: Yup.array()
         .min(1, "At least 1 facilitator required")
@@ -453,7 +453,7 @@ const AddNew = defineComponent({
         campaign_id: formState.campaign_id,
         venue: formState.venue,
         location_id: formState.county_id,
-        location_type_id: parseInt(formState.location_type),
+        // location_type_id: parseInt(formState.location_type),
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         number_of_days: formState.no_of_days,
