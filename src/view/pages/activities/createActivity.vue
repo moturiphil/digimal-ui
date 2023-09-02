@@ -118,7 +118,7 @@
                       </p>
                     </a-form-item>
 
-                    <a-form-item name="location_type_id" label="Location Type">
+                    <!-- <a-form-item name="location_type_id" label="Location Type">
                       <a-select
                         name="basic-select"
                         class="sDash_fullwidth-select"
@@ -144,7 +144,7 @@
                       >
                         {{ errors.location_type_id }}
                       </p>
-                    </a-form-item>
+                    </a-form-item> -->
 
                     <a-form-item name="campaign_id" label="Campaign">
                       <a-select
@@ -339,7 +339,7 @@ const AddNew = defineComponent({
       sub_county_id: "",
       campaign_id: "",
       start_date: "",
-      location_type_id: "",
+      // location_type_id: "",
       number_of_officers: 0,
       activity_facilitator: [],
     });
@@ -349,7 +349,7 @@ const AddNew = defineComponent({
       sub_county_id: Yup.string().required("Sub County is required"),
       campaign_id: Yup.string().required("Campaign is required"),
       start_date: Yup.string().required("Start Date is required"),
-      location_type_id: Yup.string().required("Location Type is required"),
+      // location_type_id: Yup.string().required("Location Type is required"),
       number_of_officers: Yup.number().required("Officers is required"),
       activity_facilitator: Yup.array()
         .min(1, "At least 1 facilitator required")
@@ -444,7 +444,7 @@ const AddNew = defineComponent({
         start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
         number_of_officers: formState.number_of_officers,
         activity_facilitator: formState.activity_facilitator,
-        location_type_id: formState.location_type_id,
+        // location_type_id: formState.location_type_id,
       };
 
       ArticleSchema.validate(this.formState, { abortEarly: false })
@@ -525,7 +525,7 @@ const AddNew = defineComponent({
         sub_county_id: "",
         campaign_id: "",
         start_date: "",
-        location_type_id: "",
+        // location_type_id: "",
         number_of_officers: "",
         activity_facilitator: "",
       },
