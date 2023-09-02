@@ -63,14 +63,14 @@
                             :to="{
                               // path: `/nets/receive-post-nets`,
                               path: `/nets/receive-nets-summary`,
-                              query: { id: record.id, name},
+                              query: { id: record.id, name: record.name},
                             }"
                             class="btn-icon"
                             type="success"
                             shape="circle"
                           >
                             <!-- <sdFeatherIcons type="mail" size="16" /> -->
-                            &nbsp;&nbsp; Receive Nets
+                            &nbsp;&nbsp; Manage Inventory
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -92,6 +92,7 @@
                           <!-- <sdFeatherIcons type="mail"    /> -->
                           &nbsp;&nbsp; Message HH's
                         </sdButton>
+                       
                       </div>
                     </td>
                   </template>
