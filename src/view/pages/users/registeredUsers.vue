@@ -47,7 +47,7 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <template #users="{ record }">
+                  <!-- <template #users="{ record }">
                     <td :style="{ 'margin-left': '4px' }">
                       <div class="table-actions">
                         <label class="switch">
@@ -63,7 +63,7 @@
                         <span v-else>Inactive</span>
                       </div>
                     </td>
-                  </template>
+                  </template> -->
 
                   <!-- <template #users="{ record }">
                     <td :style="{ 'margin-left': '4px' }">

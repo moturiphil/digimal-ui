@@ -182,7 +182,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="users" /><span>User Management</span>
         </template>
-        <a-menu-item key="widgetMasterList">
+        <a-menu-item v-if="isAdmin" key="widgetMasterList">
           <router-link to="/masterlist">Masterlist </router-link>
         </a-menu-item>
         <a-menu-item key="widgetUsers">
