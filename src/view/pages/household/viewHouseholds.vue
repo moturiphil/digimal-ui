@@ -60,37 +60,42 @@ const columns = [
   {
     title: "First name",
     dataIndex: "first_name",
-    key: "id_no",
+    key: "first_name",
   },
   {
     title: "Last name",
     dataIndex: "last_name",
-    key: "id_no",
+    key: "last_name",
   },
   {
     title: "Phone number",
     dataIndex: "phone_no",
-    key: "id_no",
+    key: "phone_no",
   },
   {
     title: "Household size",
     dataIndex: "hh_size",
-    key: "id_no",
+    key: "hh_size",
   },
   {
     title: "Village",
     dataIndex: "location_id",
-    key: "id_no",
+    key: "location_id",
   },
   {
-    title: "CHV",
+    title: "CHP",
     dataIndex: "chw_id",
-    key: "id_no",
+    key: "chw_id",
+  },
+  {
+    title: "CHP Phone Number",
+    dataIndex: "chw_phone_no",
+    key: "chw_phone_no",
   },
   {
     title: "Timestamp",
     dataIndex: "created_at",
-    key: "id_no",
+    key: "created_at",
   },
 ];
 

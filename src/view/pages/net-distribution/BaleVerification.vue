@@ -265,6 +265,7 @@
               })
                 .then((response) => response.json())
                 .then(({ success }) => {
+                  console.log(success);
                   if (success) {
                     notification["success"]({
                       message: "Nets Verified",
