@@ -265,7 +265,7 @@ export default defineComponent({
     });
 
     const isAdmin = computed(() => {
-      return role_id.value === 1;
+      return role_id.value === 53;
     });
 
     const router = computed(() => useRoute());
