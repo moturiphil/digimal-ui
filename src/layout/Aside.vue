@@ -113,23 +113,23 @@
       </a-sub-menu>
       <a-sub-menu key="drop-off-point">
         <template v-slot:title>
-          <sdFeatherIcons type="map-pin" /><span>Dropoff Point</span>
+          <sdFeatherIcons type="map-pin" /><span>Drop-off Point</span>
         </template>
         <a-menu-item key="widgetDropOffPoint">
           <router-link to="/nets/distribution-point">
-            Create Dropoff Point
+            Create Drop-off Point
           </router-link>
         </a-menu-item>
         <a-menu-item key="widgetListDropOffPoint">
           <router-link to="/nets/distribution-points">
-            List Dropoff Point
+            List Drop-off Point
           </router-link>
         </a-menu-item>
       </a-sub-menu>
 
       <a-sub-menu key="nets-distribution">
         <template v-slot:title>
-          <sdFeatherIcons type="share-2" /><span>Nets Distribution</span>
+          <sdFeatherIcons type="share-2" /><span>Distribution Post</span>
         </template>
         <a-menu-item key="widgetCreatePost">
           <router-link to="/nets/post-create"> Create Post </router-link>
@@ -265,7 +265,7 @@ export default defineComponent({
     });
 
     const isAdmin = computed(() => {
-      return role_id.value === 1;
+      return role_id.value === 53;
     });
 
     const router = computed(() => useRoute());
