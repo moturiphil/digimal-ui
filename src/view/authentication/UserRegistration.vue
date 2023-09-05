@@ -48,7 +48,6 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
-
 export default {
   name: "Register",
   components: { AuthWrapper },
@@ -67,15 +66,25 @@ export default {
       if (!showOtpInput.value) {
         const values = {
           id_no: formState.id_no,
+          // otp : formState.otp
         };
 
         try {
           const response = await axios.post(API_URL, values);
-    
-          if (response.status === 200 || response.status === 226 || response.status === 201) {
-            sessionStorage.removeItem("id_no", values.id_no);
-            sessionStorage.removeItem("otp", response.data.OTP);
-            sessionStorage.setItem("otp", response.data.OTP);
+          console.log(response);
+          notification.info({
+            message: "Confirmation",
+            description: response.data.message,
+          });
+
+          if (
+            response.status === 200 ||
+            response.status === 226 ||
+            response.status === 201
+          ) {
+            // sessionStorage.removeItem("id_no", values.id_no);
+            // sessionStorage.removeItem("otp", response.data.OTP);
+            // sessionStorage.setItem("otp", response.data.OTP);
             sessionStorage.setItem("id_no", values.id_no);
           } else {
             notification.error({
@@ -85,22 +94,41 @@ export default {
             throw new Error("Network response was not ok.");
           }
           showOtpInput.value = true;
-
         } catch (error) {
-          notification.info({
-            message: "Info",
-            description: "Account does not exist.Contact admin for assistance.",
-          });
+          console.log(error.message);
+          if (error.message == "Request failed with status code 403") {
+            notification.error({
+              message: "Error",
+              description: "User not allowed to create portal account",
+            });
+          } else if (error.message == "Request failed with status code 401") {
+            notification.info({
+              message: "Info",
+              description: "Your account is fully setup, please login using your ID number and password.",
+            });
+          } else {
+            notification.info({
+              message: "Info",
+              description:
+                "You are not a registered user, please contact the technical support team.",
+            });
+          }
         }
-
       } else {
         // Verify user input against sessionly stored OTP
-        const generatedOTP = sessionStorage.getItem("otp");
+        // const generatedOTP = sessionStorage.getItem("otp");
         const userOTP = formState.otp;
-        if (generatedOTP === userOTP) {
+        sessionStorage.setItem("otp", userOTP);
+        console.log(userOTP);
+        // console.log(generatedOTP);
+        if (userOTP) {
           router.push("/auth/set-password");
         } else {
           console.log("OTP does not match");
+          notification.info({
+            message: "Info",
+            description: "OTP mismatch",
+          });
         }
       }
     };

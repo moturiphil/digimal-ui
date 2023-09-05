@@ -76,7 +76,6 @@ export default {
       }
     });
 
-    // const API_URL = "http://127.0.0.1:8000/api/set_users_password";
     const formState = reactive({
       id_no: sessionStorage.getItem("id_no") || "",
       otp: sessionStorage.getItem("otp") || "",
@@ -84,6 +83,8 @@ export default {
       password: "",
       confirm_password: "",
     });
+
+    console.log(formState);
 
     const showOtpInput = ref(false);
 
@@ -98,12 +99,13 @@ export default {
       });
       // router.push("/");
       router.replace('/');
-      if (response.status == 200) {
-        console.log(response);
-        router.push("/auth/login");
-        console.log("response successfully sent....");
-        // router.push("/"); 
-      }
+      console.log(response);
+      // if (response.status == 200) {
+      //   console.log(response);
+      //   router.push("/auth/login");
+      //   console.log("response successfully sent....");
+      //   // router.push("/"); 
+      // }
       // handle success response
       // handle error response
     };
