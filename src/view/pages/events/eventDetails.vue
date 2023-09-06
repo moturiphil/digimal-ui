@@ -2,9 +2,9 @@
   <div>
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
         Generate Payroll
-      </sdButton>
+      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -57,6 +57,8 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
+                          <p><b>Total Records: </b> {{ recordCount }}</p>
+
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -72,6 +74,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'confirmed'"
                         >
+                          <!-- <p><b>Total Records: </b> {{ recordCount }}</p> -->
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -150,6 +153,11 @@ export default defineComponent({
   components: {
     Main,
     SearchResultWrapper,
+  },
+  computed: {
+    recordCount() {
+      return this.dataSource.length;
+    },
   },
   data() {
     const { query } = useRoute();
@@ -260,10 +268,10 @@ export default defineComponent({
         console.error(error);
       }
       try {
-        const response = await axios.get(API_URL+"?status=1", {
+        const response = await axios.get(API_URL + "?status=1", {
           headers: authHeader(),
         });
-        console.log(API_URL+"?status=1");
+        console.log(API_URL + "?status=1");
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
@@ -281,10 +289,10 @@ export default defineComponent({
         console.error(error);
       }
       try {
-        const response = await axios.get(API_URL+"?status=0", {
+        const response = await axios.get(API_URL + "?status=0", {
           headers: authHeader(),
         });
-        console.log(API_URL+"?status=0");
+        console.log(API_URL + "?status=0");
         console.log(response.data.data);
 
         const updatedData = response.data.data.map((record) => {
@@ -295,7 +303,6 @@ export default defineComponent({
             fullName,
           };
         });
-
 
         pending.value = updatedData;
 

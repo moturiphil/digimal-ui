@@ -30,6 +30,7 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
+                <p> <b>Total Records: </b> {{ recordCount }}</p>
                 <a-table
                   :pagination="{ pageSize: 50, showSizeChanger: true }"
                   :dataSource="results"
@@ -57,6 +58,11 @@ import { computed, onMounted, ref, defineComponent } from "vue";
 // const router = useRouter();
 
 const columns = [
+  // {
+  //   title: "#",
+  //   width: "80px",
+  //   customRender: (text, record, index) => index + 1,
+  // },
   {
     title: "First name",
     dataIndex: "first_name",
@@ -109,6 +115,11 @@ const ViewPage = defineComponent({
       modalType: "primary",
       colorVisible: false,
     };
+  },
+  computed: {
+    recordCount() {
+      return this.results.length;
+    },
   },
   setup() {
     const { state } = useStore();
@@ -165,24 +176,21 @@ const ViewPage = defineComponent({
     };
 
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.chw_id) ||
-              regex.test(event.first_name) ||
-              regex.test(event.last_name) ||
-              regex.test(event.location_id) ||
-              regex.test(event.phone_no) 
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return (
+            regex.test(event.chw_id) ||
+            regex.test(event.first_name) ||
+            regex.test(event.last_name) ||
+            regex.test(event.location_id) ||
+            regex.test(event.phone_no)
+          );
+        });
+      }
     });
 
     return {
