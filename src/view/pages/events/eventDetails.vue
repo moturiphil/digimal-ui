@@ -39,17 +39,15 @@
                     Pending Participants
                   </a>
                 </li>
-                <li>
-                  <!-- <sdButton
+              </ul>
+              <sdButton
                     class="btn-import"
                     type="success"
                     @click="exportParticipants"
                     size="extra-small"
-                  >
+                  > Download List &nbsp; &nbsp;
                     <sdFeatherIcons type="download-cloud" size="extra-small"/>
-                  </sdButton> -->
-                </li>
-              </ul>
+                  </sdButton>
             </div>
           </a-col>
           <a-col :xs="24">
@@ -233,7 +231,7 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export`;
+    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
     console.log(genetatePayrollURL);
 
