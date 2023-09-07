@@ -2,9 +2,19 @@
   <div>
     <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
     <Main>
-      <p class="detail-info">{{ `Location: ${venue    }` }} || {{ `Start Date: ${date}` }} || {{ `Duration: ${duration} days` }}</p>
-      <!-- <p class="detail-info">{{ `Start Date: ${date}` }}</p>
-      <p class="detail-info">{{ `Duration: ${duration} days` }}</p> -->
+      <p class="detail-info">
+          <b>Location:</b> {{ ` ${venue}` }} ||  <b>Start Date:</b> {{ `${date}` }} ||
+          <b>Duration:</b> {{ `${duration} days` }}
+      </p>
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportPayrollList"
+        size="small"
+      >
+        Download List &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -36,11 +46,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton type="check" size="16">
-                                    &nbsp;&nbsp;
-                                    <!-- <span class="badge badge-green"
-                                            >&nbsp;&nbsp; Payroll Details</span
-                                          > -->
+                                  <sdButton size="extra-small" type="success">
                                     <router-link
                                       :to="{
                                         path: `/event/breakdown/${record.id}`,
@@ -50,10 +56,7 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
-                                        >&nbsp;&nbsp; Breakdown</span
-                                      >
+                                      &nbsp;&nbsp; Breakdown
                                     </router-link>
                                   </sdButton>
                                 </div>
@@ -256,7 +259,9 @@ export default defineComponent({
     const venue = query.venue;
     const date = query.date;
     console.log(event_name);
+    console.log(query.id);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
+    const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
@@ -268,6 +273,32 @@ export default defineComponent({
         return dataSource.value;
       }
     });
+    const exportPayrollList = async () => {
+      try {
+        const response = await fetch(export_pay_list_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "Event Participants.xlsx";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -307,6 +338,7 @@ export default defineComponent({
       duration,
       venue,
       date,
+      exportPayrollList,
     };
   },
   // computed: {
