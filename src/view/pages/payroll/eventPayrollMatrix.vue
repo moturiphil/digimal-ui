@@ -152,7 +152,7 @@ const columns = [
   },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "Event Payroll",
   components: {
     Main,
     SearchResultWrapper,
@@ -181,10 +181,10 @@ export default defineComponent({
     async viewMatrix() {
       try {
         const response = await axios.post(
-          `${process.env.VUE_APP_BASE_URL}/payment_op`,
+          `${process.env.VUE_APP_BASE_URL}/payment_otp`,
           {
             payroll_summary_id: 1,
-            payment_type: "Activity Matrix",
+            payment_type: "Event Matrix",
           },
           { headers: authHeader() }
         );

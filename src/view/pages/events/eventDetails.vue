@@ -39,6 +39,16 @@
                     Pending Participants
                   </a>
                 </li>
+                <li>
+                  <sdButton
+                    class="btn-import"
+                    type="success"
+                    @click="exportParticipants"
+                    size="extra-small"
+                  >
+                    <sdFeatherIcons type="download-cloud" size="extra-small"/>
+                  </sdButton>
+                </li>
               </ul>
             </div>
           </a-col>
@@ -147,6 +157,11 @@ const columns = [
     dataIndex: "role_id",
     key: "id",
   },
+  {
+    title: "Attendance Days",
+    dataIndex: "no_of_days",
+    key: "id",
+  },
 ];
 export default defineComponent({
   name: "Events Participants",
@@ -211,6 +226,7 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
+    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export`;
 
     console.log(genetatePayrollURL);
 
@@ -236,6 +252,32 @@ export default defineComponent({
               "Something went wrong, ensure you have assigned payroll matrix to the event",
           });
         }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    const exportParticipants = async () => {
+      try {
+        const response = await fetch(export_participants_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "Event Participants.xlsx";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
       } catch (error) {
         console.error(error);
       }
@@ -341,6 +383,7 @@ export default defineComponent({
       handleChange,
       activeClass,
       generatePayroll,
+      exportParticipants,
     };
   },
   // computed: {
