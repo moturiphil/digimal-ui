@@ -40,14 +40,14 @@
                   </a>
                 </li>
                 <li>
-                  <sdButton
+                  <!-- <sdButton
                     class="btn-import"
                     type="success"
                     @click="exportParticipants"
                     size="extra-small"
                   >
                     <sdFeatherIcons type="download-cloud" size="extra-small"/>
-                  </sdButton>
+                  </sdButton> -->
                 </li>
               </ul>
             </div>
