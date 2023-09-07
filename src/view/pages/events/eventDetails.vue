@@ -2,9 +2,18 @@
   <div>
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <sdButton class="btn-import" type="success" size="small" @click="generatePayroll">
         Generate Payroll
-      </sdButton> -->
+      </sdButton>
+      &nbsp; &nbsp;
+      <sdButton
+                    class="btn-import"
+                    type="success"
+                    @click="exportParticipants"
+                    size="small"
+                  > Download List &nbsp; &nbsp;
+                    <sdFeatherIcons type="download-cloud" size="extra-small"/>
+                  </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -40,14 +49,6 @@
                   </a>
                 </li>
               </ul>
-              <sdButton
-                    class="btn-import"
-                    type="success"
-                    @click="exportParticipants"
-                    size="extra-small"
-                  > Download List &nbsp; &nbsp;
-                    <sdFeatherIcons type="download-cloud" size="extra-small"/>
-                  </sdButton>
             </div>
           </a-col>
           <a-col :xs="24">
