@@ -40,14 +40,14 @@
                   </a>
                 </li>
                 <li>
-                  <sdButton
+                  <!-- <sdButton
                     class="btn-import"
                     type="success"
                     @click="exportParticipants"
                     size="extra-small"
                   >
                     <sdFeatherIcons type="download-cloud" size="extra-small"/>
-                  </sdButton>
+                  </sdButton> -->
                 </li>
               </ul>
             </div>
@@ -84,7 +84,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'confirmed'"
                         >
-                          <!-- <p><b>Total Records: </b> {{ recordCount }}</p> -->
+                          <p><b>Total Records: </b> {{ confirmedCount }}</p>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -100,6 +100,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'pending'"
                         >
+                        <p><b>Total Records: </b> {{ pendingCount }}</p>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -173,6 +174,12 @@ export default defineComponent({
     recordCount() {
       return this.dataSource.length;
     },
+    confirmedCount() {
+      return this.confirmed.length;
+    },
+    pendingCount() {
+      return this.pending.length;
+    }
   },
   data() {
     const { query } = useRoute();
