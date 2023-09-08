@@ -178,6 +178,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Location",
+    dataIndex: "location_id",
+    key: "id",
+  },
+  {
     title: "Organization",
     dataIndex: "organization",
     key: "id",
