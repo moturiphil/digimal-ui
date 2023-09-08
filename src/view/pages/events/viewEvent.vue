@@ -88,7 +88,6 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="small" />
                             &nbsp;&nbsp; View Event
                           </router-link>
                         </sdButton>

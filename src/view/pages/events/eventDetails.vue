@@ -2,9 +2,24 @@
   <div>
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <sdButton
+        class="btn-import"
+        type="success"
+        size="small"
+        @click="generatePayroll"
+      >
         Generate Payroll
-      </sdButton> -->
+      </sdButton>
+      &nbsp; &nbsp;
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportParticipants"
+        size="small"
+      >
+        Download List &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -40,14 +55,6 @@
                   </a>
                 </li>
               </ul>
-              <sdButton
-                    class="btn-import"
-                    type="success"
-                    @click="exportParticipants"
-                    size="extra-small"
-                  > Download List &nbsp; &nbsp;
-                    <sdFeatherIcons type="download-cloud" size="extra-small"/>
-                  </sdButton>
             </div>
           </a-col>
           <a-col :xs="24">
@@ -98,7 +105,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'pending'"
                         >
-                        <p><b>Total Records: </b> {{ pendingCount }}</p>
+                          <p><b>Total Records: </b> {{ pendingCount }}</p>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -177,7 +184,7 @@ export default defineComponent({
     },
     pendingCount() {
       return this.pending.length;
-    }
+    },
   },
   data() {
     const { query } = useRoute();

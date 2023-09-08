@@ -160,7 +160,6 @@
   import authHeader from "../../../services/auth-header";
   import { useRouter } from "vue-router";
   import * as Yup from "yup";
-  import dayjs from "dayjs";
   import { useRoute } from "vue-router";
   
   
@@ -182,19 +181,19 @@
       const post_id = Number(query.id);
       const post_name = query.name;
       const d_no = query.delivery_no;
-      const date_received = dayjs(query.date_received, dateFormat);
+      // const date_received = dayjs(query.date_received, dateFormat);
       const received_from = query.received_from;
-      const received_by = query.received_by;
-      console.log(date_received)
+      // const received_by = query.received_by;
+      // console.log(date_received)
   
       const formState = reactive({
         post_id: post_id,
         bale_batch_no: "",
         counted_no_of_nets:"",
-        date_received: date_received,
+        // date_received: date_received,
         received_from: received_from,
         delivery_note_number: d_no,
-        received_by: received_by,
+        // received_by: received_by,
       });
   
       const {  loading, isFacility, users } = reactive({
@@ -206,10 +205,10 @@
       const ArticleSchema = Yup.object().shape({
         bale_batch_no: Yup.string().required("Bale size is required"),
         counted_no_of_nets: Yup.number().required("Bale size is required"),
-        date_received: Yup.string().required("Date received is required"),
+        // date_received: Yup.string().required("Date received is required"),
         received_from: Yup.string().required("Received from is required"),
         delivery_note_number: Yup.string().required("Delivery no is required"),
-        received_by: Yup.string().required("Received by is required"),
+        // received_by: Yup.string().required("Received by is required"),
       });
   
       const validate = (field) => {
@@ -243,10 +242,11 @@
           post_id: post_id,
           bale_batch_no: formState.bale_batch_no,
           counted_no_of_nets: formState.counted_no_of_nets,
-          date_received: formState.date_received,
+          date_received: '2023-09-06',
           received_from: formState.received_from,
           delivery_note_number: formState.delivery_note_number,
-          received_by:  formState.received_by,
+          // received_by:  formState.received_by,
+          received_by:  1,
         };
         console.log(JSON.stringify(values));
         try {
