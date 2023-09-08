@@ -454,6 +454,8 @@ export default defineComponent({
         date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
       };
 
+      console.log(data);
+
       try {
         fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_drop_off_point`,
           {
