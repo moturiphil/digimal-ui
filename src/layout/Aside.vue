@@ -157,7 +157,7 @@
           <router-link to="/stock-status">Stock Status </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="payroll" v-if="canViewInventory || isLevelOne">
+      <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
         <template v-slot:title>
           <sdFeatherIcons type="credit-card" /><span>Payroll</span>
         </template>
