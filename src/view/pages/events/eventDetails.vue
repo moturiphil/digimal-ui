@@ -135,11 +135,11 @@ import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
-import { fetchUserData, hasRole } from "../../../services/user-role";
 import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
+// import { useRoute, useRouter } from "vue-router";
 
 
 // const households = ref([]);
@@ -242,7 +242,6 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
-    // const hasAdminPermission = hasPermission("admin.permission");
 
     console.log(genetatePayrollURL);
 
@@ -382,23 +381,25 @@ export default defineComponent({
       }
     });
 
-
+    const level_id = ref("");
+    const role_id = ref("");
     // const current = ref("");
     const rt = useRouter();
 
     const formState = reactive({
       searchItem: "",
     });
-
-    const isAccountant = hasRole(4);
-
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
       if (!user) {
         rt.push({ path: "/auth/login" });
-      } 
-      // Fetch user data when the component is mounted
-      fetchUserData();
+      } else {
+        level_id.value = user.user.level_id;
+        role_id.value = user.user.role_id;
+      }
+    });
+    const isAccountant = computed(() => {
+      return role_id.value === 4;
     });
 
     return {
