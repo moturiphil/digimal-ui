@@ -393,16 +393,13 @@ export default defineComponent({
     const isAccountant = hasRole(4);
 
     onMounted(() => {
-      // Fetch user data when the component is mounted
-      fetchUserData();
       const user = JSON.parse(sessionStorage.getItem("user"));
       if (!user) {
         rt.push({ path: "/auth/login" });
       } 
+      // Fetch user data when the component is mounted
+      fetchUserData();
     });
-    // const isAccountant = computed(() => {
-    //   return role_id.value === 4;
-    // });
 
     return {
       crud,
