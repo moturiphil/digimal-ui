@@ -3,9 +3,11 @@
     <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
     <Main>
       <p class="detail-info">
-          <b>Location:</b> {{ ` ${venue}` }} ||  <b>Start Date:</b> {{ `${date}` }} ||
-          <b>Duration:</b> {{ `${duration} days` }}
+        <b>Location:</b> {{ ` ${venue}` }} || <b>Start Date:</b>
+        {{ `${date}` }} || <b>Duration:</b> {{ `${duration} days` }}
       </p>
+      <p><b>Total Records: </b> {{ recordCount }}</p>
+
       <sdButton
         class="btn-import"
         type="success"
@@ -293,7 +295,7 @@ export default defineComponent({
         }
 
         const fileBlob = await response.blob();
-        const fileName = "Event Participants.xlsx";
+        const fileName = "Payroll Participants.xlsx";
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(new Blob([fileBlob]));
         link.setAttribute("download", fileName);
@@ -323,6 +325,7 @@ export default defineComponent({
           console.error(error);
         });
     });
+
 
     const formState = reactive({
       searchItem: "",
