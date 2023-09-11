@@ -36,7 +36,7 @@
                 </a-modal>
                 <a-row :gutter="16">
                     <a-col class="w-100" :md="24">
-                        <div v-if="dataSource.length" >
+                        <div  >
     
                             <TableWrapper class="table-data-view table-responsive">
                                 <a-table
@@ -144,7 +144,7 @@
             );
             const data = await response.json();
             dataSource.value = data.data;
-            console.log(data.data);
+            console.log(data);
         } catch (error) {
             console.error(error);
         }
