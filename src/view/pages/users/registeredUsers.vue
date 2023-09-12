@@ -8,7 +8,7 @@
 
     <Main>
       <a-row :gutter="16" class="search-row">
-        <sdButton class="btn-import" type="success">
+        <!-- <sdButton class="btn-import" type="success">
           <router-link
             :to="{
               path: `/users/import`,
@@ -19,7 +19,7 @@
           >
             &nbsp;&nbsp; Import Master List
           </router-link>
-        </sdButton>
+        </sdButton> -->
         <br />
         <br />
         <a-col :xs="24" :sm="24" :md="12">

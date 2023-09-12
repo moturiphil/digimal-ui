@@ -168,7 +168,7 @@
           </template>
         </Suspense>
       </a-col> -->
-      <a-col :lg="8" :xs="24">
+      <a-col :lg="12" :xs="24">
         <sdCards headless>
           <OverviewSalesCard>
             <div class="icon-box box-primary">
@@ -195,6 +195,53 @@
               <CardBarChart2>
                 <h2>{{ total_nets_required }}</h2>
                 <span>Total Nets Required</span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards>
+        <!-- <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-secondary">
+              <SvgConverter
+                :src="require('../../static/img/icon/SalesRevenue.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2>0</h2>
+                <span>Total Actual Nets Allocation </span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards> -->
+      </a-col>
+      <a-col :lg="12" :xs="24">
+        <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-primary">
+              <SvgConverter
+                :src="require('@/static/img/icon/New Customer.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2>Ksh 10,113,400</h2>
+                <span>Total Amount Transacted</span>
+              </CardBarChart2>
+            </div>
+          </OverviewSalesCard>
+        </sdCards>
+        <sdCards headless>
+          <OverviewSalesCard>
+            <div class="icon-box box-secondary">
+              <SvgConverter
+                :src="require('../../static/img/icon/SalesRevenue.svg')"
+              />
+            </div>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <h2>291</h2>
+                <span>Total Payroll Processed</span>
               </CardBarChart2>
             </div>
           </OverviewSalesCard>

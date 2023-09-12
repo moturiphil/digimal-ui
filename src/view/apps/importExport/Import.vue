@@ -122,7 +122,7 @@ const importExport = defineComponent({
 
         const error = [];
         const regex =
-          /^(?:254|\+254)?((1|7)(?:(?:[1294][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
+          /^(?:254|\+254)?((1|7)(?:(?:[12945][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
 
         passedData.forEach((item) => {
           if (`${item["Phone No."]}`.match(regex) == null) {
