@@ -10,16 +10,16 @@
           <sdFeatherIcons type="menu" /> <span>Dashboard</span>
         </router-link>
       </a-menu-item>
-      <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
+      <a-sub-menu key="campaigns">
         <template v-slot:title>
           <sdFeatherIcons type="globe" /><span>Campaigns</span>
         </template>
-        <a-menu-item key="widgetCamp" v-if="canCreateCampaign">
+        <a-menu-item key="widgetCamp">
           <router-link to="/campaigns/create-campaign">
             Create Campaign
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetsList" v-if="canViewCampaign">
+        <a-menu-item key="widgetsList">
           <router-link to="/campaigns/view-campaign">
             List Campaigns
           </router-link>
@@ -31,34 +31,34 @@
           <router-link to="/campaign/users"> List Campaign Users </router-link>
         </a-menu-item> -->
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="canCreateEvent || canViewEvent">
+      <a-sub-menu key="events" >
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
-        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
+        <a-menu-item key="widgetCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetListevents" v-if="canViewEvent">
+        <a-menu-item key="widgetListevents">
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="activities" v-if="canCreateActivity || canViewActivities">
+      <a-sub-menu key="activities">
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
         </template>
-        <a-menu-item key="widgetCreateActivity" v-if="canCreateActivity">
+        <a-menu-item key="widgetCreateActivity">
           <router-link to="/activities/activity-create">
             Create Activity
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetsListActivity" v-if="canViewActivities">
+        <a-menu-item key="widgetsListActivity">
           <router-link to="/activities/activity-view">
             List Activity
           </router-link>
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu key="administrative-units" v-if="canViewOrgUnits">
+      <a-sub-menu key="administrative-units">
         <template v-slot:title>
           <sdFeatherIcons type="cpu" />
           <!-- <sdFeatherIcons type="DeploymentUnitOutlined" />  -->
@@ -89,59 +89,59 @@
         </a-menu-item>  -->
       </a-sub-menu>
 
-      <a-sub-menu key="house-holds" v-if="canViewRegHH || canValidateHH || canViewNetsDistributed ">
+      <a-sub-menu key="house-holds">
         <template v-slot:title>
           <sdFeatherIcons type="home" />
           <span>HouseHolds</span></template
         >
 
-        <a-menu-item key="widgetHouseholdReg" v-if="canViewRegHH">
+        <a-menu-item key="widgetHouseholdReg">
           <router-link to="/households/list">
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
+        <a-menu-item key="widgetHouseholdValidation">
           <router-link to="/household/validation">
             HouseHolds Validation
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
+        <a-menu-item key="widgetHouseholdNets">
           <router-link to="/hh-nets-distributed">
             Nets Distributed
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="drop-off-point" v-if="canCreateDropOffPoint || canViewDropOffPoint">
+      <a-sub-menu key="drop-off-point">
         <template v-slot:title>
           <sdFeatherIcons type="map-pin" /><span>Drop-off Point</span>
         </template>
-        <a-menu-item key="widgetDropOffPoint" v-if="canCreateDropOffPoint">
+        <a-menu-item key="widgetDropOffPoint">
           <router-link to="/nets/distribution-point">
             Create Drop-off Point
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetListDropOffPoint" v-if="canViewDropOffPoint">
+        <a-menu-item key="widgetListDropOffPoint">
           <router-link to="/nets/distribution-points">
             List Drop-off Point
           </router-link>
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu key="nets-distribution" v-if="canCreateDistributionPost || canViewDistributitionPostRole">
+      <a-sub-menu key="nets-distribution">
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Distribution Post</span>
         </template>
-        <a-menu-item key="widgetCreatePost" v-if="canCreateDistributionPost">
+        <a-menu-item key="widgetCreatePost" >
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetDistributionPost" v-if="canViewDistributitionPostRole">
+        <a-menu-item key="widgetDistributionPost">
           <router-link to="/nets/distribution-post">
             Distribution Posts
           </router-link>
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu key="inventory" v-if="canViewInventory">
+      <a-sub-menu key="inventory">
         <template v-slot:title>
           <sdFeatherIcons type="layers" /><span>Inventory</span>
         </template>
@@ -270,7 +270,7 @@ const viewInventoryRoles = [
   36, 37, 39, 42, 44, 56, 57, 59, 60
 ];
 
-const viewPayrollRoles = [53, 1, 2, 3, 4, 5, 7, 8, 11, 15, 16, 19, 21, 23, 37];
+const viewPayrollRoles = [53, 1, 2, 3, 4,];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
