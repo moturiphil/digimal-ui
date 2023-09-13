@@ -42,7 +42,10 @@
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="activities" v-if="canCreateActivity || canViewActivities">
+      <a-sub-menu
+        key="activities"
+        v-if="canCreateActivity || canViewActivities"
+      >
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
         </template>
@@ -89,7 +92,10 @@
         </a-menu-item>  -->
       </a-sub-menu>
 
-      <a-sub-menu key="house-holds" v-if="canViewRegHH || canValidateHH || canViewNetsDistributed ">
+      <a-sub-menu
+        key="house-holds"
+        v-if="canViewRegHH || canValidateHH || canViewNetsDistributed"
+      >
         <template v-slot:title>
           <sdFeatherIcons type="home" />
           <span>HouseHolds</span></template
@@ -111,7 +117,10 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="drop-off-point" v-if="canCreateDropOffPoint || canViewDropOffPoint">
+      <a-sub-menu
+        key="drop-off-point"
+        v-if="canCreateDropOffPoint || canViewDropOffPoint"
+      >
         <template v-slot:title>
           <sdFeatherIcons type="map-pin" /><span>Drop-off Point</span>
         </template>
@@ -127,14 +136,20 @@
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu key="nets-distribution" v-if="canCreateDistributionPost || canViewDistributitionPostRole">
+      <a-sub-menu
+        key="nets-distribution"
+        v-if="canCreateDistributionPost || canViewDistributitionPostRole"
+      >
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Distribution Post</span>
         </template>
         <a-menu-item key="widgetCreatePost" v-if="canCreateDistributionPost">
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetDistributionPost" v-if="canViewDistributitionPostRole">
+        <a-menu-item
+          key="widgetDistributionPost"
+          v-if="canViewDistributitionPostRole"
+        >
           <router-link to="/nets/distribution-post">
             Distribution Posts
           </router-link>
@@ -221,39 +236,41 @@ import { fetchUserData, hasRole } from "../services/user-role";
 
 const adminRoles = [53];
 const createCampaignRoles = [53, 5];
-const viewCampaignRoles = [53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60];
+const viewCampaignRoles = [
+  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,
+];
 const createEventRoles = [53, 5, 3, 21, 37, 39];
 const viewEventRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 const createActivityRoles = [53, 5, 3, 21, 37];
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 const viewRegHHRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59,60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59,60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59,60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
 const viewDropoffPointsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
 const createDistributionPostRoles = [
@@ -262,23 +279,25 @@ const createDistributionPostRoles = [
 
 const viewDistributionPostRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
 const viewInventoryRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60
+  36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
 const viewPayrollRoles = [53, 1, 2, 3, 4, 5, 7, 8, 11, 15, 16, 19, 21, 23, 37];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60
+  42, 60,
 ];
 
-const createDropOffPoint = [53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59];
+const createDropOffPoint = [
+  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+  36, 37, 39, 42, 44, 56, 57, 59,
+];
 
 export default defineComponent({
   name: "AsideItems",
