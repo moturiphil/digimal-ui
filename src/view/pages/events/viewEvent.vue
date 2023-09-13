@@ -42,38 +42,15 @@
                     <td>
                       <div class="table-actions">
                         <sdButton
-                          size="extra-small"
-                          type="success"
-                          :disabled="isStarting"
-                          @click="startEvent(record.id)"
-                          v-if="!record.status"
-                        >
-                          <span>
-                            <sdFeatherIcons type="clock" size="small" />
-                            &nbsp;&nbsp; Start Event
-                          </span>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
-                          size="extra-small"
-                          type="danger"
-                          :disabled="isStarting"
-                          v-else
-                          @click="closeEvent(record.id)"
-                        >
-                          <span> &nbsp;&nbsp; Close Event </span>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
                           @click="handleRegistration(record.event_code)"
                           size="extra-small"
                           type="success"
+                          v-if="record.payroll_status==='Pending'"
                         >
                           <sdFeatherIcons type="user-plus" size="small" />
                           &nbsp; Register
                         </sdButton>
                         &nbsp;&nbsp;
-
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -91,6 +68,27 @@
                             &nbsp;&nbsp; View Event
                           </router-link>
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          size="extra-small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="startEvent(record.id)"
+                          v-if="!record.status && record.payroll_status === 'Pending'"
+                        >
+                          <span> &nbsp;&nbsp; Start Event </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          size="extra-small"
+                          type="danger"
+                          :disabled="isStarting"
+                          v-else-if="record.payroll_status === 'Pending'"
+                          @click="closeEvent(record.id)"
+                        >
+                          <span> &nbsp;&nbsp; Close Event </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
                         <a-modal
                           title="Event Confirmation"
                           :visible="isModalOpen"
@@ -124,7 +122,6 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { Modal, notification } from "ant-design-vue";
-// import axios from "axios";
 
 const router = useRouter();
 const user = JSON.parse(sessionStorage.getItem("user"));
@@ -337,7 +334,6 @@ const ViewPage = defineComponent({
       try {
         const response = await axios.get(
           `${process.env.VUE_APP_BASE_URL}/event/${recordId.value}/participant/${inputValue}/assign`,
-          // `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
           { headers: authHeader() }
         );
         console.log(response);
@@ -357,6 +353,7 @@ const ViewPage = defineComponent({
       isModalOpen.value = false;
     };
 
+
     onMounted(() => {
       axios
         .get(API_URL, {
@@ -365,6 +362,7 @@ const ViewPage = defineComponent({
         .then((response) => {
           if (user) {
             dataSource.value = response.data.data;
+            console.log(dataSource.value);
           } else {
             const rs = response.data.data.filter((event) => {
               return event.location_id === user.user[2].level_id;
