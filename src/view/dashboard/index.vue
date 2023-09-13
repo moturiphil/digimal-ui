@@ -18,8 +18,8 @@
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <sdHeading as="h1">{{ nets_distributed }}</sdHeading>
-                <span>Nets Distributed</span>
+                <sdHeading as="h1">{{ registered_users }}</sdHeading>
+                <span>Registered Users</span>
                 <p></p>
               </CardBarChart2>
             </div>
@@ -154,7 +154,112 @@
           </EChartCard>
         </sdCards>
       </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless>
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading as="h1">{{ household_population }}</sdHeading>
+                <span>Total HouseHold Population</span>
+                <p>
+                  <!--<span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
+                  <span>Since last week</span>-->
+                </p>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart
+                class="visitors"
+                :height="0"
+                :labels="[]"
+                :style="{
+                  marginBottom: '-5',
+                }"
+                :datasets="[
+                  {
+                    data: [],
+                    backgroundColor: '#E8FAF4',
+                    hoverBackgroundColor: '#20C997',
+                    label: 'Visitors',
+                    barPercentage: 1,
+                  },
+                ]"
+                :options="chartOptions"
+              />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless>
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading as="h1">{{ total_nets_required }}</sdHeading>
+                <span>Total Nets Required</span>
+                <p>
+                  <!--<span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
+                  <span>Since last week</span>-->
+                </p>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart
+                class="visitors"
+                :height="0"
+                :labels="[]"
+                :style="{
+                  marginBottom: '-5',
+                }"
+                :datasets="[
+                  {
+                    data: [],
+                    backgroundColor: '#E8FAF4',
+                    hoverBackgroundColor: '#20C997',
+                    label: 'Visitors',
+                    barPercentage: 1,
+                  },
+                ]"
+                :options="chartOptions"
+              />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
     </a-row>
+    <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless>
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading as="h1">{{ nets_distributed }}</sdHeading>
+                <span>Nets Distributed</span>
+                <p></p>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart
+                class="growth"
+                :height="0"
+                :labels="[]"
+                :style="{
+                  marginBottom: '-5',
+                }"
+                :datasets="[
+                  {
+                    data: [],
+                    backgroundColor: '#E8FAF4',
+                    hoverBackgroundColor: '#20C997',
+                    label: 'Orders',
+                    barPercentage: 1,
+                  },
+                ]"
+                :options="chartOptions"
+              />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
     <a-row :gutter="25">
       <!-- <a-col :md="24">
         <Suspense>
@@ -168,84 +273,7 @@
           </template>
         </Suspense>
       </a-col> -->
-      <a-col :lg="12" :xs="24">
-        <sdCards headless>
-          <OverviewSalesCard>
-            <div class="icon-box box-primary">
-              <SvgConverter
-                :src="require('@/static/img/icon/New Customer.svg')"
-              />
-            </div>
-            <div class="card-chunk">
-              <CardBarChart2>
-                <h2>{{ household_population }}</h2>
-                <span>Total HouseHold Population</span>
-              </CardBarChart2>
-            </div>
-          </OverviewSalesCard>
-        </sdCards>
-        <sdCards headless>
-          <OverviewSalesCard>
-            <div class="icon-box box-secondary">
-              <SvgConverter
-                :src="require('../../static/img/icon/SalesRevenue.svg')"
-              />
-            </div>
-            <div class="card-chunk">
-              <CardBarChart2>
-                <h2>{{ total_nets_required }}</h2>
-                <span>Total Nets Required</span>
-              </CardBarChart2>
-            </div>
-          </OverviewSalesCard>
-        </sdCards>
-        <!-- <sdCards headless>
-          <OverviewSalesCard>
-            <div class="icon-box box-secondary">
-              <SvgConverter
-                :src="require('../../static/img/icon/SalesRevenue.svg')"
-              />
-            </div>
-            <div class="card-chunk">
-              <CardBarChart2>
-                <h2>0</h2>
-                <span>Total Actual Nets Allocation </span>
-              </CardBarChart2>
-            </div>
-          </OverviewSalesCard>
-        </sdCards> -->
-      </a-col>
-      <a-col :lg="12" :xs="24">
-        <sdCards headless>
-          <OverviewSalesCard>
-            <div class="icon-box box-primary">
-              <SvgConverter
-                :src="require('@/static/img/icon/New Customer.svg')"
-              />
-            </div>
-            <div class="card-chunk">
-              <CardBarChart2>
-                <h2>Ksh 10,113,400</h2>
-                <span>Total Amount Transacted</span>
-              </CardBarChart2>
-            </div>
-          </OverviewSalesCard>
-        </sdCards>
-        <sdCards headless>
-          <OverviewSalesCard>
-            <div class="icon-box box-secondary">
-              <SvgConverter
-                :src="require('../../static/img/icon/SalesRevenue.svg')"
-              />
-            </div>
-            <div class="card-chunk">
-              <CardBarChart2>
-                <h2>291</h2>
-                <span>Total Payroll Processed</span>
-              </CardBarChart2>
-            </div>
-          </OverviewSalesCard>
-        </sdCards>
+      <a-col :lg="8" :xs="24">
         <!-- <sdCards headless>
           <OverviewSalesCard>
             <div class="icon-box box-secondary">
@@ -282,7 +310,7 @@ import { CardBarChart2, EChartCard } from "./style";
 // import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
-import { defineComponent} from "vue";  //defineAsyncComponent
+import { defineComponent } from "vue"; //defineAsyncComponent
 import authHeader from "../../services/auth-header";
 // const IncomeAndExpenses = defineAsyncComponent(() =>
 //   import("./overview/business/IncomeAndExpenses")
@@ -395,12 +423,3 @@ export default defineComponent({
   color: white;
 }
 </style>
-
-
-
-
-
-
-
-
-

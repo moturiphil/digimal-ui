@@ -51,7 +51,7 @@
         :class="rtl ? 'ant-popover-rtl' : ''"
       >
         <a @click="SignOut" class="user-dropdwon__bottomAction" href="#">
-          <LogoutOutlined /> Sign Out
+          <LogoutOutlined /> Log Out
         </a>
         <template>
           <a @click="signOut" class="user-dropdown__bottomAction" href="#">
