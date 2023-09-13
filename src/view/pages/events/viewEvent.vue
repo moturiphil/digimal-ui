@@ -45,12 +45,12 @@
                           @click="handleRegistration(record.event_code)"
                           size="extra-small"
                           type="success"
-                          v-if="record.payroll_status==='Pending'"
+                          v-if="record.payroll_status === 'Pending'"
                         >
                           <sdFeatherIcons type="user-plus" size="small" />
                           &nbsp; Register
                         </sdButton>
-                        &nbsp;&nbsp;
+                        <span v-if="record.payroll_status === 'Pending'">&nbsp;&nbsp;</span>
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -61,11 +61,8 @@
                                 event_code: record.event_code,
                               },
                             }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
                           >
-                            &nbsp;&nbsp; View Event
+                            View Event
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -74,9 +71,13 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
-                          v-if="!record.status && record.payroll_status === 'Pending'"
+                          v-if="
+                            !record.status &&
+                            record.payroll_status === 'Pending'
+                          "
                         >
-                          <span> &nbsp;&nbsp; Start Event </span>
+                          <sdFeatherIcons type="play-circle" size="small" />
+                          <span>Start Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
@@ -86,7 +87,8 @@
                           v-else-if="record.payroll_status === 'Pending'"
                           @click="closeEvent(record.id)"
                         >
-                          <span> &nbsp;&nbsp; Close Event </span>
+                          <sdFeatherIcons type="x-circle" size="small" />
+                          <span> Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
                         <a-modal
@@ -319,7 +321,7 @@ const ViewPage = defineComponent({
 
     const handleRegistration = (id) => {
       isModalOpen.value = true;
-      console.log("handlePay", id);
+      console.log("Event Code;", id);
       recordId.value = id;
       console.log("recordId", recordId.value);
       try {
@@ -338,6 +340,7 @@ const ViewPage = defineComponent({
         );
         console.log(response);
         if (response.status == 200) {
+          inputValue = "";
           notification.success({
             message: "Success",
             description: "Event Registration Successful",
@@ -345,14 +348,18 @@ const ViewPage = defineComponent({
         }
       } catch (error) {
         console.log(error);
+        console.log(inputValue);
+        inputValue = "";
         notification.error({
           message: "Error",
           description: "Participant Registration Failed",
         });
+      } finally {
+        console.log(inputValue);
+        inputValue = ""; // Clear inputValue after the modal is closed
+        isModalOpen.value = true;
       }
-      isModalOpen.value = false;
     };
-
 
     onMounted(() => {
       axios
