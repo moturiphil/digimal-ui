@@ -646,6 +646,7 @@
           number_of_nets: trans_formState.number_of_nets,
           comment: trans_formState.comment,
         };
+        console.log(JSON.stringify(data));
         try {
             fetch(`${process.env.VUE_APP_BASE_URL}/transfer-nets`,
             {

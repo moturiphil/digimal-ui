@@ -23,7 +23,7 @@
                       <a-form-item name="bale_batch_no" label="Bale Batch No.">
                         <a-input
                           v-model:value="formState.bale_batch_no"
-                          placeholder="Enter bale size"
+                          placeholder="Enter bale batch no"
                           type="text"
                           @blur="validate('bale_batch_no')"
                           @keypress="validate('bale_batch_no')"

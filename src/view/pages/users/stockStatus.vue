@@ -56,8 +56,8 @@
       key: "id",
     },
     {
-      title: "Batch No",
-      dataIndex: "batch_no",
+      title: "Warehouse ID",
+      dataIndex: "warehouse_id",
       key: "id",
     },
     {
@@ -66,13 +66,13 @@
       key: "id",
     },
     {
-      title: "Quantity Available",
-      dataIndex: "quantity_available",
+      title: "Product Type",
+      dataIndex: "StockUom",
       key: "id",
     },
     {
-      title: "Product Source",
-      dataIndex: "product_source",
+      title: "Quantity Available",
+      dataIndex: "quantity_available",
       key: "id",
     },
   ];
