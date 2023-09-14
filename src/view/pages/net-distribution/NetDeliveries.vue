@@ -19,7 +19,7 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                 <template #action="{ record }">
+                 <!-- <template #action="{ record }">
                   <td>
                     <div class="table-actions">
                       <sdButton 
@@ -31,9 +31,7 @@
                       </sdButton>
                       </div>
                     </td>
-                  </template>
-              
-              
+                  </template> -->
               </a-table>
 
             </div>
