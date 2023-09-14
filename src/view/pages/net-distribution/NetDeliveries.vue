@@ -32,8 +32,6 @@
                       </div>
                     </td>
                   </template>
-              
-              
               </a-table>
 
             </div>

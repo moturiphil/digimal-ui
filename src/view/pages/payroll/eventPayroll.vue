@@ -695,7 +695,7 @@ export default defineComponent({
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 2 || role_id.value === 53;
+      return role_id.value === 59 || role_id.value === 53;
     });
 
     const isAdminAccountant = computed(() => {

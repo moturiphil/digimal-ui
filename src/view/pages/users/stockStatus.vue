@@ -56,8 +56,8 @@
       key: "id",
     },
     {
-      title: "Batch No",
-      dataIndex: "batch_no",
+      title: "Warehouse ID",
+      dataIndex: "warehouse_id",
       key: "id",
     },
     {
@@ -66,13 +66,13 @@
       key: "id",
     },
     {
-      title: "Quantity Available",
-      dataIndex: "quantity_available",
+      title: "Product Type",
+      dataIndex: "StockUom",
       key: "id",
     },
     {
-      title: "Product Source",
-      dataIndex: "product_source",
+      title: "Quantity Available",
+      dataIndex: "quantity_available",
       key: "id",
     },
   ];
@@ -95,14 +95,17 @@
   
       onMounted(async () => {
         try {
-          const response = await fetch(`${process.env.VUE_APP_BASE_URL}/stock_status`, {
+          const response = await fetch(`http://196.201.229.186:8091/api/InventoryMaster/Getstock`, 
+          // const response = await fetch(`${process.env.VUE_APP_BASE_URL}/stock_status`, 
+          {
             method: "GET",
-            headers: authHeader(),
+            // headers: authHeader(),
           });
           console.log(response);
           const data = await response.json();
-          dataSource.value = data.data;
-          console.log(data.data);
+          // console.log(data);
+          dataSource.value = data;
+          console.log(data);
         } catch (error) {
           console.error(error);
         }

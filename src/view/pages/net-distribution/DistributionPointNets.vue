@@ -47,28 +47,18 @@
       key: "id",
     },
     {
-      title: "Received From",
-      dataIndex: "received_from",
+      title: "County",
+      dataIndex: "drop_off_point_county",
       key: "id",
     },
     {
-      title: "Received By",
-      dataIndex: "received_by",
+      title: "Sub County",
+      dataIndex: "drop_off_point_sub_county",
       key: "id",
     },
     {
-      title: "No of Bales",
-      dataIndex: "no_of_bales",
-      key: "id",
-    },
-    {
-      title: "Total Nets",
-      dataIndex: "total_no_nets",
-      key: "id",
-    },
-    {
-      title: "Date Received",
-      dataIndex: "date_received",
+      title: "Quantity",
+      dataIndex: "quantity",
       key: "id",
     },
   ];
@@ -90,10 +80,28 @@
       //   const api_url = UserService;
       //   console.log(api_url);
   
+      // onMounted(async () => {
+      //   try {
+      //     const response = await fetch(
+      //       `${process.env.VUE_APP_BASE_URL}/net_deliveries_drop_of_points`,
+      //       {
+      //         method: "GET",
+      //         headers: authHeader(),
+      //       }
+      //     );
+      //     console.log(response);
+      //     const data = await response.json();
+      //     dataSource.value = data.data;
+      //     console.log(data.data);
+      //   } catch (error) {
+      //     console.error(error);
+      //   }
+      // });
+
       onMounted(async () => {
         try {
           const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/net_deliveries_drop_of_points`,
+            `${process.env.VUE_APP_BASE_URL}/drop_of_points_stock_status`,
             {
               method: "GET",
               headers: authHeader(),

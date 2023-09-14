@@ -2,9 +2,25 @@
   <div>
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <sdButton
+        class="btn-import"
+        type="success"
+        size="small"
+        @click="generatePayroll"
+        v-if="isAccountant"
+      >
         Generate Payroll
-      </sdButton> -->
+      </sdButton>
+      &nbsp; &nbsp;
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportParticipants"
+        size="small"
+      >
+        Download List &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -38,16 +54,6 @@
                   >
                     Pending Participants
                   </a>
-                </li>
-                <li>
-                  <sdButton
-                    class="btn-import"
-                    type="success"
-                    @click="exportParticipants"
-                    size="extra-small"
-                  >
-                    <sdFeatherIcons type="download-cloud" size="extra-small"/>
-                  </sdButton>
                 </li>
               </ul>
             </div>
@@ -84,7 +90,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'confirmed'"
                         >
-                          <!-- <p><b>Total Records: </b> {{ recordCount }}</p> -->
+                          <p><b>Total Records: </b> {{ confirmedCount }}</p>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -100,6 +106,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'pending'"
                         >
+                          <p><b>Total Records: </b> {{ pendingCount }}</p>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -131,7 +138,9 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+// import { useRoute, useRouter } from "vue-router";
+
 
 // const households = ref([]);
 
@@ -172,6 +181,12 @@ export default defineComponent({
   computed: {
     recordCount() {
       return this.dataSource.length;
+    },
+    confirmedCount() {
+      return this.confirmed.length;
+    },
+    pendingCount() {
+      return this.pending.length;
     },
   },
   data() {
@@ -226,7 +241,7 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export`;
+    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
     console.log(genetatePayrollURL);
 
@@ -366,8 +381,25 @@ export default defineComponent({
       }
     });
 
+    const level_id = ref("");
+    const role_id = ref("");
+    // const current = ref("");
+    const rt = useRouter();
+
     const formState = reactive({
       searchItem: "",
+    });
+    onMounted(() => {
+      const user = JSON.parse(sessionStorage.getItem("user"));
+      if (!user) {
+        rt.push({ path: "/auth/login" });
+      } else {
+        level_id.value = user.user.level_id;
+        role_id.value = user.user.role_id;
+      }
+    });
+    const isAccountant = computed(() => {
+      return role_id.value === 4;
     });
 
     return {
@@ -384,6 +416,7 @@ export default defineComponent({
       activeClass,
       generatePayroll,
       exportParticipants,
+      isAccountant,
     };
   },
   // computed: {
