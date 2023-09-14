@@ -53,7 +53,7 @@
                           {{ errors.counted_no_of_nets }}
                         </p>
                       </a-form-item>
-                      <a-form-item name="date_received" label="Date Received">
+                      <!-- <a-form-item name="date_received" label="Date Received">
                         <a-date-picker
                           :style="{ width: '100%' }"
                           v-model:value="formState.date_received"
@@ -69,8 +69,8 @@
                         >
                           {{ errors.date_received }}
                         </p>
-                      </a-form-item>
-                      <a-form-item name="received_from" label="Received From">
+                      </a-form-item> -->
+                      <!-- <a-form-item name="received_from" label="Received From">
                         <a-select
                           name="basic-select"
                           class="sDash_fullwidth-select"
@@ -90,7 +90,7 @@
                         >
                           {{ errors.received_from }}
                         </p>
-                      </a-form-item>
+                      </a-form-item> -->
                       <a-form-item name="delivery_note_number" label="Delivery Note No.">
                         <a-input
                           v-model:value="formState.delivery_note_number"
@@ -108,7 +108,7 @@
                         </p>
                       </a-form-item>
   
-                      <a-form-item name="received_by" label="Received By">
+                      <!-- <a-form-item name="received_by" label="Received By">
                         <a-select
                           v-model:value="formState.received_by"
                           v-if="!loading"
@@ -133,7 +133,7 @@
                         >
                           {{ errors.received_by }}
                         </p>
-                      </a-form-item>
+                      </a-form-item> -->
   
                       <div class="record-form-actions text-right">
                         <sdButton size="default" htmlType="Save" type="success">
