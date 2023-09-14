@@ -105,7 +105,7 @@
           const data = await response.json();
           // console.log(data);
           dataSource.value = data;
-          console.log(data.data);
+          console.log(data);
         } catch (error) {
           console.error(error);
         }
