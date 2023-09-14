@@ -1,27 +1,9 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Users">
-      <template id="buttons"></template>
+    <sdPageHeader title="Registered Users">
     </sdPageHeader>
-
-    <!-- sdPageBody -->
-
     <Main>
-      <a-row :gutter="16" class="search-row">
-        <!-- <sdButton class="btn-import" type="success">
-          <router-link
-            :to="{
-              path: `/users/import`,
-            }"
-            class="btn-icon"
-            type="info"
-            shape="circle"
-          >
-            &nbsp;&nbsp; Import Master List
-          </router-link>
-        </sdButton> -->
-        <br />
-        <br />
+      <!-- <a-row :gutter="16" class="search-row">
         <a-col :xs="24" :sm="24" :md="12">
           <sdAutoComplete
             @onSearch="handleSearch"
@@ -29,10 +11,8 @@
             :style="{ width: '80%', marginRight: '80px', height: '40px' }"
           />
         </a-col>
-      </a-row>
+      </a-row> -->
       <a-row :gutter="16" class="search-row"> </a-row>
-      <br />
-      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -152,50 +132,12 @@ const DragAndDropTable = defineComponent({
   name: "ViewPage",
   components: { RecordViewWrapper, Main },
 
-  // data() {
-  //   return {
-  //     users: [], // This is where your users data should be stored
-  //     // Other data properties...
-  //   };
-  // },
-
-  // methods : {
-  //   toggleUserStatus(id, status) {
-  //     const confirmMessage = status
-  //       ? "Are you sure to activate this user?"
-  //       : "Are you sure to deactivate this user?";
-  //     const confirm = window.confirm(confirmMessage);
-
-  //     if (confirm) {
-  //       axios
-  //         .post( `${process.env.VUE_APP_BASE_URL}/users/${id}/toggleStatus`)
-  //         .then((response) => {
-  //           // Assuming the API returns a success response
-  //           console.log(response);
-  //           if (response.data.success) {
-  //             // Update the user's status in your data
-  //             // For example, assuming your data structure is an array called 'users'
-  //             // const user = users.find((user) => user.id === id);
-  //             // if (user) {
-  //             //   user.status = !user.status; // Toggle the status
-  //             // }
-  //           }
-  //         })
-  //         .catch((error) => {
-  //           console.error("Error toggling user status:", error);
-  //         });
-  //     }
-  //   },
-  // },
-
   setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-
-    // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
     console.log(authHeader());
 
