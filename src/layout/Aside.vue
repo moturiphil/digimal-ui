@@ -25,14 +25,14 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="canCreateEvent || canViewEvent">
+      <a-sub-menu key="events">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
         <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetListevents" v-if="canViewEvent">
+        <a-menu-item key="widgetListevents">
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
