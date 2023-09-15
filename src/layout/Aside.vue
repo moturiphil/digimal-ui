@@ -24,12 +24,6 @@
             List Campaigns
           </router-link>
         </a-menu-item>
-        <!-- <a-menu-item key="widgetsCampaignUsers">
-          <router-link to="/households/chv"> Campaign Users </router-link>
-        </a-menu-item> -->
-        <!-- <a-menu-item  key="widgetlistCampaignUsers">
-          <router-link to="/campaign/users"> List Campaign Users </router-link>
-        </a-menu-item> -->
       </a-sub-menu>
       <a-sub-menu key="events" v-if="canCreateEvent || canViewEvent">
         <template v-slot:title>
