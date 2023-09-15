@@ -50,7 +50,9 @@
                           <sdFeatherIcons type="user-plus" size="small" />
                           &nbsp; Register
                         </sdButton>
-                        <span v-if="record.payroll_status === 'Pending'">&nbsp;&nbsp;</span>
+                        <span v-if="record.payroll_status === 'Pending'"
+                          >&nbsp;&nbsp;</span
+                        >
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
