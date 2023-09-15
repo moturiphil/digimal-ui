@@ -702,15 +702,15 @@ export default defineComponent({
     role_id.value = user.user.role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 4 || role_id.value === 53;
+      return role_id.value === 63 || role_id.value === 53;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 59 || role_id.value === 53;
+      return role_id.value === 64 || role_id.value === 53;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 1 || role_id.value === 53;
+      return role_id.value === 65 || role_id.value === 53;
     });
 
     const formState = reactive({
