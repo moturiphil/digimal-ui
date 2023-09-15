@@ -364,7 +364,7 @@ import { notification } from "ant-design-vue";
 const columns = [
   {
     title: "Name",
-    dataIndex: "name",
+    dataIndex: "event_id",
     key: "id",
   },
   // {
@@ -664,9 +664,20 @@ export default defineComponent({
           dataSource.value.forEach((item) => {
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
+
+            if (item.approved_by) {
+              const { first_name, last_name } = item.approved_by;
+              item.approval_status += ` by ${first_name} ${last_name}`;
+            }
           });
+
           dataSource.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
+
+            if (item.validated_by) {
+              const { first_name, last_name } = item.validated_by;
+              item.status += ` by ${first_name} ${last_name}`;
+            }
           });
           dataSource.value.forEach((item) => {
             item.payment_status =
