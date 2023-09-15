@@ -378,8 +378,18 @@ const columns = [
     key: "id",
   },
   {
+    title: "Validator",
+    dataIndex: "validator",
+    key: "id",
+  },
+  {
     title: "Approved",
     dataIndex: "approval_status",
+    key: "id",
+  },
+  {
+    title: "Approver",
+    dataIndex: "approver",
     key: "id",
   },
   {
@@ -662,26 +672,21 @@ export default defineComponent({
           console.log(response.data.data);
           dataSource.value = response.data.data;
           dataSource.value.forEach((item) => {
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-
-            if (item.approved_by) {
-              const { first_name, last_name } = item.approved_by;
-              item.approval_status += ` by ${first_name} ${last_name}`;
-            }
-          });
-
-          dataSource.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
-
-            if (item.validated_by) {
-              const { first_name, last_name } = item.validated_by;
-              item.status += ` by ${first_name} ${last_name}`;
-            }
-          });
-          dataSource.value.forEach((item) => {
             item.payment_status =
               item.payment_status === 1 ? "Paid" : "Not Paid";
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
+            if (item.approved_by) {
+              item.approver =
+                item.approved_by.first_name + " " + item.approved_by.last_name;
+            }
+            if (item.validated_by) {
+              item.validator =
+                item.validated_by.first_name +
+                " " +
+                item.validated_by.last_name;
+            }
           });
           console.log(dataSource.value);
         })
@@ -702,15 +707,15 @@ export default defineComponent({
     role_id.value = user.user.role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 63 || role_id.value === 53;
+      return role_id.value === 4 || role_id.value === 53;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 64 || role_id.value === 53;
+      return role_id.value === 59 || role_id.value === 53;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 65 || role_id.value === 53;
+      return role_id.value === 1 || role_id.value === 53;
     });
 
     const formState = reactive({

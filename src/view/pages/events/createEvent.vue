@@ -107,28 +107,6 @@
                         {{ errors.county_id }}
                       </p>
                     </a-form-item>
-                    <!-- <a-form-item label="Location Type">
-                      <a-select
-                        size="large"
-                        name="name"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Location Type"
-                        v-model:value="formState.location_type"
-                        @blur="validate('location_type')"
-                        @keypress="validate('location_type')"
-                      >
-                        <a-select-option value="1">City</a-select-option>
-                        <a-select-option value="2">County HQ</a-select-option>
-                        <a-select-option value="3">Others</a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.location_type"
-                      >
-                        {{ errors.location_type }}
-                      </p>
-                    </a-form-item> -->
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         placeholder="Selected Host"
@@ -428,7 +406,6 @@ const AddNew = defineComponent({
       campaign_id: Yup.string().required("Campaign is required"),
       name: Yup.string().required("Name is required"),
       county_id: Yup.string().required(),
-      // location_type: Yup.string().required("Location is required"),
       facilitator_id: Yup.string().required("Host is required"),
       trainer_id: Yup.array()
         .min(1, "At least 1 facilitator required")
@@ -436,7 +413,6 @@ const AddNew = defineComponent({
       no_of_days: Yup.number().required("No of days is required"),
       venue: Yup.string().required("Venue is required"),
     });
-    // console.log(formState);
 
     const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
@@ -453,7 +429,6 @@ const AddNew = defineComponent({
         campaign_id: formState.campaign_id,
         venue: formState.venue,
         location_id: formState.county_id,
-        // location_type_id: parseInt(formState.location_type),
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         number_of_days: formState.no_of_days,

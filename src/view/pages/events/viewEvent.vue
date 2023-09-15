@@ -61,6 +61,7 @@
                                 id: record.id,
                                 name: record.name,
                                 event_code: record.event_code,
+                                event_host_id: record.event_host_id,
                               },
                             }"
                           >
