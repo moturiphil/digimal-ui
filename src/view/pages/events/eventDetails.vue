@@ -3,13 +3,12 @@
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
       <sdButton
-        v-if="isAccountant"
+        v-if="isApprovedGenerator"
         class="btn-import"
         type="success"
         size="small"
         @click="generatePayroll"
       >
-        <!--  -->
         Generate Payroll
       </sdButton>
       &nbsp; &nbsp;
@@ -386,6 +385,10 @@ export default defineComponent({
     // const current = ref("");
     const rt = useRouter();
 
+    const event_host_id = query.event_host_id;
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    console.log(user.user);
+
     const formState = reactive({
       searchItem: "",
     });
@@ -398,8 +401,12 @@ export default defineComponent({
         role_id.value = user.user.role_id;
       }
     });
-    const isAccountant = computed(() => {
-      return role_id.value === 4;
+    const isApprovedGenerator = computed(() => {
+      if (event_host_id === user.user.id || user.user.role_id===53) {
+        return true;
+      } else {
+        return false;
+      }
     });
 
     return {
@@ -416,7 +423,7 @@ export default defineComponent({
       activeClass,
       generatePayroll,
       exportParticipants,
-      isAccountant,
+      isApprovedGenerator,
     };
   },
   // computed: {

@@ -24,12 +24,6 @@
             List Campaigns
           </router-link>
         </a-menu-item>
-        <!-- <a-menu-item key="widgetsCampaignUsers">
-          <router-link to="/households/chv"> Campaign Users </router-link>
-        </a-menu-item> -->
-        <!-- <a-menu-item  key="widgetlistCampaignUsers">
-          <router-link to="/campaign/users"> List Campaign Users </router-link>
-        </a-menu-item> -->
       </a-sub-menu>
       <a-sub-menu key="events" v-if="canCreateEvent || canViewEvent">
         <template v-slot:title>
@@ -242,8 +236,7 @@ const viewCampaignRoles = [
 const createEventRoles = [53, 5, 3, 21, 37, 39];
 const viewEventRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
-];
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65];
 const createActivityRoles = [53, 5, 3, 21, 37];
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
@@ -397,10 +390,6 @@ export default defineComponent({
         state.preOpenKeys = oldVal;
       }
     );
-
-    // onMounted(() => {
-    //   console.log(authService.getUser());
-    // });
 
     return {
       mode,
