@@ -3,12 +3,13 @@
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
       <sdButton
+        v-if="isAccountant"
         class="btn-import"
         type="success"
         size="small"
         @click="generatePayroll"
-        v-if="isAccountant"
       >
+        <!--  -->
         Generate Payroll
       </sdButton>
       &nbsp; &nbsp;
@@ -140,7 +141,6 @@ import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
 // import { useRoute, useRouter } from "vue-router";
-
 
 // const households = ref([]);
 
