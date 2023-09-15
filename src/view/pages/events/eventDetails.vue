@@ -385,7 +385,7 @@ export default defineComponent({
     // const current = ref("");
     const rt = useRouter();
 
-    const event_host_id = query.event_host_id;
+    // const event_host_id = query.event_host_id;
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user.user);
 
@@ -402,7 +402,7 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      if (event_host_id === user.user.id || user.user.role_id===53) {
+      if ( user.user.role_id===16 || user.user.role_id===53) {
         return true;
       } else {
         return false;
