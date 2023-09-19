@@ -67,23 +67,6 @@
             List Orgranization Units
           </router-link>
         </a-menu-item>
-
-        <!-- <a-menu-item  key="widgetCreateLocation">
-          <router-link to="/org-units/location-create">
-            Create Location
-          </router-link>
-        </a-menu-item>
-        <a-menu-item  key="widgetCreateSubLocation">
-          <router-link to="/org-units/sub-location-create">
-            Create Sub-Location
-          </router-link>
-        </a-menu-item>
-
-        <a-menu-item  key="widgetCreateVillage">
-          <router-link to="/org-units/village-create">
-            Create Village
-          </router-link>
-        </a-menu-item>  -->
       </a-sub-menu>
 
       <a-sub-menu
@@ -199,11 +182,6 @@
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <!-- <a-menu-item  key="review_excel">
-        <router-link to="/review_excel">
-          <sdFeatherIcons type="users" />&nbsp; &nbsp; Review Excel
-        </router-link>
-      </a-menu-item> -->
       <a-menu-item v-if="isAdmin" key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
@@ -352,10 +330,6 @@ export default defineComponent({
     const isLevelOne = computed(() => {
       return level_id.value === 1 || role_id.value === 27;
     });
-
-    // const isAdmin = computed(() => {
-    //   return role_id.value === 53;
-    // });
 
     const router = computed(() => useRoute());
     const state = reactive({

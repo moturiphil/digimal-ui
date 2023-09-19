@@ -97,11 +97,6 @@ const columns = [
     dataIndex: "ip_address",
     key: "",
   },
-  // {
-  //   title: "Created At",
-  //   dataIndex: "created_at",
-  //   key: "",
-  // },
   {
     title: "Update At",
     dataIndex: "updated_at",
@@ -164,7 +159,7 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data)
+          console.log(response.data.data);
           dataSource.value = response.data.data;
           // console.log(dataSource.value);
           dataSource.value = response.data.data.map((item) => ({
@@ -180,21 +175,15 @@ export default defineComponent({
     });
 
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.event) ||
-              regex.test(event.user_id)
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return regex.test(event.event) || regex.test(event.user_id);
+        });
+      }
     });
 
     return {

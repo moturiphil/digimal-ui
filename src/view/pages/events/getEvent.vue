@@ -204,16 +204,6 @@
       changeType(type) {
         this.modalType = type;
       },
-      // info() {
-      //   //const h = this.$createElement;
-      //   Modal.info({
-      //     title: 'This is a notification message',
-      //     content: h('div', {}, [h('p', 'some messages...some messages...'), h('p', 'some messages...some messages...')]),
-      //     onOk() {
-      //       console.log('ok');
-      //     },
-      //   });
-      // },
       success() {
         Modal.success({
           title: "This is a success message",
@@ -280,10 +270,6 @@
           router.push(`/event/register/${eventId}`);
         } catch (error) {
           console.error(error);
-          // Modal.error({
-          //   title: "Registration failed",
-          //   content: "Invalid event code",
-          // });
         }
       };
   

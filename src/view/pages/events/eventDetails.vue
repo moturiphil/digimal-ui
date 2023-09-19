@@ -214,9 +214,6 @@ export default defineComponent({
       );
       this.notData = data;
     },
-    // handleChange(value) {
-    //   this.activeClass = value;
-    // },
     onShowSizeChange(current, pageSize) {
       this.current = current;
       this.pageSize = pageSize;

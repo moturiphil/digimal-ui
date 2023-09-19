@@ -7,7 +7,6 @@
           Create Password and submit email for your account
         </p>
         <a-form-item label="ID NO">
-          <!-- <a-input :value="formattedId" disabled /> -->
           <a-input v-model:value="formState.id_no" disabled />
         </a-form-item>
         <a-form-item label="Email">
@@ -60,9 +59,6 @@ export default {
   name: "Password",
   components: { AuthWrapper },
   setup() {
-    // const id_no = props.route.params.id_no;
-    // const otp = props.route.query.otp;
-
     const isLoading = computed(() => store.state.auth.loading);
     const checked = ref(null);
     const route = useRoute();
@@ -97,17 +93,8 @@ export default {
         confirm_password: formState.confirm_password,
         email: formState.email,
       });
-      // router.push("/");
       router.replace('/');
       console.log(response);
-      // if (response.status == 200) {
-      //   console.log(response);
-      //   router.push("/auth/login");
-      //   console.log("response successfully sent....");
-      //   // router.push("/"); 
-      // }
-      // handle success response
-      // handle error response
     };
 
     return {

@@ -40,14 +40,14 @@
                   <template #activity="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton
-                        size="extra-small"
-                          type="success"
-                          >
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/activity/confirmed-participants/${record.activity_list_id}`,
-                              query: { id: record.activity_list_id, code: record.activity_code },
+                              query: {
+                                id: record.activity_list_id,
+                                code: record.activity_code,
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -58,13 +58,14 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton
-                        size="extra-small"
-                          type="success">
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/activity/pending-confirmation/${record.activity_list_id}`,
-                              query: { id: record.activity_list_id, code: record.activity_code},
+                              query: {
+                                id: record.activity_list_id,
+                                code: record.activity_code,
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -74,20 +75,6 @@
                             &nbsp;&nbsp; Pending
                           </router-link>
                         </sdButton>
-                        <!-- <sdButton>
-                          <router-link
-                            :to="{
-                              path: `/activity/pending-confirmation/${record.activity_list_id}`,
-                              query: { id: record.activity_list_id, code: record.activity_code},
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            <sdFeatherIcons type="pause" size="16" />
-                            &nbsp;&nbsp; Generate Payroll
-                          </router-link>
-                        </sdButton> -->
                       </div>
                     </td>
                   </template>
@@ -116,11 +103,6 @@ const columns = [
     dataIndex: "name",
     key: "id",
   },
-  // {
-  //   title: 'Activity diffForHumans',
-  //   dataIndex: 'diffForHumans',
-  //   key: 'id',
-  // },
   {
     title: "Activity Start Date",
     dataIndex: "start_date",
@@ -244,21 +226,15 @@ const ViewPage = defineComponent({
     };
 
     const results = computed(() => {
-         const query = searchItem.value.toLowerCase();
-         const regex = new RegExp(query, 'i');
-         if(!query){
-          
-            return dataSource.value;
-         }else{
-
-           return dataSource.value.filter((event) =>{
-              return (
-              regex.test(event.activity_code) ||
-              regex.test(event.name)
-              );
-            }
-           );
-         }
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return regex.test(event.activity_code) || regex.test(event.name);
+        });
+      }
     });
 
     const rowSelection = {

@@ -69,11 +69,6 @@ const importExport = defineComponent({
         .then((response) => response.json())
         .then(({ success, message }) => {
           console.log(success, message);
-        //   const rs = data.map((item) => {
-        //     return `Row No: ${item.row_id} "\n" ${Object.keys(item.row_errors)
-        //       .map((key) => item.row_errors[key])
-        //       .join("||")}`;
-        //   });
           if (success) {
             notification["success"]({
               message: "Success",

@@ -67,11 +67,7 @@
   import { Main, TableWrapper } from "../../styled";
   import { useStore } from "vuex";
   import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-  // import axios from "axios";
   import authHeader from "../../../services/auth-header";
-  // import { inject } from "vue";
-  // import { useRouter } from "vue-router";
-  // import DragAndDropTable from '../../../view/table/DragTable.vue';
   
   const columns = [
     {
