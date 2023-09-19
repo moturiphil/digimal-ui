@@ -60,33 +60,6 @@
       >
         <div class="sDash_addTask-modal-inner">
           <BasicFormWrapper v-for="(value, i) in task" :key="i">
-            <!-- <Form form={form} name="add-task" onFinish={eData => onEditHandle(eData, value.id)}>
-                      <Form.Item
-                        rules={[{ required: true, message: 'Please add a Title' }]}
-                        name="title"
-                        initialValue={value.title}
-                      >
-                        <Input placeholder="Title" />
-                      </Form.Item>
-  
-                      <Form.Item name="description" initialValue={value.description}>
-                        <Input.TextArea rows={4} placeholder="Add Description" />
-                      </Form.Item>
-                      <Form.Item hidden="true" name="favourite" initialValue={value.favourite}>
-                        <Input />
-                      </Form.Item>
-                      <Form.Item hidden="true" name="completed" initialValue={value.completed}>
-                        <Input />
-                      </Form.Item>
-                      <div class="sDash-modal-actions">
-                        <Button size="small" type="white" key="cancel" outlined onClick={handleCancel}>
-                          Cancel
-                        </Button>
-                        <Button htmlType="submit" size="small" type="primary" key="submit">
-                          Edit
-                        </Button>
-                      </div>
-                    </Form> -->
           </BasicFormWrapper>
         </div>
       </sdModal>

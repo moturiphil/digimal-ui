@@ -37,9 +37,6 @@ export default defineComponent({
     };
   },
   created() {
-    // const encodedData = this.$route.params.data;
-    // console.log(encodedData);
-
     let encodedData = this.$route.params.data;
     console.log("data is", encodedData);
     const decodedData = decodeURIComponent(encodedData);

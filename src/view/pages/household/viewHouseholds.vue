@@ -52,17 +52,8 @@ import { RecordViewWrapper } from "../style";
 import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
-// import { useRouter } from "vue-router";
-// import { Modal } from "ant-design-vue";
-
-// const router = useRouter();
 
 const columns = [
-  // {
-  //   title: "#",
-  //   width: "80px",
-  //   customRender: (text, record, index) => index + 1,
-  // },
   {
     title: "First name",
     dataIndex: "first_name",
@@ -197,9 +188,6 @@ const ViewPage = defineComponent({
       crud,
       isLoading,
       selectedRowKeys,
-      // handleDelete,
-      // rowSelection,
-      // onSelectChange,
       dataSource,
       columns,
       searchItem,

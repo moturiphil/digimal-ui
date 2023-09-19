@@ -118,34 +118,6 @@
                       </p>
                     </a-form-item>
 
-                    <!-- <a-form-item name="location_type_id" label="Location Type">
-                      <a-select
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Location Type"
-                        v-model:value="formState.location_type_id"
-                        @blur="validate('location_type_id')"
-                        @keypress="validate('location_type_id')"
-                      >
-                        <a-select-option value="" disabled
-                          >Select a Location</a-select-option
-                        >
-                        <a-select-option value="1">Cities</a-select-option>
-                        <a-select-option default-value="2" value="2"
-                          >County HQ</a-select-option
-                        >
-                        <a-select-option value="3">Other Areas</a-select-option>
-                        <a-select-option value="4">N/A</a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.location_type_id"
-                      >
-                        {{ errors.location_type_id }}
-                      </p>
-                    </a-form-item> -->
-
                     <a-form-item name="campaign_id" label="Campaign">
                       <a-select
                         name="basic-select"
@@ -249,16 +221,6 @@
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
-                      <!-- <sdButton
-                        @click="
-                          showConfirmModal(formState.activity_facilitator)
-                        "
-                        size="small"
-                        type="success"
-                      >
-                        <sdFeatherIcons type="check-square" size="17" />
-                        &nbsp;&nbsp; Confirm Officers
-                      </sdButton> -->
                       &nbsp;&nbsp;&nbsp;
                       <sdButton
                         size="default"

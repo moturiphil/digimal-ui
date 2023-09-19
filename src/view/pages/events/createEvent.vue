@@ -170,7 +170,7 @@
 
                     <a-form-item name="no-of-days" label="No of Days">
                       <a-input-number
-                       type="number"
+                        type="number"
                         v-model:value="formState.no_of_days"
                         placeholder="No of Days"
                         :min="0"
@@ -199,6 +199,33 @@
                         v-if="!!errors.venue"
                       >
                         {{ errors.venue }}
+                      </p>
+                    </a-form-item>
+                    <a-form-item name="funding_agency" label="Funding Agency">
+                      <a-select
+                        v-model:value="formState.funding_agency"
+                        v-if="!loading"
+                        placeholder="Select Funding Agency"
+                        @blur="validate('campaign_id')"
+                        @keypress="validate('campaign_id')"
+                        show-search
+                        option-filter-prop="label"
+                      >
+                        <a-select-option
+                          v-for="agency in funding_agencies"
+                          :key="agency.id"
+                          :value="agency.id"
+                          :label="`${agency.name}`"
+                        >
+                          {{ agency.name }}
+                        </a-select-option>
+                      </a-select>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
                       </p>
                     </a-form-item>
                     <div class="record-form-actions text-right">
@@ -274,6 +301,7 @@ const AddNew = defineComponent({
       counties,
       sub_counties,
       events_list,
+      funding_agencies,
     } = reactive({
       campaigns: "",
       loading: true,
@@ -281,6 +309,10 @@ const AddNew = defineComponent({
       counties: [],
       sub_county_id: "",
       events_list: [],
+      funding_agencies: [
+        { id: 1, name: "Global Fund" },
+        { id: 2, name: "PMI" },
+      ],
     });
 
     const fetchEvents = async () => {
@@ -307,7 +339,7 @@ const AddNew = defineComponent({
       });
       const data = await response.json();
       this.campaigns = data.data;
-      // console.log(this.campaigns);
+      console.log(this.campaigns);
       this.loading = false;
     };
     const fetchFacilitators = async () => {
@@ -497,6 +529,7 @@ const AddNew = defineComponent({
       handleSubmit,
       formState,
       campaigns,
+      funding_agencies,
       facilitators,
       loading,
       counties,
