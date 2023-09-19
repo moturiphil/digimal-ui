@@ -82,9 +82,6 @@ export default {
             response.status === 226 ||
             response.status === 201
           ) {
-            // sessionStorage.removeItem("id_no", values.id_no);
-            // sessionStorage.removeItem("otp", response.data.OTP);
-            // sessionStorage.setItem("otp", response.data.OTP);
             sessionStorage.setItem("id_no", values.id_no);
           } else {
             notification.error({

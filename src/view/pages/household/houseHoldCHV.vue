@@ -129,13 +129,9 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    // const router = useRouter();
-
     const API_URL = `${process.env.VUE_APP_BASE_URL}/users_doing_hh_reg`;
 
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
-
-    // const facilitator_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
     const chv_url = `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=chv`;
 

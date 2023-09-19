@@ -13,10 +13,6 @@
                 <sdFeatherIcons type="edit-3" size="16" />
                 &nbsp;&nbsp; Enroll Participants
               </sdButton>
-              <!-- <sdButton @click="showSuccessModal" size="small" type="success">
-                <sdFeatherIcons type="edit-3" size="16" />
-                &nbsp;&nbsp; Generate Payroll
-              </sdButton> -->
               <sdButton>
                 <router-link
                   :to="`/event/view/${record.id}`"
@@ -27,8 +23,6 @@
                   <sdFeatherIcons type="eye" size="16" />
                   &nbsp;&nbsp; View
                 </router-link>
-                <!-- <sdFeatherIcons type="edit" size="16" /> -->
-                <!-- &nbsp;&nbsp; View -->
               </sdButton>
               <sdButton
                 class="btn-icon"
@@ -38,7 +32,6 @@
               >
                 <sdFeatherIcons type="trash-2" size="16" />
                 <a href="" title="Delete"></a>
-                <!-- &nbsp;&nbsp; Delete -->
               </sdButton>
             </div>
           </td>
@@ -62,7 +55,6 @@ const columns = [
     title: "Participant Name",
     dataIndex: "fullName",
     key: "id",
-    // render: (text, record) => `${record.first_name} ${record.last_name}`,
   },
   {
     title: "Participant Phone",
@@ -112,7 +104,6 @@ const EventCampaignTable = defineComponent({
     onMounted(async () => {
       try {
         const response = await axios.get(
-          // `${API_URL}/activity_participants?activity_id/${query.code}&confirmed=0`,
           `${API_URL}/activity_participants?activity_id=${query.code}&confirmed=1`,
           {
             headers: authHeader(),
@@ -122,7 +113,6 @@ const EventCampaignTable = defineComponent({
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
           return {
             ...record,
             fullName,
@@ -130,10 +120,7 @@ const EventCampaignTable = defineComponent({
         });
 
         dataSource.value = response.data.data;
-        // console.log(updatedData);
         dataSource.value = updatedData;
-
-        // console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }

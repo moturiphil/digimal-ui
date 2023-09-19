@@ -23,8 +23,6 @@
                     <sdFeatherIcons type="eye" size="16" />
                     &nbsp;&nbsp; View
                   </router-link>
-                  <!-- <sdFeatherIcons type="edit" size="16" /> -->
-                  <!-- &nbsp;&nbsp; View -->
                 </sdButton>
                 <sdButton
                   class="btn-icon"
@@ -34,7 +32,6 @@
                 >
                   <sdFeatherIcons type="trash-2" size="16" />
                   <a href="" title="Delete"></a>
-                  <!-- &nbsp;&nbsp; Delete -->
                 </sdButton>
               </div>
             </td>
@@ -58,7 +55,6 @@
       title: "Participant Name",
       dataIndex: "fullName",
       key: "id",
-      // render: (text, record) => `${record.first_name} ${record.last_name}`,
     },
     {
       title: "Participant Phone",

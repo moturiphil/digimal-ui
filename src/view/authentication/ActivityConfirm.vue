@@ -75,16 +75,6 @@ const Sales = {
     OverviewSalesCard,
   },
   data() {
-    // let url = this.currentUrl.replace("/auth/activity-confirm?", "act_part_cfm?");
-    // console.log(url);
-    // const confirm_response = fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
-    //   method: "GET",
-    //   headers: authHeader(),
-    // });
-    // confirm_response.then((res) => {
-    //   console.log(res);
-    //   return res.json();
-    // });
     return {
       currentUrl: "",
       newUrl: "",

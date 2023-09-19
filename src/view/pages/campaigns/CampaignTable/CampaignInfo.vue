@@ -14,13 +14,7 @@
 <script>
 import { UserTableStyleWrapper } from "../style";
 import { TableWrapper } from "../../../styled";
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  ref,
-  reactive,
-} from "vue";
+import { computed, defineComponent, onMounted, ref, reactive } from "vue";
 import { useRoute } from "vue-router";
 import authHeader from "../../../../../src/services/auth-header";
 import axios from "axios";
@@ -67,17 +61,6 @@ const EventCampaignTable = defineComponent({
     const campaignId = reactive({
       value: route.params.id,
     });
-    // watch(campaignId, async (newCampaignId) => {
-    //   try {
-    //     const response = await axios.get(`${API_URL}/${newCampaignId}/events`, {
-    //       headers: authHeader(),
-    //     });
-    //     console.log(response);
-    //     dataSource.value = response.data.data;
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
     onMounted(async () => {
       try {
         const response = await axios.get(
@@ -86,14 +69,6 @@ const EventCampaignTable = defineComponent({
             headers: authHeader(),
           }
         );
-
-        // check if event status == 0  set to inactive else set to active
-        // console.log(response.data.data);
-        // if (response.data.data.status == 0) {
-        //   response.data.data.status = "Inactive";
-        // } else {
-        //   response.data.data.status = "Active";
-        // }
         if (response.data.data.length > 0) {
           response.data.data.forEach((element) => {
             if (element.status === 0) {

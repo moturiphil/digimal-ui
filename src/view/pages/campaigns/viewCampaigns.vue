@@ -3,9 +3,6 @@
     <sdPageHeader title="Campaigns">
       <template v-slot:buttons>
         <div class="page-header-actions">
-          <!-- <sdCalendarButton />
-          <sdExportButton />
-          <sdShareButton /> -->
           <sdButton class="btn-add_new" size="default" type="success">
             <router-link to="/campaigns/create-campaign">
               <sdFeatherIcons type="plus" size="14" /> Create

@@ -14,61 +14,6 @@
       <a-row v-else :gutter="25">
         <a-col :xxl="6" :xl="8" :md="24" :xs="24">
           <sdCards headless>
-            <!-- <div class="state-single">
-              <div class="color-primary">
-                <a to="#">
-                  <sdFeatherIcons type="list" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">47</sdHeading>
-                <p>Event Participants</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-secondary">
-                <a to="#">
-                  <sdFeatherIcons type="pie-chart" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">34</sdHeading>
-                <p>Event Facilitators</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-success">
-                <a to="#">
-                  <sdFeatherIcons type="layout" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">$27,500</sdHeading>
-                <p>Spendings</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-warning">
-                <a to="#">
-                  <sdFeatherIcons type="edit" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">Four Points</sdHeading>
-                <p>Event Location</p>
-              </div>
-            </div>
-            <div class="state-single">
-              <div class="color-warning">
-                <a to="#">
-                  <sdFeatherIcons type="map" size="25" />
-                </a>
-              </div>
-              <div>
-                <sdHeading as="h5">4</sdHeading>
-                <p>Event Facilitators</p>
-              </div>
-            </div> -->
           </sdCards>
         </a-col>
         <a-col :xxl="18" :xl="24" :md="24" :xs="24">

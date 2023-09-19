@@ -8,9 +8,6 @@
       </template>
     </sdPageHeader>
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="exportUserData">
-          Export Participants
-        </sdButton> -->
       <div v-if="!project" class="spin">
         <a-spin />
       </div>
@@ -29,7 +26,6 @@
 </template>
 <script>
 import { ProjectDetailsWrapper } from "./overview/style";
-// import FileListCard from './overview/FileListCard';
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 
@@ -75,33 +71,6 @@ const ProjectDetails = defineComponent({
       },
     ];
 
-    // const getfacilitators = async () => {
-    //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       ...authHeader(),
-    //     },
-    //   });
-    //   const data = await response.json();
-    //   this.facilitators = data.data;
-    //   Modal.info({
-    //     title: 'Facilitators',
-    //     content: (
-    //         {/* {data.data.map((facilitator, index) => (
-    //           <p>{index + 1} {facilitator.first_name}  {facilitator.last_name} - {facilitator.phone_no} - {facilitator.id_no}</p>
-    //         ))
-    //         } */}
-    //         // <div>
-    //         //   <Table dataSource={data.data} columns={columns} />
-    //         // </div>
-
-    //     ),
-    //     onOk() {},
-    //   });
-
-    //   // this.loading = false;
-    // };
     const getfacilitators = async () => {
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/event/${query.event_code}/facilitators`,
@@ -115,15 +84,6 @@ const ProjectDetails = defineComponent({
       );
       const data = await response.json();
       this.facilitators = data.data;
-      // Modal.info({
-      //   title: "Facilitators",
-      //   content: (
-      //     <div>
-      //       <Table dataSource={data.data} columns={columns} />
-      //     </div>
-      //   ),
-      //   onOk() {},
-      // });
       Modal.info({
         title: "Facilitators",
         content: createTable(),
