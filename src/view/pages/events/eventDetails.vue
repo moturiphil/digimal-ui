@@ -2,25 +2,33 @@
   <div>
     <sdPageHeader ghost :title="`${event_name} Event`" />
     <Main>
-      <sdButton
-        v-if="isApprovedGenerator"
-        class="btn-import"
-        type="success"
-        size="small"
-        @click="generatePayroll"
-      >
-        Generate Payroll
-      </sdButton>
-      &nbsp; &nbsp;
-      <sdButton
-        class="btn-import"
-        type="success"
-        @click="exportParticipants"
-        size="small"
-      >
-        Download List &nbsp; &nbsp;
-        <sdFeatherIcons type="download-cloud" size="extra-small" />
-      </sdButton>
+      <div class="button-container">
+        <sdButton
+          v-if="isApprovedGenerator"
+          class="btn-import"
+          type="success"
+          size="small"
+          @click="generatePayroll"
+        >
+          Generate Payroll
+        </sdButton>
+        &nbsp; &nbsp;
+        <sdButton
+          class="btn-import"
+          type="success"
+          @click="exportParticipants"
+          size="small"
+        >
+          Download List &nbsp; &nbsp;
+          <sdFeatherIcons type="download-cloud" size="extra-small" />
+        </sdButton>
+        &nbsp; &nbsp;
+        <sdButton size="small" type="success" @click="manageEvent">
+          Manage Trainers &nbsp; &nbsp;
+          <sdFeatherIcons type="tool" size="extra-small" />
+        </sdButton>
+      </div>
+
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -122,6 +130,20 @@
                   </a-col>
                 </a-row>
               </div>
+              <a-modal
+                title="Event Trainers"
+                :visible="isModalOpen"
+                @ok="handleOk(recordId, inputValue)"
+                @cancel="handleCancel"
+                class="title-success"
+              >
+                <div>
+                  <h4>Event Host</h4>
+                  <p>...</p>
+                  <h4>Event Trainers</h4>
+                  <p>...</p>
+                </div>
+              </a-modal>
             </sdCards>
           </a-col>
         </a-row>
@@ -139,9 +161,6 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
-// import { useRoute, useRouter } from "vue-router";
-
-// const households = ref([]);
 
 const columns = [
   {
@@ -221,6 +240,11 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    handleCancel() {
+      this.isModalOpen = false;
+      this.visible = false;
+      this.colorVisible = false;
+    },
   },
   setup() {
     const { state } = useStore();
@@ -233,13 +257,14 @@ export default defineComponent({
     const activeClass = ref("all");
     const { query } = useRoute();
 
+    const isModalOpen = ref(false);
+
     console.log(query.event_code);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
+    const Event_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
-
-    console.log(genetatePayrollURL);
 
     const generatePayroll = async () => {
       try {
@@ -291,6 +316,25 @@ export default defineComponent({
         link.parentNode.removeChild(link);
       } catch (error) {
         console.error(error);
+      }
+    };
+
+    const manageEvent = async () => {
+      console.log("console.log");
+      isModalOpen.value = true;
+      const response = await axios.get(Event_URL, {
+        headers: authHeader(),
+      });
+      console.log(response.data.data);
+    };
+
+    const handleOk = async (id, inputValue) => {
+      try {
+        console.log(inputValue);
+      } finally {
+        console.log(inputValue);
+        inputValue = ""; // Clear inputValue after the modal is closed
+        isModalOpen.value = true;
       }
     };
 
@@ -399,7 +443,7 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      if ( user.user.role_id===16 || user.user.role_id===53) {
+      if (user.user.role_id === 16 || user.user.role_id === 53) {
         return true;
       } else {
         return false;
@@ -421,9 +465,41 @@ export default defineComponent({
       generatePayroll,
       exportParticipants,
       isApprovedGenerator,
+      manageEvent,
+      isModalOpen,
+      handleOk,
     };
   },
   // computed: {
   // },
 });
 </script>
+
+<style>
+/* Default styles for buttons */
+.button-container {
+  text-align: center; /* Center align the buttons by default */
+}
+
+.button-container sdButton {
+  margin: 5px; /* Add some margin between buttons */
+}
+
+/* Media query for screens larger than 768px (adjust breakpoint as needed) */
+@media (min-width: 769px) {
+  .button-container {
+    text-align: left; /* Left align the buttons on larger screens */
+    display: inline-block; /* Restore default inline-block behavior */
+  }
+
+  .button-container sdButton {
+    margin: 5px; /* Adjust margin for desktop spacing */
+  }
+}
+@media (max-width: 768px) {
+  .button-container sdButton {
+    margin: 5px 0; /* Adjust vertical margin for mobile spacing */
+    padding: 5px; /* Add padding to create separation */
+  }
+}
+</style>
