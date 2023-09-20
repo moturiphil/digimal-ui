@@ -72,7 +72,7 @@
                         {{ errors.name }}
                       </p>
                     </a-form-item>
-                    <a-form-item name="county_id" label="County">
+                    <!-- <a-form-item name="county_id" label="County">
                       <a-select
                         size="large"
                         name="basic-select"
@@ -106,7 +106,7 @@
                       >
                         {{ errors.county_id }}
                       </p>
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         placeholder="Selected Host"
@@ -426,7 +426,7 @@ const AddNew = defineComponent({
     const formState = reactive({
       campaign_id: null,
       name: null,
-      county_id: "",
+      // county_id: "",
       // location_type: null,
       facilitator_id: "",
       trainer_id: [],
@@ -437,7 +437,7 @@ const AddNew = defineComponent({
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign is required"),
       name: Yup.string().required("Name is required"),
-      county_id: Yup.string().required(),
+      // county_id: Yup.string().required(),
       facilitator_id: Yup.string().required("Host is required"),
       trainer_id: Yup.array()
         .min(1, "At least 1 facilitator required")
@@ -454,13 +454,20 @@ const AddNew = defineComponent({
         });
     };
 
+    console.log(sessionStorage.getItem("user"));
+    const logged_in_user  = sessionStorage.getItem("user");
+
+    const user_data = JSON.parse(logged_in_user);
+
+    console.log(user_data.user.location_id);
+
     const handleSubmit = () => {
       store.commit("setIsSubmitting", true);
       const data = {
         // name: formState.name,
         campaign_id: formState.campaign_id,
         venue: formState.venue,
-        location_id: formState.county_id,
+        location_id: user_data.user.location_id,
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         number_of_days: formState.no_of_days,
