@@ -33,6 +33,7 @@
     "file-saver": "^2.0.5",
     "firebase": "^8.10.0",
     "glightbox": "^3.0.9",
+    "idle-vue": "^2.0.5",
     "jest-worker": "^27.4.6",
     "js-cookie": "^3.0.1",
     "jsdom": "^22.1.0",
