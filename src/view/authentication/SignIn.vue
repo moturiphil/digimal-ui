@@ -18,7 +18,6 @@
           <a-input-password
             v-model:value="formState.password"
             placeholder="Password"
-            :iconRender="getPasswordToggleIcon"
             required
           />
         </a-form-item>
@@ -165,9 +164,9 @@ export default {
     const getPasswordToggleIcon = (visible) => {
       return visible ? "hide" : "show";
     };
-    const toggleShowPassword = () => {
-      showPassword.value = !showPassword.value;
-    };
+    // const toggleShowPassword = () => {
+    //   showPassword.value = !showPassword.value;
+    // };
 
     const showModal = () => {
       visible.value = true;
@@ -287,7 +286,7 @@ export default {
       formState,
       showPassword,
       getPasswordToggleIcon,
-      toggleShowPassword,
+      // toggleShowPassword,
       proceed,
       resetPassword,
       visible,
