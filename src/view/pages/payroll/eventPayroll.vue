@@ -7,12 +7,11 @@
       </sdButton>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'event-payroll-matrix'">
-        <sdButton type="success">
+        <sdButton type="success" v-if="isAdmin">
           <sdFeatherIcons size="" class="icon-color-white" />
           Assign Payroll Matrix
         </sdButton>
       </router-link>
-
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -706,6 +705,8 @@ export default defineComponent({
     // console.log(user.user[0].role_id);
     role_id.value = user.user.role_id;
 
+    console.log(role_id.value)
+
     const isValidator = computed(() => {
       return role_id.value === 63 || role_id.value === 53;
     });
@@ -716,6 +717,10 @@ export default defineComponent({
 
     const isAdminAccountant = computed(() => {
       return role_id.value === 65 || role_id.value === 53;
+    });
+
+    const isAdmin = computed(() => {
+      return role_id.value === 53;
     });
 
     const formState = reactive({
@@ -729,14 +734,12 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      // exportHouseHoldData,
       filteredData,
       handleChange,
       activeClass,
       handleVerify,
       isModalOpen,
       inputValue,
-      // showModal,
       handlePay,
       handleValidation,
       handleApproval,
@@ -745,6 +748,7 @@ export default defineComponent({
       isValidator,
       isApprover,
       isAdminAccountant,
+      isAdmin,
     };
   },
   // computed: {
