@@ -70,15 +70,6 @@
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
-                          @click="handleRegistration(record.event_code)"
-                          size="extra-small"
-                          type="success"
-                        >
-                          <sdFeatherIcons type="user-plus" size="small" />
-                          &nbsp; Facilitators
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
                           size="extra-small"
                           type="success"
                           :disabled="isStarting"
