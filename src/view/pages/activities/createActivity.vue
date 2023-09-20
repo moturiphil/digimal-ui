@@ -367,7 +367,7 @@ const AddNew = defineComponent({
     const getSubCounties = async (org_id) => {
       // console.log(org_id);
       const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        `${process.env.VUE_APP_BASE_URL}/list_users_subcounties?parent_id=${org_id}`,
         {
           method: "GET",
           headers: {
@@ -377,7 +377,7 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      // console.log(data);
+      console.log(data);
       this.sub_counties = data.message;
     };
     //campaigns
