@@ -201,7 +201,7 @@
                         {{ errors.venue }}
                       </p>
                     </a-form-item>
-                    <a-form-item name="funding_agency" label="Funding Agency">
+                    <!-- <a-form-item name="funding_agency" label="Funding Agency">
                       <a-select
                         v-model:value="formState.funding_agency"
                         v-if="!loading"
@@ -227,7 +227,7 @@
                       >
                         {{ errors.campaign_id }}
                       </p>
-                    </a-form-item>
+                    </a-form-item> -->
                     <div class="record-form-actions text-right">
                       <sdButton
                         size="default"

@@ -119,13 +119,13 @@ const columns = [
     key: "id",
   },
   {
-    title: "Campaign",
-    dataIndex: "campaign_id",
+    title: "County",
+    dataIndex: "county_id",
     key: "id",
   },
   {
-    title: "County",
-    dataIndex: "county_id",
+    title: "Sub County",
+    dataIndex: "sub_county_id",
     key: "id",
   },
   {

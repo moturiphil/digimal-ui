@@ -20,6 +20,36 @@
                     :model="formState"
                     @finish="onSubmit"
                   >
+                    <a-form-item name="campaign_id" label="Campaign">
+                      <a-select
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Campaign"
+                        v-model:value="formState.campaign_id"
+                        @blur="validate('campaign_id')"
+                        @keypress="validate('campaign_id')"
+                        show-search
+                        option-filter-prop="label"
+                      >
+                        <a-select-option value="" disabled
+                          >Select a campaign</a-select-option
+                        >
+                        <a-select-option
+                          v-for="campaign in campaigns"
+                          :value="campaign.id"
+                          :key="campaign.id"
+                          :label="campaign.name"
+                          >{{ campaign.name }}</a-select-option
+                        >
+                      </a-select>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
+                      </p>
+                    </a-form-item>
                     <a-form-item name="activity_id" label="Activity Name">
                       <a-select
                         name="basic-select"
@@ -51,7 +81,11 @@
                       </p>
                     </a-form-item>
 
-                    <a-form-item name="county_id" label="County">
+                    <a-form-item
+                      name="county_id"
+                      label="County"
+                      v-if="isNational"
+                    >
                       <a-select
                         size="large"
                         name="basic-select"
@@ -62,8 +96,6 @@
                         v-if="!loading"
                         show-search
                         option-filter-prop="label"
-                        @blur="validate('county_id')"
-                        @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -86,7 +118,11 @@
                         {{ errors.county_id }}
                       </p>
                     </a-form-item>
-                    <a-form-item name="sub_county_id" label="Sub County">
+                    <a-form-item
+                      name="sub_county_id"
+                      label="Sub County"
+                      v-if="isNational || isCounty"
+                    >
                       <a-select
                         size="large"
                         name="basic-select"
@@ -95,8 +131,6 @@
                         v-model:value="formState.sub_county_id"
                         show-search
                         option-filter-prop="label"
-                        @blur="validate('sub_county_id')"
-                        @keypress="validate('sub_county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -115,37 +149,6 @@
                         v-if="!!errors.sub_county_id"
                       >
                         {{ errors.sub_county_id }}
-                      </p>
-                    </a-form-item>
-
-                    <a-form-item name="campaign_id" label="Campaign">
-                      <a-select
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Campaign"
-                        v-model:value="formState.campaign_id"
-                        @blur="validate('campaign_id')"
-                        @keypress="validate('campaign_id')"
-                        show-search
-                        option-filter-prop="label"
-                      >
-                        <a-select-option value="" disabled
-                          >Select a campaign</a-select-option
-                        >
-                        <a-select-option
-                          v-for="campaign in campaigns"
-                          :value="campaign.id"
-                          :key="campaign.id"
-                          :label="campaign.name"
-                          >{{ campaign.name }}</a-select-option
-                        >
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.campaign_id"
-                      >
-                        {{ errors.campaign_id }}
                       </p>
                     </a-form-item>
 
@@ -307,8 +310,8 @@ const AddNew = defineComponent({
     });
     const ArticleSchema = Yup.object().shape({
       activity_id: Yup.string().required("Name is required"),
-      county_id: Yup.string().required("County is required"),
-      sub_county_id: Yup.string().required("Sub County is required"),
+      // county_id: Yup.string().required("County is required"),
+      // sub_county_id: Yup.string().required("Sub County is required"),
       campaign_id: Yup.string().required("Campaign is required"),
       start_date: Yup.string().required("Start Date is required"),
       // location_type_id: Yup.string().required("Location Type is required"),
@@ -326,8 +329,37 @@ const AddNew = defineComponent({
         });
     };
 
-    //get activities list
+    // get users location
+    // const level_id = ref("");
+    const userData = JSON.parse(sessionStorage.getItem("user"));
+    console.log(userData.user);
 
+    const isNational = computed(() => {
+      if (userData.user.level_id == 1) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const isCounty = computed(() => {
+      if (userData.user.level_id == 2) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    const isSubCounty = computed(() => {
+      if (userData.user.level_id == 3) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    console.log(isNational.value);
+
+    //get activities list
     const getActivityList = async () => {
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/activity_list`,
@@ -365,20 +397,39 @@ const AddNew = defineComponent({
 
     //get sub_counties
     const getSubCounties = async (org_id) => {
-      // console.log(org_id);
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      // console.log(data);
-      this.sub_counties = data.message;
+      console.log(org_id);
+      // if National, provide a fetch for county and subcounty
+      if (isNational.value) {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        this.sub_counties = data.message;
+      }
+      // else list children org units of the logged in user
+      else {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/list_users_subcounties`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        this.sub_counties = data.message;
+      }
     };
     //campaigns
     const getCampaigns = async () => {
@@ -398,18 +449,20 @@ const AddNew = defineComponent({
     // const handleSelect = (values)
     const onSubmit = () => {
       store.commit("setIsSubmitting", true);
-      const values = {
-        activity_list_id: formState.activity_id,
-        county_id: formState.county_id,
-        sub_county_id: formState.sub_county_id,
-        campaign_id: formState.campaign_id,
-        start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
-        number_of_officers: formState.number_of_officers,
-        activity_facilitator: formState.activity_facilitator,
-        // location_type_id: formState.location_type_id,
-      };
 
-      ArticleSchema.validate(this.formState, { abortEarly: false })
+      if (isSubCounty.value) {
+        const values = {
+          activity_list_id: formState.activity_id,
+          // county_id: formState.county_id,
+          sub_county_id: userData.user.location_id,
+          campaign_id: formState.campaign_id,
+          start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
+          number_of_officers: formState.number_of_officers,
+          activity_facilitator: formState.activity_facilitator,
+          // location_type_id: formState.location_type_id,
+        };
+        console.log(values);
+        ArticleSchema.validate(this.formState, { abortEarly: false })
         .then(() => {
           this.errors = {};
           fetch(API_URL, {
@@ -448,6 +501,58 @@ const AddNew = defineComponent({
             this.errors[e.path] = e.message;
           });
         });
+      } else {
+        const values = {
+          activity_list_id: formState.activity_id,
+          // county_id: formState.county_id,
+          sub_county_id: formState.sub_county_id,
+          campaign_id: formState.campaign_id,
+          start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
+          number_of_officers: formState.number_of_officers,
+          activity_facilitator: formState.activity_facilitator,
+          // location_type_id: formState.location_type_id,
+        };
+        console.log(values);
+        ArticleSchema.validate(this.formState, { abortEarly: false })
+        .then(() => {
+          this.errors = {};
+          fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(values),
+          })
+            .then((response) => response.json())
+            .then(({ success, data }) => {
+              // console.log(data);
+              if (success) {
+                store.commit("setIsSubmitting", false);
+                router.push("activity-view");
+                notification["success"]({
+                  message: "Activity Created",
+                  description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+                  duration: 5.5,
+                });
+              }
+            })
+            .catch((error) => {
+              store.commit("setIsSubmitting", false);
+              notification.error({
+                message: "Could not submit!",
+                description: "An error has occured. Please try again later.",
+              });
+              console.error("Error:", error);
+            });
+        })
+        .catch((err) => {
+          store.commit("setIsSubmitting", false);
+          err.inner.forEach((e) => {
+            this.errors[e.path] = e.message;
+          });
+        });
+      }
     };
     onMounted(() => {
       axios
@@ -481,6 +586,9 @@ const AddNew = defineComponent({
       join,
       participants: [],
       validate,
+      isNational,
+      isCounty,
+      isSubCounty,
       errors: {
         activity_id: "",
         county_id: "",
