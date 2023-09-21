@@ -29,7 +29,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
-        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
+        <a-menu-item key="widgetCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
         <a-menu-item key="widgetListevents">
