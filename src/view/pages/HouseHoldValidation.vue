@@ -100,11 +100,17 @@
                             <template #households="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <sdButton type="check" size="16" @click="handleVerify(record.id)">
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
-                                        >&nbsp;&nbsp; Verify</span
-                                      >
+                                  <sdButton
+                                    type="check"
+                                    size="16"
+                                    @click="
+                                      handleVerify(record.id, record.hh_size)
+                                    "
+                                  >
+                                    &nbsp;&nbsp;
+                                    <span class="badge badge-green"
+                                      >&nbsp;&nbsp; Verify</span
+                                    >
                                   </sdButton>
                                 </div>
                               </td>
@@ -123,6 +129,19 @@
                 @showSizeChange="onShowSizeChange"
               /> -->
             </sdCards>
+            <a-modal
+              title="HouseHold Size Validation"
+              :visible="isModalOpen"
+              @ok="handleOk(recordId, inputValue)"
+              @cancel="handleCancel"
+              class="title-success"
+            >
+              <div>
+                <h4>HouseHold Size Verification</h4>
+                <p>HH Size: {{ inputValue }}</p>
+                <input type="number" v-model="inputValue" />
+              </div>
+            </a-modal>
           </a-col>
         </a-row>
       </SearchResultWrapper>
@@ -137,7 +156,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../src/services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
+// import { notification } from "ant-design-vue";
 
 // const households = ref([]);
 
@@ -209,15 +228,17 @@ export default defineComponent({
       );
       this.notData = data;
     },
-    // handleChange(value) {
-    //   this.activeClass = value;
-    // },
     onShowSizeChange(current, pageSize) {
       this.current = current;
       this.pageSize = pageSize;
     },
     searchData() {
       return this.$store.state.headerSearch.data;
+    },
+    handleCancel() {
+      this.isModalOpen = false;
+      this.visible = false;
+      this.colorVisible = false;
     },
   },
   setup() {
@@ -227,6 +248,8 @@ export default defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("all");
+    const isModalOpen = ref(false);
+    const inputValue = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
 
@@ -288,25 +311,37 @@ export default defineComponent({
           console.error(error);
         });
     });
-    const handleVerify = (record) => {
-      console.log(record)
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, { headers: authHeader() })
-        .then(({ status }) => {
-          console.log(status)
-          if (status == 200) {
-            location.reload();
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
+    const handleVerify = (id, hh_size) => {
+      console.log({ id, hh_size });
+      inputValue.value = hh_size;
+      isModalOpen.value = true;
+      console.log(inputValue.value);
+      // axios
+      //   .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, { headers: authHeader() })
+      //   .then(({ status }) => {
+      //     console.log(status)
+      //     if (status == 200) {
+      //       location.reload();
+      //       notification["success"]({
+      //         message: "HouseHold Verified",
+      //         description: `HouseHold has been verified successfully`,
+      //         duration: 5.5,
+      //       });
+      //     }
+      //   })
+      //   .catch((error) => {
+      //     // handle error
+      //     console.log(error);
+      //   });
+    };
+    const handleOk = async (id, inputValue) => {
+      try {
+        console.log(inputValue);
+      } finally {
+        console.log(inputValue);
+        inputValue = ""; // Clear inputValue after the modal is closed
+        isModalOpen.value = true;
+      }
     };
 
     const formState = reactive({
@@ -325,7 +360,14 @@ export default defineComponent({
       handleChange,
       activeClass,
       handleVerify,
+      isModalOpen,
+      inputValue,
+      handleOk,
     };
+  },
+  props: {
+    recordId: Number,
+    hh_size: Number,
   },
   // computed: {
   // },
