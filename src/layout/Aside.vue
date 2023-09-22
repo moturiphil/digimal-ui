@@ -258,7 +258,7 @@ const viewInventoryRoles = [
   36, 37, 39, 42, 44, 56, 57, 59, 60,
 ];
 
-const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 63, 64, 65];
+const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,

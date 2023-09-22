@@ -316,31 +316,32 @@ export default defineComponent({
       inputValue.value = hh_size;
       isModalOpen.value = true;
       console.log(inputValue.value);
-      // axios
-      //   .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, { headers: authHeader() })
-      //   .then(({ status }) => {
-      //     console.log(status)
-      //     if (status == 200) {
-      //       location.reload();
-      //       notification["success"]({
-      //         message: "HouseHold Verified",
-      //         description: `HouseHold has been verified successfully`,
-      //         duration: 5.5,
-      //       });
-      //     }
-      //   })
-      //   .catch((error) => {
-      //     // handle error
-      //     console.log(error);
-      //   });
+      console.log(id);
     };
     const handleOk = async (id, inputValue) => {
       try {
+        console.log(id);
         console.log(inputValue);
+        // axios
+        //   .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, { headers: authHeader() })
+        //   .then(({ status }) => {
+        //     console.log(status)
+        //     if (status == 200) {
+        //       location.reload();
+        //       notification["success"]({
+        //         message: "HouseHold Verified",
+        //         description: `HouseHold has been verified successfully`,
+        //         duration: 5.5,
+        //       });
+        //     }
+        //   })
+        //   .catch((error) => {
+        //     // handle error
+        //     console.log(error);
+        //   });
       } finally {
-        console.log(inputValue);
         inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen.value = true;
+        isModalOpen.value = false;
       }
     };
 
@@ -369,8 +370,6 @@ export default defineComponent({
     recordId: Number,
     hh_size: Number,
   },
-  // computed: {
-  // },
 });
 </script>
 <style>
