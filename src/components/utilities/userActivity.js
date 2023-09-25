@@ -1,18 +1,22 @@
-// import { useRouter } from "vue-router";
-
 let inactivityTimeout;
 
 export function resetInactivityTimer() {
   clearTimeout(inactivityTimeout);
   //   inactivityTimeout = setTimeout(logoutUser, 10 * 60 * 1000); // 10 minutes
-  inactivityTimeout = setTimeout(logoutUser, 3000); // 3 seconds
+  inactivityTimeout = setTimeout(logoutUser, 300000); // 5 minutes
 }
 
 function logoutUser() {
-  // Perform logout logic here (e.g., clear user data, redirect to login)
+  // Perform logout logic here (e.g., clear user data)
   sessionStorage.removeItem("user"); // Clear user data
-  // Access the router within the function
-  window.location.href = '/auth/login';// Redirect to the login page
+
+  const currentRoute = window.location.href;
+
+  // Check if the user is already on the login page
+  if (currentRoute !== window.location.origin + "/auth/login") {
+    // Redirect the user to the login page
+    window.location.href = window.location.origin + "/auth/login"; // Redirect to the login page
+  }
 }
 
 // Add an event listener to reset the timer on user activity
