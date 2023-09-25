@@ -1,7 +1,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import adminRoutes from "./AdminRoutes";
 import authRoutes from "./authRoutes";
-// import store from "@/vuex/store";
+import { resetInactivityTimer } from "../../src/components/utilities/userActivity"
 
 const routes = [
   {
@@ -62,6 +62,31 @@ router.beforeEach((to, from, next) => {
 
   window.scrollTo(0, 0);
 });
+
+router.beforeEach((to, from, next) => {
+  const user = sessionStorage.getItem("user");
+  const user_object = JSON.parse(user);
+
+  console.log(user_object);
+  // Check the 'to' route and decide whether to allow navigation or redirect
+  if (user_object && user_object.token) {
+      // User is authenticated, allow navigation
+      resetInactivityTimer(); // Reset the timer on user activity
+    // User is authenticated, allow navigation
+    next();
+  } else if (to.name === "login") {
+    resetInactivityTimer(); // Reset the timer on user activity
+    // User is not authenticated and trying to access the login page, allow navigation
+    next();
+  } else {
+    resetInactivityTimer(); // Reset the timer on user activity
+    // User is not authenticated and trying to access other routes, redirect to login
+    next({ name: "login" });
+  }
+
+  window.scrollTo(0, 0);
+});
+
 
 
 export default router;
