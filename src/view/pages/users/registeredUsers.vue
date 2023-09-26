@@ -1,6 +1,26 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Registered Users">
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <!-- Increase the size of the search icon by setting the 'font-size' property -->
+            <sdFeatherIcons type="search" size="24" />
+          </span>
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name, level, location or organization"
+            style="
+              font-size: 15px;
+              width: 200%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
+          />
+        </div>
+      </template>
     </sdPageHeader>
     <Main>
       <!-- <a-row :gutter="16" class="search-row">
@@ -24,7 +44,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <!-- <template #users="{ record }">
@@ -106,6 +126,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Location",
+    dataIndex: "location_id",
+    key: "id",
+  },
+  {
     title: "Organization",
     dataIndex: "org_types_id",
     key: "id",
@@ -138,6 +163,7 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const searchItem = ref("");
 
     console.log(authHeader());
 
@@ -187,7 +213,6 @@ const DragAndDropTable = defineComponent({
       return false;
     };
 
-
     const formState = reactive({
       searchItem: "",
     });
@@ -195,6 +220,24 @@ const DragAndDropTable = defineComponent({
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
+
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((user) => {
+          return (
+            regex.test(user.first_name) ||
+            regex.test(user.last_name) ||
+            regex.test(user.level_id) ||
+            regex.test(user.org_types_id) ||
+            regex.test(user.location_id)
+          );
+        });
+      }
+    });
 
     const rowSelection = {
       selectedRowKeys,
@@ -213,6 +256,8 @@ const DragAndDropTable = defineComponent({
       formState,
       isDeactivated: false,
       deactivateUser,
+      results,
+      searchItem,
       // toggleUserStatus /*, deactivate user */,
     };
   },
@@ -261,11 +306,11 @@ export default DragAndDropTable;
 }
 
 input:checked + .slider {
-  background-color: #1EC997;
+  background-color: #1ec997;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #1EC997;
+  box-shadow: 0 0 1px #1ec997;
 }
 
 input:checked + .slider:before {
