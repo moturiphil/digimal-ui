@@ -9,8 +9,16 @@
           type="success"
           size="small"
           @click="generatePayroll"
+          :disabled="isGenerating"
         >
-          Generate Payroll
+          <!-- Generate Payroll -->
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+              ? "Processing ..."
+              : "Generate Payroll"
+          }}
         </sdButton>
         &nbsp; &nbsp;
         <sdButton
@@ -161,6 +169,7 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
+import store from "../../../vuex/store";
 
 const columns = [
   {
@@ -256,6 +265,7 @@ export default defineComponent({
     const pending = ref([]);
     const activeClass = ref("all");
     const { query } = useRoute();
+    const isGenerating = computed(() => state.isGenerating);
 
     const isModalOpen = ref(false);
 
@@ -267,6 +277,7 @@ export default defineComponent({
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
     const generatePayroll = async () => {
+      store.commit("setIsGenerating", true);
       try {
         const response = await fetch(genetatePayrollURL, {
           method: "GET",
@@ -277,11 +288,13 @@ export default defineComponent({
         });
         console.log(response.status == 200);
         if (response.status == 200) {
+          store.commit("setIsGenerating", true);
           Modal.success({
             title: "Success",
             content: "Payroll Generated Successfully",
           });
         } else {
+          store.commit("setIsGenerating", true);
           Modal.error({
             title: "Error",
             content:
@@ -289,6 +302,7 @@ export default defineComponent({
           });
         }
       } catch (error) {
+      store.commit("setIsGenerating", true);
         console.error(error);
       }
     };
@@ -468,6 +482,7 @@ export default defineComponent({
       manageEvent,
       isModalOpen,
       handleOk,
+      isGenerating,
     };
   },
   // computed: {

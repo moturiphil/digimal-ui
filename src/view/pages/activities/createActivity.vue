@@ -629,13 +629,6 @@ const AddNew = defineComponent({
       this.modalType = type;
     },
   },
-  beforeRouteEnter(to, from, next) {
-    if (!sessionStorage.getItem("user")) {
-      next("/auth/login");
-    } else {
-      next();
-    }
-  },
 });
 export default AddNew;
 </script>

@@ -223,13 +223,6 @@ const AddNew = defineComponent({
       return current && current < Date.now();
     },
   },
-  beforeRouteEnter(to, from, next) {
-    if (!sessionStorage.getItem("user")) {
-      next("/auth/login");
-    } else {
-      next();
-    }
-  },
 });
 
 export default AddNew;

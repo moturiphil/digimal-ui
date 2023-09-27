@@ -149,13 +149,30 @@
           <router-link to="/stock-status">Stock Status </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
+      <a-sub-menu>
         <template v-slot:title>
-          <sdFeatherIcons type="credit-card" /><span>Payroll</span>
+            <sdFeatherIcons type="credit-card" /><span>Payroll</span>
+          </template>
+        <a-sub-menu>
+          <template v-slot:title>
+            <sdFeatherIcons type="globe" /><span>Global Fund</span>
+          </template>
+          <a-menu-item key="activity-payroll">
+            <router-link to="/activity-payroll">Activity Payroll </router-link>
+          </a-menu-item>
+          <a-menu-item key="payroll-payroll">
+            <router-link to="/event-payroll">Event Payroll </router-link>
+          </a-menu-item>
+          <a-menu-item key="widgetTransactionDetails">
+            <router-link to="/view-transactions"
+              >Transaction Details
+            </router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-sub-menu>
+          <template v-slot:title>
+          <sdFeatherIcons type="credit-card" /><span>PMI</span>
         </template>
-        <!-- <a-menu-item  key="widgetPayrollDetails">
-          <router-link to="/view-payroll">Payroll Details </router-link>
-        </a-menu-item>  -->
         <a-menu-item key="activity-payroll">
           <router-link to="/activity-payroll">Activity Payroll </router-link>
         </a-menu-item>
@@ -167,7 +184,24 @@
             >Transaction Details
           </router-link>
         </a-menu-item>
+        </a-sub-menu>
       </a-sub-menu>
+      <!-- <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
+        <template v-slot:title>
+          <sdFeatherIcons type="credit-card" /><span>Payroll</span>
+        </template>
+        <a-menu-item key="activity-payroll">
+          <router-link to="/activity-payroll">Activity Payroll </router-link>
+        </a-menu-item>
+        <a-menu-item key="payroll-payroll">
+          <router-link to="/event-payroll">Event Payroll </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetTransactionDetails">
+          <router-link to="/view-transactions"
+            >Transaction Details
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu> -->
       <a-sub-menu key="user-management" v-if="isAdmin || canViewUsers">
         <template v-slot:title>
           <sdFeatherIcons type="users" /><span>User Management</span>
@@ -214,7 +248,8 @@ const viewCampaignRoles = [
 const createEventRoles = [53, 5, 3, 21, 37, 39];
 const viewEventRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65];
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
+];
 const createActivityRoles = [53, 5, 3, 21, 37];
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
