@@ -30,7 +30,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton type="success" size="extra-small" @click="viewMatrix()">
+                                  <sdButton type="success" size="extra-small">
                                     &nbsp;&nbsp;
                                     <router-link
                                       :to="{
@@ -55,7 +55,6 @@
                                   &nbsp;&nbsp;
 
                                   <sdButton
-                                    @click="viewMatrix()"
                                     size="extra-small"
                                     type="success"
                                   >
@@ -178,22 +177,6 @@ export default defineComponent({
     };
   },
   methods: {
-    async viewMatrix() {
-      try {
-        const response = await axios.post(
-          `${process.env.VUE_APP_BASE_URL}/payment_otp`,
-          {
-            payroll_summary_id: 1,
-            payment_type: "Event Matrix",
-          },
-          { headers: authHeader() }
-        );
-
-        console.log(response);
-      } catch (error) {
-        console.log(error);
-      }
-    },
     handleSearch(searchText) {
       const data = this.searchData.filter((item) =>
         item.title.toUpperCase().startsWith(searchText.toUpperCase())

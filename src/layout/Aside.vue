@@ -171,7 +171,7 @@
         </a-sub-menu>
         <a-sub-menu>
           <template v-slot:title>
-          <sdFeatherIcons type="credit-card" /><span>PMI</span>
+          <sdFeatherIcons type="radio" /><span>PMI</span>
         </template>
         <a-menu-item key="activity-payroll">
           <router-link to="/activity-payroll">Activity Payroll </router-link>
@@ -186,22 +186,6 @@
         </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
-      <!-- <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
-        <template v-slot:title>
-          <sdFeatherIcons type="credit-card" /><span>Payroll</span>
-        </template>
-        <a-menu-item key="activity-payroll">
-          <router-link to="/activity-payroll">Activity Payroll </router-link>
-        </a-menu-item>
-        <a-menu-item key="payroll-payroll">
-          <router-link to="/event-payroll">Event Payroll </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetTransactionDetails">
-          <router-link to="/view-transactions"
-            >Transaction Details
-          </router-link>
-        </a-menu-item>
-      </a-sub-menu> -->
       <a-sub-menu key="user-management" v-if="isAdmin || canViewUsers">
         <template v-slot:title>
           <sdFeatherIcons type="users" /><span>User Management</span>
@@ -363,7 +347,7 @@ export default defineComponent({
     });
 
     const isLevelOne = computed(() => {
-      return level_id.value === 1 || role_id.value === 27;
+      return level_id.value === 1;
     });
 
     const router = computed(() => useRoute());

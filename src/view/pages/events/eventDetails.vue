@@ -293,6 +293,10 @@ export default defineComponent({
             title: "Success",
             content: "Payroll Generated Successfully",
           });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
         } else {
           store.commit("setIsGenerating", true);
           Modal.error({
@@ -300,10 +304,18 @@ export default defineComponent({
             content:
               "Something went wrong, ensure you have assigned payroll matrix to the event",
           });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          });
+          location.reload();
         }
       } catch (error) {
-      store.commit("setIsGenerating", true);
+        store.commit("setIsGenerating", true);
         console.error(error);
+        await new Promise((resolve) => {
+          setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+        });
+        location.reload();
       }
     };
     const exportParticipants = async () => {
