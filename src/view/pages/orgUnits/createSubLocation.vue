@@ -290,18 +290,6 @@ const AddNew = defineComponent({
       getWards,
     };
   },
-  beforeRouteEnter(to, from, next) {
-    if (!sessionStorage.getItem("user")) {
-      next("/auth/login");
-    } else {
-      next();
-    }
-  },
-  // methods: {
-  //   addSubLocation() {
-  //     this.formState.subLocations.push("");
-  //   },
-  // },
 });
 
 export default AddNew;

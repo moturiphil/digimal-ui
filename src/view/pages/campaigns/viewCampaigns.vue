@@ -141,12 +141,5 @@ export default defineComponent({
       formState,
     };
   },
-  beforeRouteEnter(to, from, next) {
-    if (!sessionStorage.getItem("user")) {
-      next("/auth/login");
-    } else {
-      next();
-    }
-  },
 });
 </script>

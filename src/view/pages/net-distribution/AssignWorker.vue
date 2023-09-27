@@ -254,13 +254,6 @@ const AddNew = defineComponent({
       users,
     };
   },
-  beforeRouteEnter(to, from, next) {
-    if (!sessionStorage.getItem("user")) {
-      next("/auth/login");
-    } else {
-      next();
-    }
-  },
 });
 
 export default AddNew;

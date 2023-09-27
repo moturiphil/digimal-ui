@@ -399,6 +399,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
   },
+  
   ...Apps,
 ];
 
