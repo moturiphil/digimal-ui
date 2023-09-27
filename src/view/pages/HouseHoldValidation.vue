@@ -418,13 +418,6 @@ export default defineComponent({
     recordId: Number,
     hh_size: Number,
   },
-  beforeRouteEnter(to, from, next) {
-    if (!sessionStorage.getItem("user")) {
-      next("/auth/login");
-    } else {
-      next();
-    }
-  },
 });
 </script>
 <style>
