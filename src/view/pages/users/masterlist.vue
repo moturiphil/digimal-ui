@@ -1,11 +1,18 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Masterlists">
-      <template id="buttons"></template>
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name, level, location or organization"
+          />
+        </div>
+      </template>
     </sdPageHeader>
-
     <!-- sdPageBody -->
-
     <Main>
       <a-row :gutter="16" class="search-row">
         <sdButton class="btn-import" type="success" size="extra-small">
@@ -68,7 +75,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <template #action="{ record }">
@@ -156,7 +163,8 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-    const masterlist_validation_url = `${process.env.VUE_APP_BASE_URL}/mpesa-list-export`
+    const masterlist_validation_url = `${process.env.VUE_APP_BASE_URL}/mpesa-list-export`;
+    const searchItem = ref("");
 
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
@@ -191,8 +199,7 @@ const DragAndDropTable = defineComponent({
       }
     });
 
-
-     const validateMasterlist = async () => {
+    const validateMasterlist = async () => {
       try {
         const response = await fetch(masterlist_validation_url, {
           method: "GET",
@@ -265,6 +272,24 @@ const DragAndDropTable = defineComponent({
       searchItem: "",
     });
 
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((user) => {
+          return (
+            regex.test(user.first_name) ||
+            regex.test(user.last_name) ||
+            regex.test(user.level_id) ||
+            regex.test(user.org_types_id) ||
+            regex.test(user.role)
+          );
+        });
+      }
+    });
+
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
@@ -286,6 +311,8 @@ const DragAndDropTable = defineComponent({
       formState,
       handleDeletion,
       validateMasterlist,
+      results,
+      searchItem,
     };
   },
 });

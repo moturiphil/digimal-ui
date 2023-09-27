@@ -3,14 +3,11 @@
     <sdPageHeader ghost title="Audit Logs">
       <template #buttons>
         <div class="search-box">
-          <span class="search-icon">
-            <sdFeatherIcons type="search" size="14" />
-          </span>
           <a-input
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by name/village/chw"
+            placeholder="Search by user, event or ip address..."
           /></div
       ></template>
     </sdPageHeader>
@@ -181,7 +178,7 @@ export default defineComponent({
         return dataSource.value;
       } else {
         return dataSource.value.filter((event) => {
-          return regex.test(event.event) || regex.test(event.user_id);
+          return regex.test(event.user) || regex.test(event.event) || regex.test(event.ip_address);
         });
       }
     });
