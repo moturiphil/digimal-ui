@@ -3,21 +3,11 @@
     <sdPageHeader title="Registered Users">
       <template #buttons>
         <div class="search-box">
-          <span class="search-icon">
-            <!-- Increase the size of the search icon by setting the 'font-size' property -->
-            <sdFeatherIcons type="search" size="24" />
-          </span>
           <a-input
             v-model:value="searchItem"
             type="text"
             name="dataSource"
             placeholder="Search by name, level, location or organization"
-            style="
-              font-size: 15px;
-              width: 200%;
-              max-width: 300px;
-              height: 2.5rem;
-            "
           />
         </div>
       </template>

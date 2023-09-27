@@ -1,6 +1,7 @@
 <template>
   <div>
     <sdPageHeader ghost title="HouseHold Validation" />
+
     <Main>
       <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
         Export HouseHolds Data
@@ -59,6 +60,16 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
+                          <!-- <template #buttons>
+                            <div class="search-box">
+                              <a-input
+                                v-model:value="searchItem"
+                                type="text"
+                                name="dataSource"
+                                placeholder="Search by name, phone no, village or CHP..."
+                              />
+                            </div>
+                          </template> -->
                           <a-table
                             :pagination="{
                               pageSize: 50,
@@ -76,7 +87,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 50,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -91,7 +102,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 50,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -256,6 +267,7 @@ export default defineComponent({
     const isModalOpen = ref(false);
     const inputValue = ref("");
     const household_id = ref("");
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
 
@@ -364,6 +376,24 @@ export default defineComponent({
       searchItem: "",
     });
 
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return filteredData;
+      } else {
+        return filteredData.value.filter((household) => {
+          return (
+            regex.test(household.first_name) ||
+            regex.test(household.last_name) ||
+            regex.test(household.chw_id) ||
+            regex.test(household.chw_phone_no) ||
+            regex.test(household.location_id)
+          );
+        });
+      }
+    });
+
     return {
       crud,
       isLoading,
@@ -380,6 +410,8 @@ export default defineComponent({
       inputValue,
       household_id,
       handleOk,
+      results,
+      searchItem,
     };
   },
   props: {
