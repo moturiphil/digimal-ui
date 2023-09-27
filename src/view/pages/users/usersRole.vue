@@ -1,7 +1,16 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="User Roles">
-      <template id="buttons"></template>
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by role name..."
+          />
+        </div>
+      </template>
     </sdPageHeader>
     <Main>
       <a-row :gutter="16" class="search-row"> </a-row>
@@ -16,7 +25,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                   <template #action="{ record }">
@@ -91,6 +100,7 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const searchItem = ref("");
     const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
@@ -162,6 +172,20 @@ const DragAndDropTable = defineComponent({
       searchItem: "",
     });
 
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((role) => {
+          return (
+            regex.test(role.name)
+          );
+        });
+      }
+    });
+
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
     };
@@ -183,6 +207,8 @@ const DragAndDropTable = defineComponent({
       formState,
       handleRowClick,
       exportUserData,
+      results,
+      searchItem,
     };
   },
 });

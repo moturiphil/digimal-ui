@@ -11,7 +11,7 @@
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by name/village/chw"
+            placeholder="Search by name, phone no, village or CHP"
           /></div
       ></template>
     </sdPageHeader>

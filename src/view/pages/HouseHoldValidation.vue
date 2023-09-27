@@ -1,6 +1,7 @@
 <template>
   <div>
     <sdPageHeader ghost title="HouseHold Validation" />
+
     <Main>
       <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
         Export HouseHolds Data
@@ -59,6 +60,16 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
+                          <!-- <template #buttons>
+                            <div class="search-box">
+                              <a-input
+                                v-model:value="searchItem"
+                                type="text"
+                                name="dataSource"
+                                placeholder="Search by name, phone no, village or CHP..."
+                              />
+                            </div>
+                          </template> -->
                           <a-table
                             :pagination="{
                               pageSize: 50,
@@ -76,7 +87,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 50,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -91,7 +102,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 40,
+                              pageSize: 50,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -156,7 +167,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../src/services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-// import { notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 
 // const households = ref([]);
 
@@ -187,8 +198,13 @@ const columns = [
     key: "id_no",
   },
   {
-    title: "CHV",
+    title: "CHP",
     dataIndex: "chw_id",
+    key: "id_no",
+  },
+  {
+    title: "CHP Phone Number",
+    dataIndex: "chw_phone_no",
     key: "id_no",
   },
   {
@@ -250,6 +266,8 @@ export default defineComponent({
     const activeClass = ref("all");
     const isModalOpen = ref(false);
     const inputValue = ref("");
+    const household_id = ref("");
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
 
@@ -311,34 +329,43 @@ export default defineComponent({
           console.error(error);
         });
     });
-    const handleVerify = (id, hh_size) => {
-      console.log({ id, hh_size });
+    const handleVerify = (hh_id, hh_size) => {
+      console.log({ hh_id, hh_size });
       inputValue.value = hh_size;
       isModalOpen.value = true;
-      console.log(inputValue.value);
-      console.log(id);
+      household_id.value = hh_id;
     };
+
     const handleOk = async (id, inputValue) => {
       try {
-        console.log(id);
+        console.log(household_id.value);
+        const house_id = household_id.value;
         console.log(inputValue);
-        // axios
-        //   .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, { headers: authHeader() })
-        //   .then(({ status }) => {
-        //     console.log(status)
-        //     if (status == 200) {
-        //       location.reload();
-        //       notification["success"]({
-        //         message: "HouseHold Verified",
-        //         description: `HouseHold has been verified successfully`,
-        //         duration: 5.5,
-        //       });
-        //     }
-        //   })
-        //   .catch((error) => {
-        //     // handle error
-        //     console.log(error);
-        //   });
+
+        // Call the authHeader() function to get the authorization token
+        const headers = authHeader();
+
+        axios
+          .patch(
+            `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`,
+            null,
+            { headers }
+          )
+          .then(({ success }) => {
+            console.log(success);
+            if (success == true) {
+              notification["success"]({
+                message: "HouseHold Verified",
+                description: `HouseHold has been verified successfully`,
+                duration: 5.5,
+              });
+              location.reload();
+            }
+          })
+          .catch((error) => {
+            // Handle error here
+            console.log(error);
+          });
       } finally {
         inputValue = ""; // Clear inputValue after the modal is closed
         isModalOpen.value = false;
@@ -347,6 +374,24 @@ export default defineComponent({
 
     const formState = reactive({
       searchItem: "",
+    });
+
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return filteredData;
+      } else {
+        return filteredData.value.filter((household) => {
+          return (
+            regex.test(household.first_name) ||
+            regex.test(household.last_name) ||
+            regex.test(household.chw_id) ||
+            regex.test(household.chw_phone_no) ||
+            regex.test(household.location_id)
+          );
+        });
+      }
     });
 
     return {
@@ -363,12 +408,22 @@ export default defineComponent({
       handleVerify,
       isModalOpen,
       inputValue,
+      household_id,
       handleOk,
+      results,
+      searchItem,
     };
   },
   props: {
     recordId: Number,
     hh_size: Number,
+  },
+  beforeRouteEnter(to, from, next) {
+    if (!sessionStorage.getItem("user")) {
+      next("/auth/login");
+    } else {
+      next();
+    }
   },
 });
 </script>

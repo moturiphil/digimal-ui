@@ -201,33 +201,6 @@
                         {{ errors.venue }}
                       </p>
                     </a-form-item>
-                    <!-- <a-form-item name="funding_agency" label="Funding Agency">
-                      <a-select
-                        v-model:value="formState.funding_agency"
-                        v-if="!loading"
-                        placeholder="Select Funding Agency"
-                        @blur="validate('campaign_id')"
-                        @keypress="validate('campaign_id')"
-                        show-search
-                        option-filter-prop="label"
-                      >
-                        <a-select-option
-                          v-for="agency in funding_agencies"
-                          :key="agency.id"
-                          :value="agency.id"
-                          :label="`${agency.name}`"
-                        >
-                          {{ agency.name }}
-                        </a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.campaign_id"
-                      >
-                        {{ errors.campaign_id }}
-                      </p>
-                    </a-form-item> -->
                     <div class="record-form-actions text-right">
                       <sdButton
                         size="default"
