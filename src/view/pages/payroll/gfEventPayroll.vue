@@ -370,7 +370,7 @@
 
 <script>
 import { Main } from "../../styled";
-import { SearchResultWrapper } from "./../style";
+import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
@@ -396,7 +396,7 @@ const columns = [
   },
   {
     title: "Validator",
-    dataIndex: "validator",
+    dataIndex: "validated_by",
     key: "id",
   },
   {
@@ -406,7 +406,7 @@ const columns = [
   },
   {
     title: "Approver",
-    dataIndex: "approver",
+    dataIndex: "approved_by",
     key: "id",
   },
   {
@@ -465,14 +465,18 @@ export default defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    // const payload = ref([]);
     const activeClass = ref("all");
     const recordId = ref(null);
     const isPaying = computed(() => state.isPaying);
-
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
+    const isModalOpen = ref(false);
+    const inputValue = ref("");
+    const role_id = ref("");
+    const user = JSON.parse(sessionStorage.getItem("user"));
+
     const filteredData = computed(() => {
       if (activeClass.value === "all") {
-        console.log();
         return dataSource.value;
       } else if (activeClass.value === "not_validated") {
         return dataSource.value.filter(
@@ -509,11 +513,6 @@ export default defineComponent({
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
-
-    const isModalOpen = ref(false);
-    const inputValue = ref("");
-
-    // const activity_id = ref("");
 
     const handlePay = (id) => {
       isModalOpen.value = true;
@@ -583,8 +582,6 @@ export default defineComponent({
           });
 
         console.log(response);
-        // const parser = new DOMParser();
-        // const otp = response.data.OTP;
       } catch (error) {
         console.log(error);
       }
@@ -694,25 +691,24 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log("################################");
-          console.log(response.data.data);
-          dataSource.value = response.data.data;
+          let payload = response.data.data;
+          console.log(payload);
+
+          const filteredItems = [];
+          payload.forEach((item) => {
+            console.log(item.funding_source);
+            if (item.funding_source === 1) {
+              filteredItems.push(item);
+            }
+          });
+
+          dataSource.value = filteredItems;
           dataSource.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
             item.payment_status =
               item.payment_status === 1 ? "Paid" : "Not Paid";
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
-            if (item.approved_by) {
-              item.approver =
-                item.approved_by.first_name + " " + item.approved_by.last_name;
-            }
-            if (item.validated_by) {
-              item.validator =
-                item.validated_by.first_name +
-                " " +
-                item.validated_by.last_name;
-            }
           });
           console.log(dataSource.value);
         })
@@ -723,27 +719,26 @@ export default defineComponent({
     const handleVerify = (record) => {
       console.log(record);
     };
-
-    // const level_id = ref("");
-    const role_id = ref("");
-    // const admin_role_id = ref("");
-
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    // console.log(user.user[0].role_id);
     role_id.value = user.user.role_id;
 
     console.log(role_id.value);
 
     const isValidator = computed(() => {
-      return role_id.value === 63 || role_id.value === 53 || role_id.value === 4;
+      return (
+        role_id.value === 63 || role_id.value === 53 || role_id.value === 4
+      );
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 64 || role_id.value === 53 || role_id.value === 59;
+      return (
+        role_id.value === 64 || role_id.value === 53 || role_id.value === 59
+      );
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 65 || role_id.value === 53 || role_id.value === 1;
+      return (
+        role_id.value === 65 || role_id.value === 53 || role_id.value === 1
+      );
     });
 
     const isAdmin = computed(() => {

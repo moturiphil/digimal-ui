@@ -315,11 +315,19 @@ const routes = [
       ),
   },
   {
-    path: "/event-payroll",
-    name: "event-payroll",
+    path: "/gf-event-payroll",
+    name: "gloabal-fund-event-payroll",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/eventPayroll.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
+      ),
+  },
+  {
+    path: "/pmi-event-payroll",
+    name: "pmi-event-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/pmiEventPayroll.vue"
       ),
   },
   {
