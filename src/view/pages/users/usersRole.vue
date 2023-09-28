@@ -31,7 +31,7 @@
                   <template #action="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton type="success" size="small">
+                        <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
                               path: `/assign-permission/${record.id}`,
@@ -44,7 +44,24 @@
                             type="info"
                             shape="circle"
                           >
-                            &nbsp;&nbsp; Assign Role Permission
+                            &nbsp;&nbsp; Assign Permissions
+                          </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton type="success" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/role-users/${record.id}`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; View Users
                           </router-link>
                         </sdButton>
                       </div>

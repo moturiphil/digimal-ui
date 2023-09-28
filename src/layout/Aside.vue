@@ -202,6 +202,11 @@
       </a-sub-menu>
       <a-menu-item v-if="isAdmin" key="logs">
         <router-link to="/logs">
+          <sdFeatherIcons type="hard-drive" /><span>Data Management </span>
+        </router-link>
+      </a-menu-item>
+      <a-menu-item v-if="isAdmin" key="logs">
+        <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
         </router-link>
       </a-menu-item>
