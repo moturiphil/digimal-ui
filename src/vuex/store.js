@@ -13,6 +13,7 @@ export default createStore({
     errorDescription: null,
     isSubmitting: false,
     isGenerating: false,
+    isPaying: false,
   },
   mutations: {
     setUser(state, user) {
@@ -29,6 +30,9 @@ export default createStore({
     },
     setIsGenerating(state, isGenerating) {
       state.isGenerating = isGenerating;
+    },
+    setIsPaying(state, isPaying) {
+      state.isPaying = isPaying;
     },
     setIsError(state, isError) {
       state.isError = isError;
@@ -49,6 +53,9 @@ export default createStore({
     },
     setIsGenerating({ commit }, isGenerating) {
       commit("setIsGenerating", isGenerating);
+    },
+    setIsPaying({ commit }, isPaying) {
+      commit("setIsPaying", isPaying);
     },
   },
   modules: {

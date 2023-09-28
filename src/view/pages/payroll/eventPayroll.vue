@@ -130,7 +130,6 @@
                                   <a-modal
                                     title="Payment OTP"
                                     :visible="isModalOpen"
-                                    @ok="handleOk(recordId, inputValue)"
                                     @cancel="handleCancel"
                                     class="title-success"
                                   >
@@ -141,6 +140,25 @@
                                         v-model="inputValue"
                                       />
                                     </div>
+                                    <template v-slot:footer>
+                                      <a-button
+                                        @click="handleOk(recordId, inputValue)"
+                                        type="success"
+                                        :disabled="isPaying"
+                                        >{{
+                                          isLoading
+                                            ? "Loading..."
+                                            : isPaying
+                                            ? "Processing Payment..."
+                                            : "Pay"
+                                        }}</a-button
+                                      >
+                                      <a-button
+                                        @click="handleCancel()"
+                                        type="danger"
+                                        >Cancel Payment</a-button
+                                      >
+                                    </template>
                                   </a-modal>
                                 </div>
                               </td>
@@ -189,7 +207,6 @@
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
-
                                   <sdButton
                                     type="success"
                                     size="small"
@@ -359,6 +376,7 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
+import store from "../../../vuex/store";
 
 const columns = [
   {
@@ -449,7 +467,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const recordId = ref(null);
-    // const filteredData = ref([]);
+    const isPaying = computed(() => state.isPaying);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
     const filteredData = computed(() => {
@@ -497,8 +515,6 @@ export default defineComponent({
 
     // const activity_id = ref("");
 
-    // const payment_otp_id = ref("");
-
     const handlePay = (id) => {
       isModalOpen.value = true;
       console.log("handlePay", id);
@@ -528,8 +544,6 @@ export default defineComponent({
           });
 
         console.log(response);
-        // const parser = new DOMParser();
-        // const otp = response.data.OTP;
       } catch (error) {
         console.log(error);
       }
@@ -557,6 +571,9 @@ export default defineComponent({
                 message: "Success",
                 description: "Payroll Validated Successfully",
               });
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
             } else {
               notification.error({
                 message: "Error",
@@ -593,19 +610,20 @@ export default defineComponent({
             if (data.success == true) {
               notification.success({
                 message: "Success",
-                description: "Payroll Validated Successfully",
+                description: "Payroll Approved Successfully",
               });
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
             } else {
               notification.error({
                 message: "Error",
-                description: "Payroll Validation Failed",
+                description: "Payroll Approval Failed",
               });
             }
           });
 
         console.log(response);
-        // const parser = new DOMParser();
-        // const otp = response.data.OTP;
       } catch (error) {
         console.log(error);
       }
@@ -613,6 +631,7 @@ export default defineComponent({
 
     const handleOk = async (id, inputValue) => {
       console.log(recordId.value);
+      store.commit("setIsPaying", true);
       try {
         const response = await axios.get(
           `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
@@ -620,10 +639,14 @@ export default defineComponent({
         );
         console.log(response);
         if (response.status == 200) {
+          store.commit("setIsPaying", true);
           notification.success({
             message: "Success",
             description: "Payment processed successful",
           });
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
           const approve_pay = axios
             .post(
               `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
@@ -648,11 +671,15 @@ export default defineComponent({
           console.log(approve_pay);
         }
       } catch (error) {
+        store.commit("setIsPaying", true);
         console.log(error);
         notification.error({
           message: "Error",
           description: "Payment failed",
         });
+        setTimeout(function () {
+          location.reload();
+        }, 3000);
       }
       isModalOpen.value = false;
     };
@@ -705,7 +732,7 @@ export default defineComponent({
     // console.log(user.user[0].role_id);
     role_id.value = user.user.role_id;
 
-    console.log(role_id.value)
+    console.log(role_id.value);
 
     const isValidator = computed(() => {
       return role_id.value === 63 || role_id.value === 53;
@@ -749,6 +776,7 @@ export default defineComponent({
       isApprover,
       isAdminAccountant,
       isAdmin,
+      isPaying,
     };
   },
   // computed: {

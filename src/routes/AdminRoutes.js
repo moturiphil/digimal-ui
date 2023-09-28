@@ -56,6 +56,14 @@ const routes = [
           ),
       },
       {
+        path: "role-users/:id",
+        name: "role-users",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/roleUsers.vue"
+          ),
+      },
+      {
         path: "review_excel",
         name: "review_excel",
         component: () =>

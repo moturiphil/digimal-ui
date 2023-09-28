@@ -117,7 +117,7 @@ import UserService from "../../../services/user.service";
 
 const columns = [
   {
-    title: "First Name",
+    title: "Name",
     dataIndex: "fullName",
     key: "id",
   },
@@ -144,6 +144,11 @@ const columns = [
   {
     title: "Status",
     dataIndex: "status",
+    key: "id",
+  },
+  {
+    title: "Created At",
+    dataIndex: "created_at",
     key: "id",
   },
   {
@@ -186,6 +191,8 @@ const DragAndDropTable = defineComponent({
         const updatedData = data.data.map((record) => {
           let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
           let status = record.status == 1 ? "validated" : "Not Validated";
+          // const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+          // let created_at = record.created_at.toLocaleDateString('en-US', options);
           return {
             ...record,
             fullName,
