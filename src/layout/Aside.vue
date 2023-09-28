@@ -160,8 +160,8 @@
           <a-menu-item key="activity-payroll">
             <router-link to="/activity-payroll">Activity Payroll </router-link>
           </a-menu-item>
-          <a-menu-item key="payroll-payroll">
-            <router-link to="/event-payroll">Event Payroll </router-link>
+          <a-menu-item key="gf-event-payroll">
+            <router-link to="/gf-event-payroll">Event Payroll </router-link>
           </a-menu-item>
           <a-menu-item key="widgetTransactionDetails">
             <router-link to="/view-transactions"
@@ -176,8 +176,8 @@
         <a-menu-item key="activity-payroll">
           <router-link to="/activity-payroll">Activity Payroll </router-link>
         </a-menu-item>
-        <a-menu-item key="payroll-payroll">
-          <router-link to="/event-payroll">Event Payroll </router-link>
+        <a-menu-item key="pmi-event-payroll">
+          <router-link to="/pmi-event-payroll">Event Payroll </router-link>
         </a-menu-item>
         <a-menu-item key="widgetTransactionDetails">
           <router-link to="/view-transactions"
