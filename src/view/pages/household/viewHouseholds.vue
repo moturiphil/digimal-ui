@@ -90,6 +90,11 @@ const columns = [
     key: "chw_phone_no",
   },
   {
+    title: "Post",
+    dataIndex: "post_id",
+    key: "post_id",
+  },
+  {
     title: "Timestamp",
     dataIndex: "created_at",
     key: "created_at",

@@ -294,7 +294,7 @@ export default defineComponent({
             content: "Payroll Generated Successfully",
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
           });
           location.reload();
         } else {
@@ -305,7 +305,7 @@ export default defineComponent({
               "Something went wrong, ensure you have assigned payroll matrix to the event",
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
           });
           location.reload();
         }
@@ -313,7 +313,7 @@ export default defineComponent({
         store.commit("setIsGenerating", true);
         console.error(error);
         await new Promise((resolve) => {
-          setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+          setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
         });
         location.reload();
       }
