@@ -454,7 +454,7 @@ export default defineComponent({
 
     // const event_host_id = query.event_host_id;
     const user = JSON.parse(sessionStorage.getItem("user"));
-    console.log(user.user);
+    console.log(user.user.id);
 
     const formState = reactive({
       searchItem: "",
@@ -469,7 +469,7 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      if (user.user.role_id === 16 || user.user.role_id === 53) {
+      if (user.user.role_id === 16 || user.user.role_id === 53 || user.user.id === query.event_host_id) {
         return true;
       } else {
         return false;
