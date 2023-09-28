@@ -237,7 +237,7 @@ const ViewPage = defineComponent({
             description: data.message,
           });
           await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+            setTimeout(resolve, 2000);
           });
           location.reload();
         } else {
