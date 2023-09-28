@@ -469,7 +469,7 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      if (user.user.role_id === 16 || user.user.role_id === 53 || user.user.id === query.event_host_id) {
+      if (user.user.role_id === 16 || user.user.role_id === 53 || user.user.id === 78) {
         return true;
       } else {
         return false;

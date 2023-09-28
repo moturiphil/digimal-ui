@@ -735,15 +735,15 @@ export default defineComponent({
     console.log(role_id.value);
 
     const isValidator = computed(() => {
-      return role_id.value === 63 || role_id.value === 53;
+      return role_id.value === 63 || role_id.value === 53 || role_id.value === 4;
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 64 || role_id.value === 53;
+      return role_id.value === 64 || role_id.value === 53 || role_id.value === 59;
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 65 || role_id.value === 53;
+      return role_id.value === 65 || role_id.value === 53 || role_id.value === 1;
     });
 
     const isAdmin = computed(() => {
