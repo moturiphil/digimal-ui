@@ -353,7 +353,13 @@ const ViewPage = defineComponent({
           inputValue = "";
           notification.success({
             message: "Success",
-            description: "Event Registration Successful",
+            description: response.data.message,
+          });
+        }
+        else if(response.status == 208){
+          notification.info({
+            message: "Info",
+            description: response.data.message,
           });
         }
       } catch (error) {
