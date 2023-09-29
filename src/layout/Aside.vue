@@ -200,7 +200,7 @@
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item v-if="isAdmin" key="logs">
+      <a-menu-item v-if="isAdmin" key="data">
         <router-link to="/logs">
           <sdFeatherIcons type="hard-drive" /><span>Data Management </span>
         </router-link>

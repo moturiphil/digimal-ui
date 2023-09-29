@@ -1,7 +1,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import adminRoutes from "./AdminRoutes";
 import authRoutes from "./authRoutes";
-import { resetInactivityTimer } from "../../src/components/utilities/userActivity"
+import { resetInactivityTimer } from "../../src/components/utilities/userActivity";
 
 const routes = [
   {
@@ -40,7 +40,8 @@ router.beforeEach((to, from, next) => {
 
   console.log(user_object);
 
-  // user is not logged in, redirect to the login page
+  // const allowedRoutes = [""]
+
   if (!user_object == null) {
     next("/auth/login");
   }
@@ -51,11 +52,11 @@ router.beforeEach((to, from, next) => {
   if (user_object && user_object.token) {
     // User has a token, allow navigation
     next();
-  }
-  else {
+  } else {
     // User is not logged in but is on the login page, allow navigation
     next();
   }
+
   window.scrollTo(0, 0);
 });
 
@@ -66,8 +67,8 @@ router.beforeEach((to, from, next) => {
   console.log(user_object);
   // Check the 'to' route and decide whether to allow navigation or redirect
   if (user_object && user_object.token) {
-      // User is authenticated, allow navigation
-      resetInactivityTimer(); 
+    // User is authenticated, allow navigation
+    resetInactivityTimer();
     // User is authenticated, allow navigation
     next();
   } else if (to.name === "login") {
@@ -75,14 +76,12 @@ router.beforeEach((to, from, next) => {
     // User is not authenticated and trying to access the login page, allow navigation
     next();
   } else {
-    resetInactivityTimer(); 
+    resetInactivityTimer();
     // User is not authenticated and trying to access other routes, redirect to login
     next({ name: "login" });
   }
 
   window.scrollTo(0, 0);
 });
-
-
 
 export default router;
