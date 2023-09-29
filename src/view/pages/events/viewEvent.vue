@@ -355,21 +355,22 @@ const ViewPage = defineComponent({
             message: "Success",
             description: response.data.message,
           });
+          inputValue = "";
         }
         else if(response.status == 208){
           notification.info({
             message: "Info",
             description: response.data.message,
           });
+          inputValue = "";
         }
       } catch (error) {
         console.log(error);
-        console.log(inputValue);
-        inputValue = "";
         notification.error({
           message: "Error",
           description: "Participant Registration Failed, Registration Code does not exist",
         });
+        inputValue = "";
       } finally {
         console.log(inputValue);
         inputValue = ""; // Clear inputValue after the modal is closed
