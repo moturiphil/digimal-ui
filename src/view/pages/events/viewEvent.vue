@@ -368,7 +368,7 @@ const ViewPage = defineComponent({
         inputValue = "";
         notification.error({
           message: "Error",
-          description: "Participant Registration Failed, Event Code does not exist",
+          description: "Participant Registration Failed, Registration Code does not exist",
         });
       } finally {
         console.log(inputValue);
