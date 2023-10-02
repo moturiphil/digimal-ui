@@ -283,7 +283,7 @@ const ViewPage = defineComponent({
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.error({
             message: "Event Not Closed",
-            description: "Only event host or facilitator can close event",
+            description: "Only event host can close event",
           });
         }
         // location.reload();
