@@ -49,36 +49,22 @@ router.beforeEach((to, from, next) => {
     // User is logged in but the route is not defined, redirect to 404
     next({ path: "/404" });
   }
+  if(user_object && user_object.token) {
+    resetInactivityTimer();
+    // User is authenticated, allow navigation
+    next();
+  }
+  if (to.name === "login") {
+    resetInactivityTimer();
+    // User is not authenticated and trying to access the login page, allow navigation
+    next();
+  }
   if (user_object && user_object.token) {
     // User has a token, allow navigation
     next();
   } else {
     // User is not logged in but is on the login page, allow navigation
     next();
-  }
-
-  window.scrollTo(0, 0);
-});
-
-router.beforeEach((to, from, next) => {
-  const user = sessionStorage.getItem("user");
-  const user_object = JSON.parse(user);
-
-  console.log(user_object);
-  // Check the 'to' route and decide whether to allow navigation or redirect
-  if (user_object && user_object.token) {
-    // User is authenticated, allow navigation
-    resetInactivityTimer();
-    // User is authenticated, allow navigation
-    next();
-  } else if (to.name === "login") {
-    resetInactivityTimer();
-    // User is not authenticated and trying to access the login page, allow navigation
-    next();
-  } else {
-    resetInactivityTimer();
-    // User is not authenticated and trying to access other routes, redirect to login
-    next({ name: "login" });
   }
 
   window.scrollTo(0, 0);

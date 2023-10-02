@@ -72,7 +72,11 @@
                         {{ errors.name }}
                       </p>
                     </a-form-item>
-                    <!-- <a-form-item name="county_id" label="County">
+                    <a-form-item
+                      name="county_id"
+                      label="County"
+                      v-if="isLevelOne"
+                    >
                       <a-select
                         size="large"
                         name="basic-select"
@@ -83,8 +87,6 @@
                         show-search
                         option-filter-prop="label"
                         v-if="!loading"
-                        @blur="validate('county_id')"
-                        @keypress="validate('county_id')"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -99,14 +101,14 @@
                           {{ county.name }}
                         </a-select-option>
                       </a-select>
-                      <p
+                      <!-- <p
                         class="errors"
                         style="color: red"
                         v-if="!!errors.county_id"
                       >
                         {{ errors.county_id }}
-                      </p>
-                    </a-form-item> -->
+                      </p> -->
+                    </a-form-item>
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         placeholder="Selected Host"
@@ -266,6 +268,10 @@ const AddNew = defineComponent({
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
+    
+    const logged_in_user = sessionStorage.getItem("user");
+
+    const user_data = JSON.parse(logged_in_user);
 
     const {
       campaigns,
@@ -378,7 +384,6 @@ const AddNew = defineComponent({
         }
       );
       const data = await response.json();
-      // console.log(data);
       this.sub_counties = data.message;
     };
 
@@ -396,16 +401,30 @@ const AddNew = defineComponent({
       fetchEvents();
     });
 
+    const user = JSON.parse(sessionStorage.getItem("user"));
+
+    const user_level_id = user.user.level_id;
+
+    const isLevelOne = user_level_id === 1;
+
+    console.log(isLevelOne);
+
     const formState = reactive({
       campaign_id: null,
       name: null,
-      // county_id: "",
+      county_id: "",
       // location_type: null,
       facilitator_id: "",
       trainer_id: [],
       no_of_days: null,
       venue: "",
     });
+
+    if (formState.county_id === "") {
+      formState.county_id = user_data.user.location_id;
+    } else {
+      formState.county_id;
+    }
 
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign is required"),
@@ -427,10 +446,6 @@ const AddNew = defineComponent({
         });
     };
 
-    console.log(sessionStorage.getItem("user"));
-    const logged_in_user  = sessionStorage.getItem("user");
-
-    const user_data = JSON.parse(logged_in_user);
 
     console.log(user_data.user.location_id);
 
@@ -518,6 +533,7 @@ const AddNew = defineComponent({
       handleChange,
       events_list,
       validate,
+      isLevelOne,
       errors: {
         campaign_id: null,
         name: null,

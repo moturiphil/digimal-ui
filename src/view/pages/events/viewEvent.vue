@@ -283,7 +283,7 @@ const ViewPage = defineComponent({
           localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
           notification.error({
             message: "Event Not Closed",
-            description: "Only event host or facilitator can close event",
+            description: "Only event host can close event",
           });
         }
         // location.reload();
@@ -355,21 +355,22 @@ const ViewPage = defineComponent({
             message: "Success",
             description: response.data.message,
           });
+          inputValue = "";
         }
         else if(response.status == 208){
           notification.info({
             message: "Info",
             description: response.data.message,
           });
+          inputValue = "";
         }
       } catch (error) {
         console.log(error);
-        console.log(inputValue);
-        inputValue = "";
         notification.error({
           message: "Error",
-          description: "Participant Registration Failed",
+          description: "Participant Registration Failed, Registration Code does not exist",
         });
+        inputValue = "";
       } finally {
         console.log(inputValue);
         inputValue = ""; // Clear inputValue after the modal is closed
