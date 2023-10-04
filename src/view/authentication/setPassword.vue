@@ -32,6 +32,12 @@
             placeholder="Password"
             required
           />
+          <div
+            class="password-strength-indicator"
+            :class="passwordStrengthClass"
+          >
+            Password Strength: {{ passwordStrength }}
+          </div>
         </a-form-item>
         <!-- <a-form-item label="Confirm Password" name="password">
           <a-input
