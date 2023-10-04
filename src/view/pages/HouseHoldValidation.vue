@@ -345,30 +345,52 @@ export default defineComponent({
         // Call the authHeader() function to get the authorization token
         const headers = authHeader();
 
-        axios
-          .patch(
-            `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`,
-            null,
-            { headers }
-          )
-          .then(({ success }) => {
-            console.log(success);
-            if (success == true) {
-              notification["success"]({
-                message: "HouseHold Verified",
-                description: `HouseHold has been verified successfully`,
-                duration: 5.5,
-              });
-              location.reload();
+        // Construct the URL
+        const url = `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`;
+
+        // Make the fetch request
+        fetch(url, {
+          method: "PATCH",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json", // Add any necessary headers
+          },
+          // body: JSON.stringify(data), // If you need to send a request body, add it here
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json(); // Parse the JSON response
             }
+            throw new Error("Network response was not ok.");
+          })
+          .then((data) => {
+            console.log(data); // Handle the successful response data here
+            notification["success"]({
+              message: "HouseHold Verified",
+              description: `HouseHold has been verified successfully`,
+              duration: 5.5,
+            });
+            // location.reload();
           })
           .catch((error) => {
-            // Handle error here
-            console.log(error);
+            // Handle errors here
+            console.error(
+              "There has been a problem with your fetch operation:",
+              error
+            );
+            notification["error"]({
+              message: "HouseHold Not Verified",
+              description: `HouseHold verification failed`,
+              duration: 5.5,
+            });
+          })
+          .finally(() => {
+            inputValue = ""; // Clear inputValue after the modal is closed
+            isModalOpen.value = false;
           });
-      } finally {
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen.value = false;
+      } catch (error) {
+        // Handle exceptions here
+        console.error("Error:", error);
       }
     };
 
