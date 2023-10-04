@@ -19,6 +19,12 @@
             placeholder="Password"
             required
           />
+          <div
+            class="password-strength-indicator"
+            :class="passwordStrengthClass"
+          >
+            Password Strength: {{ passwordStrength }}
+          </div>
         </a-form-item>
         <a-form-item name="password" initialValue="" label="Confirm Password">
           <a-input-password
@@ -26,6 +32,12 @@
             placeholder="Password"
             required
           />
+          <div
+            class="password-strength-indicator"
+            :class="passwordStrengthClass"
+          >
+            Password Strength: {{ passwordStrength }}
+          </div>
         </a-form-item>
         <!-- <a-form-item label="Confirm Password" name="password">
           <a-input
@@ -59,9 +71,8 @@ import store from "../../vuex/store";
 // import axios from "axios";
 // import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 import AuthService from "../../services/auth.service";
-
 
 export default {
   name: "Password",
@@ -105,17 +116,46 @@ export default {
         email: formState.email,
       });
       // router.push("/");
-      router.replace('/');
+      router.replace("/");
       console.log(response);
       // if (response.status == 200) {
       //   console.log(response);
       //   router.push("/auth/login");
       //   console.log("response successfully sent....");
-      //   // router.push("/"); 
+      //   // router.push("/");
       // }
       // handle success response
       // handle error response
     };
+
+    function checkPasswordStrength(password) {
+      // Regular expression to check for a mix of uppercase and lowercase letters,
+      // numbers, and special characters, and a minimum length of 10 characters
+      const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+
+      if (passwordRegex.test(password)) {
+        return "strong";
+      } else if (password.length >= 8) {
+        return "medium";
+      } else {
+        return "weak";
+      }
+    }
+    const passwordStrength = computed(() => {
+    return checkPasswordStrength(formState.password);
+  });
+
+    const passwordStrengthClass = computed(() => {
+      const strength = checkPasswordStrength(formState.password);
+      if (strength === "weak") {
+        return "password-weak";
+      } else if (strength === "medium") {
+        return "password-medium";
+      } else {
+        return ""; // Default class for strong password
+      }
+    });
 
     return {
       isLoading,
@@ -127,7 +167,22 @@ export default {
       errorDescription: computed(() => store.state.auth.errorDescription),
       showOtpInput,
       formattedId,
+      passwordStrength,
+      passwordStrengthClass,
     };
   },
 };
 </script>
+<style>
+.password-strength-indicator {
+  color: green; /* Default color for strong password */
+}
+
+.password-weak {
+  color: red;
+}
+
+.password-medium {
+  color: orange;
+}
+</style>
