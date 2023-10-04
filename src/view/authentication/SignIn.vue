@@ -32,6 +32,25 @@
             New User?
           </router-link>
         </div>
+        <!-- <div class="auth-form-action">
+          <a
+            class=""
+            href="https://training.digimal.uonbi.ac.ke"
+            target="_blank"
+          >
+            Training Instance
+          </a>
+        </div> -->
+        <!-- <div> -->
+          <!-- Check if the current URL is the training instance -->
+          <!-- <div v-if="isTrainingInstance">
+            You are on the training instance.
+            <a href="https://digimal.uonbi.ac.ke" target="_blank"
+              >Go to Live Instance</a
+            >
+          </div>
+          <div v-else>You are on the live instance.</div>
+        </div> -->
         <a-form-item>
           <sdButton
             class="btn-signin"
@@ -214,7 +233,7 @@ export default {
             message: "Login Successful",
             description: "Welcome to Campaign Dashboard",
           });
-        }else {
+        } else {
           notification.error({
             message: "Login Failed",
             description: "Invalid Credentials",
@@ -294,6 +313,12 @@ export default {
       handleOk,
       handleCancel,
     };
+  },
+  computed: {
+    // Check if the current URL is the training instance
+    isTrainingInstance() {
+      return this.currentHostname === "training.digimal.uonbi.ac.ke";
+    },
   },
 };
 </script>
