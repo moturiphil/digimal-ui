@@ -75,6 +75,14 @@
                             View Event
                           </router-link>
                         </sdButton>
+                        &nbsp; &nbsp;
+                        <sdButton
+                          size="extra-small"
+                          type="success"
+                          @click="manageEvent"
+                        >
+                          Manage Trainers &nbsp; &nbsp;
+                        </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
                           size="extra-small"
@@ -119,6 +127,21 @@
                 </a-table>
               </TableWrapper>
             </div>
+            <a-modal
+              title="Event Trainers"
+              :visible="isTrainerModalOpen"
+              @ok="handleTrainerCancel"
+              @cancel="handleTrainerCancel"
+              class="title-success"
+            >
+              <div>
+                <h4>Event Host</h4>
+                <p>...</p>
+                <h4>Event Trainers</h4>
+                <p>...</p>
+              </div>
+              <!-- Remove the default buttons slot -->
+            </a-modal>
           </sdCards>
         </a-col>
       </a-row>
@@ -149,11 +172,11 @@ const columns = [
     dataIndex: "event_code",
     key: "id",
   },
-  {
-    title: "Host",
-    dataIndex: "event_host",
-    key: "id",
-  },
+  // {
+  //   title: "Host",
+  //   dataIndex: "event_host",
+  //   key: "id",
+  // },
   {
     title: "Location",
     dataIndex: "location_id",
@@ -298,6 +321,11 @@ const ViewPage = defineComponent({
       this.visible = false;
       this.colorVisible = false;
     },
+    handleTrainerCancel() {
+      this.isTrainerModalOpen = false;
+      this.visible = false;
+      this.colorVisible = false;
+    },
     changeType(type) {
       this.modalType = type;
     },
@@ -325,6 +353,7 @@ const ViewPage = defineComponent({
     const eventCode = ref("");
     const searchItem = ref("");
     const isModalOpen = ref(false);
+    const isTrainerModalOpen = ref(false);
     const recordId = ref(null);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
@@ -339,6 +368,14 @@ const ViewPage = defineComponent({
       } catch (error) {
         console.log(error);
       }
+    };
+    const manageEvent = async () => {
+      console.log("console.log");
+      isTrainerModalOpen.value = true;
+      const response = await axios.get(API_URL, {
+        headers: authHeader(),
+      });
+      console.log(response.data.data);
     };
     const handleOk = async (id, inputValue) => {
       console.log(recordId.value);
@@ -356,8 +393,7 @@ const ViewPage = defineComponent({
             description: response.data.message,
           });
           inputValue = "";
-        }
-        else if(response.status == 208){
+        } else if (response.status == 208) {
           notification.info({
             message: "Info",
             description: response.data.message,
@@ -368,13 +404,14 @@ const ViewPage = defineComponent({
         console.log(error);
         notification.error({
           message: "Error",
-          description: "Participant Registration Failed, Registration Code does not exist",
+          description:
+            "Participant Registration Failed, Registration Code does not exist",
         });
         inputValue = "";
       } finally {
         console.log(inputValue);
         inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen.value = true;
+        isTrainerModalOpen.value = true;
       }
     };
 
@@ -464,6 +501,8 @@ const ViewPage = defineComponent({
       handleRegistration,
       handleOk,
       isModalOpen,
+      isTrainerModalOpen,
+      manageEvent,
     };
   },
 });

@@ -20,20 +20,16 @@
               : "Generate Payroll"
           }}
         </sdButton>
-        &nbsp; &nbsp;
+        <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
           class="btn-import"
           type="success"
           @click="exportParticipants"
           size="small"
         >
-          Download List &nbsp; &nbsp;
+          Download List
+          &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
-        </sdButton>
-        &nbsp; &nbsp;
-        <sdButton size="small" type="success" @click="manageEvent">
-          Manage Trainers &nbsp; &nbsp;
-          <sdFeatherIcons type="tool" size="extra-small" />
         </sdButton>
       </div>
 
@@ -138,20 +134,6 @@
                   </a-col>
                 </a-row>
               </div>
-              <a-modal
-                title="Event Trainers"
-                :visible="isModalOpen"
-                @ok="handleOk(recordId, inputValue)"
-                @cancel="handleCancel"
-                class="title-success"
-              >
-                <div>
-                  <h4>Event Host</h4>
-                  <p>...</p>
-                  <h4>Event Trainers</h4>
-                  <p>...</p>
-                </div>
-              </a-modal>
             </sdCards>
           </a-col>
         </a-row>
@@ -272,7 +254,6 @@ export default defineComponent({
     console.log(query.event_code);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
-    const Event_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
@@ -345,14 +326,7 @@ export default defineComponent({
       }
     };
 
-    const manageEvent = async () => {
-      console.log("console.log");
-      isModalOpen.value = true;
-      const response = await axios.get(Event_URL, {
-        headers: authHeader(),
-      });
-      console.log(response.data.data);
-    };
+    
 
     const handleOk = async (id, inputValue) => {
       try {
@@ -452,7 +426,7 @@ export default defineComponent({
     // const current = ref("");
     const rt = useRouter();
 
-    // const event_host_id = query.event_host_id;
+    const event_host_id = query.event_host_id;
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user.user.id);
 
@@ -469,7 +443,7 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      if (user.user.role_id === 16 || user.user.role_id === 53 || user.user.id === 78) {
+      if (user.user.role_id === 53 || user.user.id == event_host_id) {
         return true;
       } else {
         return false;
@@ -491,7 +465,6 @@ export default defineComponent({
       generatePayroll,
       exportParticipants,
       isApprovedGenerator,
-      manageEvent,
       isModalOpen,
       handleOk,
       isGenerating,
