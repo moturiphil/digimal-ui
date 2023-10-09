@@ -79,7 +79,7 @@
                         <sdButton
                           size="extra-small"
                           type="success"
-                          @click="manageEvent"
+                          @click="manageEvent(record.event_code)"
                         >
                           View Trainers &nbsp; &nbsp;
                         </sdButton>
@@ -372,7 +372,7 @@ const ViewPage = defineComponent({
     const event_host = ref("");
     const event_facilitators = ref([]);
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
     const handleRegistration = (id) => {
       isModalOpen.value = true;
@@ -385,18 +385,22 @@ const ViewPage = defineComponent({
         console.log(error);
       }
     };
-    const manageEvent = async () => {
+    const manageEvent = async (code) => {
+      console.log(code);
       console.log("console.log");
       isTrainerModalOpen.value = true;
       try {
-        const response = await axios.get(API_URL, {
+        const response = await axios.get(`${API_URL}/event/${code}/facilitators`, {
           headers: authHeader(),
         });
         const eventDetails = response.data.data;
-        if (eventDetails.length > 0) {
-          event_host.value = eventDetails[0].event_host;
-          event_facilitators.value = eventDetails[0].event_facilitators;
-        }
+        // Reset the arrays before adding new data
+
+        console.log(eventDetails);
+        event_host.value = eventDetails.event_host;
+        event_facilitators.value = eventDetails.event_facilitators;
+
+
         console.log(event_host.value, event_facilitators.value);
       } catch (error) {
         console.error(error);
@@ -442,7 +446,7 @@ const ViewPage = defineComponent({
 
     onMounted(() => {
       axios
-        .get(API_URL, {
+        .get(`${API_URL}/events/all`, {
           headers: authHeader(),
         })
         .then((response) => {
@@ -465,7 +469,7 @@ const ViewPage = defineComponent({
       try {
         // Validate the event code
         const { data } = await axios.get(
-          `${API_URL}?event_code=${eventCode.value}`
+          `${API_URL}/events/all?event_code=${eventCode.value}`
         );
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");
