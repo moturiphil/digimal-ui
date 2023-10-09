@@ -81,7 +81,7 @@
                           type="success"
                           @click="manageEvent"
                         >
-                          Manage Trainers &nbsp; &nbsp;
+                          View Trainers &nbsp; &nbsp;
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
@@ -135,12 +135,26 @@
               class="title-success"
             >
               <div>
-                <h4>Event Host</h4>
-                <p>...</p>
-                <h4>Event Trainers</h4>
-                <p>...</p>
+                <h4>
+                  <b>
+                    <u> Event Host </u>
+                  </b>
+                </h4>
+                <p>{{ event_host }}</p>
+                <h4>
+                  <b>
+                    <u> Event Facilitators </u>
+                  </b>
+                </h4>
+                <ul>
+                  <li
+                    v-for="facilitator in event_facilitators"
+                    :key="facilitator"
+                  >
+                    {{ facilitator }}
+                  </li>
+                </ul>
               </div>
-              <!-- Remove the default buttons slot -->
             </a-modal>
           </sdCards>
         </a-col>
@@ -355,6 +369,8 @@ const ViewPage = defineComponent({
     const isModalOpen = ref(false);
     const isTrainerModalOpen = ref(false);
     const recordId = ref(null);
+    const event_host = ref("");
+    const event_facilitators = ref([]);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/all`;
 
@@ -372,10 +388,19 @@ const ViewPage = defineComponent({
     const manageEvent = async () => {
       console.log("console.log");
       isTrainerModalOpen.value = true;
-      const response = await axios.get(API_URL, {
-        headers: authHeader(),
-      });
-      console.log(response.data.data);
+      try {
+        const response = await axios.get(API_URL, {
+          headers: authHeader(),
+        });
+        const eventDetails = response.data.data;
+        if (eventDetails.length > 0) {
+          event_host.value = eventDetails[0].event_host;
+          event_facilitators.value = eventDetails[0].event_facilitators;
+        }
+        console.log(event_host.value, event_facilitators.value);
+      } catch (error) {
+        console.error(error);
+      }
     };
     const handleOk = async (id, inputValue) => {
       console.log(recordId.value);
@@ -503,6 +528,8 @@ const ViewPage = defineComponent({
       isModalOpen,
       isTrainerModalOpen,
       manageEvent,
+      event_host,
+      event_facilitators,
     };
   },
 });
