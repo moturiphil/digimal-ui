@@ -26,6 +26,7 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
+                <p> <b>Total Records: </b> {{ recordCount }}</p>
                 <a-table
                   :pagination="{ pageSize: 50, showSizeChanger: true }"
                   :dataSource="dataSource"
@@ -160,6 +161,11 @@ const DragAndDropTable = defineComponent({
       formState,
       role_name,
     };
+  },
+  computed: {
+    recordCount() {
+      return this.dataSource.length;
+    },
   },
 });
 
