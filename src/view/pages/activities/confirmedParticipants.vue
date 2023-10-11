@@ -1,164 +1,172 @@
 <template>
-  <ProjectDetailsWrapper>
-    <sdPageHeader v-if="project">
-      <template #title
-        ><div key="1" class="project-header">
-          <sdHeading as="h2">ActivityParticipants</sdHeading>
+  <UserTableStyleWrapper>
+    <sdPageHeader title="Activity Confirmed Participants">
+      <template #subTitle>
+        <sdButton class="btn-add_new" size="default" type="success">
+          <!-- <router-link to="/events/event-create">
+            <sdFeatherIcons type="plus" size="small" /> Start New
+            Event</router-link
+          > -->
+        </sdButton>
+      </template>
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <!-- Increase the size of the search icon by setting the 'font-size' property -->
+            <!-- <sdFeatherIcons type="search" size="24" /> -->
+          </span>
+          <!-- <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name or code"
+            style="
+              font-size: 15px;
+              width: 100%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
+          /> -->
         </div>
       </template>
     </sdPageHeader>
-    <Main>
-      <sdButton
-        class="btn-import"
-        type="success"
-        @click="exportActivityParticipants"
+    <TableWrapper class="table-responsive">
+      <a-table
+        :pagination="{ pageSize: 50, showSizeChanger: true }"
+        :dataSource="dataSource"
+        :columns="columns"
       >
-        Export Participants
-      </sdButton>
-      &nbsp;&nbsp;
-      <sdButton class="btn-import" type="success" @click="generatePayroll">
-        Generate Payroll
-      </sdButton>
-      <div v-if="!project" class="spin">
-        <a-spin />
-      </div>
-      <a-row v-else :gutter="25">
-        <a-col :xxl="24" :xl="12" :md="24" :xs="24">
-          <sdCards headless> </sdCards>
-        </a-col>
-        <a-col :xxl="24" :xl="24" :md="24" :xs="24">
-          <sdCards title="ActivityParticipants">
-            <ActivityConfirmedParticipants
-          /></sdCards>
-        </a-col>
-      </a-row>
-    </Main>
-  </ProjectDetailsWrapper>
+        <template #events="{ record }">
+          <td>
+            <div class="table-actions">
+              <sdButton @click="showSuccessModal" size="small" type="success">
+                <sdFeatherIcons type="edit-3" size="16" />
+                &nbsp;&nbsp; Enroll Participants
+              </sdButton>
+              <sdButton>
+                <router-link
+                  :to="`/event/view/${record.id}`"
+                  class="btn-icon"
+                  type="info"
+                  shape="circle"
+                >
+                  <sdFeatherIcons type="eye" size="16" />
+                  &nbsp;&nbsp; View
+                </router-link>
+              </sdButton>
+              <sdButton
+                class="btn-icon"
+                type="danger"
+                @click="handleDelete(record.id)"
+                shape="circle"
+              >
+                <sdFeatherIcons type="trash-2" size="16" />
+                <a href="" title="Delete"></a>
+              </sdButton>
+            </div>
+          </td>
+        </template>
+      </a-table>
+    </TableWrapper>
+  </UserTableStyleWrapper>
 </template>
+
 <script>
-import { ProjectDetailsWrapper } from "./overview/style";
-import { Main } from "../../styled";
+import { UserTableStyleWrapper } from "../../../view/pages/campaigns/style";
+import { TableWrapper } from "../../styled";
+import { computed, defineComponent, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import authHeader from "../../../../src/services/auth-header";
+import axios from "axios";
 import { useStore } from "vuex";
 
-import { reactive, computed, onMounted, defineComponent } from "vue";
-import { Modal } from "ant-design-vue";
-import { useRoute } from "vue-router";
-import ActivityConfirmedParticipants from "./activityConfirmedParticipants.vue";
-import authHeader from "../../../services/auth-header";
+const columns = [
+  {
+    title: "Participant Name",
+    dataIndex: "fullName",
+    key: "id",
+  },
+  {
+    title: "Participant Phone",
+    dataIndex: "phone_no",
+    key: "id",
+  },
+  {
+    title: "Organization",
+    dataIndex: "org_types_id",
+    key: "id",
+  },
+  {
+    title: "Role",
+    dataIndex: "role_id",
+    key: "id",
+  },
+];
 
-const ProjectDetails = defineComponent({
-  name: "ProjectDetails",
-  components: { ProjectDetailsWrapper, Main, ActivityConfirmedParticipants},
-// V390117
-  data() {
-    const { state, dispatch } = useStore();
+const EventCampaignTable = defineComponent({
+  name: "EventCampaignTable",
+  components: { UserTableStyleWrapper, TableWrapper },
+  setup() {
+    const { state } = useStore();
+    const eventData = computed(() => state.crud.data);
 
-    const project = computed(() => state.project.singData);
-    const { params, matched, query } = useRoute();
-    const { title, content } = computed(() => state.project.singData[0]);
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/generateEventParticipantCSV?event=${query.id}`;
+    const dataSource = ref([]);
+    const selectedRowKeys = ref([]);
 
-    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
-    console.log(query.code);
-    const { facilitators } = reactive({ facilitators: [] });
+    const { query } = useRoute();
 
-    const columns = [
-      {
-        title: "Name",
-        dataIndex: "first_name",
-        render: function (text, record) {
-          return (
-            "<span>" + record.first_name + " " + record.last_name + "</span>"
-          );
-        },
-      },
-      {
-        title: "Phone Number",
-        dataIndex: "phone_no",
-        key: "phone_no",
-      },
-      {
-        title: "ID Number",
-        dataIndex: "id_no",
-        key: "id_no",
-      },
-    ];
-    onMounted(() => {
-      dispatch("eventCampaignData", parseInt(params.id, 10));
-    });
-    const exportActivityParticipants = async () => {
+    console.log(query.id);
+
+    onMounted(async () => {
       try {
-        const response = await fetch(API_URL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
+        const response = await axios.get(
+          `${API_URL}/activity_participants?activity_id=${query.code}&confirmed=1`,
+          {
+            headers: authHeader(),
+          }
+        );
+        console.log(response.data.data);
+
+        const updatedData = response.data.data.map((record) => {
+          let fullName = `${record.first_name} ${record.last_name}`;
+          // fullName = fullName.toUpperCase();
+          return {
+            ...record,
+            fullName,
+          };
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
+        dataSource.value = response.data.data;
+        console.log(updatedData);
+        dataSource.value = updatedData;
 
-        const fileBlob = await response.blob();
-        const fileName = "event_participants.csv";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
+    });
+
+    const onSelectChange = (selectedRowKey) => {
+      selectedRowKeys.value = selectedRowKey;
     };
 
-    const generatePayroll = async () => {
-      try {
-        const response = await fetch(genetatePayrollURL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
-        console.log(response);
-        if (response.status == 200) {
-          Modal.success({
-            title: "Success",
-            content: "Payroll Generated Successfully",
-          });
-        } else {
-          Modal.error({
-            title: "Error",
-            content:
-              "Something went wrong, ensure you have assigned payroll matrix to the event",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
     };
 
     return {
-      title,
-      content,
       columns,
-      project,
-      params,
-      matched,
-      facilitators,
-      generatePayroll,
-      exportActivityParticipants,
+      eventData,
+      rowSelection,
+      dataSource,
+      selectedRowKeys,
+      onSelectChange,
     };
   },
 });
 
-export default ProjectDetails;
+export default EventCampaignTable;
 </script>
-<style>
-.page-header-actions {
-  float: right;
-}
-</style>
