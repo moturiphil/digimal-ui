@@ -1,6 +1,6 @@
 <template>
   <UserTableStyleWrapper>
-    <sdPageHeader title="MassNet Activities">
+    <sdPageHeader title="Activity Confirmed Participants">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success">
           <!-- <router-link to="/events/event-create">
