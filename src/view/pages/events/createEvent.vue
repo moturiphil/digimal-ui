@@ -268,7 +268,7 @@ const AddNew = defineComponent({
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
-    
+
     const logged_in_user = sessionStorage.getItem("user");
 
     const user_data = JSON.parse(logged_in_user);
@@ -420,12 +420,6 @@ const AddNew = defineComponent({
       venue: "",
     });
 
-    if (formState.county_id === "") {
-      formState.county_id = user_data.user.location_id;
-    } else {
-      formState.county_id;
-    }
-
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign is required"),
       name: Yup.string().required("Name is required"),
@@ -446,22 +440,23 @@ const AddNew = defineComponent({
         });
     };
 
-
     console.log(user_data.user.location_id);
 
     const handleSubmit = () => {
       store.commit("setIsSubmitting", true);
+      if (formState.county_id=="") {
+        formState.county_id = user_data.user.location_id;
+      }
       const data = {
         // name: formState.name,
         campaign_id: formState.campaign_id,
         venue: formState.venue,
-        location_id: user_data.user.location_id,
+        location_id: formState.county_id,
         facilitator: formState.facilitator_id,
         trainers: formState.trainer_id,
         number_of_days: formState.no_of_days,
         event_list_id: formState.name,
       };
-
       console.log(data);
       ArticleSchema.validate(this.formState, { abortEarly: false })
         .then(() => {
