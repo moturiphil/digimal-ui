@@ -121,41 +121,41 @@
                             <input type="number" v-model="inputValue" />
                           </div>
                         </a-modal>
+                        <a-modal
+                          title="Event Trainers"
+                          :visible="isTrainerModalOpen"
+                          @ok="handleOkTrainers"
+                          @cancel="handleTrainerCancel"
+                          class="title-success"
+                        >
+                          <div>
+                            <h4>
+                              <b>
+                                <u> Event Host </u>
+                              </b>
+                            </h4>
+                            <p>{{ event_host }}</p>
+                            <h4>
+                              <b>
+                                <u> Event Facilitators </u>
+                              </b>
+                            </h4>
+                            <ul>
+                              <li
+                                v-for="facilitator in event_facilitators"
+                                :key="facilitator"
+                              >
+                                {{ facilitator }}
+                              </li>
+                            </ul>
+                          </div>
+                        </a-modal>
                       </div>
                     </td>
                   </template>
                 </a-table>
               </TableWrapper>
             </div>
-            <a-modal
-              title="Event Trainers"
-              :visible="isTrainerModalOpen"
-              @ok="handleTrainerCancel"
-              @cancel="handleTrainerCancel"
-              class="title-success"
-            >
-              <div>
-                <h4>
-                  <b>
-                    <u> Event Host </u>
-                  </b>
-                </h4>
-                <p>{{ event_host }}</p>
-                <h4>
-                  <b>
-                    <u> Event Facilitators </u>
-                  </b>
-                </h4>
-                <ul>
-                  <li
-                    v-for="facilitator in event_facilitators"
-                    :key="facilitator"
-                  >
-                    {{ facilitator }}
-                  </li>
-                </ul>
-              </div>
-            </a-modal>
           </sdCards>
         </a-col>
       </a-row>
@@ -340,6 +340,11 @@ const ViewPage = defineComponent({
       this.visible = false;
       this.colorVisible = false;
     },
+    handleOkTrainers() {
+      this.isTrainerModalOpen = false;
+      this.visible = false;
+      this.colorVisible = false;
+    },
     changeType(type) {
       this.modalType = type;
     },
@@ -366,7 +371,7 @@ const ViewPage = defineComponent({
     const dataSource = ref([]);
     const eventCode = ref("");
     const searchItem = ref("");
-    const isModalOpen = ref(false);
+    let isModalOpen = ref(false);
     const isTrainerModalOpen = ref(false);
     const recordId = ref(null);
     const event_host = ref("");
@@ -390,16 +395,17 @@ const ViewPage = defineComponent({
       console.log("console.log");
       isTrainerModalOpen.value = true;
       try {
-        const response = await axios.get(`${API_URL}/event/${code}/facilitators`, {
-          headers: authHeader(),
-        });
+        const response = await axios.get(
+          `${API_URL}/event/${code}/facilitators`,
+          {
+            headers: authHeader(),
+          }
+        );
         const eventDetails = response.data.data;
         // Reset the arrays before adding new data
 
-        console.log(eventDetails);
         event_host.value = eventDetails.event_host;
         event_facilitators.value = eventDetails.event_facilitators;
-
 
         console.log(event_host.value, event_facilitators.value);
       } catch (error) {
@@ -440,7 +446,7 @@ const ViewPage = defineComponent({
       } finally {
         console.log(inputValue);
         inputValue = ""; // Clear inputValue after the modal is closed
-        isTrainerModalOpen.value = true;
+        isModalOpen = true;
       }
     };
 
