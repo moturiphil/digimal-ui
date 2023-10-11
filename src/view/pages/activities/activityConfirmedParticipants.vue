@@ -1,5 +1,35 @@
 <template>
   <UserTableStyleWrapper>
+    <sdPageHeader title="MassNet Activities">
+      <template #subTitle>
+        <sdButton class="btn-add_new" size="default" type="success">
+          <!-- <router-link to="/events/event-create">
+            <sdFeatherIcons type="plus" size="small" /> Start New
+            Event</router-link
+          > -->
+        </sdButton>
+      </template>
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <!-- Increase the size of the search icon by setting the 'font-size' property -->
+            <!-- <sdFeatherIcons type="search" size="24" /> -->
+          </span>
+          <!-- <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name or code"
+            style="
+              font-size: 15px;
+              width: 100%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
+          /> -->
+        </div>
+      </template>
+    </sdPageHeader>
     <TableWrapper class="table-responsive">
       <a-table
         :pagination="{ pageSize: 50, showSizeChanger: true }"
@@ -42,7 +72,7 @@
 </template>
 
 <script>
-import { UserTableStyleWrapper } from "./style";
+import { UserTableStyleWrapper } from "../../../view/pages/campaigns/style";
 import { TableWrapper } from "../../styled";
 import { computed, defineComponent, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -59,16 +89,6 @@ const columns = [
   {
     title: "Participant Phone",
     dataIndex: "phone_no",
-    key: "id",
-  },
-  {
-    title: "Location",
-    dataIndex: "location_id",
-    key: "id",
-  },
-  {
-    title: "Level",
-    dataIndex: "level_id",
     key: "id",
   },
   {
@@ -97,9 +117,7 @@ const EventCampaignTable = defineComponent({
 
     const { query } = useRoute();
 
-    // console.log(query.id);
-
-    console.log(query);
+    console.log(query.id);
 
     onMounted(async () => {
       try {
@@ -113,6 +131,7 @@ const EventCampaignTable = defineComponent({
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
+          // fullName = fullName.toUpperCase();
           return {
             ...record,
             fullName,
@@ -120,7 +139,10 @@ const EventCampaignTable = defineComponent({
         });
 
         dataSource.value = response.data.data;
+        console.log(updatedData);
         dataSource.value = updatedData;
+
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
