@@ -291,5 +291,10 @@ export default defineComponent({
       exportPayrollList,
     };
   },
+  computed: {
+    recordCount() {
+      return this.results.length;
+    },
+  },
 });
 </script>
