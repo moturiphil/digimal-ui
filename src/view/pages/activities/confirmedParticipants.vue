@@ -17,11 +17,16 @@
       >
     </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" @click="generatePayroll">
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="generatePayroll"
+        v-if="isApprovedGenerator"
+      >
         Generate Payroll
       </sdButton>
-      <br>
-      <br>
+      <br />
+      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -55,7 +60,6 @@ import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import { Modal } from "ant-design-vue";
-
 
 const columns = [
   {
@@ -141,6 +145,16 @@ const ViewPage = defineComponent({
           console.error(error);
         });
     });
+    const user = JSON.parse(sessionStorage.getItem("user"));
+
+
+    const isApprovedGenerator = computed(() => {
+      if (user.user.role_id === 53) {
+        return true;
+      } else {
+        return false;
+      }
+    });
 
     const results = computed(() => {
       const query = searchItem.value.toLowerCase();
@@ -161,13 +175,16 @@ const ViewPage = defineComponent({
     });
     const generatePayroll = async () => {
       try {
-        const response = await fetch(`${API_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
+        const response = await fetch(
+          `${API_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
         console.log(response);
         if (response.status == 200) {
           Modal.success({
@@ -194,7 +211,8 @@ const ViewPage = defineComponent({
       columns,
       searchItem,
       results,
-      generatePayroll
+      generatePayroll,
+      isApprovedGenerator,
     };
   },
 });
