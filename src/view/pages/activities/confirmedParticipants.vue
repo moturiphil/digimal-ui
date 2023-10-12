@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Activity Pending Participant List">
+    <sdPageHeader title="Activity Confirmed Participant List">
       <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
