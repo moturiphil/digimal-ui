@@ -32,7 +32,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <p> <b>Total Records: </b> {{ recordCount }}</p>
                 <a-table
-                  :pagination="{ pageSize: 50, showSizeChanger: true }"
+                  :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="results"
                   :columns="columns"
                 >

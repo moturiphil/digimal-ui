@@ -1,6 +1,16 @@
 <template>
   <div>
-    <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
+    <sdPageHeader :title="`${event_name} Event`">
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name, phone no, village or CHP"
+          /></div
+      ></template>
+    </sdPageHeader>
     <Main>
       <p class="detail-info">
         <b>Location:</b> {{ ` ${venue}` }} || <b>Start Date:</b>
@@ -39,10 +49,10 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
-                            :dataSource="dataSource"
+                            :dataSource="results"
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
@@ -60,83 +70,6 @@
                                     >
                                       &nbsp;&nbsp; Breakdown
                                     </router-link>
-                                  </sdButton>
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'approved'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'outliers'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton>
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'paid'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 40,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
                                   </sdButton>
                                 </div>
                               </td>
@@ -256,6 +189,7 @@ export default defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("all");
+    const searchItem = ref("");
 
     const { params, query } = useRoute();
     console.log({ params, query });
@@ -270,16 +204,6 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
 
-    const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
-      } else {
-        return dataSource.value;
-      }
-    });
     const exportPayrollList = async () => {
       try {
         const response = await fetch(export_pay_list_url, {
@@ -326,9 +250,26 @@ export default defineComponent({
         });
     });
 
-
     const formState = reactive({
       searchItem: "",
+    });
+
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return (
+            regex.test(event.user_id) ||
+            regex.test(event.location_id) ||
+            regex.test(event.organization) ||
+            regex.test(event.role)
+
+          );
+        });
+      }
     });
 
     return {
@@ -339,40 +280,21 @@ export default defineComponent({
       columns,
       formState,
       // exportHouseHoldData,
-      filteredData,
       handleChange,
       activeClass,
       event_name,
       duration,
       venue,
       date,
+      results,
+      searchItem,
       exportPayrollList,
     };
   },
-  // computed: {
-  // },
+  computed: {
+    recordCount() {
+      return this.results.length;
+    },
+  },
 });
 </script>
-<style>
-.badge-green {
-  background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
-  font-size: 12px;
-}
-</style>
-
-<style>
-.badge-green {
-  background-color: #1ec997;
-  color: white;
-  padding: 4px;
-  margin-bottom: 18px;
-  border-radius: 3px;
-}
-sdPageHeader {
-  margin-bottom: 10px; /* Adjust the value as needed to control the vertical spacing */
-}
-</style>
