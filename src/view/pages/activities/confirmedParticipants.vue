@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Activity Pending Participant List">
+    <sdPageHeader title="Activity Confirmed Participant List">
       <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
@@ -17,6 +17,11 @@
       >
     </sdPageHeader>
     <Main>
+      <sdButton class="btn-import" type="success" @click="generatePayroll">
+        Generate Payroll
+      </sdButton>
+      <br>
+      <br>
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -49,6 +54,8 @@ import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { computed, onMounted, ref, defineComponent } from "vue";
+import { Modal } from "ant-design-vue";
+
 
 const columns = [
   {
@@ -119,9 +126,12 @@ const ViewPage = defineComponent({
 
     onMounted(() => {
       axios
-        .get(`${API_URL}/activity_participants?activity_id=${query.code}&confirmed=1`, {
-          headers: authHeader(),
-        })
+        .get(
+          `${API_URL}/activity_participants?activity_id=${query.code}&confirmed=1`,
+          {
+            headers: authHeader(),
+          }
+        )
         .then((response) => {
           console.log(response.data.data);
           dataSource.value = response.data.data;
@@ -149,6 +159,32 @@ const ViewPage = defineComponent({
         });
       }
     });
+    const generatePayroll = async () => {
+      try {
+        const response = await fetch(`${API_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+        console.log(response);
+        if (response.status == 200) {
+          Modal.success({
+            title: "Success",
+            content: "Payroll Generated Successfully",
+          });
+        } else {
+          Modal.error({
+            title: "Error",
+            content:
+              "Something went wrong, ensure you have assigned payroll matrix to the event",
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     return {
       crud,
@@ -158,6 +194,7 @@ const ViewPage = defineComponent({
       columns,
       searchItem,
       results,
+      generatePayroll
     };
   },
 });

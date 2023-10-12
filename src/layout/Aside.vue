@@ -50,7 +50,7 @@
         </a-menu-item>
         <a-menu-item key="widgetsListActivity" v-if="canViewActivities">
           <router-link to="/activities/activity-view">
-            List Activity
+            List Activities
           </router-link>
         </a-menu-item>
       </a-sub-menu>
