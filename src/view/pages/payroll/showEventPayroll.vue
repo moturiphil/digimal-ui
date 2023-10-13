@@ -62,7 +62,11 @@
                                     <router-link
                                       :to="{
                                         path: `/event/breakdown/${record.id}`,
-                                        query: { id: record.id },
+                                        query: { 
+                                          id: record.id, 
+                                          jg: record.job_group,
+                                          name: user_id,
+                                        },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -96,10 +100,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-// import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
-
-// const households = ref([]);
 
 const columns = [
   {
@@ -150,7 +151,7 @@ const columns = [
   },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "Event Payroll",
   components: {
     Main,
     SearchResultWrapper,
@@ -242,7 +243,6 @@ export default defineComponent({
         })
         .then((response) => {
           dataSource.value = response.data.data;
-          // households.value = response.data.data;
           console.log(dataSource.value);
         })
         .catch((error) => {
@@ -279,7 +279,6 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      // exportHouseHoldData,
       handleChange,
       activeClass,
       event_name,
