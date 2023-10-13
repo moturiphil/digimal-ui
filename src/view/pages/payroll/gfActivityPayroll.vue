@@ -116,7 +116,9 @@
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
+                                        query: { 
+                                          id: record.id,
+                                         },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -346,7 +348,7 @@
 
 <script>
 import { Main } from "../../styled";
-import { SearchResultWrapper } from "./../style";
+import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
@@ -355,12 +357,7 @@ import { notification } from "ant-design-vue";
 
 const columns = [
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "id",
-  },
-  {
-    title: "Event",
+    title: "Activity",
     dataIndex: "activity_id",
     key: "id",
   },
@@ -370,8 +367,18 @@ const columns = [
     key: "id",
   },
   {
+    title: "Validator",
+    dataIndex: "validated_by",
+    key: "id",
+  },
+  {
     title: "Approved",
     dataIndex: "approval_status",
+    key: "id",
+  },
+  {
+    title: "Approver",
+    dataIndex: "approved_by",
     key: "id",
   },
   {
@@ -437,7 +444,6 @@ export default defineComponent({
 
     const filteredData = computed(() => {
       if (activeClass.value === "all") {
-        console.log(dataSource.value);
         return dataSource.value;
       } else if (activeClass.value === "not_validated") {
         return dataSource.value.filter(
@@ -449,7 +455,9 @@ export default defineComponent({
         );
       } else if (activeClass.value === "pending_approval") {
         return dataSource.value.filter(
-          (item) => item.approval_status === "Not Approved"
+          (item) =>
+            item.approval_status === "Not Approved" &&
+            item.status === "Validated"
         );
       } else if (activeClass.value === "pending_payment") {
         return dataSource.value.filter(
@@ -596,12 +604,12 @@ export default defineComponent({
             if (data.success == true) {
               notification.success({
                 message: "Success",
-                description: "Payroll Validated Successfully",
+                description: "Payroll Approved Successfully",
               });
             } else {
               notification.error({
                 message: "Error",
-                description: "Payroll Validation Failed",
+                description: "Payroll Approval Failed",
               });
             }
           });
@@ -652,15 +660,11 @@ export default defineComponent({
           dataSource.value = response.data.data;
           // transform approval status to boolean
           dataSource.value.forEach((item) => {
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
-          dataSource.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
-          });
-          dataSource.value.forEach((item) => {
             item.payment_status =
               item.payment_status === 1 ? "Paid" : "Not Paid";
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
           });
           console.log(dataSource.value);
         })
@@ -682,15 +686,21 @@ export default defineComponent({
     role_id.value = user.user.role_id;
 
     const isValidator = computed(() => {
-      return role_id.value === 4;
+      return (
+        role_id.value === 63 || role_id.value === 53 || role_id.value === 4
+      );
     });
 
     const isApprover = computed(() => {
-      return role_id.value === 2;
+      return (
+        role_id.value === 64 || role_id.value === 53 || role_id.value === 59
+      );
     });
 
     const isAdminAccountant = computed(() => {
-      return role_id.value === 1;
+      return (
+        role_id.value === 65 || role_id.value === 53 || role_id.value === 1
+      );
     });
 
     const formState = reactive({

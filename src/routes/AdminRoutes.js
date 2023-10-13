@@ -307,11 +307,11 @@ const routes = [
       ),
   },
   {
-    path: "/activity-payroll",
+    path: "/gf-activity-payroll",
     name: "activity-payroll",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/Payroll.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfActivityPayroll.vue"
       ),
   },
   {
