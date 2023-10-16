@@ -513,7 +513,8 @@ export default defineComponent({
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
-
+    
+    // handle payment
     const handlePay = (id) => {
       isModalOpen.value = true;
       console.log("handlePay", id);

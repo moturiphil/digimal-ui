@@ -114,6 +114,11 @@ const routes = [
         // component: () => import("@/view/pages/events/eventRegister.vue"),
       },
       {
+        path: "/events/add-stakeholder",
+        name: "events-add-stakeholder",
+        component: () => import("@/view/pages/events/addStakeholder.vue"),
+      },
+      {
         path: "/event/view/:id",
         name: "view-event",
         component: () => import("@/view/pages/events/showEvent.vue"),
@@ -307,11 +312,11 @@ const routes = [
       ),
   },
   {
-    path: "/activity-payroll",
+    path: "/gf-activity-payroll",
     name: "activity-payroll",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/Payroll.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfActivityPayroll.vue"
       ),
   },
   {
