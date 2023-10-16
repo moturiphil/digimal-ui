@@ -114,6 +114,11 @@ const routes = [
         // component: () => import("@/view/pages/events/eventRegister.vue"),
       },
       {
+        path: "/events/add-stakeholder",
+        name: "events-add-stakeholder",
+        component: () => import("@/view/pages/events/addStakeholder.vue"),
+      },
+      {
         path: "/event/view/:id",
         name: "view-event",
         component: () => import("@/view/pages/events/showEvent.vue"),

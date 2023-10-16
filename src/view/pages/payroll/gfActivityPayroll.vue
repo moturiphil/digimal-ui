@@ -484,10 +484,6 @@ export default defineComponent({
     const isModalOpen = ref(false);
     const inputValue = ref("");
 
-    // const activity_id = ref("");
-
-    // const payment_otp_id = ref("");
-
     const handlePay = (id) => {
       isModalOpen.value = true;
       console.log("handlePay", id);
@@ -539,8 +535,6 @@ export default defineComponent({
           });
 
         console.log(response);
-        // const parser = new DOMParser();
-        // const otp = response.data.OTP;
       } catch (error) {
         console.log(error);
       }
@@ -577,8 +571,6 @@ export default defineComponent({
           });
 
         console.log(response);
-        // const parser = new DOMParser();
-        // const otp = response.data.OTP;
       } catch (error) {
         console.log(error);
       }
