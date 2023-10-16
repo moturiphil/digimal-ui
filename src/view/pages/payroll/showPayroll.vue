@@ -5,8 +5,7 @@
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
-            <div class="search-filter-menu">
-            </div>
+            <div class="search-filter-menu"></div>
           </a-col>
           <a-col :xs="24">
             <sdCards headless>
@@ -34,13 +33,16 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
-                                  <sdButton
-                                    type="success"
-                                    size="small"
+                                  <sdButton type="success" size="small"
                                     ><router-link
                                       :to="{
                                         path: `/activity/breakdown/${record.id}`,
-                                        query: { id: record.id, name: record.user_id },
+                                        query: {
+                                          id: record.id,
+                                          name: record.user_id,
+                                          jg: record.job_group,
+                                          location: record.location_id,
+                                        },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -158,33 +160,36 @@ import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
 
-// const households = ref([]);
 
 const columns = [
-  // {
-  //   title: "#",
-  //   dataIndex: "id",
-  //   key: "id",
-  // },
-  {
-    title: "#",
-    dataIndex: null,
-    key: "index",
-    render: (text, record, index) => index + 1,
-  },
   {
     title: "Name",
     dataIndex: "user_id",
     key: "id",
   },
   {
-    title: "Activity",
-    dataIndex: "activity_payroll_id",
+    title: "Level",
+    dataIndex: "level",
     key: "id",
   },
   {
-    title: "Created At",
-    dataIndex: "created_at",
+    title: "Location",
+    dataIndex: "location_id",
+    key: "id",
+  },
+  {
+    title: "Organization",
+    dataIndex: "organization",
+    key: "id",
+  },
+  {
+    title: "Role",
+    dataIndex: "role",
+    key: "id",
+  },
+  {
+    title: "Job Group",
+    dataIndex: "job_group",
     key: "id",
   },
   {
@@ -224,9 +229,6 @@ export default defineComponent({
       );
       this.notData = data;
     },
-    // handleChange(value) {
-    //   this.activeClass = value;
-    // },
     onShowSizeChange(current, pageSize) {
       this.current = current;
       this.pageSize = pageSize;

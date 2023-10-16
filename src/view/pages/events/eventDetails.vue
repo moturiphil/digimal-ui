@@ -27,9 +27,14 @@
           @click="exportParticipants"
           size="small"
         >
-          Download List
-          &nbsp; &nbsp;
+          Download List &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
+        </sdButton>
+        &nbsp;&nbsp;
+        <sdButton class="btn-import" type="success" size="small">
+          <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
+          <!-- &nbsp; &nbsp; -->
+          <!-- <sdFeatherIcons type="download-cloud" size="extra-small" /> -->
         </sdButton>
       </div>
 
@@ -253,6 +258,16 @@ export default defineComponent({
 
     console.log(query.event_code);
 
+    const eventEndDate = query.eventEndDate;
+
+    const formattedEndDate = new Date(eventEndDate);
+
+    console.log(formattedEndDate);
+
+    console.log(new Date());
+
+    console.log(new Date() >= eventEndDate);
+
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
@@ -325,8 +340,6 @@ export default defineComponent({
         console.error(error);
       }
     };
-
-    
 
     const handleOk = async (id, inputValue) => {
       try {
@@ -443,7 +456,11 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      if (user.user.role_id === 53 || user.user.id == event_host_id) {
+      const currentTime = new Date();
+      if (
+        user.user.role_id === 53 ||
+        (user.user.id == event_host_id && currentTime >= eventEndDate)
+      ) {
         return true;
       } else {
         return false;

@@ -69,6 +69,7 @@
                                 name: record.name,
                                 event_code: record.event_code,
                                 event_host_id: record.event_host_id,
+                                eventEndDate: eventEndDate.toISOString()
                               },
                             }"
                           >
@@ -170,10 +171,10 @@ import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import { useRouter } from "vue-router";
-import { Modal, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 
 const router = useRouter();
-const user = JSON.parse(sessionStorage.getItem("user"));
+// const user = JSON.parse(sessionStorage.getItem("user"));
 
 const columns = [
   {
@@ -237,23 +238,6 @@ const ViewPage = defineComponent({
     };
   },
   methods: {
-    async created() {
-      // fetch events from the server and initialize eventStatus object
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/events/all`,
-        {
-          method: "GET",
-          headers: authHeader(),
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      this.events = data;
-      this.eventStatus = {};
-      for (const event of this.events) {
-        this.eventStatus[event.id] = event.status;
-      }
-    },
     async startEvent(id) {
       try {
         this.isStarting = true;
@@ -348,20 +332,6 @@ const ViewPage = defineComponent({
     changeType(type) {
       this.modalType = type;
     },
-
-    error() {
-      Modal.error({
-        title: "This is an error message",
-        content: "some messages...some messages...",
-      });
-    },
-
-    warning() {
-      Modal.warning({
-        title: "This is a warning message",
-        content: "some messages...some messages...",
-      });
-    },
   },
   setup() {
     const { state, dispatch } = useStore();
@@ -376,6 +346,7 @@ const ViewPage = defineComponent({
     const recordId = ref(null);
     const event_host = ref("");
     const event_facilitators = ref([]);
+    const eventEndDate = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
@@ -456,15 +427,25 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          if (user) {
-            dataSource.value = response.data.data;
-            console.log(dataSource.value);
-          } else {
-            const rs = response.data.data.filter((event) => {
-              return event.location_id === user.user[2].level_id;
-            });
-            dataSource.value = rs;
-          }
+          dataSource.value = response.data.data;
+          console.log(dataSource.value);
+          dataSource.value.forEach((event) => {
+            // Parse the start date string to a Date object
+            const startDate = new Date(event.start_date);
+
+            // Calculate the end date in milliseconds (at 12:00 PM)
+            const endDateInMilliseconds =
+              startDate.getTime() + event.number_of_days * 24 * 60 * 60 * 1000;
+
+            // Create a new Date object for the end date
+            const endDate = new Date(endDateInMilliseconds);
+
+            // Set the time components to 12:00 PM
+            endDate.setHours(12, 0, 0, 0);
+
+            eventEndDate.value = endDate;
+            console.log(eventEndDate.value);
+          });
         })
         .catch((error) => {
           console.error(error);
@@ -540,6 +521,7 @@ const ViewPage = defineComponent({
       manageEvent,
       event_host,
       event_facilitators,
+      eventEndDate,
     };
   },
 });
