@@ -212,6 +212,7 @@
                         type="success"
                         :disabled="isSubmitting"
                         @click="handleButtonClick"
+                        v-if="!stakeholder_otp"
                       >
                         {{
                           isLoading
@@ -219,6 +220,22 @@
                             : isSubmitting
                             ? "Processing ..."
                             : "Verify OTP"
+                        }}
+                      </sdButton>
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                        @click="handleButtonClick"
+                        v-if="stakeholder_otp"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Submit"
                         }}
                       </sdButton>
                     </div>
@@ -370,9 +387,6 @@ const AddNew = defineComponent({
     };
 
     getRoles();
-
-
-    
 
     const user = JSON.parse(sessionStorage.getItem("user"));
 
