@@ -4,10 +4,10 @@
       <template v-slot:buttons>
         <div class="page-header-actions">
           <router-link v-bind:to="'campaigns/create-campaign'">
-            <sdButton size="small" type="success">
+            <!-- <sdButton size="small" type="success">
               <sdFeatherIcons type="plus" size="14" class="icon-color-white" />
               Create Campaign
-            </sdButton>
+            </sdButton> -->
           </router-link>
         </div>
       </template>
