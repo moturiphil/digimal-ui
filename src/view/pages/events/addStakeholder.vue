@@ -257,7 +257,7 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-import { useRouter } from "vue-router";
+// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import store from "../../../vuex/store";
 
@@ -277,7 +277,7 @@ const AddNew = defineComponent({
     const join = ref("");
     const stakeholder_otp = ref(false);
 
-    const router = useRouter();
+    // const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
@@ -540,7 +540,6 @@ const AddNew = defineComponent({
             console.log(message);
             if (success == true) {
               store.commit("setIsSubmitting", false);
-              router.push("/masterlist");
               notification["success"]({
                 message: "Stakeholder Created",
                 description: message,
