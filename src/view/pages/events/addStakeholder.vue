@@ -20,167 +20,6 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <!-- <a-form-item name="campaign_id" label="Campaign Name">
-                        <a-select
-                          v-model:value="formState.campaign_id"
-                          v-if="!loading"
-                          placeholder="Select Campaign Name"
-                          @blur="validate('campaign_id')"
-                          @keypress="validate('campaign_id')"
-                          show-search
-                          option-filter-prop="label"
-                        >
-                          <a-select-option
-                            v-for="campaign in campaigns"
-                            :key="campaign.id"
-                            :value="campaign.id"
-                            :label="`${campaign.name}`"
-                          >
-                            {{ campaign.name }}
-                          </a-select-option>
-                        </a-select>
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.campaign_id"
-                        >
-                          {{ errors.campaign_id }}
-                        </p>
-                      </a-form-item>
-                      <a-form-item label="Event Type">
-                        <a-select
-                          size="large"
-                          name="event_list_id"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select Event Type"
-                          show-search
-                          option-filter-prop="label"
-                          v-model:value="formState.name"
-                          @blur="validate('name')"
-                          @keypress="validate('name')"
-                        >
-                          <a-select-option
-                            v-for="event in events_list"
-                            :key="event.id"
-                            :value="event.id"
-                            :label="`${event.name} `"
-                          >
-                            {{ event.name }}
-                          </a-select-option>
-                        </a-select>
-                        <p class="errors" style="color: red" v-if="!!errors.name">
-                          {{ errors.name }}
-                        </p>
-                      </a-form-item>
-                      <a-form-item
-                        name="county_id"
-                        label="County"
-                        v-if="isLevelOne"
-                      >
-                        <a-select
-                          size="large"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select County"
-                          v-on:change="getSubCounties($event)"
-                          v-model:value="formState.county_id"
-                          show-search
-                          option-filter-prop="label"
-                          v-if="!loading"
-                        >
-                          <a-select-option value=""
-                            >Select an option</a-select-option
-                          >
-                          <a-select-option
-                            v-for="county in counties"
-                            :value="county.id"
-                            :key="county.id"
-                            :org_id="county.org_id"
-                            :label="`${county.name}`"
-                          >
-                            {{ county.name }}
-                          </a-select-option>
-                        </a-select>
-                      </a-form-item>
-                      <a-form-item name="facilitator_id" label="Host">
-                        <a-select
-                          placeholder="Selected Host"
-                          v-model:value="formState.facilitator_id"
-                          v-if="!loading"
-                          show-search
-                          option-filter-prop="label"
-                          @blur="validate('facilitator_id')"
-                          @keypress="validate('facilitator_id')"
-                        >
-                          <a-select-option
-                            v-for="facilitator in facilitators"
-                            :key="facilitator.id"
-                            v-model:value="facilitator.id"
-                            :label="`${facilitator.first_name} ${facilitator.last_name} -${facilitator.role_id} `"
-                          >
-                            {{ facilitator.first_name }}
-                            {{ facilitator.last_name }} -
-                            {{ facilitator.role_id }}
-                          </a-select-option>
-                        </a-select>
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.facilitator_id"
-                        >
-                          {{ errors.facilitator_id }}
-                        </p>
-                      </a-form-item>
-  
-                      <a-form-item label="Facilitators">
-                        <a-select
-                          mode="multiple"
-                          v-model:value="formState.trainer_id"
-                          v-if="!loading"
-                          placeholder="Select facilitators"
-                          show-search
-                          option-filter-prop="label"
-                          @change="handleChange"
-                          @blur="validate('trainer_id')"
-                          @keypress="validate('trainer_id')"
-                        >
-                          <a-select-option
-                            v-for="trainer in facilitators"
-                            :key="trainer.id"
-                            :value="trainer.id"
-                            :label="`${trainer.first_name} ${trainer.last_name} -${trainer.role_id} `"
-                          >
-                            {{ trainer.first_name }}
-                            {{ trainer.last_name }} - {{ trainer.role_id }}
-                          </a-select-option>
-                        </a-select>
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.trainer_id"
-                        >
-                          {{ errors.trainer_id }}
-                        </p>
-                      </a-form-item>
-  
-                      <a-form-item name="no-of-days" label="No of Days">
-                        <a-input-number
-                          type="number"
-                          v-model:value="formState.no_of_days"
-                          placeholder="No of Days"
-                          :min="0"
-                          @blur="validate('no_of_days')"
-                          @keypress="validate('no_of_days')"
-                        />
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.no_of_days"
-                        >
-                          {{ errors.no_of_days }}
-                        </p>
-                      </a-form-item> -->
-
                     <a-form-item name="First Name" label="First Name">
                       <a-input
                         v-model:value="formState.first_name"
@@ -196,21 +35,6 @@
                         {{ errors.first_name }}
                       </p>
                     </a-form-item>
-                    <!-- <a-form-item name="Last Name" label="Last Name">
-                        <a-input
-                          v-model:value="formState.last_name"
-                          placeholder="Input Last Name"
-                          @blur="validate('last_name')"
-                          @keypress="validate('last_name')"
-                        />
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.last_name"
-                        >
-                          {{ errors.last_name }}
-                        </p>
-                      </a-form-item> -->
                     <a-form-item name="Middle Name" label="Middle Name">
                       <a-input
                         v-model:value="formState.middle_name"
@@ -260,7 +84,7 @@
                     <a-form-item name="Phone No" label="Phone No">
                       <a-input
                         v-model:value="formState.phone_no"
-                        placeholder="+254..."
+                        placeholder="254..."
                         type="number"
                         @blur="validate('phone_no')"
                         @keypress="validate('phone_no')"
@@ -358,8 +182,19 @@
                         {{ errors.gender }}
                       </p>
                     </a-form-item>
+                    <a-form-item
+                      name="otp"
+                      label="Stakeholder OTP"
+                      v-if="stakeholder_otp"
+                    >
+                      <a-input
+                        v-model:value="formState.otp"
+                        placeholder="OTP."
+                        type="number"
+                      />
+                    </a-form-item>
                     <div class="record-form-actions text-right">
-                      <sdButton
+                      <!-- <sdButton
                         size="default"
                         htmlType="Save"
                         type="success"
@@ -370,7 +205,22 @@
                             ? "Loading..."
                             : isSubmitting
                             ? "Processing ..."
-                            : "Submit"
+                            : "Verify OTP"
+                        }}
+                      </sdButton> -->
+                      <sdButton
+                        size="default"
+                        htmlType="Save"
+                        type="success"
+                        :disabled="isSubmitting"
+                        @click="handleButtonClick"
+                      >
+                        {{
+                          isLoading
+                            ? "Loading..."
+                            : isSubmitting
+                            ? "Processing ..."
+                            : "Verify OTP"
                         }}
                       </sdButton>
                     </div>
@@ -390,7 +240,6 @@ import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-// import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
@@ -411,10 +260,11 @@ const AddNew = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
+    const stakeholder_otp = ref(false);
 
     const router = useRouter();
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/stakeholder/create`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
     const organization_url = `${process.env.VUE_APP_BASE_URL}/organizations`;
 
@@ -491,26 +341,8 @@ const AddNew = defineComponent({
         ...county,
         // org_id: county.org_id,
       }));
-      // console.log(this.counties);
       this.loading = false;
     };
-
-    //get sub_counties
-    // const getSubCounties = async (org_id) => {
-    //   // console.log(org_id);
-    //   const response = await fetch(
-    //     `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-    //     {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     }
-    //   );
-    //   const data = await response.json();
-    //   this.sub_counties = data.message;
-    // };
 
     function handleChange(request, response, value) {
       console.log(value);
@@ -558,10 +390,11 @@ const AddNew = defineComponent({
       phone_no: null,
       role: null,
       organization: [],
+      otp: null,
     });
 
     const regex =
-      /^(?:254|\+254)?((1|7)(?:(?:[12945][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
+      /^254((1|7)(?:(?:[12945][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
 
     const ArticleSchema = Yup.object().shape({
       first_name: Yup.string().required("First Name is required"),
@@ -584,8 +417,21 @@ const AddNew = defineComponent({
         });
     };
 
+    const data = {
+      first_name: formState.first_name,
+      middle_name: formState.middle_name,
+      last_name: formState.last_name,
+      id_no: formState.id_no,
+      phone_no: formState.phone_no,
+      organization: formState.organization,
+      role: formState.role,
+      gender: formState.gender,
+      otp: formState.otp,
+    };
+
+    sessionStorage.setItem("stakeholder", JSON.stringify(data));
+
     const handleSubmit = () => {
-      store.commit("setIsSubmitting", true);
       const data = {
         first_name: formState.first_name,
         middle_name: formState.middle_name,
@@ -595,59 +441,116 @@ const AddNew = defineComponent({
         organization: formState.organization,
         role: formState.role,
         gender: formState.gender,
+        otp: formState.otp,
       };
-      console.log(JSON.stringify(data));
-      ArticleSchema.validate(this.formState, { abortEarly: false })
-        .then(() => {
-          fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(data),
-          })
-            .then((response) => response.json())
-            .then(({ success, message }) => {
-              console.log(message);
-              if (success == true) {
-                store.commit("setIsSubmitting", false);
-                router.push("masterlist");
-                notification["success"]({
-                  message: "Stakeholder Created",
-                  description: message,
-                  duration: 5.5,
-                });
-              }
-              // show error message from the api response
-              else {
+
+      sessionStorage.setItem("stakeholder", JSON.stringify(data));
+      store.commit("setIsSubmitting", true);
+      const sendotp = {
+        first_name: formState.first_name,
+        last_name: formState.last_name,
+        phone_no: formState.phone_no,
+      };
+      console.log(JSON.stringify(sendotp));
+
+      if (!this.stakeholder_otp) {
+        ArticleSchema.validate(this.formState, { abortEarly: false })
+          .then(() => {
+            fetch(`${API_URL}/stakeholder/get_otp`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(sendotp),
+            })
+              .then((response) => response.json())
+              .then(({ success, message }) => {
+                console.log(message);
+                if (success == true) {
+                  notification["success"]({
+                    message: "Success",
+                    description: message,
+                    duration: 5.5,
+                  });
+                  this.stakeholder_otp = true;
+
+                  const stakeholder_data =
+                    sessionStorage.getItem("stakeholder");
+
+                  console.log(stakeholder_data);
+
+                  store.commit("setIsSubmitting", false);
+                }
+                // show error message from the api response
+                else {
+                  notification["error"]({
+                    message: "Error!",
+                    description: message,
+                    duration: 5.5,
+                  });
+                }
+              })
+              .catch((error) => {
                 store.commit("setIsSubmitting", false);
                 notification["error"]({
                   message: "Error!",
-                  description: message,
+                  description: `${error}`,
                   duration: 5.5,
                 });
-              }
-            })
-            .catch((error) => {
+              });
+          })
+          .catch((err) => {
+            store.commit("setIsSubmitting", false);
+            notification.error({
+              message: "Could not submit!",
+              description: "An error has occured. Please try again later.",
+            });
+            err.inner.forEach((e) => {
+              this.errors[e.path] = e.message;
+            });
+          });
+      } else {
+        console.log(data);
+        fetch(`${API_URL}/stakeholder/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            console.log(message);
+            if (success == true) {
+              store.commit("setIsSubmitting", false);
+              router.push("/masterlist");
+              notification["success"]({
+                message: "Stakeholder Created",
+                description: message,
+                duration: 5.5,
+              });
+            }
+            // show error message from the api response
+            else {
               store.commit("setIsSubmitting", false);
               notification["error"]({
                 message: "Error!",
-                description: `${error}`,
+                description: message,
                 duration: 5.5,
               });
+            }
+          })
+          .catch((error) => {
+            store.commit("setIsSubmitting", false);
+            notification["error"]({
+              message: "Error!",
+              description: `${error}`,
+              duration: 5.5,
             });
-        })
-        .catch((err) => {
-          store.commit("setIsSubmitting", false);
-          notification.error({
-            message: "Could not submit!",
-            description: "An error has occured. Please try again later.",
           });
-          err.inner.forEach((e) => {
-            this.errors[e.path] = e.message;
-          });
-        });
+      }
     };
 
     return {
@@ -667,6 +570,7 @@ const AddNew = defineComponent({
       validate,
       isLevelOne,
       getRoles,
+      stakeholder_otp,
       roles,
       errors: {
         gender: null,
