@@ -104,7 +104,6 @@
                         placeholder="Select Organization"
                         show-search
                         option-filter-prop="label"
-                        @change="handleChange"
                         @blur="validate('organization')"
                         @keypress="validate('organization')"
                         v-on:change="getRoles($event)"
@@ -134,7 +133,6 @@
                         placeholder="Select Role"
                         show-search
                         option-filter-prop="label"
-                        @change="handleChange"
                         @blur="validate('role')"
                         @keypress="validate('role')"
                       >
@@ -343,11 +341,17 @@ const AddNew = defineComponent({
       }));
       this.loading = false;
     };
+    onMounted(() => {
+      getCounties();
+      fetchTrainer();
+      fetchFacilitators();
+      fetchEvents();
+    });
 
-    function handleChange(request, response, value) {
-      console.log(value);
-      getRoles(value);
-    }
+    // function handleChange(request, response, value) {
+    //   console.log(value);
+    //   // getRoles(value);
+    // }
     const getRoles = async (org_id) => {
       console.log(org_id);
       const response = await fetch(
@@ -365,13 +369,10 @@ const AddNew = defineComponent({
       this.roles = data.data;
     };
 
-    onMounted(() => {
-      getCounties();
-      fetchTrainer();
-      fetchFacilitators();
-      fetchEvents();
-      getRoles();
-    });
+    getRoles();
+
+
+    
 
     const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -565,7 +566,7 @@ const AddNew = defineComponent({
       organizations,
       loading,
       counties,
-      handleChange,
+      // handleChange,
       events_list,
       validate,
       isLevelOne,
