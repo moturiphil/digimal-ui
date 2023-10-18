@@ -82,29 +82,27 @@
                     </a-form-item>
 
                     <a-form-item
-                      name="county_id"
+                      name="counties"
                       label="County"
                       v-if="isNational"
                     >
+                      <!-- v-on:change="getSubCounties($event)" -->
                       <a-select
-                        size="large"
+                        mode="multiple"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select County"
+                        v-model:value="formState.counties"
                         v-on:change="getSubCounties($event)"
-                        v-model:value="formState.county_id"
                         v-if="!loading"
                         show-search
                         option-filter-prop="label"
                       >
-                        <a-select-option value=""
-                          >Select an option</a-select-option
-                        >
                         <a-select-option
                           v-for="county in counties"
-                          :value="county.org_id"
+                          :value="county.id"
                           :key="county.id"
-                          :org_id="county.org_id"
+                          :org_id="county.id"
                           :label="county.name"
                         >
                           {{ county.name }}
@@ -113,31 +111,28 @@
                       <p
                         class="errors"
                         style="color: red"
-                        v-if="!!errors.county_id"
+                        v-if="!!errors.conties"
                       >
-                        {{ errors.county_id }}
+                        {{ errors.counties }}
                       </p>
                     </a-form-item>
                     <a-form-item
                       name="sub_county_id"
                       label="Sub County"
-                      v-if="isNational || isCounty"
+                      v-if="isCounty"
                     >
                       <a-select
-                        size="large"
+                        mode="multiple"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub-County"
-                        v-model:value="formState.sub_county_id"
+                        v-model:value="formState.sub_counties"
                         show-search
                         option-filter-prop="label"
                       >
-                        <a-select-option value=""
-                          >Select an option</a-select-option
-                        >
                         <a-select-option
                           v-for="scounty in sub_counties"
-                          :value="scounty.org_id"
+                          :value="scounty.id"
                           :key="scounty.id"
                           :label="scounty.name"
                           >{{ scounty.name }}</a-select-option
@@ -167,6 +162,25 @@
                         v-if="!!errors.start_date"
                       >
                         {{ errors.start_date }}
+                      </p>
+                    </a-form-item>
+                    <!-- no of days as number -->
+                    <a-form-item name="number_of_days" label="No of Days">
+                      <a-input
+                        v-model:value="formState.number_of_days"
+                        placeholder="No of Days"
+                        type="number"
+                        min="0"
+                        :value="computedPayableTravelDays"
+                        @blur="validate('number_of_days')"
+                        @keypress="validate('number_of_days')"
+                      />
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.number_of_days"
+                      >
+                        {{ errors.number_of_days }}
                       </p>
                     </a-form-item>
                     <!-- no of officers as number -->
@@ -220,6 +234,20 @@
                         v-if="!!errors.activity_facilitator"
                       >
                         {{ errors.activity_facilitator }}
+                      </p>
+                    </a-form-item>
+                    <a-form-item name="description" label="Description">
+                      <a-textarea
+                        v-model:value="formState.description"
+                        placeholder="Write a narrative that describes the activity of the campaign"
+                        :rows="4"
+                      />
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
+                        {{ errors.campaign_id }}
                       </p>
                     </a-form-item>
 
@@ -300,22 +328,21 @@ const AddNew = defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/create_activity_with_facilitator`;
     const formState = reactive({
       activity_id: "",
-      county_id: "",
-      sub_county_id: "",
+      counties: "",
+      sub_counties: "",
       campaign_id: "",
       start_date: "",
-      // location_type_id: "",
       number_of_officers: 0,
+      number_of_days: 0,
       activity_facilitator: [],
+      description: "",
     });
     const ArticleSchema = Yup.object().shape({
       activity_id: Yup.string().required("Name is required"),
-      // county_id: Yup.string().required("County is required"),
-      // sub_county_id: Yup.string().required("Sub County is required"),
       campaign_id: Yup.string().required("Campaign is required"),
       start_date: Yup.string().required("Start Date is required"),
-      // location_type_id: Yup.string().required("Location Type is required"),
       number_of_officers: Yup.number().required("Officers is required"),
+      number_of_days: Yup.number().required("Days is required"),
       activity_facilitator: Yup.array()
         .min(1, "At least 1 facilitator required")
         .required(),
@@ -348,6 +375,9 @@ const AddNew = defineComponent({
         return false;
       }
     });
+
+    console.log(isCounty.value);
+
 
     const isSubCounty = computed(() => {
       if (userData.user.level_id == 3) {
@@ -391,13 +421,14 @@ const AddNew = defineComponent({
         ...county,
         // org_id: county.org_id,
       }));
-      // console.log(this.counties);
+      console.log(this.counties);
       this.loading = false;
     };
 
     //get sub_counties
     const getSubCounties = async (org_id) => {
       console.log(org_id);
+      console.log(isNational.value);
       // if National, provide a fetch for county and subcounty
       if (isNational.value) {
         const response = await fetch(
@@ -427,8 +458,8 @@ const AddNew = defineComponent({
           }
         );
         const data = await response.json();
-        console.log(data);
-        this.sub_counties = data.message;
+        console.log(data.data);
+        this.sub_counties = data.data;
       }
     };
     //campaigns
@@ -449,109 +480,165 @@ const AddNew = defineComponent({
     // const handleSelect = (values)
     const onSubmit = () => {
       store.commit("setIsSubmitting", true);
-
+      console.log("Checking the level of the user");
+      console.log(isSubCounty.value);
+      console.log(isCounty.value);
       if (isSubCounty.value) {
         const values = {
-          activity_list_id: formState.activity_id,
-          // county_id: formState.county_id,
-          sub_county_id: userData.user.location_id,
           campaign_id: formState.campaign_id,
+          activity_list_id: formState.activity_id,
+          counties: formState.counties,
+          subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
+          number_of_days: formState.number_of_days,
           activity_facilitator: formState.activity_facilitator,
-          // location_type_id: formState.location_type_id,
+          description: formState.description,
         };
-        console.log(values);
+        console.log(JSON.stringify(values));
         ArticleSchema.validate(this.formState, { abortEarly: false })
-        .then(() => {
-          this.errors = {};
-          fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(values),
-          })
-            .then((response) => response.json())
-            .then(({ success, data }) => {
-              // console.log(data);
-              if (success) {
-                store.commit("setIsSubmitting", false);
-                router.push("activity-view");
-                notification["success"]({
-                  message: "Activity Created",
-                  description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
-                  duration: 5.5,
-                });
-              }
+          .then(() => {
+            this.errors = {};
+            fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(values),
             })
-            .catch((error) => {
-              store.commit("setIsSubmitting", false);
-              notification.error({
-                message: "Could not submit!",
-                description: "An error has occured. Please try again later.",
+              .then((response) => response.json())
+              .then(({ success, data }) => {
+                // console.log(data);
+                if (success) {
+                  store.commit("setIsSubmitting", false);
+                  router.push("activity-view");
+                  notification["success"]({
+                    message: "Activity Created",
+                    description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+                    duration: 5.5,
+                  });
+                }
+              })
+              .catch((error) => {
+                store.commit("setIsSubmitting", false);
+                notification.error({
+                  message: "Could not submit!",
+                  description: "An error has occured. Please try again later.",
+                });
+                console.error("Error:", error);
               });
-              console.error("Error:", error);
+          })
+          .catch((err) => {
+            store.commit("setIsSubmitting", false);
+            err.inner.forEach((e) => {
+              this.errors[e.path] = e.message;
             });
-        })
-        .catch((err) => {
-          store.commit("setIsSubmitting", false);
-          err.inner.forEach((e) => {
-            this.errors[e.path] = e.message;
           });
-        });
+      } else if (isCounty.value) {
+        const values = {
+          campaign_id: formState.campaign_id,
+          activity_list_id: formState.activity_id,
+          counties: formState.counties,
+          subcounties: formState.sub_counties,
+          start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
+          number_of_officers: formState.number_of_officers,
+          number_of_days: formState.number_of_days,
+          activity_facilitator: formState.activity_facilitator,
+          description: formState.description,
+        };
+        console.log(JSON.stringify(values));
+        ArticleSchema.validate(this.formState, { abortEarly: false })
+          .then(() => {
+            this.errors = {};
+            fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(values),
+            })
+              .then((response) => response.json())
+              .then(({ success, data }) => {
+                // console.log(data);
+                if (success) {
+                  store.commit("setIsSubmitting", false);
+                  router.push("activity-view");
+                  notification["success"]({
+                    message: "Activity Created",
+                    description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+                    duration: 5.5,
+                  });
+                }
+              })
+              .catch((error) => {
+                store.commit("setIsSubmitting", false);
+                notification.error({
+                  message: "Could not submit!",
+                  description: "An error has occured. Please try again later.",
+                });
+                console.error("Error:", error);
+              });
+          })
+          .catch((err) => {
+            store.commit("setIsSubmitting", false);
+            err.inner.forEach((e) => {
+              this.errors[e.path] = e.message;
+            });
+          });
       } else {
         const values = {
-          activity_list_id: formState.activity_id,
-          // county_id: formState.county_id,
-          sub_county_id: formState.sub_county_id,
           campaign_id: formState.campaign_id,
+          activity_list_id: formState.activity_id,
+          counties: formState.counties,
+          subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
+          number_of_days: formState.number_of_days,
           activity_facilitator: formState.activity_facilitator,
-          // location_type_id: formState.location_type_id,
+          description: formState.description,
         };
-        console.log(values);
+        console.log(JSON.stringify(values));
         ArticleSchema.validate(this.formState, { abortEarly: false })
-        .then(() => {
-          this.errors = {};
-          fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(values),
-          })
-            .then((response) => response.json())
-            .then(({ success, data }) => {
-              // console.log(data);
-              if (success) {
-                store.commit("setIsSubmitting", false);
-                router.push("activity-view");
-                notification["success"]({
-                  message: "Activity Created",
-                  description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
-                  duration: 5.5,
-                });
-              }
+          .then(() => {
+            this.errors = {};
+            fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(values),
             })
-            .catch((error) => {
-              store.commit("setIsSubmitting", false);
-              notification.error({
-                message: "Could not submit!",
-                description: "An error has occured. Please try again later.",
+              .then((response) => response.json())
+              .then(({ success, data }) => {
+                // console.log(data);
+                if (success) {
+                  store.commit("setIsSubmitting", false);
+                  router.push("activity-view");
+                  notification["success"]({
+                    message: "Activity Created",
+                    description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
+                    duration: 5.5,
+                  });
+                }
+              })
+              .catch((error) => {
+                store.commit("setIsSubmitting", false);
+                notification.error({
+                  message: "Could not submit!",
+                  description: "An error has occured. Please try again later.",
+                });
+                console.error("Error:", error);
               });
-              console.error("Error:", error);
+          })
+          .catch((err) => {
+            store.commit("setIsSubmitting", false);
+            err.inner.forEach((e) => {
+              this.errors[e.path] = e.message;
             });
-        })
-        .catch((err) => {
-          store.commit("setIsSubmitting", false);
-          err.inner.forEach((e) => {
-            this.errors[e.path] = e.message;
           });
-        });
       }
     };
     onMounted(() => {
@@ -597,6 +684,7 @@ const AddNew = defineComponent({
         start_date: "",
         // location_type_id: "",
         number_of_officers: "",
+        number_of_days: "",
         activity_facilitator: "",
       },
     };
