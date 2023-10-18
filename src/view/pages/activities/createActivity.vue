@@ -82,7 +82,7 @@
                     </a-form-item>
 
                     <a-form-item
-                      name="county_id"
+                      name="counties"
                       label="County"
                       v-if="isNational"
                     >
@@ -100,9 +100,9 @@
                       >
                         <a-select-option
                           v-for="county in counties"
-                          :value="county.org_id"
+                          :value="county.id"
                           :key="county.id"
-                          :org_id="county.org_id"
+                          :org_id="county.id"
                           :label="county.name"
                         >
                           {{ county.name }}
@@ -119,7 +119,7 @@
                     <a-form-item
                       name="sub_county_id"
                       label="Sub County"
-                      v-if="isNational || isCounty"
+                      v-if="isCounty"
                     >
                       <a-select
                         mode="multiple"
@@ -376,6 +376,9 @@ const AddNew = defineComponent({
       }
     });
 
+    console.log(isCounty.value);
+
+
     const isSubCounty = computed(() => {
       if (userData.user.level_id == 3) {
         return true;
@@ -588,7 +591,7 @@ const AddNew = defineComponent({
         const values = {
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
-          conties: formState.counties,
+          counties: formState.counties,
           subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
