@@ -458,7 +458,7 @@ export default defineComponent({
     const isApprovedGenerator = computed(() => {
       const currentTime = new Date();
       if (
-        user.user.role_id === 53 ||
+        user.user.role_id === 53 ||  user.user.role_id === 63 ||
         (user.user.id == event_host_id && currentTime >= eventEndDate)
       ) {
         return true;
