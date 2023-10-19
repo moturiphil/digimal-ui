@@ -239,7 +239,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_list`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_list_payroll_assignment`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
