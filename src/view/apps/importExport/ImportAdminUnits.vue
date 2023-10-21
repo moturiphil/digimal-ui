@@ -44,6 +44,7 @@
 import { Main, ImportStyleWrap } from "../../styled";
 import { message } from "ant-design-vue";
 import { ref, defineComponent } from "vue";
+import authHeader from "../../../services/auth-header";
 
 const Import = defineComponent({
   name: "Import",
@@ -53,9 +54,36 @@ const Import = defineComponent({
     const list = ref(null);
     const submitValues = ref({});
     const fileUploadProps = {
-      name: "file",
+      name: "csv_file",
       multiple: true,
-      action: `${process.env.VUE_APP_BASE_URL}/create_administrative_units`,
+      customRequest({ file, onSuccess, onError }) {
+        const formData = new FormData();
+        formData.append("csv_file", file); // Set the key as 'csv_file'
+
+        console.log(formData);
+
+        // Perform the API request with the custom FormData using fetch
+        fetch(`${process.env.VUE_APP_BASE_URL}/create/adminunits`, {
+          method: "POST",
+          headers: {
+          ...authHeader(),
+        },
+          body: formData,
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error("Network response was not ok.");
+          })
+          .then((data) => {
+            onSuccess(data, file);
+          })
+          .catch((error) => {
+            onError(error);
+          });
+      },
+
       onChange(info) {
         const { status } = info.file;
         if (status !== "uploading") {
