@@ -156,4 +156,38 @@ export default [
       },
     ],
   },
+  {
+    name: "data-management",
+    path: "/import",
+    component: () =>
+      import(
+        /* webpackChunkName: "import" */ "../view/apps/importExport/Index.vue"
+      ),
+    children: [
+      {
+        name: "import-masterlist",
+        path: "import-masterlist",
+        component: () =>
+          import(
+            /* webpackChunkName: "import" */ "../view/apps/importExport/Import.vue"
+          ),
+      },
+      {
+        name: "admin-units",
+        path: "admin-units",
+        component: () =>
+          import(
+            /* webpackChunkName: "import" */ "../view/apps/importExport/ImportAdminUnits.vue"
+          ),
+      },
+      // {
+      //   name: "export",
+      //   path: "export",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "export" */ "../view/apps/importExport/Export.vue"
+      //     ),
+      // },
+    ],
+  },
 ];

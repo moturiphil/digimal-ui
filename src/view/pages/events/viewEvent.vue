@@ -69,7 +69,7 @@
                                 name: record.name,
                                 event_code: record.event_code,
                                 event_host_id: record.event_host_id,
-                                eventEndDate: eventEndDate.toISOString()
+                                eventEndDate: eventEndDate.toISOString(),
                               },
                             }"
                           >
@@ -139,8 +139,16 @@
                             <h4>
                               <b>
                                 <u> Event Facilitators </u>
+                                <!-- <sdButton
+                                  size="extra-small"
+                                  type="info"
+                                  @click="manageEvent(record.event_code)"
+                                >
+                                  Add Trainer &nbsp; &nbsp;
+                                </sdButton> -->
                               </b>
                             </h4>
+                            <br />
                             <ul>
                               <li
                                 v-for="facilitator in event_facilitators"
@@ -148,6 +156,28 @@
                               >
                                 {{ facilitator }}
                               </li>
+                              <!-- <li>
+                                <sdButton
+                                  class="spaced-button"
+                                  size="extra-small"
+                                  type="success"
+                                  outlined
+                                  v-for="facilitator in event_facilitators"
+                                  :key="facilitator"
+                                >
+                                  {{ facilitator }}
+                                  <sdButton
+                                    class="remove-button"
+                                    size="extra-small"
+                                    type="danger"
+                                  >
+                                    <sdFeatherIcons
+                                      type="trash-2"
+                                      size="small"
+                                    />
+                                  </sdButton>
+                                </sdButton> -->
+                              <!-- </li> -->
                             </ul>
                           </div>
                         </a-modal>
@@ -174,7 +204,7 @@ import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
 const router = useRouter();
-// const user = JSON.parse(sessionStorage.getItem("user"));
+
 
 const columns = [
   {
@@ -238,6 +268,7 @@ const ViewPage = defineComponent({
     };
   },
   methods: {
+    // start an event == only host can start/close
     async startEvent(id) {
       try {
         this.isStarting = true;
@@ -275,6 +306,7 @@ const ViewPage = defineComponent({
         this.isStarting = false;
       }
     },
+    // close an event == only host can start/close
     async closeEvent(id) {
       try {
         this.isStarting = true;
@@ -350,6 +382,7 @@ const ViewPage = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
+    // participants registrations
     const handleRegistration = (id) => {
       isModalOpen.value = true;
       console.log("Event Code;", id);
@@ -383,6 +416,7 @@ const ViewPage = defineComponent({
         console.error(error);
       }
     };
+    // confirm participant registration code
     const handleOk = async (id, inputValue) => {
       console.log(recordId.value);
       console.log(inputValue);
@@ -421,6 +455,7 @@ const ViewPage = defineComponent({
       }
     };
 
+    // get all the events
     onMounted(() => {
       axios
         .get(`${API_URL}/events/all`, {
@@ -451,6 +486,8 @@ const ViewPage = defineComponent({
           console.error(error);
         });
     });
+
+    // Handle when event code is incorrect
 
     async () => {
       try {
@@ -487,6 +524,7 @@ const ViewPage = defineComponent({
       selectedRowKeys.value = selectedRowKey;
     };
 
+    // search through the events table
     const results = computed(() => {
       const query = searchItem.value.toLowerCase();
       const regex = new RegExp(query, "i");
@@ -528,3 +566,48 @@ const ViewPage = defineComponent({
 
 export default ViewPage;
 </script>
+
+<style lang="css">
+.badge-green {
+  background-color: #1ec997;
+  /* color: white; */
+  /* padding: 2px;
+    border-radius: 3px; */
+  /* size */
+  font-size: 12px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  padding: 1rem;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.spaced-button {
+  margin-right: 25px; /* Adjust the value as needed */
+  margin-bottom: 15px;
+}
+
+.remove-button {
+  margin-left: 15px; /* Adjust the value as needed */
+  margin-right: -25px;
+}
+</style>

@@ -439,7 +439,7 @@ export default defineComponent({
     // const current = ref("");
     const rt = useRouter();
 
-    const event_host_id = query.event_host_id;
+    // const event_host_id = query.event_host_id;
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user.user.id);
 
@@ -456,10 +456,9 @@ export default defineComponent({
       }
     });
     const isApprovedGenerator = computed(() => {
-      const currentTime = new Date();
+      // const currentTime = new Date();
       if (
-        user.user.role_id === 53 ||
-        (user.user.id == event_host_id && currentTime >= eventEndDate)
+        user.user.role_id === 53 ||  user.user.role_id === 63 
       ) {
         return true;
       } else {

@@ -201,7 +201,7 @@
         </a-menu-item>
       </a-sub-menu>
       <a-menu-item v-if="isAdmin" key="data">
-        <router-link to="/logs">
+        <router-link to="/import/admin-units">
           <sdFeatherIcons type="hard-drive" /><span>Data Management </span>
         </router-link>
       </a-menu-item>
