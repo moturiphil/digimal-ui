@@ -13,15 +13,11 @@
       </template>
     </sdPageHeader>
     <Main>
-      <!-- <a-row :gutter="16" class="search-row">
-        <a-col :xs="24" :sm="24" :md="12">
-          <sdAutoComplete
-            @onSearch="handleSearch"
-            placeholder="Search registered users"
-            :style="{ width: '80%', marginRight: '80px', height: '40px' }"
-          />
-        </a-col>
-      </a-row> -->
+      <sdButton class="btn-import" type="success" size="small">
+        <router-link to="/users/add-chp-ve"> Add CHP & VE</router-link>
+      </sdButton>
+      <br>
+      <br>
       <a-row :gutter="16" class="search-row"> </a-row>
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
