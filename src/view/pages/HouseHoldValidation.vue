@@ -60,16 +60,6 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
-                          <!-- <template #buttons>
-                            <div class="search-box">
-                              <a-input
-                                v-model:value="searchItem"
-                                type="text"
-                                name="dataSource"
-                                placeholder="Search by name, phone no, village or CHP..."
-                              />
-                            </div>
-                          </template> -->
                           <a-table
                             :pagination="{
                               pageSize: 50,
