@@ -158,7 +158,7 @@
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
           <a-menu-item key="activity-payroll">
-            <router-link to="/gf-activity-payroll">Activity Payroll </router-link>
+            <router-link to="/activity-payroll">Activity Payroll </router-link>
           </a-menu-item>
           <a-menu-item key="gf-event-payroll">
             <router-link to="/gf-event-payroll">Event Payroll </router-link>
@@ -174,7 +174,7 @@
           <sdFeatherIcons type="radio" /><span>PMI</span>
         </template>
         <a-menu-item key="activity-payroll">
-          <router-link to="/pmi-activity-payroll">Activity Payroll </router-link>
+          <router-link to="/activity-payroll">Activity Payroll </router-link>
         </a-menu-item>
         <a-menu-item key="pmi-event-payroll">
           <router-link to="/pmi-event-payroll">Event Payroll </router-link>
@@ -201,7 +201,7 @@
         </a-menu-item>
       </a-sub-menu>
       <a-menu-item v-if="isAdmin" key="data">
-        <router-link to="/import/admin-units">
+        <router-link to="/logs">
           <sdFeatherIcons type="hard-drive" /><span>Data Management </span>
         </router-link>
       </a-menu-item>
@@ -286,7 +286,7 @@ const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60,
+  42, 60, 34
 ];
 
 const createDropOffPoint = [
