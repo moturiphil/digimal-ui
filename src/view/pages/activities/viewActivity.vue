@@ -2,12 +2,12 @@
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Activities">
       <template #subTitle>
-        <sdButton class="btn-add_new" size="default" type="success">
+        <!-- <sdButton class="btn-add_new" size="default" type="success">
           <router-link to="/activities/activity-create">
             <sdFeatherIcons type="plus" size="14" /> Start New
             Activity</router-link
           >
-        </sdButton>
+        </sdButton> -->
       </template>
       <template #buttons>
         <div class="search-box">

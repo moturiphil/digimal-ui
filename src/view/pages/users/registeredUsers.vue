@@ -14,10 +14,15 @@
     </sdPageHeader>
     <Main>
       <sdButton class="btn-import" type="success" size="small">
+        <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
+      </sdButton>
+      &nbsp;&nbsp;
+
+      <sdButton class="btn-import" type="success" size="small">
         <router-link to="/users/add-chp-ve"> Add CHP & VE</router-link>
       </sdButton>
-      <br>
-      <br>
+      <br />
+      <br />
       <a-row :gutter="16" class="search-row"> </a-row>
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
