@@ -119,6 +119,11 @@ const routes = [
         component: () => import("@/view/pages/events/addStakeholder.vue"),
       },
       {
+        path: "/users/add-chp-ve",
+        name: "users-chp-ve",
+        component: () => import("@/view/pages/users/addCHPVE.vue"),
+      },
+      {
         path: "/stakeholders",
         name: "stakeholder",
         component: () => import("@/view/pages/events/viewStakeholders.vue"),
@@ -273,14 +278,14 @@ const routes = [
       //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createSubLocation.vue"
       //     ),
       // },
-      // {
-      //   path: "village-create",
-      //   name: "village-create",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
-      //     ),
-      // },
+      {
+        path: "village-create",
+        name: "/village-create",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-add" */ "../view/pages/orgUnits/createVillage.vue"
+          ),
+      },
       {
         path: "sub-counties/:id",
         name: "/org-units/sub-counties",

@@ -1,10 +1,10 @@
 <template>
+  <Main>
   <sdPageHeader title="Create Village">
     <sdButton class="btn-add_new" size="default" key="1" type="sucess">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>
   </sdPageHeader>
-  <Main>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
