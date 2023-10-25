@@ -19,7 +19,7 @@
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by name or code"
+            placeholder="Search by name code, venue or location"
             style="
               font-size: 15px;
               width: 100%;
@@ -532,7 +532,7 @@ const ViewPage = defineComponent({
         return dataSource.value;
       } else {
         return dataSource.value.filter((event) => {
-          return regex.test(event.event_code) || regex.test(event.name);
+          return regex.test(event.event_code) || regex.test(event.name)|| regex.test(event.location_id)|| regex.test(event.venue);
         });
       }
     });

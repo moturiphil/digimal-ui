@@ -97,35 +97,6 @@
                         {{ errors.phone_no }}
                       </p>
                     </a-form-item>
-                    <!-- <a-form-item label="Organization">
-                      <a-select
-                        v-model:value="formState.organization"
-                        v-if="!loading"
-                        placeholder="Select Organization"
-                        show-search
-                        option-filter-prop="label"
-                        @blur="validate('organization')"
-                        @keypress="validate('organization')"
-                        v-on:change="getRoles($event)"
-                      >
-                        <a-select-option
-                          v-for="organization in organizations"
-                          :key="organization.id"
-                          :value="organization.id"
-                          :label="`${organization.name} `"
-                        >
-                          {{ organization.name }} -
-                          {{ organization.description }}
-                        </a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.organization"
-                      >
-                        {{ errors.organization }}
-                      </p>
-                    </a-form-item> -->
                     <a-form-item name="Gender" label="Gender">
                       <a-select
                         v-model:value="formState.gender"
@@ -180,24 +151,56 @@
                         {{ errors.organization }}
                       </p>
                     </a-form-item>
-                    <a-form-item
-                      name="otp"
-                      label="Stakeholder OTP"
-                      v-if="stakeholder_otp"
-                    >
-                      <a-input
-                        v-model:value="formState.otp"
-                        placeholder="OTP."
-                        type="number"
-                      />
+
+                    <a-form-item name="county" label="County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select County"
+                        v-on:change="getSubCounties($event)"
+                        v-if="!loading"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="county in counties"
+                          :value="county.org_id"
+                          :key="county.id"
+                          :org_id="county.org_id"
+                        >
+                          {{ county.name }}
+                        </a-select-option>
+                      </a-select>
                     </a-form-item>
-                    <!-- v-on:change="getLocations($event)" -->
+                    <a-form-item name="sub_county" label="Sub County">
+                      <a-select
+                        size="large"
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select Sub-County"
+                        v-on:change="getWards($event)"
+                      >
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
+                        <a-select-option
+                          v-for="scounty in sub_counties"
+                          :value="scounty.org_id"
+                          :key="scounty.id"
+                          >{{ scounty.name }}</a-select-option
+                        >
+                      </a-select>
+                    </a-form-item>
+
                     <a-form-item name="ward_id" label="Ward">
                       <a-select
                         size="large"
                         name="basic-select"
                         class="sDash_fullwidth-select"
                         placeholder="Select Ward"
+                        v-on:change="getLocations($event)"
                         v-model:value="formState.ward_id"
                       >
                         <a-select-option value=""
@@ -211,6 +214,7 @@
                         >
                       </a-select>
                     </a-form-item>
+
                     <a-form-item name="location_id" label="Location">
                       <a-select
                         size="large"
@@ -239,6 +243,7 @@
                         class="sDash_fullwidth-select"
                         placeholder="Select Sub Location"
                         v-model:value="formState.sub_location_id"
+                        v-on:change="getVillages($event)"
                       >
                         <a-select-option value=""
                           >Select an option</a-select-option
@@ -251,6 +256,7 @@
                         >
                       </a-select>
                     </a-form-item>
+
                     <a-form-item name="village" label="Village">
                       <a-select
                         size="large"
@@ -263,28 +269,26 @@
                           >Select an option</a-select-option
                         >
                         <a-select-option
-                          v-for="slocation in sub_locations"
-                          :value="slocation.org_id"
-                          :key="slocation.id"
-                          >{{ slocation.name }}</a-select-option
+                          v-for="village in villages"
+                          :value="village.org_id"
+                          :key="village.id"
+                          >{{ village.name }}</a-select-option
                         >
                       </a-select>
                     </a-form-item>
+
+                    <a-form-item
+                      name="otp"
+                      label="CHP / VE OTP"
+                      v-if="stakeholder_otp"
+                    >
+                      <a-input
+                        v-model:value="formState.otp"
+                        placeholder="OTP."
+                        type="number"
+                      />
+                    </a-form-item>
                     <div class="record-form-actions text-right">
-                      <!-- <sdButton
-                        size="default"
-                        htmlType="Save"
-                        type="success"
-                        :disabled="isSubmitting"
-                      >
-                        {{
-                          isLoading
-                            ? "Loading..."
-                            : isSubmitting
-                            ? "Processing ..."
-                            : "Verify OTP"
-                        }}
-                      </sdButton> -->
                       <sdButton
                         size="default"
                         htmlType="Save"
@@ -366,19 +370,122 @@ const AddNew = defineComponent({
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
-    const { gender, organizations, loading, counties, roles, events_list } =
-      reactive({
-        gender: [
-          { id: "M", name: "Male" },
-          { id: "F", name: "Female" },
-        ],
-        loading: true,
-        organizations: [],
-        counties: [],
-        sub_county_id: "",
-        events_list: [],
-        roles: "",
-      });
+    const {
+      gender,
+      organizations,
+      loading,
+      counties,
+      roles,
+      events_list,
+      sub_counties,
+      wards,
+      locations,
+      sub_locations,
+      villages,
+    } = reactive({
+      gender: [
+        { id: "M", name: "Male" },
+        { id: "F", name: "Female" },
+      ],
+      loading: true,
+      organizations: [],
+      counties: [],
+      sub_county_id: "",
+      events_list: [],
+      roles: "",
+      sub_counties: [],
+      wards: [],
+      locations: [],
+      sub_locations: [],
+      villages: [],
+    });
+
+    // sub_county
+    const getSubCounties = async (org_id) => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.sub_counties = data.message;
+    };
+
+    //wards
+    const getWards = async (org_id) => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.wards = data.message;
+    };
+
+    // locations
+    const getLocations = async (org_id) => {
+      console.log(org_id);
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.locations = data.message;
+    };
+
+    // sub-locations
+    const getSubLocations = async (org_id) => {
+      console.log(org_id);
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.sub_locations = data.message;
+    };
+
+    const getVillages = async (org_id) => {
+      console.log(org_id);
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      this.villages = data.message;
+    };
 
     const fetchEvents = async () => {
       const response = await fetch(events_url, {
@@ -502,6 +609,7 @@ const AddNew = defineComponent({
       role: null,
       organization: [],
       otp: null,
+      village: null,
     });
 
     const regex =
@@ -511,7 +619,6 @@ const AddNew = defineComponent({
       first_name: Yup.string().required("First Name is required"),
       middle_name: Yup.string().required("Middle Name is required"),
       last_name: Yup.string().required("Last Name is required"),
-      organization: Yup.string().required("Organization is required"),
       role: Yup.string().required("Role is required"),
       id_no: Yup.string().required("ID No is required"),
       phone_no: Yup.string()
@@ -537,6 +644,7 @@ const AddNew = defineComponent({
       organization: formState.organization,
       role: formState.role,
       gender: formState.gender,
+      location_code: formState.village,
       otp: formState.otp,
     };
 
@@ -549,9 +657,10 @@ const AddNew = defineComponent({
         last_name: formState.last_name,
         id_no: formState.id_no,
         phone_no: formState.phone_no,
-        organization: formState.organization,
+        organization: 15,
         role: formState.role,
         gender: formState.gender,
+        location_code: formState.village,
         otp: formState.otp,
       };
 
@@ -567,7 +676,7 @@ const AddNew = defineComponent({
       if (!this.stakeholder_otp) {
         ArticleSchema.validate(this.formState, { abortEarly: false })
           .then(() => {
-            fetch(`${API_URL}/stakeholder/get_otp`, {
+            fetch(`${API_URL}/registration/get_otp`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -622,8 +731,8 @@ const AddNew = defineComponent({
             });
           });
       } else {
-        console.log(data);
-        fetch(`${API_URL}/stakeholder/create`, {
+        console.log(JSON.stringify(data));
+        fetch(`${API_URL}/user/create`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -637,7 +746,7 @@ const AddNew = defineComponent({
             if (success == true) {
               store.commit("setIsSubmitting", false);
               notification["success"]({
-                message: "Stakeholder Created",
+                message: "Record Created",
                 description: message,
                 duration: 5.5,
               });
@@ -675,6 +784,16 @@ const AddNew = defineComponent({
       organizations,
       loading,
       counties,
+      sub_counties,
+      wards,
+      locations,
+      sub_locations,
+      villages,
+      getSubCounties,
+      getWards,
+      getLocations,
+      getSubLocations,
+      getVillages,
       // handleChange,
       events_list,
       validate,
