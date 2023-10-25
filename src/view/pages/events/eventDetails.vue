@@ -30,10 +30,6 @@
           Download List &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
         </sdButton>
-        &nbsp;&nbsp;
-        <sdButton class="btn-import" type="success" size="small">
-          <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
-        </sdButton>
       </div>
 
       <SearchResultWrapper>
