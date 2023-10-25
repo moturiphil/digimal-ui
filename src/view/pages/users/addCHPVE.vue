@@ -529,7 +529,7 @@ const AddNew = defineComponent({
     };
 
     const getCounties = async () => {
-      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/get_counties`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -572,8 +572,8 @@ const AddNew = defineComponent({
     //   console.log(value);
     //   // getRoles(value);
     // }
-    const getRoles = async (org_id) => {
-      console.log(org_id);
+    const getRoles = async () => {
+      // console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_roles_given_the_org?organization_id=15`,
         {
@@ -591,13 +591,13 @@ const AddNew = defineComponent({
 
     getRoles();
 
-    const user = JSON.parse(sessionStorage.getItem("user"));
+    // const user = JSON.parse(sessionStorage.getItem("user"));
 
-    const user_level_id = user.user.level_id;
+    // const user_level_id = user.user.level_id;
 
-    const isLevelOne = user_level_id === 1;
+    // const isLevelOne = user_level_id === 1;
 
-    console.log(isLevelOne);
+    // console.log(isLevelOne);
 
     const formState = reactive({
       gender: null,
@@ -797,7 +797,7 @@ const AddNew = defineComponent({
       // handleChange,
       events_list,
       validate,
-      isLevelOne,
+      // isLevelOne,
       getRoles,
       stakeholder_otp,
       roles,
