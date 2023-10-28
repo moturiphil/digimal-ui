@@ -55,19 +55,17 @@
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu key="administrative-units" v-if="canViewOrgUnits">
-        <template v-slot:title>
+      <!-- <template v-slot:title>
           <sdFeatherIcons type="cpu" />
-          <!-- <sdFeatherIcons type="DeploymentUnitOutlined" />  -->
           <span>Organization Units</span></template
-        >
+        > -->
 
-        <a-menu-item key="widgetListOrgUnits">
-          <router-link to="/org-units/view">
-            List Orgranization Units
-          </router-link>
-        </a-menu-item>
-      </a-sub-menu>
+      <a-menu-item key="widgetListOrgUnits">
+        <router-link to="/org-units/view">
+          <sdFeatherIcons type="cpu" />
+          <span>Administrative Units</span>
+        </router-link>
+      </a-menu-item>
 
       <a-sub-menu
         key="house-holds"
@@ -151,8 +149,8 @@
       </a-sub-menu>
       <a-sub-menu v-if="canViewPayroll && isLevelOne">
         <template v-slot:title>
-            <sdFeatherIcons type="credit-card" /><span>Payroll</span>
-          </template>
+          <sdFeatherIcons type="credit-card" /><span>Payroll</span>
+        </template>
         <a-sub-menu>
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
@@ -171,19 +169,19 @@
         </a-sub-menu>
         <a-sub-menu>
           <template v-slot:title>
-          <sdFeatherIcons type="radio" /><span>PMI</span>
-        </template>
-        <a-menu-item key="activity-payroll">
-          <router-link to="/activity-payroll">Activity Payroll </router-link>
-        </a-menu-item>
-        <a-menu-item key="pmi-event-payroll">
-          <router-link to="/pmi-event-payroll">Event Payroll </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetTransactionDetails">
-          <router-link to="/view-transactions"
-            >Transaction Details
-          </router-link>
-        </a-menu-item>
+            <sdFeatherIcons type="radio" /><span>PMI</span>
+          </template>
+          <a-menu-item key="activity-payroll">
+            <router-link to="/activity-payroll">Activity Payroll </router-link>
+          </a-menu-item>
+          <a-menu-item key="pmi-event-payroll">
+            <router-link to="/pmi-event-payroll">Event Payroll </router-link>
+          </a-menu-item>
+          <a-menu-item key="widgetTransactionDetails">
+            <router-link to="/view-transactions"
+              >Transaction Details
+            </router-link>
+          </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
       <a-sub-menu key="user-management" v-if="isAdmin || canViewUsers">
@@ -286,7 +284,7 @@ const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37
+  42, 60, 34, 37,
 ];
 
 const createDropOffPoint = [

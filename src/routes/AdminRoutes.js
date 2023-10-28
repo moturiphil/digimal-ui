@@ -311,6 +311,11 @@ const routes = [
         name: "/org-units/villages",
         component: () => import("../view/pages/orgUnits/villageUnits.vue"),
       },
+      {
+        path: "chp/:id",
+        name: "/org-units-chp",
+        component: () => import("../view/pages/users/chpVillageElders.vue"),
+      },
     ],
   },
   {
