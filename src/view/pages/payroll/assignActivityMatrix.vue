@@ -125,7 +125,7 @@ const AddNew = defineComponent({
 
     const pay_matrix_url = `${process.env.VUE_APP_BASE_URL}/list_pay_matrix`;
 
-    const organization_url = `${process.env.VUE_APP_BASE_URL}/organizations`;
+    const organization_url = `${process.env.VUE_APP_BASE_URL}/payable_organizations`;
 
     const { matrix, loading, organizations } = reactive({
       loading: true,

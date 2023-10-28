@@ -7,273 +7,278 @@
     </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
-        <RecordFormWrapper>
-          <sdCards headless>
-            <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24" order="flex">
-                <BasicFormWrapper>
-                  <a-form
-                    class="add-record-form"
-                    :style="{ width: '100%' }"
-                    layout="vertical"
-                    name="addnew"
-                    :model="formState"
-                    @finish="onSubmit"
-                  >
-                    <a-form-item name="campaign_id" label="Campaign">
-                      <a-select
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Campaign"
-                        v-model:value="formState.campaign_id"
-                        @blur="validate('campaign_id')"
-                        @keypress="validate('campaign_id')"
-                        show-search
-                        option-filter-prop="label"
-                      >
-                        <a-select-option value="" disabled
-                          >Select a campaign</a-select-option
-                        >
-                        <a-select-option
-                          v-for="campaign in campaigns"
-                          :value="campaign.id"
-                          :key="campaign.id"
-                          :label="campaign.name"
-                          >{{ campaign.name }}</a-select-option
-                        >
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.campaign_id"
-                      >
-                        {{ errors.campaign_id }}
-                      </p>
-                    </a-form-item>
-                    <a-form-item name="activity_id" label="Activity Name">
-                      <a-select
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Activity"
-                        v-model:value="formState.activity_id"
-                        show-search
-                        option-filter-prop="label"
-                        @blur="validate('activity_id')"
-                        @keypress="validate('activity_id')"
-                      >
-                        <a-select-option value=""
-                          >Select an Activity</a-select-option
-                        >
-                        <a-select-option
-                          v-for="activity in activities"
-                          :value="activity.id"
-                          :key="activity.id"
-                          :label="activity.name"
-                          >{{ activity.name }}</a-select-option
-                        >
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.activity_id"
-                      >
-                        {{ errors.activity_id }}
-                      </p>
-                    </a-form-item>
-
-                    <a-form-item
-                      name="counties"
-                      label="County"
-                      v-if="isNational"
+        <div class="col-md-6 col-sm-12">
+          <RecordFormWrapper>
+            <sdCards headless>
+              <a-row justify="center">
+                <a-col :xl="10" :md="16" :xs="24" order="flex">
+                  <BasicFormWrapper>
+                    <a-form
+                      class="add-record-form"
+                      :style="{ width: '100%' }"
+                      layout="vertical"
+                      name="addnew"
+                      :model="formState"
+                      @finish="onSubmit"
                     >
-                      <!-- v-on:change="getSubCounties($event)" -->
-                      <a-select
-                        mode="multiple"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select County"
-                        v-model:value="formState.counties"
-                        v-on:change="getSubCounties($event)"
-                        v-if="!loading"
-                        show-search
-                        option-filter-prop="label"
-                      >
-                        <a-select-option
-                          v-for="county in counties"
-                          :value="county.id"
-                          :key="county.id"
-                          :org_id="county.id"
-                          :label="county.name"
+                      <a-form-item name="campaign_id" label="Campaign">
+                        <a-select
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select Campaign"
+                          v-model:value="formState.campaign_id"
+                          @blur="validate('campaign_id')"
+                          @keypress="validate('campaign_id')"
+                          show-search
+                          option-filter-prop="label"
                         >
-                          {{ county.name }}
-                        </a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.conties"
-                      >
-                        {{ errors.counties }}
-                      </p>
-                    </a-form-item>
-                    <a-form-item
-                      name="sub_county_id"
-                      label="Sub County"
-                      v-if="isCounty"
-                    >
-                      <a-select
-                        mode="multiple"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Sub-County"
-                        v-model:value="formState.sub_counties"
-                        show-search
-                        option-filter-prop="label"
-                      >
-                        <a-select-option
-                          v-for="scounty in sub_counties"
-                          :value="scounty.id"
-                          :key="scounty.id"
-                          :label="scounty.name"
-                          >{{ scounty.name }}</a-select-option
+                          <a-select-option value="" disabled
+                            >Select a campaign</a-select-option
+                          >
+                          <a-select-option
+                            v-for="campaign in campaigns"
+                            :value="campaign.id"
+                            :key="campaign.id"
+                            :label="campaign.name"
+                            >{{ campaign.name }}</a-select-option
+                          >
+                        </a-select>
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.campaign_id"
                         >
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.sub_county_id"
-                      >
-                        {{ errors.sub_county_id }}
-                      </p>
-                    </a-form-item>
+                          {{ errors.campaign_id }}
+                        </p>
+                      </a-form-item>
+                      <a-form-item name="activity_id" label="Activity Name">
+                        <a-select
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select Activity"
+                          v-model:value="formState.activity_id"
+                          show-search
+                          option-filter-prop="label"
+                          @blur="validate('activity_id')"
+                          @keypress="validate('activity_id')"
+                        >
+                          <a-select-option value=""
+                            >Select an Activity</a-select-option
+                          >
+                          <a-select-option
+                            v-for="activity in activities"
+                            :value="activity.id"
+                            :key="activity.id"
+                            :label="activity.name"
+                            >{{ activity.name }}</a-select-option
+                          >
+                        </a-select>
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.activity_id"
+                        >
+                          {{ errors.activity_id }}
+                        </p>
+                      </a-form-item>
 
-                    <a-form-item name="start_date" label="Activity Start Date">
-                      <a-date-picker
-                        :style="{ width: '100%' }"
-                        v-model:value="formState.start_date"
-                        :format="dateFormat"
-                        :disabledDate="disabledDate"
-                        @blur="validate('start_date')"
-                        @keypress="validate('start_date')"
-                      />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.start_date"
+                      <a-form-item
+                        name="counties"
+                        label="County"
+                        v-if="isNational"
                       >
-                        {{ errors.start_date }}
-                      </p>
-                    </a-form-item>
-                    <!-- no of days as number -->
-                    <a-form-item name="number_of_days" label="No of Days">
-                      <a-input
-                        v-model:value="formState.number_of_days"
-                        placeholder="No of Days"
-                        type="number"
-                        min="0"
-                        :value="computedPayableTravelDays"
-                        @blur="validate('number_of_days')"
-                        @keypress="validate('number_of_days')"
-                      />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.number_of_days"
+                        <!-- v-on:change="getSubCounties($event)" -->
+                        <a-select
+                          mode="multiple"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select County"
+                          v-model:value="formState.counties"
+                          v-on:change="getSubCounties($event)"
+                          v-if="!loading"
+                          show-search
+                          option-filter-prop="label"
+                        >
+                          <a-select-option
+                            v-for="county in counties"
+                            :value="county.id"
+                            :key="county.id"
+                            :org_id="county.id"
+                            :label="county.name"
+                          >
+                            {{ county.name }}
+                          </a-select-option>
+                        </a-select>
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.conties"
+                        >
+                          {{ errors.counties }}
+                        </p>
+                      </a-form-item>
+                      <a-form-item
+                        name="sub_county_id"
+                        label="Sub County"
+                        v-if="isCounty"
                       >
-                        {{ errors.number_of_days }}
-                      </p>
-                    </a-form-item>
-                    <!-- no of officers as number -->
-                    <a-form-item
-                      name="number_of_officers"
-                      label="No of Officers"
-                    >
-                      <a-input
-                        v-model:value="formState.number_of_officers"
-                        placeholder="No of Officers"
-                        type="number"
-                        min="0"
-                        :value="computedPayableTravelDays"
-                        @blur="validate('number_of_officers')"
-                        @keypress="validate('number_of_officers')"
-                      />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.number_of_officers"
-                      >
-                        {{ errors.number_of_officers }}
-                      </p>
-                    </a-form-item>
+                        <a-select
+                          mode="multiple"
+                          name="basic-select"
+                          class="sDash_fullwidth-select"
+                          placeholder="Select Sub-County"
+                          v-model:value="formState.sub_counties"
+                          show-search
+                          option-filter-prop="label"
+                        >
+                          <a-select-option
+                            v-for="scounty in sub_counties"
+                            :value="scounty.id"
+                            :key="scounty.id"
+                            :label="scounty.name"
+                            >{{ scounty.name }}</a-select-option
+                          >
+                        </a-select>
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.sub_county_id"
+                        >
+                          {{ errors.sub_county_id }}
+                        </p>
+                      </a-form-item>
 
-                    <a-form-item name="activity_facilitator" label="Officers">
-                      <a-select
-                        mode="multiple"
-                        v-model:value="formState.activity_facilitator"
-                        placeholder="Please select"
-                        :disabled="isOfficerSelectionDisabled"
-                        @blur="validate('activity_facilitator')"
-                        @keypress="validate('activity_facilitator')"
-                        show-search
-                        option-filter-prop="label"
-                        :options="
-                          (() => {
-                            return users.map(
-                              ({ first_name, last_name, role_id, id }) => ({
-                                label: `${first_name} ${last_name} - ${role_id}`,
-                                value: id,
-                              })
-                            );
-                          })()
-                        "
+                      <a-form-item
+                        name="start_date"
+                        label="Activity Start Date"
                       >
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.activity_facilitator"
+                        <a-date-picker
+                          :style="{ width: '100%' }"
+                          v-model:value="formState.start_date"
+                          :format="dateFormat"
+                          :disabledDate="disabledDate"
+                          @blur="validate('start_date')"
+                          @keypress="validate('start_date')"
+                        />
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.start_date"
+                        >
+                          {{ errors.start_date }}
+                        </p>
+                      </a-form-item>
+                      <!-- no of days as number -->
+                      <a-form-item name="number_of_days" label="No of Days">
+                        <a-input
+                          v-model:value="formState.number_of_days"
+                          placeholder="No of Days"
+                          type="number"
+                          min="0"
+                          :value="computedPayableTravelDays"
+                          @blur="validate('number_of_days')"
+                          @keypress="validate('number_of_days')"
+                        />
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.number_of_days"
+                        >
+                          {{ errors.number_of_days }}
+                        </p>
+                      </a-form-item>
+                      <!-- no of officers as number -->
+                      <a-form-item
+                        name="number_of_officers"
+                        label="No of Officers"
                       >
-                        {{ errors.activity_facilitator }}
-                      </p>
-                    </a-form-item>
-                    <a-form-item name="description" label="Description">
-                      <a-textarea
-                        v-model:value="formState.description"
-                        placeholder="Write a narrative that describes the activity of the campaign"
-                        :rows="4"
-                      />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.campaign_id"
-                      >
-                        {{ errors.campaign_id }}
-                      </p>
-                    </a-form-item>
+                        <a-input
+                          v-model:value="formState.number_of_officers"
+                          placeholder="No of Officers"
+                          type="number"
+                          min="0"
+                          :value="computedPayableTravelDays"
+                          @blur="validate('number_of_officers')"
+                          @keypress="validate('number_of_officers')"
+                        />
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.number_of_officers"
+                        >
+                          {{ errors.number_of_officers }}
+                        </p>
+                      </a-form-item>
 
-                    <div class="record-form-actions text-right">
-                      &nbsp;&nbsp;&nbsp;
-                      <sdButton
-                        size="default"
-                        htmlType="Save"
-                        type="success"
-                        :disabled="isSubmitting"
-                      >
-                        {{
-                          isLoading
-                            ? "Loading..."
-                            : isSubmitting
-                            ? "Processing ..."
-                            : "Submit"
-                        }}
-                      </sdButton>
-                    </div>
-                  </a-form>
-                </BasicFormWrapper>
-              </a-col>
-            </a-row>
-          </sdCards>
-        </RecordFormWrapper>
+                      <a-form-item name="activity_facilitator" label="Officers">
+                        <a-select
+                          mode="multiple"
+                          v-model:value="formState.activity_facilitator"
+                          placeholder="Please select"
+                          :disabled="isOfficerSelectionDisabled"
+                          @blur="validate('activity_facilitator')"
+                          @keypress="validate('activity_facilitator')"
+                          show-search
+                          option-filter-prop="label"
+                          :options="
+                            (() => {
+                              return users.map(
+                                ({ first_name, last_name, role_id, id }) => ({
+                                  label: `${first_name} ${last_name} - ${role_id}`,
+                                  value: id,
+                                })
+                              );
+                            })()
+                          "
+                        >
+                        </a-select>
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.activity_facilitator"
+                        >
+                          {{ errors.activity_facilitator }}
+                        </p>
+                      </a-form-item>
+                      <a-form-item name="description" label="Description">
+                        <a-textarea
+                          v-model:value="formState.description"
+                          placeholder="Write a narrative that describes the activity of the campaign"
+                          :rows="4"
+                        />
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.campaign_id"
+                        >
+                          {{ errors.campaign_id }}
+                        </p>
+                      </a-form-item>
+
+                      <div class="record-form-actions text-right">
+                        &nbsp;&nbsp;&nbsp;
+                        <sdButton
+                          size="default"
+                          htmlType="Save"
+                          type="success"
+                          :disabled="isSubmitting"
+                        >
+                          {{
+                            isLoading
+                              ? "Loading..."
+                              : isSubmitting
+                              ? "Processing ..."
+                              : "Submit"
+                          }}
+                        </sdButton>
+                      </div>
+                    </a-form>
+                  </BasicFormWrapper>
+                </a-col>
+              </a-row>
+            </sdCards>
+          </RecordFormWrapper>
+        </div>
       </a-col>
     </a-row>
   </Main>
@@ -377,7 +382,6 @@ const AddNew = defineComponent({
     });
 
     console.log(isCounty.value);
-
 
     const isSubCounty = computed(() => {
       if (userData.user.level_id == 3) {
