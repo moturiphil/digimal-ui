@@ -7,7 +7,7 @@
     <a-menu-item-group key="pages">
       <a-menu-item key="widgetDashboard">
         <router-link to="/">
-          <sdFeatherIcons type="menu" /> <span>Dashboard</span>
+          <sdFeatherIcons type="home" /> <span>Dashboard</span>
         </router-link>
       </a-menu-item>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
@@ -156,7 +156,7 @@
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
           <a-menu-item key="activity-payroll">
-            <router-link to="/activity-payroll">Activity Payroll </router-link>
+            <router-link to="/gf-activity-payroll">Activity Payroll </router-link>
           </a-menu-item>
           <a-menu-item key="gf-event-payroll">
             <router-link to="/gf-event-payroll">Event Payroll </router-link>
@@ -172,7 +172,7 @@
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
           <a-menu-item key="activity-payroll">
-            <router-link to="/activity-payroll">Activity Payroll </router-link>
+            <router-link to="/pmi-activity-payroll">Activity Payroll </router-link>
           </a-menu-item>
           <a-menu-item key="pmi-event-payroll">
             <router-link to="/pmi-event-payroll">Event Payroll </router-link>
@@ -199,7 +199,7 @@
         </a-menu-item>
       </a-sub-menu>
       <a-menu-item v-if="isAdmin" key="data">
-        <router-link to="/logs">
+        <router-link to="/import/admin-units">
           <sdFeatherIcons type="hard-drive" /><span>Data Management </span>
         </router-link>
       </a-menu-item>
