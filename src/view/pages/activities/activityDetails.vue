@@ -263,7 +263,7 @@ export default defineComponent({
     console.log(new Date() >= eventEndDate);
 
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`; // activity_invited_officers
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=4`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
