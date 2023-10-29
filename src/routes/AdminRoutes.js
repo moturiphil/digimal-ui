@@ -144,6 +144,12 @@ const routes = [
         component: () => import("@/view/pages/events/pendingConfirmation.vue"),
       },
       {
+        path: "/activity/details/:id",
+        name: "activity-details",
+        component: () =>
+          import("@/view/pages/activities/activityDetails.vue"),
+      },
+      {
         path: "/activity/pending-confirmation/:id",
         name: "pending-confirmation-activity",
         component: () =>
@@ -310,6 +316,11 @@ const routes = [
         path: "villages/:id",
         name: "/org-units/villages",
         component: () => import("../view/pages/orgUnits/villageUnits.vue"),
+      },
+      {
+        path: "chp/:id",
+        name: "/org-units-chp",
+        component: () => import("../view/pages/users/chpVillageElders.vue"),
       },
     ],
   },

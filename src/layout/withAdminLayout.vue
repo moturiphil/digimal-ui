@@ -38,16 +38,7 @@
               "
               to="/"
             >
-              <!-- <img
-                :src="
-                  !darkMode
-                    ? require(`../static/img/Logo_Dark.svg`)
-                    : require(`../static/img/Logo_white.png`)
-                "
-                alt="logo"
-              /> -->
-              <span style="color:#22C997;"><b>DigiMal-KE</b></span>
-
+              <span style="color: #22c997"><b>DigiMal-KE</b></span>
             </router-link>
           </a-col>
           <a-col :lg="!topMenu ? 14 : 15" :md="8" :sm="0" :xs="0">
@@ -144,9 +135,9 @@
                 suppressScrollX: true,
               }"
             >
-              <!-- <p class="sidebar-nav-title">MAIN MENU</p> -->
+              <!-- <p class="sidebar-nav-title">MAIN MENU</p>  :toggleCollapsed="toggleCollapsedMobile" -->
               <AsideItems
-                :toggleCollapsed="toggleCollapsedMobile"
+              :toggleCollapsed="toggleCollapsedMobile"
                 :topMenu="topMenu"
                 :rtl="rtl"
                 :darkMode="darkMode"
@@ -182,11 +173,12 @@
             >
               <a-row>
                 <a-col :md="12" :xs="24">
-                  <span class="admin-footer__copyright">2023 © MassNetCampaign</span>
+                  <span class="admin-footer__copyright"
+                    >2023 © MassNetCampaign</span
+                  >
                 </a-col>
                 <a-col :md="12" :xs="24">
-                  <div class="admin-footer__links">
-                  </div>
+                  <div class="admin-footer__links"></div>
                 </a-col>
               </a-row>
             </Footer>
@@ -232,7 +224,7 @@ export default defineComponent({
     PerfectScrollbar,
   },
   setup() {
-    const collapsed = ref(false);
+    const collapsed = ref(true);
     const hide = ref(true);
     const searchHide = ref(true);
     const customizerAction = ref(false);
@@ -244,7 +236,7 @@ export default defineComponent({
     const darkMode = computed(() => state.themeLayout.data);
     const topMenu = computed(() => state.themeLayout.topMenu);
 
-    collapsed.value = window.innerWidth <= 1200 && true;
+    // collapsed.value = window.innerWidth <= 1200 && false;
 
     const toggleCollapsed = (e) => {
       e.preventDefault();

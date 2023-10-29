@@ -15,7 +15,7 @@
       ></template>
     </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success">
+      <!-- <sdButton class="btn-import" type="success">
         <router-link
           :to="{
             path: `/org-units/import-orgunit/${params.id}`,
@@ -30,7 +30,7 @@
       </sdButton>
       <br />
       <br />
-      <br />
+      <br /> -->
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -62,6 +62,21 @@
                             &nbsp;&nbsp; View HouseHolds
                           </router-link>
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton size="small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/org-units/chp/${record.id}`,
+                              query: { id: record.id },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            <sdFeatherIcons type="eye" size="16" />
+                            &nbsp;&nbsp; View CHP & VE
+                          </router-link>
+                        </sdButton>
                       </div>
                     </td>
                   </template>
@@ -87,11 +102,6 @@ import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-  //   {
-  //     title: "Id",
-  //     dataIndex: "id",
-  //     key: "id",
-  //   },
   {
     title: "Village Name",
     dataIndex: "name",
