@@ -144,6 +144,12 @@ const routes = [
         component: () => import("@/view/pages/events/pendingConfirmation.vue"),
       },
       {
+        path: "/activity/details/:id",
+        name: "activity-details",
+        component: () =>
+          import("@/view/pages/activities/activityDetails.vue"),
+      },
+      {
         path: "/activity/pending-confirmation/:id",
         name: "pending-confirmation-activity",
         component: () =>

@@ -35,16 +35,17 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/activity/view`,
+                              path: `/activity/details/${record.id}`,
                               query: {
                                 id: record.id,
+                                name: record.name,
                               },
                             }"
                             class="btn-icon"
                             type="info"
                             shape="circle"
                           >
-                            View Activity
+                            Activity Details
                           </router-link>
                         </sdButton>
                       </div>
