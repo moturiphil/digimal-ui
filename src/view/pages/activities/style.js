@@ -44,86 +44,66 @@ const RecordViewWrapper = Styled.div`
     }
 `;
 
-const UserTableStyleWrapper = Styled.div`
-  padding: 25px;
-  background: #fff;
-  border-radius: 10px
-  table{
-    tbody{
-      td{
-        .user-info{
-          .user-name{
-            font-size: 14px;
-          }
-        }
-        span.status-text{
-          font-size: 12px;
-          padding: 0 12.41px;
-          line-height: 1.9;
-          font-weight: 500;
-          border-radius: 12px;
-          text-transform: capitalize;
-          display: inline-block !important;
-          background: #ddd;
-          &.active{
-            background-color: ${({ theme }) => theme['success-color']}15;
-            color: ${({ theme }) => theme['success-color']};
-          }
-          &.deactivate{
-            background-color: ${({ theme }) => theme['warning-color']}15;
-            color: ${({ theme }) => theme['warning-color']};
-          }
-          &.blocked{
-            background-color: ${({ theme }) => theme['danger-color']}15;
-            color: ${({ theme }) => theme['danger-color']};
-          }
-        }
-      }
-    }
-    .table-actions{
-      min-width: 150px !important;
+const SearchResultWrapper = Styled.div`
+  .ant-select{
+    @media only screen and (max-width: 575px){
+      width: 100% !important;
     }
   }
-  .ant-table-pagination.ant-pagination{
-    width: 100%;
-    text-align: ${({ theme }) => (!theme.rtl ? 'right' : 'left')};
-    border-top: 1px solid ${({ theme }) => theme['border-color-light']};
-    margin-top: 0 !important;
-    padding-top: 30px;
-    @media only screen and (max-width: 767px){
+  .ant-select-selector{
+    height: 48px !important;
+    .ant-select-selection-search{
+      height: 48px;
+      width: 100% !important;
+      input{
+        height: 46px !important;
+      }
+    }
+    .ant-input-affix-wrapper{
+      border: 0 none;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    .ant-select-selection-search-input {
+      border-radius: 100px;
+    }
+  }
+  .ant-input-suffix{
+    i{
+      font-size: 14px;
+      top: 0 !important;
+    }
+    svg{
+      width: 14px;
+      height: 14px;
+    }
+  }
+  .search-filter-menu{
+    margin: 22px 0 20px;
+    @media only screen and (max-width: 575px){
       text-align: center;
     }
-  }
-  .contact-table{
-    table{
-      tr{
-        th{
-          &:first-child{
-            ${({ theme }) => (theme.rtl ? 'padding-right' : 'padding-left')}: 20px;
-          }
-          &:last-child{
-            ${({ theme }) => (theme.rtl ? 'padding-left' : 'padding-right')}: 20px;
+    ul{
+      li{
+        display: inline-block;
+        margin-bottom: 10px;
+        &:not(:last-child){
+          ${({ theme }) => (!theme.rtl ? 'margin-right' : 'margin-left')}: 10px;
+        }
+        a{
+          font-size: 13px;
+          font-weight: 500;
+          display: block;
+          padding: 5px 15px;
+          border-radius: 5px;
+          color: ${({ theme }) => theme['light-color']};
+          box-shadow: 0 3px 6px ${({ theme }) => theme['light-color']}05;
+          background: #fff;
+          &.active{
+            color: #fff;
+            background: ${({ theme }) => theme['success-color']};
           }
         }
-      }
-      .table-actions{
-        button{
-          width: auto;
-          height: auto;
-          padding: 0;
-          background-color: transparent;
-          &:hover{
-            background-color: transparent;
-          }
-          &.ant-btn-primary{
-            &:hover{
-              color: #ADB4D2;
-            }
-          }
-        }
-      }
-      tbody >tr.ant-table-row-selected >td{
-        background-color: ${({ theme }) => theme['primary-color']}10;
       }
     }
   }
@@ -240,4 +220,4 @@ const RecordFormWrapper = Styled.div`
         justify-content: center;
     }
 `;
-export { RecordViewWrapper, RecordFormWrapper, UserTableStyleWrapper };
+export { RecordViewWrapper, RecordFormWrapper, SearchResultWrapper };

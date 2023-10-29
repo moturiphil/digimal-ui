@@ -34,9 +34,14 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 100, showSizeChanger: true }"
+                  :pagination="{
+                    pageSize: 100,
+                    showSizeChanger: true,
+                    current: currentPage,
+                  }"
                   :dataSource="results"
                   :columns="columns"
+                  @change="handleTableChange"
                 >
                   <!-- <template #users="{ record }">
                     <td :style="{ 'margin-left': '4px' }">
@@ -161,12 +166,33 @@ const DragAndDropTable = defineComponent({
     const api_url = UserService;
     console.log(api_url);
 
+    // onMounted(async () => {
+    //   try {
+    //     const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+    //       method: "GET",
+    //       headers: authHeader(),
+    //     });
+    //     const data = await response.json();
+    //     dataSource.value = data.data;
+    //     console.log(data.data);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // });
+
     onMounted(async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-          method: "GET",
-          headers: authHeader(),
-        });
+        // Assuming you have an initial page number
+        const pageNumber = 1;
+        const pageSize = 100;
+
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/users?page=${pageNumber}&per_page=${pageSize}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
         const data = await response.json();
         dataSource.value = data.data;
         console.log(data.data);
