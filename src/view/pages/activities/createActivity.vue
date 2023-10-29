@@ -1,10 +1,6 @@
 <template>
   <Main>
-    <sdPageHeader title="Create an Activity">
-      <sdButton class="btn-add_new" size="default" key="1" type="sucess">
-        <router-link to="/crud/axios-view">View All</router-link>
-      </sdButton>
-    </sdPageHeader>
+    <sdPageHeader title="Create an Activity" />
     <a-row :gutter="15">
       <a-col :xs="24">
         <div class="col-md-6 col-sm-12">
@@ -17,7 +13,7 @@
                       class="add-record-form"
                       :style="{ width: '100%' }"
                       layout="vertical"
-                      name="addnew"
+                      name="addactivity"
                       :model="formState"
                       @finish="onSubmit"
                     >
@@ -84,27 +80,23 @@
 
                       <a-form-item
                         name="counties"
-                        label="County"
+                        label="Counties"
                         v-if="isNational"
                       >
-                        <!-- v-on:change="getSubCounties($event)" -->
                         <a-select
                           mode="multiple"
-                          name="basic-select"
-                          class="sDash_fullwidth-select"
-                          placeholder="Select County"
                           v-model:value="formState.counties"
-                          v-on:change="getSubCounties($event)"
                           v-if="!loading"
+                          placeholder="Select counties"
                           show-search
                           option-filter-prop="label"
+                          @change="handleChange"
                         >
                           <a-select-option
                             v-for="county in counties"
-                            :value="county.id"
                             :key="county.id"
-                            :org_id="county.id"
-                            :label="county.name"
+                            :value="county.id"
+                            :label="`${county.name}`"
                           >
                             {{ county.name }}
                           </a-select-option>
@@ -112,7 +104,7 @@
                         <p
                           class="errors"
                           style="color: red"
-                          v-if="!!errors.conties"
+                          v-if="!!errors.counties"
                         >
                           {{ errors.counties }}
                         </p>
@@ -284,7 +276,7 @@
   </Main>
 </template>
 <script>
-import { RecordFormWrapper } from "./style";
+import { RecordFormWrapper } from "../activities/style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
@@ -297,8 +289,8 @@ import * as Yup from "yup";
 import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
-const AddNew = defineComponent({
-  name: "AddNew",
+const AddActivity = defineComponent({
+  name: "AddActivity",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
   computed: {
     isOfficerSelectionDisabled() {
@@ -412,13 +404,16 @@ const AddNew = defineComponent({
     };
     //counties
     const getCounties = async () => {
-      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_counties`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
 
       const data = await response.json();
       this.counties = data.map((county) => ({
@@ -427,6 +422,17 @@ const AddNew = defineComponent({
       }));
       console.log(this.counties);
       this.loading = false;
+    };
+    const getUsers = async () => {
+      axios
+        .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
+        .then(function ({ data }) {
+          // console.log({ data: data.data });
+          users.value = data.data;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
     };
 
     //get sub_counties
@@ -595,7 +601,7 @@ const AddNew = defineComponent({
         const values = {
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
-          counties: formState.counties,
+          counties: formState.counties.filter((county) => county !== ""),
           subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
@@ -646,19 +652,11 @@ const AddNew = defineComponent({
       }
     };
     onMounted(() => {
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
-        .then(function ({ data }) {
-          // console.log({ data: data.data });
-          users.value = data.data;
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      getCounties();
       getCampaigns();
-      getSubCounties();
       getActivityList();
+      getCounties();
+      getSubCounties();
+      getUsers();
     });
     return {
       isLoading,
@@ -686,7 +684,6 @@ const AddNew = defineComponent({
         sub_county_id: "",
         campaign_id: "",
         start_date: "",
-        // location_type_id: "",
         number_of_officers: "",
         number_of_days: "",
         activity_facilitator: "",
@@ -722,5 +719,5 @@ const AddNew = defineComponent({
     },
   },
 });
-export default AddNew;
+export default AddActivity;
 </script>

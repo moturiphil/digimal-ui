@@ -2,19 +2,7 @@
   <!-- Wrapper component for the record view -->
   <RecordViewWrapper>
     <!-- Page header with search input -->
-    <sdPageHeader title="MassNet Activities">
-      <template #buttons>
-        <!-- Search input box -->
-        <div class="search-box">
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name or role"
-          />
-        </div>
-      </template>
-    </sdPageHeader>
+    <sdPageHeader title="MassNet Activities" />
 
     <!-- Main content area -->
     <Main>
@@ -35,7 +23,7 @@
                 <!-- Activity data table -->
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="results"
+                  :dataSource="dataSource"
                   :columns="columns"
                 >
                   <!-- Custom template for activity column -->
@@ -47,17 +35,17 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/activity/view`,
+                              path: `/activity/details/${record.id}`,
                               query: {
                                 id: record.id,
+                                name: record.name,
                               },
                             }"
                             class="btn-icon"
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View Activity
+                            Activity Details
                           </router-link>
                         </sdButton>
                       </div>
@@ -77,7 +65,7 @@
 // Import necessary modules and components
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
+// import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 
@@ -127,11 +115,6 @@ const ActivityTable = defineComponent({
 
   // Component setup function
   setup() {
-    // Vuex store instance
-    const { state, dispatch } = useStore();
-
-    // Computed properties and refs for data and state management
-    const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const searchItem = ref("");
@@ -154,31 +137,10 @@ const ActivityTable = defineComponent({
       }
     });
 
-    // Function to handle deletion of activity records
-    const handleDelete = (id) => {
-      // Confirm deletion with user
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        // Dispatch deletion action to Vuex store
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
-
     // Reactive form state for search input
     const formState = reactive({
       searchItem: "",
     });
-
-    // Function to handle selection change in the table
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
 
     // Computed property for filtered search results
     const results = computed(() => {
@@ -197,19 +159,10 @@ const ActivityTable = defineComponent({
       }
     });
 
-    // Row selection object
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
     // Return relevant data, methods, and computed properties
     return {
-      isLoading,
+      // isLoading,
       selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
       dataSource,
       columns,
       formState,
