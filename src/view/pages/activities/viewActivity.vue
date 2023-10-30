@@ -39,6 +39,7 @@
                               query: {
                                 id: record.id,
                                 name: record.name,
+                                code: record.code,
                               },
                             }"
                             class="btn-icon"
