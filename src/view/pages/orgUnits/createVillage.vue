@@ -155,8 +155,13 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import { notification } from "ant-design-vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { hasRole } from "../../../services/user-role";
+
 
 const dateFormat = "YYYY-MM-DD";
+
+const adminRoles = [53];
+
 
 const AddNew = defineComponent({
   name: "AddNew",
@@ -312,6 +317,9 @@ const AddNew = defineComponent({
         });
     };
 
+    const isAdmin = hasRole(adminRoles);
+
+
     return {
       isLoading,
       loading,
@@ -331,6 +339,7 @@ const AddNew = defineComponent({
       getLocations,
       getSubLocations,
       getWards,
+      isAdmin,
     };
   },
 });

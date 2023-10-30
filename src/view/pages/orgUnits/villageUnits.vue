@@ -15,7 +15,7 @@
       ></template>
     </sdPageHeader>
     <Main>
-      <!-- <sdButton class="btn-import" type="success">
+      <sdButton class="btn-import" type="success" v-if="isAdmin">
         <router-link
           :to="{
             path: `/org-units/import-orgunit/${params.id}`,
@@ -30,7 +30,7 @@
       </sdButton>
       <br />
       <br />
-      <br /> -->
+      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -100,6 +100,8 @@ import { computed, onMounted, ref, defineComponent } from "vue";
 // import axios from "axios";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
+import { hasRole } from "../../../services/user-role";
+
 
 const columns = [
   {
@@ -124,6 +126,9 @@ const columns = [
     slots: { customRender: "units" },
   },
 ];
+
+const adminRoles = [53];
+
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
@@ -195,6 +200,10 @@ const DragAndDropTable = defineComponent({
         });
       }
     });
+
+    const isAdmin = hasRole(adminRoles);
+
+
     return {
       crud,
       isLoading,
@@ -206,6 +215,7 @@ const DragAndDropTable = defineComponent({
       searchItem,
       params,
       columns,
+      isAdmin,
     };
   },
 });
