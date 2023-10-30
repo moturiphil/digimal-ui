@@ -96,6 +96,9 @@ const Sales = {
     console.log(newUrl);
     console.log(user);
     if (user && user.token) {
+      // Remove the 'redirectUrl' item from sessionStorage
+      sessionStorage.removeItem("redirectUrl");
+
       console.log(newUrl);
       const response = fetch(newUrl, {
         method: "GET",
@@ -113,7 +116,18 @@ const Sales = {
         })
         .then((data) => {
           console.log(data); // This should log the parsed JSON data
-          this.participant_name = data.user_id;
+          if (data.success == false) {
+            notification.info({
+              message: "Info",
+              description: data.data,
+            });
+            this.$router.push("/");
+          }
+          else {
+            this.participant_name = data.first_name + " " + data.last_name + " - " + data.org_types_id;
+
+          }
+          // this.participant_name = data.user_id;
           this.activity_name = data.activity_id;
           this.activity_date = data.activity_date;
         })
@@ -149,7 +163,7 @@ const Sales = {
         if (res.status == 200) {
           notification.success({
             message: "Success",
-            description: res.statusText,
+            description: "This activity participation has already been confirmed. Thank you!",
           });
           this.$router.push("/");
         } else {
