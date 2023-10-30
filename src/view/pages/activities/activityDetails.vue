@@ -402,7 +402,6 @@ export default defineComponent({
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
           return {
             ...record,
             fullName,
