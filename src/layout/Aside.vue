@@ -188,7 +188,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="users" /><span>User Management</span>
         </template>
-        <a-menu-item v-if="isAdmin" key="widgetMasterList">
+        <a-menu-item v-if="isAdmin || canViewMasterlist" key="widgetMasterList">
           <router-link to="/masterlist">Masterlist </router-link>
         </a-menu-item>
         <a-menu-item key="widgetUsers" v-if="canViewUsers">
@@ -284,7 +284,11 @@ const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37,
+  42, 60, 34, 37, 56
+];
+
+const viewMasterlistsRoles = [
+   56
 ];
 
 const createDropOffPoint = [
@@ -337,6 +341,7 @@ export default defineComponent({
     const canViewInventory = hasRole(viewInventoryRoles);
     const canViewPayroll = hasRole(viewPayrollRoles);
     const canViewUsers = hasRole(viewUsersRoles);
+    const canViewMasterlist = hasRole(viewMasterlistsRoles);
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -420,6 +425,7 @@ export default defineComponent({
       canViewInventory,
       canViewPayroll,
       canViewUsers,
+      canViewMasterlist,
     };
   },
 });
