@@ -4,14 +4,12 @@
     <Main>
       <div class="button-container">
         <sdButton
-          v-if="isApprovedGenerator"
           class="btn-import"
           type="success"
-          size="small"
           @click="generatePayroll"
+          v-if="isApprovedGenerator"
           :disabled="isGenerating"
         >
-          <!-- Generate Payroll -->
           {{
             isLoading
               ? "Loading..."
@@ -261,51 +259,9 @@ export default defineComponent({
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`; // activity_invited_officers
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
     const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
-    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
+    // const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
-    const generatePayroll = async () => {
-      store.commit("setIsGenerating", true);
-      try {
-        const response = await fetch(genetatePayrollURL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
-        console.log(response.status == 200);
-        if (response.status == 200) {
-          store.commit("setIsGenerating", true);
-          Modal.success({
-            title: "Success",
-            content: "Payroll Generated Successfully",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          store.commit("setIsGenerating", true);
-          Modal.error({
-            title: "Error",
-            content:
-              "Something went wrong, ensure you have assigned payroll matrix to the event",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
-          });
-          location.reload();
-        }
-      } catch (error) {
-        store.commit("setIsGenerating", true);
-        console.error(error);
-        await new Promise((resolve) => {
-          setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
-        });
-        location.reload();
-      }
-    };
     const exportParticipants = async () => {
       try {
         const response = await fetch(export_participants_url, {
@@ -452,6 +408,39 @@ export default defineComponent({
         return false;
       }
     });
+
+    const generatePayroll = async () => {
+      try {
+        const response = await fetch(
+          `${BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        console.log(response);
+        if (response.status == 200) {
+          store.commit("setIsGenerating", true);
+          Modal.success({
+            title: "Success",
+            content: "Payroll Generated Successfully",
+          });
+        } else {
+          store.commit("setIsGenerating", true);
+          Modal.error({
+            title: "Error",
+            content:
+              "Something went wrong, ensure you have assigned payroll matrix to the event",
+          });
+        }
+      } catch (error) {
+        store.commit("setIsGenerating", true);
+        console.error(error);
+      }
+    };
 
     return {
       crud,

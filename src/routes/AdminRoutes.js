@@ -341,6 +341,14 @@ const routes = [
       ),
   },
   {
+    path: "/pmi-activity-payroll",
+    name: "pmi-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/pmiActivityPayroll.vue"
+      ),
+  },
+  {
     path: "/gf-event-payroll",
     name: "gloabal-fund-event-payroll",
     component: () =>
