@@ -184,7 +184,7 @@
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
-      <a-sub-menu key="user-management" v-if="isAdmin || canViewUsers">
+      <a-sub-menu key="user-management" v-if="isAdmin || canViewUsers || canViewMasterlist">
         <template v-slot:title>
           <sdFeatherIcons type="users" /><span>User Management</span>
         </template>

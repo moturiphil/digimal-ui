@@ -39,7 +39,7 @@
                               query: {
                                 id: record.id,
                                 name: record.name,
-                                code: record.code,
+                                code: record.activity_code,
                               },
                             }"
                             class="btn-icon"
@@ -74,6 +74,11 @@ const columns = [
   {
     title: "Actvity Name",
     dataIndex: "name",
+    key: "id",
+  },
+  {
+    title: "Actvity Code",
+    dataIndex: "activity_code",
     key: "id",
   },
   {
@@ -122,6 +127,20 @@ const ActivityTable = defineComponent({
 
     // Fetch activity data from the API endpoint on component mount
     onMounted(async () => {
+      // try {
+      //   const response = await fetch(
+      //     `${process.env.VUE_APP_BASE_URL}/activity`,
+      //     {
+      //       method: "GET",
+      //       headers: authHeader(),
+      //     }
+      //   );
+      //   const data = await response.json();
+      //   dataSource.value = data.data;
+      //   console.log(data.data);
+      // } catch (error) {
+      //   console.error(error);
+      // }
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/activity`,
@@ -131,8 +150,23 @@ const ActivityTable = defineComponent({
           }
         );
         const data = await response.json();
-        dataSource.value = data.data;
-        console.log(data.data);
+
+        // Format the data before assigning it to dataSource
+        dataSource.value = data.data.map((item) => {
+          const countyName = item.county_id[0].name;
+          const subCountyName =
+            item.sub_county_id.length > 0
+              ? item.sub_county_id.map((subCounty) => subCounty.name).join(", ")
+              : "N/A";
+
+          return {
+            ...item,
+            county_id: countyName,
+            sub_county_id: subCountyName,
+          };
+        });
+
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }

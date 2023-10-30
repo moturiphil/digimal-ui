@@ -43,7 +43,7 @@
                     @click="handleChange('all')"
                     href="#"
                   >
-                  Invited Officers
+                    Invited Officers
                   </a>
                 </li>
                 <li>
@@ -155,7 +155,7 @@ import store from "../../../vuex/store";
 const columns = [
   {
     title: "Participant Name",
-    dataIndex: "user_id",
+    dataIndex: "fullName",
     key: "id",
     // render: (text, record) => `${record.first_name} ${record.last_name}`,
   },
@@ -170,13 +170,13 @@ const columns = [
     key: "id",
   },
   {
-    title: "Role",
-    dataIndex: "role",
+    title: "Organization",
+    dataIndex: "org_types_id",
     key: "id",
   },
   {
-    title: "Organization",
-    dataIndex: "organization",
+    title: "Role",
+    dataIndex: "role_id",
     key: "id",
   },
 ];
@@ -242,7 +242,7 @@ export default defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-    const confirmed = ref([]);
+    const confirmed = ref({});
     const pending = ref([]);
     const activeClass = ref("all");
     const { query } = useRoute();
@@ -252,18 +252,15 @@ export default defineComponent({
 
     console.log(query.event_code);
 
-    const eventEndDate = query.eventEndDate;
+    const activity_code = query.code;
 
-    const formattedEndDate = new Date(eventEndDate);
-
-    console.log(formattedEndDate);
+    console.log(query.code);
 
     console.log(new Date());
 
-    console.log(new Date() >= eventEndDate);
-
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`; // activity_invited_officers
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
+    const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
     const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
 
@@ -359,7 +356,6 @@ export default defineComponent({
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
           return {
             ...record,
             fullName,
@@ -367,38 +363,36 @@ export default defineComponent({
         });
 
         dataSource.value = updatedData;
-
-        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
       try {
-        const response = await axios.get(API_URL + "?status=1", {
-          headers: authHeader(),
-        });
-        console.log(API_URL + "?status=1");
-
+        const response = await axios.get(
+          `${BASE_URL}/activity_participants?activity_id=${activity_code}&confirmed=1`,
+          {
+            headers: authHeader(),
+          }
+        );
+        console.log(response);
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
           return {
             ...record,
             fullName,
           };
         });
-
+        console.log(response.data);
         confirmed.value = updatedData;
-
-        console.log(confirmed.value.toRaw());
       } catch (error) {
         console.error(error);
       }
       try {
-        const response = await axios.get(API_URL + "?status=0", {
-          headers: authHeader(),
-        });
-        console.log(API_URL + "?status=0");
-        console.log(response.data.data);
+        const response = await axios.get(
+          `${BASE_URL}/activity_participants?activity_id=${activity_code}&confirmed=0`,
+          {
+            headers: authHeader(),
+          }
+        );
 
         const updatedData = response.data.data.map((record) => {
           let fullName = `${record.first_name} ${record.last_name}`;
@@ -407,6 +401,7 @@ export default defineComponent({
             fullName,
           };
         });
+        console.log(response.data);
 
         pending.value = updatedData;
 
