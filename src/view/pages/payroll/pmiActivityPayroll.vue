@@ -654,8 +654,18 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data[0]);
-          dataSource.value = response.data.data;
+          let payload = response.data.data;
+          console.log(payload);
+
+          const filteredItems = [];
+          payload.forEach((item) => {
+            console.log(item.funding_source);
+            if (item.funding_source === 2) {
+              filteredItems.push(item);
+            }
+          });
+
+          dataSource.value = filteredItems;
           // transform approval status to boolean
           dataSource.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
