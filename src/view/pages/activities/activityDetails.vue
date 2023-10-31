@@ -177,6 +177,11 @@ const columns = [
     dataIndex: "role_id",
     key: "id",
   },
+  {
+    title: "Confirmed Days",
+    dataIndex: "no_of_days",
+    key: "id",
+  },
 ];
 export default defineComponent({
   name: "Events Participants",
