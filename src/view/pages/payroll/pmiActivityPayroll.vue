@@ -510,28 +510,6 @@ export default defineComponent({
                 description: "OTP Sent Successfully",
               });
             }
-            const approve_pay = axios
-              .post(
-                `${process.env.VUE_APP_BASE_URL}/payroll_payment`,
-                {
-                  payroll_id: id,
-                },
-                { headers: authHeader() }
-              )
-              .then((responsePromise) => {
-                return responsePromise.data;
-              })
-              .then((data) => {
-                console.log(data);
-                if (data.success == true) {
-                  notification.success({
-                    message: "Success",
-                    description:
-                      "Payment Approved Successfully, Enter OTP to complete payment",
-                  });
-                }
-              });
-            console.log(approve_pay);
           });
 
         console.log(response);
@@ -627,6 +605,31 @@ export default defineComponent({
             message: "Success",
             description: "Payment processed successful",
           });
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+          const approve_pay = axios
+            .post(
+              `${process.env.VUE_APP_BASE_URL}/payroll_payment`,
+              {
+                payroll_id: id,
+              },
+              { headers: authHeader() }
+            )
+            .then((responsePromise) => {
+              return responsePromise.data;
+            })
+            .then((data) => {
+              console.log(data);
+              if (data.success == true) {
+                notification.success({
+                  message: "Success",
+                  description:
+                    "Payment Approved Successfully, Enter OTP to complete payment",
+                });
+              }
+            });
+          console.log(approve_pay);
         }
       } catch (error) {
         console.log(error);
@@ -634,6 +637,9 @@ export default defineComponent({
           message: "Error",
           description: "Payment failed",
         });
+        setTimeout(function () {
+          location.reload();
+        }, 3000);
       }
       isModalOpen.value = false;
     };
