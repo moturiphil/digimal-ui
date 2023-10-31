@@ -198,6 +198,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Days Confirmed",
+    dataIndex: "no_of_days",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     key: "payroll",
