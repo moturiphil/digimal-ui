@@ -155,7 +155,7 @@
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
-          <a-menu-item key="activity-payroll">
+          <a-menu-item key="gf-activity-payroll">
             <router-link to="/gf-activity-payroll">Activity Payroll </router-link>
           </a-menu-item>
           <a-menu-item key="gf-event-payroll">
@@ -171,7 +171,7 @@
           <template v-slot:title>
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
-          <a-menu-item key="activity-payroll">
+          <a-menu-item key="pmi-activity-payroll">
             <router-link to="/pmi-activity-payroll">Activity Payroll </router-link>
           </a-menu-item>
           <a-menu-item key="pmi-event-payroll">
