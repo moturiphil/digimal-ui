@@ -55,11 +55,6 @@
         </a-menu-item>
       </a-sub-menu>
 
-      <!-- <template v-slot:title>
-          <sdFeatherIcons type="cpu" />
-          <span>Organization Units</span></template
-        > -->
-
       <a-menu-item key="widgetListOrgUnits">
         <router-link to="/org-units/view">
           <sdFeatherIcons type="cpu" />
@@ -156,7 +151,9 @@
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
           <a-menu-item key="gf-activity-payroll">
-            <router-link to="/gf-activity-payroll">Activity Payroll </router-link>
+            <router-link to="/gf-activity-payroll"
+              >Activity Payroll
+            </router-link>
           </a-menu-item>
           <a-menu-item key="gf-event-payroll">
             <router-link to="/gf-event-payroll">Event Payroll </router-link>
@@ -172,7 +169,9 @@
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
           <a-menu-item key="pmi-activity-payroll">
-            <router-link to="/pmi-activity-payroll">Activity Payroll </router-link>
+            <router-link to="/pmi-activity-payroll"
+              >Activity Payroll
+            </router-link>
           </a-menu-item>
           <a-menu-item key="pmi-event-payroll">
             <router-link to="/pmi-event-payroll">Event Payroll </router-link>
@@ -184,7 +183,10 @@
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
-      <a-sub-menu key="user-management" v-if="isAdmin || canViewUsers || canViewMasterlist">
+      <a-sub-menu
+        key="user-management"
+        v-if="isAdmin || canViewUsers || canViewMasterlist"
+      >
         <template v-slot:title>
           <sdFeatherIcons type="users" /><span>User Management</span>
         </template>
@@ -198,11 +200,30 @@
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item v-if="isAdmin" key="data">
-        <router-link to="/import/admin-units">
-          <sdFeatherIcons type="hard-drive" /><span>Data Management </span>
-        </router-link>
-      </a-menu-item>
+
+      <a-sub-menu
+        key="data-management"
+        v-if="isAdmin"
+      >
+        <template v-slot:title>
+          <sdFeatherIcons type="hard-drive" /><span>Data Management</span>
+        </template>
+        <a-menu-item v-if="isAdmin" key="admin-units">
+          <router-link to="/import/admin-units">
+            <span>Administrative Units </span>
+          </router-link>
+        </a-menu-item>
+        <a-menu-item v-if="isAdmin" key="drop-off">
+          <router-link to="/import/dropoff-points">
+            <span>Drop-off Points </span>
+          </router-link>
+        </a-menu-item>
+        <a-menu-item v-if="isAdmin" key="distribution-post">
+          <router-link to="/import/distribution-posts">
+            <span>Distribution Posts </span>
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-menu-item v-if="isAdmin" key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
@@ -284,12 +305,10 @@ const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37, 56
+  42, 60, 34, 37, 56,
 ];
 
-const viewMasterlistsRoles = [
-   56
-];
+const viewMasterlistsRoles = [56];
 
 const createDropOffPoint = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
