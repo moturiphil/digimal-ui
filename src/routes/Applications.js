@@ -180,6 +180,22 @@ export default [
             /* webpackChunkName: "import" */ "../view/apps/importExport/ImportAdminUnits.vue"
           ),
       },
+      {
+        name: "dropoff-points",
+        path: "dropoff-points",
+        component: () =>
+          import(
+            /* webpackChunkName: "import" */ "../view/apps/importExport/ImportDropOffPoints.vue"
+          ),
+      },
+      {
+        name: "distribution-posts",
+        path: "distribution-posts",
+        component: () =>
+          import(
+            /* webpackChunkName: "import" */ "../view/apps/importExport/ImportDistributionPosts.vue"
+          ),
+      },
       // {
       //   name: "export",
       //   path: "export",
