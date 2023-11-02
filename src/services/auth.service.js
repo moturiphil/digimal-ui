@@ -23,7 +23,7 @@ class AuthService {
           sessionStorage.setItem("user", JSON.stringify(response.data));
         }
         const user = sessionStorage.getItem("user");
-        console.log(user);
+        console.log(user.s);
         return response;
       });
   }
