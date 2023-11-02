@@ -19,6 +19,10 @@
       <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
         Export HouseHolds Data
       </sdButton>
+      &nbsp;&nbsp;
+      <sdButton class="btn-import" type="success" @click="startHHReg">
+        Start Household Registration
+      </sdButton>
       <br />
       <br />
       <a-row :gutter="15">
@@ -52,6 +56,8 @@ import { RecordViewWrapper } from "../style";
 import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
+import { notification } from "ant-design-vue";
+
 
 const columns = [
   {
@@ -129,6 +135,8 @@ const ViewPage = defineComponent({
 
     const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
+    const households_reg_start = `${process.env.VUE_APP_BASE_URL}/start_hh_reg`;
+
     onMounted(() => {
       axios
         .get(API_URL, {
@@ -171,6 +179,34 @@ const ViewPage = defineComponent({
       }
     };
 
+    const startHHReg = async () => {
+      try {
+        const response = await fetch(households_reg_start, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        console.log(response);
+        if (response.status == 200) {
+          notification.success({
+            message: "success",
+            description: "Household Registration started successfully",
+          });
+        }
+        else {
+          notification.error({
+            message: "error",
+            description: "Household Registration already started",
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     const results = computed(() => {
       const query = searchItem.value.toLowerCase();
       const regex = new RegExp(query, "i");
@@ -198,6 +234,7 @@ const ViewPage = defineComponent({
       searchItem,
       results,
       exportHouseHoldData,
+      startHHReg,
     };
   },
 });

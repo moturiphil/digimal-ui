@@ -63,7 +63,7 @@
           console.log(formData);
   
           // Perform the API request with the custom FormData using fetch
-          fetch(`${process.env.VUE_APP_BASE_URL}/create/adminunits`, {
+          fetch(`${process.env.VUE_APP_BASE_URL}/import/distribution_posts`, {
             method: "POST",
             headers: {
             ...authHeader(),
