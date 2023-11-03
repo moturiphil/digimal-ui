@@ -1,7 +1,71 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Households Lists">
-      <template #subTitle> </template>
+      <template #subTitle>
+        <div class="filter-container">
+          <a-select v-model="selectedCounty" style="width: 200px">
+            <!-- <a-select-option
+              v-for="county in counties"
+              :key="county.id"
+              :value="county.id"
+              >{{ county.name }}</a-select-option
+            > -->
+          </a-select>
+
+          &nbsp;&nbsp;
+          <a-select
+            v-model="selectedSubCounty"
+            style="width: 200px"
+            :disabled="!selectedCounty"
+          >
+            <!-- <a-select-option
+              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
+              :key="subCounty.id"
+              :value="subCounty.id"
+              >{{ subCounty.name }}</a-select-option
+            > -->
+          </a-select>
+          &nbsp;&nbsp;
+          <a-select
+            v-model="selectedSubCounty"
+            style="width: 200px"
+            :disabled="!selectedCounty"
+          >
+            <!-- <a-select-option
+              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
+              :key="subCounty.id"
+              :value="subCounty.id"
+              >{{ subCounty.name }}</a-select-option
+            > -->
+          </a-select>
+          &nbsp;&nbsp;
+          <a-select
+            v-model="selectedSubCounty"
+            style="width: 200px"
+            :disabled="!selectedCounty"
+          >
+            <!-- <a-select-option
+              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
+              :key="subCounty.id"
+              :value="subCounty.id"
+              >{{ subCounty.name }}</a-select-option
+            > -->
+          </a-select>
+          &nbsp;&nbsp;
+          <a-select
+            v-model="selectedSubCounty"
+            style="width: 200px"
+            :disabled="!selectedCounty"
+          >
+            <!-- <a-select-option
+              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
+              :key="subCounty.id"
+              :value="subCounty.id"
+              >{{ subCounty.name }}</a-select-option
+            > -->
+          </a-select>
+        </div>
+      </template>
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -34,7 +98,7 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <p> <b>Total Records: </b> {{ recordCount }}</p>
+                <p><b>Total Records: </b> {{ recordCount }}</p>
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="results"
@@ -57,7 +121,6 @@ import { Main, TableWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import { notification } from "ant-design-vue";
-
 
 const columns = [
   {
@@ -122,6 +185,22 @@ const ViewPage = defineComponent({
     recordCount() {
       return this.results.length;
     },
+  },
+  methods: {
+    async loadCounties() {
+      try {
+        // Fetch counties from the API
+        const countiesResponse = await axios.get(`${process.env.VUE_APP_BASE_URL}/counties`);
+        this.counties = countiesResponse.data;
+        
+        // Fetch sub-counties from the API (or wherever you get the data)
+        const subCountiesResponse = await axios.get(`${process.env.VUE_APP_BASE_URL}/subcounties`);
+        this.subCounties = subCountiesResponse.data;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
   },
   setup() {
     const { state } = useStore();
@@ -195,8 +274,7 @@ const ViewPage = defineComponent({
             message: "success",
             description: "Household Registration started successfully",
           });
-        }
-        else {
+        } else {
           notification.error({
             message: "error",
             description: "Household Registration already started",
