@@ -53,126 +53,167 @@
       <a-modal
         title="Reassign CHP"
         :visible="isModalOpen"
-        @ok="handleOk(recordId, inputValue)"
+        @ok="handleOk(recordId)"
         @cancel="handleCancel"
         class="title-success"
       >
         <div>
-          <!-- <p>Reassign User</p> -->
-          <!-- <input type="number" v-model="inputValue" /> -->
+          <BasicFormWrapper>
+            <a-form
+              class="add-record-form"
+              :style="{ width: '100%' }"
+              layout="vertical"
+              name="addnew"
+              :model="formState"
+              @finish="handleSubmit"
+            >
+              <a-form-item name="county">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select County"
+                  v-on:change="getSubCounties($event)"
+                  v-if="!loading"
+                >
+                  <a-select-option value="">Select an option</a-select-option>
+                  <a-select-option
+                    v-for="county in counties"
+                    :value="county.org_id"
+                    :key="county.id"
+                    :org_id="county.org_id"
+                  >
+                    {{ county.name }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+              <a-form-item name="sub_county">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Sub-County"
+                  v-on:change="getWards($event)"
+                >
+                  <a-select-option value="">Select an option</a-select-option>
+                  <a-select-option
+                    v-for="scounty in sub_counties"
+                    :value="scounty.org_id"
+                    :key="scounty.id"
+                    >{{ scounty.name }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
 
-          <a-form-item name="county">
-            <a-select
-              size="large"
-              name="basic-select"
-              class="sDash_fullwidth-select"
-              placeholder="Select County"
-              v-on:change="getSubCounties($event)"
-              v-if="!loading"
-            >
-              <a-select-option value="">Select an option</a-select-option>
-              <a-select-option
-                v-for="county in counties"
-                :value="county.org_id"
-                :key="county.id"
-                :org_id="county.org_id"
-              >
-                {{ county.name }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-          <a-form-item name="sub_county">
-            <a-select
-              size="large"
-              name="basic-select"
-              class="sDash_fullwidth-select"
-              placeholder="Select Sub-County"
-              v-on:change="getWards($event)"
-            >
-              <a-select-option value="">Select an option</a-select-option>
-              <a-select-option
-                v-for="scounty in sub_counties"
-                :value="scounty.org_id"
-                :key="scounty.id"
-                >{{ scounty.name }}</a-select-option
-              >
-            </a-select>
-          </a-form-item>
+              <a-form-item name="ward_id">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Ward"
+                  v-on:change="getLocations($event)"
+                >
+                  <a-select-option value="">Select an option</a-select-option>
+                  <a-select-option
+                    v-for="ward in wards"
+                    :value="ward.org_id"
+                    :key="ward.id"
+                    >{{ ward.name }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
 
-          <a-form-item name="ward_id">
-            <a-select
-              size="large"
-              name="basic-select"
-              class="sDash_fullwidth-select"
-              placeholder="Select Ward"
-              v-on:change="getLocations($event)"
-              v-model:value="formState.ward_id"
-            >
-              <a-select-option value="">Select an option</a-select-option>
-              <a-select-option
-                v-for="ward in wards"
-                :value="ward.org_id"
-                :key="ward.id"
-                >{{ ward.name }}</a-select-option
-              >
-            </a-select>
-          </a-form-item>
+              <a-form-item name="location">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Location"
+                  v-on:change="getSubLocations($event)"
+                >
+                  <a-select-option value="">Select an option</a-select-option>
+                  <a-select-option
+                    v-for="location in locations"
+                    :value="location.org_id"
+                    :key="location.id"
+                    >{{ location.name }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
 
-          <a-form-item name="location_id">
-            <a-select
-              size="large"
-              name="basic-select"
-              class="sDash_fullwidth-select"
-              placeholder="Select Location"
-              v-model:value="formState.location_id"
-              v-on:change="getSubLocations($event)"
-            >
-              <a-select-option value="">Select an option</a-select-option>
-              <a-select-option
-                v-for="location in locations"
-                :value="location.org_id"
-                :key="location.id"
-                >{{ location.name }}</a-select-option
-              >
-            </a-select>
-          </a-form-item>
+              <a-form-item name="sub_location_id">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Sub Location"
+                  v-on:change="getVillages($event)"
+                >
+                  <a-select-option value="">Select an option</a-select-option>
+                  <a-select-option
+                    v-for="slocation in sub_locations"
+                    :value="slocation.org_id"
+                    :key="slocation.id"
+                    >{{ slocation.name }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
 
-          <a-form-item name="sub_location_id">
-            <a-select
-              size="large"
-              name="basic-select"
-              class="sDash_fullwidth-select"
-              placeholder="Select Sub Location"
-              v-model:value="formState.sub_location_id"
-              v-on:change="getVillages($event)"
-            >
-              <a-select-option value="">Select an option</a-select-option>
-              <a-select-option
-                v-for="slocation in sub_locations"
-                :value="slocation.org_id"
-                :key="slocation.id"
-                >{{ slocation.name }}</a-select-option
-              >
-            </a-select>
-          </a-form-item>
+              <a-form-item name="Location">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Village to Reassign to"
+                  v-model:value="formState.location_id"
+                >
+                  <a-select-option value="">Select an option</a-select-option>
+                  <a-select-option
+                    v-for="village in villages"
+                    :value="village.id"
+                    :key="village.id"
+                    >{{ village.name }}</a-select-option
+                  >
+                </a-select>
+              </a-form-item>
+              <a-form-item name="Role">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Role"
+                  v-on:change="getSubCounties($event)"
+                  v-model:value="formState.role_id"
+                  v-if="!loading"
+                >
+                  <a-select-option
+                    v-for="role in roles"
+                    :value="role.id"
+                    :key="role.id"
+                  >
+                    {{ role.name }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
 
-          <a-form-item name="village">
-            <a-select
-              size="large"
-              name="basic-select"
-              class="sDash_fullwidth-select"
-              placeholder="Select Village to Reassign to"
-              v-model:value="formState.village"
-            >
-              <a-select-option value="">Select an option</a-select-option>
-              <a-select-option
-                v-for="village in villages"
-                :value="village.org_id"
-                :key="village.id"
-                >{{ village.name }}</a-select-option
-              >
-            </a-select>
-          </a-form-item>
+              <div class="record-form-actions text-right">
+                <sdButton
+                  size="default"
+                  htmlType="Save"
+                  type="success"
+                  :disabled="isSubmitting"
+                >
+                  {{
+                    isLoading
+                      ? "Loading..."
+                      : isSubmitting
+                      ? "Processing ..."
+                      : "Submit"
+                  }}
+                </sdButton>
+              </div>
+            </a-form>
+          </BasicFormWrapper>
         </div>
       </a-modal>
     </Main>
@@ -187,6 +228,7 @@ import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import axios from "axios";
+import * as Yup from "yup";
 // import { Switch } from "ant-design-vue";
 
 const columns = [
@@ -265,10 +307,13 @@ const DragAndDropTable = defineComponent({
     const locations = ref([]);
     const sub_locations = ref([]);
     const villages = ref([]);
-
+    const roles = [
+      { id: 52, name: "CHP" },
+      { id: 51, name: "Village Elder" },
+    ];
 
     const location_id = query.id;
-
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/update_chp_ve`;
 
     const getCounties = async () => {
       const response = await fetch(
@@ -285,9 +330,7 @@ const DragAndDropTable = defineComponent({
       console.log(data);
       counties.value = data.map((county) => ({
         ...county,
-        // org_id: county.org_id,
       }));
-      // data.loading = false;
     };
 
     onMounted(async () => {
@@ -307,19 +350,6 @@ const DragAndDropTable = defineComponent({
       }
     });
 
-    const handleAssignment = (id) => {
-      getCounties();
-      isModalOpen.value = true;
-      console.log("Event Code;", id);
-      // recordId.value = id;
-      // console.log("recordId", recordId.value);
-      try {
-        console.log("register");
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
       if (confirm) {
@@ -333,17 +363,77 @@ const DragAndDropTable = defineComponent({
       return false;
     };
 
+    const ArticleSchema = Yup.object().shape({});
+
+    const validate = (field) => {
+      ArticleSchema.validateAt(field, formState)
+        .then(() => (this.errors[field] = ""))
+        .catch((err) => {
+          this.errors[err.path] = err.message;
+        });
+    };
+
+    var user_id = "";
+
+    const handleAssignment = (id) => {
+      getCounties();
+      isModalOpen.value = true;
+      console.log("Record ID", id);
+      user_id = id;
+    };
+
+
+    const handleSubmit = () => {
+      const data = {
+        location_id: formState.location_id,
+        user_id: user_id, // Make sure user_id is defined
+        role_id: formState.role_id,
+      };
+      console.log(data);
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success }) => {
+              if (success) {
+                notification["success"]({
+                  message: "Success",
+                  description: `User Reassigned mapped successfully`,
+                  duration: 5.5,
+                });
+              }
+              // show error message from the api response
+              else {
+                notification["error"]({
+                  message: "Error!",
+                  description: "Fail to Reassigned User",
+                  duration: 5.5,
+                });
+              }
+            })
+        .catch((error) => {
+          // Handle fetch errors here
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
+
     const handleOk = async (id, inputValue) => {
-      // console.log(recordId.value);
+      console.log(id);
       console.log(inputValue);
       try {
-        const response = await axios.get(
-          // `${process.env.VUE_APP_BASE_URL}/event/${recordId.value}/participant/${inputValue}/assign`,
-          { headers: authHeader() }
-        );
+        const response = await axios.post(API_URL, { headers: authHeader() });
         console.log(response);
         if (response.status == 200) {
-          inputValue = "";
           notification.success({
             message: "Success",
             description: response.data.message,
@@ -516,7 +606,9 @@ const DragAndDropTable = defineComponent({
       getLocations,
       getSubLocations,
       getVillages,
-
+      roles,
+      handleSubmit,
+      validate,
       // toggleUserStatus /*, deactivate user */,
     };
   },

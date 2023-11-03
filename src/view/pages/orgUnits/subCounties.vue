@@ -55,6 +55,7 @@
                               path: `/sub-county-units/chp-ve/${record.org_id}`,
                               query: {
                                 name: record.name,
+                                id: record.id
                               },
                             }"
                             class="btn-icon"

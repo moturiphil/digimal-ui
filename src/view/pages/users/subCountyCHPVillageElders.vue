@@ -108,13 +108,15 @@ const DragAndDropTable = defineComponent({
 
     const sub_county_name = query.name;
 
-    // console.log(location_id);
+    const location_id = query.id;
+
+    console.log(query);
 
     onMounted(async () => {
       try {
         const response = await fetch(
           // `${process.env.VUE_APP_BASE_URL}/list_chp_ve?location_id=${location_id}`,
-          `${process.env.VUE_APP_BASE_URL}/sub_county_villages`,
+          `${process.env.VUE_APP_BASE_URL}/sub_county_villages?location_id=${location_id}`,
           {
             method: "GET",
             headers: authHeader(),
