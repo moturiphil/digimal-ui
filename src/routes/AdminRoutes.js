@@ -322,7 +322,17 @@ const routes = [
         name: "/org-units-chp",
         component: () => import("../view/pages/users/chpVillageElders.vue"),
       },
+      // {
+      //   path: "sub-county-units/chp-ve/:id",
+      //   name: "/org-units-chp",
+      //   component: () => import("../view/pages/users/chpVillageElders.vue"),
+      // },
     ],
+  },
+  {
+    path: "/sub-county-units/chp-ve/:id",
+    name: "/org-units-villages",
+    component: () => import("../view/pages/users/subCountyCHPVillageElders.vue"),
   },
   {
     path: "/household/validation",
