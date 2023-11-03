@@ -45,8 +45,24 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View Wards
+                          View Wards
+                          </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/sub-county-units/chp-ve/${record.org_id}`,
+                              query: {
+                                name: record.name,
+                                id: record.id
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                          View Villages
                           </router-link>
                         </sdButton>
                       </div>

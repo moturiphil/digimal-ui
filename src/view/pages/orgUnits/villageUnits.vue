@@ -73,8 +73,7 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View CHP & VE
+                            View CHP & VE
                           </router-link>
                         </sdButton>
                       </div>

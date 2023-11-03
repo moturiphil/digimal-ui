@@ -591,14 +591,6 @@ const AddNew = defineComponent({
 
     getRoles();
 
-    // const user = JSON.parse(sessionStorage.getItem("user"));
-
-    // const user_level_id = user.user.level_id;
-
-    // const isLevelOne = user_level_id === 1;
-
-    // console.log(isLevelOne);
-
     const formState = reactive({
       gender: null,
       first_name: null,
