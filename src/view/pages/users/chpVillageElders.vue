@@ -382,7 +382,6 @@ const DragAndDropTable = defineComponent({
       user_id = id;
     };
 
-
     const handleSubmit = () => {
       const data = {
         location_id: formState.location_id,
@@ -401,22 +400,22 @@ const DragAndDropTable = defineComponent({
       })
         .then((response) => response.json())
         .then(({ success }) => {
-              if (success) {
-                notification["success"]({
-                  message: "Success",
-                  description: `User Reassigned mapped successfully`,
-                  duration: 5.5,
-                });
-              }
-              // show error message from the api response
-              else {
-                notification["error"]({
-                  message: "Error!",
-                  description: "Fail to Reassigned User",
-                  duration: 5.5,
-                });
-              }
-            })
+          if (success) {
+            notification["success"]({
+              message: "Success",
+              description: `User Reassigned mapped successfully`,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to Reassigned User",
+              duration: 5.5,
+            });
+          }
+        })
         .catch((error) => {
           // Handle fetch errors here
           notification["error"]({

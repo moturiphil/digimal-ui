@@ -29,7 +29,7 @@
                   :dataSource="results"
                   :columns="columns"
                 >
-                <template #units="{ record }">
+                  <template #units="{ record }">
                     <td>
                       <div class="table-actions">
                         <sdButton size="small" type="success">
@@ -115,7 +115,6 @@ const DragAndDropTable = defineComponent({
     onMounted(async () => {
       try {
         const response = await fetch(
-          // `${process.env.VUE_APP_BASE_URL}/list_chp_ve?location_id=${location_id}`,
           `${process.env.VUE_APP_BASE_URL}/sub_county_villages?location_id=${location_id}`,
           {
             method: "GET",
@@ -124,8 +123,6 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data;
-
-
       } catch (error) {
         console.error(error);
       }
@@ -159,9 +156,7 @@ const DragAndDropTable = defineComponent({
         return dataSource.value;
       } else {
         return dataSource.value.filter((user) => {
-          return (
-            regex.test(user.name) 
-          );
+          return regex.test(user.name);
         });
       }
     });
@@ -184,7 +179,7 @@ const DragAndDropTable = defineComponent({
       isDeactivated: false,
       results,
       searchItem,
-      sub_county_name
+      sub_county_name,
       // toggleUserStatus /*, deactivate user */,
     };
   },
