@@ -126,24 +126,44 @@ const columns = [
   {
     title: "Distribution Post",
     dataIndex: "name",
-    key: "name",
+    key: "",
   },
   {
-    title: "Distribution Post Code",
-    dataIndex: "post_code",
-    key: "post_code",
+    title: "Sub County",
+    dataIndex: "distribution_sub_county",
+    key: "",
   },
   {
-    title: "Supervisor Name",
-    dataIndex: "post_supervisor_user_id",
-    key: "post_supervisor_user_id",
+    title: "Ward",
+    dataIndex: "distribution_ward",
+    key: "",
   },
   {
-    title: "",
-    dataIndex: "",
-    key: "activities",
-    slots: { customRender: "activities" },
+    title: "SubLocation",
+    dataIndex: "distribution_sublocation_id",
+    key: "",
   },
+  {
+    title: "Location",
+    dataIndex: "distribution_location_id",
+    key: "",
+  },
+  // {
+  //   title: "Distribution Post Code",   // distribution_sublocation_id
+  //   dataIndex: "post_code",
+  //   key: "post_code",
+  // },
+  // {
+  //   title: "Supervisor Name",
+  //   dataIndex: "post_supervisor_user_id",
+  //   key: "post_supervisor_user_id",
+  // },
+  // {
+  //   title: "",
+  //   dataIndex: "",
+  //   key: "activities",
+  //   slots: { customRender: "activities" },
+  // },
 ];
 
 const DragAndDropTable = defineComponent({
@@ -253,9 +273,11 @@ const DragAndDropTable = defineComponent({
       } else {
         return dataSource.value.filter((event) => {
           return (
-            regex.test(event.name) ||
-            regex.test(event.post_code) ||
-            regex.test(event.post_supervisor_user_id)
+            // regex.test(event.name) ||
+            regex.test(event.distribution_sub_county) ||
+            regex.test(event.distribution_ward) ||
+            regex.test(event.distribution_sublocation_id) ||
+            regex.test(event.distribution_location_id)
           );
         });
       }
