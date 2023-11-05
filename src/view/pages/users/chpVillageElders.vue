@@ -38,6 +38,14 @@
                         >
                           Reassign
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          @click="handleDeAssignment(record.id)"
+                          size="extra-small"
+                          type="success"
+                        >
+                          De-assign
+                        </sdButton>
                       </div>
                     </td>
                   </template>
@@ -314,6 +322,8 @@ const DragAndDropTable = defineComponent({
 
     const location_id = query.id;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/update_chp_ve`;
+    const DEASSIGN_URL = `${process.env.VUE_APP_BASE_URL}/deassign_chp_ve`;
+
 
     const getCounties = async () => {
       const response = await fetch(
@@ -380,6 +390,48 @@ const DragAndDropTable = defineComponent({
       isModalOpen.value = true;
       console.log("Record ID", id);
       user_id = id;
+    };
+
+    const handleDeAssignment = (id) => {
+      const data = {
+        user_id: id,
+      };
+      console.log(data);
+
+      fetch(DEASSIGN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success }) => {
+          if (success) {
+            notification["success"]({
+              message: "User De-assigned successfully",
+              description: `User De-assigned from village to sub-county successfully`,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            notification["error"]({
+              message: "Error!",
+              description: "Failed to De-assigned",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          // Handle fetch errors here
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
     };
 
     const handleSubmit = () => {
@@ -608,7 +660,7 @@ const DragAndDropTable = defineComponent({
       roles,
       handleSubmit,
       validate,
-      // toggleUserStatus /*, deactivate user */,
+      handleDeAssignment,
     };
   },
 });
