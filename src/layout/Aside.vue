@@ -76,9 +76,6 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetUsers" v-if="canViewRegHH">
-          <router-link to="/users/view-chp-ve">Registration Summary </router-link>
-        </a-menu-item>
         <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
           <router-link to="/household/validation">
             HouseHolds Validation
@@ -198,6 +195,9 @@
         </a-menu-item>
         <a-menu-item key="widgetUsers" v-if="canViewUsers">
           <router-link to="/registered-users">Users </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetUsers">
+          <router-link to="/users/view-chp-ve">Registered CHP & VE </router-link>
         </a-menu-item>
         <a-menu-item v-if="isAdmin" key="widgetRoles">
           <router-link to="/user-roles">Roles </router-link>
