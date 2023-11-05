@@ -102,18 +102,8 @@ import UserService from "../../../services/user.service";
 
 const columns = [
   {
-    title: "First Name",
-    dataIndex: "first_name",
-    key: "id",
-  },
-  {
-    title: "Middle Name",
-    dataIndex: "middle_name",
-    key: "id",
-  },
-  {
-    title: "Last Name",
-    dataIndex: "last_name",
+    title: "User's Name",
+    dataIndex: "user_name",
     key: "id",
   },
   {
@@ -246,8 +236,7 @@ const DragAndDropTable = defineComponent({
       } else {
         return dataSource.value.filter((user) => {
           return (
-            regex.test(user.first_name) ||
-            regex.test(user.last_name) ||
+            regex.test(user.user_name) ||
             regex.test(user.level_id) ||
             regex.test(user.org_types_id) ||
             regex.test(user.id_no) ||
