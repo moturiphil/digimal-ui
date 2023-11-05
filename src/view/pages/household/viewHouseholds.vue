@@ -2,14 +2,14 @@
   <RecordViewWrapper>
     <sdPageHeader title="Households Lists">
       <template #subTitle>
-        <div class="filter-container">
+        <!-- <div class="filter-container">
           <a-select v-model="selectedCounty" style="width: 200px">
-            <!-- <a-select-option
+            <a-select-option
               v-for="county in counties"
               :key="county.id"
               :value="county.id"
               >{{ county.name }}</a-select-option
-            > -->
+            >
           </a-select>
 
           &nbsp;&nbsp;
@@ -18,12 +18,12 @@
             style="width: 200px"
             :disabled="!selectedCounty"
           >
-            <!-- <a-select-option
+            <a-select-option
               v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
               :key="subCounty.id"
               :value="subCounty.id"
               >{{ subCounty.name }}</a-select-option
-            > -->
+            >
           </a-select>
           &nbsp;&nbsp;
           <a-select
@@ -31,12 +31,12 @@
             style="width: 200px"
             :disabled="!selectedCounty"
           >
-            <!-- <a-select-option
+            <a-select-option
               v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
               :key="subCounty.id"
               :value="subCounty.id"
               >{{ subCounty.name }}</a-select-option
-            > -->
+            >
           </a-select>
           &nbsp;&nbsp;
           <a-select
@@ -44,12 +44,12 @@
             style="width: 200px"
             :disabled="!selectedCounty"
           >
-            <!-- <a-select-option
+            <a-select-option
               v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
               :key="subCounty.id"
               :value="subCounty.id"
               >{{ subCounty.name }}</a-select-option
-            > -->
+            >
           </a-select>
           &nbsp;&nbsp;
           <a-select
@@ -57,14 +57,14 @@
             style="width: 200px"
             :disabled="!selectedCounty"
           >
-            <!-- <a-select-option
+            <a-select-option
               v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
               :key="subCounty.id"
               :value="subCounty.id"
               >{{ subCounty.name }}</a-select-option
-            > -->
+            >
           </a-select>
-        </div>
+        </div> -->
       </template>
       <template #buttons>
         <div class="search-box">
@@ -190,17 +190,22 @@ const ViewPage = defineComponent({
     async loadCounties() {
       try {
         // Fetch counties from the API
-        const countiesResponse = await axios.get(`${process.env.VUE_APP_BASE_URL}/counties`);
+        const countiesResponse = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/counties`
+        );
         this.counties = countiesResponse.data;
-        
+
+        console.log("Counties" + this.counties);
+
         // Fetch sub-counties from the API (or wherever you get the data)
-        const subCountiesResponse = await axios.get(`${process.env.VUE_APP_BASE_URL}/subcounties`);
+        const subCountiesResponse = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/subcounties`
+        );
         this.subCounties = subCountiesResponse.data;
       } catch (error) {
         console.error(error);
       }
     },
-
   },
   setup() {
     const { state } = useStore();
@@ -216,20 +221,29 @@ const ViewPage = defineComponent({
 
     const households_reg_start = `${process.env.VUE_APP_BASE_URL}/start_hh_reg`;
 
+    const PAGE_SIZE = 50;
+    const currentPage = ref(1);
+
     onMounted(() => {
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          console.log(response.data.data);
-          dataSource.value = response.data.data;
-          // let house_hold_sz = dataSource;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      fetchData(currentPage.value);
     });
+
+    const fetchData = async (page) => {
+      try {
+        const response = await axios.get(API_URL, {
+          params: {
+            page: page,
+            pageSize: PAGE_SIZE,
+          },
+          headers: authHeader(),
+        });
+
+        console.log(response.data.data);
+        dataSource.value = response.data.data;
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const exportHouseHoldData = async () => {
       try {
