@@ -618,6 +618,7 @@ const DragAndDropTable = defineComponent({
           return (
             regex.test(user.first_name) ||
             regex.test(user.last_name) ||
+            regex.test(user.id_no) ||
             regex.test(user.role_id)
           );
         });
