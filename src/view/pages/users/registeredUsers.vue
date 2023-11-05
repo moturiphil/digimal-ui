@@ -427,6 +427,14 @@ const DragAndDropTable = defineComponent({
       user_id = id;
     };
 
+
+    // const handleDeAssign = (id) => {
+    //   console.log("deAssignment ready");
+    //   isDeassignModalOpen.value = true;
+    //   console.log("Record ID", id);
+    //   user_id = id;
+    // };
+
     const handleDeAssignment = (id) => {
       const data = {
         user_id: id,
@@ -689,6 +697,7 @@ const DragAndDropTable = defineComponent({
             regex.test(user.first_name) ||
             regex.test(user.last_name) ||
             regex.test(user.level_id) ||
+            regex.test(user.id_no) ||
             regex.test(user.org_types_id) ||
             regex.test(user.location_id)
           );
