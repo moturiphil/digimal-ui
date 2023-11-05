@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Registered Users">
+    <sdPageHeader title="Registered CHP & Village Elders">
       <template #buttons>
         <div class="search-box">
           <a-input
@@ -13,16 +13,16 @@
       </template>
     </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/events/add-stakeholde"> Add Stakeholder</router-link>
-      </sdButton>
-      &nbsp;&nbsp;
-
-      <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/users/add-chp-ve"> Add CHP & VE</router-link>
-      </sdButton>
-      <br />
-      <br />
+      <!-- <sdButton class="btn-import" type="success" size="small">
+          <router-link to="/events/add-stakeholde"> Add Stakeholder</router-link>
+        </sdButton>
+        &nbsp;&nbsp;
+  
+        <sdButton class="btn-import" type="success" size="small">
+          <router-link to="/users/add-chp-ve"> Add CHP & VE</router-link>
+        </sdButton>
+        <br />
+        <br /> -->
       <a-row :gutter="16" class="search-row"> </a-row>
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
@@ -56,6 +56,14 @@
                           type="success"
                         >
                           Reassign
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          @click="handleDeAssignment(record.id)"
+                          size="extra-small"
+                          type="success"
+                        >
+                          De-assign
                         </sdButton>
                       </div>
                     </td>
@@ -333,6 +341,7 @@ const DragAndDropTable = defineComponent({
 
     const api_url = UserService;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/update_chp_ve`;
+    const DEASSIGN_URL = `${process.env.VUE_APP_BASE_URL}/deassign_chp_ve`;
 
     console.log(api_url);
 
@@ -369,7 +378,7 @@ const DragAndDropTable = defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/chp_ve`, {
           method: "GET",
           headers: authHeader(),
         });
@@ -416,6 +425,48 @@ const DragAndDropTable = defineComponent({
       isModalOpen.value = true;
       console.log("Record ID", id);
       user_id = id;
+    };
+
+    const handleDeAssignment = (id) => {
+      const data = {
+        user_id: id,
+      };
+      console.log(data);
+
+      fetch(DEASSIGN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success }) => {
+          if (success) {
+            notification["success"]({
+              message: "User De-assigned successfully",
+              description: `User De-assigned from village to sub-county successfully`,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            notification["error"]({
+              message: "Error!",
+              description: "Failed to De-assigned",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          // Handle fetch errors here
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
     };
 
     const handleSubmit = () => {
@@ -682,6 +733,7 @@ const DragAndDropTable = defineComponent({
       handleSubmit,
       handleOk,
       isModalOpen,
+      handleDeAssignment,
       // toggleUserStatus /*, deactivate user */,
     };
   },
