@@ -102,8 +102,18 @@ import UserService from "../../../services/user.service";
 
 const columns = [
   {
-    title: "User's Name",
-    dataIndex: "user_name",
+    title: "First Name",
+    dataIndex: "first_name",
+    key: "id",
+  },
+  {
+    title: "Middle Name",
+    dataIndex: "middle_name",
+    key: "id",
+  },
+  {
+    title: "Last Name",
+    dataIndex: "last_name",
     key: "id",
   },
   {
