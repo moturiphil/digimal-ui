@@ -281,6 +281,16 @@ const columns = [
     key: "id",
   },
   {
+    title: "Household Registered",
+    dataIndex: "household_registered",
+    key: "id",
+  },
+  {
+    title: "Registration Days",
+    dataIndex: "registration_days",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     key: "units",
