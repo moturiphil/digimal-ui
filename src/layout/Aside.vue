@@ -76,6 +76,11 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
+        <!-- <a-menu-item key="widgetHouseholdRegSummary">
+          <router-link to="/households/summary">
+            HouseHolds Summary
+          </router-link>
+        </a-menu-item> -->
         <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
           <router-link to="/household/validation">
             HouseHolds Validation
@@ -197,17 +202,16 @@
           <router-link to="/registered-users">Users </router-link>
         </a-menu-item>
         <a-menu-item key="widgetUsers">
-          <router-link to="/users/view-chp-ve">Registered CHP & VE </router-link>
+          <router-link to="/users/view-chp-ve"
+            >Registered CHP & VE
+          </router-link>
         </a-menu-item>
         <a-menu-item v-if="isAdmin" key="widgetRoles">
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu
-        key="data-management"
-        v-if="isAdmin"
-      >
+      <a-sub-menu key="data-management" v-if="isAdmin">
         <template v-slot:title>
           <sdFeatherIcons type="hard-drive" /><span>Data Management</span>
         </template>
@@ -282,12 +286,12 @@ const viewHHValidationRoles = [
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55
 ];
 
 const viewDropoffPointsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55
 ];
 
 const createDistributionPostRoles = [
@@ -296,12 +300,12 @@ const createDistributionPostRoles = [
 
 const viewDistributionPostRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55
 ];
 
 const viewInventoryRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55
 ];
 
 const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
