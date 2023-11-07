@@ -346,6 +346,14 @@ const routes = [
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/HouseHoldValidation.vue"
       ),
+  }, // /households/summary
+  {
+    path: "/households/summary",
+    name: "hh-summary",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/HouseHoldSummary.vue"
+      ),
   },
   {
     path: "/gf-activity-payroll",

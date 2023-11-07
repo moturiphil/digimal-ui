@@ -1,71 +1,7 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Households Lists">
-      <template #subTitle>
-        <!-- <div class="filter-container">
-          <a-select v-model="selectedCounty" style="width: 200px">
-            <a-select-option
-              v-for="county in counties"
-              :key="county.id"
-              :value="county.id"
-              >{{ county.name }}</a-select-option
-            >
-          </a-select>
-
-          &nbsp;&nbsp;
-          <a-select
-            v-model="selectedSubCounty"
-            style="width: 200px"
-            :disabled="!selectedCounty"
-          >
-            <a-select-option
-              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
-              :key="subCounty.id"
-              :value="subCounty.id"
-              >{{ subCounty.name }}</a-select-option
-            >
-          </a-select>
-          &nbsp;&nbsp;
-          <a-select
-            v-model="selectedSubCounty"
-            style="width: 200px"
-            :disabled="!selectedCounty"
-          >
-            <a-select-option
-              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
-              :key="subCounty.id"
-              :value="subCounty.id"
-              >{{ subCounty.name }}</a-select-option
-            >
-          </a-select>
-          &nbsp;&nbsp;
-          <a-select
-            v-model="selectedSubCounty"
-            style="width: 200px"
-            :disabled="!selectedCounty"
-          >
-            <a-select-option
-              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
-              :key="subCounty.id"
-              :value="subCounty.id"
-              >{{ subCounty.name }}</a-select-option
-            >
-          </a-select>
-          &nbsp;&nbsp;
-          <a-select
-            v-model="selectedSubCounty"
-            style="width: 200px"
-            :disabled="!selectedCounty"
-          >
-            <a-select-option
-              v-for="subCounty in getSubCountiesByCountyId(selectedCounty)"
-              :key="subCounty.id"
-              :value="subCounty.id"
-              >{{ subCounty.name }}</a-select-option
-            >
-          </a-select>
-        </div> -->
-      </template>
+      <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -80,9 +16,9 @@
       ></template>
     </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
+      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
         Export HouseHolds Data
-      </sdButton>
+      </sdButton> -->
       &nbsp;&nbsp;
       <sdButton class="btn-import" type="success" @click="startHHReg">
         Start Household Registration
@@ -239,7 +175,7 @@ const ViewPage = defineComponent({
         });
 
         console.log(response.data.data);
-        dataSource.value = response.data.data;
+        dataSource.value = response.data.data.data;
       } catch (error) {
         console.error(error);
       }

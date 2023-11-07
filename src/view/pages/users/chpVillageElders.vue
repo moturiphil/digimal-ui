@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Village Elders & CHP">
+    <sdPageHeader title="Village Elders & CHPs">
       <template #buttons>
         <div class="search-box">
           <a-input
