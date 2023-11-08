@@ -339,20 +339,29 @@ const routes = [
     name: "/org-units-villages",
     component: () => import("../view/pages/users/subCountyCHPVillageElders.vue"),
   },
+  // households/summary
   {
     path: "/household/validation",
     name: "hh-validation",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/HouseHoldValidation.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
-  }, // /households/summary
+  }, 
+  {
+    path: "/chp-hh-registered/:id",
+    name: "chp-hh-registered",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/chpHHRegistered.vue"
+      ),
+  },
   {
     path: "/households/summary",
     name: "hh-summary",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/HouseHoldSummary.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldSummary.vue"
       ),
   },
   {
