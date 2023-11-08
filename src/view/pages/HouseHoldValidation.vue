@@ -62,7 +62,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -77,7 +77,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -199,7 +199,7 @@ const columns = [
   },
   {
     title: "Timestamp",
-    dataIndex: "created_at",
+    dataIndex: "created_at_time",
     key: "id_no",
   },
   {
@@ -259,7 +259,7 @@ export default defineComponent({
     const household_id = ref("");
     const searchItem = ref("");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291`;
 
     const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
@@ -313,7 +313,7 @@ export default defineComponent({
         .then((response) => {
           dataSource.value = response.data.data;
           // households.value = response.data.data;
-          console.log(dataSource.value);
+          console.log(response.data);
         })
         .catch((error) => {
           console.error(error);
