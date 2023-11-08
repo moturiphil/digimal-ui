@@ -201,7 +201,7 @@
         <a-menu-item key="widgetUsers" v-if="canViewUsers">
           <router-link to="/registered-users">Users </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetUsers">
+        <a-menu-item key="widgetCHP">
           <router-link to="/users/view-chp-ve"
             >Registered CHP & VE
           </router-link>
