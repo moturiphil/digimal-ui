@@ -148,10 +148,10 @@
 </template>
 
 <script>
-import { Main } from "../styled";
-import { SearchResultWrapper } from "./style";
+import { Main } from "../../styled";
+import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-import authHeader from "../../../src/services/auth-header";
+import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
