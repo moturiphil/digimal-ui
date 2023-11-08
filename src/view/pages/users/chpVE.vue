@@ -46,6 +46,19 @@
                   <template #users="{ record }">
                     <td>
                       <div class="table-actions">
+                        <sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/chp-hh-registered/${record.id}`,
+                              query: {
+                                id: record.id,
+                              },
+                            }"
+                          >
+                            CHP Households
+                          </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp;
                         <sdButton
                           v-if="
                             record.role_id === 'CHV' ||
@@ -355,37 +368,6 @@ const DragAndDropTable = defineComponent({
 
     console.log(api_url);
 
-    // onMounted(async () => {
-    //   try {
-    //     const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-    //       method: "GET",
-    //       headers: authHeader(),
-    //     });
-    //     const data = await response.json();
-    //     dataSource.value = data.data;
-    //     console.log(data.data);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
-
-    // onMounted(async () => {
-    //   try {
-    //     const response = await fetch(
-    //       `${process.env.VUE_APP_BASE_URL}/users`,
-    //       {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       }
-    //     );
-    //     const data = await response.json();
-    //     dataSource.value = data.data;
-    //     console.log(data.data);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
-
     onMounted(async () => {
       try {
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/chp_ve`, {
@@ -439,7 +421,7 @@ const DragAndDropTable = defineComponent({
 
     const handleDeAssignment = (id) => {
       const data = {
-        user_id: id, 
+        user_id: id,
       };
       console.log(data);
 
@@ -478,6 +460,29 @@ const DragAndDropTable = defineComponent({
           });
         });
     };
+
+    // const handleCHPHouseholds = async (id) => {
+    //   try {
+    //     const response = await fetch(
+    //       `${process.env.VUE_APP_BASE_URL}/chw_households?chp_id=${id}`,
+    //       {
+    //         method: "GET",
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           ...authHeader(),
+    //         },
+    //       }
+    //     );
+
+    //     if (!response.ok) {
+    //       throw new Error("Failed to fetch data");
+    //     } else {
+    //       console.log(response)
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
 
     const handleSubmit = () => {
       const data = {

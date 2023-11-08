@@ -61,11 +61,8 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
-                            :pagination="{
-                              pageSize: 50,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
+                            :pagination="paginationOptions"
+                            :dataSource="results"
                             :columns="columns"
                           >
                           </a-table>
@@ -77,7 +74,7 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
                             :dataSource="filteredData"
@@ -151,10 +148,10 @@
 </template>
 
 <script>
-import { Main } from "../styled";
-import { SearchResultWrapper } from "./style";
+import { Main } from "../../styled";
+import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-import authHeader from "../../../src/services/auth-header";
+import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
@@ -199,7 +196,7 @@ const columns = [
   },
   {
     title: "Timestamp",
-    dataIndex: "created_at",
+    dataIndex: "created_at_time",
     key: "id_no",
   },
   {
@@ -259,7 +256,14 @@ export default defineComponent({
     const household_id = ref("");
     const searchItem = ref("");
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/households`;
+    const paginationOptions = ref({
+      pageSize: 100, // Number of items per page
+      showSizeChanger: true, // Show the page size changer
+      current: 1, // Current page number
+      total: 0, // Total number of items (will be updated after fetching data)
+    });
+
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291`;
 
     const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
@@ -311,9 +315,9 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          dataSource.value = response.data.data;
-          // households.value = response.data.data;
-          console.log(dataSource.value);
+          console.log(response.data.data);
+          dataSource.value = response.data.data.data;
+          paginationOptions.value.total = response.data.data.length;
         })
         .catch((error) => {
           console.error(error);
@@ -389,21 +393,11 @@ export default defineComponent({
     });
 
     const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return filteredData;
-      } else {
-        return filteredData.value.filter((household) => {
-          return (
-            regex.test(household.first_name) ||
-            regex.test(household.last_name) ||
-            regex.test(household.chw_id) ||
-            regex.test(household.chw_phone_no) ||
-            regex.test(household.location_id)
-          );
-        });
-      }
+      const start =
+        (paginationOptions.value.current - 1) *
+        paginationOptions.value.pageSize;
+      const end = start + paginationOptions.value.pageSize;
+      return filteredData.value.slice(start, end);
     });
 
     return {
@@ -424,6 +418,7 @@ export default defineComponent({
       handleOk,
       results,
       searchItem,
+      paginationOptions,
     };
   },
   props: {
