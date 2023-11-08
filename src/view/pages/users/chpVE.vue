@@ -355,37 +355,6 @@ const DragAndDropTable = defineComponent({
 
     console.log(api_url);
 
-    // onMounted(async () => {
-    //   try {
-    //     const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-    //       method: "GET",
-    //       headers: authHeader(),
-    //     });
-    //     const data = await response.json();
-    //     dataSource.value = data.data;
-    //     console.log(data.data);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
-
-    // onMounted(async () => {
-    //   try {
-    //     const response = await fetch(
-    //       `${process.env.VUE_APP_BASE_URL}/users`,
-    //       {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       }
-    //     );
-    //     const data = await response.json();
-    //     dataSource.value = data.data;
-    //     console.log(data.data);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
-
     onMounted(async () => {
       try {
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/chp_ve`, {
