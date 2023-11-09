@@ -24,7 +24,11 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
-                            :pagination="paginationOptions"
+                            :pagination="{
+                              pageSize: 100,
+                              showSizeChanger: true,
+                              current: currentPage,
+                            }"
                             :dataSource="dataSource"
                             :columns="columns"
                           >
@@ -70,7 +74,6 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
-
 
 // const households = ref([]);
 
@@ -179,14 +182,11 @@ export default defineComponent({
       total: 0, // Total number of items (will be updated after fetching data)
     });
 
-
     const { query } = useRoute();
-
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/chw_households?chp_id=${query.id}`;
 
     console.log(query.id);
-
 
     const handleChange = (tab) => {
       activeClass.value = tab;

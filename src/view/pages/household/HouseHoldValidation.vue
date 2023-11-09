@@ -68,13 +68,6 @@
                           </a-table>
                           <br />
                           <br />
-                          <a-pagination
-                            :current="paginationOptions.current"
-                            :total="paginationOptions.total"
-                            :pageSize="paginationOptions.pageSize"
-                            :showSizeChanger="paginationOptions.showSizeChanger"
-                            @change="paginationOptions.onChange"
-                          />
                         </TableWrapper>
 
                         <TableWrapper
@@ -88,7 +81,7 @@
                           >
                             <br />
                             <br />
-                            <a-pagination
+                            <!-- <a-pagination
                               :current="paginationOptions.current"
                               :total="paginationOptions.total"
                               :pageSize="paginationOptions.pageSize"
@@ -96,7 +89,8 @@
                                 paginationOptions.showSizeChanger
                               "
                               @change="paginationOptions.onChange"
-                          /></a-table>
+                          /> -->
+                          </a-table>
                         </TableWrapper>
 
                         <TableWrapper
@@ -128,7 +122,7 @@
                             </template>
                             <br />
                             <br />
-                            <a-pagination
+                            <!-- <a-pagination
                               :current="paginationOptions.current"
                               :total="paginationOptions.total"
                               :pageSize="paginationOptions.pageSize"
@@ -136,9 +130,18 @@
                                 paginationOptions.showSizeChanger
                               "
                               @change="paginationOptions.onChange"
-                            />
+                            /> -->
                           </a-table>
                         </TableWrapper>
+                        <br />
+                        <br />
+                        <a-pagination
+                          :current="paginationOptions.current"
+                          :total="paginationOptions.total"
+                          :pageSize="paginationOptions.pageSize"
+                          :showSizeChanger="paginationOptions.showSizeChanger"
+                          @change="paginationOptions.onChange"
+                        />
                       </div>
                     </sdCards>
                   </a-col>
@@ -296,6 +299,7 @@ export default defineComponent({
             { headers: authHeader() }
           );
           dataSource.value = response.data.data.data;
+          console.log(dataSource.value);
           paginationOptions.value.total = response.data.data.total;
         } catch (error) {
           console.error(error);
@@ -305,34 +309,34 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291`;
 
-    const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
+    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
-    const exportHouseHoldData = async () => {
-      try {
-        const response = await fetch(households_url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
+    // const exportHouseHoldData = async () => {
+    //   try {
+    //     const response = await fetch(households_url, {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         ...authHeader(),
+    //       },
+    //     });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
+    //     if (!response.ok) {
+    //       throw new Error("Failed to fetch export data");
+    //     }
 
-        const fileBlob = await response.blob();
-        const fileName = "households.csv";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    //     const fileBlob = await response.blob();
+    //     const fileName = "households.csv";
+    //     const link = document.createElement("a");
+    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+    //     link.setAttribute("download", fileName);
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     link.parentNode.removeChild(link);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
@@ -355,7 +359,7 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data);
+          console.log(response.data.data.data);
           dataSource.value = response.data.data.data;
           // paginationOptions.value.total = response.data.data.length;
           paginationOptions.value.total = response.data.data.total;
@@ -448,7 +452,7 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      exportHouseHoldData,
+      // exportHouseHoldData,
       filteredData,
       handleChange,
       activeClass,
