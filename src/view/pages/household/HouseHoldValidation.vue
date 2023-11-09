@@ -3,9 +3,9 @@
     <sdPageHeader ghost title="HouseHold Validation" />
 
     <Main>
-      <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
+      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
         Export HouseHolds Data
-      </sdButton>
+      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -82,10 +82,21 @@
                           v-show="activeClass === 'approved'"
                         >
                           <a-table
-                            :pagination="paginationOptions"
+                            :pagination="false"
                             :dataSource="dataSource"
                             :columns="columns"
-                          ></a-table>
+                          >
+                            <br />
+                            <br />
+                            <a-pagination
+                              :current="paginationOptions.current"
+                              :total="paginationOptions.total"
+                              :pageSize="paginationOptions.pageSize"
+                              :showSizeChanger="
+                                paginationOptions.showSizeChanger
+                              "
+                              @change="paginationOptions.onChange"
+                          /></a-table>
                         </TableWrapper>
 
                         <TableWrapper
@@ -93,7 +104,7 @@
                           v-show="activeClass === 'outliers'"
                         >
                           <a-table
-                            :pagination="paginationOptions"
+                            :pagination="false"
                             :dataSource="dataSource"
                             :columns="columns"
                           >
@@ -115,6 +126,17 @@
                                 </div>
                               </td>
                             </template>
+                            <br />
+                            <br />
+                            <a-pagination
+                              :current="paginationOptions.current"
+                              :total="paginationOptions.total"
+                              :pageSize="paginationOptions.pageSize"
+                              :showSizeChanger="
+                                paginationOptions.showSizeChanger
+                              "
+                              @change="paginationOptions.onChange"
+                            />
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -257,28 +279,6 @@ export default defineComponent({
     const inputValue = ref("");
     const household_id = ref("");
     const searchItem = ref("");
-
-    // const paginationOptions = ref({
-    //   pageSize: 100,
-    //   showSizeChanger: true,
-    //   current: 1,
-    //   total: 0,
-    //   onChange: async (page, pageSize) => {
-    //     paginationOptions.value.current = page;
-    //     paginationOptions.value.pageSize = pageSize;
-    //     try {
-    //       const response = await axios.get(
-    //         response.data.data.next_page_url, // Use next_page_url for pagination
-    //         { headers: authHeader() }
-    //       );
-    //       console.log(response.data.data);
-    //       dataSource.value = response.data.data.data;
-    //       paginationOptions.value.total = response.data.data.total;
-    //     } catch (error) {
-    //       console.error(error);
-    //     }
-    //   },
-    // });
 
     const paginationOptions = ref({
       pageSize: 100,
