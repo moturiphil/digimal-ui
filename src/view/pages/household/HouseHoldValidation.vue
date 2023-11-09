@@ -61,11 +61,20 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
-                            :pagination="paginationOptions"
-                            :dataSource="results"
+                            :pagination="false"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                           </a-table>
+                          <br />
+                          <br />
+                          <a-pagination
+                            :current="paginationOptions.current"
+                            :total="paginationOptions.total"
+                            :pageSize="paginationOptions.pageSize"
+                            :showSizeChanger="paginationOptions.showSizeChanger"
+                            @change="paginationOptions.onChange"
+                          />
                         </TableWrapper>
 
                         <TableWrapper
@@ -73,14 +82,10 @@
                           v-show="activeClass === 'approved'"
                         >
                           <a-table
-                            :pagination="{
-                              pageSize: 100,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
+                            :pagination="paginationOptions"
+                            :dataSource="dataSource"
                             :columns="columns"
-                          >
-                          </a-table>
+                          ></a-table>
                         </TableWrapper>
 
                         <TableWrapper
@@ -88,11 +93,8 @@
                           v-show="activeClass === 'outliers'"
                         >
                           <a-table
-                            :pagination="{
-                              pageSize: 50,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
+                            :pagination="paginationOptions"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                             <template #households="{ record }">
@@ -256,11 +258,49 @@ export default defineComponent({
     const household_id = ref("");
     const searchItem = ref("");
 
+    // const paginationOptions = ref({
+    //   pageSize: 100,
+    //   showSizeChanger: true,
+    //   current: 1,
+    //   total: 0,
+    //   onChange: async (page, pageSize) => {
+    //     paginationOptions.value.current = page;
+    //     paginationOptions.value.pageSize = pageSize;
+    //     try {
+    //       const response = await axios.get(
+    //         response.data.data.next_page_url, // Use next_page_url for pagination
+    //         { headers: authHeader() }
+    //       );
+    //       console.log(response.data.data);
+    //       dataSource.value = response.data.data.data;
+    //       paginationOptions.value.total = response.data.data.total;
+    //     } catch (error) {
+    //       console.error(error);
+    //     }
+    //   },
+    // });
+
     const paginationOptions = ref({
-      pageSize: 100, // Number of items per page
-      showSizeChanger: true, // Show the page size changer
-      current: 1, // Current page number
-      total: 0, // Total number of items (will be updated after fetching data)
+      pageSize: 100,
+      showSizeChanger: true,
+      current: 1,
+      total: 0,
+      onChange: async (page, pageSize) => {
+        // Update the current page when the pagination changes
+        paginationOptions.value.current = page;
+
+        // Fetch data for the new page using the updated page number
+        try {
+          const response = await axios.get(
+            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}`,
+            { headers: authHeader() }
+          );
+          dataSource.value = response.data.data.data;
+          paginationOptions.value.total = response.data.data.total;
+        } catch (error) {
+          console.error(error);
+        }
+      },
     });
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291`;
@@ -317,7 +357,8 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data.data);
           dataSource.value = response.data.data.data;
-          paginationOptions.value.total = response.data.data.length;
+          // paginationOptions.value.total = response.data.data.length;
+          paginationOptions.value.total = response.data.data.total;
         })
         .catch((error) => {
           console.error(error);
