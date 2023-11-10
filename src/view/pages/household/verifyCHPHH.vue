@@ -41,7 +41,7 @@
                                     @click="
                                       handleVerify(record.id, record.hh_size)
                                     "
-                                    v-if="record.hh_size > 10"
+                                    v-if="record.hh_size > 10 && record.isVerified == 0"
                                   >
                                     &nbsp;&nbsp;
                                     <span class="badge badge-green"

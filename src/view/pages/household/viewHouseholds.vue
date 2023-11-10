@@ -21,6 +21,8 @@
                       </div>
 
                       <div v-else>
+                        Total Records:  
+                        <br>
                         <TableWrapper
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
@@ -168,6 +170,8 @@ export default defineComponent({
     const inputValue = ref("");
     const household_id = ref("");
     const searchItem = ref("");
+    const total_households = ref("");
+
 
     const paginationOptions = ref({
       pageSize: 100,
@@ -248,6 +252,7 @@ export default defineComponent({
           dataSource.value = response.data.data.data;
           // paginationOptions.value.total = response.data.data.length;
           paginationOptions.value.total = response.data.data.total;
+          total_households.value.total = response.data.data.total
         })
         .catch((error) => {
           console.error(error);
@@ -349,6 +354,7 @@ export default defineComponent({
       results,
       searchItem,
       paginationOptions,
+      total_households,
     };
   },
   props: {

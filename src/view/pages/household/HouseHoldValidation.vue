@@ -1,820 +1,534 @@
 <template>
-  <RecordViewWrapper>
-    <sdPageHeader title="Validate HouseHolds Registered By CHP">
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name, level, location or organization"
-          />
-        </div>
-      </template>
-    </sdPageHeader>
+  <div>
+    <sdPageHeader ghost title="HouseHold Validation" />
+
     <Main>
-      <!-- <sdButton class="btn-import" type="success" size="small">
-          <router-link to="/events/add-stakeholde"> Add Stakeholder</router-link>
-        </sdButton>
-        &nbsp;&nbsp;
-  
-        <sdButton class="btn-import" type="success" size="small">
-          <router-link to="/users/add-chp-ve"> Add CHP & VE</router-link>
-        </sdButton>
-        <br />
-        <br /> -->
-      <a-row :gutter="16" class="search-row"> </a-row>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
+      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
+        Export HouseHolds Data
+      </sdButton> -->
+      <SearchResultWrapper>
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <div class="search-filter-menu">
+              <ul>
+                <li>
+                  <a
+                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
+                    @click="handleChange('all')"
+                    href="#"
+                  >
+                    All HouseHolds
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
+                      activeClass === 'approved' ? 'active' : 'deactivate'
+                    "
+                    @click="handleChange('approved')"
+                    href="#"
+                  >
+                    Approved HouseHolds
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
+                      activeClass === 'outliers' ? 'active' : 'deactivate'
+                    "
+                    @click="handleChange('outliers')"
+                    href="#"
+                  >
+                    Outliers
+                  </a>
+                </li>
+              </ul>
             </div>
-
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="{
-                    pageSize: 100,
-                    showSizeChanger: true,
-                    current: currentPage,
-                  }"
-                  :dataSource="results"
-                  :columns="columns"
-                  @change="handleTableChange"
-                >
-                  <template #users="{ record }">
-                    <td>
-                      <div class="table-actions">
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/verify-chp-hh/${record.id}`,
-                              query: {
-                                id: record.id,
-                              },
-                            }"
-                          >
-                            CHP Households
-                          </router-link>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <!-- <sdButton
-                          v-if="
-                            record.role_id === 'CHV' ||
-                            record.role_id === 'Village Elder'
-                          "
-                          @click="handleAssignment(record.id)"
-                          size="extra-small"
-                          type="success"
-                        >
-                          Reassign
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
-                          @click="handleDeAssignment(record.id)"
-                          size="extra-small"
-                          type="success"
-                        >
-                          De-assign
-                        </sdButton> -->
+          </a-col>
+          <a-col :xs="24">
+            <sdCards headless>
+              <div class="result-list-content">
+                <a-row :gutter="15">
+                  <a-col class="w-100" :md="24">
+                    <sdCards headless>
+                      <div v-if="isLoading" class="spin">
+                        <a-spin />
                       </div>
-                    </td>
-                  </template>
-                </a-table>
-              </TableWrapper>
-            </div>
-          </sdCards>
-        </a-col>
-      </a-row>
-      <a-col :xs="24">
-        <DragAndDropTable />
-      </a-col>
-      <a-modal
-        title="Reassign CHP"
-        :visible="isModalOpen"
-        @ok="handleOk(recordId)"
-        @cancel="handleCancel"
-        class="title-success"
-      >
-        <div>
-          <BasicFormWrapper>
-            <a-form
-              class="add-record-form"
-              :style="{ width: '100%' }"
-              layout="vertical"
-              name="addnew"
-              :model="formState"
-              @finish="handleSubmit"
-            >
-              <a-form-item name="county">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select County"
-                  v-on:change="getSubCounties($event)"
-                  v-if="!loading"
-                >
-                  <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option
-                    v-for="county in counties"
-                    :value="county.org_id"
-                    :key="county.id"
-                    :org_id="county.org_id"
-                  >
-                    {{ county.name }}
-                  </a-select-option>
-                </a-select>
-              </a-form-item>
-              <a-form-item name="sub_county">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select Sub-County"
-                  v-on:change="getWards($event)"
-                >
-                  <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option
-                    v-for="scounty in sub_counties"
-                    :value="scounty.org_id"
-                    :key="scounty.id"
-                    >{{ scounty.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
 
-              <a-form-item name="ward_id">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select Ward"
-                  v-on:change="getLocations($event)"
-                >
-                  <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option
-                    v-for="ward in wards"
-                    :value="ward.org_id"
-                    :key="ward.id"
-                    >{{ ward.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
+                      <div v-else>
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'all'"
+                        >
+                          <a-table
+                            :pagination="false"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                          </a-table>
+                          <br />
+                          <br />
+                        </TableWrapper>
 
-              <a-form-item name="location">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select Location"
-                  v-on:change="getSubLocations($event)"
-                >
-                  <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option
-                    v-for="location in locations"
-                    :value="location.org_id"
-                    :key="location.id"
-                    >{{ location.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'approved'"
+                        >
+                          <a-table
+                            :pagination="false"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                            <br />
+                            <br />
+                            <!-- <a-pagination
+                              :current="paginationOptions.current"
+                              :total="paginationOptions.total"
+                              :pageSize="paginationOptions.pageSize"
+                              :showSizeChanger="
+                                paginationOptions.showSizeChanger
+                              "
+                              @change="paginationOptions.onChange"
+                          /> -->
+                          </a-table>
+                        </TableWrapper>
 
-              <a-form-item name="sub_location_id">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select Sub Location"
-                  v-on:change="getVillages($event)"
-                >
-                  <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option
-                    v-for="slocation in sub_locations"
-                    :value="slocation.org_id"
-                    :key="slocation.id"
-                    >{{ slocation.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
-
-              <a-form-item name="Location">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select Village to Reassign to"
-                  v-model:value="formState.location_id"
-                >
-                  <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option
-                    v-for="village in villages"
-                    :value="village.id"
-                    :key="village.id"
-                    >{{ village.name }}</a-select-option
-                  >
-                </a-select>
-              </a-form-item>
-              <a-form-item name="Role">
-                <a-select
-                  size="large"
-                  name="basic-select"
-                  class="sDash_fullwidth-select"
-                  placeholder="Select Role"
-                  v-on:change="getSubCounties($event)"
-                  v-model:value="formState.role_id"
-                  v-if="!loading"
-                >
-                  <a-select-option
-                    v-for="role in roles"
-                    :value="role.id"
-                    :key="role.id"
-                  >
-                    {{ role.name }}
-                  </a-select-option>
-                </a-select>
-              </a-form-item>
-
-              <div class="record-form-actions text-right">
-                <sdButton
-                  size="default"
-                  htmlType="Save"
-                  type="success"
-                  :disabled="isSubmitting"
-                >
-                  {{
-                    isLoading
-                      ? "Loading..."
-                      : isSubmitting
-                      ? "Processing ..."
-                      : "Submit"
-                  }}
-                </sdButton>
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'outliers'"
+                        >
+                          <a-table
+                            :pagination="false"
+                            :dataSource="filteredData"
+                            :columns="columns"
+                          >
+                            <template #households="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <sdButton
+                                    type="check"
+                                    size="16"
+                                    @click="
+                                      handleVerify(record.id, record.hh_size)
+                                    "
+                                  >
+                                    &nbsp;&nbsp;
+                                    <span class="badge badge-green"
+                                      >&nbsp;&nbsp; Verify</span
+                                    >
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
+                            <br />
+                            <br />
+                            <!-- <a-pagination
+                              :current="paginationOptions.current"
+                              :total="paginationOptions.total"
+                              :pageSize="paginationOptions.pageSize"
+                              :showSizeChanger="
+                                paginationOptions.showSizeChanger
+                              "
+                              @change="paginationOptions.onChange"
+                            /> -->
+                          </a-table>
+                        </TableWrapper>
+                        <br />
+                        <br />
+                        <a-pagination
+                          :current="paginationOptions.current"
+                          :total="paginationOptions.total"
+                          :pageSize="paginationOptions.pageSize"
+                          :showSizeChanger="paginationOptions.showSizeChanger"
+                          @change="paginationOptions.onChange"
+                        />
+                      </div>
+                    </sdCards>
+                  </a-col>
+                </a-row>
               </div>
-            </a-form>
-          </BasicFormWrapper>
-        </div>
-      </a-modal>
+              <!-- <a-pagination
+                show-size-changer
+                :default-current="3"
+                :total="40"
+                @showSizeChange="onShowSizeChange"
+              /> -->
+            </sdCards>
+            <a-modal
+              title="HouseHold Size Validation"
+              :visible="isModalOpen"
+              @ok="handleOk(recordId, inputValue)"
+              @cancel="handleCancel"
+              class="title-success"
+            >
+              <div>
+                <h4>HouseHold Size Verification</h4>
+                <p>HH Size: {{ inputValue }}</p>
+                <input type="number" v-model="inputValue" />
+              </div>
+            </a-modal>
+          </a-col>
+        </a-row>
+      </SearchResultWrapper>
     </Main>
-  </RecordViewWrapper>
+  </div>
 </template>
+
 <script>
-import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-// import axios from "axios";
+import { SearchResultWrapper } from "../style";
+import {
+  computed,
+  onMounted,
+  ref,
+  reactive,
+  defineComponent,
+  watch,
+} from "vue";
 import authHeader from "../../../services/auth-header";
-import UserService from "../../../services/user.service";
-import { notification } from "ant-design-vue";
 import axios from "axios";
-import * as Yup from "yup";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+
+import { notification } from "ant-design-vue";
+
+// const households = ref([]);
 
 const columns = [
   {
-    title: "First Name",
+    title: "First name",
     dataIndex: "first_name",
-    key: "id",
+    key: "id_no",
   },
   {
-    title: "Middle Name",
-    dataIndex: "middle_name",
-    key: "id",
-  },
-  {
-    title: "Last Name",
+    title: "Last name",
     dataIndex: "last_name",
-    key: "id",
+    key: "id_no",
   },
   {
-    title: "Level",
-    dataIndex: "level_id",
-    key: "id",
-  },
-  {
-    title: "Location",
-    dataIndex: "location_id",
-    key: "id",
-  },
-  {
-    title: "Organization",
-    dataIndex: "org_types_id",
-    key: "id",
-  },
-  {
-    title: "Role",
-    dataIndex: "role_id",
-    key: "id",
-  },
-  {
-    title: "Phone Number",
+    title: "Phone number",
     dataIndex: "phone_no",
-    key: "id",
+    key: "id_no",
   },
   {
-    title: "Household Registered",
-    dataIndex: "household_registered",
-    key: "id",
+    title: "Household size",
+    dataIndex: "hh_size",
+    key: "id_no",
   },
   {
-    title: "Registration Days",
-    dataIndex: "registration_days",
-    key: "id",
+    title: "Village",
+    dataIndex: "location_id",
+    key: "id_no",
+  },
+  {
+    title: "CHP",
+    dataIndex: "chw_id",
+    key: "id_no",
+  },
+  {
+    title: "CHP Phone Number",
+    dataIndex: "chw_phone_no",
+    key: "id_no",
+  },
+  {
+    title: "Timestamp",
+    dataIndex: "created_at_time",
+    key: "id_no",
   },
   {
     title: "",
     dataIndex: "",
-    key: "users",
-    slots: { customRender: "users" },
+    key: "households",
+    slots: { customRender: "households" },
   },
 ];
-
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
+export default defineComponent({
+  name: "HouseHold Validation",
+  components: {
+    Main,
+    SearchResultWrapper,
+  },
+  data() {
+    return {
+      notData: this.searchData,
+      current: 0,
+      pageSize: 0,
+      visible: false,
+      confirmLoading: false,
+      modalType: "primary",
+      colorVisible: false,
+      households: [],
+    };
+  },
   methods: {
+    handleSearch(searchText) {
+      const data = this.searchData.filter((item) =>
+        item.title.toUpperCase().startsWith(searchText.toUpperCase())
+      );
+      this.notData = data;
+    },
+    onShowSizeChange(current, pageSize) {
+      this.current = current;
+      this.pageSize = pageSize;
+    },
+    searchData() {
+      return this.$store.state.headerSearch.data;
+    },
     handleCancel() {
       this.isModalOpen = false;
       this.visible = false;
       this.colorVisible = false;
     },
   },
-
   setup() {
-    const { state, dispatch } = useStore();
+    const { state } = useStore();
     const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const activeClass = ref("all");
+    const isModalOpen = ref(false);
+    const inputValue = ref("");
+    const household_id = ref("");
     const searchItem = ref("");
-    let isModalOpen = ref(false);
-    const counties = ref([]);
-    const sub_counties = ref([]);
-    const wards = ref([]);
-    const locations = ref([]);
-    const sub_locations = ref([]);
-    const villages = ref([]);
-    const roles = [
-      { id: 52, name: "CHP" },
-      { id: 51, name: "Village Elder" },
-    ];
+    const level_id = ref("");
+    const role_id = ref("");
+    const rt = useRouter();
+    const location_id = ref("");
 
-    console.log(authHeader());
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (!user) {
+      rt.push({ path: "/auth/login" });
+    } else {
+      level_id.value = user.user.level_id;
+      role_id.value = user.user.role_id;
+      location_id.value = user.user.location_id;
+      console.log(location_id.value);
+    }
 
-    const api_url = UserService;
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/update_chp_ve`;
-    const DEASSIGN_URL = `${process.env.VUE_APP_BASE_URL}/deassign_chp_ve`;
-
-    console.log(api_url);
-
-    onMounted(async () => {
-      try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/chp_ve`, {
-          method: "GET",
-          headers: authHeader(),
-        });
-        const data = await response.json();
-        const filteredUsers = data.data.filter((user) => {
-          // Assuming there is a property in the user object indicating their role, e.g., user.role
-          return user.role_id === "CHV" || user.role_id === "Village Elder";
-        });
-        dataSource.value = filteredUsers;
-        console.log(filteredUsers);
-      } catch (error) {
-        console.error(error);
-      }
+    onMounted(() => {
+      fetchData(); // Initial data fetch
     });
 
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
+    const paginationOptions = ref({
+      pageSize: 100,
+      showSizeChanger: true,
+      current: 1,
+      total: 0,
+      onChange: async (page, pageSize) => {
+        // Update the current page when the pagination changes
+        paginationOptions.value.current = page;
 
-    const ArticleSchema = Yup.object().shape({});
+        // Fetch data for the new page using the updated page number
+        try {
+          const response = await axios.get(
+            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}`,
+            { headers: authHeader() }
+          );
+          dataSource.value = response.data.data.data;
+          console.log(dataSource.value);
+          paginationOptions.value.total = response.data.data.total;
+        } catch (error) {
+          console.error(error);
+        }
+      },
+    });
 
-    const validate = (field) => {
-      ArticleSchema.validateAt(field, formState)
-        .then(() => (this.errors[field] = ""))
-        .catch((err) => {
-          this.errors[err.path] = err.message;
-        });
-    };
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}`;
 
-    var user_id = "";
+    console.log(location_id.value);
 
-    const handleAssignment = (id) => {
-      console.log("Assignment ready");
-      getCounties();
-      isModalOpen.value = true;
-      console.log("Record ID", id);
-      user_id = id;
-    };
+    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
-    const handleDeAssignment = (id) => {
-      const data = {
-        user_id: id,
-      };
-      console.log(data);
-
-      fetch(DEASSIGN_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ success }) => {
-          if (success) {
-            notification["success"]({
-              message: "User De-assigned successfully",
-              description: `User De-assigned from village to sub-county successfully`,
-              duration: 5.5,
-            });
-          }
-          // show error message from the api response
-          else {
-            notification["error"]({
-              message: "Error!",
-              description: "Failed to De-assigned",
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // Handle fetch errors here
-          notification["error"]({
-            message: "Error!",
-            description: `${error}`,
-            duration: 5.5,
-          });
-        });
-    };
-
-    // const handleCHPHouseholds = async (id) => {
+    // const exportHouseHoldData = async () => {
     //   try {
-    //     const response = await fetch(
-    //       `${process.env.VUE_APP_BASE_URL}/chw_households?chp_id=${id}`,
-    //       {
-    //         method: "GET",
-    //         headers: {
-    //           "Content-Type": "application/json",
-    //           ...authHeader(),
-    //         },
-    //       }
-    //     );
+    //     const response = await fetch(households_url, {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         ...authHeader(),
+    //       },
+    //     });
 
     //     if (!response.ok) {
-    //       throw new Error("Failed to fetch data");
-    //     } else {
-    //       console.log(response)
+    //       throw new Error("Failed to fetch export data");
     //     }
+
+    //     const fileBlob = await response.blob();
+    //     const fileName = "households.csv";
+    //     const link = document.createElement("a");
+    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+    //     link.setAttribute("download", fileName);
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     link.parentNode.removeChild(link);
     //   } catch (error) {
     //     console.error(error);
     //   }
     // };
 
-    const handleSubmit = () => {
-      const data = {
-        location_id: formState.location_id,
-        user_id: user_id, // Make sure user_id is defined
-        role_id: formState.role_id,
-      };
-      console.log(data);
+    const filteredData = computed(() => {
+      if (activeClass.value === "approved") {
+        console.log(dataSource.value);
+        return dataSource.value.filter((item) => item.isVerified === 1);
+      } else if (activeClass.value === "outliers") {
+        return dataSource.value.filter((item) => item.isVerified === 0);
+      } else {
+        return dataSource.value;
+      }
+    });
 
-      fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ success }) => {
-          if (success) {
-            notification["success"]({
-              message: "Success",
-              description: `User Reassigned mapped successfully`,
-              duration: 5.5,
-            });
-          }
-          // show error message from the api response
-          else {
-            notification["error"]({
-              message: "Error!",
-              description: "Fail to Reassigned User",
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // Handle fetch errors here
-          notification["error"]({
-            message: "Error!",
-            description: `${error}`,
-            duration: 5.5,
-          });
+    // const filteredData = computed(() => {
+    //   if (activeClass.value === "approved") {
+    //     return dataSource.value.filter((item) => item.isVerified === 1);
+    //   } else if (activeClass.value === "outliers") {
+    //     return dataSource.value.filter((item) => item.isVerified === 0);
+    //   } else {
+    //     return dataSource.value;
+    //   }
+    // });
+
+    const handleChange = (tab) => {
+      activeClass.value = tab;
+    };
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(API_URL, {
+          headers: authHeader(),
         });
+        dataSource.value = response.data.data.data;
+        paginationOptions.value.total = response.data.data.total;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    // Watch for changes in the activeClass and refetch data accordingly
+    watch(activeClass, async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${paginationOptions.value.current}&pageSize=${paginationOptions.value.pageSize}`,
+          { headers: authHeader() }
+        );
+        dataSource.value = response.data.data.data;
+        console.log(dataSource.value);
+        paginationOptions.value.total = response.data.data.total;
+      } catch (error) {
+        console.error(error);
+      }
+    });
+    const handleVerify = (hh_id, hh_size) => {
+      console.log({ hh_id, hh_size });
+      inputValue.value = hh_size;
+      isModalOpen.value = true;
+      household_id.value = hh_id;
     };
 
     const handleOk = async (id, inputValue) => {
-      console.log(id);
-      console.log(inputValue);
       try {
-        const response = await axios.post(API_URL, { headers: authHeader() });
-        console.log(response);
-        if (response.status == 200) {
-          notification.success({
-            message: "Success",
-            description: response.data.message,
-          });
-          inputValue = "";
-        } else if (response.status == 208) {
-          notification.info({
-            message: "Info",
-            description: response.data.message,
-          });
-          inputValue = "";
-        }
-      } catch (error) {
-        console.log(error);
-        notification.error({
-          message: "Error",
-          description:
-            "Reassignment Failed, User already started household registration",
-        });
-        inputValue = "";
-      } finally {
+        console.log(household_id.value);
+        const house_id = household_id.value;
         console.log(inputValue);
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen = true;
+
+        // Call the authHeader() function to get the authorization token
+        const headers = authHeader();
+
+        // Construct the URL
+        const url = `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`;
+
+        // Make the fetch request
+        fetch(url, {
+          method: "PATCH",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json", // Add any necessary headers
+          },
+          // body: JSON.stringify(data), // If you need to send a request body, add it here
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json(); // Parse the JSON response
+            }
+            throw new Error("Network response was not ok.");
+          })
+          .then((data) => {
+            console.log(data); // Handle the successful response data here
+            notification["success"]({
+              message: "HouseHold Verified",
+              description: `HouseHold has been verified successfully`,
+              duration: 5.5,
+            });
+            // location.reload();
+          })
+          .catch((error) => {
+            // Handle errors here
+            console.error(
+              "There has been a problem with your fetch operation:",
+              error
+            );
+            notification["error"]({
+              message: "HouseHold Not Verified",
+              description: `HouseHold verification failed`,
+              duration: 5.5,
+            });
+          })
+          .finally(() => {
+            inputValue = ""; // Clear inputValue after the modal is closed
+            isModalOpen.value = false;
+          });
+      } catch (error) {
+        // Handle exceptions here
+        console.error("Error:", error);
       }
-    };
-
-    // get counties
-    const getCounties = async () => {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_counties`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      counties.value = data.map((county) => ({
-        ...county,
-      }));
-    };
-
-    // sub_county
-    const getSubCounties = async (org_id) => {
-      console.log(org_id);
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      sub_counties.value = data.message;
-    };
-
-    //wards
-    const getWards = async (org_id) => {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      wards.value = data.message;
-    };
-
-    // locations
-    const getLocations = async (org_id) => {
-      console.log(org_id);
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      locations.value = data.message;
-    };
-
-    // sub-subcountues
-    const getSubLocations = async (org_id) => {
-      console.log(org_id);
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      sub_locations.value = data.message;
-    };
-
-    const getVillages = async (org_id) => {
-      console.log(org_id);
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      villages.value = data.message;
-    };
-
-    const deactivateUser = async (id) => {
-      console.log(id);
-      const confirm = window.confirm("Are you sure to deactivate this user?");
-      if (confirm) {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/users/${id}/toggleStatus`,
-          {
-            method: "POST",
-            headers: authHeader(),
-          }
-        );
-        console.log(response);
-      }
-      return false;
     };
 
     const formState = reactive({
       searchItem: "",
     });
 
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
     const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((user) => {
-          return (
-            regex.test(user.first_name) ||
-            regex.test(user.last_name) ||
-            regex.test(user.level_id) ||
-            regex.test(user.org_types_id) ||
-            regex.test(user.location_id) ||
-            regex.test(user.id_no)
-          );
-        });
-      }
+      const start =
+        (paginationOptions.value.current - 1) *
+        paginationOptions.value.pageSize;
+      const end = start + paginationOptions.value.pageSize;
+      return filteredData.value.slice(start, end);
     });
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
 
     return {
       crud,
       isLoading,
       selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
       dataSource,
       columns,
       formState,
-      isDeactivated: false,
-      deactivateUser,
+      // exportHouseHoldData,
+      filteredData,
+      handleChange,
+      activeClass,
+      handleVerify,
+      isModalOpen,
+      inputValue,
+      household_id,
+      handleOk,
       results,
       searchItem,
-      counties,
-      sub_counties,
-      wards,
-      locations,
-      sub_locations,
-      villages,
-      getCounties,
-      getSubCounties,
-      getWards,
-      getLocations,
-      getSubLocations,
-      getVillages,
-      roles,
-      validate,
-      handleAssignment,
-      handleSubmit,
-      handleOk,
-      isModalOpen,
-      handleDeAssignment,
-      // toggleUserStatus /*, deactivate user */,
+      paginationOptions,
     };
   },
+  props: {
+    recordId: Number,
+    hh_size: Number,
+  },
 });
-
-export default DragAndDropTable;
 </script>
-
 <style>
-/* You can style the toggle switch as needed */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-input:checked + .slider {
+.badge-green {
   background-color: #1ec997;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #1ec997;
-}
-
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
+  /* color: white; */
+  /* padding: 2px;
+  border-radius: 3px; */
+  /* size */
+  font-size: 12px;
 }
 </style>
