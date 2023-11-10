@@ -365,14 +365,28 @@ export default defineComponent({
     //   } catch (error) {
     //     console.error(error);
     //   }
-    // };
+    // };   household_outliers
+
+    const fetchOutliers = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/household_outliers?sub_county_id=${location_id.value}&page=${paginationOptions.value.current}&pageSize=${paginationOptions.value.pageSize}`,
+          { headers: authHeader() }
+        );
+
+        dataSource.value = response.data.data.data;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
         console.log(dataSource.value);
         return dataSource.value.filter((item) => item.isVerified === 1);
       } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
+        fetchOutliers(); // Call the asynchronous function to fetch data
+        return dataSource.value;
       } else {
         return dataSource.value;
       }
