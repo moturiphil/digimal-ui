@@ -81,7 +81,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "No of Users",
+    title: "No of Households",
     dataIndex: "",
     key: "id",
   },
@@ -122,6 +122,7 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
+        console.log(data);
         dataSource.value = data;
       } catch (error) {
         console.error(error);
