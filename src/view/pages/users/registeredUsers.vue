@@ -60,7 +60,6 @@
                       </div>
                     </td>
                   </template> -->
-
                   <!-- <template #users="{ record }">
                     <td :style="{ 'margin-left': '4px' }">
                       <div class="table-actions">
