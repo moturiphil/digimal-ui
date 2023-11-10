@@ -357,6 +357,14 @@ const routes = [
       ),
   },
   {
+    path: "/verify-chp-hh/:id",
+    name: "verify-chp-hh",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/verifyCHPHH.vue"
+      ),
+  },
+  {
     path: "/households/summary",
     name: "hh-summary",
     component: () =>
