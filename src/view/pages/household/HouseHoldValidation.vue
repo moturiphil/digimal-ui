@@ -1,6 +1,17 @@
 <template>
   <div>
-    <sdPageHeader ghost title="HouseHold Validation" />
+    <sdPageHeader ghost title="HouseHold Validations">
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name, level, location or organization"
+          />
+        </div>
+      </template>
+    </sdPageHeader>
 
     <Main>
       <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
@@ -99,7 +110,7 @@
                         >
                           <a-table
                             :pagination="false"
-                            :dataSource="filteredData"
+                            :dataSource="searchResults"
                             :columns="columns"
                           >
                             <template #households="{ record }">
@@ -509,6 +520,24 @@ export default defineComponent({
       return filteredData.value.slice(start, end);
     });
 
+    const searchResults = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((user) => {
+          return (
+            regex.test(user.user_name) ||
+            regex.test(user.level_id) ||
+            regex.test(user.org_types_id) ||
+            regex.test(user.id_no) ||
+            regex.test(user.location_id)
+          );
+        });
+      }
+    });
+
     return {
       crud,
       isLoading,
@@ -528,6 +557,7 @@ export default defineComponent({
       results,
       searchItem,
       paginationOptions,
+      searchResults
     };
   },
   props: {
