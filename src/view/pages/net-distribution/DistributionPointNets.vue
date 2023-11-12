@@ -1,6 +1,6 @@
 <template>
     <RecordViewWrapper>
-      <sdPageHeader title="Nets Summary At Distribution Point">
+      <sdPageHeader title="Nets Summary At Drop Off">
         <template #subTitle>
           <sdButton class="btn-add_new" size="default" type="success">
           </sdButton>
@@ -42,7 +42,7 @@
   
   const columns = [
   {
-      title: "Distribution Point",
+      title: " Drop Off",
       dataIndex: "drop_off_point_id",
       key: "id",
     },
