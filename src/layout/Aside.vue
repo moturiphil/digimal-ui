@@ -99,11 +99,11 @@
         <template v-slot:title>
           <sdFeatherIcons type="map-pin" /><span>Drop-off Point</span>
         </template>
-        <a-menu-item key="widgetDropOffPoint" v-if="canCreateDropOffPoint">
+        <!-- <a-menu-item key="widgetDropOffPoint" v-if="canCreateDropOffPoint">
           <router-link to="/nets/distribution-point">
             Create Drop-off Point
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item key="widgetListDropOffPoint" v-if="canViewDropOffPoint">
           <router-link to="/nets/distribution-points">
             List Drop-off Point
@@ -118,9 +118,9 @@
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Distribution Post</span>
         </template>
-        <a-menu-item key="widgetCreatePost" v-if="canCreateDistributionPost">
+        <!-- <a-menu-item key="widgetCreatePost" v-if="canCreateDistributionPost">
           <router-link to="/nets/post-create"> Create Post </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item
           key="widgetDistributionPost"
           v-if="canViewDistributitionPostRole"
@@ -144,7 +144,7 @@
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
         </a-menu-item>
         <a-menu-item key="">
-          <router-link to="/stock-status">Stock Status </router-link>
+          <router-link to="/stock-status">Meds Issuance </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu v-if="canViewPayroll && isLevelOne">
