@@ -144,7 +144,7 @@
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
         </a-menu-item>
         <a-menu-item key="">
-          <router-link to="/stock-status">Stock Status </router-link>
+          <router-link to="/stock-status">Meds Issuance </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu v-if="canViewPayroll && isLevelOne">
