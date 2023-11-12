@@ -1,157 +1,229 @@
 <template>
-    <RecordViewWrapper>
-      <sdPageHeader title="Stock Status">
-        <template #subTitle>
-          <sdButton class="btn-add_new" size="default" type="success">
-            <!-- <router-link to="/campaigns/create-campaign">
-              <sdFeatherIcons type="plus" size="14" /> Start New
-              Campaign</router-link
-            > -->
-          </sdButton>
-        </template>
-        <!-- <template #buttons>
-          <div class="search-box">
-            <span class="search-icon">
-              <sdFeatherIcons type="search" size="14" />
-            </span></div
-        ></template> -->
-      </sdPageHeader>
-      <Main>
-        <a-row :gutter="15">
-          <a-col class="w-100" :md="24">
+  <div>
+    <sdPageHeader ghost title="MEDS Issuance">
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by user, event or ip address..."
+          /></div
+      ></template>
+    </sdPageHeader>
+    <Main>
+      <SearchResultWrapper>
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <div class="search-filter-menu"></div>
+          </a-col>
+          <a-col :xs="24">
             <sdCards headless>
-              <div v-if="isLoading" class="spin">
-                <a-spin />
-              </div>
-  
-              <div v-else>
-                <TableWrapper class="table-data-view table-responsive">
-                  <a-table
-                    :pagination="{ pageSize: 50, showSizeChanger: true }"
-                    :dataSource="dataSource"
-                    :columns="columns"
-                  />
-                </TableWrapper>
+              <div class="result-list-content">
+                <a-row :gutter="15">
+                  <a-col class="w-100" :md="24">
+                    <sdCards headless>
+                      <div v-if="isLoading" class="spin">
+                        <a-spin />
+                      </div>
+
+                      <div v-else>
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'all'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 50,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="results"
+                            :columns="columns"
+                          >
+                            <template>
+                              <td :style="{ 'margin-left': '4px' }">
+                                <div class="table-actions"></div>
+                              </td>
+                            </template>
+                          </a-table>
+                        </TableWrapper>
+                      </div>
+                    </sdCards>
+                  </a-col>
+                </a-row>
               </div>
             </sdCards>
           </a-col>
         </a-row>
-        <a-col :xs="24">
-          <DragAndDropTable />
-        </a-col>
-      </Main>
-    </RecordViewWrapper>
-  </template>
-  <script>
-  import { RecordViewWrapper } from "../style";
-  import { Main, TableWrapper } from "../../styled";
-  import { useStore } from "vuex";
-  import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-  import authHeader from "../../../services/auth-header";
-  
-  const columns = [
-    {
-      title: "Product Name",
-      dataIndex: "product_name",
-      key: "id",
+      </SearchResultWrapper>
+    </Main>
+  </div>
+</template>
+
+<script>
+import { Main } from "../../styled";
+import { SearchResultWrapper } from "./../style";
+import { computed, onMounted, ref, defineComponent } from "vue";
+import authHeader from "../../../services/auth-header";
+import axios from "axios";
+import { useStore } from "vuex";
+
+const columns = [
+  {
+    title: "County",
+    dataIndex: "county",
+    key: "id",
+  },
+  {
+    title: "Sub County",
+    dataIndex: "sub_county",
+    key: "id",
+  },
+  {
+    title: "Drop Off",
+    dataIndex: "facility_name",
+    key: "id",
+  },
+  {
+    title: "Drop_off Code",
+    dataIndex: "facility_mfl_code",
+    key: "",
+  },
+  {
+    title: "Number of Bales",
+    dataIndex: "number_of_bales",
+    key: "id",
+  },
+  {
+    title: "Number of Nets",
+    dataIndex: "number_of_nets",
+    key: "id",
+  },
+  // {
+  //   title: "Received By",
+  //   dataIndex: "received_by",
+  //   key: "",
+  // },
+  // {
+  //   title: "Date Received",
+  //   dataIndex: "date_received",
+  //   key: "",
+  // },
+  // {
+  //   title: "Status",
+  //   dataIndex: "",
+  //   key: "",
+  // },
+];
+export default defineComponent({
+  name: "HouseHold Validation",
+  components: {
+    Main,
+    SearchResultWrapper,
+  },
+  data() {
+    return {
+      notData: this.searchData,
+      current: 0,
+      pageSize: 0,
+      visible: false,
+      confirmLoading: false,
+      modalType: "primary",
+      colorVisible: false,
+      payroll: [],
+    };
+  },
+  methods: {
+    handleSearch(searchText) {
+      const data = this.searchData.filter((item) =>
+        item.title.toUpperCase().startsWith(searchText.toUpperCase())
+      );
+      this.notData = data;
     },
-    {
-      title: "Warehouse ID",
-      dataIndex: "warehouse_id",
-      key: "id",
+    onShowSizeChange(current, pageSize) {
+      this.current = current;
+      this.pageSize = pageSize;
     },
-    {
-      title: "Warehouse Name",
-      dataIndex: "warehouse_name",
-      key: "id",
+    searchData() {
+      return this.$store.state.headerSearch.data;
     },
-    {
-      title: "Product Type",
-      dataIndex: "StockUom",
-      key: "id",
-    },
-    {
-      title: "Quantity Available",
-      dataIndex: "quantity_available",
-      key: "id",
-    },
-  ];
-  
-  const DragAndDropTable = defineComponent({
-    name: "ViewPage",
-    components: { RecordViewWrapper, Main, TableWrapper },
-  
-    setup() {
-      const { state, dispatch } = useStore();
-      const crud = computed(() => state.crud.data);
-      const isLoading = computed(() => state.crud.loading);
-      const selectedRowKeys = ref([]);
-      const dataSource = ref([]);
-  
-      console.log(authHeader());
-  
-    //   const api_url = UserService;
-    //   console.log(api_url);
-  
-      onMounted(async () => {
-        try {
-          const response = await fetch(`http://196.201.229.186:8091/api/InventoryMaster/Getstock`, 
-          // const response = await fetch(`${process.env.VUE_APP_BASE_URL}/stock_status`, 
-          {
-            method: "GET",
-            // headers: authHeader(),
-          });
-          console.log(response);
-          const data = await response.json();
-          // console.log(data);
-          dataSource.value = data;
-          console.log(data);
-        } catch (error) {
+  },
+  setup() {
+    const { state } = useStore();
+    const crud = computed(() => state.crud.data);
+    const isLoading = computed(() => state.crud.loading);
+    const selectedRowKeys = ref([]);
+    const dataSource = ref([]);
+    const activeClass = ref("all");
+    const searchItem = ref("");
+
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/meds_issuance`;
+
+    const handleChange = (tab) => {
+      activeClass.value = tab;
+    };
+
+    // const tableData = ref([]);
+
+    onMounted(() => {
+      axios
+        .get(API_URL, {
+          headers: authHeader(),
+        })
+        .then((response) => {
+          console.log(response.data.data);
+          dataSource.value = response.data.data;
+          // console.log(dataSource.value);
+          console.log(dataSource.value);
+        })
+        .catch((error) => {
           console.error(error);
-        }
-      });
-  
-      const handleDelete = (id) => {
-        const confirm = window.confirm("Are you sure delete this?");
-        if (confirm) {
-          dispatch("axiosDataDelete", {
-            id,
-            getData: () => {
-              dispatch("axiosCrudGetData");
-            },
-          });
-        }
-        return false;
-      };
-  
-      const formState = reactive({
-        searchItem: "",
-      });
-  
-      const onSelectChange = (selectedRowKey) => {
-        selectedRowKeys.value = selectedRowKey;
-      };
-  
-      const rowSelection = {
-        selectedRowKeys,
-        onChange: onSelectChange,
-      };
-  
-      return {
-        crud,
-        isLoading,
-        selectedRowKeys,
-        handleDelete,
-        rowSelection,
-        onSelectChange,
-        dataSource,
-        columns,
-        formState,
-      };
-    },
-  });
-  
-  export default DragAndDropTable;
-  
-  </script>
-    
+        });
+    });
+
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((event) => {
+          return (
+            regex.test(event.user) ||
+            regex.test(event.event) ||
+            regex.test(event.ip_address)
+          );
+        });
+      }
+    });
+
+    return {
+      crud,
+      isLoading,
+      selectedRowKeys,
+      results,
+      searchItem,
+      columns,
+      handleChange,
+      activeClass,
+      // handleVerify,
+    };
+  },
+});
+</script>
+<style>
+.badge-green {
+  background-color: #1ec997;
+  font-size: 12px;
+}
+</style>
+
+<style>
+.badge-green {
+  background-color: #1ec997;
+  color: white;
+  padding: 4px;
+  margin-bottom: 18px;
+  border-radius: 3px;
+}
+</style>

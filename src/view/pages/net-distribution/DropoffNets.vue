@@ -77,14 +77,14 @@
                       <a-select
                         v-model:value="formState.received_from"
                         v-if="!loading"
-                        placeholder="Select Received By"
+                        placeholder="Select Received From"
                       >
                         <a-select-option value="KEMSA">KEMSA</a-select-option>
                         <a-select-option value="MEDS">MEDS</a-select-option>
                       </a-select>
                     </a-form-item>
 
-                    <a-form-item name="received_by" label="Received By">
+                    <!-- <a-form-item name="received_by" label="Received By">
                       <a-select
                         v-model:value="formState.received_by"
                         v-if="!loading"
@@ -99,7 +99,7 @@
                           {{ user.last_name }} - {{ user.id_no }}
                         </a-select-option>
                       </a-select>
-                    </a-form-item>
+                    </a-form-item> -->
 
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
@@ -183,17 +183,17 @@ const AddNew = defineComponent({
     };
 
     //users
-    const getUsers = async () => {
-      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
-      const data = await response.json();
-      this.users = data.data;
-    };
+    // const getUsers = async () => {
+    //   const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+    //     method: "GET",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       ...authHeader(),
+    //     },
+    //   });
+    //   const data = await response.json();
+    //   this.users = data.data;
+    // };
     const getCampaigns = async () => {
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/campaign_all`,
@@ -211,7 +211,7 @@ const AddNew = defineComponent({
     };
 
     onMounted(() => {
-      getUsers();
+      // getUsers();
       getVillages();
       getCampaigns();
       drop_off_point_id;
@@ -229,9 +229,9 @@ const AddNew = defineComponent({
           .toISOString()
           .substr(0, 10),
         received_from: values.received_from,
-        received_by: values.received_by,
+        // received_by: values.received_by,
       };
-      console.log(values);
+      console.log(JSON.stringify(values));
       fetch(API_URL, {
         method: "POST",
         headers: {

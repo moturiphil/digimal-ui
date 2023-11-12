@@ -94,6 +94,14 @@ export default [
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/NetsDropoff.vue"
           ),
       },
+      {
+        name: "meds-supplies",
+        path: "meds-supplies",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/MedsIssuance.vue"
+          ),
+      },
     ],
   },
   {
