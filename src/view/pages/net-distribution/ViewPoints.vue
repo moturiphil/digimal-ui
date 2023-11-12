@@ -212,11 +212,6 @@ const columns = [
     key: "id",
   },
   {
-    title: "Campaign",
-    dataIndex: "campaign_id",
-    key: "id",
-  },
-  {
     title: "Action",
     dataIndex: "",
     key: "point",
