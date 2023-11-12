@@ -46,11 +46,11 @@ const columns = [
     dataIndex: "drop_off_point_id",
     key: "id",
   },
-  {
-    title: "Campaign",
-    dataIndex: "campaign_id",
-    key: "id",
-  },
+  // {
+  //   title: "Campaign",
+  //   dataIndex: "campaign_id",
+  //   key: "id",
+  // },
   {
     title: "No of Bales",
     dataIndex: "no_of_bales",
@@ -66,11 +66,11 @@ const columns = [
     dataIndex: "delivery_note",
     key: "id",
   },
-  {
-    title: "Delivery Note",
-    dataIndex: "delivery_note",
-    key: "id",
-  },
+  // {
+  //   title: "Delivery Note",
+  //   dataIndex: "delivery_note",
+  //   key: "id",
+  // },
   {
     title: "Received By",
     dataIndex: "received_by",
