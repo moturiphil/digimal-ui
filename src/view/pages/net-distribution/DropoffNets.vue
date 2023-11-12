@@ -20,7 +20,7 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <a-form-item name="campaign_id" label="Campaign Name">
+                    <!-- <a-form-item name="campaign_id" label="Campaign Name">
                       <a-select
                         size="large"
                         name="basic-select"
@@ -34,8 +34,8 @@
                           :key="campaign.id"
                           >{{ campaign.name }}</a-select-option
                         >
-                      </a-select>
-                    </a-form-item>
+                      </a-select> -->
+                    <!-- </a-form-item> -->
                     <!-- <a-form-item name="bale_size" label="Bale Size">
                       <a-input
                         v-model:value="formState.bale_size"
@@ -49,8 +49,8 @@
                         v-model:value="formState.bale_size"
                         placeholder="Select Bale Size"
                       >
-                        <a-select-option value=40 >40</a-select-option>
-                        <a-select-option value=50 >50</a-select-option>
+                        <a-select-option value="40">40</a-select-option>
+                        <a-select-option value="50">50</a-select-option>
                       </a-select>
                     </a-form-item>
                     <a-form-item name="no_of_bales" label="Number of Bales">
@@ -60,19 +60,48 @@
                         type="number"
                       />
                     </a-form-item>
-                    <a-form-item name="delivery_note" label="Delivery Note No.">
+
+                    <a-form-item name="no_of_pieces" label="Number of Pieces">
+                      <a-input
+                        v-model:value="formState.no_of_pieces"
+                        placeholder="Enter number of pieces"
+                        type="number"
+                        @change="validateNoOfPieces"
+                      />
+                    </a-form-item>
+                    <!-- <a-form-item name="delivery_note" label="Delivery Note No.">
                       <a-input
                         v-model:value="formState.delivery_note"
                         placeholder="Delivery Note No."
                       />
+                    </a-form-item> -->
+
+                    <a-form-item name="delivery_note" label="Delivery Note No.">
+                      <a-select
+                        placeholder="Select Delivery Note No"
+                        v-model:value="formState.delivery_note"
+                        v-if="!loading"
+                        show-search
+                        option-filter-prop="label"
+                      >
+                        <a-select-option
+                          v-for="note in delivery_notes"
+                          :key="note"
+                          :value="note"
+                          :label="note"
+                        >
+                          {{ note }}
+                        </a-select-option>
+                      </a-select>
                     </a-form-item>
-                    <a-form-item name="date_received" label="Date Received">
+
+                    <!-- <a-form-item name="date_received" label="Date Received">
                       <a-date-picker
                         :style="{ width: '100%' }"
                         v-model:value="formState.date_received"
                         :format="dateFormat"
                       />
-                    </a-form-item>
+                    </a-form-item> -->
                     <a-form-item name="received_from" label="Received From">
                       <a-select
                         v-model:value="formState.received_from"
@@ -148,11 +177,11 @@ const AddNew = defineComponent({
     const drop_off_point_id = parameters.query.id;
 
     const formState = reactive({
-      campaign_id: "",
+      // campaign_id: "",
       bale_size: "",
       no_of_bales: "",
+      no_of_pieces: "",
       delivery_note: "",
-      date_received: "",
       received_from: "",
       received_by: "",
     });
@@ -242,22 +271,20 @@ const AddNew = defineComponent({
       getVillages();
       getCampaigns();
       drop_off_point_id;
-      fetchDeliveryNotes()
+      fetchDeliveryNotes();
     });
     // console.log(formState.isFacility)
     const handleSubmit = (values) => {
       console.log(values);
       values = {
-        campaign_id: values.campaign_id,
+        campaign_id: 1,
         drop_off_point_id: drop_off_point_id,
         bale_size: values.bale_size,
         no_of_bales: values.no_of_bales,
+        no_of_pieces: values.no_of_pieces,
         delivery_note: values.delivery_note,
-        date_received: new Date(values.date_received)
-          .toISOString()
-          .substr(0, 10),
+        date_received: new Date().toISOString().substr(0, 10),
         received_from: values.received_from,
-        // received_by: values.received_by,
       };
       console.log(JSON.stringify(values));
       fetch(API_URL, {
