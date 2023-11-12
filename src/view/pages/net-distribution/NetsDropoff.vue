@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="All Distribution Points">
+    <sdPageHeader title="All Drop Off Points">
       <template #subTitle>
         <sdButton class="btn-add_new" size="small" type="success"> </sdButton>
       </template>

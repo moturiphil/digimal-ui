@@ -45,11 +45,10 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="paperclip" size="16" />
-                            &nbsp;&nbsp; Receive Nets
+                              Receive Nets
                           </router-link>
                         </sdButton>
-                        &nbsp;&nbsp;
+                        &nbsp;&nbsp; 
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -62,10 +61,10 @@
                             type="info"
                             shape="circle"
                           >
-                            &nbsp;&nbsp; Net Transfers
+                            Net Transfers
                           </router-link>
                         </sdButton>
-                        &nbsp;&nbsp;
+                        &nbsp;&nbsp; 
                         <sdButton
                           size="extra-small"
                           type="success"
@@ -87,7 +86,7 @@
                             type="info"
                             shape="circle"
                           >
-                            &nbsp;&nbsp; Returned Nets
+                            Returned Nets
                           </router-link>
                         </sdButton>
                       </div>
@@ -127,13 +126,6 @@
                       </a-select-option>
                     </a-select>
                   </a-form-item>
-                  <!-- <a-form-item name="bale_size" label="Bale Size">
-                    <a-input
-                      v-model:value="formState.bale_size"
-                      placeholder="Bale size"
-                      type="number"
-                    />
-                  </a-form-item> -->
                   <a-form-item name="bale_size" label="Bale Size">
                     <a-select
                       v-model:value="formState.bale_size"
