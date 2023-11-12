@@ -141,6 +141,7 @@ const AddNew = defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/net_deliveries_drop_of_points`;
     const router = useRouter();
     const { query } = useRoute();
+    const delivery_notes = ref([]);
     // const drop_off_point_id = query.id;
     const parameters = { query };
 
@@ -210,11 +211,38 @@ const AddNew = defineComponent({
       this.campaigns = data.data;
     };
 
+    const fetchDeliveryNotes = async () => {
+      try {
+        await fetch(`${process.env.VUE_APP_BASE_URL}/delivery notes`, {
+          method: "GET",
+          headers: authHeader(),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            delivery_notes.value = data.data;
+            console.log(delivery_notes.value);
+          })
+          .catch((error) => {
+            notification.error({
+              message: "Error",
+              description: `${error}`,
+            });
+            // isModalOpen.value = false;
+          });
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      }
+    };
+
     onMounted(() => {
       // getUsers();
       getVillages();
       getCampaigns();
       drop_off_point_id;
+      fetchDeliveryNotes()
     });
     // console.log(formState.isFacility)
     const handleSubmit = (values) => {
@@ -270,6 +298,7 @@ const AddNew = defineComponent({
       villages,
       campaigns,
       users,
+      delivery_notes,
     };
   },
 });

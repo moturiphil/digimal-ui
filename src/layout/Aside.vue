@@ -109,6 +109,11 @@
             List Drop-off Point
           </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetDropOffPointReceives" v-if="canViewDropOffPoint">
+          <router-link to="/nets/drop-off">
+            Dropoff Receives
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
       <a-sub-menu
@@ -147,11 +152,11 @@
           <router-link to="/stock-status">Meds Issuance </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu v-if="canViewPayroll && isLevelOne">
+      <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
         <template v-slot:title>
           <sdFeatherIcons type="credit-card" /><span>Payroll</span>
         </template>
-        <a-sub-menu>
+        <a-sub-menu key="gf-payroll">
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
@@ -169,7 +174,7 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-sub-menu>
+        <a-sub-menu key="pmi-payrolly">
           <template v-slot:title>
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
