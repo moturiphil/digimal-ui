@@ -111,7 +111,7 @@
         </a-menu-item>
         <a-menu-item key="widgetDropOffPointReceives" v-if="canViewDropOffPoint">
           <router-link to="/nets/drop-off">
-            Dropoff Receives
+            Dropoff Receipts
           </router-link>
         </a-menu-item>
       </a-sub-menu>
@@ -149,7 +149,7 @@
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
         </a-menu-item>
         <a-menu-item key="">
-          <router-link to="/stock-status">Meds Issuance </router-link>
+          <router-link to="/stock-status">Meds Issues</router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
