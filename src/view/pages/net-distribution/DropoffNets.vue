@@ -49,8 +49,8 @@
                         v-model:value="formState.bale_size"
                         placeholder="Select Bale Size"
                       >
-                        <a-select-option value=40 >40</a-select-option>
-                        <a-select-option value=50 >50</a-select-option>
+                        <a-select-option value="40">40</a-select-option>
+                        <a-select-option value="50">50</a-select-option>
                       </a-select>
                     </a-form-item>
                     <a-form-item name="no_of_bales" label="Number of Bales">
@@ -60,12 +60,32 @@
                         type="number"
                       />
                     </a-form-item>
-                    <a-form-item name="delivery_note" label="Delivery Note No.">
+                    <!-- <a-form-item name="delivery_note" label="Delivery Note No.">
                       <a-input
                         v-model:value="formState.delivery_note"
                         placeholder="Delivery Note No."
                       />
+                    </a-form-item> -->
+
+                    <a-form-item name="delivery_note" label="Delivery Note No.">
+                      <a-select
+                        placeholder="Select Delivery Note No"
+                        v-model:value="formState.delivery_note"
+                        v-if="!loading"
+                        show-search
+                        option-filter-prop="label"
+                      >
+                        <a-select-option
+                          v-for="note in delivery_notes"
+                          :key="note"
+                          :value="note"
+                          :label="note"
+                        >
+                          {{ note }}
+                        </a-select-option>
+                      </a-select>
                     </a-form-item>
+
                     <a-form-item name="date_received" label="Date Received">
                       <a-date-picker
                         :style="{ width: '100%' }"
@@ -242,7 +262,7 @@ const AddNew = defineComponent({
       getVillages();
       getCampaigns();
       drop_off_point_id;
-      fetchDeliveryNotes()
+      fetchDeliveryNotes();
     });
     // console.log(formState.isFacility)
     const handleSubmit = (values) => {
