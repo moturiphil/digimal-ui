@@ -175,10 +175,10 @@
                     />
                   </a-form-item> -->
 
-                  <a-form-item name="Serial Number" label="Serial Number">
+                  <a-form-item name="S11 Serial Number" label="S11 Serial Number">
                     <a-input
                       v-model:value="formState.delivery_note_number"
-                      placeholder="Delivery Note Number"
+                      placeholder="S11 Serial Number"
                     />
                   </a-form-item>
                   <div class="record-form-actions text-right">

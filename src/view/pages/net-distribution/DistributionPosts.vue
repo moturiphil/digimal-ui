@@ -88,10 +88,9 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
-                          <!-- <sdFeatherIcons type="mail"    /> -->
+                        <!-- <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
                           &nbsp;&nbsp; Message HH's
-                        </sdButton>
+                        </sdButton> -->
                        
                       </div>
                     </td>
@@ -148,22 +147,22 @@ const columns = [
     dataIndex: "distribution_location_id",
     key: "",
   },
-  // {
-  //   title: "Distribution Post Code",   // distribution_sublocation_id
-  //   dataIndex: "post_code",
-  //   key: "post_code",
-  // },
-  // {
-  //   title: "Supervisor Name",
-  //   dataIndex: "post_supervisor_user_id",
-  //   key: "post_supervisor_user_id",
-  // },
-  // {
-  //   title: "",
-  //   dataIndex: "",
-  //   key: "activities",
-  //   slots: { customRender: "activities" },
-  // },
+  {
+    title: "Distribution Post Code",   // distribution_sublocation_id
+    dataIndex: "post_code",
+    key: "post_code",
+  },
+  {
+    title: "Supervisor Name",
+    dataIndex: "post_supervisor_user_id",
+    key: "post_supervisor_user_id",
+  },
+  {
+    title: "",
+    dataIndex: "",
+    key: "activities",
+    slots: { customRender: "activities" },
+  },
 ];
 
 const DragAndDropTable = defineComponent({
