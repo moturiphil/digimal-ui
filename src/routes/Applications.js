@@ -105,6 +105,14 @@ export default [
     ],
   },
   {
+    name: "dropoff-assign-posts",
+    path: "dropoff/assign-posts",
+    component: () =>
+      import(
+        /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/AssignDropOffPosts.vue"
+      ),
+  },
+  {
     name: "hh-nets-distributed",
     path: "hh-nets-distributed",
     component: () =>

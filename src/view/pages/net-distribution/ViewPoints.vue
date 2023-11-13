@@ -52,6 +52,23 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
+                              path: `/dropoff/assign-posts`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                              Assign Posts
+                          </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp; 
+                        <sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
                               path: `/nets/nets-transfer-dropoff`,
                               query: {
                                 id: record.id,
@@ -182,7 +199,7 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-// import axios from "axios";
+// import axios from "axios";  drop_off_manager
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
@@ -201,6 +218,11 @@ const columns = [
   {
     title: "Sub County",
     dataIndex: "sub_county_id",
+    key: "id",
+  },
+  {
+    title: "Drop off Manager",
+    dataIndex: "drop_off_manager",
     key: "id",
   },
   {
@@ -245,6 +267,7 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
