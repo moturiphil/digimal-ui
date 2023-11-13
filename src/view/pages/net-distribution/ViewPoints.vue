@@ -45,10 +45,10 @@
                             type="info"
                             shape="circle"
                           >
-                              Receive Nets
+                            Receive Nets
                           </router-link>
                         </sdButton>
-                        &nbsp;&nbsp; 
+                        &nbsp;&nbsp;
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -62,10 +62,10 @@
                             type="info"
                             shape="circle"
                           >
-                              Assign Posts
+                            Assign Posts
                           </router-link>
                         </sdButton>
-                        &nbsp;&nbsp; 
+                        &nbsp;&nbsp;
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -81,7 +81,7 @@
                             Net Transfers
                           </router-link>
                         </sdButton>
-                        &nbsp;&nbsp; 
+                        &nbsp;&nbsp;
                         <sdButton
                           size="extra-small"
                           type="success"
@@ -159,18 +159,23 @@
                       type="number"
                     />
                   </a-form-item>
-                  <a-form-item name="issue_date" label="Date of Issue">
+                  <a-form-item name="no_of_pieces" label="Number of Pieces">
+                    <a-input
+                      v-model:value="formState.no_of_pieces"
+                      placeholder="Enter number of pieces"
+                      type="number"
+                      @change="validateNoOfPieces"
+                    />
+                  </a-form-item>
+                  <!-- <a-form-item name="issue_date" label="Date of Issue">
                     <a-date-picker
                       :style="{ width: '100%' }"
                       v-model:value="formState.issue_date"
                       :format="dateFormat"
                     />
-                  </a-form-item>
+                  </a-form-item> -->
 
-                  <a-form-item
-                    name="delivery_note_number"
-                    label="Delivery Note Number"
-                  >
+                  <a-form-item name="Serial Number" label="Serial Number">
                     <a-input
                       v-model:value="formState.delivery_note_number"
                       placeholder="Delivery Note Number"
@@ -202,7 +207,7 @@ import { computed, onMounted, ref, reactive, defineComponent } from "vue";
 // import axios from "axios";  drop_off_manager
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-import dayjs from "dayjs";
+// import dayjs from "dayjs";
 const dateFormat = "YYYY-MM-DD";
 const columns = [
   {
@@ -251,12 +256,12 @@ const DragAndDropTable = defineComponent({
       drop_off_point_id: "",
       bale_size: "",
       number_of_bales: "",
+      no_of_pieces: "",
       issue_date: "",
       delivery_note_number: "",
     });
 
     onMounted(async () => {
-      fetchPosts();
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`,
@@ -297,6 +302,8 @@ const DragAndDropTable = defineComponent({
       }
     };
 
+    fetchPosts();
+
     const handleIssue = async () => {
       try {
         const data = {
@@ -304,11 +311,12 @@ const DragAndDropTable = defineComponent({
           drop_off_point_id: formState.drop_off_point_id,
           bale_size: formState.bale_size,
           number_of_bales: formState.number_of_bales,
-          issue_date: dayjs(formState.issue_date).format("YYYY-MM-DD"),
+          number_of_pieces: formState.no_of_pieces,
+          issue_date: new Date().toISOString().substr(0, 10),
           delivery_note_number: formState.delivery_note_number,
         };
 
-        console.log(data);
+        console.log(JSON.stringify(data));
         await fetch(
           `${process.env.VUE_APP_BASE_URL}/issue_nets_from_drop_off_to_post`,
           {

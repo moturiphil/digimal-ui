@@ -20,7 +20,6 @@
                       <a-transfer
                         :dataSource="distribution_posts"
                         showSearch
-                        v-model="targetKeys"
                         :targetKeys="targetKeys"
                         :render="(item) => item.title"
                         :filterOption="filterOption"
@@ -84,16 +83,17 @@ export default defineComponent({
 
     const targetKeys = ref([]); // Use ref for reactivity
     const formState = reactive({
-      role_id: "",
+      //   drop_off_point_id: "",
       post_ids: [],
     });
 
     onMounted(() => {
       fetchPosts();
       fetchRoles();
-      fetchRolePerm();
+      fetchDropoffPosts();
     });
 
+    // Fetch all distribution posts
     const fetchPosts = async () => {
       try {
         const posts = [];
@@ -104,6 +104,7 @@ export default defineComponent({
 
         const data = await response.json();
         const posts_data = data.data;
+
         for (let i = 0; i < posts_data.length; i++) {
           const element = {
             key: posts_data[i].id,
@@ -111,7 +112,11 @@ export default defineComponent({
           };
           posts.push(element);
         }
+
         distribution_posts.value = posts;
+
+        // After fetching all distribution posts, fetch assigned posts
+        fetchDropoffPosts();
       } catch (error) {
         notification.error({
           message: "Error",
@@ -148,7 +153,7 @@ export default defineComponent({
       }
     };
 
-    const fetchRolePerm = async () => {
+    const fetchDropoffPosts = async () => {
       try {
         const response = await fetch(drop_off_posts_url, {
           method: "GET",
@@ -159,13 +164,11 @@ export default defineComponent({
         });
 
         const data = await response.json();
-        // console.log(data.data.name);
 
         if (data.data) {
-          data.data.forEach((element) => {
-            console.log(element);
-            targetKeys.value.push(element.id);
-          });
+          // Set the initial values of targetKeys and formState.posts_ids
+          targetKeys.value = data.data.map((element) => element.id);
+          formState.post_ids = [...targetKeys.value];
         } else {
           console.error("Data or data.name is undefined:", data);
         }
@@ -216,7 +219,7 @@ export default defineComponent({
 
     const handleChange = (newTargetKeys) => {
       targetKeys.value = newTargetKeys; // Use targetKeys directly
-      formState.posts_ids = newTargetKeys;
+      formState.post_ids = newTargetKeys;
     };
 
     const filterOption = (inputValue, option) => {
@@ -228,7 +231,7 @@ export default defineComponent({
       distribution_posts,
       roles,
       formState,
-      targetKeys, // Use targetKeys directly
+      targetKeys,
       dropoff_name,
       handleSubmit,
       handleChange,
