@@ -15,7 +15,7 @@
 
             <div v-else>
                 <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
+                  :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
                 >
@@ -27,7 +27,7 @@
                       size="extra-small" 
                       @click="goToBaleVerification(record.post_id, record.post_name, record.delivery_note_number, record.date_received, record.received_from, record.received_by )"
                       >
-                      Verify
+                      Bale Verification
                       </sdButton>
                       </div>
                     </td>
@@ -83,12 +83,12 @@ const columns = [
     dataIndex: "received_by",
     key: "received_by",
   },
-  {
-    title: "Action",
-    dataIndex: "action",  
-    key: "action",
-    slots: { customRender: "action" },
-  },
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",  
+  //   key: "action",
+  //   slots: { customRender: "action" },
+  // },
   
 ];
 
