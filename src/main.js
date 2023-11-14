@@ -10,10 +10,12 @@ import "@/core/plugins/masonry";
 import "@/core/plugins/apexcharts";
 import "@/core/components/custom";
 import "@/core/components/style";
+import HighchartsVue from 'highcharts-vue';
 
 app.config.productionTip = false;
 app.use(store);
 app.use(router);
+app.use(HighchartsVue);
 app.mount("#app");
 
 if (process.env.NODE_ENV === "production") {
