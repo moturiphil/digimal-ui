@@ -528,11 +528,12 @@ export default defineComponent({
       } else {
         return dataSource.value.filter((user) => {
           return (
-            regex.test(user.user_name) ||
-            regex.test(user.level_id) ||
-            regex.test(user.org_types_id) ||
+            regex.test(user.first_name) ||
+            regex.test(user.middle_name) ||
+            regex.test(user.last_name) ||
             regex.test(user.id_no) ||
-            regex.test(user.location_id)
+            regex.test(user.phone_no) ||
+            regex.test(user.post_id)
           );
         });
       }
