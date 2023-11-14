@@ -272,7 +272,7 @@ const DragAndDropTable = defineComponent({
       } else {
         return dataSource.value.filter((event) => {
           return (
-            // regex.test(event.name) ||
+            regex.test(event.name) ||
             regex.test(event.distribution_sub_county) ||
             regex.test(event.distribution_ward) ||
             regex.test(event.distribution_sublocation_id) ||
