@@ -382,6 +382,8 @@ export default defineComponent({
 
     const data = await response.json();
 
+    setInterval(data, 3000);
+
     const chartData = data.data.map(item => ({
       name: item.name,
       nets_required: parseInt(item.nets_required),
@@ -399,6 +401,8 @@ export default defineComponent({
 
 
     const newChartData = await newChartDataResponse.json();
+
+    setInterval(newChartData, 3000);
 
     const newChartOptions = {
       chart: {
@@ -428,7 +432,7 @@ export default defineComponent({
       {
         name: 'Nets Required',
         data: newChartData.data.map(item => parseInt(item.nets_required)),
-        color: '#e74c3c'
+        color: '#6A8ABC'
       }, {
         name: 'Nets Issued',
         data: newChartData.data.map(item => item.nets_issued),
@@ -484,7 +488,8 @@ export default defineComponent({
           data: chartData.map(item => item.nets_required)
         }, {
           name: 'Nets Issued',
-          data: chartData.map(item => item.total_issues)
+          data: chartData.map(item => item.total_issues),
+          color: '#2ecc71'
         }],
         credits: {
           enabled: false
