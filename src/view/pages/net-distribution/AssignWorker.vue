@@ -1,10 +1,10 @@
 <template>
+  <Main>
   <sdPageHeader title="Assign Worker">
     <sdButton class="btn-add_new" size="default" key="1" type="success">
       <router-link to="/crud/axios-view">View All</router-link>
     </sdButton>
   </sdPageHeader>
-  <Main>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -36,22 +36,27 @@
                         >
                       </a-select>
                     </a-form-item> -->
+
                     <a-form-item name="received_by" label="Post Workers">
                       <a-select
                         mode="multiple"
+                        placeholder="Selected Post workers"
                         v-model:value="formState.received_by"
                         v-if="!loading"
-                        placeholder="Select post workers"
-                        @blur="validate('received_by')" 
+                        show-search
+                        option-filter-prop="label"
+                        @blur="validate('received_by')"
                         @keypress="validate('received_by')"
                       >
                         <a-select-option
                           v-for="worker in users"
                           :key="worker.id"
-                          :value="worker.id"
+                          v-model:value="worker.id"
+                          :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
                         >
                           {{ worker.first_name }}
-                          {{ worker.last_name }} - {{ worker.role_id }}
+                          {{ worker.last_name }} -
+                          {{ worker.role_id }}, {{worker.location_id}}
                         </a-select-option>
                       </a-select>
                       <p class="errors" style="color: red;" v-if="!!errors.received_by" >{{errors.received_by}}</p>
