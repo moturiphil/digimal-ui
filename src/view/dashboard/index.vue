@@ -382,7 +382,9 @@ export default defineComponent({
 
     const data = await response.json();
 
-    setInterval(data, 3000);
+    // set intervals for 3 seconds
+
+    // setInterval(data, 3000);
 
     const chartData = data.data.map(item => ({
       name: item.name,
@@ -402,7 +404,7 @@ export default defineComponent({
 
     const newChartData = await newChartDataResponse.json();
 
-    setInterval(newChartData, 3000);
+    // setInterval(newChartData, 3000);
 
     const newChartOptions = {
       chart: {
