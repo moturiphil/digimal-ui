@@ -266,86 +266,21 @@
 </template>
 <script>
 import { CardBarChart2, EChartCard } from "./style";
-// import Chart from "../../components/utilities/chartjs";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
 import { defineComponent } from "vue"; //defineAsyncComponent
 import authHeader from "../../services/auth-header";
-// import { Bar } from 'ant-design-vue';
 import Highcharts from 'highcharts';
-// import HighchartsVue from 'highcharts-vue';
 
-// );
-// const chartOptions = {
-//   legend: {
-//     display: false,
-//     labels: {
-//       display: false,
-//     },
-//   },
-//   scales: {
-//     yAxes: [
-//       {
-//         stacked: true,
-//         gridLines: {
-//           display: false,
-//         },
-//         ticks: {
-//           display: false,
-//         },
-//       },
-//     ],
-//     xAxes: [
-//       {
-//         stacked: true,
-//         gridLines: {
-//           display: false,
-//         },
-//         ticks: {
-//           display: false,
-//         },
-//       },
-//     ],
-//   },
-// };
 export default defineComponent({
   name: "CRM",
   components: {
     Main,
     CardBarChart2,
     EChartCard,
-    // Bar,
-    // HighchartsVue,
   },
   data() {
     return {
-      // chartOptions: {
-      //   chart: {
-      //     type: 'bar'
-      //   },
-      //   title: {
-      //     text: 'Nets Required vs Nets Issued'
-      //   },
-      //   xAxis: {
-      //     categories: ['Post 1', 'Post 2', 'Post 3'] // Replace with your subcounties
-      //   },
-      //   yAxis: {
-      //     title: {
-      //       text: 'Number of Nets'
-      //     }
-      //   },
-      //   series: [{
-      //     name: 'Nets Required',
-      //     data: [100, 200, 150] // Replace with your data for Nets Required
-      //   }, {
-      //     name: 'Nets Issued',
-      //     data: [80, 150, 120] // Replace with your data for Nets Issued
-      //   }],
-      //   credits: {
-      //       enabled: false
-      //   },
-      // },
-
       pieOptions: {
         chart: {
           type: 'pie'
@@ -354,11 +289,17 @@ export default defineComponent({
           text: 'Household Registration by Subcounty'
         },
         series: [{
-          name: 'Household Registration',
+          name: 'Household Registered by Subcounty',
           data: [
-            { name: 'Subcounty 1', y: 150 }, // Replace with your data for Subcounty 1
-            { name: 'Subcounty 2', y: 200 }, // Replace with your data for Subcounty 2
-            { name: 'Subcounty 3', y: 100 }, // Replace with your data for Subcounty 3
+            { name: 'Homa Bay Town Sub County', y: 27589 },
+            { name: 'Kabondo Kasipul Sub County', y: 26573 },
+            { name: 'Karachuonyo Sub County', y: 42763 }, 
+            { name: 'Suba North Sub County', y: 23656 }, 
+            { name: 'Ndhiwa Sub County', y: 48229 }, 
+            { name: 'Rachuonyo South Sub County', y: 29857 },
+            { name: 'Rangwe Sub County', y: 28799 }, 
+            { name: 'Suba South Sub County', y: 26049 },
+            { name: 'Suba Central Sub County', y: 5903 }, 
           ]
         }],
         tooltip: {
