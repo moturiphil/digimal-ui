@@ -14,7 +14,7 @@
     </sdPageHeader>
     <Main>
       <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/events/add-stakeholde"> Add Stakeholder</router-link>
+        <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
       </sdButton>
       &nbsp;&nbsp;
 
