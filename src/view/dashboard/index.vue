@@ -303,15 +303,15 @@ export default defineComponent({
         series: [{
           name: 'Household Registered by Subcounty',
           data: [
-            { name: 'Homa Bay Town Sub County', y: 27589 },
-            { name: 'Kabondo Kasipul Sub County', y: 26573 },
-            { name: 'Karachuonyo Sub County', y: 42763 }, 
-            { name: 'Suba North Sub County', y: 23656 }, 
-            { name: 'Ndhiwa Sub County', y: 48229 }, 
-            { name: 'Rachuonyo South Sub County', y: 29857 },
-            { name: 'Rangwe Sub County', y: 28799 }, 
-            { name: 'Suba South Sub County', y: 26049 },
-            { name: 'Suba Central Sub County', y: 5903 }, 
+            { name: 'Homa Bay Town Sub County', y: 27666 },
+            { name: 'Kabondo Kasipul Sub County', y: 26572 },
+            { name: 'Karachuonyo Sub County', y: 42745 }, 
+            { name: 'Suba North Sub County', y: 23654 }, 
+            { name: 'Ndhiwa Sub County', y: 48208 }, 
+            { name: 'Rachuonyo South Sub County', y: 29782 },
+            { name: 'Rangwe Sub County', y: 28792 }, 
+            { name: 'Suba South Sub County', y: 26141 },
+            { name: 'Suba Central Sub County', y: 5163 }, 
           ]
         }],
         tooltip: {
