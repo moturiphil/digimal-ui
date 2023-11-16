@@ -99,6 +99,12 @@ const routes = [
           import("@/view/pages/net-distribution/AssignWorker.vue"),
       },
       {
+        path: "/view-worker",
+        name: "view-worker",
+        component: () =>
+          import("@/view/pages/net-distribution/ViewWorker.vue"),
+      },
+      {
         path: "/campaigns/create-campaign",
         name: "create-campaign",
         component: () => import("@/view/pages/campaigns/createCampaign.vue"),
