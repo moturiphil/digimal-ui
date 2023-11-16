@@ -35,28 +35,6 @@
                   <template #activities="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton
-                          size="extra-small"
-                          type="success"
-                          :disabled="isStarting"
-                          @click="startDistribution(record.id)"
-                          v-if="!record.status"
-                        >
-                          <span>
-                            <sdFeatherIcons type="clock" size="extra-small" />
-                            &nbsp;&nbsp; Start Distribution
-                          </span>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
-                          size="small"
-                          type="danger"
-                          :disabled="isStarting"
-                          v-else
-                          @click="closeDistribution(record.id)"
-                        >
-                          <span> &nbsp;&nbsp; Close Distribution </span>
-                        </sdButton>
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
                           <router-link
@@ -88,10 +66,19 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <!-- <sdButton type="success" size="extra-small" @click="notifyHH(record.id)" >
-                          &nbsp;&nbsp; Message HH's
-                        </sdButton> -->
-                       
+                        <sdButton type="success" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/nets/verify-post-nets`,
+                              query: { id: record.id, name: record.name },
+                            }"
+                            class="btn-icon"
+                            type="success"
+                            shape="circle"
+                          >
+                            Bale Verification
+                          </router-link>
+                        </sdButton>
                       </div>
                     </td>
                   </template>
