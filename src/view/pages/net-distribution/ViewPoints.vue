@@ -32,7 +32,7 @@
                     <td>
                       <div class="table-actions">
 
-                        <sdButton size="extra-small" type="success">
+                        <!-- <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/manage-inventory/`,
@@ -46,7 +46,7 @@
                           >
                             Manage Inventory
                           </router-link>
-                        </sdButton>
+                        </sdButton> -->
                         &nbsp;&nbsp;
                         <sdButton size="extra-small" type="success">
                           <router-link
