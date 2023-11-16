@@ -53,23 +53,6 @@
                           {{ errors.counted_no_of_nets }}
                         </p>
                       </a-form-item>
-                      <!-- <a-form-item name="expected_no_of_nets" label="Expected Number of Nets">
-                        <a-input
-                          v-model:value="formState.expected_no_of_nets"
-                          placeholder="Expected Number of Nets"
-                          type="number"
-                          @blur="validate('expected_no_of_nets')"
-                          @keypress="validate('expected_no_of_nets')"
-                        />
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.expected_no_of_nets"
-                        >
-                          {{ errors.expected_no_of_nets }}
-                        </p>
-                      </a-form-item> -->
-
 
                       <a-form-item name="expected_no_of_nets" label="Expected Number of Nets">
                       <a-select
@@ -91,7 +74,7 @@
                     </a-form-item>
 
 
-                      <a-form-item name="delivery_note_number" label="Delivery Note No.">
+                      <a-form-item name="delivery_note_number" label="Delivery Note No/S11">
                         <a-select
                           v-model:value="formState.delivery_note_number"
                           showSearch
@@ -177,8 +160,8 @@
   
       const ArticleSchema = Yup.object().shape({
         bale_batch_no: Yup.string().required("Bale size is required"),
-        counted_no_of_nets: Yup.number().required("Bale size is required"),
-        expected_no_of_nets: Yup.number().required("Bale size is required"),
+        counted_no_of_nets: Yup.number().required("Counted no of nets is required"),
+        expected_no_of_nets: Yup.number().required("Expected no of nets is required"),
         // date_received: Yup.string().required("Date received is required"),
         delivery_note_number: Yup.string().required("Delivery no is required"),
         // received_by: Yup.string().required("Received by is required"),

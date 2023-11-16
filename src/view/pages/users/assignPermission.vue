@@ -84,8 +84,6 @@ const AssignPermissions = defineComponent({
     const role_id = params.id;
     const role_name = query.name;
     const perm_url = `${process.env.VUE_APP_BASE_URL}/roles_permissions_mapping?role_id=${role_id}`;
-    console.log(role_name);
-
 
     const { campaigns, loading } = reactive({
       campaigns: "",

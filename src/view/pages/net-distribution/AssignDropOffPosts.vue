@@ -20,6 +20,7 @@
                       <a-transfer
                         :dataSource="distribution_posts"
                         showSearch
+                        v-model="targetKeys"
                         :targetKeys="targetKeys"
                         :render="(item) => item.title"
                         :filterOption="filterOption"
@@ -31,7 +32,6 @@
                       >
                       </a-transfer>
                     </a-form-item>
-
                     <div class="record-form-actions text-right">
                       <sdButton size="default" htmlType="Save" type="success">
                         {{ isLoading ? "Loading..." : "Submit" }}
@@ -71,29 +71,29 @@ export default defineComponent({
   setup() {
     const { query } = useRoute();
     const { state } = useStore();
-    // const API_URL = `${process.env.VUE_APP_BASE_URL}/assignPermissionsToRole/`;
 
     const isLoading = computed(() => state.crud.loading);
     const distribution_posts = ref([]);
-    const roles = ref([]);
+    const targetKeys = ref([]);
     const drop_off_point_id = query.id;
     const dropoff_name = query.name;
     const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
     const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
 
-    const targetKeys = ref([]); // Use ref for reactivity
     const formState = reactive({
-      //   drop_off_point_id: "",
+      drop_off_id: "",
       post_ids: [],
     });
 
-    onMounted(() => {
-      fetchPosts();
-      fetchRoles();
-      fetchDropoffPosts();
+    onMounted(async () => {
+      await fetchPosts();
+      await fetchDropoffPosts();
+      // Initialize targetKeys to an empty array
+      targetKeys.value = [];
+      // Update targetKeys with the assigned post keys
+      targetKeys.value = formState.post_ids;
     });
 
-    // Fetch all distribution posts
     const fetchPosts = async () => {
       try {
         const posts = [];
@@ -114,37 +114,6 @@ export default defineComponent({
         }
 
         distribution_posts.value = posts;
-
-        // After fetching all distribution posts, fetch assigned posts
-        fetchDropoffPosts();
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `Error: ${error}`,
-        });
-      }
-    };
-
-    const fetchRoles = async () => {
-      try {
-        const rls = [];
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
-        const data = await response.json();
-        for (let i = 1; i < data.length; i++) {
-          const element = {
-            id: i,
-            name: data[i].name,
-            orgtype_id: data[i].orgtype_id,
-          };
-          rls.push(element);
-        }
-        roles.value = rls;
       } catch (error) {
         notification.error({
           message: "Error",
@@ -155,6 +124,7 @@ export default defineComponent({
 
     const fetchDropoffPosts = async () => {
       try {
+        const assignedPosts = [];
         const response = await fetch(drop_off_posts_url, {
           method: "GET",
           headers: {
@@ -165,10 +135,19 @@ export default defineComponent({
 
         const data = await response.json();
 
+        console.log(data.data);
+
         if (data.data) {
-          // Set the initial values of targetKeys and formState.posts_ids
-          targetKeys.value = data.data.map((element) => element.id);
-          formState.post_ids = [...targetKeys.value];
+          const posts_data = data.data;
+          for (let i = 0; i < posts_data.length; i++) {
+            const element = {
+              key: posts_data[i].id,
+              title: posts_data[i].name,
+            };
+            assignedPosts.push(element);
+          }
+          targetKeys.value = assignedPosts.map((post) => post.key);
+          formState.post_ids = targetKeys.value;
         } else {
           console.error("Data or data.name is undefined:", data);
         }
@@ -185,7 +164,6 @@ export default defineComponent({
         drop_off_point_id: drop_off_point_id,
         post_ids: toRaw(formState.post_ids),
       };
-      console.log(data);
       try {
         await fetch(`${process.env.VUE_APP_BASE_URL}/dropoff/assingpost`, {
           method: "POST",
@@ -218,7 +196,7 @@ export default defineComponent({
     };
 
     const handleChange = (newTargetKeys) => {
-      targetKeys.value = newTargetKeys; // Use targetKeys directly
+      targetKeys.value = newTargetKeys;
       formState.post_ids = newTargetKeys;
     };
 
@@ -226,10 +204,10 @@ export default defineComponent({
       return option.title.indexOf(inputValue) > -1;
     };
 
+
     return {
       isLoading,
       distribution_posts,
-      roles,
       formState,
       targetKeys,
       dropoff_name,

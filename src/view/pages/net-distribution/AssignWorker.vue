@@ -1,9 +1,9 @@
 <template>
   <Main>
   <sdPageHeader title="Assign Worker">
-    <sdButton class="btn-add_new" size="default" key="1" type="success">
+    <!-- <sdButton class="btn-add_new" size="default" key="1" type="success">
       <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton>
+    </sdButton> -->
   </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
@@ -20,23 +20,6 @@
                     :model="formState"
                     @finish="handleSubmit"
                   >
-                    <!-- <a-form-item name="post_id" label="Post Name">
-                      <a-select
-                        size="large"
-                        name="basic-select"
-                        class="sDash_fullwidth-select"
-                        placeholder="Select Post"
-                        v-model:value="formState.post_id"
-                      >
-                        <a-select-option
-                          v-for="post in posts"
-                          :value="post.id"
-                          :key="post.id"
-                          >{{ post.name }}</a-select-option
-                        >
-                      </a-select>
-                    </a-form-item> -->
-
                     <a-form-item name="received_by" label="Post Workers">
                       <a-select
                         mode="multiple"

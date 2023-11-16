@@ -406,6 +406,8 @@ export default defineComponent({
 
     // setInterval(newChartData, 3000);
 
+    console.log(newChartData);
+
     const newChartOptions = {
       chart: {
         type: 'column',
@@ -422,11 +424,12 @@ export default defineComponent({
         }
       },
       series: [
+      // {
+      //   name: 'Population',
+      //   data: newChartData.data.map(item => parseInt(item.population)),
+      //   color: '#f39c12'
+      // },
       {
-        name: 'Population',
-        data: newChartData.data.map(item => parseInt(item.population)),
-        color: '#f39c12'
-      },{
         name: 'Households Registered',
         data: newChartData.data.map(item => item.households_registered),
         color: '#3498db' 
@@ -437,7 +440,7 @@ export default defineComponent({
         color: '#6A8ABC'
       }, {
         name: 'Nets Issued',
-        data: newChartData.data.map(item => item.nets_issued),
+        data: newChartData.data.map(item => parseInt(item.nets_issued)),
         color: '#2ecc71'
       }],
       credits: {

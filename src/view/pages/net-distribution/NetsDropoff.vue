@@ -46,11 +46,6 @@ const columns = [
     dataIndex: "drop_off_point_id",
     key: "id",
   },
-  // {
-  //   title: "Campaign",
-  //   dataIndex: "campaign_id",
-  //   key: "id",
-  // },
   {
     title: "No of Bales",
     dataIndex: "no_of_bales",
