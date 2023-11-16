@@ -40,7 +40,7 @@
                       <a-form-item name="counted_no_of_nets" label="Counted Number of Nets">
                         <a-input
                           v-model:value="formState.counted_no_of_nets"
-                          placeholder="Enter number of bales"
+                          placeholder="Counted Number of Nets"
                           type="number"
                           @blur="validate('counted_no_of_nets')"
                           @keypress="validate('counted_no_of_nets')"
@@ -56,7 +56,7 @@
                       <a-form-item name="expected_no_of_nets" label="Expected Number of Nets">
                         <a-input
                           v-model:value="formState.expected_no_of_nets"
-                          placeholder="Enter number of bales"
+                          placeholder="Expected Number of Nets"
                           type="number"
                           @blur="validate('expected_no_of_nets')"
                           @keypress="validate('expected_no_of_nets')"
