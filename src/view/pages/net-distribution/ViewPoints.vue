@@ -31,22 +31,6 @@
                   <template #point="{ record }">
                     <td>
                       <div class="table-actions">
-
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/manage-inventory/`,
-                              query: {
-                                id: record.id,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            Manage Inventory
-                          </router-link>
-                        </sdButton>
                         &nbsp;&nbsp;
                         <sdButton size="extra-small" type="success">
                           <router-link

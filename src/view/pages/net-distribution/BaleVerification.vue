@@ -40,7 +40,7 @@
                       <a-form-item name="counted_no_of_nets" label="Counted Number of Nets">
                         <a-input
                           v-model:value="formState.counted_no_of_nets"
-                          placeholder="Enter number of bales"
+                          placeholder="Counted Number of Nets"
                           type="number"
                           @blur="validate('counted_no_of_nets')"
                           @keypress="validate('counted_no_of_nets')"
@@ -53,10 +53,10 @@
                           {{ errors.counted_no_of_nets }}
                         </p>
                       </a-form-item>
-                      <a-form-item name="expected_no_of_nets" label="Expected Number of Nets">
+                      <!-- <a-form-item name="expected_no_of_nets" label="Expected Number of Nets">
                         <a-input
                           v-model:value="formState.expected_no_of_nets"
-                          placeholder="Enter number of bales"
+                          placeholder="Expected Number of Nets"
                           type="number"
                           @blur="validate('expected_no_of_nets')"
                           @keypress="validate('expected_no_of_nets')"
@@ -68,7 +68,29 @@
                         >
                           {{ errors.expected_no_of_nets }}
                         </p>
-                      </a-form-item>
+                      </a-form-item> -->
+
+
+                      <a-form-item name="expected_no_of_nets" label="Expected Number of Nets">
+                      <a-select
+                        v-model:value="formState.expected_no_of_nets"
+                        placeholder="Select Expected No of Nets"
+                        @blur="validate('expected_no_of_nets')"
+                        @keypress="validate('expected_no_of_nets')"
+                      >
+                        <a-select-option value="40">40</a-select-option>
+                        <a-select-option value="50">50</a-select-option>
+                      </a-select>
+                      <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.expected_no_of_nets"
+                        >
+                          {{ errors.expected_no_of_nets }}
+                        </p>
+                    </a-form-item>
+
+
                       <a-form-item name="delivery_note_number" label="Delivery Note No.">
                         <a-select
                           v-model:value="formState.delivery_note_number"
