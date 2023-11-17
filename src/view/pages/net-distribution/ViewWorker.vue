@@ -3,16 +3,11 @@
     <RecordViewWrapper>
       <sdPageHeader title="View Post Workers">
         <template #subTitle>
-          <!-- <sdButton class="btn-add_new" size="extra-small" type="success">
-          <router-link to="/assign-worker">
-            <sdFeatherIcons type="plus" size="small" /> Add Post Worker</router-link
-          >
-        </sdButton> -->
         <sdButton type="success" size="extra-small">
           <router-link
             :to="{
               path: `/assign-worker`,
-              query: { id: post_id } // Replace yourValueHere with the actual value
+              query: { id: post_id } 
             }"
             class="btn-icon"
             type="success"

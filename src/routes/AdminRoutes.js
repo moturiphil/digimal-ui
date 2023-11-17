@@ -80,11 +80,19 @@ const routes = [
           ),
       },
       {
-        path: "stock-status",
-        name: "stock-status",
+        path: "meds-issues",
+        name: "meds-issues",
         component: () =>
           import(
             /* webpackChunkName: "Business" */ "@/view/pages/users/stockStatus.vue"
+          ),
+      },
+      {
+        path: "meds-orders",
+        name: "meds-orders",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/users/MedsOrders.vue"
           ),
       },
       {

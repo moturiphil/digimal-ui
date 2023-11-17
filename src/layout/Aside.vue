@@ -148,9 +148,38 @@
         <a-menu-item key="widgetNetsReceived">
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
         </a-menu-item>
-        <a-menu-item key="">
-          <router-link to="/stock-status">MEDS Issues</router-link>
-        </a-menu-item>
+      </a-sub-menu>
+      <a-sub-menu key="supply-chain" v-if="canViewInventory">
+        <template v-slot:title>
+          <sdFeatherIcons type="database" /><span>Supply Chain</span>
+        </template>
+          
+        <a-sub-menu key="meds-issuance">
+          <template v-slot:title>
+            <sdFeatherIcons type="globe" /><span>MEDS</span>
+          </template>
+          <a-menu-item key="meds-orders">
+            <router-link to="/meds-orders"
+              >Orders
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="meds-issues">
+            <router-link to="/meds-issues">Issues </router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-sub-menu key="kemsa-issuance">
+          <template v-slot:title>
+            <sdFeatherIcons type="table" /><span>KEMSA</span>
+          </template>
+          <a-menu-item key="kemsa-orders">
+            <router-link to="/kemsa-order"
+              >Orders
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="kemsa-issues">
+            <router-link to="/kemsa-issues">Issues </router-link>
+          </a-menu-item>
+        </a-sub-menu>
       </a-sub-menu>
       <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
         <template v-slot:title>

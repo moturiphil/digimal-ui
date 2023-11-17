@@ -424,15 +424,15 @@ export default defineComponent({
         }
       },
       series: [
-      // {
-      //   name: 'Population',
-      //   data: newChartData.data.map(item => parseInt(item.population)),
-      //   color: '#f39c12'
-      // },
       {
         name: 'Households Registered',
         data: newChartData.data.map(item => item.households_registered),
         color: '#3498db' 
+      },
+      {
+        name: 'Household Served',
+        data: newChartData.data.map(item => parseInt(item.households_served)),
+        color: '#f39c12'
       },
       {
         name: 'Nets Required',
