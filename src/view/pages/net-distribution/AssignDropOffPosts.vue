@@ -173,7 +173,7 @@ export default defineComponent({
           const posts_data = data.data;
           for (let i = 0; i < posts_data.length; i++) {
             const element = {
-              key: posts_data[i].id,
+              key: posts_data[i].distribution_post_id,
               title: posts_data[i].name,
             };
             assignedPosts.push(element);
