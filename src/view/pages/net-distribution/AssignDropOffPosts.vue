@@ -103,6 +103,8 @@ export default defineComponent({
         const data = await response.json();
         const posts_data = data.data;
 
+        console.log(data);
+
         for (let i = 0; i < posts_data.length; i++) {
           const element = {
             key: posts_data[i].id,
@@ -110,6 +112,8 @@ export default defineComponent({
           };
           posts.push(element);
         }
+
+        console.log(posts);
 
         distribution_posts.value = posts;
         console.log(distribution_posts.value);
@@ -171,6 +175,8 @@ export default defineComponent({
 
         if (data.data) {
           const posts_data = data.data;
+
+          console.log(posts_data);
           for (let i = 0; i < posts_data.length; i++) {
             const element = {
               key: posts_data[i].distribution_post_id,
@@ -180,6 +186,7 @@ export default defineComponent({
           }
           targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
           console.log(targetKeys.value);
+          distribution_posts.value = assignedPosts
         } else {
           console.error("Data or data.name is undefined:", data);
         }
