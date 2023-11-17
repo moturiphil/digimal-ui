@@ -20,7 +20,6 @@
                       <a-transfer
                         :dataSource="distribution_posts"
                         showSearch
-                        v-model="targetKeys"
                         :targetKeys="targetKeys"
                         :render="(item) => item.title"
                         :filterOption="filterOption"
@@ -68,14 +67,16 @@ export default defineComponent({
     "a-transfer": Transfer,
   },
 
-  setup() {
+  data() {
     const { query } = useRoute();
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
     const distribution_posts = ref([]);
-    const targetKeys = ref([]);
+    // const targetKeys = ref([]);
     const drop_off_point_id = query.id;
+    const dropoffs = ref([]);
+    const targetKeys = ref([]);
     const dropoff_name = query.name;
     const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
     const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
@@ -88,10 +89,7 @@ export default defineComponent({
     onMounted(async () => {
       await fetchPosts();
       await fetchDropoffPosts();
-      // Initialize targetKeys to an empty array
-      targetKeys.value = [];
-      // Update targetKeys with the assigned post keys
-      targetKeys.value = formState.post_ids;
+      await fetchDropOff();
     });
 
     const fetchPosts = async () => {
@@ -114,8 +112,42 @@ export default defineComponent({
         }
 
         distribution_posts.value = posts;
+        console.log(distribution_posts.value);
       } catch (error) {
         notification.error({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
+    };
+
+    const fetchDropOff = async () => {
+      try {
+        const drpoff = [];
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        for (let i = 1; i < data.length; i++) {
+          const element = {
+            id: i,
+            name: data[i].name,
+            // dropoff_id: data[i].dropoff_id,
+          };
+          drpoff.push(element);
+        }
+        this.dropoffs = drpoff;
+        this.loading = false;
+      } catch (error) {
+        notification["error"]({
           message: "Error",
           description: `Error: ${error}`,
         });
@@ -146,8 +178,8 @@ export default defineComponent({
             };
             assignedPosts.push(element);
           }
-          targetKeys.value = assignedPosts.map((post) => post.key);
-          formState.post_ids = targetKeys.value;
+          targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
+          console.log(targetKeys.value);
         } else {
           console.error("Data or data.name is undefined:", data);
         }
@@ -157,6 +189,11 @@ export default defineComponent({
           description: `Error: ${error}`,
         });
       }
+    };
+
+    const handleChange = (newTargetKeys) => {
+      targetKeys.value = newTargetKeys; // Update directly
+      formState.post_ids = newTargetKeys;
     };
 
     const handleSubmit = async () => {
@@ -195,15 +232,11 @@ export default defineComponent({
       }
     };
 
-    const handleChange = (newTargetKeys) => {
-      targetKeys.value = newTargetKeys;
-      formState.post_ids = newTargetKeys;
-    };
-
     const filterOption = (inputValue, option) => {
+      console.log("inputValue:", inputValue);
+      console.log("option.title:", option.title);
       return option.title.indexOf(inputValue) > -1;
     };
-
 
     return {
       isLoading,
@@ -214,6 +247,7 @@ export default defineComponent({
       handleSubmit,
       handleChange,
       filterOption,
+      dropoffs,
     };
   },
 });
