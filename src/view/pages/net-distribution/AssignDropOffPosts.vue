@@ -78,7 +78,8 @@ export default defineComponent({
     const dropoffs = ref([]);
     const targetKeys = ref([]);
     const dropoff_name = query.name;
-    const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
+    // const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
+    const post_data_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts_data?drop_off_point_id=${drop_off_point_id}`;
     const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
 
     const formState = reactive({
@@ -95,7 +96,7 @@ export default defineComponent({
     const fetchPosts = async () => {
       try {
         const posts = [];
-        const response = await fetch(posts_url, {
+        const response = await fetch(post_data_url, {
           method: "GET",
           headers: authHeader(),
         });
@@ -186,7 +187,6 @@ export default defineComponent({
           }
           targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
           console.log(targetKeys.value);
-          distribution_posts.value = assignedPosts
         } else {
           console.error("Data or data.name is undefined:", data);
         }
