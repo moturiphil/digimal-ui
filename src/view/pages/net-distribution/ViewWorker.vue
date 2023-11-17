@@ -3,6 +3,11 @@
     <RecordViewWrapper>
       <sdPageHeader title="View Post Workers">
         <template #subTitle>
+          <sdButton class="btn-add_new" size="extra-small" type="success">
+          <router-link to="/assign-worker">
+            <sdFeatherIcons type="plus" size="small" /> Add Post Worker</router-link
+          >
+        </sdButton>
         </template>
       </sdPageHeader>
       <Main>
