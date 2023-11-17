@@ -155,6 +155,24 @@ export default [
     ],
   },
   {
+    name: "households-registrations",
+    path: "households-registrations",
+    component: () =>
+      import(
+        /* webpackChunkName: "ecommerce" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      {
+        name: "incomplete",
+        path: "incomplete",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/household/incompleteHouseholds.vue"
+          ),
+      },
+    ],
+  },
+  {
     name: "import-export",
     path: "/users",
     component: () =>
