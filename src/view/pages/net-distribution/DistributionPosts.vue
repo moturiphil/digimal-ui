@@ -52,7 +52,7 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton type="success" size="extra-small">
+                        <!-- <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
                               path: `/assign-worker`,
@@ -63,6 +63,20 @@
                             shape="circle"
                           >
                             &nbsp;&nbsp; Assign Post Workers
+                          </router-link>
+                        </sdButton> -->
+                        <!-- &nbsp;&nbsp; -->
+                        <sdButton type="success" size="extra-small">
+                          <router-link
+                            :to="{
+                              path: `/view-worker`,
+                              query: { id: record.id },
+                            }"
+                            class="btn-icon"
+                            type="success"
+                            shape="circle"
+                          >
+                            View Post Workers
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -117,16 +131,6 @@ const columns = [
   {
     title: "Sub County",
     dataIndex: "distribution_sub_county",
-    key: "",
-  },
-  {
-    title: "Ward",
-    dataIndex: "distribution_ward",
-    key: "",
-  },
-  {
-    title: "SubLocation",
-    dataIndex: "distribution_sublocation_id",
     key: "",
   },
   {
@@ -186,8 +190,6 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
-        console.log('/*...................................*/');
-        console.log('******************************');
         console.log(dataSource.value);
         this.distributionStatus = {};
         console.log(this.distributionStatus);
