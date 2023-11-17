@@ -202,7 +202,7 @@ const AddNew = defineComponent({
         .then(({ status, data }) => {
           console.log(data);
           if (status) {
-            router.push("/nets/distribution");
+            router.push(`/view-worker?id=${post_id}`);
             notification["success"]({
               message: "Post Workers Added",
               description: "Post Workers have been successfully assigner",

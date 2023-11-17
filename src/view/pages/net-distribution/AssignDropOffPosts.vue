@@ -67,7 +67,7 @@ export default defineComponent({
     "a-transfer": Transfer,
   },
 
-  data() {
+  setup() {
     const { query } = useRoute();
     const { state } = useStore();
 
@@ -78,8 +78,8 @@ export default defineComponent({
     const dropoffs = ref([]);
     const targetKeys = ref([]);
     const dropoff_name = query.name;
-    // const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
-    const post_data_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts_data?drop_off_point_id=${drop_off_point_id}`;
+    const post_data_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
+    // const post_data_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts_data?drop_off_point_id=${drop_off_point_id}`;
     const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
 
     const formState = reactive({
@@ -104,7 +104,7 @@ export default defineComponent({
         const data = await response.json();
         const posts_data = data.data;
 
-        console.log(data);
+        console.log(data.data);
 
         for (let i = 0; i < posts_data.length; i++) {
           const element = {
@@ -113,9 +113,7 @@ export default defineComponent({
           };
           posts.push(element);
         }
-
         console.log(posts);
-
         distribution_posts.value = posts;
         console.log(distribution_posts.value);
       } catch (error) {
@@ -184,9 +182,9 @@ export default defineComponent({
               title: posts_data[i].name,
             };
             assignedPosts.push(element);
+            console.log(assignedPosts);
           }
-          targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
-          console.log(targetKeys.value);
+          targetKeys.value = assignedPosts.map((post) => post.key);
         } else {
           console.error("Data or data.name is undefined:", data);
         }
