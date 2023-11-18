@@ -1,25 +1,90 @@
 <template>
     <div>
-      <sdPageHeader ghost :title="`Nets Returned at ${drop_off_name}`" />
+      <sdPageHeader ghost :title="`Manage Inventory at ${drop_off_name}`" />
       <Main>
+        <div class="button-container">
+          <sdButton class="button-container"  size="extra-small" type="success">
+          <router-link
+            :to="{
+              path: `/receive-nets/`,
+              query: {
+                id: drop_off_id,
+                name: drop_off_name,
+                campaign_id: drop_off_campaign_id,
+              },
+            }"
+            class="btn-icon"
+            type="info"
+            shape="circle"
+          >
+            Receive Nets
+          </router-link>
+          </sdButton>
+          &nbsp;&nbsp;
+          <sdButton class="button-container" size="extra-small" type="success">
+            <router-link
+              :to="{
+                path: `/dropoff/assign-posts`,
+                query: {
+                  id: drop_off_id,
+                  name: drop_off_name,
+                },
+              }"
+              class="btn-icon"
+              type="info"
+              shape="circle"
+            >
+              Assign Posts
+            </router-link>
+          </sdButton>
+          &nbsp;&nbsp;
+          <sdButton class="button-container" size="extra-small" type="success">
+            <router-link
+              :to="{
+                path: `/nets/nets-transfer-dropoff`,
+                query: {
+                  id: drop_off_id,
+                },
+              }"
+              class="btn-icon"
+              type="info"
+              shape="circle"
+            >
+              Net Transfers
+            </router-link>
+          </sdButton>
+          &nbsp;&nbsp;
+          <sdButton
+            class="button-container"
+            size="extra-small"
+            type="success"
+            @click="openModal(drop_off_id)"
+          >
+            Issue Nets
+          </sdButton>
+          &nbsp;&nbsp;
+          <sdButton class="button-container" size="extra-small" type="success">
+            <router-link
+              :to="{
+                path: `/nets/receive-nets-dropoff`,
+                query: {
+                  id: drop_off_id,
+                  name: drop_off_name,
+                },
+              }"
+              class="btn-icon"
+              type="info"
+              shape="circle"
+            >
+              Returned Nets
+            </router-link>
+          </sdButton>
+        </div>
+        <br>
+        <br>
   
         <SearchResultWrapper>
           <a-row :gutter="25">
-            <a-col :xs="24">
-              <div class="search-filter-menu">
-                <ul>
-                  <li>
-                    <a
-                      :class="activeClass === 'nets_returned' ? 'active' : 'deactivate'"
-                      @click="handleChange('nets_returned')"
-                      href="#"
-                    >
-                      Nets Returned
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </a-col>
             <a-col :xs="24">
               <sdCards headless>
                 <div class="result-list-content">
@@ -43,6 +108,9 @@
                               :dataSource="returnedNets"
                               :columns="columns"
                             >
+                            <template v-slot:title>
+                              <h3> <u>Returned Nets</u></h3>
+                            </template>
                               <template #action="{ record }">
                                 <td :style="{ 'margin-left': '4px' }">
                                   <div class="table-actions">
@@ -58,8 +126,6 @@
                             </a-table>
                           </TableWrapper>
                           &nbsp;&nbsp;
-  
-                           <!-- receive nets modal -->
                            <a-modal
                               title="Receive Nets"
                               :visible="isOpen"
@@ -93,6 +159,79 @@
                                 </a-form>
                               </BasicFormWrapper>
                             </a-modal>
+
+
+                            <!-- Issue modal -->
+                            <a-modal
+                              title="Issue Nets"
+                              :visible="isModalOpen"
+                              @cancel="handleCancelReceive"
+                              width="50%"
+                              footer=""
+                            >
+                              <BasicFormWrapper>
+                                <a-form
+                                  class="add-transfer-form"
+                                  :style="{ width: '100%' }"
+                                  layout="vertical"
+                                  name="addnew"
+                                  :model="formState"
+                                  @finish="handleIssue"
+                                >
+                                  <a-form-item name="post_id" label="To Post">
+                                    <a-select
+                                      placeholder="Select  Post "
+                                      v-model:value="formState.post_id"
+                                    >
+                                      <a-select-option
+                                        v-for="post in postdata"
+                                        :key="post.id"
+                                        v-model:value="post.id"
+                                      >
+                                        {{ post.name }}
+                                      </a-select-option>
+                                    </a-select>
+                                  </a-form-item>
+                                  <a-form-item name="bale_size" label="Bale Size">
+                                    <a-select
+                                      v-model:value="formState.bale_size"
+                                      placeholder="Select Bale Size"
+                                    >
+                                      <a-select-option value="40">40</a-select-option>
+                                      <a-select-option value="50">50</a-select-option>
+                                    </a-select>
+                                  </a-form-item>
+                                  <a-form-item name="no_of_bales" label="Number of bales">
+                                    <a-input
+                                      v-model:value="formState.number_of_bales"
+                                      placeholder="Number of bales"
+                                      type="number"
+                                    />
+                                  </a-form-item>
+                                  <a-form-item name="no_of_pieces" label="Number of Pieces">
+                                    <a-input
+                                      v-model:value="formState.no_of_pieces"
+                                      placeholder="Enter number of pieces"
+                                      type="number"
+                                      @change="validateNoOfPieces"
+                                    />
+                                  </a-form-item>
+
+                                  <a-form-item name="S11 Serial Number" label="S11 Serial Number">
+                                    <a-input
+                                      v-model:value="formState.delivery_note_number"
+                                      placeholder="S11 Serial Number"
+                                    />
+                                  </a-form-item>
+                                  <div class="record-form-actions text-right">
+                                    <sdButton size="default" htmlType="Save" type="success">
+                                      {{ isLoading ? "Loading..." : "Submit" }}
+                                    </sdButton>
+                                  </div>
+                                </a-form>
+                              </BasicFormWrapper>
+                            </a-modal>
+                            <!-- End of Issue modal -->
                         
                         </div>
                       </sdCards>
@@ -177,6 +316,8 @@
       const { query } = useRoute();
       const isOpen = ref(false);
       const drop_off_name = query.name;
+      const drop_off_id = query.id;
+      const drop_off_campaign = query.campaign_id
   
       const handleOk = async () => isModalOpen.value = false;     
       const handleCancelReceive = () => isOpen.value = false;
@@ -191,6 +332,12 @@
         formState.returned_id = id;
         isOpen.value = true;
       };
+
+      const openModal = (id) => {
+        isModalOpen.value = true;
+        formState.drop_off_point_id = id;
+      };
+
   
       const fetchPosts = async()=>{
         try {
@@ -290,15 +437,71 @@
             description: `${error}`
           });
         }
-  
       }
+
+      const handleIssue = async () => {
+        try {
+          const data = {
+            post_id: formState.post_id,
+            drop_off_point_id: formState.drop_off_point_id,
+            bale_size: formState.bale_size,
+            number_of_bales: formState.number_of_bales,
+            number_of_pieces: formState.no_of_pieces,
+            issue_date: new Date().toISOString().substr(0, 10),
+            delivery_note_number: formState.delivery_note_number,
+          };
+
+          console.log(JSON.stringify(data));
+          await fetch(
+            `${process.env.VUE_APP_BASE_URL}/issue_nets_from_drop_off_to_post`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(data),
+            }
+          )
+            .then((response) => response.json())
+            .then(({ success, message }) => {
+              if (success) {
+                notification.success({
+                  message: "Success",
+                  description: `Issued successfully`,
+                });
+                isModalOpen.value = false;
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${message}`,
+                });
+              }
+              isModalOpen.value = false;
+            })
+            .catch((error) => {
+              notification.error({
+                message: "Error",
+                description: `${error}`,
+              });
+            });
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`,
+          });
+        }
+      };
   
       onMounted(() => {
         fetchPosts();
         fetchReturnedNets();
       });
       return {
+        handleIssue,
         drop_off_name,
+        drop_off_id,
+        drop_off_campaign,
         receiveNets,
         handleCancelReceive,
         dateFormat,
@@ -313,6 +516,7 @@
         activeClass,
         isModalOpen,
         openmodal,
+        openModal,
         handleOk,
       };
     },
@@ -335,24 +539,36 @@
   .icon-color-white {
     color: white;
   }
-  </style>
-  <style>
   .full-modal {
-    .ant-modal {
-      max-width: 50%;
-      top: 0;
-      padding-bottom: 0;
-      margin: 0;
-    ;
-      
-    }
-    .ant-modal-content {
-      display: flex;
-      flex-direction: column;
-      height: calc(70vh);
-    }
-    .ant-modal-body {
-      flex: 1;
+    max-width: 50%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+
+  .full-modal .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(70vh);
+  }
+
+  .full-modal .ant-modal-body {
+    flex: 1;
+  }
+  .button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .custom-button {
+    font-size: 1rem;
+    margin: 0.5rem; /* Adjust as needed */
+  }
+
+  @media screen and (min-width: 600px) {
+    .custom-button {
+      /* Additional styles for larger screens */
     }
   }
   </style>

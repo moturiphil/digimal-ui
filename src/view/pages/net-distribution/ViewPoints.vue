@@ -35,7 +35,7 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/receive-nets/`,
+                              path: `/manage-dropoff-inventory`,
                               query: {
                                 id: record.id,
                                 name: record.name,
@@ -46,67 +46,18 @@
                             type="info"
                             shape="circle"
                           >
-                            Receive Nets
+                            Manage Inventory
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/dropoff/assign-posts`,
-                              query: {
-                                id: record.id,
-                                name: record.name,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            Assign Posts
-                          </router-link>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/nets/nets-transfer-dropoff`,
-                              query: {
-                                id: record.id,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            Net Transfers
-                          </router-link>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
+                        <!-- <sdButton
+                          class="button-container"
                           size="extra-small"
                           type="success"
                           @click="openModal(record.id)"
                         >
-                          Issue Nets
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/nets/receive-nets-dropoff`,
-                              query: {
-                                id: record.id,
-                                name: record.name,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            Returned Nets
-                          </router-link>
-                        </sdButton>
+                          Assign Drop-off Manager
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>
@@ -128,7 +79,7 @@
                   layout="vertical"
                   name="addnew"
                   :model="formState"
-                  @finish="handleIssue"
+                  @finish="handleAssign"
                 >
                   <a-form-item name="post_id" label="To Post">
                     <a-select
@@ -168,15 +119,11 @@
                       @change="validateNoOfPieces"
                     />
                   </a-form-item>
-                  <!-- <a-form-item name="issue_date" label="Date of Issue">
-                    <a-date-picker
-                      :style="{ width: '100%' }"
-                      v-model:value="formState.issue_date"
-                      :format="dateFormat"
-                    />
-                  </a-form-item> -->
 
-                  <a-form-item name="S11 Serial Number" label="S11 Serial Number">
+                  <a-form-item
+                    name="S11 Serial Number"
+                    label="S11 Serial Number"
+                  >
                     <a-input
                       v-model:value="formState.delivery_note_number"
                       placeholder="S11 Serial Number"
@@ -305,7 +252,7 @@ const DragAndDropTable = defineComponent({
 
     fetchPosts();
 
-    const handleIssue = async () => {
+    const handleAssign = async () => {
       try {
         const data = {
           post_id: formState.post_id,
@@ -386,7 +333,7 @@ const DragAndDropTable = defineComponent({
     };
 
     return {
-      handleIssue,
+      handleAssign,
       dateFormat,
       postdata,
       handleCancelReceive,

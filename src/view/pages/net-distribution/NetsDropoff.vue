@@ -37,7 +37,6 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-// import axios from "axios";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
