@@ -38,8 +38,6 @@ router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
 
-  // const allowedRoutes = [""]
-
   if (!user_object == null) {
     next("/auth/login");
   }

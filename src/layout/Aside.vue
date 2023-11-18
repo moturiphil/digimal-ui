@@ -171,13 +171,13 @@
           <template v-slot:title>
             <sdFeatherIcons type="table" /><span>KEMSA</span>
           </template>
-          <a-menu-item key="kemsa-orders">
-            <router-link to="/kemsa-order"
+          <a-menu-item key="kemsa-orders/">
+            <router-link to="/orders/kemsa-order"
               >Orders
             </router-link>
           </a-menu-item>
           <a-menu-item key="kemsa-issues">
-            <router-link to="/kemsa-issues">Issues </router-link>
+            <router-link to="/orders/kemsa-issues">Issues </router-link>
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
