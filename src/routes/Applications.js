@@ -29,6 +29,11 @@ export default [
         component: () =>import("../view/pages/net-distribution/ReceiveNets.vue"),
       },
       {
+        path: "distributions",
+        name: "net-distributions",
+        component: () =>import("../view/pages/net-distribution/viewDistribution.vue"),
+      },
+      {
         path: "receive-nets-summary/",
         name: "receive-nets-summary",
         component: () =>import("../view/pages/net-distribution/ReceiveNetsSummary.vue"),

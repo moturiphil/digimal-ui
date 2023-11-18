@@ -93,6 +93,21 @@
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
+        key="distribution"
+        v-if="canViewRegHH || canValidateHH || canViewNetsDistributed"
+      >
+        <template v-slot:title>
+          <sdFeatherIcons type="share" />
+          <span>Distribution</span></template
+        >
+
+        <a-menu-item key="netDistribution" v-if="canViewRegHH">
+          <router-link to="/nets/distributions">
+            Nets Distribution
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+      <a-sub-menu
         key="drop-off-point"
         v-if="canCreateDropOffPoint || canViewDropOffPoint"
       >
