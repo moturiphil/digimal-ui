@@ -67,7 +67,7 @@ export default defineComponent({
     "a-transfer": Transfer,
   },
 
-  setup() {
+  data() {
     const { query } = useRoute();
     const { state } = useStore();
 
@@ -78,8 +78,7 @@ export default defineComponent({
     const dropoffs = ref([]);
     const targetKeys = ref([]);
     const dropoff_name = query.name;
-    const post_data_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
-    // const post_data_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts_data?drop_off_point_id=${drop_off_point_id}`;
+    const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
     const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
 
     const formState = reactive({
@@ -96,15 +95,13 @@ export default defineComponent({
     const fetchPosts = async () => {
       try {
         const posts = [];
-        const response = await fetch(post_data_url, {
+        const response = await fetch(posts_url, {
           method: "GET",
           headers: authHeader(),
         });
 
         const data = await response.json();
         const posts_data = data.data;
-
-        console.log(data.data);
 
         for (let i = 0; i < posts_data.length; i++) {
           const element = {
@@ -113,7 +110,7 @@ export default defineComponent({
           };
           posts.push(element);
         }
-        console.log(posts);
+
         distribution_posts.value = posts;
         console.log(distribution_posts.value);
       } catch (error) {
@@ -174,17 +171,15 @@ export default defineComponent({
 
         if (data.data) {
           const posts_data = data.data;
-
-          console.log(posts_data);
           for (let i = 0; i < posts_data.length; i++) {
             const element = {
               key: posts_data[i].distribution_post_id,
               title: posts_data[i].name,
             };
             assignedPosts.push(element);
-            console.log(assignedPosts);
           }
-          targetKeys.value = assignedPosts.map((post) => post.key);
+          targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
+          console.log(targetKeys.value);
         } else {
           console.error("Data or data.name is undefined:", data);
         }
@@ -201,13 +196,14 @@ export default defineComponent({
       formState.post_ids = newTargetKeys;
     };
 
+    console.log(formState.post_ids);
     const handleSubmit = async () => {
       const data = {
         drop_off_point_id: drop_off_point_id,
         post_ids: toRaw(formState.post_ids),
       };
       try {
-        await fetch(`${process.env.VUE_APP_BASE_URL}/dropoff/assingpost`, {
+        await fetch(`${process.env.VUE_APP_BASE_URL}/dropoff/assignpost`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
