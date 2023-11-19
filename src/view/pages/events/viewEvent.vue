@@ -2,12 +2,7 @@
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Events">
       <template #subTitle>
-        <sdButton class="btn-add_new" size="default" type="success">
-          <router-link to="/events/event-create">
-            <sdFeatherIcons type="plus" size="small" /> Start New
-            Event</router-link
-          >
-        </sdButton>
+        
       </template>
       <template #buttons>
         <div class="search-box">
