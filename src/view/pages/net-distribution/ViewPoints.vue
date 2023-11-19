@@ -50,14 +50,14 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <!-- <sdButton
+                        <sdButton
                           class="button-container"
                           size="extra-small"
                           type="success"
                           @click="openModal(record.id)"
                         >
                           Assign Drop-off Manager
-                        </sdButton> -->
+                        </sdButton>
                       </div>
                     </td>
                   </template>
@@ -81,53 +81,28 @@
                   :model="formState"
                   @finish="handleAssign"
                 >
-                  <a-form-item name="post_id" label="To Post">
+                  <a-form-item
+                    name="drop_off_manager"
+                    label="Assign Drop Off Manager"
+                  >
                     <a-select
-                      placeholder="Select  Post "
-                      v-model:value="formState.post_id"
+                      placeholder="Assign Drop Off Manager"
+                      v-model:value="formState.drop_off_manager"
+                      v-if="!loading"
+                      show-search
+                      option-filter-prop="label"
                     >
                       <a-select-option
-                        v-for="post in postdata"
-                        :key="post.id"
-                        v-model:value="post.id"
+                        v-for="worker in users"
+                        :key="worker.id"
+                        v-model:value="worker.id"
+                        :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
                       >
-                        {{ post.name }}
+                        {{ worker.first_name }}
+                        {{ worker.last_name }} - {{ worker.id_no }},
+                        {{ worker.role_id }}, {{ worker.location_id }}
                       </a-select-option>
                     </a-select>
-                  </a-form-item>
-                  <a-form-item name="bale_size" label="Bale Size">
-                    <a-select
-                      v-model:value="formState.bale_size"
-                      placeholder="Select Bale Size"
-                    >
-                      <a-select-option value="40">40</a-select-option>
-                      <a-select-option value="50">50</a-select-option>
-                    </a-select>
-                  </a-form-item>
-                  <a-form-item name="no_of_bales" label="Number of bales">
-                    <a-input
-                      v-model:value="formState.number_of_bales"
-                      placeholder="Number of bales"
-                      type="number"
-                    />
-                  </a-form-item>
-                  <a-form-item name="no_of_pieces" label="Number of Pieces">
-                    <a-input
-                      v-model:value="formState.no_of_pieces"
-                      placeholder="Enter number of pieces"
-                      type="number"
-                      @change="validateNoOfPieces"
-                    />
-                  </a-form-item>
-
-                  <a-form-item
-                    name="S11 Serial Number"
-                    label="S11 Serial Number"
-                  >
-                    <a-input
-                      v-model:value="formState.delivery_note_number"
-                      placeholder="S11 Serial Number"
-                    />
                   </a-form-item>
                   <div class="record-form-actions text-right">
                     <sdButton size="default" htmlType="Save" type="success">
@@ -197,7 +172,7 @@ const DragAndDropTable = defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const isModalOpen = ref(false);
-    const postdata = ref([]);
+    const users = ref("");
 
     const formState = reactive({
       post_id: "",
@@ -207,6 +182,7 @@ const DragAndDropTable = defineComponent({
       no_of_pieces: "",
       issue_date: "",
       delivery_note_number: "",
+      drop_off_manager: "",
     });
 
     onMounted(async () => {
@@ -231,63 +207,56 @@ const DragAndDropTable = defineComponent({
       formState.drop_off_point_id = id;
     };
 
-    const fetchPosts = async () => {
-      try {
-        await fetch(`${process.env.VUE_APP_BASE_URL}/posts_data`, {
+    //users
+    const getManagers = async () => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_drop_off_manager`,
+        {
           method: "GET",
-          headers: authHeader(),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            postdata.value = data.data;
-          });
-        console.log(postdata.value);
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      users.value = data.data;
+      console.log(users.value);
     };
 
-    fetchPosts();
+    getManagers();
 
     const handleAssign = async () => {
       try {
         const data = {
-          post_id: formState.post_id,
+          user_id: formState.drop_off_manager,
           drop_off_point_id: formState.drop_off_point_id,
-          bale_size: formState.bale_size,
-          number_of_bales: formState.number_of_bales,
-          number_of_pieces: formState.no_of_pieces,
-          issue_date: new Date().toISOString().substr(0, 10),
-          delivery_note_number: formState.delivery_note_number,
         };
 
         console.log(JSON.stringify(data));
-        await fetch(
-          `${process.env.VUE_APP_BASE_URL}/issue_nets_from_drop_off_to_post`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(data),
-          }
-        )
+        await fetch(`${process.env.VUE_APP_BASE_URL}/assign_dropoff_manager`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
           .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success) {
+          .then(({ status, data }) => {
+            if (status == true) {
               notification.success({
                 message: "Success",
-                description: `Issued successfully`,
+                description: data,
               });
               isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
             } else {
               notification.error({
                 message: "Error",
-                description: `${message}`,
+                description: `${status}`,
               });
             }
             isModalOpen.value = false;
@@ -331,11 +300,11 @@ const DragAndDropTable = defineComponent({
       selectedRowKeys,
       onChange: onSelectChange,
     };
+    console.log(users);
 
     return {
       handleAssign,
       dateFormat,
-      postdata,
       handleCancelReceive,
       openModal,
       isModalOpen,
@@ -348,6 +317,7 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
+      users,
     };
   },
 });
