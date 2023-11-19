@@ -1,8 +1,14 @@
 <template>
   <Main>
-    <sdPageHeader :title="`Bales Verified at ${post_name}`"> <br>
+    <sdPageHeader :title="`Bales Verified at ${post_name}`">
+      <br />
       <template #subTitle>
-        <sdButton class="btn-add_new" size="extra-small" type="success" @click="openModal(post_id)">
+        <sdButton
+          class="btn-add_new"
+          size="extra-small"
+          type="success"
+          @click="openModal(post_id)"
+        >
           Verify Bale
         </sdButton>
       </template>
@@ -59,43 +65,108 @@
           </div>
           <!-- Issue modal -->
           <a-modal
-            title="Issue Nets"
+            title="Verify Bales"
             :visible="isModalOpen"
-            @cancel="handleCancelReceive"
+            @cancel="handleCancel"
             width="50%"
             footer=""
           >
             <BasicFormWrapper>
               <a-form
-                class="add-transfer-form"
+                class="add-record-form"
                 :style="{ width: '100%' }"
                 layout="vertical"
                 name="addnew"
                 :model="formState"
-                @finish="handleAssign"
+                @finish="handleSubmit"
               >
+                <a-form-item name="bale_batch_no" label="Bale Batch No.">
+                  <a-input
+                    v-model:value="formState.bale_batch_no"
+                    placeholder="Enter bale batch no"
+                    type="text"
+                    @blur="validate('bale_batch_no')"
+                    @keypress="validate('bale_batch_no')"
+                  >
+                  </a-input>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.bale_batch_no"
+                  >
+                    {{ errors.bale_batch_no }}
+                  </p>
+                </a-form-item>
                 <a-form-item
-                  name="drop_off_manager"
-                  label="Assign Drop Off Manager"
+                  name="counted_no_of_nets"
+                  label="Counted Number of Nets"
+                >
+                  <a-input
+                    v-model:value="formState.counted_no_of_nets"
+                    placeholder="Counted Number of Nets"
+                    type="number"
+                    @blur="validate('counted_no_of_nets')"
+                    @keypress="validate('counted_no_of_nets')"
+                  />
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.counted_no_of_nets"
+                  >
+                    {{ errors.counted_no_of_nets }}
+                  </p>
+                </a-form-item>
+
+                <a-form-item
+                  name="expected_no_of_nets"
+                  label="Expected Number of Nets"
                 >
                   <a-select
-                    placeholder="Assign Drop Off Manager"
-                    v-model:value="formState.drop_off_manager"
-                    v-if="!loading"
-                    show-search
+                    v-model:value="formState.expected_no_of_nets"
+                    placeholder="Select Expected No of Nets"
+                    @blur="validate('expected_no_of_nets')"
+                    @keypress="validate('expected_no_of_nets')"
+                  >
+                    <a-select-option value="40">40</a-select-option>
+                    <a-select-option value="50">50</a-select-option>
+                  </a-select>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.expected_no_of_nets"
+                  >
+                    {{ errors.expected_no_of_nets }}
+                  </p>
+                </a-form-item>
+
+                <a-form-item
+                  name="delivery_note_number"
+                  label="Delivery Note No/S11"
+                >
+                  <a-select
+                    v-model:value="formState.delivery_note_number"
+                    showSearch
                     option-filter-prop="label"
+                    placeholder="Select Delivery Note No."
+                    @blur="validate('delivery_note_number')"
+                    @keypress="validate('delivery_note_number')"
                   >
                     <a-select-option
-                      v-for="worker in users"
-                      :key="worker.id"
-                      v-model:value="worker.id"
-                      :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
+                      v-for="note in delivery_notes"
+                      :key="note.delivery_note_number"
+                      :value="note.delivery_note_number"
+                      :label="note.delivery_note_number"
                     >
-                      {{ worker.first_name }}
-                      {{ worker.last_name }} - {{ worker.id_no }},
-                      {{ worker.role_id }}, {{ worker.location_id }}
+                      {{ note.delivery_note_number }}
                     </a-select-option>
                   </a-select>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.delivery_note_number"
+                  >
+                    {{ errors.delivery_note_number }}
+                  </p>
                 </a-form-item>
                 <div class="record-form-actions text-right">
                   <sdButton size="default" htmlType="Save" type="success">
@@ -109,122 +180,6 @@
         </sdCards>
       </a-col>
     </a-row>
-    <!-- <a-row :gutter="15">
-      <a-col :xs="24">
-        <RecordFormWrapper>
-          <sdCards headless>
-            <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24">
-                <BasicFormWrapper>
-                  <a-form
-                    class="add-record-form"
-                    :style="{ width: '100%' }"
-                    layout="vertical"
-                    name="addnew"
-                    :model="formState"
-                    @finish="handleSubmit"
-                  >
-                    <a-form-item name="bale_batch_no" label="Bale Batch No.">
-                      <a-input
-                        v-model:value="formState.bale_batch_no"
-                        placeholder="Enter bale batch no"
-                        type="text"
-                        @blur="validate('bale_batch_no')"
-                        @keypress="validate('bale_batch_no')"
-                      >
-                      </a-input>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.bale_batch_no"
-                      >
-                        {{ errors.bale_batch_no }}
-                      </p>
-                    </a-form-item>
-                    <a-form-item
-                      name="counted_no_of_nets"
-                      label="Counted Number of Nets"
-                    >
-                      <a-input
-                        v-model:value="formState.counted_no_of_nets"
-                        placeholder="Counted Number of Nets"
-                        type="number"
-                        @blur="validate('counted_no_of_nets')"
-                        @keypress="validate('counted_no_of_nets')"
-                      />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.counted_no_of_nets"
-                      >
-                        {{ errors.counted_no_of_nets }}
-                      </p>
-                    </a-form-item>
-
-                    <a-form-item
-                      name="expected_no_of_nets"
-                      label="Expected Number of Nets"
-                    >
-                      <a-select
-                        v-model:value="formState.expected_no_of_nets"
-                        placeholder="Select Expected No of Nets"
-                        @blur="validate('expected_no_of_nets')"
-                        @keypress="validate('expected_no_of_nets')"
-                      >
-                        <a-select-option value="40">40</a-select-option>
-                        <a-select-option value="50">50</a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.expected_no_of_nets"
-                      >
-                        {{ errors.expected_no_of_nets }}
-                      </p>
-                    </a-form-item>
-
-                    <a-form-item
-                      name="delivery_note_number"
-                      label="Delivery Note No/S11"
-                    >
-                      <a-select
-                        v-model:value="formState.delivery_note_number"
-                        showSearch
-                        option-filter-prop="label"
-                        placeholder="Select Delivery Note No."
-                        @blur="validate('delivery_note_number')"
-                        @keypress="validate('delivery_note_number')"
-                      >
-                        <a-select-option
-                          v-for="note in delivery_notes"
-                          :key="note.delivery_note_number"
-                          :value="note.delivery_note_number"
-                          :label="note.delivery_note_number"
-                        >
-                          {{ note.delivery_note_number }}
-                        </a-select-option>
-                      </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.delivery_note_number"
-                      >
-                        {{ errors.delivery_note_number }}
-                      </p>
-                    </a-form-item>
-                    <div class="record-form-actions text-right">
-                      <sdButton size="default" htmlType="Save" type="success">
-                        {{ isLoading ? "Loading..." : "Submit" }}
-                      </sdButton>
-                    </div>
-                  </a-form>
-                </BasicFormWrapper>
-              </a-col>
-            </a-row>
-          </sdCards>
-        </RecordFormWrapper>
-      </a-col>
-    </a-row> -->
   </Main>
 </template>
 <script>
@@ -235,7 +190,7 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
-import { useRouter } from "vue-router";
+// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import { useRoute } from "vue-router";
 
@@ -280,16 +235,23 @@ const AddNew = defineComponent({
     const join = ref("");
     const dataSource = ref([]);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/bale_verification`;
-    const router = useRouter();
+    // const router = useRouter();
 
     const { query } = useRoute();
     const post_id = Number(query.id);
     const post_name = query.name;
     console.log(query.id);
     const d_no = query.delivery_no;
-    // const date_received = dayjs(query.date_received, dateFormat);
-    // const received_by = query.received_by;
-    // console.log(date_received)
+
+    const isModalOpen = ref(false);
+    const handleOk = async () => (isModalOpen.value = false);
+    const handleCancel = () => isModalOpen.value = false;
+    const openmodal = () => (isModalOpen.value = true);
+
+    const openModal = (id) => {
+      isModalOpen.value = true;
+      formState.drop_off_point_id = id;
+    };
 
     const formState = reactive({
       post_id: post_id,
@@ -400,7 +362,7 @@ const AddNew = defineComponent({
             description: "Nets have been successfully verified",
             duration: 5.5,
           });
-          router.push("/nets/nets-delivered");
+          // router.push("/nets/nets-delivered");
         } else {
           // Handle failure
           notification["error"]({
@@ -443,6 +405,11 @@ const AddNew = defineComponent({
       },
       delivery_notes,
       post_name,
+      isModalOpen,
+      openmodal,
+      openModal,
+      handleOk,
+      handleCancel,
     };
   },
 });
