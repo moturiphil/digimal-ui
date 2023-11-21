@@ -393,7 +393,8 @@ export default defineComponent({
     }));
 
 
-    const newChartDataResponse = await fetch(
+    // county comparisons bar chart
+    const subCountyComparisonResponse = await fetch(
       `${process.env.VUE_APP_BASE_URL}/subcounty/stats?county_id=nK0A12Q7MvS`,
       {
         method: "GET",
@@ -401,8 +402,7 @@ export default defineComponent({
       }
     );
 
-
-    const newChartData = await newChartDataResponse.json();
+    const newChartData = await subCountyComparisonResponse.json();
 
     // setInterval(newChartData, 3000);
 

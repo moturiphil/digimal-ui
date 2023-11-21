@@ -32,14 +32,14 @@
                         @keypress="validate('received_by')"
                       >
                         <a-select-option
-                          v-for="worker in users"
-                          :key="worker.id"
-                          v-model:value="worker.id"
-                          :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
+                          v-for="manager in users"
+                          :key="manager.id"
+                          v-model:value="manager.id"
+                          :label="`${manager.first_name} ${manager.last_name} -${manager.role_id} `"
                         >
-                          {{ worker.first_name }}
-                          {{ worker.last_name }} -
-                          {{ worker.role_id }}, {{worker.location_id}}
+                          {{ manager.first_name }}
+                          {{ manager.last_name }} - {{manager.id_no}},
+                          {{ manager.role_id }}, {{manager.location_id}}
                         </a-select-option>
                       </a-select>
                       <p class="errors" style="color: red;" v-if="!!errors.received_by" >{{errors.received_by}}</p>

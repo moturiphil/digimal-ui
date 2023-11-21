@@ -29,7 +29,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
-        <a-menu-item key="widgetCreateEvent">
+        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
         <a-menu-item key="widgetListevents">
@@ -307,35 +307,37 @@ import { fetchUserData, hasRole } from "../services/user-role";
 const adminRoles = [53];
 const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
-  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,
+  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,78,17
 ];
 const createEventRoles = [53, 5, 3, 21, 37, 39];
+
 const viewEventRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
   36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
 ];
 const createActivityRoles = [53, 5, 3, 21, 37];
+
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
 ];
 const viewRegHHRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
 ];
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
 ];
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 78,17
 ];
 
 const viewDropoffPointsRoles = [
@@ -357,11 +359,11 @@ const viewInventoryRoles = [
   36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35
 ];
 
-const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
+const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78,17];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37, 56,
+  42, 60, 34, 37, 56,78, 17
 ];
 
 const viewMasterlistsRoles = [56];

@@ -52,20 +52,6 @@
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <!-- <sdButton type="success" size="extra-small">
-                          <router-link
-                            :to="{
-                              path: `/assign-worker`,
-                              query: { id: record.id },
-                            }"
-                            class="btn-icon"
-                            type="success"
-                            shape="circle"
-                          >
-                            &nbsp;&nbsp; Assign Post Workers
-                          </router-link>
-                        </sdButton> -->
-                        <!-- &nbsp;&nbsp; -->
                         <sdButton type="success" size="extra-small">
                           <router-link
                             :to="{
