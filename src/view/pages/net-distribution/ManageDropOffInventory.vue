@@ -208,7 +208,7 @@
                                       type="number"
                                     />
                                   </a-form-item>
-                                  <a-form-item name="no_of_pieces" label="Number of Pieces">
+                                  <a-form-item name="no_of_pieces" label="Number of Loose Pieces">
                                     <a-input
                                       v-model:value="formState.no_of_pieces"
                                       placeholder="Enter number of pieces"
