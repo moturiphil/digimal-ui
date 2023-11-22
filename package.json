@@ -41,6 +41,7 @@
     "leaflet": "^1.7.1",
     "mitt": "^3.0.0",
     "svgmap": "^2.7.1",
+    "sweetalert2": "^11.10.1",
     "v-calendar": "^3.0.0-alpha.8",
     "vee-validate": "^4.10.6",
     "vue": "^3.2.45",

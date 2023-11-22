@@ -3,11 +3,20 @@
     <RecordViewWrapper>
       <sdPageHeader title="View Post Workers">
         <template #subTitle>
-          <sdButton class="btn-add_new" size="extra-small" type="success">
-          <router-link to="/assign-worker">
-            <sdFeatherIcons type="plus" size="small" /> Add Post Worker</router-link
+        <sdButton type="success" size="extra-small">
+          <router-link
+            :to="{
+              path: `/assign-worker`,
+              query: { id: post_id } 
+            }"
+            class="btn-icon"
+            type="success"
+            shape="circle"
           >
+            &nbsp;&nbsp; Assign Post Workers
+          </router-link>
         </sdButton>
+
         </template>
       </sdPageHeader>
       <Main>
@@ -208,7 +217,10 @@
         delivery_note_number: "",
       });
 
-      console.log(query.id)
+
+      const post_id = query.id
+
+      console.log(post_id);
   
       onMounted(async () => {
         try {
@@ -274,6 +286,7 @@
         dataSource,
         columns,
         formState,
+        post_id,
       };
     },
   });

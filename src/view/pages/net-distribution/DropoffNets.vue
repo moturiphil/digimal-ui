@@ -61,7 +61,7 @@
                       />
                     </a-form-item>
 
-                    <a-form-item name="no_of_pieces" label="Number of Pieces">
+                    <a-form-item name="no_of_pieces" label="Number of Loose Pieces">
                       <a-input
                         v-model:value="formState.no_of_pieces"
                         placeholder="Enter number of pieces"
@@ -173,7 +173,6 @@ const AddNew = defineComponent({
     const delivery_notes = ref([]);
     // const drop_off_point_id = query.id;
     const parameters = { query };
-
     const drop_off_point_id = parameters.query.id;
 
     const formState = reactive({
@@ -273,7 +272,7 @@ const AddNew = defineComponent({
       drop_off_point_id;
       fetchDeliveryNotes();
     });
-    // console.log(formState.isFacility)
+    // console.log(drop_off_point_id)
     const handleSubmit = (values) => {
       console.log(values);
       values = {
@@ -305,6 +304,13 @@ const AddNew = defineComponent({
               description: "Nets have been successfully delivered",
               duration: 5.5,
             });
+          }
+          else{
+            notification["error"]({
+              message: "Unauthorized Action",
+              description: "Only Drop-off Supervisors to Receive",
+              duration: 5.5,
+            })
           }
         })
         .catch((error) => {

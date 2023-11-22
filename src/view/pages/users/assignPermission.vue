@@ -209,6 +209,7 @@ const AssignPermissions = defineComponent({
             user_perm.push(element.id);
         });
         this.targetKeys = user_perm;
+        console.log(this.targetKeys);
       } catch (error) {
         notification["error"]({
           message: "Error",

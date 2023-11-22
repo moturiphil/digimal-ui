@@ -34,6 +34,11 @@ export default [
         component: () =>import("../view/pages/net-distribution/IssuanceLineList.vue"),
       },
       {
+        path: "distributions",
+        name: "net-distributions",
+        component: () =>import("../view/pages/net-distribution/viewDistribution.vue"),
+      },
+      {
         path: "receive-nets-summary/",
         name: "receive-nets-summary",
         component: () =>import("../view/pages/net-distribution/ReceiveNetsSummary.vue"),
@@ -76,14 +81,6 @@ export default [
           ),
       },
       {
-        name: "manage-inventory",
-        path: "drop-off/manage-inventory/:id",
-        component: () =>
-          import(
-            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/ManageDropOffInventory.vue"
-          ),
-      },
-      {
         name: "receive-nets-dropoff",
         path: "receive-nets-dropoff",
         component: () =>
@@ -97,6 +94,14 @@ export default [
         component: () =>
           import(
             /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/DistributionPointNets.vue"
+          ),
+      },
+      {
+        name: "post-summary",
+        path: "post-summary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/PostSummary.vue"
           ),
       },
       {
@@ -123,6 +128,14 @@ export default [
     component: () =>
       import(
         /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/AssignDropOffPosts.vue"
+      ),
+  },
+  {
+    name: "manage-dropoff-inventory",
+    path: "manage-dropoff-inventory",
+    component: () =>
+      import(
+        /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/ManageDropOffInventory.vue"
       ),
   },
   {

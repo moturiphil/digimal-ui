@@ -29,7 +29,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
-        <a-menu-item key="widgetCreateEvent">
+        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
         <a-menu-item key="widgetListevents">
@@ -93,6 +93,21 @@
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
+        key="distribution"
+        v-if="canViewRegHH || canValidateHH || canViewNetsDistributed"
+      >
+        <template v-slot:title>
+          <sdFeatherIcons type="share" />
+          <span>Distribution</span></template
+        >
+
+        <a-menu-item key="netDistribution" v-if="canViewRegHH">
+          <router-link to="/nets/distributions">
+            Nets Distribution
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+      <a-sub-menu
         key="drop-off-point"
         v-if="canCreateDropOffPoint || canViewDropOffPoint"
       >
@@ -152,10 +167,42 @@
         </a-menu-item>
         <a-menu-item key="widgetNetsReceived">
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
+        </a-menu-item> 
+        <a-menu-item key="widgetPostSummary">
+          <router-link to="/nets/post-summary"> Posts Summary </router-link>
         </a-menu-item>
-        <a-menu-item key="">
-          <router-link to="/stock-status">MEDS Issues</router-link>
-        </a-menu-item>
+      </a-sub-menu>
+      <a-sub-menu key="supply-chain" v-if="canViewInventory">
+        <template v-slot:title>
+          <sdFeatherIcons type="database" /><span>Supply Chain</span>
+        </template>
+          
+        <a-sub-menu key="meds-issuance">
+          <template v-slot:title>
+            <sdFeatherIcons type="globe" /><span>MEDS</span>
+          </template>
+          <a-menu-item key="meds-orders">
+            <router-link to="/meds-orders"
+              >Orders
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="meds-issues">
+            <router-link to="/meds-issues">Issues </router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-sub-menu key="kemsa-issuance">
+          <template v-slot:title>
+            <sdFeatherIcons type="table" /><span>KEMSA</span>
+          </template>
+          <a-menu-item key="kemsa-orders/">
+            <router-link to="/orders/kemsa-order"
+              >Orders
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="kemsa-issues">
+            <router-link to="/orders/kemsa-issues">Issues </router-link>
+          </a-menu-item>
+        </a-sub-menu>
       </a-sub-menu>
       <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
         <template v-slot:title>
@@ -268,40 +315,42 @@ import { fetchUserData, hasRole } from "../services/user-role";
 const adminRoles = [53];
 const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
-  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,
+  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,78,17
 ];
 const createEventRoles = [53, 5, 3, 21, 37, 39];
+
 const viewEventRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
   36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
 ];
 const createActivityRoles = [53, 5, 3, 21, 37];
+
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
 ];
 const viewRegHHRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
 ];
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
 ];
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 78,17
 ];
 
 const viewDropoffPointsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35, 34
 ];
 
 const createDistributionPostRoles = [
@@ -310,19 +359,19 @@ const createDistributionPostRoles = [
 
 const viewDistributionPostRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35, 34
 ];
 
 const viewInventoryRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77
+  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35, 34
 ];
 
-const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59];
+const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78,17];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37, 56,
+  42, 60, 34, 37, 56,78, 17
 ];
 
 const viewMasterlistsRoles = [56];
