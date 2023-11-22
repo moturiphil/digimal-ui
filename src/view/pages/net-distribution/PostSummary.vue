@@ -4,6 +4,18 @@
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <sdFeatherIcons type="search" size="14" />
+          </span>
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name"
+          /></div
+      ></template>
     </sdPageHeader>
     <Main>
       <a-row :gutter="15">
@@ -16,7 +28,7 @@
             <div v-else>
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="dataSource"
+                  :dataSource="results"
                   :columns="columns"
                 >
                  <!-- <template #action="{  }">
@@ -88,6 +100,8 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const searchItem = ref("");
+
 
     onMounted(async () => {
       try {
@@ -104,13 +118,27 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     });
+    const results = computed(() => {
+      const query = searchItem.value.toLowerCase();
+      const regex = new RegExp(query, "i");
+      if (!query) {
+        return dataSource.value;
+      } else {
+        return dataSource.value.filter((post) => {
+          return regex.test(post.name);
+        });
+      }
+    });
+
 
     return {
       crud,
       isLoading,
       selectedRowKeys,
       dataSource,
+      searchItem,
       columns,
+      results
     };
   },
 });
