@@ -114,6 +114,11 @@
             Drop-off Receipts
           </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetListIssuance" v-if="canViewDropOffPoint">
+          <router-link to="/nets/issuance-linelist">
+            Issuance linelist
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
       <a-sub-menu

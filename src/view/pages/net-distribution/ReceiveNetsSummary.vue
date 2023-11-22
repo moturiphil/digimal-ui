@@ -182,6 +182,8 @@
                                 <div class="table-actions">
                                   <span v-if="record.status == 1" class="badge badge-green">Received</span>
                                   <span v-else-if="record.status == 2" class="badge badge-warning">Cancelled</span>
+                                  <span v-else class="badge badge-red">Pending</span>
+
                                 </div>
                               </td>
                             </template>
@@ -219,6 +221,8 @@
                                 <div class="table-actions">
                                   <span v-if="record.status == 1" class="badge badge-green">Received</span>
                                   <span v-else-if="record.status == 2" class="badge badge-warning">Cancelled</span>
+                                  <span v-else class="badge badge-red">Pending</span>
+
                                 </div>
                               </td>
                             </template>
@@ -994,7 +998,7 @@
   <style scoped>
   .badge-green {
     background-color: #1ec997;
-    /* color: white; */
+    color: white;
     /* padding: 2px;
       border-radius: 3px; */
     /* size */
@@ -1002,7 +1006,15 @@
   }
   .badge-warning {
     background-color: #f7b924;
-    /* color: white; */
+    color: white;
+    /* padding: 2px;
+      border-radius: 3px; */
+    /* size */
+    font-size: 12px;
+  }
+  .badge-red {
+    background-color: #f0506e;
+    color: white;
     /* padding: 2px;
       border-radius: 3px; */
     /* size */
