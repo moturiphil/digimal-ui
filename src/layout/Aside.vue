@@ -147,6 +147,9 @@
         </a-menu-item>
         <a-menu-item key="widgetNetsReceived">
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
+        </a-menu-item> 
+        <a-menu-item key="widgetPostSummary">
+          <router-link to="/nets/post-summary"> Posts Summary </router-link>
         </a-menu-item>
         <a-menu-item key="">
           <router-link to="/stock-status">MEDS Issues</router-link>
