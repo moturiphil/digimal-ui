@@ -29,6 +29,11 @@ export default [
         component: () =>import("../view/pages/net-distribution/ReceiveNets.vue"),
       },
       {
+        path: "issuance-linelist",
+        name: "issuance-linelist",
+        component: () =>import("../view/pages/net-distribution/IssuanceLineList.vue"),
+      },
+      {
         path: "distributions",
         name: "net-distributions",
         component: () =>import("../view/pages/net-distribution/viewDistribution.vue"),
