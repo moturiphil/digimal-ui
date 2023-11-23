@@ -86,11 +86,11 @@
             HouseHolds Validation
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
+        <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
           <router-link to="/hh-nets-distributed">
             Nets Distributed
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
       </a-sub-menu>
       <a-sub-menu
         key="distribution"
@@ -127,6 +127,11 @@
         <a-menu-item key="widgetDropOffPointReceives" v-if="canViewDropOffPoint">
           <router-link to="/nets/drop-off">
             Drop-off Receipts
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetListIssuance" v-if="canViewDropOffPoint">
+          <router-link to="/nets/issuance-linelist">
+            Drop-off Issues
           </router-link>
         </a-menu-item>
       </a-sub-menu>
