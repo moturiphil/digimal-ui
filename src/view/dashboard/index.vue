@@ -315,7 +315,7 @@ export default defineComponent({
     });
 
     const updateFilters = () => {
-      access_level.value.level.level_name = 'ward'
+      //access_level.value.level.level_name = 'ward'
       if (access_level.value.level.level_name.toLowerCase() == 'national') {
         filterAccessList.value=['county','subcounty','ward','location','sublocation']
         fetchCounties()
