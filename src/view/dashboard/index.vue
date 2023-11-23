@@ -314,7 +314,7 @@ export default defineComponent({
     });
 
     const updateFilters = () => {
-      //access_level.value.level.level_name = 'ward'
+      access_level.value.level.level_name = 'national'
       if (access_level.value.level.level_name.toLowerCase() == 'national') {
         filterAccessList.value=['county','subcounty','ward','location','sublocation']
         fetchCounties()
@@ -353,29 +353,31 @@ export default defineComponent({
       }else if (org_level == 'ward') {//get locatios
         fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
         statUrl = `subcounty/stats?org_id=${org_id}`
-      }else{//get sublocations
-        fetchUrl = `post/stats?sublocation_id=${org_id}`
-        statUrl = `post/stats?org_id=${org_id}`
+      } else if (org_level == 'location') {//get sub locatios
+        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
+        statUrl = `subcounty/stats?org_id=${org_id}`
+      } else if (org_level == 'sublocation') {//get sublocations stats
+        statUrl = `subcounty/stats?org_id=${org_id}`
       }
       await axios.get(`${fetchUrl}`)
         .then(response => {
-          if (org_level == 'subcounty') {
+           if (org_level == 'county') {//get county stats
             subcounties.value = response.data.message.map(x => ({
               value: x.org_id,
               label: x.name
             }));
-          }else if (org_level == 'ward') {
+          }else if (org_level == 'subcounty') {//get sub county stats
             wards.value = response.data.message.map(x => ({
               value: x.org_id,
               label: x.name
             }));
-          } else if (org_level == 'location') {
+          }else if (org_level == 'ward') {//get ward stats
             locations.value = response.data.message.map(x => ({
               value: x.org_id,
               label: x.name
             }));
-          } else {
-            subcounties.value = response.data.message.map(x => ({
+          } else if (org_level == 'location') {//get location stats
+            sublocations.value = response.data.message.map(x => ({
               value: x.org_id,
               label: x.name
             }));
