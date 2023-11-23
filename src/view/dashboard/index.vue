@@ -219,40 +219,40 @@
       </a-col>
     </a-row>
     <div>
-      <a-row :gutter="25">
-        <a-col :xxl="12" :md="12" :sm="24" :xs="24">
-          <sdCards headless>
-            <EChartCard>
-              <div class="chart-container">
-                <highcharts :options="chartOptions" ref="" style="width: 100%;"></highcharts>
-              </div>
-            </EChartCard>
-          </sdCards>
-        </a-col>
-
-        <a-col :xxl="12" :md="12" :sm="24" :xs="24">
-          <sdCards headless>
-            <EChartCard>
-              <div class="chart-container">
-                <highcharts :options="pieOptions" style="width: 100%;"></highcharts>
-              </div>
-            </EChartCard>
-          </sdCards>
-        </a-col>
-      </a-row>
-      <a-row :gutter="25">
+    <a-row :gutter="25">
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
               <div id="householdRegvsServedChart"></div>
             </figure>
           </a-col>
-        </a-row>
-      <a-row :gutter="25">
-        <a-col :xxl="24" :md="24" :sm="24" :xs="24">
-          <figure class="highcharts-figure">
-            <div id="netsReqvsIssuedChart"></div>
-          </figure>
-        </a-col>
+    </a-row>
+    <a-row :gutter="25">
+      <a-col :xxl="24" :md="24" :sm="24" :xs="24">
+        <figure class="highcharts-figure">
+          <div id="netsReqvsIssuedChart"></div>
+        </figure>
+      </a-col>
+    </a-row>
+     <a-row :gutter="25">
+          <a-col :xxl="12" :md="12" :sm="24" :xs="24" v-if="sublocations !== null">
+            <sdCards headless>
+              <EChartCard>
+                <div class="chart-container">
+                  <highcharts :options="chartOptions" ref="" style="width: 100%;"></highcharts>
+                </div>
+              </EChartCard>
+            </sdCards>
+          </a-col>
+
+          <a-col :xxl="12" :md="12" :sm="24" :xs="24">
+            <sdCards headless>
+              <EChartCard>
+                <div class="chart-container">
+                  <highcharts :options="pieOptions" style="width: 100%;"></highcharts>
+                </div>
+              </EChartCard>
+            </sdCards>
+          </a-col>
       </a-row>
     </div>
     <a-notification
@@ -290,15 +290,14 @@ export default defineComponent({
     const household_population = ref(0);
     const total_nets_required = ref(0);
     const activities = ref(0);
-    const counties = ref([])
     const newChartData = ref([])
-
-    const subcounties = ref([])
-    const wards = ref([])
-    const locations = ref([])
-    const sublocations = ref([])
-    const newChartOptions = ref({});
-    const combineChartOptions = ref({});
+    const counties = ref(null)
+    const subcounties = ref(null)
+    const wards = ref(null)
+    const locations = ref(null)
+    const sublocations = ref(null)
+    const newChartOptions = ref(null);
+    const combineChartOptions = ref(null);
     const chartOptions = ref({})
     const chartData = ref({})
     const pieOptions = ref({})
