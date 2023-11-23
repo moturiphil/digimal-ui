@@ -34,6 +34,7 @@
           <a-col v-if="filterAccessList.includes('sublocation')">
             <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
               :options="sublocations" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+
           </a-col>
         </a-row>
       </template>
@@ -75,6 +76,7 @@
                 barPercentage: 1,
               },
             ]" :options="chartOptions" />
+
             </div>
           </EChartCard>
         </sdCards>
@@ -104,6 +106,7 @@
                 barPercentage: 1,
               },
             ]" :options="chartOptions" />
+
             </div>
           </EChartCard>
         </sdCards>
@@ -133,6 +136,7 @@
                 barPercentage: 1,
               },
             ]" :options="chartOptions" />
+
             </div>
           </EChartCard>
         </sdCards>
@@ -154,6 +158,7 @@
               <Chart class="visitors" :height="0" :labels="[]" :style="{
                 marginBottom: '-5',
               }" :datasets="[
+
               {
                 data: [],
                 backgroundColor: '#E8FAF4',
@@ -162,6 +167,7 @@
                 barPercentage: 1,
               },
             ]" :options="chartOptions" />
+
             </div>
           </EChartCard>
         </sdCards>
@@ -191,6 +197,7 @@
                 barPercentage: 1,
               },
             ]" :options="chartOptions" />
+
             </div>
           </EChartCard>
         </sdCards>
@@ -209,6 +216,7 @@
               <Chart class="growth" :height="0" :labels="[]" :style="{
                 marginBottom: '-5',
               }" :datasets="[
+
               {
                 data: [],
                 backgroundColor: '#E8FAF4',
@@ -217,6 +225,7 @@
                 barPercentage: 1,
               },
             ]" :options="chartOptions" />
+
             </div>
           </EChartCard>
         </sdCards>
@@ -344,6 +353,7 @@ export default defineComponent({
       }
     }
 
+
     const handleChange = async (org_id,org_level) => {
       //fetch child data
       fetchChildData(org_id, org_level)
@@ -436,6 +446,7 @@ export default defineComponent({
         });
     }
 
+
     const fetchCounties = async () => {
       axios.get('counties/')
         .then(response => {
@@ -448,6 +459,7 @@ export default defineComponent({
             message: `Error!`,
             description: `${error}`,
           });
+
         })
     }
 
@@ -533,6 +545,7 @@ export default defineComponent({
                 newChartData.value.data.map(item => item.name),//cats
               )
               pieOptions.value = {
+
                 chart: {
                   type: 'pie'
                 },
@@ -902,6 +915,7 @@ export default defineComponent({
       updateStats,
       netsReqvsIssuedChart,
       householdRegvsServedChart,
+
       //charts
       //charts options
       newChartOptions,

@@ -1,6 +1,18 @@
 <template>
   <div>
-    <sdPageHeader ghost title="HouseHolds" />
+    <sdPageHeader ghost title="HouseHolds" >
+     <template #buttons>
+        <div class="search-box">
+          <a-input
+            style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by ID No, Phone No, name"
+          />
+        </div>
+      </template>
+    </sdPageHeader>
 
     <Main>
       <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
@@ -65,7 +77,7 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -180,12 +192,17 @@ export default defineComponent({
       total: 0,
       onChange: async (page, pageSize) => {
         // Update the current page when the pagination changes
+        const query = searchItem.value.toLowerCase();
+
         paginationOptions.value.current = page;
+
+        let url = ''
+        if(!query) url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}`
+        else url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}&query=${query}`
 
         // Fetch data for the new page using the updated page number
         try {
-          const response = await axios.get(
-            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}`,
+          const response = await axios.get(url,
             { headers: authHeader() }
           );
           dataSource.value = response.data.data.data;
@@ -258,6 +275,37 @@ export default defineComponent({
           console.error(error);
         });
     });
+
+    watchEffect(async()=>{
+      const query = searchItem.value.toLowerCase();
+      try {
+        if(!query) return dataSource.value;
+        if(query.length> 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&query=${query}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+            }
+          );
+          const data = await response.json();
+          dataSource.value = await data.data.data;
+          paginationOptions.value.total = await data.data.total;
+          // total_households.value.total = data.data.total
+          console.log(paginationOptions)
+        }
+      } catch (error) {
+        notification["error"]({
+          message: "Error",
+          description: `Error fetching households`,
+          duration: 5.5,
+        });
+      }
+    })
+
     const handleVerify = (hh_id, hh_size) => {
       console.log({ hh_id, hh_size });
       inputValue.value = hh_size;
@@ -334,6 +382,7 @@ export default defineComponent({
       const end = start + paginationOptions.value.pageSize;
       return filteredData.value.slice(start, end);
     });
+
 
     return {
       crud,
