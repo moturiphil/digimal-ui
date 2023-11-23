@@ -4,6 +4,7 @@
       <template #buttons>
         <div class="search-box">
           <a-input
+            style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
             v-model:value="searchItem"
             type="text"
             name="dataSource"
@@ -75,7 +76,7 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="results"
+                  :dataSource="dataSource"
                   :columns="columns"
                 >
                   <template #action="{ record }">
@@ -108,12 +109,12 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
 // import { UploadOutlined } from '@ant-design/icons';
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-import UserService from "../../../services/user.service";
+// import UserService from "../../../services/user.service";
 
 const columns = [
   {
@@ -173,11 +174,6 @@ const DragAndDropTable = defineComponent({
 
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
-    console.log(authHeader());
-
-    const api_url = UserService;
-    console.log(api_url);
-
     onMounted(async () => {
       try {
         const response = await fetch(
@@ -200,7 +196,6 @@ const DragAndDropTable = defineComponent({
           };
         });
         dataSource.value = updatedData;
-        console.log(data.data);
       } catch (error) {
         console.error(error);
       }
@@ -235,7 +230,6 @@ const DragAndDropTable = defineComponent({
 
     const handleDeletion = async (id) => {
       try {
-        console.log(id);
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/delete_record?record_id=${id}`,
           {
@@ -244,7 +238,6 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        console.log(data);
         if (data.success == true) {
           notification.success({
             message: "Success",
@@ -279,21 +272,57 @@ const DragAndDropTable = defineComponent({
       searchItem: "",
     });
 
-    const results = computed(() => {
+    // const results = computed(() => {
+    //   const query = searchItem.value.toLowerCase();
+    
+    //   const regex = new RegExp(query, "i");
+    //   if (!query) {
+    //     return dataSource.value;
+    //   } else {
+    //     return dataSource.value.filter((user) => {
+    //       return (
+    //         regex.test(user.first_name) ||
+    //         regex.test(user.last_name) ||
+    //         regex.test(user.level_id) ||
+    //         regex.test(user.org_types_id) ||
+    //         regex.test(user.id_no) ||
+    //         regex.test(user.role)
+    //       );
+    //     });
+    //   }
+    // });
+
+    watchEffect(async() => {
       const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((user) => {
-          return (
-            regex.test(user.first_name) ||
-            regex.test(user.last_name) ||
-            regex.test(user.level_id) ||
-            regex.test(user.org_types_id) ||
-            regex.test(user.id_no) ||
-            regex.test(user.role)
+
+      try {
+        if(!query) return dataSource.value;
+        if(query.length > 3){
+
+          const response =  await fetch(
+            `${process.env.VUE_APP_BASE_URL}/masterlist_list?query=${query}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
           );
+          const data =  await response.json();
+          const updatedData = data.data.map((record) => {
+            let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
+            let status = record.status == 1 ? "validated" : "Not Validated";
+            return {
+              ...record,
+              fullName,
+              status,
+            };
+        });
+        dataSource.value = updatedData;
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
         });
       }
     });
@@ -315,11 +344,11 @@ const DragAndDropTable = defineComponent({
       rowSelection,
       onSelectChange,
       dataSource,
+      // results,
       columns,
       formState,
       handleDeletion,
       validateMasterlist,
-      results,
       searchItem,
     };
   },

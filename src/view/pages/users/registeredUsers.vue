@@ -4,10 +4,11 @@
       <template #buttons>
         <div class="search-box">
           <a-input
+            style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by name, level, location or organization"
+            placeholder="Search by name"
           />
         </div>
       </template>
@@ -39,7 +40,7 @@
                     showSizeChanger: true,
                     current: currentPage,
                   }"
-                  :dataSource="results"
+                  :dataSource="dataSource"
                   :columns="columns"
                   @change="handleTableChange"
                 >
@@ -93,10 +94,10 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import UserService from "../../../services/user.service";
+import { notification } from "ant-design-vue";
 // import { Switch } from "ant-design-vue";
 
 const columns = [
@@ -160,11 +161,6 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const searchItem = ref("");
 
-    console.log(authHeader());
-
-    const api_url = UserService;
-    console.log(api_url);
-
     // onMounted(async () => {
     //   try {
     //     const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
@@ -194,7 +190,6 @@ const DragAndDropTable = defineComponent({
         );
         const data = await response.json();
         dataSource.value = data.data;
-        console.log(data.data);
       } catch (error) {
         console.error(error);
       }
@@ -237,23 +232,29 @@ const DragAndDropTable = defineComponent({
       selectedRowKeys.value = selectedRowKey;
     };
 
-    const results = computed(() => {
+    watchEffect(async()=>{
       const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((user) => {
-          return (
-            regex.test(user.user_name) ||
-            regex.test(user.level_id) ||
-            regex.test(user.org_types_id) ||
-            regex.test(user.id_no) ||
-            regex.test(user.location_id)
+      try {
+        if(!query) return dataSource.value;
+        if(query.length > 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/users?query=${query}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
           );
+          const data = await response.json();
+          dataSource.value = data.data;
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
         });
       }
-    });
+    })
 
     const rowSelection = {
       selectedRowKeys,
@@ -272,7 +273,6 @@ const DragAndDropTable = defineComponent({
       formState,
       isDeactivated: false,
       deactivateUser,
-      results,
       searchItem,
       // toggleUserStatus /*, deactivate user */,
     };
