@@ -14,12 +14,20 @@
           <a-col>
             <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
               :options="counties" :filter-option="filterOption" @change="handleChange"></a-select>
+          </a-col>
+          <a-col>
             <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
               :options="subcounties" :filter-option="filterOption" @change="handleChange"></a-select>
+          </a-col>
+          <a-col>
             <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
               :filter-option="filterOption" @change="handleChange"></a-select>
+          </a-col>
+          <a-col>
             <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
               :options="locations" :filter-option="filterOption" @change="handleChange"></a-select>
+          </a-col>
+          <a-col>
             <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
               :options="sublocations" :filter-option="filterOption" @change="handleChange"></a-select>
           </a-col>
@@ -252,7 +260,14 @@
         </a-col>
       </a-row>
     </div>
-
+    <a-notification
+          :message="errorMessage"
+          type="error"
+          :description="errorDescription"
+          :showIcon="true"
+          :duration="0"
+          :style="{ width: '100%' }"
+        />
   </Main>
 </template>
 <script >
@@ -262,8 +277,8 @@ import { onMounted, ref } from "vue";
 import { defineComponent } from "vue"; //defineAsyncComponent
 //import authHeader from "../../services/auth-header";
 import Highcharts from 'highcharts';
-import Swal from 'sweetalert2';
 import axios from '@/Axiosconfig';
+import { notification } from "ant-design-vue";
 
 export default defineComponent({
   name: "Dashboard",
@@ -317,12 +332,10 @@ export default defineComponent({
           //pie chars Registered households by sub county
           pieOptions.value.series[0].data = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
         }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
+           notification.error({
+            message: `Error!`,
+            description:  `${error}`,
+          });
         })
     };
 
@@ -334,12 +347,10 @@ export default defineComponent({
             label: x.name
           }));
         }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
+          notification.error({
+            message: `Error!`,
+            description: `${error}`,
+          });
         })
     }
 
@@ -361,12 +372,10 @@ export default defineComponent({
           // actual_allocation = data.
           // console.log(data.active_events);
         }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
+           notification.error({
+            message: `Error!`,
+            description: `${error}`,
+          });
           console.error(error);
         });
     }
@@ -658,12 +667,10 @@ export default defineComponent({
               }
             })
         }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
+          notification.error({
+            message: `Error!`,
+            description: `${error}`,
+          });
         })
     }
     return {
