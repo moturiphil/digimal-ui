@@ -10,55 +10,6 @@
             </sdButton> -->
           </router-link>
         </div>
-       <a-row>
-        <a-col>
-         <a-select
-          v-model:value="county"
-          show-search
-          placeholder="Select County"
-          style="width: 200px"
-          :options="counties"
-          :filter-option="filterOption"
-          @change="handleChange"
-        ></a-select>
-        <a-select
-            v-model:value="subcounty"
-            show-search
-            placeholder="Select Sub County"
-            style="width: 200px"
-            :options="subcounties"
-            :filter-option="filterOption"
-            @change="handleChange"
-          ></a-select>
-          <a-select
-              v-model:value="ward"
-              show-search
-              placeholder="Select Ward"
-              style="width: 200px"
-              :options="wards"
-              :filter-option="filterOption"
-              @change="handleChange"
-            ></a-select>
-            <a-select
-                v-model:value="location"
-                show-search
-                placeholder="Select Location"
-                style="width: 200px"
-                :options="locations"
-                :filter-option="filterOption"
-                @change="handleChange"
-              ></a-select>
-              <a-select
-                v-model:value="sublocation"
-                show-search
-                placeholder="Select Sub Location"
-                style="width: 200px"
-                :options="sublocations"
-                :filter-option="filterOption"
-                @change="handleChange"
-              ></a-select>
-        </a-col>
-       </a-row>
       </template>
     </sdPageHeader>
     <a-row :gutter="25">
@@ -82,8 +33,7 @@
               <CardBarChart2>
                 <sdHeading as="h3">{{ activities }}</sdHeading>
                 <span>Active Activities</span>
-                <p>
-                </p>
+                <p></p>
               </CardBarChart2>
             </div>
             <div class="card-chunk">
@@ -293,7 +243,10 @@
           <sdCards headless>
             <EChartCard>
               <div class="chart-container">
-                <highcharts :options="chartOptions" ref="" style="width: 100%;"></highcharts>
+                <highcharts
+                  :options="chartOptions"
+                  style="width: 100%"
+                ></highcharts>
               </div>
             </EChartCard>
           </sdCards>
@@ -303,7 +256,10 @@
           <sdCards headless>
             <EChartCard>
               <div class="chart-container">
-                <highcharts :options="pieOptions" style="width: 100%;"></highcharts>
+                <highcharts
+                  :options="pieOptions"
+                  style="width: 100%"
+                ></highcharts>
               </div>
             </EChartCard>
           </sdCards>
@@ -314,38 +270,25 @@
           <sdCards headless>
             <EChartCard>
               <div class="chart-container">
-                <highcharts :options="newChartOptions" style="width: 100%;"></highcharts>
+                <highcharts
+                  :options="newChartOptions"
+                  style="width: 100%"
+                ></highcharts>
               </div>
             </EChartCard>
           </sdCards>
         </a-col>
-
       </a-row>
-      <a-row :gutter="25">
-          <a-col :xxl="24" :md="24" :sm="24" :xs="24">
-            <sdCards headless>
-              <EChartCard>
-                <div class="chart-container">
-                  <highcharts :options="combineChartOptions" ref="combinedChart" style="width: 100%;"></highcharts>
-                </div>
-              </EChartCard>
-            </sdCards>
-          </a-col>
-
-        </a-row>
-  </div>
-
+    </div>
   </Main>
 </template>
-<script >
+<script>
 import { CardBarChart2, EChartCard } from "./style";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
 import { defineComponent } from "vue"; //defineAsyncComponent
-//import authHeader from "../../services/auth-header";
-import Highcharts from 'highcharts';
-import Swal from 'sweetalert2';
-import axios from '@/Axiosconfig';
+import authHeader from "../../services/auth-header";
+import Highcharts from "highcharts";
 
 export default defineComponent({
   name: "Dashboard",
@@ -358,45 +301,49 @@ export default defineComponent({
     return {
       pieOptions: {
         chart: {
-          type: 'pie'
+          type: "pie",
         },
         title: {
-          text: 'Household Registration by Subcounty'
+          text: "Household Registration by Subcounty",
         },
-        series: [{
-          name: 'Household Registered by Subcounty',
-          data: [
-            { name: 'Homa Bay Town Sub County', y: 27666 },
-            { name: 'Kabondo Kasipul Sub County', y: 26572 },
-            { name: 'Karachuonyo Sub County', y: 42745 },
-            { name: 'Suba North Sub County', y: 23654 },
-            { name: 'Ndhiwa Sub County', y: 48208 },
-            { name: 'Rachuonyo South Sub County', y: 29782 },
-            { name: 'Rangwe Sub County', y: 28792 },
-            { name: 'Suba South Sub County', y: 26141 },
-            { name: 'Suba Central Sub County', y: 5163 },
-          ]
-        }],
+        series: [
+          {
+            name: "Household Registered by Subcounty",
+            data: [
+              { name: "Homa Bay Town Sub County", y: 27666 },
+              { name: "Kabondo Kasipul Sub County", y: 26572 },
+              { name: "Karachuonyo Sub County", y: 42745 },
+              { name: "Suba North Sub County", y: 23654 },
+              { name: "Ndhiwa Sub County", y: 48208 },
+              { name: "Rachuonyo South Sub County", y: 29782 },
+              { name: "Rangwe Sub County", y: 28792 },
+              { name: "Suba South Sub County", y: 26141 },
+              { name: "Suba Central Sub County", y: 5163 },
+            ],
+          },
+        ],
         tooltip: {
-          pointFormat: '{series.name}: <b>{point.y}</b>'
+          pointFormat: "{series.name}: <b>{point.y}</b>",
         },
         plotOptions: {
           pie: {
             allowPointSelect: true,
-            cursor: 'pointer',
+            cursor: "pointer",
             dataLabels: {
               enabled: true,
-              format: '<b>{point.name}</b>: {point.y}',
+              format: "<b>{point.name}</b>: {point.y}",
               style: {
-                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-              }
-            }
-          }
+                color:
+                  (Highcharts.theme && Highcharts.theme.contrastTextColor) ||
+                  "black",
+              },
+            },
+          },
         },
         credits: {
-            enabled: false
+          enabled: false,
         },
-      }
+      },
     };
   },
   async setup() {
@@ -407,265 +354,126 @@ export default defineComponent({
     const household_population = ref(0);
     const total_nets_required = ref(0);
     const activities = ref(0);
-    const counties = ref([])
-    const newChartData = ref([])
-
-    const subcounties = ref([])
-    const wards = ref([])
-    const locations = ref([])
-    const sublocations = ref([])
-    const newChartOptions = ref({});
-    const combineChartOptions = ref({});
-    const chartOptions=ref({})
-    const chartData = ref({})
-
-    const handleChange = async (county_id) => {
-      await axios.get(`subcounty/stats?county_id=${county_id}`)
-        .then(response => {
-          newChartData.value = response.data.data;
-          newChartOptions.value.xAxis.categories = newChartData.value.map(item => item.name);
-          newChartOptions.value.series[0].data = newChartData.value.map(item =>  parseInt(item.households_registered));
-          newChartOptions.value.series[1].data = newChartData.value.map(item => parseInt(item.households_served));
-          combineChartOptions.value.xAxis.categories = newChartData.value.map(item => item.name);
-          combineChartOptions.value.series[0].data =  newChartData.value.map(item => parseInt(item.nets_required));
-          combineChartOptions.value.series[1].data = newChartData.value.map(item => parseInt(item.nets_issued));
-          combineChartOptions.value.series[2].data = newChartData.value.map(item => parseInt(item.households_served));
-          //redraw charts
-        }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer:3000,
-        })
-      })
-    };
-
-    const fetchFilterData = async () => {
-      axios.get('counties/')
-        .then(response => {
-          counties.value = response.data.map(x => ({
-            value: x.org_id,
-            label: x.name
-          }));
-      }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
-        })
-    }
-
-    const filterOption = (input, option) => {
-      return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-    };
-
-    const updateStats = async () => {
-      await axios.get(`dash_stats`)
-        .then(response => {
-          const data = response.data;
-          active_events.value = data.active_events;
-          nets_distributed.value = data.nets_distributed;
-          registered_house_holds.value = data.registered_house_holds;
-          registered_users.value = data.registered_users;
-          household_population.value = data.all_hh_members;
-          total_nets_required.value = data.sys_allocation;
-          activities.value = data.active_activities;
-          // actual_allocation = data.
-          // console.log(data.active_events);
-        }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
-          console.error(error);
-        });
-    }
 
     onMounted(async () => {
-      fetchInitialChartData()
-      updateStats()
-      fetchFilterData()
-      const user = JSON.parse(sessionStorage.getItem("user")).location_id;
-      console.log(user);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/dash_stats`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        active_events.value = data.active_events;
+        nets_distributed.value = data.nets_distributed;
+        registered_house_holds.value = data.registered_house_holds;
+        registered_users.value = data.registered_users;
+        household_population.value = data.all_hh_members;
+        total_nets_required.value = data.sys_allocation;
+        activities.value = data.active_activities;
+        // actual_allocation = data.
+        // console.log(data.active_events);
+      } catch (error) {
+        console.error(error);
+      }
     });
 
-    const fetchInitialChartData = async () => {
-      axios.get(`post/stats?sublocation_id=3488`)
-        .then(response => {
-        chartData.value = response.data.data.map(item => ({
-            name: item.name,
-            nets_required: parseInt(item.nets_required),
-            total_issues: parseInt(item.total_issues)
-        }));
-        chartOptions.value= {
-            chart: {
-              type: 'bar'
-            },
-            title: {
-              text: 'Nets Required vs Nets Issued'
-            },
-            xAxis: {
-              categories: chartData.value.map(item => item.name)
-            },
-            yAxis: {
-              title: {
-                text: 'Number of Nets'
-              }
-            },
-            series: [{
-              name: 'Nets Required',
-              data: chartData.value.map(item => item.nets_required)
-            }, {
-              name: 'Nets Issued',
-              data: chartData.value.map(item => item.total_issues),
-              color: '#2ecc71'
-            }],
-            credits: {
-              enabled: false
-            }
-          }
-        axios.get(`/subcounty/stats?county_id=nK0A12Q7MvS`)
-            .then(response1 => {
-              newChartData.value = response1.data
-              newChartOptions.value= {
-                chart: {
-                  type: 'column',
-                },
-                title: {
-                  text: 'Subcounty Comparison'
-                },
-                xAxis: {
-                  categories: newChartData.value.data.map(item => item.name)
-                },
-                yAxis: {
-                  title: {
-                    text: 'Values'
-                  }
-                },
-                series: [
-                  {
-                    name: 'Households Registered',
-                    data: newChartData.value.data.map(item => item.households_registered),
-                    color: '#3498db'
-                  },
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post/stats?sublocation_id=3488`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    );
 
-                  {
-                    name: 'Household Served',
-                    data: newChartData.value.data.map(item => parseInt(item.households_served)),
-                    color: '#f39c12'
-                  }
-                ],
-                credits: {
-                  enabled: false
-                },
-                exporting: {
-                  enabled: true, // Enable exporting module
-                  buttons: {
-                    contextButton: {
-                      menuItems: [
-                        'viewFullscreen',
-                        'printChart',
-                        'separator',
-                        'downloadPNG',
-                        'downloadJPEG',
-                        'downloadPDF',
-                      ]
-                    }
-                  }
-                },
-              }
-              combineChartOptions.value= {
-                chart: {
-                  type: 'column',
-                },
-                title: {
-                  text: 'Subcounty Comparison'
-                },
-                xAxis: {
-                  categories: newChartData.value.data.map(item => item.name)
-                },
-                yAxis: [{
-                  title: {
-                    text: 'Values',
-                    style: {
-                      color: Highcharts.getOptions().colors[1]
-                    }
-                  }
-                }, {
-                  title: {
-                    text: 'Traget (%)',
-                    style: {
-                      color: Highcharts.getOptions().colors[0]
-                    }
-                  },
-                  opposite: true
-                }],
-                tooltip: {
-                  shared: true
-                },
-                legend: {
-                  align: 'left',
-                  x: 80,
-                  verticalAlign: 'top',
-                  y: 60,
-                  floating: true,
-                  backgroundColor:
-                    Highcharts.defaultOptions.legend.backgroundColor || // theme
-                    'rgba(255,255,255,0.25)'
-                },
-                series: [
-                  {
-                    name: 'Nets Required',
-                    data: newChartData.value.data.map(item => parseInt(item.nets_required)),
-                    color: '#6A8ABC'
-                  }, {
-                    name: 'Nets Issued',
-                    data: newChartData.value.data.map(item => parseInt(item.nets_issued)),
-                    color: '#2ecc71'
-                  },
-                  {
-                    name: 'Target',
-                    type: 'spline',
-                    data: newChartData.value.data.map(item => parseInt(item.households_served)),
-                    tooltip: {
-                      valueSuffix: '%'
-                    }
-                  },
-                ],
-                credits: {
-                  enabled: false
-                },
-                exporting: {
-                  enabled: true, // Enable exporting module
-                  buttons: {
-                    contextButton: {
-                      menuItems: [
-                        'viewFullscreen',
-                        'printChart',
-                        'separator',
-                        'downloadPNG',
-                        'downloadJPEG',
-                        'downloadPDF',
-                      ]
-                    }
-                  }
-                },
-              }
-            })
-        }).catch(error => {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            html: error,
-            timer: 3000,
-          })
-      })
-    }
+    const data = await response.json();
+
+    // set intervals for 3 seconds
+
+    // setInterval(data, 3000);
+
+    const chartData = data.data.map((item) => ({
+      name: item.name,
+      nets_required: parseInt(item.nets_required),
+      total_issues: parseInt(item.total_issues),
+    }));
+
+    // county comparisons bar chart
+    const subCountyComparisonResponse = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/subcounty/stats?org_id=nK0A12Q7MvS`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    );
+
+    const newChartData = await subCountyComparisonResponse.json();
+
+    // setInterval(newChartData, 3000);
+
+    console.log(newChartData);
+
+    const newChartOptions = {
+      chart: {
+        type: "column",
+      },
+      title: {
+        text: "Subcounty Comparison",
+      },
+      xAxis: {
+        categories: newChartData.data.map((item) => item.name),
+      },
+      yAxis: {
+        title: {
+          text: "Values",
+        },
+      },
+      series: [
+        {
+          name: "Households Registered",
+          data: newChartData.data.map((item) => item.households_registered),
+          color: "#3498db",
+        },
+        {
+          name: "Household Served",
+          data: newChartData.data.map((item) =>
+            parseInt(item.households_served)
+          ),
+          color: "#f39c12",
+        },
+        {
+          name: "Nets Required",
+          data: newChartData.data.map((item) => parseInt(item.nets_required)),
+          color: "#6A8ABC",
+        },
+        {
+          name: "Nets Issued",
+          data: newChartData.data.map((item) => parseInt(item.nets_issued)),
+          color: "#2ecc71",
+        },
+      ],
+      credits: {
+        enabled: false,
+      },
+      exporting: {
+        enabled: true, // Enable exporting module
+        buttons: {
+          contextButton: {
+            menuItems: [
+              "viewFullscreen",
+              "printChart",
+              "separator",
+              "downloadPNG",
+              "downloadJPEG",
+              "downloadPDF",
+            ],
+          },
+        },
+      },
+    };
+
     return {
       // chartOptions,
       active_events,
@@ -675,23 +483,37 @@ export default defineComponent({
       household_population,
       total_nets_required,
       activities,
-      //filters
-      newChartData,
-      counties,
-      subcounties,
-      wards,
-      locations,
-      sublocations,
-      fetchInitialChartData,
-      fetchFilterData,
-      handleChange,
-      filterOption,
-      updateStats,
-      //charts
-      //charts options
       newChartOptions,
-      combineChartOptions,
-      chartOptions,
+      chartOptions: {
+        chart: {
+          type: "bar",
+        },
+        title: {
+          text: "Nets Required vs Nets Issued",
+        },
+        xAxis: {
+          categories: chartData.map((item) => item.name),
+        },
+        yAxis: {
+          title: {
+            text: "Number of Nets",
+          },
+        },
+        series: [
+          {
+            name: "Nets Required",
+            data: chartData.map((item) => item.nets_required),
+          },
+          {
+            name: "Nets Issued",
+            data: chartData.map((item) => item.total_issues),
+            color: "#2ecc71",
+          },
+        ],
+        credits: {
+          enabled: false,
+        },
+      },
     };
   },
 });
