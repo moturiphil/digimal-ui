@@ -86,11 +86,11 @@
             HouseHolds Validation
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
+        <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
           <router-link to="/hh-nets-distributed">
             Nets Distributed
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
       </a-sub-menu>
       <a-sub-menu
         key="distribution"

@@ -33,8 +33,7 @@
               <CardBarChart2>
                 <sdHeading as="h3">{{ activities }}</sdHeading>
                 <span>Active Activities</span>
-                <p>
-                </p>
+                <p></p>
               </CardBarChart2>
             </div>
             <div class="card-chunk">
@@ -244,7 +243,10 @@
           <sdCards headless>
             <EChartCard>
               <div class="chart-container">
-                <highcharts :options="chartOptions" style="width: 100%;"></highcharts>
+                <highcharts
+                  :options="chartOptions"
+                  style="width: 100%"
+                ></highcharts>
               </div>
             </EChartCard>
           </sdCards>
@@ -254,7 +256,10 @@
           <sdCards headless>
             <EChartCard>
               <div class="chart-container">
-                <highcharts :options="pieOptions" style="width: 100%;"></highcharts>
+                <highcharts
+                  :options="pieOptions"
+                  style="width: 100%"
+                ></highcharts>
               </div>
             </EChartCard>
           </sdCards>
@@ -265,24 +270,25 @@
           <sdCards headless>
             <EChartCard>
               <div class="chart-container">
-                <highcharts :options="newChartOptions" style="width: 100%;"></highcharts>
+                <highcharts
+                  :options="newChartOptions"
+                  style="width: 100%"
+                ></highcharts>
               </div>
             </EChartCard>
           </sdCards>
         </a-col>
-
       </a-row>
-  </div>
-
+    </div>
   </Main>
 </template>
-<script >
+<script>
 import { CardBarChart2, EChartCard } from "./style";
 import { Main } from "../styled";
 import { onMounted, ref } from "vue";
 import { defineComponent } from "vue"; //defineAsyncComponent
 import authHeader from "../../services/auth-header";
-import Highcharts from 'highcharts';
+import Highcharts from "highcharts";
 
 export default defineComponent({
   name: "Dashboard",
@@ -295,45 +301,49 @@ export default defineComponent({
     return {
       pieOptions: {
         chart: {
-          type: 'pie'
+          type: "pie",
         },
         title: {
-          text: 'Household Registration by Subcounty'
+          text: "Household Registration by Subcounty",
         },
-        series: [{
-          name: 'Household Registered by Subcounty',
-          data: [
-            { name: 'Homa Bay Town Sub County', y: 27666 },
-            { name: 'Kabondo Kasipul Sub County', y: 26572 },
-            { name: 'Karachuonyo Sub County', y: 42745 }, 
-            { name: 'Suba North Sub County', y: 23654 }, 
-            { name: 'Ndhiwa Sub County', y: 48208 }, 
-            { name: 'Rachuonyo South Sub County', y: 29782 },
-            { name: 'Rangwe Sub County', y: 28792 }, 
-            { name: 'Suba South Sub County', y: 26141 },
-            { name: 'Suba Central Sub County', y: 5163 }, 
-          ]
-        }],
+        series: [
+          {
+            name: "Household Registered by Subcounty",
+            data: [
+              { name: "Homa Bay Town Sub County", y: 27666 },
+              { name: "Kabondo Kasipul Sub County", y: 26572 },
+              { name: "Karachuonyo Sub County", y: 42745 },
+              { name: "Suba North Sub County", y: 23654 },
+              { name: "Ndhiwa Sub County", y: 48208 },
+              { name: "Rachuonyo South Sub County", y: 29782 },
+              { name: "Rangwe Sub County", y: 28792 },
+              { name: "Suba South Sub County", y: 26141 },
+              { name: "Suba Central Sub County", y: 5163 },
+            ],
+          },
+        ],
         tooltip: {
-          pointFormat: '{series.name}: <b>{point.y}</b>'
+          pointFormat: "{series.name}: <b>{point.y}</b>",
         },
         plotOptions: {
           pie: {
             allowPointSelect: true,
-            cursor: 'pointer',
+            cursor: "pointer",
             dataLabels: {
               enabled: true,
-              format: '<b>{point.name}</b>: {point.y}',
+              format: "<b>{point.name}</b>: {point.y}",
               style: {
-                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-              }
-            }
-          }
+                color:
+                  (Highcharts.theme && Highcharts.theme.contrastTextColor) ||
+                  "black",
+              },
+            },
+          },
         },
         credits: {
-            enabled: false
+          enabled: false,
         },
-      }
+      },
     };
   },
   async setup() {
@@ -370,8 +380,6 @@ export default defineComponent({
       }
     });
 
-
-   
     const response = await fetch(
       `${process.env.VUE_APP_BASE_URL}/post/stats?sublocation_id=3488`,
       {
@@ -386,16 +394,15 @@ export default defineComponent({
 
     // setInterval(data, 3000);
 
-    const chartData = data.data.map(item => ({
+    const chartData = data.data.map((item) => ({
       name: item.name,
       nets_required: parseInt(item.nets_required),
-      total_issues: parseInt(item.total_issues)
+      total_issues: parseInt(item.total_issues),
     }));
-
 
     // county comparisons bar chart
     const subCountyComparisonResponse = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/subcounty/stats?county_id=nK0A12Q7MvS`,
+      `${process.env.VUE_APP_BASE_URL}/subcounty/stats?org_id=nK0A12Q7MvS`,
       {
         method: "GET",
         headers: authHeader(),
@@ -410,56 +417,60 @@ export default defineComponent({
 
     const newChartOptions = {
       chart: {
-        type: 'column',
+        type: "column",
       },
       title: {
-        text: 'Subcounty Comparison'
+        text: "Subcounty Comparison",
       },
       xAxis: {
-        categories: newChartData.data.map(item => item.name)
+        categories: newChartData.data.map((item) => item.name),
       },
       yAxis: {
         title: {
-          text: 'Values'
-        }
+          text: "Values",
+        },
       },
       series: [
-      {
-        name: 'Households Registered',
-        data: newChartData.data.map(item => item.households_registered),
-        color: '#3498db' 
-      },
-      {
-        name: 'Household Served',
-        data: newChartData.data.map(item => parseInt(item.households_served)),
-        color: '#f39c12'
-      },
-      {
-        name: 'Nets Required',
-        data: newChartData.data.map(item => parseInt(item.nets_required)),
-        color: '#6A8ABC'
-      }, {
-        name: 'Nets Issued',
-        data: newChartData.data.map(item => parseInt(item.nets_issued)),
-        color: '#2ecc71'
-      }],
+        {
+          name: "Households Registered",
+          data: newChartData.data.map((item) => item.households_registered),
+          color: "#3498db",
+        },
+        {
+          name: "Household Served",
+          data: newChartData.data.map((item) =>
+            parseInt(item.households_served)
+          ),
+          color: "#f39c12",
+        },
+        {
+          name: "Nets Required",
+          data: newChartData.data.map((item) => parseInt(item.nets_required)),
+          color: "#6A8ABC",
+        },
+        {
+          name: "Nets Issued",
+          data: newChartData.data.map((item) => parseInt(item.nets_issued)),
+          color: "#2ecc71",
+        },
+      ],
       credits: {
-        enabled: false
+        enabled: false,
       },
       exporting: {
         enabled: true, // Enable exporting module
         buttons: {
           contextButton: {
             menuItems: [
-              'viewFullscreen',
-              'printChart',
-              'separator',
-              'downloadPNG', 
-              'downloadJPEG',
-              'downloadPDF',
-            ]
-          }
-        }
+              "viewFullscreen",
+              "printChart",
+              "separator",
+              "downloadPNG",
+              "downloadJPEG",
+              "downloadPDF",
+            ],
+          },
+        },
       },
     };
 
@@ -475,31 +486,34 @@ export default defineComponent({
       newChartOptions,
       chartOptions: {
         chart: {
-          type: 'bar'
+          type: "bar",
         },
         title: {
-          text: 'Nets Required vs Nets Issued'
+          text: "Nets Required vs Nets Issued",
         },
         xAxis: {
-          categories: chartData.map(item => item.name)
+          categories: chartData.map((item) => item.name),
         },
         yAxis: {
           title: {
-            text: 'Number of Nets'
-          }
+            text: "Number of Nets",
+          },
         },
-        series: [{
-          name: 'Nets Required',
-          data: chartData.map(item => item.nets_required)
-        }, {
-          name: 'Nets Issued',
-          data: chartData.map(item => item.total_issues),
-          color: '#2ecc71'
-        }],
+        series: [
+          {
+            name: "Nets Required",
+            data: chartData.map((item) => item.nets_required),
+          },
+          {
+            name: "Nets Issued",
+            data: chartData.map((item) => item.total_issues),
+            color: "#2ecc71",
+          },
+        ],
         credits: {
-          enabled: false
-        }
-      }
+          enabled: false,
+        },
+      },
     };
   },
 });
