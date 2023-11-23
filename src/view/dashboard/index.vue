@@ -10,55 +10,20 @@
             </sdButton> -->
           </router-link>
         </div>
-       <a-row>
-        <a-col>
-         <a-select
-          v-model:value="county"
-          show-search
-          placeholder="Select County"
-          style="width: 200px"
-          :options="counties"
-          :filter-option="filterOption"
-          @change="handleChange"
-        ></a-select>
-        <a-select
-            v-model:value="subcounty"
-            show-search
-            placeholder="Select Sub County"
-            style="width: 200px"
-            :options="subcounties"
-            :filter-option="filterOption"
-            @change="handleChange"
-          ></a-select>
-          <a-select
-              v-model:value="ward"
-              show-search
-              placeholder="Select Ward"
-              style="width: 200px"
-              :options="wards"
-              :filter-option="filterOption"
-              @change="handleChange"
-            ></a-select>
-            <a-select
-                v-model:value="location"
-                show-search
-                placeholder="Select Location"
-                style="width: 200px"
-                :options="locations"
-                :filter-option="filterOption"
-                @change="handleChange"
-              ></a-select>
-              <a-select
-                v-model:value="sublocation"
-                show-search
-                placeholder="Select Sub Location"
-                style="width: 200px"
-                :options="sublocations"
-                :filter-option="filterOption"
-                @change="handleChange"
-              ></a-select>
-        </a-col>
-       </a-row>
+        <a-row>
+          <a-col>
+            <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
+              :options="counties" :filter-option="filterOption" @change="handleChange"></a-select>
+            <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
+              :options="subcounties" :filter-option="filterOption" @change="handleChange"></a-select>
+            <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
+              :filter-option="filterOption" @change="handleChange"></a-select>
+            <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
+              :options="locations" :filter-option="filterOption" @change="handleChange"></a-select>
+            <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
+              :options="sublocations" :filter-option="filterOption" @change="handleChange"></a-select>
+          </a-col>
+        </a-row>
       </template>
     </sdPageHeader>
     <a-row :gutter="25">
@@ -87,24 +52,17 @@
               </CardBarChart2>
             </div>
             <div class="card-chunk">
-              <Chart
-                class="downward"
-                :height="0"
-                :labels="[]"
-                :style="{
-                  marginBottom: '-5',
-                }"
-                :datasets="[
-                  {
-                    data: [],
-                    backgroundColor: '#E8FAF4',
-                    hoverBackgroundColor: '#20C997',
-                    label: 'Nets Distributed',
-                    barPercentage: 1,
-                  },
-                ]"
-                :options="chartOptions"
-              />
+              <Chart class="downward" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+  {
+    data: [],
+    backgroundColor: '#E8FAF4',
+    hoverBackgroundColor: '#20C997',
+    label: 'Nets Distributed',
+    barPercentage: 1,
+  },
+]" :options="chartOptions" />
             </div>
           </EChartCard>
         </sdCards>
@@ -123,24 +81,17 @@
               </CardBarChart2>
             </div>
             <div class="card-chunk">
-              <Chart
-                class="upward"
-                :height="0"
-                :labels="[]"
-                :style="{
-                  marginBottom: '-5',
-                }"
-                :datasets="[
-                  {
-                    data: [],
-                    backgroundColor: '#E8FAF4',
-                    hoverBackgroundColor: '#20C997',
-                    label: 'Avg Orders',
-                    barPercentage: 1,
-                  },
-                ]"
-                :options="chartOptions"
-              />
+              <Chart class="upward" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+  {
+    data: [],
+    backgroundColor: '#E8FAF4',
+    hoverBackgroundColor: '#20C997',
+    label: 'Avg Orders',
+    barPercentage: 1,
+  },
+]" :options="chartOptions" />
             </div>
           </EChartCard>
         </sdCards>
@@ -159,24 +110,17 @@
               </CardBarChart2>
             </div>
             <div class="card-chunk">
-              <Chart
-                class="visitors"
-                :height="0"
-                :labels="[]"
-                :style="{
-                  marginBottom: '-5',
-                }"
-                :datasets="[
-                  {
-                    data: [],
-                    backgroundColor: '#E8FAF4',
-                    hoverBackgroundColor: '#20C997',
-                    label: 'Visitors',
-                    barPercentage: 1,
-                  },
-                ]"
-                :options="chartOptions"
-              />
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+  {
+    data: [],
+    backgroundColor: '#E8FAF4',
+    hoverBackgroundColor: '#20C997',
+    label: 'Visitors',
+    barPercentage: 1,
+  },
+]" :options="chartOptions" />
             </div>
           </EChartCard>
         </sdCards>
@@ -195,24 +139,17 @@
               </CardBarChart2>
             </div>
             <div class="card-chunk">
-              <Chart
-                class="visitors"
-                :height="0"
-                :labels="[]"
-                :style="{
-                  marginBottom: '-5',
-                }"
-                :datasets="[
-                  {
-                    data: [],
-                    backgroundColor: '#E8FAF4',
-                    hoverBackgroundColor: '#20C997',
-                    label: 'Visitors',
-                    barPercentage: 1,
-                  },
-                ]"
-                :options="chartOptions"
-              />
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+  {
+    data: [],
+    backgroundColor: '#E8FAF4',
+    hoverBackgroundColor: '#20C997',
+    label: 'Visitors',
+    barPercentage: 1,
+  },
+]" :options="chartOptions" />
             </div>
           </EChartCard>
         </sdCards>
@@ -231,24 +168,17 @@
               </CardBarChart2>
             </div>
             <div class="card-chunk">
-              <Chart
-                class="visitors"
-                :height="0"
-                :labels="[]"
-                :style="{
-                  marginBottom: '-5',
-                }"
-                :datasets="[
-                  {
-                    data: [],
-                    backgroundColor: '#E8FAF4',
-                    hoverBackgroundColor: '#20C997',
-                    label: 'Visitors',
-                    barPercentage: 1,
-                  },
-                ]"
-                :options="chartOptions"
-              />
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+  {
+    data: [],
+    backgroundColor: '#E8FAF4',
+    hoverBackgroundColor: '#20C997',
+    label: 'Visitors',
+    barPercentage: 1,
+  },
+]" :options="chartOptions" />
             </div>
           </EChartCard>
         </sdCards>
@@ -264,24 +194,17 @@
               </CardBarChart2>
             </div>
             <div class="card-chunk">
-              <Chart
-                class="growth"
-                :height="0"
-                :labels="[]"
-                :style="{
-                  marginBottom: '-5',
-                }"
-                :datasets="[
-                  {
-                    data: [],
-                    backgroundColor: '#E8FAF4',
-                    hoverBackgroundColor: '#20C997',
-                    label: 'Orders',
-                    barPercentage: 1,
-                  },
-                ]"
-                :options="chartOptions"
-              />
+              <Chart class="growth" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+  {
+    data: [],
+    backgroundColor: '#E8FAF4',
+    hoverBackgroundColor: '#20C997',
+    label: 'Orders',
+    barPercentage: 1,
+  },
+]" :options="chartOptions" />
             </div>
           </EChartCard>
         </sdCards>
@@ -322,18 +245,13 @@
 
       </a-row>
       <a-row :gutter="25">
-          <a-col :xxl="24" :md="24" :sm="24" :xs="24">
-            <sdCards headless>
-              <EChartCard>
-                <div class="chart-container">
-                  <highcharts :options="combineChartOptions" ref="combinedChart" style="width: 100%;"></highcharts>
-                </div>
-              </EChartCard>
-            </sdCards>
-          </a-col>
-
-        </a-row>
-  </div>
+        <a-col :xxl="24" :md="24" :sm="24" :xs="24">
+          <figure class="highcharts-figure">
+            <div id="combinedchart"></div>
+          </figure>
+        </a-col>
+      </a-row>
+    </div>
 
   </Main>
 </template>
@@ -354,51 +272,6 @@ export default defineComponent({
     CardBarChart2,
     EChartCard,
   },
-  data() {
-    return {
-      pieOptions: {
-        chart: {
-          type: 'pie'
-        },
-        title: {
-          text: 'Household Registration by Subcounty'
-        },
-        series: [{
-          name: 'Household Registered by Subcounty',
-          data: [
-            { name: 'Homa Bay Town Sub County', y: 27666 },
-            { name: 'Kabondo Kasipul Sub County', y: 26572 },
-            { name: 'Karachuonyo Sub County', y: 42745 },
-            { name: 'Suba North Sub County', y: 23654 },
-            { name: 'Ndhiwa Sub County', y: 48208 },
-            { name: 'Rachuonyo South Sub County', y: 29782 },
-            { name: 'Rangwe Sub County', y: 28792 },
-            { name: 'Suba South Sub County', y: 26141 },
-            { name: 'Suba Central Sub County', y: 5163 },
-          ]
-        }],
-        tooltip: {
-          pointFormat: '{series.name}: <b>{point.y}</b>'
-        },
-        plotOptions: {
-          pie: {
-            allowPointSelect: true,
-            cursor: 'pointer',
-            dataLabels: {
-              enabled: true,
-              format: '<b>{point.name}</b>: {point.y}',
-              style: {
-                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-              }
-            }
-          }
-        },
-        credits: {
-            enabled: false
-        },
-      }
-    };
-  },
   async setup() {
     const active_events = ref(0);
     const nets_distributed = ref(0);
@@ -416,29 +289,41 @@ export default defineComponent({
     const sublocations = ref([])
     const newChartOptions = ref({});
     const combineChartOptions = ref({});
-    const chartOptions=ref({})
+    const chartOptions = ref({})
     const chartData = ref({})
+    const pieOptions = ref({})
+
 
     const handleChange = async (county_id) => {
       await axios.get(`subcounty/stats?county_id=${county_id}`)
         .then(response => {
+          //column Subcounty comparison
           newChartData.value = response.data.data;
           newChartOptions.value.xAxis.categories = newChartData.value.map(item => item.name);
-          newChartOptions.value.series[0].data = newChartData.value.map(item =>  parseInt(item.households_registered));
+          newChartOptions.value.series[0].data = newChartData.value.map(item => parseInt(item.households_registered));
           newChartOptions.value.series[1].data = newChartData.value.map(item => parseInt(item.households_served));
-          combineChartOptions.value.xAxis.categories = newChartData.value.map(item => item.name);
-          combineChartOptions.value.series[0].data =  newChartData.value.map(item => parseInt(item.nets_required));
-          combineChartOptions.value.series[1].data = newChartData.value.map(item => parseInt(item.nets_issued));
-          combineChartOptions.value.series[2].data = newChartData.value.map(item => parseInt(item.households_served));
-          //redraw charts
+          //bar Registered vs Issued
+          chartOptions.value.xAxis.categories = newChartData.value.map(item => item.name);
+          chartOptions.value.series[0].data = newChartData.value.map(item => parseInt(item.nets_required))
+          chartOptions.value.series[1].data = newChartData.value.map(item => parseInt(item.nets_issued))
+          //combine bar line bar Subcounty comparison
+          drawCombineChart(
+            newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
+            newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
+            newChartData.value.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
+            newChartData.value.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
+            newChartData.value.map(item => item.name),//cats
+          )
+          //pie chars Registered households by sub county
+          pieOptions.value.series[0].data = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
         }).catch(error => {
           Swal.fire({
             icon: 'error',
             title: 'Error!',
             html: error,
-            timer:3000,
+            timer: 3000,
+          })
         })
-      })
     };
 
     const fetchFilterData = async () => {
@@ -448,7 +333,7 @@ export default defineComponent({
             value: x.org_id,
             label: x.name
           }));
-      }).catch(error => {
+        }).catch(error => {
           Swal.fire({
             icon: 'error',
             title: 'Error!',
@@ -494,15 +379,167 @@ export default defineComponent({
       console.log(user);
     });
 
+    const drawCombineChart = (nets_required, nets_issued, target_data, target_level, cats) => {
+      Highcharts.chart('combinedchart', {
+        chart: {
+          zoomType: 'xy'
+        },
+        title: {
+          text: 'Comparison by ...',
+          align: 'left'
+        },
+        subtitle: {
+          text: 'Source:',
+          align: 'left'
+        },
+        xAxis: [{
+          categories: cats,
+          crosshair: true
+        }],
+        yAxis: [{ // Primary yAxis
+          labels: {
+            format: '{value}%',
+            style: {
+              color: Highcharts.getOptions().colors[2]
+            }
+          },
+          title: {
+            text: 'Target',
+            style: {
+              color: Highcharts.getOptions().colors[2]
+            }
+          },
+          max: 100,
+          opposite: true
+
+        }, { // Secondary yAxis
+          gridLineWidth: 0,
+          title: {
+            text: 'Count',
+            style: {
+              color: Highcharts.getOptions().colors[0]
+            }
+          },
+          labels: {
+            // format: '{value} mm',
+            style: {
+              color: Highcharts.getOptions().colors[0]
+            }
+          }
+
+        }, { // Tertiary yAxis
+          gridLineWidth: 0,
+          title: {
+            text: 'Expected Target',
+            style: {
+              color: Highcharts.getOptions().colors[1]
+            }
+          },
+          labels: {
+            format: '{value} %',
+            style: {
+              color: Highcharts.getOptions().colors[1]
+            }
+          },
+          max: 100,
+          opposite: true
+        }],
+        tooltip: {
+          shared: true
+        },
+        legend: {
+          layout: 'horizontal',
+          align: 'center',
+          x: 80,
+          verticalAlign: 'top',
+          y: 10,
+          floating: true,
+          backgroundColor:
+            Highcharts.defaultOptions.legend.backgroundColor || // theme
+            'rgba(255,255,255,0.25)'
+        },
+        series: [{
+          name: 'Nets Required',
+          type: 'column',
+          yAxis: 1,
+          data: nets_required,
+          color: '#3498db',
+        }, {
+          name: 'Nets Issued',
+          type: 'column',
+          yAxis: 1,
+          data: nets_issued,
+          color: '#f39c12',
+        }, {
+          name: 'Expected Target',
+          type: 'spline',
+          yAxis: 2,
+          data: target_level,
+          color: Highcharts.getOptions().colors[1],
+          marker: {
+            enabled: false
+          },
+          dashStyle: 'shortdot',
+          tooltip: {
+            valueSuffix: ' %'
+          },
+          lineWidth: 6,
+        }, {
+          name: 'Target',
+          type: 'spline',
+          yAxis: 2,
+          data: target_data,
+          color: Highcharts.getOptions().colors[2],
+          tooltip: {
+            valueSuffix: ' %'
+          }
+        }],
+        responsive: {
+          rules: [{
+            condition: {
+              maxWidth: 500
+            },
+            chartOptions: {
+              legend: {
+                floating: false,
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom',
+                x: 0,
+                y: 0
+              },
+              yAxis: [{
+                labels: {
+                  align: 'right',
+                  x: 0,
+                  y: -6
+                },
+                showLastLabel: false
+              }, {
+                labels: {
+                  align: 'left',
+                  x: 0,
+                  y: -6
+                },
+                showLastLabel: false
+              }, {
+                visible: false
+              }]
+            }
+          }]
+        }
+      });
+    }
+
     const fetchInitialChartData = async () => {
       axios.get(`post/stats?sublocation_id=3488`)
         .then(response => {
-        chartData.value = response.data.data.map(item => ({
+          chartData.value = response.data.data.map(item => ({
             name: item.name,
             nets_required: parseInt(item.nets_required),
             total_issues: parseInt(item.total_issues)
-        }));
-        chartOptions.value= {
+          }));
+          chartOptions.value = {
             chart: {
               type: 'bar'
             },
@@ -529,10 +566,11 @@ export default defineComponent({
               enabled: false
             }
           }
-        axios.get(`/subcounty/stats?county_id=nK0A12Q7MvS`)
+          axios.get(`/subcounty/stats?county_id=nK0A12Q7MvS`)
             .then(response1 => {
               newChartData.value = response1.data
-              newChartOptions.value= {
+              const pieOptionsData = newChartData.value.data.map(item => ({ name: item.name, y: item.households_registered }))
+              newChartOptions.value = {
                 chart: {
                   type: 'column',
                 },
@@ -579,92 +617,54 @@ export default defineComponent({
                   }
                 },
               }
-              combineChartOptions.value= {
+              //nets_required,nets_issued,target_data,target_level,cats
+              drawCombineChart(
+                newChartData.value.data.map(item => parseInt(item.nets_required)),//nets_required
+                newChartData.value.data.map(item => parseInt(item.nets_issued)),//nets_issued
+                newChartData.value.data.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
+                newChartData.value.data.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
+                newChartData.value.data.map(item => item.name),//cats
+              )
+              pieOptions.value = {
                 chart: {
-                  type: 'column',
+                  type: 'pie'
                 },
                 title: {
-                  text: 'Subcounty Comparison'
+                  text: 'Household Registration by Subcounty'
                 },
-                xAxis: {
-                  categories: newChartData.value.data.map(item => item.name)
-                },
-                yAxis: [{
-                  title: {
-                    text: 'Values',
-                    style: {
-                      color: Highcharts.getOptions().colors[1]
-                    }
-                  }
-                }, {
-                  title: {
-                    text: 'Traget (%)',
-                    style: {
-                      color: Highcharts.getOptions().colors[0]
-                    }
-                  },
-                  opposite: true
+                series: [{
+                  name: 'Household Registered by Subcounty',
+                  data: pieOptionsData,
                 }],
                 tooltip: {
-                  shared: true
+                  pointFormat: '{series.name}: <b>{point.y}</b>'
                 },
-                legend: {
-                  align: 'left',
-                  x: 80,
-                  verticalAlign: 'top',
-                  y: 60,
-                  floating: true,
-                  backgroundColor:
-                    Highcharts.defaultOptions.legend.backgroundColor || // theme
-                    'rgba(255,255,255,0.25)'
-                },
-                series: [
-                  {
-                    name: 'Nets Required',
-                    data: newChartData.value.data.map(item => parseInt(item.nets_required)),
-                    color: '#6A8ABC'
-                  }, {
-                    name: 'Nets Issued',
-                    data: newChartData.value.data.map(item => parseInt(item.nets_issued)),
-                    color: '#2ecc71'
-                  },
-                  {
-                    name: 'Target',
-                    type: 'spline',
-                    data: newChartData.value.data.map(item => parseInt(item.households_served)),
-                    tooltip: {
-                      valueSuffix: '%'
-                    }
-                  },
-                ],
-                credits: {
-                  enabled: false
-                },
-                exporting: {
-                  enabled: true, // Enable exporting module
-                  buttons: {
-                    contextButton: {
-                      menuItems: [
-                        'viewFullscreen',
-                        'printChart',
-                        'separator',
-                        'downloadPNG',
-                        'downloadJPEG',
-                        'downloadPDF',
-                      ]
+                plotOptions: {
+                  pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                      enabled: true,
+                      format: '<b>{point.name}</b>: {point.y}',
+                      style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                      }
                     }
                   }
+                },
+                credits: {
+                  enabled: false
                 },
               }
             })
         }).catch(error => {
-        Swal.fire({
+          Swal.fire({
             icon: 'error',
             title: 'Error!',
             html: error,
             timer: 3000,
           })
-      })
+        })
     }
     return {
       // chartOptions,
@@ -687,11 +687,13 @@ export default defineComponent({
       handleChange,
       filterOption,
       updateStats,
+      drawCombineChart,
       //charts
       //charts options
       newChartOptions,
       combineChartOptions,
       chartOptions,
+      pieOptions,
     };
   },
 });
@@ -700,9 +702,12 @@ export default defineComponent({
 .icon-color-white {
   color: white;
 }
+
 .chart-container {
-  margin: 10px; /* Adjust the margin as needed to create space between charts */
+  margin: 10px;
+  /* Adjust the margin as needed to create space between charts */
 }
+
 /* Additional styles for better responsiveness */
 .chart-container {
   width: 100%;
