@@ -11,6 +11,10 @@
           </router-link>
         </div>
         <a-row>
+          <a-col v-if="filterAccessList.includes('country')">
+              <a-select v-model:value="country" show-search placeholder="Select Country" style="width: 200px"
+                :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+            </a-col>
           <a-col v-if="filterAccessList.includes('county')">
             <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
               :options="counties" :filter-option="filterOption" @change="handleChange($event,'county')"></a-select>
@@ -282,7 +286,7 @@ export default defineComponent({
     CardBarChart2,
     EChartCard,
   },
-  async setup() {
+  async setup() {//HfVjCurKxh2
     const active_events = ref(0);
     const nets_distributed = ref(0);
     const registered_house_holds = ref(0);
@@ -291,6 +295,7 @@ export default defineComponent({
     const total_nets_required = ref(0);
     const activities = ref(0);
     const newChartData = ref([])
+    const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }])
     const counties = ref(null)
     const subcounties = ref(null)
     const wards = ref(null)
@@ -315,8 +320,11 @@ export default defineComponent({
 
     const updateFilters = () => {
       access_level.value.level.level_name = 'national'
+      access_level.value.location.org_id = 'HfVjCurKxh2'
+      access_level.value.location.name = 'Kenya'
+
       if (access_level.value.level.level_name.toLowerCase() == 'national') {
-        filterAccessList.value=['county','subcounty','ward','location','sublocation']
+        filterAccessList.value = ['country','county', 'subcounty', 'ward', 'location', 'sublocation']
         fetchCounties()
       } else if (access_level.value.level.level_name.toLowerCase() == 'county') {
         filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
@@ -344,7 +352,10 @@ export default defineComponent({
     const fetchChildData = async (org_id, org_level) => {
       let fetchUrl = ``
       let statUrl = ``
-      if (org_level == 'county') {//get subcounties
+      if (org_level == 'country') {//get counties
+        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
+        statUrl = `subcounty/stats?org_id=${org_id}`
+      }else if (org_level == 'county') {//get subcounties
         fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
         statUrl=`subcounty/stats?org_id=${org_id}`
       }else if (org_level == 'subcounty') {//get wards
@@ -361,7 +372,13 @@ export default defineComponent({
       }
       await axios.get(`${fetchUrl}`)
         .then(response => {
-           if (org_level == 'county') {//get county stats
+          if(org_level == 'country') {//get county stats
+            counties.value = response.data.message.map(x => ({
+              value: x.org_id,
+              label: x.name
+            }));
+            counties.value.splice(0,1)
+          }else if (org_level == 'county') {//get county stats
             subcounties.value = response.data.message.map(x => ({
               value: x.org_id,
               label: x.name
@@ -870,6 +887,7 @@ export default defineComponent({
       //filters
       filterAccessList,
       newChartData,
+      countries,
       counties,
       subcounties,
       wards,
