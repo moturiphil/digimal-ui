@@ -167,9 +167,6 @@
         </a-menu-item>
         <a-menu-item key="widgetNetsReceived">
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
-        </a-menu-item> 
-        <a-menu-item key="widgetPostSummary">
-          <router-link to="/nets/post-summary"> Posts Summary </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="supply-chain" v-if="canViewInventory">
