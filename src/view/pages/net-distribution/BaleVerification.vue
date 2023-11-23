@@ -278,7 +278,7 @@ const AddNew = defineComponent({
         "Expected no of nets is required"
       ),
       // date_received: Yup.string().required("Date received is required"),
-      delivery_note_number: Yup.string().required("Delivery no is required"),
+      delivery_note_number: Yup.string().required("Delivery note no/s11 is required"),
       // received_by: Yup.string().required("Received by is required"),
     });
 
