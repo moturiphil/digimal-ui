@@ -319,9 +319,9 @@ export default defineComponent({
     });
 
     const updateFilters = () => {
-      access_level.value.level.level_name = 'national'
-      access_level.value.location.org_id = 'HfVjCurKxh2'
-      access_level.value.location.name = 'Kenya'
+      // access_level.value.level.level_name = 'national'
+      // access_level.value.location.org_id = 'HfVjCurKxh2'
+      // access_level.value.location.name = 'Kenya'
 
       if (access_level.value.level.level_name.toLowerCase() == 'national') {
         filterAccessList.value = ['country','county', 'subcounty', 'ward', 'location', 'sublocation']
