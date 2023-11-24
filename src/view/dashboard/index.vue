@@ -303,9 +303,34 @@ const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
 const selectedCounties = ref([
-  // 'nK0A12Q7MvS',//homa bay
-  // 'sPkRcDvhGWA',//kisii
-  // 'uepLTG8wGWJ',//nyamira
+  "Homa Bay County",
+  "Kisii County",
+  "Nyamira County",
+  // "Kisumu County",
+  // "Siaya County",
+  // "Busia County",
+  // "Migori County",
+  // "Lamu County",
+  // "Kilifi County",
+  // "Tana River County",
+  // "Kwale County",
+  // "Taita Taveta County",
+  // "Mombasa County",
+  // "Bungoma County",
+  // "Kakamega County",
+  // "Vihiga County",
+  // "West Pokot County",
+  // "Turkana County",
+  // "Trans Nzoia County",
+  // "Narok County",
+  // "Marsabit County",
+  // "Baringo County",
+  // "Kirinyaga County"
+])
+const currentCounties = ref([
+  'nK0A12Q7MvS',//homa bay
+  'sPkRcDvhGWA',//kisii
+  'uepLTG8wGWJ',//nyamira
   // 'u4t9H8XyU9P',//siaya
   // 'fVra3Pwta0Q',//migori
   // 'Tvf1zgVZ0K4',//busia
@@ -325,31 +350,7 @@ const selectedCounties = ref([
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
   // 'Ulj33KBau7V',
-  "Homa Bay County",
-  "Kisii County",
-  "Nyamira County",
-  "Kisumu County",
-  "Siaya County",
-  "Busia County",
-  "Migori County",
-  "Lamu County",
-  "Kilifi County",
-  "Tana River County",
-  "Kwale County",
-  "Taita Taveta County",
-  "Mombasa County",
-  "Bungoma County",
-  "Kakamega County",
-  "Vihiga County",
-  "West Pokot County",
-  "Turkana County",
-  "Trans Nzoia County",
-  "Narok County",
-  "Marsabit County",
-  "Baringo County",
-  "Kirinyaga County"
 ])
-const currentCounties=ref(['nK0A12Q7MvS','sPkRcDvhGWA','uepLTG8wGWJ',])
 
 onMounted(async () => {
   if (sessionStorage.getItem("user")) {
