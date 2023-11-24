@@ -39,7 +39,7 @@ router.beforeEach((to, from, next) => {
   const user_object = JSON.parse(user);
 
   if (!user_object == null) {
-    next("/auth/login");
+    next({ path: "/auth/login" });
   }
   if (user_object && user_object.token && to.matched.length === 0) {
     // User is logged in but the route is not defined, redirect to 404
