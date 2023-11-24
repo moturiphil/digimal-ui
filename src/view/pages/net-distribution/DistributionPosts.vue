@@ -126,7 +126,7 @@
                       :value="user.id"
                       :label="user.id"
                     >
-                      {{ user.id_no }} - {{ user.first_name }} {{ user.last_name }} {{ user.other_name }}
+                      {{ user.first_name }} {{ user.last_name }} {{ user.other_name }} -  {{ user.id_no }},{{ user.role_id }}, {{ user.location_id }}
                     </a-select-option>
                   </a-select>
                   
