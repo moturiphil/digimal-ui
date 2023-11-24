@@ -139,35 +139,6 @@
                   </p>
                 </a-form-item>
 
-                <a-form-item
-                  name="delivery_note_number"
-                  label="Delivery Note No/S11"
-                >
-                  <a-select
-                    v-model:value="formState.delivery_note_number"
-                    showSearch
-                    option-filter-prop="label"
-                    placeholder="Select Delivery Note No."
-                    @blur="validate('delivery_note_number')"
-                    @keypress="validate('delivery_note_number')"
-                  >
-                    <a-select-option
-                      v-for="note in delivery_notes"
-                      :key="note.delivery_note_number"
-                      :value="note.delivery_note_number"
-                      :label="note.delivery_note_number"
-                    >
-                      {{ note.delivery_note_number }}
-                    </a-select-option>
-                  </a-select>
-                  <p
-                    class="errors"
-                    style="color: red"
-                    v-if="!!errors.delivery_note_number"
-                  >
-                    {{ errors.delivery_note_number }}
-                  </p>
-                </a-form-item>
                 <div class="record-form-actions text-right">
                   <sdButton size="default" htmlType="Save" type="success">
                     {{ isLoading ? "Loading..." : "Submit" }}
@@ -241,7 +212,7 @@ const AddNew = defineComponent({
     const post_id = Number(query.id);
     const post_name = query.name;
     console.log(query.id);
-    const d_no = query.delivery_no;
+    // const d_no = query.delivery_no;
 
     const isModalOpen = ref(false);
     const handleOk = async () => (isModalOpen.value = false);
@@ -259,7 +230,7 @@ const AddNew = defineComponent({
       counted_no_of_nets: "",
       expected_no_of_nets: "",
       // date_received: date_received,
-      delivery_note_number: d_no,
+      // delivery_note_number: d_no,
       // received_by: received_by,
     });
 
@@ -278,7 +249,7 @@ const AddNew = defineComponent({
         "Expected no of nets is required"
       ),
       // date_received: Yup.string().required("Date received is required"),
-      delivery_note_number: Yup.string().required("Delivery no is required"),
+      // delivery_note_number: Yup.string().required("Delivery no is required"),
       // received_by: Yup.string().required("Received by is required"),
     });
 
@@ -332,7 +303,7 @@ const AddNew = defineComponent({
         bale_batch_no: formState.bale_batch_no,
         counted_no_of_nets: formState.counted_no_of_nets,
         expected_no_of_nets: formState.expected_no_of_nets,
-        delivery_note_number: formState.delivery_note_number,
+        // delivery_note_number: formState.delivery_note_number,
       };
 
       console.log(JSON.stringify(values));
@@ -367,7 +338,7 @@ const AddNew = defineComponent({
           // Handle failure
           notification["error"]({
             message: "Error",
-            description: "Error verifying nets",
+            description: data.message,
             duration: 5.5,
           });
         }
