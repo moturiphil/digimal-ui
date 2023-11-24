@@ -195,6 +195,7 @@ import {
   reactive,
   defineComponent,
   watch,
+watchEffect,
 } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
@@ -305,6 +306,8 @@ export default defineComponent({
     const level_id = ref("");
     const role_id = ref("");
     const rt = useRouter();
+    const outliers = ref([]);
+    const household_validations = ref([]);
     const location_id = ref("");
 
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -319,6 +322,7 @@ export default defineComponent({
 
     onMounted(() => {
       fetchData(); // Initial data fetch
+      fetchOutliers(); 
     });
 
     const paginationOptions = ref({
@@ -328,16 +332,21 @@ export default defineComponent({
       total: 0,
       onChange: async (page, pageSize) => {
         // Update the current page when the pagination changes
+        const query = searchItem.value.toLowerCase();
         paginationOptions.value.current = page;
+        let url =''
 
+        if(!query) {
+          url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}`;
+        } else {
+          url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}&query=${query}`;
+        }
         // Fetch data for the new page using the updated page number
         try {
-          const response = await axios.get(
-            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}`,
+          const response = await axios.get(url,
             { headers: authHeader() }
           );
           dataSource.value = response.data.data.data;
-          console.log(dataSource.value);
           paginationOptions.value.total = response.data.data.total;
         } catch (error) {
           console.error(error);
@@ -347,7 +356,6 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}`;
 
-    console.log(location_id.value);
 
     // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
@@ -385,7 +393,7 @@ export default defineComponent({
           { headers: authHeader() }
         );
 
-        dataSource.value = response.data.data.data;
+        outliers.value = response.data.data.data;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -396,8 +404,8 @@ export default defineComponent({
         console.log(dataSource.value);
         return dataSource.value.filter((item) => item.isVerified === 1);
       } else if (activeClass.value === "outliers") {
-        fetchOutliers(); // Call the asynchronous function to fetch data
-        return dataSource.value;
+        // Call the asynchronous function to fetch data
+        return outliers.value;
       } else {
         return dataSource.value;
       }
@@ -422,6 +430,7 @@ export default defineComponent({
         const response = await axios.get(API_URL, {
           headers: authHeader(),
         });
+        household_validations.value = response.data.data.data;
         dataSource.value = response.data.data.data;
         paginationOptions.value.total = response.data.data.total;
       } catch (error) {
@@ -538,6 +547,38 @@ export default defineComponent({
         });
       }
     });
+
+    watchEffect(async()=>{
+      const query = searchItem.value.toLowerCase();
+      
+      try {
+        if(!query){ 
+          dataSource.value = household_validations.value;
+          return dataSource.value;
+        }
+        if(query.length > 3){
+          const response = await fetch(`${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&query=${query}`,
+          {
+            method: "GET",
+            headers:{
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          } 
+        );
+        const data = await response.json();
+        dataSource.value = data.data.data;
+        paginationOptions.value.total = data.data.total;
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
+        });
+        
+      }
+    })
 
     return {
       crud,

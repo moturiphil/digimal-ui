@@ -37,7 +37,7 @@
                               pageSize: 50,
                               showSizeChanger: true,
                             }"
-                            :dataSource="results"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                             <template>
@@ -63,10 +63,11 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -141,6 +142,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
+    const logs = ref([]);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/logs`;
 
@@ -157,29 +159,44 @@ export default defineComponent({
         })
         .then((response) => {
           console.log(response.data.data);
-          dataSource.value = response.data.data;
-          // console.log(dataSource.value);
-          dataSource.value = response.data.data.map((item) => ({
+          logs.value = response.data.data.map((item) => ({
             ...item,
             old_values: item.old_values,
             new_values: item.new_values,
           }));
-          console.log(dataSource.value);
+          dataSource.value = logs.value;
         })
         .catch((error) => {
           console.error(error);
         });
     });
 
-    const results = computed(() => {
+    watchEffect(async() => {
       const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return regex.test(event.user) || regex.test(event.event) || regex.test(event.ip_address);
+      try {
+        if(!query){
+          dataSource.value = logs.value;
+          return dataSource.value;
+        }
+        if(query.length > 3){
+          const response = await fetch(`${API_URL}/search?query=${query}`, 
+            {
+              method: "GET",
+              headers: authHeader(),
+            });
+          const data = await response.json();
+          dataSource.value = data.data.map((item) => ({
+            ...item,
+            old_values: item.old_values,
+            new_values: item.new_values,
+          }));        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
         });
+        
       }
     });
 
@@ -187,7 +204,7 @@ export default defineComponent({
       crud,
       isLoading,
       selectedRowKeys,
-      results,
+      dataSource,
       searchItem,
       columns,
       handleChange,
