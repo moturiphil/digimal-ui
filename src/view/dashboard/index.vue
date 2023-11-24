@@ -302,10 +302,57 @@ const subcounties = ref(null)
 const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
-const selectedCounties = ref(['nK0A12Q7MvS', 'sPkRcDvhGWA', 'uepLTG8wGWJ'])
+const selectedCounties = ref([
+  // 'nK0A12Q7MvS',//homa bay
+  // 'sPkRcDvhGWA',//kisii
+  // 'uepLTG8wGWJ',//nyamira
+  // 'u4t9H8XyU9P',//siaya
+  // 'fVra3Pwta0Q',//migori
+  // 'Tvf1zgVZ0K4',//busia
+  // 'NjWSbQTwys4',//lamu
+  // 'nrI2khZx3d0',//kilifi
+  // 'JsH2bnvNt2d',//tan river
+  // 'N7YETT3A9r1',//kwale
+  // 'QyGNX2DpR4h',//taita taveta
+  // 'wsBsC6gjHvn',// mombasa
+  // 'KGHhQ5GLd4k',//
+  // 'BjC1xL40gHo',//kakamega
+  // 'sANMZ3lpqGs',//vihiga
+  // 'XWALbfAPa6n',//west pokot
+  // 'kphDeKClFch',//turkana
+  // 'mThvosEflAU',//trans nzoia
+  // 'kqJ83J2D72s',//naraok
+  // 'Eey8fT4Im3y',//marsabit
+  // 'vvOK1BxTbet',//baringo
+  // 'Ulj33KBau7V',
+  "Homa Bay County",
+  "Kisii County",
+  "Nyamira County",
+  "Kisumu County",
+  "Siaya County",
+  "Busia County",
+  "Migori County",
+  "Lamu County",
+  "Kilifi County",
+  "Tana River County",
+  "Kwale County",
+  "Taita Taveta County",
+  "Mombasa County",
+  "Bungoma County",
+  "Kakamega County",
+  "Vihiga County",
+  "West Pokot County",
+  "Turkana County",
+  "Trans Nzoia County",
+  "Narok County",
+  "Marsabit County",
+  "Baringo County",
+  "Kirinyaga County"
+])
+const currentCounties=ref(['nK0A12Q7MvS','sPkRcDvhGWA','uepLTG8wGWJ',])
 
 onMounted(async () => {
-  if (sessionStorage.getItem("user") != null) {
+  if (sessionStorage.getItem("user")) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters()
     fetchInitialChartData()
@@ -345,23 +392,23 @@ const updateFilters = () => {
 const fetchInitialChartData = async () => {
   axios.get(`/subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(response => {
-      newChartData.value = response.data
+      newChartData.value = response.data.data.filter(e => selectedCounties.value.includes(e.name.toString()))
       //nets_required,nets_issued,target_data,target_level,cats
       netsReqvsIssuedChart(
-        newChartData.value.data.map(item => parseInt(item.nets_required)),//nets_required
-        newChartData.value.data.map(item => parseInt(item.nets_issued)),//nets_issued
-        newChartData.value.data.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
-        newChartData.value.data.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
-        newChartData.value.data.map(item => item.name),//cats
+        newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
+        newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
+        newChartData.value.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
+        newChartData.value.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
+        newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
       )
       //registered,served,target_data,target_level,cats
       householdRegvsServedChart(
-        newChartData.value.data.map(item => parseInt(item.households_registered)),//registered
-        newChartData.value.data.map(item => parseInt(item.households_served)),//served
-        newChartData.value.data.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
-        newChartData.value.data.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
-        newChartData.value.data.map(item => item.name),//cats
+        newChartData.value.map(item => parseInt(item.households_registered)),//registered
+        newChartData.value.map(item => parseInt(item.households_served)),//served
+        newChartData.value.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
+        newChartData.value.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
+        newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
       )
     }).catch(error => {
@@ -403,7 +450,7 @@ const fetchChildData = async (org_id, org_level) => {
         counties.value = response.data.message.map(x => ({
           value: x.org_id,
           label: x.name
-        })).filter(e => selectedCounties.value.includes(e.value.toString()));
+        })).filter(e => currentCounties.value.includes(e.value.toString()));
         //counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get county stats
         subcounties.value = response.data.message.map(x => ({
@@ -431,7 +478,7 @@ const fetchChildData = async (org_id, org_level) => {
     }).then(async () => {
       await axios.get(`${statUrl}`)
         .then(response => {
-          newChartData.value = response.data.data;
+          newChartData.value = response.data.data.filter(e=>selectedCounties.value.includes(e.name.toString()));
           //column Subcounty comparison
           org_level = capitalizeFirstLetter(org_level);
           householdRegvsServedChart(
@@ -473,7 +520,7 @@ const fetchCounties = async () => {
       counties.value = response.data.map(x => ({
         value: x.org_id,
         label: x.name
-      })).filter(e => selectedCounties.value.includes(e.value.toString()));
+      })).filter(e => currentCounties.value.includes(e.value.toString()));
     }).catch(error => {
       notification.error({
         message: `Error!`,
