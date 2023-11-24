@@ -904,16 +904,16 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           lineWidth: 6,
         }, {
           name: 'Target',
-          type: 'scatter',
+          type: 'spline',
           yAxis: 2,
           data: target_data,
           color: '#004225',
           tooltip: {
             valueSuffix: ' %'
           },
-          marker: {
-            radius: 8, // Set the radius to adjust the size of scatter plot dots
-          },
+          // marker: {
+          //   radius: 8, // Set the radius to adjust the size of scatter plot dots
+          // },
         }],
         responsive: {
           rules: [{
@@ -1060,16 +1060,16 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       lineWidth: 6,
     }, {
       name: 'Target',
-      type: 'scatter',
+      type: 'spline',
       yAxis: 2,
       data: target_data,
       color: '#004225',
       tooltip: {
         valueSuffix: ' %'
       },
-      marker: {
-        radius: 8, // Set the radius to adjust the size of scatter plot dots
-      },
+      // marker: {
+      //   radius: 8, // Set the radius to adjust the size of scatter plot dots
+      // },
     }],
     responsive: {
       rules: [{
