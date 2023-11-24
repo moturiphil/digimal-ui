@@ -34,14 +34,14 @@
           <a-col v-if="filterAccessList.includes('sublocation')">
             <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
               :options="sublocations" :filter-option="filterOption"
-              @change="handleChange($event, 'subcounty')"></a-select>
+              @change="handleChange($event, 'sublocation')"></a-select>
           </a-col>
         </a-row>
       </template>
     </sdPageHeader>
     <a-row :gutter="25">
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-        <sdCards headless style="background:#D0F0C0;color:rgb(27, 19, 19)">
+        <sdCards headless style="background:#4adede;color:whitesmoke">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
@@ -54,14 +54,13 @@
         </sdCards>
       </a-col>
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-        <sdCards headless style="background:#00A86B;color:rgb(27, 19, 19)">
+        <sdCards headless  style="background:#3498db;color:whitesmoke">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
                 <sdHeading as="h3">{{ new Intl.NumberFormat().format(activities) }}</sdHeading>
                 <span>Active Activities</span>
-                <p>
-                </p>
+                <p></p>
               </CardBarChart2>
             </div>
             <div class="card-chunk">
@@ -81,16 +80,13 @@
         </sdCards>
       </a-col>
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-        <sdCards headless style="background:#00A86B;color:rgb(27, 19, 19)">
+        <sdCards headless style="background:#4adede;color:whitesmoke">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
                 <sdHeading as="h3">{{ new Intl.NumberFormat().format(active_events) }}</sdHeading>
                 <span>Active Events</span>
-                <p>
-                  <!-- <span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
-                   <span>Since last week</span> -->
-                </p>
+                <p></p>
               </CardBarChart2>
             </div>
             <div class="card-chunk">
@@ -116,10 +112,7 @@
                   <CardBarChart2>
                     <sdHeading as="h3">{{ new Intl.NumberFormat().format(total_nets_required) }}</sdHeading>
                     <span>Total Nets Required</span>
-                    <p>
-                      <!--<span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
-                  <span>Since last week</span>-->
-                    </p>
+                    <p></p>
                   </CardBarChart2>
                 </div>
                 <div class="card-chunk">
@@ -139,14 +132,13 @@
             </sdCards>
           </a-col>
           <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-          <sdCards headless style="background:#D0F0C0;color:rgb(27, 19, 19)">
+          <sdCards headless  style="background:#3498db;color:whitesmoke">
             <EChartCard>
               <div class="card-chunk">
                 <CardBarChart2>
                   <sdHeading as="h3">{{ new Intl.NumberFormat().format(registered_house_holds) }}</sdHeading>
                   <span>Registered HouseHolds</span>
-                  <p>
-                  </p>
+                  <p></p>
                 </CardBarChart2>
               </div>
               <div class="card-chunk">
@@ -166,14 +158,12 @@
           </sdCards>
         </a-col>
          <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-            <sdCards headless style="background:#8A9A5B;color:rgb(27, 19, 19)">
+            <sdCards headless style="background:#4adede;color:whitesmoke">
               <EChartCard>
                 <div class="card-chunk">
                   <CardBarChart2>
                     <sdHeading as="h3">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}</sdHeading>
                     <span>Total HouseHolds Served</span>
-                    <p>
-                    </p>
                   </CardBarChart2>
                 </div>
                 <div class="card-chunk">
@@ -194,16 +184,12 @@
           </a-col>
 
         <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-            <sdCards headless style="background:#8A9A5B;color:rgb(27, 19, 19)">
+            <sdCards headless  style="background:#3498db;color:whitesmoke">
               <EChartCard>
                 <div class="card-chunk">
                   <CardBarChart2>
                     <sdHeading as="h3">{{ new Intl.NumberFormat().format(household_population) }}</sdHeading>
                     <span>Total HouseHold Population</span>
-                    <p>
-                      <!--<span class="growth-upward"> <sdFeatherIcons type="arrow-up" /> 25% </span>
-                  <span>Since last week</span>-->
-                    </p>
                   </CardBarChart2>
                 </div>
                 <div class="card-chunk">
@@ -296,224 +282,229 @@ import Highcharts from 'highcharts';
 import axios from '@/Axiosconfig';
 import { notification } from "ant-design-vue";
 
-    const active_events = ref(0);
-    const nets_distributed = ref(0);
-    const registered_house_holds = ref(0);
-    const registered_users = ref(0);
-    const household_population = ref(0);
-    const total_nets_required = ref(0);
-    const activities = ref(0);
-    const newChartData = ref([])
-    const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }])
-    const counties = ref(null)
-    const subcounties = ref(null)
-    const wards = ref(null)
-    const locations = ref(null)
-    const sublocations = ref(null)
-    const chartOptions = ref({})
-    const access_level = ref({})
-    const filterAccessList = ref([])
-    const totalhouseholds_served = ref([])
+const active_events = ref(0);
+const nets_distributed = ref(0);
+const registered_house_holds = ref(0);
+const registered_users = ref(0);
+const household_population = ref(0);
+const total_nets_required = ref(0);
+const activities = ref(0);
+const newChartData = ref([])
+const chartOptions = ref({})
+const totalhouseholds_served = ref([])
+
+//org levels
+const access_level = ref({})
+const filterAccessList = ref([])
+const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }])
+const counties = ref(null)
+const subcounties = ref(null)
+const wards = ref(null)
+const locations = ref(null)
+const sublocations = ref(null)
+const selectedCounties = ref(['nK0A12Q7MvS', 'sPkRcDvhGWA', 'uepLTG8wGWJ'])
+
+onMounted(async () => {
+  if (sessionStorage.getItem("user") != null) {
+    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    updateFilters()
+    fetchInitialChartData()
+    updateStats()
+  }
+});
+const capitalizeFirstLetter = (word) => {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+};
 
 
-    onMounted(async () => {
-      if (sessionStorage.getItem("user") != null) {
-        access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-        updateFilters()
-        fetchInitialChartData()
-        updateStats()
+const updateFilters = () => {
+  // access_level.value.level.level_name = 'county'
+  // access_level.value.location.org_id = 'nK0A12Q7MvS'
+  // access_level.value.location.name = 'Homa Bay County'
+
+  if (access_level.value.level.level_name.toLowerCase() == 'national') {
+    filterAccessList.value = ['country','county', 'subcounty', 'ward', 'location', 'sublocation']
+    fetchCounties()
+  } else if (access_level.value.level.level_name.toLowerCase() == 'county') {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
+    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'subcounty') {
+    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation']
+    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'ward') {
+    filterAccessList.value = ['ward', 'location', 'sublocation']
+    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'location') {
+    filterAccessList.value = ['location', 'sublocation']
+    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'sublocation') {
+    filterAccessList.value = ['sublocation']
+    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+  }
+}
+const fetchInitialChartData = async () => {
+  axios.get(`/subcounty/stats?org_id=${access_level.value.location.org_id}`)
+    .then(response => {
+      newChartData.value = response.data
+      //nets_required,nets_issued,target_data,target_level,cats
+      netsReqvsIssuedChart(
+        newChartData.value.data.map(item => parseInt(item.nets_required)),//nets_required
+        newChartData.value.data.map(item => parseInt(item.nets_issued)),//nets_issued
+        newChartData.value.data.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
+        newChartData.value.data.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
+        newChartData.value.data.map(item => item.name),//cats
+        access_level.value.level.level_name,//level
+      )
+      //registered,served,target_data,target_level,cats
+      householdRegvsServedChart(
+        newChartData.value.data.map(item => parseInt(item.households_registered)),//registered
+        newChartData.value.data.map(item => parseInt(item.households_served)),//served
+        newChartData.value.data.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
+        newChartData.value.data.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
+        newChartData.value.data.map(item => item.name),//cats
+        access_level.value.level.level_name,//level
+      )
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    })
+}
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  console.log(org_id + "," + org_level)
+  fetchChildData(org_id, org_level)
+};
+const fetchChildData = async (org_id, org_level) => {
+  let fetchUrl = `get_sub_counties_list`
+  let statUrl = `subcounty/stats`
+  if (org_level == 'country') {//get counties
+    fetchUrl += `?parent_id=${org_id}`
+    statUrl += `?org_id=${org_id}`
+  } else if (org_level == 'county') {//get subcounties
+    fetchUrl += `?parent_id=${org_id}`
+    statUrl += `?org_id=${org_id}`
+  } else if (org_level == 'subcounty') {//get wards
+    fetchUrl += `?parent_id=${org_id}`
+    statUrl += `?org_id=${org_id}`
+  } else if (org_level == 'ward') {//get locatios
+    fetchUrl += `?parent_id=${org_id}`
+    statUrl += `?org_id=${org_id}`
+  } else if (org_level == 'location') {//get sub locatios
+    fetchUrl += `?parent_id=${org_id}`
+    statUrl += `?org_id=${org_id}`
+  } else if (org_level == 'sublocation') {//get sublocations stats
+    statUrl += `?org_id=${org_id}`
+  }
+  await axios.get(`${fetchUrl}`)
+    .then(response => {
+      if (org_level == 'country') {//get county stats
+        counties.value = response.data.message.map(x => ({
+          value: x.org_id,
+          label: x.name
+        })).filter(e => selectedCounties.value.includes(e.value.toString()));
+        //counties.value.splice(0, 1)
+      } else if (org_level == 'county') {//get county stats
+        subcounties.value = response.data.message.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+      } else if (org_level == 'subcounty') {//get sub county stats
+        wards.value = response.data.message.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+      } else if (org_level == 'ward') {//get ward stats
+        locations.value = response.data.message.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+      } else if (org_level == 'location') {//get location stats
+        sublocations.value = response.data.message.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+      } else{//get location stats
+        //pass
       }
+    }).then(async () => {
+      await axios.get(`${statUrl}`)
+        .then(response => {
+          newChartData.value = response.data.data;
+          //column Subcounty comparison
+          org_level = capitalizeFirstLetter(org_level);
+          householdRegvsServedChart(
+            newChartData.value.map(item => parseInt(item.households_registered)),//registered
+            newChartData.value.map(item => parseInt(item.households_served)),//served
+            newChartData.value.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
+            newChartData.value.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
+            newChartData.value.map(item => item.name),//cats
+            org_level,
+          )
+          //combine bar line bar Subcounty comparison
+          netsReqvsIssuedChart(
+            newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
+            newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
+            newChartData.value.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
+            newChartData.value.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
+            newChartData.value.map(item => item.name),//cats
+            org_level,
+          )
+
+          //pie chars Registered households by sub county
+          let pieOptionsData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
+          let chartData = newChartData.value.map(item => ({ name: item.name, y: item.households_served }))
+          let netsIssuedData= newChartData.value.map(item => ({ name: item.name, y: parseInt(item.nets_issued) }))
+          HouseHoldRegisteredbyCoountyChart(pieOptionsData,org_level)
+          HouseHoldsServedbyCountyChart(chartData, org_level)
+          NetsIssuedbyCountyChart(netsIssuedData, org_level)
+        })
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     });
-
-    const updateFilters = () => {
-      access_level.value.level.level_name = 'county'
-      access_level.value.location.org_id = 'nK0A12Q7MvS'
-      access_level.value.location.name = 'Homa Bay County'
-
-      if (access_level.value.level.level_name.toLowerCase() == 'national') {
-        filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation']
-        fetchCounties()
-      } else if (access_level.value.level.level_name.toLowerCase() == 'county') {
-        filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
-        counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-      } else if (access_level.value.level.level_name.toLowerCase() == 'subcounty') {
-        filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation']
-        subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-      } else if (access_level.value.level.level_name.toLowerCase() == 'ward') {
-        filterAccessList.value = ['ward', 'location', 'sublocation']
-        wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-      } else if (access_level.value.level.level_name.toLowerCase() == 'location') {
-        filterAccessList.value = ['location', 'sublocation']
-        locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-      } else if (access_level.value.level.level_name.toLowerCase() == 'sublocation') {
-        filterAccessList.value = ['sublocation']
-        sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-      }
-    }
-
-    const handleChange = async (org_id, org_level) => {
-      //fetch child data
-      fetchChildData(org_id, org_level)
-    };
-
-    const fetchChildData = async (org_id, org_level) => {
-      let fetchUrl = ``
-      let statUrl = ``
-      if (org_level == 'country') {//get counties
-        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
-        statUrl = `subcounty/stats?org_id=${org_id}`
-      } else if (org_level == 'county') {//get subcounties
-        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
-        statUrl = `subcounty/stats?org_id=${org_id}`
-      } else if (org_level == 'subcounty') {//get wards
-        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
-        statUrl = `subcounty/stats?org_id=${org_id}`
-      } else if (org_level == 'ward') {//get locatios
-        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
-        statUrl = `subcounty/stats?org_id=${org_id}`
-      } else if (org_level == 'location') {//get sub locatios
-        fetchUrl = `get_sub_counties_list?parent_id=${org_id}`
-        statUrl = `subcounty/stats?org_id=${org_id}`
-      } else if (org_level == 'sublocation') {//get sublocations stats
-        statUrl = `subcounty/stats?org_id=${org_id}`
-      }
-      await axios.get(`${fetchUrl}`)
-        .then(response => {
-          if (org_level == 'country') {//get county stats
-            counties.value = response.data.message.map(x => ({
-              value: x.org_id,
-              label: x.name
-            })).filter(e => e.value == 'nK0A12Q7MvS');
-            //counties.value.splice(0, 1)
-          } else if (org_level == 'county') {//get county stats
-            subcounties.value = response.data.message.map(x => ({
-              value: x.org_id,
-              label: x.name
-            }));
-          } else if (org_level == 'subcounty') {//get sub county stats
-            wards.value = response.data.message.map(x => ({
-              value: x.org_id,
-              label: x.name
-            }));
-          } else if (org_level == 'ward') {//get ward stats
-            locations.value = response.data.message.map(x => ({
-              value: x.org_id,
-              label: x.name
-            }));
-          } else if (org_level == 'location') {//get location stats
-            sublocations.value = response.data.message.map(x => ({
-              value: x.org_id,
-              label: x.name
-            }));
-          }
-        }).then(async () => {
-          await axios.get(`${statUrl}`)
-            .then(response => {
-              newChartData.value = response.data.data;
-              //column Subcounty comparison
-              householdRegvsServedChart(
-                newChartData.value.map(item => parseInt(item.households_registered)),//registered
-                newChartData.value.map(item => parseInt(item.households_served)),//served
-                newChartData.value.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
-                newChartData.value.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
-                newChartData.value.map(item => item.name),//cats
-                org_level,
-              )
-              //combine bar line bar Subcounty comparison
-              netsReqvsIssuedChart(
-                newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
-                newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
-                newChartData.value.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
-                newChartData.value.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
-                newChartData.value.map(item => item.name),//cats
-                org_level,
-              )
-
-              //pie chars Registered households by sub county
-              let pieOptionsData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
-              let chartData = newChartData.value.map(item => ({ name: item.name, y: item.households_served }))
-              let netsIssuedData= newChartData.value.map(item => ({ name: item.name, y: parseInt(item.nets_issued) }))
-              HouseHoldRegisteredbyCoountyChart(pieOptionsData,org_level)
-              HouseHoldsServedbyCountyChart(chartData, org_level)
-              NetsIssuedbyCountyChart(netsIssuedData, org_level)
-            })
-        }).catch(error => {
-          notification.error({
-            message: `Error!`,
-            description: `${error}`,
-          });
-        });
-    }
-
-    const fetchCounties = async () => {
-      axios.get('counties/')
-        .then(response => {
-          counties.value = response.data.map(x => ({
-            value: x.org_id,
-            label: x.name
-          })).filter(e=>e.value == 'nK0A12Q7MvS');
-        }).catch(error => {
-          notification.error({
-            message: `Error!`,
-            description: `${error}`,
-          });
-        })
-    }
-
-    const filterOption = (input, option) => {
-      return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-    };
-    const updateStats = async () => {
-      await axios.get(`dash_stats`)
-        .then(response => {
-          const data = response.data;
-          active_events.value = data.active_events;
-          nets_distributed.value = data.nets_distributed;
-          registered_house_holds.value = data.registered_house_holds;
-          totalhouseholds_served.value= data.registered_house_holds;
-          registered_users.value = data.registered_users;
-          household_population.value = data.all_hh_members;
-          total_nets_required.value = data.sys_allocation;
-          activities.value = data.active_activities;
-          // actual_allocation = data.
-          // console.log(data.active_events);
-        }).catch(error => {
-          notification.error({
-            message: `Error!`,
-            description: `${error}`,
-          });
-          console.error(error);
-        });
-    }
-
-    const fetchInitialChartData = async () => {
-          axios.get(`/subcounty/stats?org_id=${access_level.value.location.org_id}`)
-            .then(response1 => {
-              newChartData.value = response1.data
-              //nets_required,nets_issued,target_data,target_level,cats
-              netsReqvsIssuedChart(
-                newChartData.value.data.map(item => parseInt(item.nets_required)),//nets_required
-                newChartData.value.data.map(item => parseInt(item.nets_issued)),//nets_issued
-                newChartData.value.data.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
-                newChartData.value.data.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
-                newChartData.value.data.map(item => item.name),//cats
-                access_level.value.level.level_name,//level
-              )
-              //registered,served,target_data,target_level,cats
-              householdRegvsServedChart(
-                newChartData.value.data.map(item => parseInt(item.households_registered)),//registered
-                newChartData.value.data.map(item => parseInt(item.households_served)),//served
-                newChartData.value.data.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
-                newChartData.value.data.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
-                newChartData.value.data.map(item => item.name),//cats
-                access_level.value.level.level_name,//level
-              )
-        }).catch(error => {
-          notification.error({
-            message: `Error!`,
-            description: `${error}`,
-          });
-        })
+}
+const fetchCounties = async () => {
+  axios.get('counties/')
+    .then(response => {
+      counties.value = response.data.map(x => ({
+        value: x.org_id,
+        label: x.name
+      })).filter(e => selectedCounties.value.includes(e.value.toString()));
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    })
+}
+const filterOption = (input, option) => {
+  return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+};
+const updateStats = async () => {
+  await axios.get(`dash_stats`)
+    .then(response => {
+      const data = response.data;
+      active_events.value = data.active_events;
+      nets_distributed.value = data.nets_distributed;
+      registered_house_holds.value = data.registered_house_holds;
+      totalhouseholds_served.value= data.house_holds_served;
+      registered_users.value = data.registered_users;
+      household_population.value = data.all_hh_members;
+      total_nets_required.value = data.sys_allocation;
+      activities.value = data.active_activities;
+      // actual_allocation = data.
+      // console.log(data.active_events);
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+      console.error(error);
+    });
 }
 //chart functions
 const HouseHoldRegisteredbyCoountyChart = (data,orglevel) => {
@@ -755,7 +746,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           zoomType: 'xy'
         },
         title: {
-          text: `Comparison by ${orglevel}`,
+          text: `Comparison of Nets Required vs Nets Issued by ${orglevel}`,
           align: 'left'
         },
         subtitle: {
@@ -776,7 +767,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           title: {
             text: 'Target',
             style: {
-              color: Highcharts.getOptions().colors[2]
+              color: '#004225'
             }
           },
           max: 100,
@@ -807,7 +798,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
             }
           },
           labels: {
-            format: '{value} %',
+            format: '{value:.1f} %',
             style: {
               color: Highcharts.getOptions().colors[1]
             }
@@ -824,7 +815,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           align: 'center',
           x: 80,
           verticalAlign: 'top',
-          y: 10,
+          y: 20,
           floating: true,
           backgroundColor:
             Highcharts.defaultOptions.legend.backgroundColor || // theme
@@ -858,13 +849,16 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           lineWidth: 6,
         }, {
           name: 'Target',
-          type: 'spline',
+          type: 'scatter',
           yAxis: 2,
           data: target_data,
-          color: Highcharts.getOptions().colors[2],
+          color: '#004225',
           tooltip: {
             valueSuffix: ' %'
-          }
+          },
+          marker: {
+            radius: 8, // Set the radius to adjust the size of scatter plot dots
+          },
         }],
         responsive: {
           rules: [{
@@ -901,14 +895,14 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           }]
         }
       });
-    }
+}
 const householdRegvsServedChart = (registered, served, target_data, target_level, cats,orglevel) => {
   Highcharts.chart('householdRegvsServedChart', {
     chart: {
       zoomType: 'xy'
     },
     title: {
-      text: `Comparison by ${orglevel}`,
+      text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
       align: 'left'
     },
     subtitle: {
@@ -929,7 +923,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       title: {
         text: 'Target',
         style: {
-          color: Highcharts.getOptions().colors[2]
+          color: '#004225'
         }
       },
       max: 100,
@@ -977,7 +971,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       align: 'center',
       x: 80,
       verticalAlign: 'top',
-      y: 10,
+      y: 20,
       floating: true,
       backgroundColor:
         Highcharts.defaultOptions.legend.backgroundColor || // theme
@@ -1011,13 +1005,16 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       lineWidth: 6,
     }, {
       name: 'Target',
-      type: 'spline',
+      type: 'scatter',
       yAxis: 2,
       data: target_data,
-      color: Highcharts.getOptions().colors[2],
+      color: '#004225',
       tooltip: {
         valueSuffix: ' %'
-      }
+      },
+      marker: {
+        radius: 8, // Set the radius to adjust the size of scatter plot dots
+      },
     }],
     responsive: {
       rules: [{
