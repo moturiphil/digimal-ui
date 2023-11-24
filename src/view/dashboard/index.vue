@@ -393,7 +393,10 @@ const updateFilters = () => {
 const fetchInitialChartData = async () => {
   axios.get(`/subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(response => {
-      newChartData.value = response.data.data.filter(e => selectedCounties.value.includes(e.name.toString()))
+      newChartData.value = response.data.data;
+       if (access_level.value.level.level_name.toLowerCase() === 'national') {
+        newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
+      }
       //nets_required,nets_issued,target_data,target_level,cats
       netsReqvsIssuedChart(
         newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
@@ -447,29 +450,30 @@ const fetchChildData = async (org_id, org_level) => {
   }
   await axios.get(`${fetchUrl}`)
     .then(response => {
+      let data =response.data.message;
       if (org_level == 'country') {//get county stats
-        counties.value = response.data.message.map(x => ({
+        counties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         })).filter(e => currentCounties.value.includes(e.value.toString()));
         //counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get county stats
-        subcounties.value = response.data.message.map(x => ({
+        subcounties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
       } else if (org_level == 'subcounty') {//get sub county stats
-        wards.value = response.data.message.map(x => ({
+        wards.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
       } else if (org_level == 'ward') {//get ward stats
-        locations.value = response.data.message.map(x => ({
+        locations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
       } else if (org_level == 'location') {//get location stats
-        sublocations.value = response.data.message.map(x => ({
+        sublocations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
@@ -479,7 +483,10 @@ const fetchChildData = async (org_id, org_level) => {
     }).then(async () => {
       await axios.get(`${statUrl}`)
         .then(response => {
-          newChartData.value = response.data.data.filter(e=>selectedCounties.value.includes(e.name.toString()));
+          newChartData.value = response.data.data;
+          if (org_level === 'country') {
+            newChartData.value=newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
+          }
           //column Subcounty comparison
           org_level = capitalizeFirstLetter(org_level);
           householdRegvsServedChart(
