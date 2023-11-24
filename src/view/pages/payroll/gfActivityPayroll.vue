@@ -1,6 +1,18 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Activity Payroll" />
+    <sdPageHeader ghost title="Activity Payroll">
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by ID No, Phone No, name"
+          />
+        </div>
+      </template>
+    </sdPageHeader> 
     <Main>
       <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
@@ -349,7 +361,7 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -439,42 +451,55 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const recordId = ref(null);
+    const searchItem = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
 
-    const filteredData = computed(() => {
-      if (activeClass.value === "all") {
-        return dataSource.value;
-      } else if (activeClass.value === "not_validated") {
-        return dataSource.value.filter(
-          (item) => item.status === "Not Validated"
-        );
-      } else if (activeClass.value === "not_approved") {
-        return dataSource.value.filter(
-          (item) => item.status === "Validated" && item.approval_status === 0
-        );
-      } else if (activeClass.value === "pending_approval") {
-        return dataSource.value.filter(
-          (item) =>
-            item.approval_status === "Not Approved" &&
-            item.status === "Validated"
-        );
-      } else if (activeClass.value === "pending_payment") {
-        return dataSource.value.filter(
-          (item) =>
-            item.approval_status === "Approved" &&
-            item.payment_status === "Not Paid"
-        );
-      } else if (activeClass.value === "paid") {
-        return dataSource.value.filter(
-          (item) =>
-            item.payment_status === "Paid" &&
-            item.approval_status === "Approved" &&
-            item.status === "Validated"
-        );
-      } else {
-        return dataSource.value;
+    const filter = (data)=>{
+      switch (activeClass.value) {
+        case 'all':
+          return data;
+        
+        case 'not_validated':
+          return data.filter(
+            (item) => item.status === "Not Validated"
+          );
+        
+        case 'not_approved':
+          return data.filter(
+            (item) => item.status === "Validated" && item.approval_status === 0
+          );
+        
+        case 'pending_approval':
+          return data.filter(
+            (item) =>
+              item.approval_status === "Not Approved" &&
+              item.status === "Validated"
+          );
+
+        case 'pending_payment':
+          return data.filter(
+            (item) =>
+              item.approval_status === "Approved" &&
+              item.payment_status === "Not Paid"
+          );
+        
+        case 'paid':
+          return data.filter(
+            (item) =>
+              item.payment_status === "Paid" &&
+              item.approval_status === "Approved" &&
+              item.status === "Validated"
+          );
+
+        default:
+          return data;
       }
+    }
+
+
+    const filteredData = computed(() => {
+      return filter(dataSource.value);
     });
 
     const handleChange = (tab) => {
@@ -486,11 +511,9 @@ export default defineComponent({
 
     const handlePay = (id) => {
       isModalOpen.value = true;
-      console.log("handlePay", id);
       recordId.value = id;
-      console.log("recordId", recordId.value);
       try {
-        const response = axios
+        axios
           .post(
             `${process.env.VUE_APP_BASE_URL}/payment_otp`,
             {
@@ -510,7 +533,7 @@ export default defineComponent({
                 description: "OTP Sent Successfully",
               });
             }
-            const approve_pay = axios
+            axios
               .post(
                 `${process.env.VUE_APP_BASE_URL}/payroll_payment`,
                 {
@@ -531,20 +554,16 @@ export default defineComponent({
                   });
                 }
               });
-            console.log(approve_pay);
           });
 
-        console.log(response);
       } catch (error) {
         console.log(error);
       }
     };
 
     const handleValidation = (id) => {
-      console.log("handleApprove", id);
-      console.log(id);
       try {
-        const response = axios
+        axios
           .post(
             `${process.env.VUE_APP_BASE_URL}/payroll_validation`,
             {
@@ -556,7 +575,6 @@ export default defineComponent({
             return responsePromise.data;
           })
           .then((data) => {
-            console.log(data);
             if (data.success == true) {
               notification.success({
                 message: "Success",
@@ -570,17 +588,14 @@ export default defineComponent({
             }
           });
 
-        console.log(response);
       } catch (error) {
         console.log(error);
       }
     };
 
     const handleApproval = (id) => {
-      console.log("handleApprove", id);
-      console.log(id);
       try {
-        const response = axios
+        axios
           .post(
             `${process.env.VUE_APP_BASE_URL}/payroll_approval`,
             {
@@ -606,7 +621,6 @@ export default defineComponent({
             }
           });
 
-        console.log(response);
         // const parser = new DOMParser();
         // const otp = response.data.OTP;
       } catch (error) {
@@ -615,7 +629,6 @@ export default defineComponent({
     };
 
     const handleOk = async (id, inputValue) => {
-      console.log(recordId.value);
       try {
         const response = await axios.get(
           `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
@@ -669,12 +682,51 @@ export default defineComponent({
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
           });
-          console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
         });
     });
+
+    watchEffect(async()=>{
+      const querysearch = searchItem.value.toLowerCase();
+      try {
+        if(!querysearch) return dataSource.value;
+        if(querysearch.length > 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary?query=${querysearch}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
+          );
+          const data = await response.json();
+          const filteredItems = [];
+          data.data.forEach((item) => {
+            if (item.funding_source === 1) {
+              filteredItems.push(item);
+            }
+          });
+
+          dataSource.value = filteredItems;
+          dataSource.value.forEach((item) => {
+            item.status = item.status === 1 ? "Validated" : "Not Validated";
+            item.payment_status =
+              item.payment_status === 1 ? "Paid" : "Not Paid";
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
+          });
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
+        });
+      }
+
+    })
+
     const handleVerify = (record) => {
       console.log(record);
     };
@@ -684,7 +736,6 @@ export default defineComponent({
     // const admin_role_id = ref("");
 
     const user = JSON.parse(sessionStorage.getItem("user"));
-    console.log(user);
 
     role_id.value = user.user.role_id;
 
@@ -717,6 +768,7 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
+      searchItem,
       // exportHouseHoldData,
       filteredData,
       handleChange,
