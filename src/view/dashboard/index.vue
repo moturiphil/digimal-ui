@@ -303,9 +303,34 @@ const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
 const selectedCounties = ref([
-  // 'nK0A12Q7MvS',//homa bay
-  // 'sPkRcDvhGWA',//kisii
-  // 'uepLTG8wGWJ',//nyamira
+  "Homa Bay County",
+  "Kisii County",
+  "Nyamira County",
+  // "Kisumu County",
+  // "Siaya County",
+  // "Busia County",
+  // "Migori County",
+  // "Lamu County",
+  // "Kilifi County",
+  // "Tana River County",
+  // "Kwale County",
+  // "Taita Taveta County",
+  // "Mombasa County",
+  // "Bungoma County",
+  // "Kakamega County",
+  // "Vihiga County",
+  // "West Pokot County",
+  // "Turkana County",
+  // "Trans Nzoia County",
+  // "Narok County",
+  // "Marsabit County",
+  // "Baringo County",
+  // "Kirinyaga County"
+])
+const currentCounties = ref([
+  'nK0A12Q7MvS',//homa bay
+  'sPkRcDvhGWA',//kisii
+  'uepLTG8wGWJ',//nyamira
   // 'u4t9H8XyU9P',//siaya
   // 'fVra3Pwta0Q',//migori
   // 'Tvf1zgVZ0K4',//busia
@@ -325,31 +350,7 @@ const selectedCounties = ref([
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
   // 'Ulj33KBau7V',
-  "Homa Bay County",
-  "Kisii County",
-  "Nyamira County",
-  "Kisumu County",
-  "Siaya County",
-  "Busia County",
-  "Migori County",
-  "Lamu County",
-  "Kilifi County",
-  "Tana River County",
-  "Kwale County",
-  "Taita Taveta County",
-  "Mombasa County",
-  "Bungoma County",
-  "Kakamega County",
-  "Vihiga County",
-  "West Pokot County",
-  "Turkana County",
-  "Trans Nzoia County",
-  "Narok County",
-  "Marsabit County",
-  "Baringo County",
-  "Kirinyaga County"
 ])
-const currentCounties=ref(['nK0A12Q7MvS','sPkRcDvhGWA','uepLTG8wGWJ',])
 
 onMounted(async () => {
   if (sessionStorage.getItem("user")) {
@@ -392,7 +393,10 @@ const updateFilters = () => {
 const fetchInitialChartData = async () => {
   axios.get(`/subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(response => {
-      newChartData.value = response.data.data.filter(e => selectedCounties.value.includes(e.name.toString()))
+      newChartData.value = response.data.data;
+       if (access_level.value.level.level_name.toLowerCase() === 'national') {
+        newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
+      }
       //nets_required,nets_issued,target_data,target_level,cats
       netsReqvsIssuedChart(
         newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
@@ -446,29 +450,30 @@ const fetchChildData = async (org_id, org_level) => {
   }
   await axios.get(`${fetchUrl}`)
     .then(response => {
+      let data =response.data.message;
       if (org_level == 'country') {//get county stats
-        counties.value = response.data.message.map(x => ({
+        counties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         })).filter(e => currentCounties.value.includes(e.value.toString()));
         //counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get county stats
-        subcounties.value = response.data.message.map(x => ({
+        subcounties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
       } else if (org_level == 'subcounty') {//get sub county stats
-        wards.value = response.data.message.map(x => ({
+        wards.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
       } else if (org_level == 'ward') {//get ward stats
-        locations.value = response.data.message.map(x => ({
+        locations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
       } else if (org_level == 'location') {//get location stats
-        sublocations.value = response.data.message.map(x => ({
+        sublocations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
@@ -478,7 +483,10 @@ const fetchChildData = async (org_id, org_level) => {
     }).then(async () => {
       await axios.get(`${statUrl}`)
         .then(response => {
-          newChartData.value = response.data.data.filter(e=>selectedCounties.value.includes(e.name.toString()));
+          newChartData.value = response.data.data;
+          if (org_level === 'country') {
+            newChartData.value=newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
+          }
           //column Subcounty comparison
           org_level = capitalizeFirstLetter(org_level);
           householdRegvsServedChart(
