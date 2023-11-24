@@ -41,7 +41,7 @@
     </sdPageHeader>
     <a-row :gutter="25">
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-        <sdCards headless style="background:#D0F0C0;color:rgb(27, 19, 19)">
+        <sdCards headless style="background:#4adede;color:whitesmoke">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
@@ -54,7 +54,7 @@
         </sdCards>
       </a-col>
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-        <sdCards headless style="background:#00A86B;color:rgb(27, 19, 19)">
+        <sdCards headless  style="background:#3498db;color:whitesmoke">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
@@ -80,7 +80,7 @@
         </sdCards>
       </a-col>
       <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-        <sdCards headless style="background:#00A86B;color:rgb(27, 19, 19)">
+        <sdCards headless style="background:#4adede;color:whitesmoke">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
@@ -132,7 +132,7 @@
             </sdCards>
           </a-col>
           <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-          <sdCards headless style="background:#D0F0C0;color:rgb(27, 19, 19)">
+          <sdCards headless  style="background:#3498db;color:whitesmoke">
             <EChartCard>
               <div class="card-chunk">
                 <CardBarChart2>
@@ -158,7 +158,7 @@
           </sdCards>
         </a-col>
          <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-            <sdCards headless style="background:#8A9A5B;color:rgb(27, 19, 19)">
+            <sdCards headless style="background:#4adede;color:whitesmoke">
               <EChartCard>
                 <div class="card-chunk">
                   <CardBarChart2>
@@ -184,7 +184,7 @@
           </a-col>
 
         <a-col :xxl="6" :md="12" :sm="12" :xs="24">
-            <sdCards headless style="background:#8A9A5B;color:rgb(27, 19, 19)">
+            <sdCards headless  style="background:#3498db;color:whitesmoke">
               <EChartCard>
                 <div class="card-chunk">
                   <CardBarChart2>
@@ -302,7 +302,7 @@ const subcounties = ref(null)
 const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
-
+const selectedCounties = ref(['nK0A12Q7MvS', 'sPkRcDvhGWA', 'uepLTG8wGWJ'])
 
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
@@ -312,6 +312,11 @@ onMounted(async () => {
     updateStats()
   }
 });
+const capitalizeFirstLetter = (word) => {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+};
+
+
 const updateFilters = () => {
   // access_level.value.level.level_name = 'county'
   // access_level.value.location.org_id = 'nK0A12Q7MvS'
@@ -368,7 +373,7 @@ const fetchInitialChartData = async () => {
 }
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  console.log(org_id+","+org_level)
+  console.log(org_id + "," + org_level)
   fetchChildData(org_id, org_level)
 };
 const fetchChildData = async (org_id, org_level) => {
@@ -398,7 +403,7 @@ const fetchChildData = async (org_id, org_level) => {
         counties.value = response.data.message.map(x => ({
           value: x.org_id,
           label: x.name
-        })).filter(e => (e.value == 'nK0A12Q7MvS' || e.value == 'sPkRcDvhGWA' || e.value == 'uepLTG8wGWJ'));
+        })).filter(e => selectedCounties.value.includes(e.value.toString()));
         //counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get county stats
         subcounties.value = response.data.message.map(x => ({
@@ -428,6 +433,7 @@ const fetchChildData = async (org_id, org_level) => {
         .then(response => {
           newChartData.value = response.data.data;
           //column Subcounty comparison
+          org_level = capitalizeFirstLetter(org_level);
           householdRegvsServedChart(
             newChartData.value.map(item => parseInt(item.households_registered)),//registered
             newChartData.value.map(item => parseInt(item.households_served)),//served
@@ -467,7 +473,7 @@ const fetchCounties = async () => {
       counties.value = response.data.map(x => ({
         value: x.org_id,
         label: x.name
-      })).filter(e => (e.value =='nK0A12Q7MvS' || e.value=='sPkRcDvhGWA' || e.value=='uepLTG8wGWJ'));
+      })).filter(e => selectedCounties.value.includes(e.value.toString()));
     }).catch(error => {
       notification.error({
         message: `Error!`,
@@ -740,7 +746,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           zoomType: 'xy'
         },
         title: {
-          text: `Comparison by ${orglevel}`,
+          text: `Comparison of Nets Required vs Nets Issued by ${orglevel}`,
           align: 'left'
         },
         subtitle: {
@@ -809,7 +815,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
           align: 'center',
           x: 80,
           verticalAlign: 'top',
-          y: 10,
+          y: 20,
           floating: true,
           backgroundColor:
             Highcharts.defaultOptions.legend.backgroundColor || // theme
@@ -896,7 +902,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       zoomType: 'xy'
     },
     title: {
-      text: `Comparison by ${orglevel}`,
+      text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
       align: 'left'
     },
     subtitle: {
@@ -965,7 +971,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       align: 'center',
       x: 80,
       verticalAlign: 'top',
-      y: 10,
+      y: 20,
       floating: true,
       backgroundColor:
         Highcharts.defaultOptions.legend.backgroundColor || // theme
