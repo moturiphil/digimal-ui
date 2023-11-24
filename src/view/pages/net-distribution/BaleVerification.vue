@@ -230,7 +230,7 @@ const AddNew = defineComponent({
       counted_no_of_nets: "",
       expected_no_of_nets: "",
       // date_received: date_received,
-      // delivery_note_number: d_no,
+      delivery_note_number: 'N/A',
       // received_by: received_by,
     });
 
@@ -303,7 +303,7 @@ const AddNew = defineComponent({
         bale_batch_no: formState.bale_batch_no,
         counted_no_of_nets: formState.counted_no_of_nets,
         expected_no_of_nets: formState.expected_no_of_nets,
-        // delivery_note_number: formState.delivery_note_number,
+        delivery_note_number: 'N/A',
       };
 
       console.log(JSON.stringify(values));
