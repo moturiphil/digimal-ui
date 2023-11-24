@@ -171,6 +171,7 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const masterlist_validation_url = `${process.env.VUE_APP_BASE_URL}/mpesa-list-export`;
     const searchItem = ref("");
+    const masterlist = ref([]);
 
     // const API_URL = `${process.env.VUE_APP_BASE_URL}/generateUserCSV`;
 
@@ -195,6 +196,7 @@ const DragAndDropTable = defineComponent({
             status,
           };
         });
+        masterlist.value = updatedData;
         dataSource.value = updatedData;
       } catch (error) {
         console.error(error);
@@ -296,7 +298,11 @@ const DragAndDropTable = defineComponent({
       const query = searchItem.value.toLowerCase();
 
       try {
-        if(!query) return dataSource.value;
+        if(!query) 
+        {
+          dataSource.value = masterlist.value;
+          return dataSource.value;
+        }
         if(query.length > 3){
 
           const response =  await fetch(

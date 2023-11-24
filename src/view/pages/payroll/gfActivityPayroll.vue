@@ -452,6 +452,7 @@ export default defineComponent({
     const activeClass = ref("all");
     const recordId = ref(null);
     const searchItem = ref("");
+    const activitypayroll = ref([]);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary`;
 
@@ -673,15 +674,16 @@ export default defineComponent({
           });
 
 
-          dataSource.value = filteredItems;
+          activitypayroll.value = filteredItems;
           // transform approval status to boolean
-          dataSource.value.forEach((item) => {
+          activitypayroll.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
             item.payment_status =
               item.payment_status === 1 ? "Paid" : "Not Paid";
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
           });
+          dataSource.value = activitypayroll.value;
         })
         .catch((error) => {
           console.error(error);
@@ -691,7 +693,11 @@ export default defineComponent({
     watchEffect(async()=>{
       const querysearch = searchItem.value.toLowerCase();
       try {
-        if(!querysearch) return dataSource.value;
+        if(!querysearch)
+        {
+          dataSource.value = activitypayroll.value;
+          return dataSource.value;
+        }
         if(querysearch.length > 3){
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/activity_payroll_summary?query=${querysearch}`,

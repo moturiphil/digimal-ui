@@ -160,6 +160,7 @@ const DragAndDropTable = defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const searchItem = ref("");
+    const users = ref([]);
 
     // onMounted(async () => {
     //   try {
@@ -189,6 +190,7 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
+        users.value = data.data;
         dataSource.value = data.data;
       } catch (error) {
         console.error(error);
@@ -235,7 +237,11 @@ const DragAndDropTable = defineComponent({
     watchEffect(async()=>{
       const query = searchItem.value.toLowerCase();
       try {
-        if(!query) return dataSource.value;
+        if(!query) 
+        {
+          dataSource.value = users.value;
+          return dataSource.value;
+        }
         if(query.length > 3){
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/users?query=${query}`,

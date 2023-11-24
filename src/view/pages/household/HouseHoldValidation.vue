@@ -461,9 +461,7 @@ export default defineComponent({
 
     const handleOk = async (id, inputValue) => {
       try {
-        console.log(household_id.value);
         const house_id = household_id.value;
-        console.log(inputValue);
 
         // Call the authHeader() function to get the authorization token
         const headers = authHeader();

@@ -488,12 +488,18 @@ export default defineComponent({
     const inputValue = ref("");
     const role_id = ref("");
     const searchItem = ref("")
+    const eventspayroll = ref([])
     const user = JSON.parse(sessionStorage.getItem("user"));
 
     watchEffect(async()=>{
       const query = searchItem.value.toLowerCase();
       try {
-        if(!query) return dataSource.value;
+        if(!query) 
+        {
+          dataSource.value = eventspayroll.value;
+          return dataSource.value
+        }
+        // return dataSource.value;
         if(query.length > 3){
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary?query=${query}`,
@@ -753,15 +759,15 @@ export default defineComponent({
               filteredItems.push(item);
             }
           });
-
-          dataSource.value = filteredItems;
-          dataSource.value.forEach((item) => {
+          eventspayroll.value=filteredItems
+          eventspayroll.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
             item.payment_status =
               item.payment_status === 1 ? "Paid" : "Not Paid";
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
           });
+          dataSource.value = eventspayroll.value;
         })
         .catch((error) => {
           console.error(error);

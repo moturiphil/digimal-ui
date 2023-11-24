@@ -192,17 +192,14 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
+    const eventpayroll_list = ref([]);
 
-    const { params, query } = useRoute();
-    console.log({ params, query });
+    const {  query } = useRoute();
 
-    console.log(query.id);
     const event_name = query.name;
     const duration = query.duration;
     const venue = query.venue;
     const date = query.date;
-    console.log(event_name);
-    console.log(query.id);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
 
@@ -243,8 +240,8 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
+          eventpayroll_list.value = response.data.data;
           dataSource.value = response.data.data;
-          console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
@@ -274,9 +271,13 @@ export default defineComponent({
     // });
     watchEffect(async()=>{
       const querysearch = encodeURIComponent(searchItem.value.toLowerCase());
-      console.log(querysearch);
       try {
-        if(!querysearch) return dataSource.value;
+        if(!querysearch)
+        {
+          dataSource.value = eventpayroll_list.value;
+          return dataSource.value;
+        }
+        //  return dataSource.value;
         if(querysearch.length > 3){
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}&query=${querysearch}`,
