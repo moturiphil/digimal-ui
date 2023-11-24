@@ -39,7 +39,7 @@
                     showSizeChanger: true,
                     current: currentPage,
                   }"
-                  :dataSource="results"
+                  :dataSource="dataSource"
                   :columns="columns"
                   @change="handleTableChange"
                 >
@@ -263,10 +263,9 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, watchEffect, defineComponent } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
-import UserService from "../../../services/user.service";
 import { notification } from "ant-design-vue";
 import axios from "axios";
 import * as Yup from "yup";
@@ -360,13 +359,8 @@ const DragAndDropTable = defineComponent({
       { id: 51, name: "Village Elder" },
     ];
 
-    console.log(authHeader());
-
-    const api_url = UserService;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/update_chp_ve`;
     const DEASSIGN_URL = `${process.env.VUE_APP_BASE_URL}/deassign_chp_ve`;
-
-    console.log(api_url);
 
     onMounted(async () => {
       try {
@@ -380,7 +374,6 @@ const DragAndDropTable = defineComponent({
           return user.role_id === "CHV" || user.role_id === "Village Elder";
         });
         dataSource.value = filteredUsers;
-        console.log(filteredUsers);
       } catch (error) {
         console.error(error);
       }
@@ -412,7 +405,6 @@ const DragAndDropTable = defineComponent({
     var user_id = "";
 
     const handleAssignment = (id) => {
-      console.log("Assignment ready");
       getCounties();
       isModalOpen.value = true;
       console.log("Record ID", id);
@@ -423,7 +415,6 @@ const DragAndDropTable = defineComponent({
       const data = {
         user_id: id,
       };
-      console.log(data);
 
       fetch(DEASSIGN_URL, {
         method: "POST",
@@ -490,7 +481,6 @@ const DragAndDropTable = defineComponent({
         user_id: user_id, // Make sure user_id is defined
         role_id: formState.role_id,
       };
-      console.log(data);
 
       fetch(API_URL, {
         method: "POST",
@@ -529,11 +519,8 @@ const DragAndDropTable = defineComponent({
     };
 
     const handleOk = async (id, inputValue) => {
-      console.log(id);
-      console.log(inputValue);
       try {
         const response = await axios.post(API_URL, { headers: authHeader() });
-        console.log(response);
         if (response.status == 200) {
           notification.success({
             message: "Success",
@@ -575,7 +562,6 @@ const DragAndDropTable = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data);
       counties.value = data.map((county) => ({
         ...county,
       }));
@@ -583,7 +569,6 @@ const DragAndDropTable = defineComponent({
 
     // sub_county
     const getSubCounties = async (org_id) => {
-      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -595,7 +580,6 @@ const DragAndDropTable = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data);
       sub_counties.value = data.message;
     };
 
@@ -612,13 +596,11 @@ const DragAndDropTable = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data);
       wards.value = data.message;
     };
 
     // locations
     const getLocations = async (org_id) => {
-      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -630,13 +612,11 @@ const DragAndDropTable = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data);
       locations.value = data.message;
     };
 
     // sub-subcountues
     const getSubLocations = async (org_id) => {
-      console.log(org_id);
       const response = await fetch(
         `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
         {
@@ -648,7 +628,6 @@ const DragAndDropTable = defineComponent({
         }
       );
       const data = await response.json();
-      console.log(data);
       sub_locations.value = data.message;
     };
 
@@ -693,21 +672,29 @@ const DragAndDropTable = defineComponent({
       selectedRowKeys.value = selectedRowKey;
     };
 
-    const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((user) => {
-          return (
-            regex.test(user.first_name) ||
-            regex.test(user.last_name) ||
-            regex.test(user.level_id) ||
-            regex.test(user.org_types_id) ||
-            regex.test(user.location_id) ||
-            regex.test(user.id_no)
+    watchEffect(async()=>{
+      const query = searchItem.value.toLocaleLowerCase();
+      try {
+        if(!query) return dataSource.value;
+        if(query.length > 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/chp_ve?query=${query}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+            }
           );
+          const data = await response.json();
+          dataSource.value = data.data;
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
         });
       }
     });
@@ -729,7 +716,6 @@ const DragAndDropTable = defineComponent({
       formState,
       isDeactivated: false,
       deactivateUser,
-      results,
       searchItem,
       counties,
       sub_counties,
