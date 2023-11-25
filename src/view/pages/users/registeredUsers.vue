@@ -34,50 +34,58 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="{
-                    pageSize: 100,
-                    showSizeChanger: true,
-                    current: currentPage,
-                  }"
+                <a-row class="" style="float:end;" :gutter="5">
+                  <a-space>
+                  <a-col v-if="filterAccessList.includes('country')" :xxl="3" :xl="6" :md="12" :sm="24">
+                    <a-select v-model:value="country" show-search placeholder="Select Country" style="width: 200px"
+                      :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+                  </a-col>
+                  <a-col v-if="filterAccessList.includes('county')" :xxl="3" :xl="6" :md="12" :sm="24">
+                    <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
+                      :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
+                  </a-col>
+                  <a-col v-if="filterAccessList.includes('subcounty')">
+                    <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
+                      :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+                  </a-col>
+                  <a-col v-if="filterAccessList.includes('ward')" :xxl="3" :xl="6" :md="12" :sm="24">
+                    <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
+                      :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
+                  </a-col>
+                  </a-space>
+                </a-row>
+                <br/>
+                <a-row style="float:end;" :gutter="5">
+                  <a-space>
+                  <a-col v-if="filterAccessList.includes('location')" :xxl="3" :xl="6" :md="12" :sm="24">
+                    <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
+                      :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+                  </a-col>
+                  <a-col v-if="filterAccessList.includes('sublocation')" :xxl="3" :xl="6" :md="12" :sm="24">
+                    <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
+                      :options="sublocations" :filter-option="filterOption"
+                      @change="handleChange($event, 'sublocation')" ></a-select>
+                  </a-col>
+                  <a-col v-if="filterAccessList.includes('village')" :xxl="3" :xl="6" :md="12" :sm="24">
+                      <a-select v-model:value="village" show-search placeholder="Select a Post" style="width: 200px"
+                        :options="villages" :filter-option="filterOption"
+                        @change="handleChange($event, 'village')" ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-divider></a-divider>
+                 <a-table
                   :dataSource="dataSource"
                   :columns="columns"
                   @change="handleTableChange"
                 >
-                  <!-- <template #users="{ record }">
-                    <td :style="{ 'margin-left': '4px' }">
-                      <div class="table-actions">
-                        <label class="switch">
-                          <input
-                            type="checkbox"
-                            :disabled="isDeactivated"
-                            @change="deactivateUser(record.id)"
-                            v-model="record.status"
-                          />
-                          <span class="slider round"></span>
-                        </label>
-                        <span v-if="record.status">Active</span>
-                        <span v-else>Inactive</span>
-                      </div>
-                    </td>
-                  </template> -->
-                  <!-- <template #users="{ record }">
-                    <td :style="{ 'margin-left': '4px' }">
-                      <div class="table-actions">
-                        <label class="switch">
-                          <input
-                            type="checkbox"
-                            :disabled="isStarting"
-                            @change="toggleUserStatus(record.id, record.status)"
-                            v-model="record.status"
-                          />
-                          <span class="slider round"></span>
-                        </label>
-                        <span v-if="record.status">Inactive</span>
-                        <span v-else>Active</span>
-                      </div>
-                    </td>
-                  </template> -->
+                <template #pagination="{ pageSize}">
+                  <a-pagination
+                    :total="pageSize"
+                    v-model:current="current"
+                    @change="handlePaginationChange(current)"
+                  />
+                  </template>
                 </a-table>
               </TableWrapper>
             </div>
@@ -90,16 +98,12 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
-// import axios from "axios";
-import authHeader from "../../../services/auth-header";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import { notification } from "ant-design-vue";
-// import { Switch } from "ant-design-vue";
-
 const columns = [
   {
     title: "First Name",
@@ -148,91 +152,84 @@ const columns = [
     slots: { customRender: "users" },
   },
 ];
+import axios from '@/Axiosconfig';
+const current = ref(1);
+const pageSize = ref(100);
 
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
+const { state } = useStore();
+//const crud = computed(() => state.crud.data);
+const isLoading = computed(() => state.crud.loading);
+//const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+const searchItem = ref("");
+//Drill down filters
+const access_level = ref({})
+const filterAccessList = ref([])
+//org levels
+const countries = ref([{ value: { id: 1, org_id: 'HfVjCurKxh2' }, label: "Kenya" }])
+const counties = ref(null)
+const subcounties = ref(null)
+const wards = ref(null)
+const locations = ref(null)
+const sublocations = ref(null)
+const villages = ref(null)
 
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const searchItem = ref("");
-    const users = ref([]);
 
-    // onMounted(async () => {
-    //   try {
-    //     const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-    //       method: "GET",
-    //       headers: authHeader(),
-    //     });
-    //     const data = await response.json();
-    //     dataSource.value = data.data;
-    //     console.log(data.data);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // });
+const org_ids = ref([])
 
-    onMounted(async () => {
-      try {
-        // Assuming you have an initial page number
-        const pageNumber = 1;
-        const pageSize = 100;
 
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/users?page=${pageNumber}&per_page=${pageSize}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        users.value = data.data;
-        dataSource.value = data.data;
-      } catch (error) {
-        console.error(error);
-      }
-    });
+onMounted(async () => {
+  if (sessionStorage.getItem("user") != null) {
+    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    updateFilters()
+    console.log(JSON.stringify(access_level.value.location));
+  }
+});
 
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
+const handlePaginationChange = (newPage) => {
+  current.value = newPage;
+  console.log(newPage);
+  fetchUsers()
+};
 
-    const deactivateUser = async (id) => {
-      console.log(id);
-      const confirm = window.confirm("Are you sure to deactivate this user?");
-      if (confirm) {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/users/${id}/toggleStatus`,
-          {
-            method: "POST",
-            headers: authHeader(),
-          }
-        );
-        console.log(response);
-      }
-      return false;
-    };
+const updateFilters = () => {
+  access_level.value.level.level_name = 'national'
+  access_level.value.location.id = 1
+  access_level.value.location.org_id = 'HfVjCurKxh2'
+  access_level.value.location.name = 'Kenya'
 
-    const formState = reactive({
-      searchItem: "",
-    });
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
+  if (access_level.value.level.level_name.toLowerCase() == 'national') {
+    filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    fetchCounties()
+  } else if (access_level.value.level.level_name.toLowerCase() == 'county') {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'subcounty') {
+    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation', 'village']
+    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'ward') {
+    filterAccessList.value = ['ward', 'location', 'sublocation', 'village']
+    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'location') {
+    filterAccessList.value = ['location', 'sublocation', 'village']
+    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.level_name.toLowerCase() == 'sublocation') {
+    filterAccessList.value = ['sublocation', 'village']
+    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else {
+    filterAccessList.value = ['village']
+    villages.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  }
+  fetchUsers()
+}
 
     watchEffect(async()=>{
       const query = searchItem.value.toLowerCase();
@@ -259,33 +256,174 @@ const DragAndDropTable = defineComponent({
           message: "Error",
           description: error.message,
         });
+      }})
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
+  console.log(org)
+  let parent_id = org[0] || 1
+  console.log(parent_id)
+  console.log(org_level)
+  fetchChildData(parent_id, org_id, org_level)
+};
+const fetchChildData = async (location_id, org_id, org_level) => {
+  let fetchUrl = `get_sub_counties_list`
+  let masterListUrl = `users?page=${current.value}&per_page=${pageSize.value}`
+  if (org_level == 'country') {//get counties
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `?location_id=${location_id}`
+  } else if (org_level == 'county') {//get subcounties
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `?location_id=${location_id}`
+  } else if (org_level == 'subcounty') {//get wards
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `?location_id=${location_id}`
+  } else if (org_level == 'ward') {//get locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `?location_id=${location_id}`
+  } else if (org_level == 'location') {//get sub locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `?location_id=${location_id}`
+  } else if (org_level == 'sublocation') {//get sublocations stats
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `?location_id=${location_id}`
+  } else if (org_level == 'village') {
+    masterListUrl += `?location_id=${location_id}`
+  }
+  await axios.get(`${fetchUrl}`)
+    .then(response => {
+      let data = response.data.message;
+      if (org_level == 'country') {//get counties
+        counties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({
+          org_id: x.org_id,
+          id: x.id
+        }));
+        counties.value.splice(0, 1)
+      } else if (org_level == 'county') {//get subcounties
+        subcounties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({
+          org_id: x.org_id,
+          id: x.id
+        }));
+      } else if (org_level == 'subcounty') {//get wards
+        wards.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({
+          org_id: x.org_id,
+          id: x.id
+        }));
+      } else if (org_level == 'ward') {//get locations
+        locations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({
+          org_id: x.org_id,
+          id: x.id
+        }));
+      } else if (org_level == 'location') {//get sublocations
+        sublocations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({
+          org_id: x.org_id,
+          id: x.id
+        }));
+      } else if (org_level == 'sublocation') {//get villages
+        villages.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({
+          org_id: x.org_id,
+          id: x.id
+        }));
       }
+    }).then(async () => {
+      await axios.get(`${masterListUrl}`)
+        .then(response => {
+          console.log(response.data)
+          let data = response.data;
+          const updatedData = data.data.map((record) => {
+            let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
+            let status = record.status == 1 ? "validated" : "Not Validated";
+            return {
+              ...record,
+              fullName,
+              status,
+            };
+          });
+          dataSource.value = updatedData;
+        })
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+}
+const fetchCounties = async () => {
+  axios.get('counties/')
+    .then(response => {
+      counties.value = response.data.map(x => ({
+        value: x.org_id,
+        label: x.name
+      })).filter(e => e.value == 'nK0A12Q7MvS');
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     })
+}
+const filterOption = (input, option) => {
+  return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+};
 
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
+const fetchUsers = async () => {
+  try {
+    // Assuming you have an initial page number
+    const response = await axios.get(`users?page=${current.value}&per_page=${pageSize.value}`);
+    const data = await response.data;
+    dataSource.value = data.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
 
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      dataSource,
-      columns,
-      formState,
-      isDeactivated: false,
-      deactivateUser,
-      searchItem,
-      // toggleUserStatus /*, deactivate user */,
-    };
-  },
-});
+watchEffect(async()=>{
+  const query = searchItem.value.toLowerCase();
+  try {
+    if(!query) return dataSource.value;
+    if(query.length > 3){
+      const response = await axios.get(`users?query=${query}`);
+      const data = await response.json();
+      dataSource.value = data.data;
+    }
 
-export default DragAndDropTable;
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: error.message,
+    });
+  }
+})
+
+// const rowSelection = {
+//   selectedRowKeys,
+//   onChange: onSelectChange,
+// };
+
 </script>
 
 <style>

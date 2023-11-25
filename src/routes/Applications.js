@@ -97,6 +97,14 @@ export default [
           ),
       },
       {
+        name: "post-summary",
+        path: "post-summary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/PostSummary.vue"
+          ),
+      },
+      {
         name: "drop-off",
         path: "drop-off",
         component: () =>
