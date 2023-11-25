@@ -119,6 +119,7 @@
                     showSearch
                     option-filter-prop="label"
                     placeholder="Select one"
+                    show-search
                   >
                     <a-select-option
                       v-for="user in supervisors"
@@ -225,7 +226,7 @@ const DragAndDropTable = defineComponent({
     const supervisorList =async()=>{
       try{
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/post_supervisors`,
+          `${process.env.VUE_APP_BASE_URL}/users`,
           {
             method: "GET",
             headers: authHeader(),
@@ -260,8 +261,6 @@ const DragAndDropTable = defineComponent({
       } catch (error) {
         console.error(error);
       }
-
-      console.log(supervisors.value)
 
     });
 
