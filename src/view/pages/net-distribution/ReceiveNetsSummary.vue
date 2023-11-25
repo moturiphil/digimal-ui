@@ -736,16 +736,16 @@ export default defineComponent({
           body: JSON.stringify(data),
         })
           .then((response) => response.json())
-          .then(({ success, message }) => {
+          .then(({ success, data }) => {
             if (success) {
               notification.success({
                 message: "Success",
-                description: `${message}`,
+                description: `${data}`,
               });
             } else {
               notification.error({
                 message: "Error",
-                description: `${message}`,
+                description: `${data}`,
               });
             }
             isModalOpen.value = false;
