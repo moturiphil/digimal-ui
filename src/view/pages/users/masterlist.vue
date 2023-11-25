@@ -154,6 +154,7 @@ import {computed,onMounted,ref,watchEffect} from "vue";
 import { notification } from "ant-design-vue";
 import { UploadOutlined } from '@ant-design/icons-vue';
 import axios from '@/Axiosconfig';
+import authHeader from "../../../services/auth-header";
 
 
 const { state } = useStore();
@@ -215,6 +216,7 @@ const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
 const villages = ref(null)
+const masterlist = ref([])
 
 
 const org_ids=ref([])
@@ -453,6 +455,7 @@ const updateMasterList=async()=>{
         status,
       };
     });
+    masterlist.value = updatedData;
     dataSource.value = updatedData;
   } catch (error) {
     console.error(error);
