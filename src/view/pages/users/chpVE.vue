@@ -354,6 +354,7 @@ const DragAndDropTable = defineComponent({
     const locations = ref([]);
     const sub_locations = ref([]);
     const villages = ref([]);
+    const chpve= ref([]);
     const roles = [
       { id: 52, name: "CHP" },
       { id: 51, name: "Village Elder" },
@@ -373,6 +374,7 @@ const DragAndDropTable = defineComponent({
           // Assuming there is a property in the user object indicating their role, e.g., user.role
           return user.role_id === "CHV" || user.role_id === "Village Elder";
         });
+        chpve.value = filteredUsers;
         dataSource.value = filteredUsers;
       } catch (error) {
         console.error(error);
@@ -675,7 +677,10 @@ const DragAndDropTable = defineComponent({
     watchEffect(async()=>{
       const query = searchItem.value.toLocaleLowerCase();
       try {
-        if(!query) return dataSource.value;
+        if(!query) {
+          dataSource.value = chpve.value;
+          return dataSource.value;
+        }
         if(query.length > 3){
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/chp_ve?query=${query}`,

@@ -154,6 +154,7 @@ import {computed,onMounted,ref,watchEffect} from "vue";
 import { notification } from "ant-design-vue";
 import { UploadOutlined } from '@ant-design/icons-vue';
 import axios from '@/Axiosconfig';
+import authHeader from "../../../services/auth-header";
 
 
 const { state } = useStore();
@@ -215,6 +216,7 @@ const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
 const villages = ref(null)
+const masterlist = ref([])
 
 
 const org_ids=ref([])
@@ -399,6 +401,45 @@ const filterOption = (input, option) => {
   return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
 
+
+    watchEffect(async() => {
+      const query = searchItem.value.toLowerCase();
+
+      try {
+        if(!query) 
+        {
+          dataSource.value = masterlist.value;
+          return dataSource.value;
+        }
+        if(query.length > 3){
+
+          const response =  await fetch(
+            `${process.env.VUE_APP_BASE_URL}/masterlist_list?query=${query}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
+          );
+          const data =  await response.json();
+          const updatedData = data.data.map((record) => {
+            let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
+            let status = record.status == 1 ? "validated" : "Not Validated";
+            return {
+              ...record,
+              fullName,
+              status,
+            };
+        });
+        dataSource.value = updatedData;
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
+        });
+      }
+    });
 const updateMasterList=async()=>{
     try {
     const response = await axios.get(`masterlist_list`);
@@ -414,6 +455,7 @@ const updateMasterList=async()=>{
         status,
       };
     });
+    masterlist.value = updatedData;
     dataSource.value = updatedData;
   } catch (error) {
     console.error(error);

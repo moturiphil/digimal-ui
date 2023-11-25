@@ -183,6 +183,7 @@ export default defineComponent({
     const household_id = ref("");
     const searchItem = ref("");
     const total_households = ref("");
+    const reg_households = ref([])
 
 
     const paginationOptions = ref({
@@ -265,7 +266,7 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.data);
+          reg_households.value = response.data.data.data;
           dataSource.value = response.data.data.data;
           // paginationOptions.value.total = response.data.data.length;
           paginationOptions.value.total = response.data.data.total;
@@ -279,7 +280,11 @@ export default defineComponent({
     watchEffect(async()=>{
       const query = searchItem.value.toLowerCase();
       try {
-        if(!query) return dataSource.value;
+        if(!query)
+        {
+          dataSource.value = reg_households.value;
+          return dataSource.value;
+        }
         if(query.length> 3){
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&query=${query}`,

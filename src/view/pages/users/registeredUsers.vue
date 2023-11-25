@@ -104,6 +104,8 @@ import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, watchEffect } from "vue";
 import { notification } from "ant-design-vue";
+import authHeader from "../../../services/auth-header";
+
 const columns = [
   {
     title: "First Name",
@@ -173,6 +175,7 @@ const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
 const villages = ref(null)
+const users = ref([])
 
 
 const org_ids = ref([])
@@ -231,6 +234,32 @@ const updateFilters = () => {
   fetchUsers()
 }
 
+    watchEffect(async()=>{
+      const query = searchItem.value.toLowerCase();
+      try {
+        if(!query) 
+        {
+          dataSource.value = users.value;
+          return dataSource.value;
+        }
+        if(query.length > 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/users?query=${query}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
+          );
+          const data = await response.json();
+          dataSource.value = data.data;
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
+        });
+      }})
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
@@ -369,6 +398,7 @@ const fetchUsers = async () => {
     // Assuming you have an initial page number
     const response = await axios.get(`users?page=${current.value}&per_page=${pageSize.value}`);
     const data = await response.data;
+    users.value = data.data;
     dataSource.value = data.data;
   } catch (error) {
     console.error(error);
