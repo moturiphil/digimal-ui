@@ -74,52 +74,82 @@ import { notification } from "ant-design-vue";
 // const households = ref([]);
 
 const columns = [
-  {
-    title: "First name",
-    dataIndex: "first_name",
-    key: "id_no",
+ { 
+    title: "County",
+    dataIndex: "county",
+    key: "u_id_no",
+  },
+  { 
+    title: "SubCounty",
+    dataIndex: "subcounty",
+    key: "u_id_no",
+  },
+  { 
+    title: "Ward",
+    dataIndex: "ward",
+    key: "u_id_no",
   },
   {
-    title: "Last name",
-    dataIndex: "last_name",
-    key: "id_no",
+    title: "Location",
+    dataIndex: "location",
+    key: "u_id_no",
   },
   {
-    title: "Phone number",
-    dataIndex: "phone_no",
-    key: "id_no",
-  },
-  {
-    title: "Household size",
-    dataIndex: "hh_size",
-    key: "id_no",
+    title: "Sublocation",
+    dataIndex: "sublocation",
+    key: "u_id_no",
   },
   {
     title: "Village",
-    dataIndex: "location_id",
-    key: "id_no",
+    dataIndex: "village",
+    key: "u_id_no",
   },
   {
-    title: "CHP",
-    dataIndex: "chw_id",
+    title: "First name",
+    dataIndex: "u_first_name",
+    key: "u_id_no",
+  },
+  {
+    title: "Last name",
+    dataIndex: "u_last_name",
+    key: "u_id_no",
+  },
+  {
+    title: "Phone number",
+    dataIndex: "u_phone_number",
+    key: "u_id_no",
+  },
+  // {
+  //   title: "Household size",
+  //   dataIndex: "hh_size",
+  //   key: "u_id_no",
+  // },
+  {
+    title: "CHP First Name",
+    dataIndex: "chv_first_name",
+    key: "u_id_no",
+  },
+  {
+    title: "CHP Last Name",
+    dataIndex: "chv_last_name",
+    key: "u_id_no",
+  },
+  {
+    title: "CHP Phone Number",
+    dataIndex: "chv_phone_no",
     key: "id_no",
   },
   // {
-  //   title: "CHP Phone Number",
-  //   dataIndex: "chw_phone_no",
+  //   title: "Timestamp",
+  //   dataIndex: "created_at",
   //   key: "id_no",
   // },
-  {
-    title: "Timestamp",
-    dataIndex: "created_at",
-    key: "id_no",
-  },
-  {
-    title: "",
-    dataIndex: "",
-    key: "households",
-    slots: { customRender: "households" },
-  },
+  // {
+  //   title: "",
+  //   dataIndex: "",
+  //   key: "households",
+  //   slots: { customRender: "households" },
+  // },
 ];
 export default defineComponent({
   name: "HouseHold registration",
@@ -170,18 +200,18 @@ export default defineComponent({
         // Fetch data for the new page using the updated page number
         try {
           const response = await axios.get(
-            `${process.env.VUE_APP_BASE_URL}/incomplete_household_registration&page=${page}&pageSize=${pageSize}`,
+            `${process.env.VUE_APP_BASE_URL}/incomplete_hh_linelist&page=${page}&pageSize=${pageSize}`,
             { headers: authHeader() }
           );
-          dataSource.value = response.data.data.data;
-          paginationOptions.value.total = response.data.data.total;
+          dataSource.value = response.data;
+          paginationOptions.value.total = response.total;
         } catch (error) {
           console.error(error);
         }
       },
     });
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/incomplete_household_registration`;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}/incomplete_hh_linelist`;
 
     const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
@@ -233,11 +263,11 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          console.log(response.data.unregistered_households.data);
-          dataSource.value = response.data.unregistered_households.data;
+          dataSource.value = response.data.data;
           // paginationOptions.value.total = response.data.data.length;
-          paginationOptions.value.total = response.data.unregistered_households.total;
-          total_households.value.total = response.data.unregistered_households.total
+          paginationOptions.value.total = response.data.total;
+          total_households.value = response.data.total
+
         })
         .catch((error) => {
           console.error(error);
