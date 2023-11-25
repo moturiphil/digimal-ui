@@ -1,7 +1,6 @@
 <template>
   <!-- Wrapper component for the record view -->
   <RecordViewWrapper>
-    <!-- Page header with search input -->
     <sdPageHeader title="MassNet Activities" />
 
     <!-- Main content area -->
@@ -121,26 +120,14 @@ const ActivityTable = defineComponent({
 
   // Component setup function
   setup() {
+    const isLoading = ref(false);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const searchItem = ref("");
 
+
     // Fetch activity data from the API endpoint on component mount
     onMounted(async () => {
-      // try {
-      //   const response = await fetch(
-      //     `${process.env.VUE_APP_BASE_URL}/activity`,
-      //     {
-      //       method: "GET",
-      //       headers: authHeader(),
-      //     }
-      //   );
-      //   const data = await response.json();
-      //   dataSource.value = data.data;
-      //   console.log(data.data);
-      // } catch (error) {
-      //   console.error(error);
-      // }
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/activity`,
@@ -150,6 +137,8 @@ const ActivityTable = defineComponent({
           }
         );
         const data = await response.json();
+
+        console.log(data);
 
         // Format the data before assigning it to dataSource
         dataSource.value = data.data.map((item) => {
@@ -165,8 +154,6 @@ const ActivityTable = defineComponent({
             sub_county_id: subCountyName,
           };
         });
-
-        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }
@@ -196,7 +183,7 @@ const ActivityTable = defineComponent({
 
     // Return relevant data, methods, and computed properties
     return {
-      // isLoading,
+      isLoading,
       selectedRowKeys,
       dataSource,
       columns,

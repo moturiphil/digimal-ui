@@ -852,7 +852,7 @@ export default defineComponent({
           body: JSON.stringify(payload),
         })
           .then((response) => response.json())
-          .then(({ success, message }) => {
+          .then(({ success }) => {
             if (success) {
               notification.success({
                 message: "Success",
@@ -861,7 +861,7 @@ export default defineComponent({
             } else {
               notification.error({
                 message: "Error",
-                description: `${message}`,
+                description: "Only post supervisor can receive nets, contact SCMCC.",
               });
             }
             isModalOpen.value = false;
