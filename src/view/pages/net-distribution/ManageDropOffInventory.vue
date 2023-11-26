@@ -79,6 +79,18 @@
               Returned Nets
             </router-link>
           </sdButton>
+          &nbsp;&nbsp;
+      
+            <sdButton
+              class="button-container"
+              :class="activeClass === 'post_orders' ? 'active' : 'deactivate'"
+              @click="handleChange('post_orders')"
+              href="#"
+              size="extra-small" type="success"
+            >
+              Orders List
+            </sdButton>
+              
         </div>
         <br>
         <br>
@@ -126,7 +138,49 @@
                             </a-table>
                           </TableWrapper>
                           &nbsp;&nbsp;
-                           <a-modal
+
+                          <!-- post orders -->
+                          <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'post_orders'"
+                        >
+                            <sdButton
+                              class="button-container"
+                              style="float: right; margin-bottom: 10px;"
+                              :class="activeClass === 'post_orders' ? 'active' : 'deactivate'"
+                              @click="openGO()"
+                              href="#"
+                              size="extra-small" type="warning"
+                            >
+                              Generate New Order
+                            </sdButton>
+                          <a-table
+                            :pagination="{
+                              pageSize: 40,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="postOrders"
+                            :columns="postOrdersColumns"
+                          >
+                            
+                            <!-- <template #action="{record}">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <div v-if="record.status==3">
+                                    <sdButton type="success" size="extra-small"
+                                      >Verify</sdButton>
+                                  </div>
+                                  <div v-else-if="record.status==0">
+                                    <sdButton type="success" size="extra-small"
+                                      >Approve</sdButton>
+                                  </div>
+                                </div>
+                              </td>
+                            </template> -->
+                          </a-table>
+                        </TableWrapper>
+
+                            <a-modal
                               title="Receive Nets"
                               :visible="isOpen"
                               @cancel="handleCancelReceive"
@@ -232,6 +286,105 @@
                               </BasicFormWrapper>
                             </a-modal>
                             <!-- End of Issue modal -->
+
+                            <!-- generate orders -->
+                            <a-modal
+                              title="Generate Orders"
+                              :visible="isModalOpen_GO"
+                              @cancel="handleCancelGO"
+                              width="50%"
+                              footer=""
+                            >
+                              <BasicFormWrapper>
+                                <a-form
+                                  class="add-transfer-form"
+                                  :style="{ width: '100%' }"
+                                  layout="vertical"
+                                  name="addnew"
+                                  :model="newOrder"
+                                  @finish="generateOrders"
+                                >
+                                  <a-form-item name="check" label="Generate for all posts?">
+                                    <a-checkbox
+                                     v-model:checked="checked"
+                                     @change="clearSelected(checked)"
+                                     >For all</a-checkbox>
+                                  </a-form-item>
+                                  <a-form-item name="post_id" label="Post">
+                                    <a-select
+                                      placeholder="Select  Post "
+                                      v-model:value="newOrder.post_id"
+                                      mode="multiple"
+                                      showSearch
+                                      allowClear
+                                      option-filter-prop="label"
+                                      :disabled="checked"
+                                    >
+                                      <a-select-option
+                                        v-for="post in dropoffPosts"
+                                        :key="post.id"
+                                        v-model:value="post.id"
+                                        :label="`${post.name} - ${post.code}`"
+                                      >
+                                        {{ post.name }}
+                                      </a-select-option>
+                                    </a-select>
+                                  </a-form-item>
+                                  <a-form-item name="order_type" label="Order type">
+                                    <!-- <a-select
+                                      v-model:value="newOrder.order_type"
+                                      placeholder="Select Bale Size"
+                                    >
+                                      <a-select-option value="40">40</a-select-option>
+                                      <a-select-option value="50">50</a-select-option>
+                                    </a-select> -->
+                                    <a-input
+                                      v-model:value="newOrder.order_type"
+                                      placeholder="Order type"
+                                      :disabled="true"
+                                    />
+                                  </a-form-item>
+                                  <a-form-item name="source" label="Source">
+                                    <a-select
+                                      v-model:value="newOrder.source"
+                                      placeholder="Select Source"
+                                    >
+                                      <a-select-option value="1">KEMSA</a-select-option>
+                                      <a-select-option value="2">MEDS</a-select-option>
+                                    </a-select>
+                                  </a-form-item>
+                                  <a-form-item name="product_code" label="Product Code">
+                                    <a-select
+                                      v-model:value="newOrder.product_code"
+                                      placeholder="Select Product"
+                                      @change="handleProductChange"
+                                    >
+                                      <a-select-option
+                                        v-for="product in productList"
+                                        :key="product.id"
+                                        v-model:value="product.item_code"
+                                      >
+                                        {{ product.item_code }}
+                                      </a-select-option>
+                                    </a-select>
+                                  </a-form-item>
+
+                                  <a-form-item name="product_name" label="Product Name">
+                                    <a-input
+                                      v-model:value="newOrder.product_name"
+                                      placeholder="Product Name"
+                                      :disabled="true"
+                                    />
+                                  </a-form-item>
+                                  <div class="record-form-actions text-right">
+                                    <sdButton size="default" htmlType="Save" type="success">
+                                      {{ isLoading ? "Loading..." : "Submit" }}
+                                    </sdButton>
+                                  </div>
+                                </a-form>
+                              </BasicFormWrapper>
+                            </a-modal>
+                            <!-- end generate orders -->
                         
                         </div>
                       </sdCards>
@@ -297,6 +450,57 @@
     }
   
   ];
+
+  const postOrdersColumns = [
+    {
+      title: "Order Reference",
+      dataIndex: "order_reference",
+      key: "id",
+    },
+    {
+      title: "Post Name",
+      dataIndex: "post",
+      key: "id",
+    },
+    {
+      title: "Post Code",
+      dataIndex: "post_code",
+      key: "id",
+    },
+    {
+      title: "Product Code",
+      dataIndex: "product_code",
+      key: "id",
+    },
+    {
+      title: "Product Name",
+      dataIndex: "product_name",
+      key: "id",
+    },
+    {
+      title: "Date ordered",
+      dataIndex: "date_ordered",
+      key: "id",
+    },
+    {
+      title: "Ordered By",
+      dataIndex: "ordered_by",
+      key: "id",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "id",
+    },
+    // {
+    //   title: "Action",
+    //   dataIndex: "action",
+    //   key: "id",
+    //   slots: { customRender: "action" },
+    // }
+  
+  ];
+
   export default defineComponent({
     name: "Payroll",
     components: {
@@ -313,21 +517,35 @@
       const activeClass = ref("nets_returned");
       const postdata = ref([]);
       const returnedNets = ref([]);
+      const postOrders = ref([]);
+      const dropoffPosts=ref([]);
+      const productList = ref([]);
       const { query } = useRoute();
       const isOpen = ref(false);
       const drop_off_name = query.name;
       const drop_off_id = query.id;
       const drop_off_campaign = query.campaign_id
+      const checked = ref(false);
   
       const handleOk = async () => isModalOpen.value = false;     
       const handleCancelReceive = () => isOpen.value = false;
       const handleChange = (tab) => activeClass.value = tab;
       const isModalOpen = ref(false);
+      const isModalOpen_GO = ref(false);
       const openmodal = () => isModalOpen.value = true;
       const formState = reactive({
         date_received:"",
         returned_id: "",
       });
+      const newOrder = reactive({
+        checked:checked,
+        post_id: [],
+        order_type: "REGULAR",
+        source: "",
+        product_code: "",
+        product_name: "",
+      });
+
       const openReceiveModal = (id) => {
         formState.returned_id = id;
         isOpen.value = true;
@@ -337,7 +555,9 @@
         isModalOpen.value = true;
         formState.drop_off_point_id = id;
       };
-
+      
+      const openGO = () =>  isModalOpen_GO.value = true;
+      const handleCancelGO = () => isModalOpen_GO.value = false;
   
       const fetchPosts = async()=>{
         try {
@@ -392,6 +612,87 @@
         }
       }
 
+      const fetchPostOrders = ()=>{
+        const dropoffid ={
+          "drop_off_point_id":drop_off_id
+        }
+        try {
+          fetch(`${process.env.VUE_APP_BASE_URL}/per_droppoff_point_post_orders`,
+          {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+                ...
+               authHeader()
+              },
+            body: JSON.stringify(dropoffid),
+          })
+          .then((response) => response.json())
+          .then(({success, data}) => {
+            if(success){
+              postOrders.value = data;
+            }else{
+              notification.error({
+                message: "Error",
+                description: `${data}`
+              });
+            }
+          })
+          .catch((error)=>{
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            });
+            isModalOpen.value = false;
+          })
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
+
+      const fetchdropoffPosts = ()=>{
+        const dropoffid ={
+          "drop_off_point_id":drop_off_id
+        }
+        try {
+          fetch(`${process.env.VUE_APP_BASE_URL}/posts_dropoff`,
+          {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+                ...
+               authHeader()
+              },
+            body: JSON.stringify(dropoffid),
+          })
+          .then((response) => response.json())
+          .then(({success, data}) => {
+            if(success){
+              dropoffPosts.value = data;
+            }else{
+              notification.error({
+                message: "Error",
+                description: `${data}`
+              });
+            }
+          })
+          .catch((error)=>{
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            });
+            isModalOpen.value = false;
+          })
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
 
       const receiveNets = async()=>{ 
         const data = {
@@ -492,27 +793,133 @@
           });
         }
       };
+
+      const getProductList = ()=>{
+        try {
+          fetch(`${process.env.VUE_APP_BASE_URL}/product_code_list`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            productList.value = data.data;
+          });
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
+
+      const handleProductChange = (value)=>{
+        const product = productList.value.find((product) => product.item_code === value);
+        newOrder.product_name = product.item_name;
+      }
+
+      const clearSelected = (checked) => {
+        if (checked){
+          newOrder.post_id = [];
+        }
+        // selectedRowKeys.value = [];
+      };
+
+      const generateOrders =()=>{
+
+        const data = {
+          for_all_posts: newOrder.checked,
+          order_type: newOrder.order_type,
+          target_fulfiller_source: newOrder.source,
+          product_code: newOrder.product_code,
+          product_name: newOrder.product_name,
+        };
+        // newOrder.checked ? data.post_id = newOrder.post_id : data.drop_off_point_id = drop_off_id
+        if (!newOrder.checked){
+          data.post_id = newOrder.post_id;
+        }else{
+          data.drop_off_point_id = drop_off_id;
+        }
+
+        // console.log(JSON.stringify( data));
+        try {
+          fetch(
+            `${process.env.VUE_APP_BASE_URL}/create_post_orders`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(data),
+            }
+          )
+            .then((response) => response.json())
+            .then(({ success, message }) => {
+              if (success) {
+                notification.success({
+                  message: "Success",
+                  description: `Order generated successfully`,
+                });
+                isModalOpen_GO.value = false;
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${message}`,
+                });
+              }
+              isModalOpen_GO.value = false;
+            })
+            .catch((error) => {
+              notification.error({
+                message: "Error",
+                description: `${error}`,
+              });
+            });
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`,
+          });
+        }
+      }
   
       onMounted(() => {
         fetchPosts();
         fetchReturnedNets();
+        fetchPostOrders();
+        fetchdropoffPosts();
+        getProductList();
+
       });
       return {
         handleIssue,
         drop_off_name,
         drop_off_id,
         drop_off_campaign,
+        dropoffPosts,
+        productList,
         receiveNets,
         handleCancelReceive,
+        generateOrders,
+        handleProductChange,
+        clearSelected,
         dateFormat,
         openReceiveModal,
+        openGO,
+        isModalOpen_GO,
+        newOrder,
         isOpen,
         returnedNets,
         postdata,
         dataSource,
+        checked,
         columns,
+        postOrdersColumns,
         formState,
+        postOrders,
         handleChange,
+        handleCancelGO,
         activeClass,
         isModalOpen,
         openmodal,
