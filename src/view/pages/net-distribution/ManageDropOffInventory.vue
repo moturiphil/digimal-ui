@@ -2,6 +2,8 @@
     <div>
       <sdPageHeader ghost :title="`Manage Inventory at ${drop_off_name}`" />
       <Main>
+        <SearchResultWrapper>
+
         <div class="button-container">
           <sdButton class="button-container"  size="extra-small" type="success">
           <router-link
@@ -84,18 +86,42 @@
             <sdButton
               class="button-container"
               :class="activeClass === 'post_orders' ? 'active' : 'deactivate'"
-              @click="handleChange('post_orders')"
+              @click="handleTransactions('post_orders')"
               href="#"
               size="extra-small" type="success"
             >
-              Orders List
+            Manage Orders
             </sdButton>
-              
         </div>
+          <div class="search-filter-menu"> 
+            <ul>
+              <li>
+                
+                <a
+                  :class="activeClass === 'posts_summary' ? 'active' : 'deactivate'"
+                  @click="handleChange('posts_summary')"
+                  href="#"
+                  :hidden="activeTransaction!== 'post_orders'"
+                >
+                  Post Summary
+                </a>
+              </li>
+              <li>
+                <a
+                  :class="activeClass === 'orders' ? 'active' : 'deactivate'"
+                  @click="handleChange('orders')"
+                  href="#"
+                  :hidden="activeTransaction !== 'post_orders'"
+                >
+                  Orders
+                </a>
+              </li>
+            </ul>
+          </div>
+              
         <br>
         <br>
   
-        <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
               <sdCards headless>
@@ -139,21 +165,21 @@
                           </TableWrapper>
                           &nbsp;&nbsp;
 
-                          <!-- post orders -->
-                          <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'post_orders'"
-                        >
-                            <sdButton
+                            <!-- post orders -->
+                            <TableWrapper
+                            class="table-data-view table-responsive"
+                            v-show="activeClass === 'orders'"
+                          >
+                            <!-- <sdButton
                               class="button-container"
                               style="float: right; margin-bottom: 10px;"
-                              :class="activeClass === 'post_orders' ? 'active' : 'deactivate'"
+                              :class="activeClass === 'orders' ? 'active' : 'deactivate'"
                               @click="openGO()"
                               href="#"
                               size="extra-small" type="warning"
                             >
                               Generate New Order
-                            </sdButton>
+                            </sdButton> -->
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -178,8 +204,52 @@
                               </td>
                             </template> -->
                           </a-table>
-                        </TableWrapper>
+                            </TableWrapper>
+                            <!-- end post orders -->
 
+                            <!-- post summary -->
+                            <TableWrapper
+                            class="table-data-view table-responsive"
+                            v-show="activeClass === 'posts_summary'"
+                          >
+                            <sdButton
+                              class="button-container"
+                              style="float: right; margin-bottom: 10px;"
+                              :class="activeClass === 'orders' ? 'active' : 'deactivate'"
+                              @click="openGO()"
+                              href="#"
+                              size="extra-small" type="warning"
+                            >
+                              Generate New Order
+                            </sdButton>
+                          <a-table
+                            :pagination="{
+                              pageSize: 40,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="postOrders"
+                            :columns="postSummaryCol"
+                          >
+                            
+                            <!-- <template #action="{record}">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <div v-if="record.status==3">
+                                    <sdButton type="success" size="extra-small"
+                                      >Verify</sdButton>
+                                  </div>
+                                  <div v-else-if="record.status==0">
+                                    <sdButton type="success" size="extra-small"
+                                      >Approve</sdButton>
+                                  </div>
+                                </div>
+                              </td>
+                            </template> -->
+                          </a-table>
+                            </TableWrapper>
+                            <!-- end of post summary -->
+
+                            <!-- Receive nets -->
                             <a-modal
                               title="Receive Nets"
                               :visible="isOpen"
@@ -213,7 +283,7 @@
                                 </a-form>
                               </BasicFormWrapper>
                             </a-modal>
-
+                            <!-- End of receive nets -->
 
                             <!-- Issue modal -->
                             <a-modal
@@ -501,6 +571,29 @@
   
   ];
 
+  const postSummaryCol=[
+  {
+      title: "Post Name",
+      dataIndex: "post_name",
+      key: "id",
+    },
+    {
+      title: "No of Households",
+      dataIndex: "no_of_households",
+      key: "id",
+    },
+    {
+      title: "Verified Households",
+      dataIndex: "verified_households",
+      key: "id",
+    },
+    {
+      title: "Number of nets required",
+      dataIndex: "nets_required",
+      key: "id",
+    },
+  ]
+
   export default defineComponent({
     name: "Payroll",
     components: {
@@ -509,12 +602,9 @@
       BasicFormWrapper,
     },
     setup() {
-      // const { state } = useStore();
-      // const crud = computed(() => state.crud.data);
-      // const isLoading = computed(() => state.crud.loading);
-      // const selectedRowKeys = ref([]);
       const dataSource = ref([]);
       const activeClass = ref("nets_returned");
+      const activeTransaction = ref("nets_returned");
       const postdata = ref([]);
       const returnedNets = ref([]);
       const postOrders = ref([]);
@@ -526,10 +616,9 @@
       const drop_off_id = query.id;
       const drop_off_campaign = query.campaign_id
       const checked = ref(false);
-  
       const handleOk = async () => isModalOpen.value = false;     
       const handleCancelReceive = () => isOpen.value = false;
-      const handleChange = (tab) => activeClass.value = tab;
+      const handleChange = (tab) => (activeClass.value = tab);
       const isModalOpen = ref(false);
       const isModalOpen_GO = ref(false);
       const openmodal = () => isModalOpen.value = true;
@@ -545,6 +634,17 @@
         product_code: "",
         product_name: "",
       });
+
+      const handleTransactions = (tab) => {
+      activeTransaction.value = tab;
+      tab === "post_orders"
+        ? handleChange("orders")
+        // : tab === "transfer"
+        //   ? handleChange("transfer_ins")
+        //   : tab === "return"
+        //     ? openReturnsModal()
+            : null;
+    };
 
       const openReceiveModal = (id) => {
         formState.returned_id = id;
@@ -894,6 +994,9 @@
       });
       return {
         handleIssue,
+        activeTransaction,
+        handleTransactions,
+        postSummaryCol,
         drop_off_name,
         drop_off_id,
         drop_off_campaign,
