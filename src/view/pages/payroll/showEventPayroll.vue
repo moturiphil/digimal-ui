@@ -52,7 +52,7 @@
                               pageSize: 100,
                               showSizeChanger: true,
                             }"
-                            :dataSource="results"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
@@ -96,11 +96,12 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -191,17 +192,14 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
+    const eventpayroll_list = ref([]);
 
-    const { params, query } = useRoute();
-    console.log({ params, query });
+    const {  query } = useRoute();
 
-    console.log(query.id);
     const event_name = query.name;
     const duration = query.duration;
     const venue = query.venue;
     const date = query.date;
-    console.log(event_name);
-    console.log(query.id);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
 
@@ -242,8 +240,8 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
+          eventpayroll_list.value = response.data.data;
           dataSource.value = response.data.data;
-          console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
@@ -254,23 +252,53 @@ export default defineComponent({
       searchItem: "",
     });
 
-    const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return (
-            regex.test(event.user_id) ||
-            regex.test(event.location_id) ||
-            regex.test(event.organization) ||
-            regex.test(event.role)
+    // const results = computed(() => {
+    //   const query = searchItem.value.toLowerCase();
+    //   const regex = new RegExp(query, "i");
+    //   if (!query) {
+    //     return dataSource.value;
+    //   } else {
+    //     return dataSource.value.filter((event) => {
+    //       return (
+    //         regex.test(event.user_id) ||
+    //         regex.test(event.location_id) ||
+    //         regex.test(event.organization) ||
+    //         regex.test(event.role)
 
+    //       );
+    //     });
+    //   }
+    // });
+    watchEffect(async()=>{
+      const querysearch = encodeURIComponent(searchItem.value.toLowerCase());
+      try {
+        if(!querysearch)
+        {
+          dataSource.value = eventpayroll_list.value;
+          return dataSource.value;
+        }
+        //  return dataSource.value;
+        if(querysearch.length > 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}&query=${querysearch}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
           );
+          const data = await response.json();
+          console.log(data);
+          dataSource.value = data.data;
+        }
+
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
         });
       }
-    });
+    })
 
     return {
       crud,
@@ -285,15 +313,15 @@ export default defineComponent({
       duration,
       venue,
       date,
-      results,
+      // results,
       searchItem,
       exportPayrollList,
     };
   },
-  computed: {
-    recordCount() {
-      return this.results.length;
-    },
-  },
+  // computed: {
+  //   recordCount() {
+  //     return this.results.length;
+  //   },
+  // },
 });
 </script>

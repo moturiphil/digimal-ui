@@ -1,6 +1,19 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Event Payroll" />
+    <sdPageHeader ghost title="Event Payroll">
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name"
+          />
+        </div>
+      </template>
+
+    </sdPageHeader> 
     <Main>
       <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
           Export Payroll Data
@@ -371,7 +384,7 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive, defineComponent,watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -473,7 +486,9 @@ export default defineComponent({
     const isModalOpen = ref(false);
     const inputValue = ref("");
     const role_id = ref("");
+    const searchItem = ref("");
     const user = JSON.parse(sessionStorage.getItem("user"));
+    const pmiEventPayroll = ref([]);
 
     const filteredData = computed(() => {
       if (activeClass.value === "all") {
@@ -702,7 +717,47 @@ export default defineComponent({
             }
           });
 
-          dataSource.value = filteredItems;
+          pmiEventPayroll.value = filteredItems;
+          pmiEventPayroll.value.forEach((item) => {
+            item.status = item.status === 1 ? "Validated" : "Not Validated";
+            item.payment_status =
+              item.payment_status === 1 ? "Paid" : "Not Paid";
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
+          });
+          dataSource.value = pmiEventPayroll.value;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
+
+    watchEffect(async()=>{
+      const query = searchItem.value.toLowerCase();
+      try {
+        if(!query) 
+        {
+          dataSource.value = pmiEventPayroll.value;
+          return dataSource.value
+        }
+        // return dataSource.value;
+        if(query.length > 3){
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary?query=${query}`,
+            {
+              method: "GET",
+              headers: authHeader(),
+            }
+          );
+
+          const data = await response.json();
+          const events = []
+          data.data.forEach((item) => {
+            if (item.funding_source === 2) {
+              events.push(item);
+            }
+          });
+          dataSource.value = events;
           dataSource.value.forEach((item) => {
             item.status = item.status === 1 ? "Validated" : "Not Validated";
             item.payment_status =
@@ -710,12 +765,17 @@ export default defineComponent({
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
           });
-          console.log(dataSource.value);
-        })
-        .catch((error) => {
-          console.error(error);
+
+        }
+        
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: error.message,
         });
-    });
+      }
+    })
+
     const handleVerify = (record) => {
       console.log(record);
     };
@@ -757,6 +817,7 @@ export default defineComponent({
       columns,
       formState,
       filteredData,
+      searchItem,
       handleChange,
       activeClass,
       handleVerify,
