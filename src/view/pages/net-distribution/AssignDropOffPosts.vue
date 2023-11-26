@@ -79,7 +79,7 @@ export default defineComponent({
     const targetKeys = ref([]);
     const dropoff_name = query.name;
     const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
-    const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
+    const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
 
     const formState = reactive({
       drop_off_id: "",
@@ -155,14 +155,18 @@ export default defineComponent({
     };
 
     const fetchDropoffPosts = async () => {
+      const dropoffid = {
+        drop_off_point_id: drop_off_point_id,
+      };
       try {
         const assignedPosts = [];
         const response = await fetch(drop_off_posts_url, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
+          body: JSON.stringify(dropoffid),
         });
 
         const data = await response.json();

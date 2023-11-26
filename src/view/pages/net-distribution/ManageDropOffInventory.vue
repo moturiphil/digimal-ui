@@ -673,7 +673,7 @@
       const isModalOpen_receiveNets = ref(false); //receive nets modal form
       const openmodal = () => isModalOpen_issuenets.value = true;
       const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_id}`;
-      const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_id}`;
+      const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
 
       const formState = reactive({
         date_received:"",
@@ -798,14 +798,18 @@
       return option.title.indexOf(inputValue) > -1;
       };
       const fetchDropoffPosts = async () => {
+        const dropoffid = {
+        drop_off_point_id: drop_off_id,
+      };
       try {
         const assignedPosts = [];
         const response = await fetch(drop_off_posts_url, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
+          body: JSON.stringify(dropoffid),
         });
 
         const data = await response.json();
