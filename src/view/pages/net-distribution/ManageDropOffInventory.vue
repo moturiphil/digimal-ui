@@ -22,8 +22,9 @@
             Receive Nets
           </router-link>
           </sdButton>
-          &nbsp;&nbsp;
-          <sdButton class="button-container" size="extra-small" type="success">
+          &nbsp;&nbsp; 
+          <!-- @click="openModalAll('assignPost')" -->
+          <sdButton class="button-container" size="extra-small" type="success" >
             <router-link
               :to="{
                 path: `/dropoff/assign-posts`,
@@ -38,6 +39,7 @@
             >
               Assign Posts
             </router-link>
+            <!-- Assign Posts -->
           </sdButton>
           &nbsp;&nbsp;
           <sdButton class="button-container" size="extra-small" type="success">
@@ -170,16 +172,16 @@
                             class="table-data-view table-responsive"
                             v-show="activeClass === 'orders'"
                           >
-                            <!-- <sdButton
+                            <sdButton
                               class="button-container"
                               style="float: right; margin-bottom: 10px;"
                               :class="activeClass === 'orders' ? 'active' : 'deactivate'"
-                              @click="openGO()"
+                              @click="approveOrders()"
                               href="#"
                               size="extra-small" type="warning"
                             >
-                              Generate New Order
-                            </sdButton> -->
+                              Approve Orders
+                            </sdButton>
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -227,7 +229,7 @@
                               pageSize: 40,
                               showSizeChanger: true,
                             }"
-                            :dataSource="postOrders"
+                            :dataSource="postSummary"
                             :columns="postSummaryCol"
                           >
                             
@@ -288,7 +290,7 @@
                             <!-- Issue modal -->
                             <a-modal
                               title="Issue Nets"
-                              :visible="isModalOpen"
+                              :visible="isModalOpen_issuenets"
                               @cancel="handleCancelReceive"
                               width="50%"
                               footer=""
@@ -455,6 +457,49 @@
                               </BasicFormWrapper>
                             </a-modal>
                             <!-- end generate orders -->
+
+                            <!-- assign posts to dropoff -->
+                            <a-modal
+                              title="Assign Posts"
+                              :visible="isModalOpen_assignPosts"
+                              @cancel="closeModalAll('assignPost')"
+                              width="50%"
+                              footer=""
+                            >
+                            <BasicFormWrapper>
+                            <a-form
+                              class="add-record-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="addnew"
+                              :model="formState"
+                              @finish="handleSubmit"
+                            >
+                              <a-form-item label="Distribution Posts">
+                                <a-transfer
+                                  :dataSource="distribution_posts"
+                                  showSearch
+                                  :targetKeys="targetKeys"
+                                  :render="(item) => item.title"
+                                  :filterOption="filterOption"
+                                  @change="handleChangeAssignPosts"
+                                  :listStyle="{
+                                    width: '500px',
+                                    height: '500px',
+                                  }"
+                                >
+                                </a-transfer>
+                              </a-form-item>
+                              <div class="record-form-actions text-right">
+                                <sdButton size="default" htmlType="Save" type="success">
+                                  {{ isLoading ? "Loading..." : "Submit" }}
+                                </sdButton>
+                              </div>
+                            </a-form>
+                          </BasicFormWrapper>
+                            
+                            </a-modal>
+                            <!-- end of assigndropoff -->
                         
                         </div>
                       </sdCards>
@@ -574,17 +619,17 @@
   const postSummaryCol=[
   {
       title: "Post Name",
-      dataIndex: "post_name",
+      dataIndex: "name",
       key: "id",
     },
     {
       title: "No of Households",
-      dataIndex: "no_of_households",
+      dataIndex: "households",
       key: "id",
     },
     {
       title: "Verified Households",
-      dataIndex: "verified_households",
+      dataIndex: "households_verified",
       key: "id",
     },
     {
@@ -610,18 +655,26 @@
       const postOrders = ref([]);
       const dropoffPosts=ref([]);
       const productList = ref([]);
+      const distribution_posts = ref([]);
+      const postSummary = ref([]);
+      const targetKeys = ref([]);
       const { query } = useRoute();
-      const isOpen = ref(false);
       const drop_off_name = query.name;
       const drop_off_id = query.id;
       const drop_off_campaign = query.campaign_id
       const checked = ref(false);
-      const handleOk = async () => isModalOpen.value = false;     
+      const handleOk = async () => isModalOpen_issuenets.value = false;     
       const handleCancelReceive = () => isOpen.value = false;
       const handleChange = (tab) => (activeClass.value = tab);
-      const isModalOpen = ref(false);
-      const isModalOpen_GO = ref(false);
-      const openmodal = () => isModalOpen.value = true;
+      const isOpen = ref(false);
+      const isModalOpen_issuenets = ref(false);    //issue modal form
+      const isModalOpen_GO = ref(false); //generate order modal form
+      const isModalOpen_assignPosts = ref(false); //assignpost modal form
+      const isModalOpen_receiveNets = ref(false); //receive nets modal form
+      const openmodal = () => isModalOpen_issuenets.value = true;
+      const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_id}`;
+      const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_id}`;
+
       const formState = reactive({
         date_received:"",
         returned_id: "",
@@ -652,12 +705,163 @@
       };
 
       const openModal = (id) => {
-        isModalOpen.value = true;
+        isModalOpen_issuenets.value = true;
         formState.drop_off_point_id = id;
       };
       
       const openGO = () =>  isModalOpen_GO.value = true;
       const handleCancelGO = () => isModalOpen_GO.value = false;
+
+      const openModalAll = (type) =>{
+        switch (type) {
+          case 'assignPost':
+            isModalOpen_assignPosts.value = true;
+            break;
+          case 'generateOrder':
+            isModalOpen_GO.value = true;
+            break;
+          case 'issueNets':
+            isModalOpen_issuenets.value = true;
+            break;
+          case 'receiveNets':
+            isModalOpen_receiveNets.value = true;
+            break;
+        
+          default:
+            break;
+        }
+        
+      }
+      const closeModalAll =(type)=>{
+        switch (type) {
+          case 'assignPost':
+            isModalOpen_assignPosts.value = false;
+            break;
+          case 'generateOrder':
+            isModalOpen_GO.value = false;
+            break;
+          case 'issueNets':
+            isModalOpen_issuenets.value = false;
+            break;
+          case 'receiveNets':
+            isModalOpen_receiveNets.value = false;
+            break;
+        
+          default:
+            break;
+        }
+
+      }
+
+      const approveOrders =async()=>{
+        const data={
+          drop_off_point_id:drop_off_id
+        }
+        try {
+          await fetch(`${process.env.VUE_APP_BASE_URL}/approve_orders_per_drop_off_point`,
+          {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+                ...
+               authHeader()
+              },
+            body: JSON.stringify(data),
+          })
+          .then((response) => response.json())
+          .then(({success, data}) => {
+            if(success){
+              notification.success({
+                message: "Success",
+                description: `${data}`
+              });
+            }else{
+              notification.info({
+                message: "Info",
+                description: `${data}`
+              });
+            }
+          })
+          
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
+      const handleChangeAssignPosts = (newTargetKeys) => {
+         targetKeys.value = newTargetKeys; // Update directly
+         formState.post_ids = newTargetKeys;
+      };
+      const filterOption = (inputValue, option) => {
+      return option.title.indexOf(inputValue) > -1;
+      };
+      const fetchDropoffPosts = async () => {
+      try {
+        const assignedPosts = [];
+        const response = await fetch(drop_off_posts_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        const data = await response.json();
+
+        console.log(data.data);
+
+        if (data.data) {
+          const posts_data = data.data;
+          for (let i = 0; i < posts_data.length; i++) {
+            const element = {
+              key: posts_data[i].distribution_post_id,
+              title: posts_data[i].name,
+            };
+            assignedPosts.push(element);
+          }
+          targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
+          console.log(targetKeys.value);
+        } else {
+          console.error("Data or data.name is undefined:", data);
+        }
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
+    };
+
+
+      const fetchDistributionPosts = async()=>{
+        try {
+        const posts = [];
+        const response = await fetch(distributionposts_url, {
+          method: "GET",
+          headers: authHeader(),
+        });
+
+        const data = await response.json();
+        const posts_data = data.data;
+
+        for (let i = 0; i < posts_data.length; i++) {
+          const element = {
+            key: posts_data[i].id,
+            title: posts_data[i].name,
+          };
+          posts.push(element);
+        }
+
+        distribution_posts.value = posts;
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `Error: ${error}`,
+        });
+      }
+      }
   
       const fetchPosts = async()=>{
         try {
@@ -702,7 +906,7 @@
               message: "Error",
               description: `${error}`
             });
-            isModalOpen.value = false;
+            isModalOpen_issuenets.value = false;
           })
         } catch (error) {
           notification.error({
@@ -732,8 +936,8 @@
             if(success){
               postOrders.value = data;
             }else{
-              notification.error({
-                message: "Error",
+              notification.info({
+                message: "Info",
                 description: `${data}`
               });
             }
@@ -743,7 +947,48 @@
               message: "Error",
               description: `${error}`
             });
-            isModalOpen.value = false;
+            isModalOpen_issuenets.value = false;
+          })
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
+
+      const fetchPostSummary = ()=>{
+        const dropoffid ={
+          "drop_off_point_id":drop_off_id
+        }
+        try {
+          fetch(`${process.env.VUE_APP_BASE_URL}/drop_off_point_posts_summary`,
+          {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+                ...
+               authHeader()
+              },
+            body: JSON.stringify(dropoffid),
+          })
+          .then((response) => response.json())
+          .then(({success, data}) => {
+            if(success){
+              postSummary.value = data;
+            }else{
+              notification.info({
+                message: "Info",
+                description: `${data}`
+              });
+            }
+          })
+          .catch((error)=>{
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            });
+            isModalOpen_issuenets.value = false;
           })
         } catch (error) {
           notification.error({
@@ -784,7 +1029,7 @@
               message: "Error",
               description: `${error}`
             });
-            isModalOpen.value = false;
+            isModalOpen_issuenets.value = false;
           })
         } catch (error) {
           notification.error({
@@ -871,14 +1116,14 @@
                   message: "Success",
                   description: `Issued successfully`,
                 });
-                isModalOpen.value = false;
+                isModalOpen_issuenets.value = false;
               } else {
                 notification.error({
                   message: "Error",
                   description: `${message}`,
                 });
               }
-              isModalOpen.value = false;
+              isModalOpen_issuenets.value = false;
             })
             .catch((error) => {
               notification.error({
@@ -990,7 +1235,9 @@
         fetchPostOrders();
         fetchdropoffPosts();
         getProductList();
-
+        fetchDistributionPosts();
+        fetchPostSummary();
+        fetchDropoffPosts();
       });
       return {
         handleIssue,
@@ -1001,6 +1248,7 @@
         drop_off_id,
         drop_off_campaign,
         dropoffPosts,
+        distribution_posts,
         productList,
         receiveNets,
         handleCancelReceive,
@@ -1010,6 +1258,9 @@
         dateFormat,
         openReceiveModal,
         openGO,
+        openModalAll,
+        targetKeys,
+        isModalOpen_assignPosts,
         isModalOpen_GO,
         newOrder,
         isOpen,
@@ -1021,13 +1272,18 @@
         postOrdersColumns,
         formState,
         postOrders,
+        approveOrders,
         handleChange,
+        handleChangeAssignPosts,
+        filterOption,
         handleCancelGO,
         activeClass,
-        isModalOpen,
+        isModalOpen_issuenets,
         openmodal,
         openModal,
         handleOk,
+        postSummary,
+        closeModalAll,
       };
     },
   });
