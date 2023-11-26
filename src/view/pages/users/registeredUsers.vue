@@ -296,56 +296,52 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
         counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get subcounties
         subcounties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'subcounty') {//get wards
         wards.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'ward') {//get locations
         locations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
       } else if (org_level == 'location') {//get sublocations
         sublocations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
-      } else if (org_level == 'sublocation') {//get villages
-        villages.value = data.map(x => ({
-          value: x.org_id,
-          label: x.name
-        }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       }
     }).then(async () => {
       await axios.get(`${masterListUrl}`)
