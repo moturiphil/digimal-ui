@@ -41,7 +41,7 @@
                             :to="{
                               // path: `/nets/receive-post-nets`,
                               path: `/nets/receive-nets-summary`,
-                              query: { id: record.id, name: record.name},
+                              query: { id: record.id, name: record.name },
                             }"
                             class="btn-icon"
                             type="success"
@@ -67,11 +67,11 @@
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
-                          type="success" 
+                          type="success"
                           size="extra-small"
                           @click="openModal(record.id)"
                         >
-                            Assign Supervisor
+                          Assign Supervisor
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
@@ -95,51 +95,49 @@
             </div>
             <!-- Assign supervisor -->
             <a-modal
-            title="Assign Supervisor"
-            :visible="isModalOpen"
-            @cancel="handleCancel"
-            width="50%"
-            footer=""
-          >
-            <BasicFormWrapper>
-              <a-form
-                class="add-record-form"
-                :style="{ width: '100%' }"
-                layout="vertical"
-                name="addnew"
-                :model="formState"
-                @finish="handleSubmit"
-              >
-                <a-form-item
-                  name="Supervisors"
-                  label="Select Supervisor"
+              title="Assign Supervisor"
+              :visible="isModalOpen"
+              @cancel="handleCancel"
+              width="50%"
+              footer=""
+            >
+              <BasicFormWrapper>
+                <a-form
+                  class="add-record-form"
+                  :style="{ width: '100%' }"
+                  layout="vertical"
+                  name="addnew"
+                  :model="formState"
+                  @finish="handleSubmit"
                 >
-                  <a-select
-                    v-model:value="formState.user_id"
-                    showSearch
-                    option-filter-prop="label"
-                    placeholder="Select one"
-                    show-search
-                  >
-                    <a-select-option
-                      v-for="user in supervisors"
-                      :key="user.id"
-                      :value="user.id"
-                      :label="user.id"
+                  <a-form-item name="Supervisors" label="Select Supervisor">
+                    <a-select
+                      v-model:value="formState.user_id"
+                      show-search
+                      option-filter-prop="label"
+                      placeholder="Select one"
                     >
-                      {{ user.first_name }} {{ user.last_name }} {{ user.other_name }} -  {{ user.id_no }},{{ user.role_id }}, {{ user.location_id }}
-                    </a-select-option>
-                  </a-select>
-                  
-                </a-form-item>
-                <div class="record-form-actions text-right">
-                  <sdButton size="default" htmlType="Save" type="success">
-                    {{ isLoading ? "Loading..." : "Submit" }}
-                  </sdButton>
-                </div>
-              </a-form>
-            </BasicFormWrapper>
-          </a-modal>
+                      <a-select-option
+                        v-for="user in supervisors"
+                        :key="user.id"
+                        :value="user.id"
+                        :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
+                      >
+                        {{ user.first_name }} {{ user.last_name }}
+                        {{ user.other_name }} - {{ user.id_no }},{{
+                          user.role_id
+                        }}, {{ user.location_id }}
+                      </a-select-option>
+                    </a-select>
+                  </a-form-item>
+                  <div class="record-form-actions text-right">
+                    <sdButton size="default" htmlType="Save" type="success">
+                      {{ isLoading ? "Loading..." : "Submit" }}
+                    </sdButton>
+                  </div>
+                </a-form>
+              </BasicFormWrapper>
+            </a-modal>
             <!-- End of assign supervisor -->
           </sdCards>
         </a-col>
@@ -181,7 +179,7 @@ const columns = [
     key: "",
   },
   {
-    title: "Distribution Post Code",   // distribution_sublocation_id
+    title: "Distribution Post Code", // distribution_sublocation_id
     dataIndex: "post_code",
     key: "post_code",
   },
@@ -203,11 +201,11 @@ const DragAndDropTable = defineComponent({
   components: { RecordViewWrapper, Main },
 
   data() {
-    return{
+    return {
       isStarting: false,
       distributionStatus: {},
       posts: [],
-    }
+    };
   },
 
   setup() {
@@ -223,21 +221,23 @@ const DragAndDropTable = defineComponent({
     //   const api_url = UserService;
     //   console.log(api_url);
 
-    const supervisorList =async()=>{
-      try{
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/users`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
+    const supervisorList = async () => {
+      try {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+          method: "GET",
+          headers: authHeader(),
+        });
         const data = await response.json();
-        supervisors.value = data.data;
-      }catch(error){
+
+        // Modify the structure of each supervisor to include a 'label' property
+        supervisors.value = data.data.map((user) => ({
+          ...user,
+          label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+        }));
+      } catch (error) {
         console.error(error);
       }
-    }
+    };
 
     onMounted(async () => {
       try {
@@ -254,14 +254,13 @@ const DragAndDropTable = defineComponent({
         // console.log(dataSource.value);
         this.distributionStatus = {};
         console.log(this.distributionStatus);
-        for(const post of dataSource.value) {
-          this.distributionStatus[post.id] = post.status
+        for (const post of dataSource.value) {
+          this.distributionStatus[post.id] = post.status;
           console.log(post.status);
         }
       } catch (error) {
         console.error(error);
       }
-
     });
 
     const formState = reactive({
@@ -272,7 +271,7 @@ const DragAndDropTable = defineComponent({
     const openModal = (id) => {
       isModalOpen.value = true;
       formState.post_id = id;
-      console.log(isModalOpen.value)
+      console.log(isModalOpen.value);
     };
 
     const handleCancel = () => {
@@ -319,9 +318,9 @@ const DragAndDropTable = defineComponent({
       } catch (error) {
         console.error(error);
       }
-    }
+    };
 
-    const handleSubmit = async()=>{
+    const handleSubmit = async () => {
       try {
         const data = {
           post_id: formState.post_id,
@@ -367,7 +366,7 @@ const DragAndDropTable = defineComponent({
           description: `${error}`,
         });
       }
-    }
+    };
 
     const onSelectChange = (selectedRowKey) => {
       selectedRowKeys.value = selectedRowKey;
@@ -417,7 +416,6 @@ const DragAndDropTable = defineComponent({
   },
 
   methods: {
-    
     async startDistribution(id) {
       try {
         this.isStarting = true;
@@ -467,8 +465,8 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
-        console.log('******************************************');
-        console.log('******************************************');
+        console.log("******************************************");
+        console.log("******************************************");
         console.log(data);
         if (data.status === true) {
           // this.eventStatus[id] = true;
@@ -501,7 +499,6 @@ const DragAndDropTable = defineComponent({
       }
     },
   },
-
 });
 
 export default DragAndDropTable;

@@ -355,6 +355,7 @@ const currentCounties = ref([
 onMounted(async () => {
   if (sessionStorage.getItem("user")) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    filterAccessList.value = ['country','county', 'subcounty', 'ward', 'location', 'sublocation']
     updateFilters()
     fetchInitialChartData()
     updateStats()

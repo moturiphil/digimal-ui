@@ -241,7 +241,7 @@ const AddNew = defineComponent({
     });
 
     const ArticleSchema = Yup.object().shape({
-      bale_batch_no: Yup.string().required("Bale size is required"),
+      bale_batch_no: Yup.string().required("Batch no is required"),
       counted_no_of_nets: Yup.number().required(
         "Counted no of nets is required"
       ),
