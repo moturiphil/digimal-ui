@@ -235,7 +235,7 @@
         </a-button>
       </a-row>
       <div id="printPDFDiv">
-        <a-row :gutter="5" v-if="wards !== null">
+        <a-row :gutter="5" v-show="wards !== null">
           <a-col :xxl="8" :md="8" :sm="24" :xs="24" class="pdf-row">
             <figure class="highcharts-figure">
               <div id="HouseholdsRegisteredbyCountyChart"></div>
