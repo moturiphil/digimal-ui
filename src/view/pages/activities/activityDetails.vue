@@ -14,8 +14,8 @@
             isLoading
               ? "Loading..."
               : isGenerating
-              ? "Processing ..."
-              : "Generate Payroll"
+                ? "Processing ..."
+                : "Generate Payroll"
           }}
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
@@ -131,6 +131,55 @@
                   </a-col>
                 </a-row>
               </div>
+              <!-- add officers -->
+              <a-modal
+                title="Add Officers"
+                :visible="isModalOpen"
+                @cancel="handleCancel"
+                width="50%"
+                footer=""
+              >
+                <BasicFormWrapper>
+                  <a-form
+                    class="add-transfer-form"
+                    :style="{ width: '100%' }"
+                    layout="vertical"
+                    name="addnew"
+                    :model="formState"
+                    @finish="handleAssign"
+                  >
+                    <a-form-item
+                      name="drop_off_manager"
+                      label="Assign Drop Off Manager"
+                    >
+                      <a-select
+                        placeholder="Assign Drop Off Manager"
+                        v-model:value="formState.drop_off_manager"
+                        v-if="!loading"
+                        show-search
+                        option-filter-prop="label"
+                      >
+                        <a-select-option
+                          v-for="worker in users"
+                          :key="worker.id"
+                          v-model:value="worker.id"
+                          :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
+                        >
+                          {{ worker.first_name }}
+                          {{ worker.last_name }} - {{ worker.id_no }},
+                          {{ worker.role_id }}, {{ worker.location_id }}
+                        </a-select-option>
+                      </a-select>
+                    </a-form-item>
+                    <div class="record-form-actions text-right">
+                      <sdButton size="default" htmlType="Save" type="success">
+                        {{ isLoading ? "Loading..." : "Submit" }}
+                      </sdButton>
+                    </div>
+                  </a-form>
+                </BasicFormWrapper>
+              </a-modal>
+              <!-- End of Issue modal -->
             </sdCards>
           </a-col>
         </a-row>
@@ -233,11 +282,6 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
-    handleCancel() {
-      this.isModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
   },
   setup() {
     const { state } = useStore();
@@ -250,6 +294,7 @@ export default defineComponent({
     const activeClass = ref("all");
     const { query } = useRoute();
     const isGenerating = computed(() => state.isGenerating);
+
 
     const isModalOpen = ref(false);
 
@@ -447,6 +492,15 @@ export default defineComponent({
       }
     };
 
+    const openModal = (id) => {
+      isModalOpen.value = true;
+      formState.drop_off_point_id = id;
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
+
     return {
       crud,
       isLoading,
@@ -465,6 +519,9 @@ export default defineComponent({
       isModalOpen,
       handleOk,
       isGenerating,
+      openModal,
+      handleCancel,
+
     };
   },
   // computed: {
