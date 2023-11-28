@@ -230,12 +230,12 @@
     </a-row>
     <div class="">
       <a-row :gutter="6">
-        <a-button @click="exportChartsToPDF()" style="float:right;">
+        <a-button @click="exportChartsToPDF()" :style="{panding:'2px',border:'solid 1px 2%'}">
           <FilePdfOutlined /> Print Pdf
         </a-button>
       </a-row>
       <div id="printPDFDiv">
-        <a-row :gutter="5" v-if="wards !== null">
+        <a-row :gutter="5" v-show="wards !== null">
           <a-col :xxl="8" :md="8" :sm="24" :xs="24" class="pdf-row">
             <figure class="highcharts-figure">
               <div id="HouseholdsRegisteredbyCountyChart"></div>
@@ -472,10 +472,10 @@ const currentCounties = ref([
 onMounted(async () => {
   if (sessionStorage.getItem("user")) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-    fetchInitialChartData()
-    updateStats()
-    handleFilterChange()
     updateFilters()
+    fetchInitialChartData()
+    updateStats(access_level.value.location.org_id)
+    handleFilterChange()
   }
 });
 const capitalizeFirstLetter = (word) => {
@@ -489,7 +489,7 @@ const updateFilters = () => {
   // access_level.value.location.name = 'Kabondo Kasipul Sub County'
 
   if (access_level.value.level.id == 1) {
-    filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
     fetchCounties()
@@ -516,10 +516,10 @@ const updateFilters = () => {
   }
 }
 const fetchInitialChartData = async () => {
-  axios.get(`/subcounty/stats?org_id=${access_level.value.location.org_id}`)
+  axios.get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(response => {
       newChartData.value = response.data.data;
-      if (access_level.value.level.level_name.toLowerCase() === 'national') {
+      if (access_level.value.level.id === 1) {
         newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
       }
       //nets_required,nets_issued,target_data,target_level,cats
@@ -542,7 +542,7 @@ const fetchInitialChartData = async () => {
       )
 
       let currentDate = new Date()
-      console.log(currentDate.getFullYear())
+      //console.log(currentDate.getFullYear())
       dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
       dateTo.value = moment(currentDate).format(dateFormat.value);
       fileterOrgeLevel.value = access_level.value.level.level_name
@@ -558,7 +558,8 @@ const fetchInitialChartData = async () => {
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
-  console.log(org)
+  console.log(org_id)
+  console.log(org_ids.value)
   let parent_id = org[0] || 9
   console.log(parent_id)
   console.log(org_level)
@@ -568,6 +569,7 @@ const handleChange = async (org_id, org_level) => {
   fetchNetsDistributed()
 };
 const fetchChildData = async (org_id, org_level) => {
+  updateStats(org_id)
   let fetchUrl = `get_sub_counties_list`
   let statUrl = `subcounty/stats`
   if (org_level == 'country') {//get counties
@@ -616,47 +618,42 @@ const fetchChildData = async (org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
         counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get subcounties
         subcounties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
       } else if (org_level == 'subcounty') {//get wards
         wards.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'ward') {//get locations
         locations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
       } else if (org_level == 'location') {//get sublocations
         sublocations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+       org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       }
     }).then(async () => {
       await axios.get(`${statUrl}`)
@@ -709,10 +706,7 @@ const fetchCounties = async () => {
         value: x.org_id,
         label: x.name
       })).filter(e => currentCounties.value.includes(e.value.toString()));
-      org_ids.value = response.data.map(x => ({
-        org_id: x.org_id,
-        id: x.id
-      }));
+      org_ids.value=[...org_ids.value,...response.data.map(x => ({ org_id: x.org_id,id: x.id }))];
     }).catch(error => {
       notification.error({
         message: `Error!`,
@@ -723,18 +717,19 @@ const fetchCounties = async () => {
 const filterOption = (input, option) => {
   return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
-const updateStats = async () => {
-  await axios.get(`dash_stats`)
+const updateStats = async (org_id) => {
+  await axios.get(`all_stats?org_id=${org_id}`)
     .then(response => {
-      const data = response.data;
-      active_events.value = data.active_events;
+      const data = response.data.data[0];
+      console.log(data)
+      active_events.value = data.events;
       nets_distributed.value = data.nets_distributed;
       registered_house_holds.value = data.registered_house_holds;
-      totalhouseholds_served.value = data.house_holds_served;
+      totalhouseholds_served.value = data.households_served;
       registered_users.value = data.registered_users;
       household_population.value = data.all_hh_members;
-      total_nets_required.value = data.sys_allocation;
-      activities.value = data.active_activities;
+      total_nets_required.value = data.nets_required;
+      activities.value = data.activities;
       // actual_allocation = data.
       // console.log(data.active_events);
     }).catch(error => {
@@ -761,10 +756,6 @@ const exportChartsToPDF = async () => {
   const rows = content.querySelectorAll('.pdf-row');
   // Loop through each row
   for (let i = 0; i < rows.length; i++) {
-    // Create a new page for each row (except the first page)
-    // if (i > 0) {
-    //   pdf.addPage();
-    // }
     const row = rows[i];
     // Use html2canvas to convert the row to a canvas
     const canvas = await html2canvas(row);
@@ -787,7 +778,7 @@ const exportChartsToPDF = async () => {
 //chart functions
 const handleFilterChange = () => {
   const currentDate = new Date();
-  console.log(selectedFilter.value)
+  //console.log(selectedFilter.value)
 
   switch (selectedFilter.value) {
     case 'year':
@@ -817,8 +808,8 @@ const handleFilterChange = () => {
   }
   //fetch data
   fetchNetsDistributed()
-  console.log(dateFrom)
-  console.log(dateTo)
+  // console.log(dateFrom)
+  // console.log(dateTo)
 
 }
 const fetchNetsDistributed = () => {
@@ -828,7 +819,7 @@ const fetchNetsDistributed = () => {
   axios.get(`distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
       let data = response.data.data.total_nets_distributed;
-      console.log(data.map(item => item.date.toString()))
+      //console.log(data.map(item => item.date.toString()))
       NetsDistributedwithTimeData.value = data
       NetsDistributedwithTime(data, fileterOrgeLevel.value)
     }).catch(error => {
@@ -841,10 +832,13 @@ const fetchNetsDistributed = () => {
 
 watch(selectedFilter, handleFilterChange)
 const NetsDistributedwithTime = (data, org_level) => {
-  console.log(data)
+  //console.log(data)
   Highcharts.chart('NetsDistributedwithTime', {
     chart: {
       type: 'spline',
+    },
+    credits: {
+      enabled: false,
     },
     title: {
       text: `Nets Distributed with Time by ${org_level}`,
@@ -895,6 +889,9 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
     chart: {
       type: 'pie'
     },
+    credits: {
+      enabled: false,
+    },
     title: {
       text: `Households Registered by ${orglevel}`,
       align: 'left',
@@ -932,6 +929,9 @@ const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
   Highcharts.chart('HouseHoldsServedbyCountyChart', {
     chart: {
       type: 'pie'
+    },
+    credits: {
+      enabled: false,
     },
     title: {
       text: `Households Served by ${orglevel}`,
@@ -978,6 +978,9 @@ const NetsIssuedbyCountyChart = (charData, orglevel) => {
     chart: {
       type: 'pie'
     },
+    credits: {
+      enabled: false,
+    },
     title: {
       text: `Nets Issued by ${orglevel}`,
       align: 'left',
@@ -1014,6 +1017,9 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
   Highcharts.chart('netsReqvsIssuedChart', {
     chart: {
       zoomType: 'xy'
+    },
+    credits: {
+      enabled: false,
     },
     title: {
       text: `Comparison of Nets Required vs Nets Issued by ${orglevel}`,
@@ -1170,6 +1176,9 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
   Highcharts.chart('householdRegvsServedChart', {
     chart: {
       zoomType: 'xy'
+    },
+    credits: {
+      enabled: false,
     },
     title: {
       text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
