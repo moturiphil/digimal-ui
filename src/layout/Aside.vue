@@ -11,10 +11,10 @@
           </template>
            <a-menu-item key="widgetDashboard">
               <router-link to="/">
-              Activity Dashboard
+              Campaign Dashboard
               </router-link>
             </a-menu-item>
-          <a-menu-item key="widgetDashboard">
+          <a-menu-item key="widgetDashboard" v-if="false">
             <router-link to="/MNEDashboard">
               M & E Dashboard
             </router-link>

@@ -1040,7 +1040,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
     }],
     yAxis: [{ // Primary yAxis
       labels: {
-        format: '{value}%',
+        format: '{value:.1f}%',
         style: {
           color: Highcharts.getOptions().colors[2]
         }
@@ -1134,8 +1134,8 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       yAxis: 2,
       data: target_data,
       color: '#004225',
-      tooltip: {
-        valueSuffix: ' %'
+       tooltip: {
+        pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
       },
       marker: {
         radius: 8, // Set the radius to adjust the size of scatter plot dots
@@ -1199,7 +1199,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
     }],
     yAxis: [{ // Primary yAxis
       labels: {
-        format: '{value}%',
+        format: '{value:.1f}%',
         style: {
           color: '#004225'
         }
@@ -1238,7 +1238,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
         }
       },
       labels: {
-        format: '{value} %',
+        format: '{value:.1f} %',
         style: {
           color: Highcharts.getOptions().colors[1]
         }
@@ -1293,8 +1293,8 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       yAxis: 2,
       data: target_data,
       color: '#004225',
-      tooltip: {
-        valueSuffix: ' %'
+       tooltip: {
+        pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
       },
       marker: {
         radius: 8, // Set the radius to adjust the size of scatter plot dots
