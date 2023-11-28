@@ -118,6 +118,16 @@
                   Orders
                 </a>
               </li>
+              <li>
+                <a
+                  :class="activeClass === 'serviced_orders' ? 'active' : 'deactivate'"
+                  @click="handleChange('serviced_orders')"
+                  href="#"
+                  :hidden="activeTransaction !== 'post_orders'"
+                >
+                  Serviced Orders
+                </a>
+              </li>
             </ul>
           </div>
               
@@ -268,6 +278,21 @@
                           </a-table>
                             </TableWrapper>
                             <!-- end of post summary -->
+
+                            <!-- serviced orders -->
+                            <TableWrapper
+                            class="table-data-view table-responsive"
+                            v-show="activeClass === 'serviced_orders'"
+                            >
+                            <a-table
+                              :pagination="{
+                                pageSize: 40,
+                                showSizeChanger: true,
+                              }"
+                              :dataSource="servicedOrders"
+                              :columns="serviceOrdersColumns"></a-table>
+                            </TableWrapper>
+                            <!-- end serviced orders -->
 
                             <!-- Receive nets -->
                             <a-modal
@@ -533,7 +558,7 @@
   </template>
   
   <script>
-  import { Main, BasicFormWrapper } from "../../styled";
+  import { Main, BasicFormWrapper, TableWrapper } from "../../styled";
   import { SearchResultWrapper } from "./../style";
   import { onMounted, ref, reactive, defineComponent } from "vue";
   import authHeader from "../../../services/auth-header";
@@ -664,13 +689,39 @@
     },
   ]
 
+  const serviceOrdersColumns =[
+    {
+      title: "To Post Name",
+      dataIndex: "to_post_name",
+      key: "id",
+    },
+    {
+      title: "Quantity Issued",
+      dataIndex: "quantity_issued",
+      key: "id",
+    },
+    {
+      title: "Issue Date",
+      dataIndex: "issue_date",
+      key: "id",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      slots: { customRender: "status" },
+      key: "id",
+    }
+
+  ]
+
   export default defineComponent({
     name: "Payroll",
     components: {
-      Main,
-      SearchResultWrapper,
-      BasicFormWrapper,
-    },
+    Main,
+    SearchResultWrapper,
+    BasicFormWrapper,
+    TableWrapper
+},
     setup() {
       const dataSource = ref([]);
       const activeClass = ref("nets_returned");
@@ -681,6 +732,7 @@
       const dropoffPosts=ref([]);
       const productList = ref([]);
       const distribution_posts = ref([]);
+      const servicedOrders = ref([]);
       const postSummary = ref([]);
       const targetKeys = ref([]);
       const { query } = useRoute();
@@ -1257,11 +1309,54 @@
           });
         }
       }
+
+      // servicedOrders
+      const fetchServicedOrders = async()=>{
+        const dropoffid ={
+          "drop_off_point_id":drop_off_id
+        }
+        try {
+          await fetch(`${process.env.VUE_APP_BASE_URL}/linelist_net_issuance_to_post`,
+          {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+            body: JSON.stringify(dropoffid),
+          })
+          .then((response) => response.json())
+          .then(({ data}) => {
+            // console.log(data, success);
+            // if(success){
+              servicedOrders.value = data;
+            // }else{
+            //   notification.info({
+            //     message: "Info",
+            //     description: `${data}`
+            //   });
+            // }
+          })
+          .catch((error)=>{
+            notification.error({
+              message: "Error",
+              description: `${error}`
+            });
+            isModalOpen_issuenets.value = false;
+          })
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`
+          });
+        }
+      }
   
       onMounted(() => {
         fetchPosts();
         fetchReturnedNets();
         fetchPostOrders();
+        fetchServicedOrders();
         fetchdropoffPosts();
         getProductList();
         fetchDistributionPosts();
@@ -1312,7 +1407,9 @@
         openModal,
         handleOk,
         postSummary,
+        serviceOrdersColumns,
         closeModalAll,
+        servicedOrders
       };
     },
   });
