@@ -18,7 +18,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "auth" */ "@/layout/withAuthLayout.vue"),
     children: [...authRoutes],
-    meta: { auth: false },
+    meta: { auth: true },
   },
 ];
 
