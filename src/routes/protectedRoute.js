@@ -10,7 +10,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "admin" */ "@/layout/withAdminLayout.vue"),
     children: [...adminRoutes],
-    meta: { auth: false },
+    meta: { auth: true },
   },
   {
     name: "Auth",
@@ -18,7 +18,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "auth" */ "@/layout/withAuthLayout.vue"),
     children: [...authRoutes],
-    meta: { auth: true },
+    meta: { auth: false },
   },
 ];
 
@@ -37,11 +37,12 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
+  console.log(to)
 
-  if (!user_object == null) {
+  if (to.meta.auth && (user_object == null)) {
     next({ path: "/auth/login" });
   }
-  if (user_object && user_object.token && to.matched.length === 0) {
+  if (user_object !=null && user_object.token !=null && to.matched.length === 0) {
     // User is logged in but the route is not defined, redirect to 404
     next({ path: "/404" });
   }
@@ -55,13 +56,13 @@ router.beforeEach((to, from, next) => {
     // User is not authenticated and trying to access the login page, allow navigation
     next();
   }
-  if (user_object && user_object.token) {
-    // User has a token, allow navigation
-    next();
-  } else {
+  // if (user_object && user_object.token) {
+  //   // User has a token, allow navigation
+  //   next();
+  // } else {
     // User is not logged in but is on the login page, allow navigation
     next();
-  }
+  //}
 
   window.scrollTo(0, 0);
 });

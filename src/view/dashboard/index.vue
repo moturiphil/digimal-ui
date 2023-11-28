@@ -372,7 +372,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 //import html2pdf from 'html2pdf.js';
 import { FilePdfOutlined } from '@ant-design/icons-vue';
-
+import { useRouter } from 'vue-router';
+const router = useRouter()
 exporting(Highcharts);
 const active_events = ref(0);
 const nets_distributed = ref(0);
@@ -410,7 +411,7 @@ const ward = ref("Select Ward")
 
 //Nets with Time
 const dateFormat = ref('YYYY-MM-DD');
-var selectedFilter = ref('year');
+var selectedFilter = ref('month');
 var filterOrgId = ref(9)
 var fileterOrgeLevel = ref("")
 var dateFrom = ref(new Date())
@@ -470,12 +471,16 @@ const currentCounties = ref([
 ])
 
 onMounted(async () => {
-  if (sessionStorage.getItem("user")) {
-    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+  const user = sessionStorage.getItem("user");
+  const user_object = JSON.parse(user);
+  if (user_object !=null) {
+    access_level.value = user_object.user;
     updateFilters()
     fetchInitialChartData()
     updateStats(access_level.value.location.org_id)
     handleFilterChange()
+  } else {
+    router.push("/login")
   }
 });
 const capitalizeFirstLetter = (word) => {
