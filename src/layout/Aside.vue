@@ -288,6 +288,11 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-menu-item v-if="isAdmin" key="massnet-admin">
+        <router-link to="/admin-massnet">
+          <sdFeatherIcons type="alert-triangle" /><span> Administrator </span>
+        </router-link>
+      </a-menu-item>
       <a-menu-item v-if="isAdmin" key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
