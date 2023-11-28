@@ -205,6 +205,24 @@
                                 </div>
                               </td>
                             </template> -->
+                            <template #status="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <span
+                                    v-if="record.status ==6"
+                                    class="badge badge-blue"
+                                    >Submitted</span >
+                                  <span
+                                    v-else-if="record.status == 5"
+                                    class="badge badge-green"
+                                    >Approved</span>
+                                    <span
+                                    v-else-if="record.status == 0"
+                                    class="badge badge-red"
+                                    >Pending Approval</span>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                             </TableWrapper>
                             <!-- end post orders -->
@@ -593,6 +611,11 @@
       key: "id",
     },
     {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "id",
+    },
+    {
       title: "Date ordered",
       dataIndex: "date_ordered",
       key: "id",
@@ -606,6 +629,8 @@
       title: "Status",
       dataIndex: "status",
       key: "id",
+      slots: { customRender: "status" },
+
     },
     // {
     //   title: "Action",
@@ -691,7 +716,7 @@
       const handleTransactions = (tab) => {
       activeTransaction.value = tab;
       tab === "post_orders"
-        ? handleChange("orders")
+        ? handleChange("posts_summary")
         // : tab === "transfer"
         //   ? handleChange("transfer_ins")
         //   : tab === "return"
@@ -1295,12 +1320,28 @@
   <style scoped>
   .badge-green {
     background-color: #1ec997;
-    /* color: white; */
+    color: white;
     /* padding: 2px;
       border-radius: 3px; */
     /* size */
     font-size: 12px;
   }
+  .badge-blue {
+  background-color: rgb(0, 140, 255);
+  color: white;
+  /* padding: 2px;
+      border-radius: 3px; */
+  /* size */
+  font-size: 12px;
+}
+.badge-red {
+  background-color: #f0506e;
+  color: white;
+  /* padding: 2px;
+      border-radius: 3px; */
+  /* size */
+  font-size: 12px;
+}
   .title-success {
     color: green;
   }
