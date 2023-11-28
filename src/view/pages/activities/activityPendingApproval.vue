@@ -2,6 +2,7 @@
     <!-- Wrapper component for the record view -->
     <RecordViewWrapper>
       <sdPageHeader title="Activities Pending Approvals" />
+  
       <!-- Main content area -->
       <Main>
         <!-- Rows for search and table -->
@@ -33,7 +34,7 @@
                           <sdButton size="extra-small" type="success">
                             <router-link
                               :to="{
-                                path: `/activity/details/${record.id}`,
+                                path: `/activity/pending-approval-details/${record.id}`,
                                 query: {
                                   id: record.id,
                                   name: record.name,
@@ -129,7 +130,7 @@
       onMounted(async () => {
         try {
           const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/activity`,
+            `${process.env.VUE_APP_BASE_URL}/activities_pending_approval`,
             {
               method: "GET",
               headers: authHeader(),
@@ -140,7 +141,7 @@
           console.log(data);
   
           // Format the data before assigning it to dataSource
-          dataSource.value = data.data.map((item) => {
+          dataSource.value = data.data.data.map((item) => {
             const countyName = item.county_id[0].name;
             const subCountyName =
               item.sub_county_id.length > 0

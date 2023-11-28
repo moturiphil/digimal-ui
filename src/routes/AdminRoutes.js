@@ -169,6 +169,18 @@ const routes = [
           import("@/view/pages/activities/activityDetails.vue"),
       },
       {
+        path: "dashboard/my-activities/",
+        name: "my-activities-dashboard",
+        component: () =>
+          import("@/view/pages/activities/myActivityDashboard.vue"),
+      },
+      {
+        path: "/activity/pending-approval-details/:id",
+        name: "activity-pending-approval-details",
+        component: () =>
+          import("@/view/pages/activities/activityPendingApprovalDetails.vue"),
+      },
+      {
         path: "/activity/pending-confirmation/:id",
         name: "pending-confirmation-activity",
         component: () =>
