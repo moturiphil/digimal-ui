@@ -720,15 +720,16 @@ const filterOption = (input, option) => {
 const updateStats = async (org_id) => {
   await axios.get(`all_stats?org_id=${org_id}`)
     .then(response => {
-      const data = response.data;
-      active_events.value = data.active_events;
+      const data = response.data.data[0];
+      console.log(data)
+      active_events.value = data.events;
       nets_distributed.value = data.nets_distributed;
       registered_house_holds.value = data.registered_house_holds;
-      totalhouseholds_served.value = data.house_holds_served;
+      totalhouseholds_served.value = data.households_served;
       registered_users.value = data.registered_users;
       household_population.value = data.all_hh_members;
-      total_nets_required.value = data.sys_allocation;
-      activities.value = data.active_activities;
+      total_nets_required.value = data.nets_required;
+      activities.value = data.activities;
       // actual_allocation = data.
       // console.log(data.active_events);
     }).catch(error => {
