@@ -6,14 +6,21 @@ const routes = [
     name: "dashboard",
     component: () =>
       import(
-        /* webpackChunkName: "Dashboard" */ "@/view/dashboard/Dashboard.vue"
+        /* webpackChunkName: "Dashboard" */ "@/view/dashboard/Dashboard.vue"//
       ),
     children: [
       {
         path: "/",
         name: "home",
         component: () =>
-          import(/* webpackChunkName: "Home" */ "@/view/dashboard"),
+          import("@/view/dashboard"),
+        meta: { auth: true },
+      },
+      {
+        path: "/MNEDashboard",
+        name: "MNEDashboard",
+        component: () =>
+          import(/* webpackChunkName: "Home" */ "@/view/dashboard/MNEDashboard"),
       },
       {
         path: "registered-users",
@@ -361,7 +368,7 @@ const routes = [
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
-  }, 
+  },
   {
     path: "/chp-hh-registered/:id",
     name: "chp-hh-registered",
@@ -503,7 +510,7 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
   },
-  
+
   ...Apps,
 ];
 

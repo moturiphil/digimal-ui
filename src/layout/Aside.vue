@@ -5,11 +5,21 @@
     :theme="darkMode ? 'dark' : 'light'"
   >
     <a-menu-item-group key="pages">
-      <a-menu-item key="widgetDashboard">
-        <router-link to="/">
-          <sdFeatherIcons type="home" /> <span>Dashboard</span>
-        </router-link>
-      </a-menu-item>
+        <a-sub-menu key="widgetDashboard">
+          <template v-slot:title>
+              <sdFeatherIcons type="home" /> <span>Dashboards</span>
+          </template>
+           <a-menu-item key="widgetDashboard">
+              <router-link to="/">
+              Campaign Dashboard
+              </router-link>
+            </a-menu-item>
+          <a-menu-item key="widgetDashboard" v-if="false">
+            <router-link to="/MNEDashboard">
+              M & E Dashboard
+            </router-link>
+          </a-menu-item>
+        </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>
           <sdFeatherIcons type="globe" /><span>Campaigns</span>
@@ -176,7 +186,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="database" /><span>Supply Chain</span>
         </template>
-          
+
         <a-sub-menu key="meds-issuance">
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>MEDS</span>
