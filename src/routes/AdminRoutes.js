@@ -186,6 +186,18 @@ const routes = [
           import("@/view/pages/activities/activityDetails.vue"),
       },
       {
+        path: "dashboard/my-activities/",
+        name: "my-activities-dashboard",
+        component: () =>
+          import("@/view/pages/activities/myActivityDashboard.vue"),
+      },
+      {
+        path: "/activity/pending-approval-details/:id",
+        name: "activity-pending-approval-details",
+        component: () =>
+          import("@/view/pages/activities/activityPendingApprovalDetails.vue"),
+      },
+      {
         path: "/activity/pending-confirmation/:id",
         name: "pending-confirmation-activity",
         component: () =>
@@ -263,6 +275,15 @@ const routes = [
       },
 
       {
+        path: "activity-pending-approval",
+        name: "activity-pending-approval",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/activityPendingApproval.vue"
+          ),
+      },
+
+      {
         path: "activity-confirm",
         name: "activity-confirm",
         component: () =>
@@ -280,6 +301,37 @@ const routes = [
       },
     ],
   },
+  // {
+  //   name: 'activities-profile',
+  //   path: '/activity/dashboard',
+  //   component: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
+  //   children: [
+  //     {
+  //       path: 'overview',
+  //       name: 'overview',
+  //       components: {
+  //         default: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
+  //         child: () => import(/* webpackChunkName: "overview" */ '../view/apps/myProfile/overview/Overview.vue'),
+  //       },
+  //     },
+  //     {
+  //       path: 'timeline',
+  //       name: 'timeline',
+  //       components: {
+  //         default: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
+  //         child: () => import(/* webpackChunkName: "timeline" */ '../view/apps/myProfile/overview/Timeline.vue'),
+  //       },
+  //     },
+  //     {
+  //       path: 'activity',
+  //       name: 'activity',
+  //       components: {
+  //         default: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
+  //         child: () => import(/* webpackChunkName: "activity" */ '../view/apps/myProfile/overview/Activity.vue'),
+  //       },
+  //     },
+  //   ],
+  // },
   {
     path: "/org-units/",
     name: "org-units",

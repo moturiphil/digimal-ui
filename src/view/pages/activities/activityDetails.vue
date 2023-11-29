@@ -6,6 +6,7 @@
         <sdButton
           class="btn-import"
           type="success"
+          size="small"
           @click="generatePayroll"
           v-if="isApprovedGenerator"
           :disabled="isGenerating"
@@ -64,6 +65,16 @@
                     Pending Confirmation
                   </a>
                 </li>
+                <li>
+                  <a
+                    class="button-container"
+                    size="extra-small"
+                    type="success"
+                    @click="openModal()"
+                  >
+                    Add Officer
+                  </a>
+                </li>
               </ul>
             </div>
           </a-col>
@@ -92,6 +103,23 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
+                            <template #actions="{ record }">
+                              <td>
+                                <div class="table-actions">
+                                  <sdButton
+                                    size="extra-small"
+                                    type="danger"
+                                    @click="removeOfficer(record.id)"
+                                  >
+                                    <span> Remove Officer </span>
+                                    <sdFeatherIcons
+                                      type="x-circle"
+                                      size="small"
+                                    />
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
 
@@ -135,7 +163,7 @@
               <a-modal
                 title="Add Officers"
                 :visible="isModalOpen"
-                @cancel="handleCancel"
+                @cancel="handleCancelReceive"
                 width="50%"
                 footer=""
               >
@@ -146,28 +174,29 @@
                     layout="vertical"
                     name="addnew"
                     :model="formState"
-                    @finish="handleAssign"
+                    @finish="handleAddOfficers"
                   >
                     <a-form-item
-                      name="drop_off_manager"
-                      label="Assign Drop Off Manager"
+                      name="add_officer"
+                      label="Add Officer to Activity"
                     >
                       <a-select
-                        placeholder="Assign Drop Off Manager"
-                        v-model:value="formState.drop_off_manager"
+                        placeholder="Add Officer(s)"
+                        v-model:value="formState.add_officer"
                         v-if="!loading"
                         show-search
                         option-filter-prop="label"
+                        mode="multiple"
                       >
                         <a-select-option
-                          v-for="worker in users"
-                          :key="worker.id"
-                          v-model:value="worker.id"
-                          :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
+                          v-for="officer in officers"
+                          :key="officer.id"
+                          v-model:value="officer.id"
+                          :label="`${officer.first_name} ${officer.last_name} -${officer.role_id} `"
                         >
-                          {{ worker.first_name }}
-                          {{ worker.last_name }} - {{ worker.id_no }},
-                          {{ worker.role_id }}, {{ worker.location_id }}
+                          {{ officer.first_name }}
+                          {{ officer.last_name }} - {{ officer.id_no }},
+                          {{ officer.role_id }}, {{ officer.location_id }}
                         </a-select-option>
                       </a-select>
                     </a-form-item>
@@ -179,7 +208,7 @@
                   </a-form>
                 </BasicFormWrapper>
               </a-modal>
-              <!-- End of Issue modal -->
+              <!-- End of Assigning officer modal -->
             </sdCards>
           </a-col>
         </a-row>
@@ -191,13 +220,14 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import store from "../../../vuex/store";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -230,6 +260,12 @@ const columns = [
     title: "Confirmed Days",
     dataIndex: "no_of_days",
     key: "id",
+  },
+  {
+    title: "",
+    dataIndex: "",
+    key: "actions",
+    slots: { customRender: "actions" },
   },
 ];
 export default defineComponent({
@@ -291,18 +327,16 @@ export default defineComponent({
     const dataSource = ref([]);
     const confirmed = ref({});
     const pending = ref([]);
+    const officers = ref([]);
     const activeClass = ref("all");
     const { query } = useRoute();
     const isGenerating = computed(() => state.isGenerating);
 
-
     const isModalOpen = ref(false);
 
-    console.log(query.event_code);
+    console.log(query.id);
 
     const activity_code = query.code;
-
-    console.log(query.code);
 
     console.log(new Date());
 
@@ -327,7 +361,7 @@ export default defineComponent({
         }
 
         const fileBlob = await response.blob();
-        const fileName = "Event Participants.xlsx";
+        const fileName = "Activity Participants.xlsx";
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(new Blob([fileBlob]));
         link.setAttribute("download", fileName);
@@ -367,6 +401,8 @@ export default defineComponent({
             fullName,
           };
         });
+
+        console.log(updatedData);
 
         dataSource.value = updatedData;
       } catch (error) {
@@ -417,6 +453,84 @@ export default defineComponent({
       }
     });
 
+    const formState = reactive({
+      activity_id: query.id,
+      add_officer: [],
+    });
+
+    const handleAddOfficers = async () => {
+      try {
+        const data = {
+          activity_id: formState.activity_id,
+          participants: formState.add_officer,
+        };
+
+        console.log(data);
+
+        console.log(JSON.stringify(data));
+        await fetch(`${process.env.VUE_APP_BASE_URL}/add_officers`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then(({ success, data }) => {
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: data,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${data}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((error) => {
+            notification.error({
+              message: "Error",
+              description: `${error}`,
+            });
+          });
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      }
+    };
+
+    const officersList = async () => {
+      try {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+          method: "GET",
+          headers: authHeader(),
+        });
+        const data = await response.json();
+
+        console.log(data);
+
+        // Modify the structure of each supervisor to include a 'label' property
+        officers.value = data.data.map((user) => ({
+          ...user,
+          label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+        }));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    officersList();
+
     const filteredData = computed(() => {
       if (activeClass.value === "confirmed") {
         console.log(confirmed.value);
@@ -429,27 +543,10 @@ export default defineComponent({
       }
     });
 
-    const level_id = ref("");
-    const role_id = ref("");
-    // const current = ref("");
-    const rt = useRouter();
-
     // const event_host_id = query.event_host_id;
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user.user.id);
 
-    const formState = reactive({
-      searchItem: "",
-    });
-    onMounted(() => {
-      const user = JSON.parse(sessionStorage.getItem("user"));
-      if (!user) {
-        rt.push({ path: "/auth/login" });
-      } else {
-        level_id.value = user.user.level_id;
-        role_id.value = user.user.role_id;
-      }
-    });
     const isApprovedGenerator = computed(() => {
       // const currentTime = new Date();
       if (user.user.role_id === 53 || user.user.role_id === 63) {
@@ -492,9 +589,8 @@ export default defineComponent({
       }
     };
 
-    const openModal = (id) => {
+    const openModal = () => {
       isModalOpen.value = true;
-      formState.drop_off_point_id = id;
     };
 
     const handleCancel = () => {
@@ -509,7 +605,6 @@ export default defineComponent({
       confirmed,
       pending,
       columns,
-      formState,
       filteredData,
       handleChange,
       activeClass,
@@ -521,7 +616,9 @@ export default defineComponent({
       isGenerating,
       openModal,
       handleCancel,
-
+      officers,
+      handleAddOfficers,
+      formState
     };
   },
   // computed: {

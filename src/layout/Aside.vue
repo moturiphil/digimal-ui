@@ -53,9 +53,19 @@
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
         </template>
+        <a-menu-item key="widgetsMyActivity" v-if="canViewActivities">
+          <router-link to="/dashboard/my-activities">
+            My Activities Dashboard
+          </router-link>
+        </a-menu-item>
         <a-menu-item key="widgetCreateActivity" v-if="canCreateActivity">
           <router-link to="/activities/activity-create">
             Create Activity
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetActivityPendingApproval" v-if="canCreateActivity">
+          <router-link to="/activities/activity-pending-approval">
+            Pending Approval
           </router-link>
         </a-menu-item>
         <a-menu-item key="widgetsListActivity" v-if="canViewActivities">

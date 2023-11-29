@@ -78,6 +78,21 @@
                         </p>
                       </a-form-item>
 
+                      <a-form-item name="description" label="Description">
+                        <a-textarea
+                          v-model:value="formState.description"
+                          placeholder="Write a narrative that describes the activity of the campaign"
+                          :rows="4"
+                        />
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.description"
+                        >
+                          {{ errors.description }}
+                        </p>
+                      </a-form-item>
+
                       <a-form-item
                         name="counties"
                         label="Counties"
@@ -232,20 +247,6 @@
                           {{ errors.activity_facilitator }}
                         </p>
                       </a-form-item>
-                      <a-form-item name="description" label="Description">
-                        <a-textarea
-                          v-model:value="formState.description"
-                          placeholder="Write a narrative that describes the activity of the campaign"
-                          :rows="4"
-                        />
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.campaign_id"
-                        >
-                          {{ errors.campaign_id }}
-                        </p>
-                      </a-form-item>
 
                       <div class="record-form-actions text-right">
                         &nbsp;&nbsp;&nbsp;
@@ -259,8 +260,8 @@
                             isLoading
                               ? "Loading..."
                               : isSubmitting
-                              ? "Processing ..."
-                              : "Submit"
+                                ? "Processing ..."
+                                : "Submit"
                           }}
                         </sdButton>
                       </div>

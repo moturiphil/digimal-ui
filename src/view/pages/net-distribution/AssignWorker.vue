@@ -1,9 +1,6 @@
 <template>
   <Main>
   <sdPageHeader title="Assign Worker">
-    <!-- <sdButton class="btn-add_new" size="default" key="1" type="success">
-      <router-link to="/crud/axios-view">View All</router-link>
-    </sdButton> -->
   </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
