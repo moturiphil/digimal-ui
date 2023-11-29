@@ -847,8 +847,16 @@ const NetsDistributedwithTime = (data, org_level) => {
       type: 'spline',
     },
     credits: {
-      enabled: false,
-    },
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target:'_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
     title: {
       text: `Nets Distributed with Time by ${org_level}`,
       align: 'left',
@@ -903,8 +911,16 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
       }
     },
     credits: {
-      enabled: false,
-    },
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target:'_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
     title: {
       text: `Households Registered by ${orglevel}`,
       align: 'left',
@@ -945,8 +961,16 @@ const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
       type: 'pie',
     },
     credits: {
-      enabled: false,
-    },
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target:'_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
     title: {
       text: `Households Served by ${orglevel}`,
       align: 'left'
@@ -993,8 +1017,16 @@ const NetsIssuedbyCountyChart = (charData, orglevel) => {
       type: 'pie'
     },
     credits: {
-      enabled: false,
-    },
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target:'_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
     title: {
       text: `Nets Issued by ${orglevel}`,
       align: 'left',
@@ -1033,8 +1065,16 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       zoomType: 'xy'
     },
     credits: {
-      enabled: false,
-    },
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target:'_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
     title: {
       text: `Comparison of Nets Required vs Nets Issued by ${orglevel}`,
       align: 'left'
@@ -1192,8 +1232,16 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       zoomType: 'xy'
     },
     credits: {
-      enabled: false,
-    },
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target:'_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
     title: {
       text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
       align: 'left'
