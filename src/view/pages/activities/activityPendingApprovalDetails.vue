@@ -6,7 +6,7 @@
         <sdButton
           class="btn-import"
           type="warning"
-          @click="exportParticipants"
+          @click="approveActivity"
           size="small"
         >
           Approve Activity
@@ -72,7 +72,7 @@
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
-                                    @click="removeOfficer(record.id)"
+                                    @click="removeOfficer(record.user_id)"
                                   >
                                     <span> Remove Officer </span>
                                     <sdFeatherIcons
@@ -307,32 +307,94 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
     const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
     // const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
+    const approve_activity_url = `${process.env.VUE_APP_BASE_URL}/approve_activity/${query.id}`;
 
-    const exportParticipants = async () => {
+    console.log(approve_activity_url);
+
+    const approveActivity = async () => {
       try {
-        const response = await fetch(export_participants_url, {
-          method: "GET",
+        await fetch(approve_activity_url, {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: message,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((message) => {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          });
+      } catch (message) {
+        notification.error({
+          message: "Error",
+          description: `${message}`,
         });
+      }
+    };
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
-
-        const fileBlob = await response.blob();
-        const fileName = "Activity Participants.xlsx";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
+    const removeOfficer = (id) => {
+      console.log(id);
+      //   console.log("recordId", recordId.value);
+      console.log(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`);
+      try {
+        fetch(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: message,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((message) => {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          });
+      } catch (message) {
+        notification.error({
+          message: "Error",
+          description: `${message}`,
+        });
       }
     };
 
@@ -572,7 +634,7 @@ export default defineComponent({
       handleChange,
       activeClass,
       generatePayroll,
-      exportParticipants,
+      approveActivity,
       isApprovedGenerator,
       isModalOpen,
       handleOk,
@@ -582,6 +644,7 @@ export default defineComponent({
       officers,
       handleAddOfficers,
       formState,
+      removeOfficer,
     };
   },
   // computed: {
