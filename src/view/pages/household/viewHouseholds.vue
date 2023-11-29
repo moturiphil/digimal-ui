@@ -15,9 +15,6 @@
     </sdPageHeader>
 
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
-        Export HouseHolds Data
-      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -33,12 +30,52 @@
                       </div>
 
                       <div v-else>
-                        Total Records:  
+                        Total Records:
                         <br>
                         <TableWrapper
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
+                         <a-row class="" style="float:end;" :gutter="5">
+                            <a-space>
+                            <a-col v-if="filterAccessList.includes('country')" :xxl="3" :xl="6" :md="12" :sm="24">
+                              <a-select v-model:value="country" show-search placeholder="Select Country" style="width: 200px"
+                                :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+                            </a-col>
+                            <a-col v-if="filterAccessList.includes('county')" :xxl="3" :xl="6" :md="12" :sm="24">
+                              <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
+                                :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
+                            </a-col>
+                            <a-col v-if="filterAccessList.includes('subcounty')">
+                              <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
+                                :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+                            </a-col>
+                            <a-col v-if="filterAccessList.includes('ward')" :xxl="3" :xl="6" :md="12" :sm="24">
+                              <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
+                                :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
+                            </a-col>
+                            </a-space>
+                          </a-row>
+                          <br/>
+                          <a-row style="float:end;" :gutter="5">
+                            <a-space>
+                            <a-col v-if="filterAccessList.includes('location')" :xxl="3" :xl="6" :md="12" :sm="24">
+                              <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
+                                :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+                            </a-col>
+                            <a-col v-if="filterAccessList.includes('sublocation')" :xxl="3" :xl="6" :md="12" :sm="24">
+                              <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
+                                :options="sublocations" :filter-option="filterOption"
+                                @change="handleChange($event, 'sublocation')" ></a-select>
+                            </a-col>
+                            <a-col v-if="filterAccessList.includes('village')" :xxl="3" :xl="6" :md="12" :sm="24">
+                                <a-select v-model:value="village" show-search placeholder="Select a Post" style="width: 200px"
+                                  :options="villages" :filter-option="filterOption"
+                                  @change="handleChange($event, 'village')" ></a-select>
+                              </a-col>
+                            </a-space>
+                          </a-row>
+                          <a-divider></a-divider>
                           <a-table
                             :pagination="false"
                             :dataSource="dataSource"
@@ -48,24 +85,19 @@
                           <br />
                           <br />
                           <a-pagination
-                            :current="paginationOptions.current"
-                            :total="paginationOptions.total"
-                            :pageSize="paginationOptions.pageSize"
-                            :showSizeChanger="paginationOptions.showSizeChanger"
-                            @change="paginationOptions.onChange"
-                          />
+                                :current="current"
+                                :total="total"
+                                :pageSize="pageSize"
+                                :showSizeChanger="true"
+                                :pagination="true"
+                                @change="onPageChange($event)"
+                              />
                         </TableWrapper>
                       </div>
                     </sdCards>
                   </a-col>
                 </a-row>
               </div>
-              <!-- <a-pagination
-                show-size-changer
-                :default-current="3"
-                :total="40"
-                @showSizeChange="onShowSizeChange"
-              /> -->
             </sdCards>
           </a-col>
         </a-row>
@@ -74,18 +106,17 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
+import { computed, onMounted, ref, defineProps, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
-import axios from "axios";
+import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 
-// const households = ref([]);
 
-const columns = [
+const columns = ref([
   {
     title: "First name",
     dataIndex: "first_name",
@@ -132,290 +163,325 @@ const columns = [
     key: "households",
     slots: { customRender: "households" },
   },
-];
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      households: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-    handleCancel() {
-      this.isModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
-  },
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const isModalOpen = ref(false);
-    const inputValue = ref("");
-    const household_id = ref("");
-    const searchItem = ref("");
-    const total_households = ref("");
-    const reg_households = ref([])
+]);
+var current = ref(1);
+var pageSize = ref(50);
+var total = ref(0)
+const { state } = useStore();
+const isLoading = computed(() => state.crud.loading);
+const dataSource = ref([]);
+const activeClass = ref("all");
+const searchItem = ref("");
+const total_households = ref(0);
+const API_URL = `household_validation?page=${current.value}&per_page=${pageSize.value}`;//sub_county_id=291
 
+//Drill down filters
+const access_level = ref({})
+const filterAccessList = ref([])
+//org levels
+const countries = ref([{ value: { id: 1, org_id: 'HfVjCurKxh2' }, label: "Kenya" }])
+const counties = ref(null)
+const subcounties = ref(null)
+const wards = ref(null)
+const locations = ref(null)
+const sublocations = ref(null)
+const villages = ref(null)
+const country = ref("Select Country")
+const county = ref("Select County")
+const sublocation = ref("Select Sublocation")
+const subcounty = ref("Select Subcounty")
+const location = ref("Select Location")
+const ward = ref("Select Ward")
+const village = ref("Select a Post")
+const org_ids = ref([])
 
-    const paginationOptions = ref({
-      pageSize: 100,
-      showSizeChanger: true,
-      current: 1,
-      total: 0,
-      onChange: async (page, pageSize) => {
-        // Update the current page when the pagination changes
-        const query = searchItem.value.toLowerCase();
+const currentCounties = ref([
+  'nK0A12Q7MvS',//homa bay
+  'sPkRcDvhGWA',//kisii
+  'uepLTG8wGWJ',//nyamira
+  // 'u4t9H8XyU9P',//siaya
+  // 'fVra3Pwta0Q',//migori
+  // 'Tvf1zgVZ0K4',//busia
+  // 'NjWSbQTwys4',//lamu
+  // 'nrI2khZx3d0',//kilifi
+  // 'JsH2bnvNt2d',//tan river
+  // 'N7YETT3A9r1',//kwale
+  // 'QyGNX2DpR4h',//taita taveta
+  // 'wsBsC6gjHvn',// mombasa
+  // 'KGHhQ5GLd4k',//
+  // 'BjC1xL40gHo',//kakamega
+  // 'sANMZ3lpqGs',//vihiga
+  // 'XWALbfAPa6n',//west pokot
+  // 'kphDeKClFch',//turkana
+  // 'mThvosEflAU',//trans nzoia
+  // 'kqJ83J2D72s',//naraok
+  // 'Eey8fT4Im3y',//marsabit
+  // 'vvOK1BxTbet',//baringo
+  // 'Ulj33KBau7V',
+])
 
-        paginationOptions.value.current = page;
+defineProps({
+  recordId: Number,
+  hh_size: Number,
+});
 
-        let url = ''
-        if(!query) url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}`
-        else url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}&query=${query}`
+onMounted(async () => {
+  if (sessionStorage.getItem("user") != null) {
+    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    updateFilters()
+    console.log(JSON.stringify(access_level.value.location));
+  }
+});
 
-        // Fetch data for the new page using the updated page number
-        try {
-          const response = await axios.get(url,
-            { headers: authHeader() }
-          );
-          dataSource.value = response.data.data.data;
-          paginationOptions.value.total = response.data.data.total;
-        } catch (error) {
-          console.error(error);
-        }
-      },
+// const handlePaginationChange = (newPage) => {
+//   current.value = newPage;
+//   console.log(newPage);
+//   fetchHouseHolds()
+// };
+
+const updateFilters = () => {
+  // access_level.value.level.level_name = 'national'
+  // access_level.value.location.id = 1
+  // access_level.value.location.org_id = 'HfVjCurKxh2'
+  // access_level.value.location.name = 'Kenya'
+
+   if (access_level.value.level.id == 1) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
+    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    fetchCounties()
+  } else if (access_level.value.level.id == 2) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
+    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 3) {
+    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation']
+    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 4) {
+    filterAccessList.value = ['ward', 'location', 'sublocation']
+    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 5) {
+    filterAccessList.value = ['location', 'sublocation']
+    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 6) {
+    filterAccessList.value = ['sublocation']
+    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  }
+  fetchHouseholds()
+}
+
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  console.log(org_id)
+  console.log(org_ids.value)
+  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
+  console.log(org)
+  let parent_id = org[0] || 9
+  console.log(parent_id)
+  console.log(org_level)
+  fetchChildData(parent_id, org_id, org_level)
+};
+const fetchChildData = async (location_id, org_id, org_level) => {
+  let fetchUrl = `get_sub_counties_list`
+  let masterListUrl = API_URL
+  if (org_level == 'country') {//get counties
+    fetchUrl += `?parent_id=${org_id}`
+    //masterListUrl += `&location=${location_id}`
+    //clear fields
+    county.value = "Select County"
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'county') {//get subcounties
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&county=${location_id}`
+    //clear fields
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'subcounty') {//get wards
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&sub_county=${location_id}`
+    //clear fields
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'ward') {//get locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&ward=${location_id}`
+    //clear fields
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'location') {//get sub locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'sublocation') {//get sublocations stats
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&sublocation=${location_id}`
+  }
+  await axios.get(`${fetchUrl}`)
+    .then(response => {
+      let data = response.data.message;
+      if (org_level == 'country') {//get counties
+        counties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
+        counties.value.splice(0, 1)
+      } else if (org_level == 'county') {//get subcounties
+        subcounties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
+      } else if (org_level == 'subcounty') {//get wards
+        wards.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'ward') {//get locations
+        locations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
+      } else if (org_level == 'location') {//get sublocations
+        sublocations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      }
+    }).then(async () => {
+      await axios.get(`${masterListUrl}`)
+        .then(response => {
+          console.log(response.data.data)
+          let data = response.data.data.data;
+          dataSource.value = data;
+          // paginationOptions.value.total = response.data.data.length;
+          total.value = response.data.data.total;
+          total_households.value = response.data.data.total;
+        })
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     });
+}
+const fetchCounties = async () => {
+  axios.get('counties/')
+    .then(response => {
+      counties.value = response.data.map(x => ({
+        value: x.org_id,
+        label: x.name
+      })).filter(e => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = response.data.map(x => ({
+        org_id: x.org_id,
+        id: x.id
+      }));
+      console.log(counties.value)
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    })
+}
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291`;
+const fetchHouseholds = () => {
+  axios
+    .get(API_URL)
+    .then((response) => {
+      console.log(response.data.data);
+      dataSource.value = response.data.data.data;
+      // paginationOptions.value.total = response.data.data.length;
+      paginationOptions.value.total = response.data.data.total;
+      total_households.value  = response.data.data.total
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
 
-    const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
+const paginationOptions = ref({
+  pageSize: pageSize.value,
+  showSizeChanger: true,
+  current: current.value,
+  total: 0,
+  onChange: async (page, pageSize) => {
+    // Update the current page when the pagination changes
+    const query = searchItem.value.toLowerCase();
 
-    const exportHouseHoldData = async () => {
-      try {
-        const response = await fetch(households_url, {
+    paginationOptions.value.current = page;
+
+    let url = ''
+    if(!query) url = `household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}`
+    else url = `household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}&query=${query}`
+
+    // Fetch data for the new page using the updated page number
+    try {
+      const response = await axios.get(url);
+      dataSource.value = response.data.data.data;
+      paginationOptions.value.total = response.data.data.total;
+    } catch (error) {
+      console.error(error);
+    }
+  },
+});
+
+
+watchEffect(async()=>{
+  const query = searchItem.value.toLowerCase();
+  try {
+    if(!query) return dataSource.value;
+    if(query.length> 3){
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&query=${query}`,
+        {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
         }
-
-        const fileBlob = await response.blob();
-        const fileName = "households.csv";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
-      } else {
-        return dataSource.value;
-      }
+      );
+      const data = await response.json();
+      dataSource.value = await data.data.data;
+      paginationOptions.value.total = await data.data.total;
+      // total_households.value.total = data.data.total
+      console.log(paginationOptions)
+    }
+  } catch (error) {
+    notification["error"]({
+      message: "Error",
+      description: `Error fetching households`,
+      duration: 5.5,
     });
+  }
+})
 
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-
-    onMounted(() => {
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          reg_households.value = response.data.data.data;
-          dataSource.value = response.data.data.data;
-          // paginationOptions.value.total = response.data.data.length;
-          paginationOptions.value.total = response.data.data.total;
-          total_households.value.total = response.data.data.total
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
-
-    watchEffect(async()=>{
-      const query = searchItem.value.toLowerCase();
-      try {
-        if(!query)
-        {
-          dataSource.value = reg_households.value;
-          return dataSource.value;
-        }
-        if(query.length> 3){
-          const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&query=${query}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                ...authHeader(),
-              },
-            }
-          );
-          const data = await response.json();
-          dataSource.value = await data.data.data;
-          paginationOptions.value.total = await data.data.total;
-          // total_households.value.total = data.data.total
-          console.log(paginationOptions)
-        }
-      } catch (error) {
-        notification["error"]({
-          message: "Error",
-          description: `Error fetching households`,
-          duration: 5.5,
-        });
-      }
-    })
-
-    const handleVerify = (hh_id, hh_size) => {
-      console.log({ hh_id, hh_size });
-      inputValue.value = hh_size;
-      isModalOpen.value = true;
-      household_id.value = hh_id;
-    };
-
-    const handleOk = async (id, inputValue) => {
-      try {
-        console.log(household_id.value);
-        const house_id = household_id.value;
-        console.log(inputValue);
-
-        // Call the authHeader() function to get the authorization token
-        const headers = authHeader();
-
-        // Construct the URL
-        const url = `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`;
-
-        // Make the fetch request
-        fetch(url, {
-          method: "PATCH",
-          headers: {
-            ...headers,
-            "Content-Type": "application/json", // Add any necessary headers
-          },
-          // body: JSON.stringify(data), // If you need to send a request body, add it here
-        })
-          .then((response) => {
-            if (response.ok) {
-              return response.json(); // Parse the JSON response
-            }
-            throw new Error("Network response was not ok.");
-          })
-          .then((data) => {
-            console.log(data); // Handle the successful response data here
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-            // location.reload();
-          })
-          .catch((error) => {
-            // Handle errors here
-            console.error(
-              "There has been a problem with your fetch operation:",
-              error
-            );
-            notification["error"]({
-              message: "HouseHold Not Verified",
-              description: `HouseHold verification failed`,
-              duration: 5.5,
-            });
-          })
-          .finally(() => {
-            inputValue = ""; // Clear inputValue after the modal is closed
-            isModalOpen.value = false;
-          });
-      } catch (error) {
-        // Handle exceptions here
-        console.error("Error:", error);
-      }
-    };
-
-    const formState = reactive({
-      searchItem: "",
-    });
-
-    const results = computed(() => {
-      const start =
-        (paginationOptions.value.current - 1) *
-        paginationOptions.value.pageSize;
-      const end = start + paginationOptions.value.pageSize;
-      return filteredData.value.slice(start, end);
-    });
-
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      columns,
-      formState,
-      exportHouseHoldData,
-      filteredData,
-      handleChange,
-      activeClass,
-      handleVerify,
-      isModalOpen,
-      inputValue,
-      household_id,
-      handleOk,
-      results,
-      searchItem,
-      paginationOptions,
-      total_households,
-    };
-  },
-  props: {
-    recordId: Number,
-    hh_size: Number,
-  },
-});
 </script>
 <style>
 .badge-green {
