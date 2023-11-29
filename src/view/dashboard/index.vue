@@ -367,14 +367,13 @@ import axios from '@/Axiosconfig';
 import { notification } from "ant-design-vue";
 import { onMounted, ref, watch } from 'vue';
 import moment from "moment"
-import exporting from 'highcharts/modules/exporting';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 //import html2pdf from 'html2pdf.js';
 import { FilePdfOutlined } from '@ant-design/icons-vue';
 import { useRouter } from 'vue-router';
 const router = useRouter()
-exporting(Highcharts);
+//exporting(Highcharts);
 const active_events = ref(0);
 const nets_distributed = ref(0);
 const registered_house_holds = ref(0);
@@ -623,7 +622,12 @@ const fetchChildData = async (org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
         counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get subcounties
         subcounties.value = data.map(x => ({
@@ -727,14 +731,14 @@ const updateStats = async (org_id) => {
     .then(response => {
       const data = response.data;
       console.log(data)
-      active_events.value = data.events;
-      nets_distributed.value = data.nets_distributed;
-      registered_house_holds.value = data.registered_house_holds;
-      totalhouseholds_served.value = data.households_served;
-      registered_users.value = data.registered_users;
-      household_population.value = data.all_hh_members;
-      total_nets_required.value = data.nets_distributed;
-      activities.value = data.activities;
+      active_events.value = data.events || 0;
+      nets_distributed.value = data.nets_distributed || 0;
+      registered_house_holds.value = data.registered_house_holds || 0;
+      totalhouseholds_served.value = data.households_served || 0;
+      registered_users.value = data.registered_users || 0;
+      household_population.value = data.all_hh_members || 0;
+      total_nets_required.value = data.nets_required || 0;
+      activities.value = data.activities || 0;
       // actual_allocation = data.
       // console.log(data.active_events);
     }).catch(error => {
@@ -892,7 +896,11 @@ const NetsDistributedwithTime = (data, org_level) => {
 const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
   Highcharts.chart('HouseholdsRegisteredbyCountyChart', {
     chart: {
-      type: 'pie'
+      type: 'pie',
+      options3d: {
+        enabled: true,
+        alpha: 45
+      }
     },
     credits: {
       enabled: false,
@@ -913,6 +921,8 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
         allowPointSelect: true,
         borderWidth: 2,
         cursor: 'pointer',
+        innerSize: 40,
+        depth:10,
         dataLabels: {
           enabled: true,
           format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
@@ -930,10 +940,9 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
   });
 }
 const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
-
   Highcharts.chart('HouseHoldsServedbyCountyChart', {
     chart: {
-      type: 'pie'
+      type: 'pie',
     },
     credits: {
       enabled: false,

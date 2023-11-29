@@ -51,12 +51,13 @@
                 </a-button>
             </a-row>
             <div id="printPDFDiv">
-                <a-row :gutter="25" class="pdf-row">
+                <a-row :gutter="10" class="pdf-row">
                     <a-col :xxl="24" :md="24" :sm="24" :xs="24">
                         <figure class="highcharts-figure">
                             <div id="TargetedvsCoveredChart"></div>
                         </figure>
                     </a-col>
+                    <a-divider></a-divider>
                     <a-col :xxl="24" :md="24" :sm="24" :xs="24">
                         <figure class="highcharts-figure">
                             <div id="EstimatedvsRegisteredHouseholdpouplation"></div>
@@ -89,6 +90,72 @@
                             </table>
                         </figure>
                     </a-col>
+                    <a-divider></a-divider>
+                    <a-col :xxl="24" :md="24" :sm="24" :xs="24">
+                        <figure class="highcharts-figure">
+                            <div id="EstimatedvsRegisteredHouseholds"></div>
+                            <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
+                                <thead>
+                                    <tr>
+                                        <th v-for="item in EstimateChartData" :key="item.name">{{ item.name }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td v-for="item in EstimateChartData" :key="item.name">
+                                            <table class="nested-table" style="max-width: 100%;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="font-weight:bold;font-style:italic;">Estimated Households</td>
+                                                        <td style="font-weight:bold;font-style:italic;">Households
+                                                        Registered
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>{{ parseInt(item.households_registered) || 0 }}</td>
+                                                        <td>{{ parseInt(item.house_holds_served) || 0 }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </figure>
+                    </a-col>
+                     <a-divider></a-divider>
+                        <a-col :xxl="24" :md="24" :sm="24" :xs="24">
+                            <figure class="highcharts-figure">
+                                <div id="EstimatedvsRegisteredHouseholdSizeChart"></div>
+                                <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
+                                    <thead>
+                                        <tr>
+                                            <th v-for="item in EstimateChartData" :key="item.name">{{ item.name }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td v-for="item in EstimateChartData" :key="item.name">
+                                                <table class="nested-table" style="max-width: 100%;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td style="font-weight:bold;font-style:italic;">Estimated Household Size</td>
+                                                            <td style="font-weight:bold;font-style:italic;">Household
+                                                            Registered Size
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>{{ parseInt(item.households_registered) || 0 }}</td>
+                                                            <td>{{ parseInt(item.house_holds_served) || 0 }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </figure>
+                        </a-col>
                 </a-row>
             </div>
         </div>
@@ -115,7 +182,6 @@ import { FilePdfOutlined } from '@ant-design/icons-vue';
 exporting(Highcharts);
 //chart data
 const newChartData = ref([])
-const TargetedvsCoveredChartData = ref([])
 var printMode = ref(false)
 //org levels
 const access_level = ref({})
@@ -239,8 +305,20 @@ const fetchInitialChartData = async () => {
             TargetedvsCoveredChart([{name:"Counties Covered",y:10,sliced: true}, { name: "Gap", y: 12,sliced: true }],)//
             //registered,served,target_data,target_level,cats
             EstimatedvsRegisteredHouseholdpouplation(
-                newChartData.value.map(item => parseInt(item.households_registered)),//registered
-                newChartData.value.map(item => parseInt(item.households_served)),//served
+                newChartData.value.map(item => parseInt(item.households_registered)),//estimmated
+                newChartData.value.map(item => parseInt(item.households_served)),//registration
+                newChartData.value.map(item => item.name),//cats
+                access_level.value.level.level_name,//level
+            )
+            EstimatedvsRegisteredHouseholds(
+               newChartData.value.map(item => parseInt(item.households_registered)),//estimmated
+               newChartData.value.map(item => parseInt(item.households_served)),//registration
+               newChartData.value.map(item => item.name),//cats
+               access_level.value.level.level_name,//level
+            )
+            EstimatedvsRegisteredHouseholdSizeChart(
+                 newChartData.value.map(item => Math.ceil(parseInt(item.households_registered)/ parseInt(item.households_served))),//estimmated
+                newChartData.value.map(item => parseInt(item.households_served)),//registration
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
             )
@@ -366,13 +444,19 @@ const fetchChildData = async (org_id, org_level) => {
                     EstimatedvsRegisteredHouseholdpouplation(rgstd,srvd,cats,org_level)
                     //combine bar line bar Subcounty comparison
                     //pie chars Registered households by sub county
-                    let pieOptionsData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
-                    let chartData = newChartData.value.map(item => ({ name: item.name, y: item.households_served }))
+                    let TargetedvsCoveredChartData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
                     TargetedvsCoveredChart([{ name: "Counties Covered", y: 10 }, { name: "Gap", y: 12 }])
-                    TargetedvsCoveredChartData.value = pieOptionsData
-                    HouseHoldsServedbyCountyChart(chartData, org_level)
+                    TargetedvsCoveredChartData.value = TargetedvsCoveredChartData
+                    EstimatedvsRegisteredHouseholds(rgstd, srvd, cats, org_level)
                     fileterOrgeLevel.value = org_level
+                    EstimatedvsRegisteredHouseholdSizeChart(
+                        rgstd,//estimmated
+                        srvd,//registration
+                        cats,//cats
+                        org_level,//level
+                    )
                 })
+
         }).catch(error => {
             notification.error({
                 message: `Error!`,
@@ -433,51 +517,44 @@ const exportChartsToPDF = async () => {
 };
 
 const TargetedvsCoveredChart = (data) => {
-    Highcharts.chart('TargetedvsCoveredChart', {
+    console.log(data)
+   Highcharts.chart('TargetedvsCoveredChart', {
         chart: {
-            type: 'pie'
-        },
-        credits: {
-            enabled: false,
+            type: 'pie',
+            options3d: {
+                enabled: true,
+                alpha: 45
+            }
         },
         title: {
-            text: `Proportion of targeted Counties completed microplanning`,
-            align: 'left',
-        },
-        subtitle: {
-            text: '',
+            text: 'Beijing 2022 gold medals by country',
             align: 'left'
         },
-        tooltip: {
-            valueSuffix: ''
+        subtitle: {
+            text: '3D donut in Highcharts',
+            align: 'left'
         },
         plotOptions: {
             pie: {
-                allowPointSelect: true,
-                borderWidth: 2,
-                cursor: 'pointer',
-                innerSize: '0%',
-                slicedOffset: 20,
-                dataLabels: {
-                    enabled: true,
-                    format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
-                    distance: 20
-                }
-            },
-        },
-        series: [
-            {
-                name: 'Count',
-                colorByPoint: true,
-                data: data,
+                innerSize: 100,
+                depth: 45
             }
-        ],
+        },
+        series: [{
+            name: 'Medals',
+            data: data,
+        }]
     });
+
+
 }
 const EstimatedvsRegisteredHouseholdpouplation = (estimated, rgstd, cats, orglevel) => {
     Highcharts.chart('EstimatedvsRegisteredHouseholdpouplation', {
         chart: {
             type: 'column'
+        },
+        credits: {
+            enabled:false,
         },
         // Custom option for templates
         cats,
@@ -515,7 +592,7 @@ const EstimatedvsRegisteredHouseholdpouplation = (estimated, rgstd, cats, orglev
             accessibility: {
                 description: 'Distribution by Administrative Level'
             },
-            max: 4,
+            //max: 4,
             labels: {
                 useHTML: true,
                 animate: true,
@@ -561,51 +638,164 @@ const EstimatedvsRegisteredHouseholdpouplation = (estimated, rgstd, cats, orglev
         }
     });
 }
-const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
-
-    Highcharts.chart('HouseHoldsServedbyCountyChart', {
+const EstimatedvsRegisteredHouseholds = (estimated, rgstd, cats, orglevel) => {
+    Highcharts.chart('EstimatedvsRegisteredHouseholds', {
         chart: {
-            type: 'pie'
+            type: 'column'
         },
         credits: {
             enabled: false,
         },
+        // Custom option for templates
+        cats,
         title: {
-            text: `Households Served by ${orglevel}`,
+            text: 'Estimated Households vs Registered Hoseholds by ' + orglevel,
             align: 'left'
-        },
-        subtitle: {
-            text: orglevel,
-            align: 'left'
-        },
-        tooltip: {
-            pointFormat: '{point.name}: <b>{point.y}</b>'
-        },
-        accessibility: {
-            point: {
-                valueSuffix: '%'
-            }
         },
         plotOptions: {
-            pie: {
-                allowPointSelect: true,
-                borderWidth: 2,
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: true,
-                    format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
-                    distance: 20
+            series: {
+                grouping: false,
+                borderWidth: 0
+            }
+        },
+        legend: {
+            layout: 'horizontal',
+            align: 'center',
+            x: 80,
+            verticalAlign: 'top',
+            y: 10,
+            floating: true,
+            backgroundColor:
+                Highcharts.defaultOptions.legend.backgroundColor || // theme
+                'rgba(255,255,255,0.25)'
+        },
+        tooltip: {
+            shared: true,
+            headerFormat: '<span style="font-size: 15px">' +
+                '{series.chart.options.cats.(point.key).name}' +
+                '</span><br/>',
+            pointFormat: '<span style="color:{point.color}">\u25CF</span> ' +
+                '{series.name}: <b>{point.y} records</b><br/>'
+        },
+        xAxis: {
+            type: 'category',
+            accessibility: {
+                description: 'Distribution by Administrative Level'
+            },
+            //max: 4,
+            labels: {
+                useHTML: true,
+                animate: true,
+                format: '{chart.options.cats.(value)}<br>' +
+                    '<span class="f32">' +
+                    '<span style="display:inline-block;height:32px;vertical-align:text-top;" ' +
+                    'class="flag {value}"></span></span>',
+                style: {
+                    textAlign: 'center'
                 }
             }
         },
-        series: [{
-            // Disable mouse tracking on load, enable after custom animation
-            enableMouseTracking: false,
-            animation: {
-                duration: 2000
+        yAxis: [{
+            title: {
+                text: 'Household Count'
             },
-            colorByPoint: true,
-            data: charData,
+            showFirstLabel: false
+        }],
+        series: [{
+            color: 'rgba(158, 159, 163, 0.5)',
+            pointPlacement: -0.2,
+            linkedTo: 'main',
+            data: estimated,
+            name: 'Estimated Households'
+        }, {
+            name: 'Registered Households',
+            id: 'main',
+            dataSorting: {
+                enabled: true,
+                matchByName: true
+            },
+            dataLabels: [{
+                enabled: true,
+                inside: true,
+                style: {
+                    fontSize: '16px'
+                }
+            }],
+            data: rgstd
+        }],
+        exporting: {
+            allowHTML: true
+        }
+    });
+}
+const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level) => {
+    Highcharts.chart('EstimatedvsRegisteredHouseholdSizeChart', {
+        chart: {
+            type: 'column',
+            options3d: {
+                enabled: true,
+                alpha: 0,
+                beta: 15,
+                viewDistance: 100,
+                depth: 40
+            }
+        },
+        cats,
+        title: {
+            text: 'Estimated Household size vs Household size based registration by '+org_level,
+            align: 'left'
+        },
+
+        xAxis: {
+            type: 'category',
+            accessibility: {
+                description: 'Distribution by Administrative Level'
+            },
+            labels: {
+                useHTML: true,
+                animate: true,
+                format: '{chart.options.cats.(value)}<br>' +
+                    '<span class="f32">' +
+                    '<span style="display:inline-block;height:32px;vertical-align:text-top;" ' +
+                    'class="flag {value}"></span></span>',
+                style: {
+                    textAlign: 'center'
+                }
+            }
+        },
+
+        yAxis: {
+            allowDecimals: false,
+            min: 0,
+            title: {
+                text: 'Count',
+                skew3d: true,
+                style: {
+                    fontSize: '16px'
+                }
+            }
+        },
+
+        tooltip: {
+            headerFormat: '<b>{point.key}</b><br>',
+            pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}:{point.stackTotal}'
+        },
+
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                depth: 40
+            }
+        },
+
+        series: [{
+            name: 'Estimated Household Size',
+            data: estimated,
+            stack: 'Asia'
+        }, {
+            name: 'Estimation by Registered',
+            data: rgstd,
+            stack: 'Europe'
         }]
     });
 
