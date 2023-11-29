@@ -339,6 +339,16 @@
                                   type="number"
                                 />
                               </a-form-item>
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                              >
+                                <a-input
+                                  v-model:value="trans_formState.delivery_note_number"
+                                  placeholder="S11 No"
+                                  type="number"
+                                />
+                              </a-form-item>
                               <a-form-item name="comment" label="Comment">
                                 <a-input
                                   v-model:value="trans_formState.comment"
@@ -735,6 +745,7 @@ export default defineComponent({
         from_post_id: trans_formState.from_post_id,
         to_post_id: trans_formState.to_post_id,
         number_of_nets: trans_formState.number_of_nets,
+        delivery_note_number: trans_formState.delivery_note_number, // s11_no
         comment: trans_formState.comment,
       };
       console.log(JSON.stringify(data));
