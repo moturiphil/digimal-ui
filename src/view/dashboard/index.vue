@@ -725,7 +725,7 @@ const filterOption = (input, option) => {
 const updateStats = async (org_id) => {
   await axios.get(`all_stats?org_id=${org_id}`)
     .then(response => {
-      const data = response.data.data[0];
+      const data = response.data;
       console.log(data)
       active_events.value = data.events;
       nets_distributed.value = data.nets_distributed;
@@ -733,7 +733,7 @@ const updateStats = async (org_id) => {
       totalhouseholds_served.value = data.households_served;
       registered_users.value = data.registered_users;
       household_population.value = data.all_hh_members;
-      total_nets_required.value = data.nets_required;
+      total_nets_required.value = data.nets_distributed;
       activities.value = data.activities;
       // actual_allocation = data.
       // console.log(data.active_events);
@@ -759,7 +759,7 @@ const exportChartsToPDF = async () => {
   });
   // Get all rows in the content
   const rows = content.querySelectorAll('.pdf-row');
-  // Loop through each row
+  // Loop through ev row
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     // Use html2canvas to convert the row to a canvas
@@ -1046,7 +1046,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
         }
       },
       title: {
-        text: 'Target',
+        text: 'Current Achievement',
         style: {
           color: '#004225'
         }
@@ -1115,7 +1115,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       data: nets_issued,
       color: '#4ADEDE',
     }, {
-      name: 'Expected Target',
+      name: 'Expected Achievement',
       type: 'spline',
       yAxis: 2,
       data: target_level,
@@ -1129,7 +1129,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       },
       lineWidth: 6,
     }, {
-      name: 'Target',
+      name: 'Current Achievement',
       type: 'scatter',
       yAxis: 2,
       data: target_data,
@@ -1205,7 +1205,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
         }
       },
       title: {
-        text: 'Target',
+        text: 'Current Achievement',
         style: {
           color: '#004225'
         }
@@ -1274,7 +1274,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       data: served,
       color: '#4ADEDE',
     }, {
-      name: 'Expected Target',
+      name: 'Expected Achievement',
       type: 'spline',
       yAxis: 2,
       data: target_level,
@@ -1288,7 +1288,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
       },
       lineWidth: 6,
     }, {
-      name: 'Target',
+      name: 'Current Achievement',
       type: 'scatter',
       yAxis: 2,
       data: target_data,
