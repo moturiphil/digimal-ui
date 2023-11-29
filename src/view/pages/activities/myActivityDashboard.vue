@@ -1,146 +1,145 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Activity Dashboard">
-      <template #buttons> ></template>
-    </sdPageHeader>
+    <sdPageHeader ghost title="Activity Dashboard"> </sdPageHeader>
     <Main>
       <SearchResultWrapper>
-        <div style="background-color: #ececec; padding: 20px">
-          <a-row :gutter="16">
-            <a-col :span="8">
-              <a-card
-                title="Created Activities"
-                :bordered="true"
-                @click="selectCard('created')"
-              >
-                <sdButton size="extra-small" type="success">View</sdButton>
-              </a-card>
-            </a-col>
-            <a-col :span="8">
-              <a-card
-                title="Invited Activities"
-                :bordered="true"
-                @click="selectCard('invited')"
-              >
-                <sdButton size="extra-small" type="success">View</sdButton>
-              </a-card>
-            </a-col>
-            <a-col :span="8">
-              <a-card
-                title="Enrolled Activities"
-                :bordered="true"
-                @click="selectCard('enrolled')"
-              >
-                <sdButton size="extra-small" type="success">View</sdButton>
-              </a-card>
-            </a-col>
-          </a-row>
-        </div>
-
-        <!-- Render table based on the selected card -->
-        <div v-if="activeClass === 'created'">
-          <a-col class="w-100" :md="24">
-            <!-- Render table for Created Activities -->
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <div class="search-filter-menu"></div>
+          </a-col>
+          <a-col :xs="24">
             <sdCards headless>
-              <div v-if="isLoading" class="spin">
-                <a-spin />
-              </div>
+              <div class="result-list-content">
+                <div style="padding: 20px">
+                  <h3><u>Created Activities</u></h3>
 
-              <div v-else>
-                <TableWrapper
-                  class="table-data-view table-responsive"
-                  v-show="activeClass === 'created'"
-                >
-                  <a-table
-                    :pagination="{
-                      pageSize: 10,
-                      showSizeChanger: true,
-                    }"
-                    :dataSource="created_act"
-                    :columns="columns"
-                  >
-                    <template>
-                      <td :style="{ 'margin-left': '4px' }">
-                        <div class="table-actions"></div>
-                      </td>
-                    </template>
-                  </a-table>
-                </TableWrapper>
+                  <a-row :gutter="16">
+                    <a-col
+                      :span="24"
+                      :sm="12"
+                      :md="8"
+                      :lg="6"
+                      :xl="4"
+                      v-for="(item, index) in cardContent"
+                      :key="index"
+                    >
+                      <a-card
+                        :title="item.name"
+                        :bordered="true"
+                        style="margin-bottom: 16px"
+                      >
+                        <a-card-grid style="width: 100%; text-align: center">
+                          Activity Code: {{ item.activity_code }} <br />
+                          Start Date: {{ item.start_date }} <br />
+                          No of Days: {{ item.number_of_days }}
+                          <br />
+                          <sdButton size="extra-small" type="success">
+                            <router-link :to="{ path: `/view/admin-ents/` }">
+                              View Activity
+                            </router-link>
+                          </sdButton>
+                        </a-card-grid>
+                      </a-card>
+                    </a-col>
+                  </a-row>
+                </div>
               </div>
             </sdCards>
           </a-col>
-        </div>
+        </a-row>
+      </SearchResultWrapper>
 
-        <div v-else-if="activeClass === 'invited'">
-          <!-- Render table for Invited Activities -->
-          <!-- Adjust the Table component accordingly -->
-          <a-col class="w-100" :md="24">
-            <!-- Render table for Invited Activities -->
+      <SearchResultWrapper>
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <div class="search-filter-menu"></div>
+          </a-col>
+          <a-col :xs="24">
             <sdCards headless>
-              <div v-if="isLoading" class="spin">
-                <a-spin />
-              </div>
+              <div class="result-list-content">
+                <div style="padding: 20px">
+                  <h3><u>Invited Activities</u></h3>
 
-              <div v-else>
-                <TableWrapper
-                  class="table-data-view table-responsive"
-                  v-show="activeClass === 'invited'"
-                >
-                  <a-table
-                    :pagination="{
-                      pageSize: 10,
-                      showSizeChanger: true,
-                    }"
-                    :dataSource="invited_act"
-                    :columns="columns"
-                  >
-                    <template>
-                      <td :style="{ 'margin-left': '4px' }">
-                        <div class="table-actions"></div>
-                      </td>
-                    </template>
-                  </a-table>
-                </TableWrapper>
+                  <a-row :gutter="16">
+                    <a-col
+                      :span="24"
+                      :sm="12"
+                      :md="8"
+                      :lg="6"
+                      :xl="4"
+                      v-for="(item, index) in invitedActContent"
+                      :key="index"
+                    >
+                      <a-card
+                        :title="item.name"
+                        :bordered="true"
+                        style="margin-bottom: 16px"
+                      >
+                        <a-card-grid style="width: 100%; text-align: center">
+                          Activity Code: {{ item.activity_code }} <br />
+                          Start Date: {{ item.start_date }} <br />
+                          No of Days: {{ item.number_of_days }}
+                          <br />
+                          <sdButton size="extra-small" type="success">
+                            <router-link :to="{ path: `/view/adn-events/` }">
+                              View Activity
+                            </router-link>
+                          </sdButton>
+                        </a-card-grid>
+                      </a-card>
+                    </a-col>
+                  </a-row>
+                </div>
               </div>
             </sdCards>
           </a-col>
-        </div>
+        </a-row>
+      </SearchResultWrapper>
 
-        <div v-else-if="activeClass === 'enrolled'">
-          <!-- Render table for Enrolled Activities -->
-          <!-- Adjust the Table component accordingly -->
-          
-          <a-col class="w-100" :md="24">
-            <!-- Render table for Created Activities -->
+      <SearchResultWrapper>
+        <a-row :gutter="25">
+          <a-col :xs="24">
+            <div class="search-filter-menu"></div>
+          </a-col>
+          <a-col :xs="24">
             <sdCards headless>
-              <div v-if="isLoading" class="spin">
-                <a-spin />
-              </div>
+              <div class="result-list-content">
+                <div style="padding: 20px">
+                  <h3><u>Enrolled Activities</u></h3>
 
-              <div v-else>
-                <TableWrapper
-                  class="table-data-view table-responsive"
-                  v-show="activeClass === 'enrolled'"
-                >
-                  <a-table
-                    :pagination="{
-                      pageSize: 10,
-                      showSizeChanger: true,
-                    }"
-                    :dataSource="enrolled_act"
-                    :columns="columns"
-                  >
-                    <template>
-                      <td :style="{ 'margin-left': '4px' }">
-                        <div class="table-actions"></div>
-                      </td>
-                    </template>
-                  </a-table>
-                </TableWrapper>
+                  <a-row :gutter="16">
+                    <a-col
+                      :span="24"
+                      :sm="12"
+                      :md="8"
+                      :lg="6"
+                      :xl="4"
+                      v-for="(item, index) in enrolledActContent"
+                      :key="index"
+                    >
+                      <a-card
+                        :title="item.activity_id"
+                        :bordered="true"
+                        style="margin-bottom: 16px"
+                      >
+                        <a-card-grid style="width: 100%; text-align: center">
+                          Activity Code: {{ item.code }} <br />
+                          Start Date: {{ item.activity_date }} <br />
+                          <br />
+                          <sdButton size="extra-small" type="success">
+                            <router-link :to="{ path: `/view/admin-eves/` }">
+                              View Activity
+                            </router-link>
+                          </sdButton>
+                        </a-card-grid>
+                      </a-card>
+                    </a-col>
+                  </a-row>
+                </div>
               </div>
             </sdCards>
           </a-col>
-        </div>
+        </a-row>
       </SearchResultWrapper>
     </Main>
   </div>
@@ -191,6 +190,12 @@ const columns = [
     dataIndex: "sub_county_id",
     key: "id",
   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "activity",
+    slots: { customRender: "activity" },
+  },
 ];
 export default defineComponent({
   name: "HouseHold Validation",
@@ -230,12 +235,16 @@ export default defineComponent({
     const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
+    const dataSource = ref([]); // invitedAct
+    const invitedAct = ref([]);
+    const enrolledAct = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
-    const created_act = ref([]);
-    const invited_act = ref([]);
-    const enrolled_act = ref([]);
+    const logs = ref([]);
+
+    const myCreatedActivities = `${process.env.VUE_APP_BASE_URL}/my_created_activities`;
+    const myInvitedActivities = `${process.env.VUE_APP_BASE_URL}/my_assigned_activities`;
+    const myEnrolledActivities = `${process.env.VUE_APP_BASE_URL}/my_enrolled_activities`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -245,47 +254,76 @@ export default defineComponent({
 
     onMounted(() => {});
 
-    const selectCard = async (cardType) => {
-      console.log(cardType);
-      try {
-        let apiUrl = "";
-
-        if (cardType === "created") {
-          apiUrl = `${process.env.VUE_APP_BASE_URL}/my_created_activities`;
-          console.log(apiUrl);
-          const response = await axios.get(apiUrl, {
-            headers: authHeader(),
-          });
-          console.log(response.data.data);
-          created_act.value = response.data.data;
-        } else if (cardType === "invited") {
-          apiUrl = `${process.env.VUE_APP_BASE_URL}/my_assigned_activities`;
-          // Handle the API request and update the corresponding ref here
-          console.log(apiUrl);
-          const response = await axios.get(apiUrl, {
-            headers: authHeader(),
-          });
-          console.log(response.data.data);
-          invited_act.value = response.data.data;
-        } else if (cardType === "enrolled") {
-          apiUrl = `${process.env.VUE_APP_BASE_URL}/my_enrolled_activities`;
-          // Handle the API request and update the corresponding ref here
-          console.log(apiUrl);
-          const response = await axios.get(apiUrl, {
-            headers: authHeader(),
-          });
-          console.log(response.data.data);
-          enrolled_act.value = response.data.data;
-        }
-
-        // The API requests for "invited" and "enrolled" are missing from the original code
-        // Make the API requests for these card types and update the corresponding refs
-      } catch (error) {
+    axios
+      .get(myCreatedActivities, {
+        headers: authHeader(),
+      })
+      .then((response) => {
+        console.log(response.data.data);
+        logs.value = response.data.data.map((item) => ({
+          ...item,
+          name: item.name,
+        }));
+        dataSource.value = logs.value;
+      })
+      .catch((error) => {
         console.error(error);
-      }
-    };
+      });
 
-    console.log(activeClass);
+    axios
+      .get(myInvitedActivities, {
+        headers: authHeader(),
+      })
+      .then((response) => {
+        console.log(response.data.data);
+        logs.value = response.data.data.map((item) => ({
+          ...item,
+          name: item.name,
+        }));
+        invitedAct.value = logs.value;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    axios
+      .get(myEnrolledActivities, {
+        headers: authHeader(),
+      })
+      .then((response) => {
+        console.log(response.data.data);
+        logs.value = response.data.data.map((item) => ({
+          ...item,
+          name: item.name,
+        }));
+        enrolledAct.value = logs.value;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // watchEffect(async () => {
+    //   const query = searchItem.value.toLowerCase();
+    //   try {
+    //     if (!query) {
+    //       dataSource.value = logs.value;
+    //       return dataSource.value;
+    //     }
+    //     if (query.length > 3) {
+    //       const response = await fetch(`${API_URL}/search?query=${query}`, {
+    //         method: "GET",
+    //         headers: authHeader(),
+    //       });
+    //       const data = await response.json();
+    //       dataSource.value = data;
+    //     }
+    //   } catch (error) {
+    //     notification.error({
+    //       message: "Error",
+    //       description: error.message,
+    //     });
+    //   }
+    // });
 
     return {
       crud,
@@ -296,12 +334,21 @@ export default defineComponent({
       columns,
       handleChange,
       activeClass,
+      invitedAct,
+      enrolledAct,
       // handleVerify,
-      selectCard,
-      created_act,
-      invited_act,
-      enrolled_act,
     };
+  },
+  computed: {
+    cardContent() {
+      return this.dataSource;
+    },
+    invitedActContent() {
+      return this.invitedAct;
+    },
+    enrolledActContent() {
+      return this.enrolledAct;
+    },
   },
 });
 </script>
@@ -321,3 +368,23 @@ export default defineComponent({
   border-radius: 3px;
 }
 </style>
+
+<!-- <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'all'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 50,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="dataSource"
+                            :columns="columns"
+                          >
+                            <template>
+                              <td :style="{ 'margin-left': '4px' }">
+                                <div class="table-actions"></div>
+                              </td>
+                            </template>
+                          </a-table>
+                        </TableWrapper> -->
