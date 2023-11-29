@@ -6,14 +6,21 @@ const routes = [
     name: "dashboard",
     component: () =>
       import(
-        /* webpackChunkName: "Dashboard" */ "@/view/dashboard/Dashboard.vue"
+        /* webpackChunkName: "Dashboard" */ "@/view/dashboard/Dashboard.vue"//
       ),
     children: [
       {
         path: "/",
         name: "home",
         component: () =>
-          import(/* webpackChunkName: "Home" */ "@/view/dashboard"),
+          import("@/view/dashboard"),
+        meta: { auth: true },
+      },
+      {
+        path: "/MNEDashboard",
+        name: "MNEDashboard",
+        component: () =>
+          import(/* webpackChunkName: "Home" */ "@/view/dashboard/MNEDashboard"),
       },
       {
         path: "registered-users",
@@ -151,6 +158,16 @@ const routes = [
         path: "/event/view/:id",
         name: "view-event",
         component: () => import("@/view/pages/events/showEvent.vue"),
+      },
+      {
+        path: "/view/admin-events",
+        name: "view-event",
+        component: () => import("@/view/pages/events/adminEvent.vue"),
+      },
+      {
+        path: "/event/participant-otp/:id",
+        name: "participant-otp",
+        component: () => import("@/view/pages/events/participantOTP.vue"),
       },
       {
         path: "/event/details/:id",
@@ -413,7 +430,7 @@ const routes = [
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
-  }, 
+  },
   {
     path: "/chp-hh-registered/:id",
     name: "chp-hh-registered",
@@ -550,12 +567,20 @@ const routes = [
       ),
   },
   {
+    path: "/admin-massnet",
+    name: "massnet-admin",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/admin/Administrator.vue"
+      ),
+  },
+  {
     path: "/404", // Use an absolute path
     name: "404",
     component: () =>
       import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
   },
-  
+
   ...Apps,
 ];
 

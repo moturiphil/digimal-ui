@@ -75,6 +75,7 @@
                                     @click="removeOfficer(record.id)"
                                   >
                                     <span> Remove Officer </span>
+
                                     <sdFeatherIcons
                                       type="x-circle"
                                       size="small"
@@ -349,7 +350,6 @@ export default defineComponent({
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
-
     onMounted(async () => {
       try {
         const response = await axios.get(API_URL, {

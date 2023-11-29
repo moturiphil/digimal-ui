@@ -104,8 +104,6 @@ import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, watchEffect } from "vue";
 import { notification } from "ant-design-vue";
-import authHeader from "../../../services/auth-header";
-
 const columns = [
   {
     title: "First Name",
@@ -174,10 +172,14 @@ const subcounties = ref(null)
 const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
+const country = ref("Select Country")
+const county = ref("Select County")
+const sublocation = ref("Select Sublocation")
+const subcounty = ref("Select Subcounty")
+const location = ref("Select Location")
+const ward = ref("Select Ward")
 const villages = ref(null)
-const users = ref([])
-
-
+const village=ref("Select a Post")
 const org_ids = ref([])
 
 
@@ -196,75 +198,45 @@ const handlePaginationChange = (newPage) => {
 };
 
 const updateFilters = () => {
-  access_level.value.level.level_name = 'national'
-  access_level.value.location.id = 1
-  access_level.value.location.org_id = 'HfVjCurKxh2'
-  access_level.value.location.name = 'Kenya'
+  // access_level.value.level.id = 1
+  // access_level.value.location.id = 1
+  // access_level.value.location.org_id = 'HfVjCurKxh2'
+  // access_level.value.location.name = 'Kenya'
 
-  if (access_level.value.level.level_name.toLowerCase() == 'national') {
+   if (access_level.value.level.id == 1) {
     filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
     fetchCounties()
-  } else if (access_level.value.level.level_name.toLowerCase() == 'county') {
+  } else if (access_level.value.level.id == 2) {
     filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-  } else if (access_level.value.level.level_name.toLowerCase() == 'subcounty') {
+  } else if (access_level.value.level.id == 3) {
     filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation', 'village']
     subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-  } else if (access_level.value.level.level_name.toLowerCase() == 'ward') {
+  } else if (access_level.value.level.id == 4) {
     filterAccessList.value = ['ward', 'location', 'sublocation', 'village']
     wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-  } else if (access_level.value.level.level_name.toLowerCase() == 'location') {
+  } else if (access_level.value.level.id == 5) {
     filterAccessList.value = ['location', 'sublocation', 'village']
     locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-  } else if (access_level.value.level.level_name.toLowerCase() == 'sublocation') {
+  } else if (access_level.value.level.id == 6) {
     filterAccessList.value = ['sublocation', 'village']
     sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-  } else {
-    filterAccessList.value = ['village']
-    villages.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
   }
   fetchUsers()
 }
 
-    watchEffect(async()=>{
-      const query = searchItem.value.toLowerCase();
-      try {
-        if(!query) 
-        {
-          dataSource.value = users.value;
-          return dataSource.value;
-        }
-        if(query.length > 3){
-          const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/users?query=${query}`,
-            {
-              method: "GET",
-              headers: authHeader(),
-            }
-          );
-          const data = await response.json();
-          dataSource.value = data.data;
-        }
-        
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-      }})
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
   console.log(org)
-  let parent_id = org[0] || 1
+  let parent_id = org[0] || 9
   console.log(parent_id)
   console.log(org_level)
   fetchChildData(parent_id, org_id, org_level)
@@ -274,24 +246,47 @@ const fetchChildData = async (location_id, org_id, org_level) => {
   let masterListUrl = `users?page=${current.value}&per_page=${pageSize.value}`
   if (org_level == 'country') {//get counties
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    county.value = "Select County"
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
   } else if (org_level == 'county') {//get subcounties
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
   } else if (org_level == 'subcounty') {//get wards
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
   } else if (org_level == 'ward') {//get locatios
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
   } else if (org_level == 'location') {//get sub locatios
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    sublocation.value = "Select Sub Location"
   } else if (org_level == 'sublocation') {//get sublocations stats
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    sublocation.value = "Select Sub Location"
+    village.value="Select Post"
   } else if (org_level == 'village') {
-    masterListUrl += `?location_id=${location_id}`
+    masterListUrl += `&location=${location_id}`
   }
   await axios.get(`${fetchUrl}`)
     .then(response => {
@@ -301,56 +296,47 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
         counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get subcounties
         subcounties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'subcounty') {//get wards
         wards.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'ward') {//get locations
         locations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
       } else if (org_level == 'location') {//get sublocations
         sublocations.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
-      } else if (org_level == 'sublocation') {//get villages
-        villages.value = data.map(x => ({
-          value: x.org_id,
-          label: x.name
-        }));
-        org_ids.value = data.map(x => ({
-          org_id: x.org_id,
-          id: x.id
-        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       }
     }).then(async () => {
       await axios.get(`${masterListUrl}`)
@@ -398,7 +384,6 @@ const fetchUsers = async () => {
     // Assuming you have an initial page number
     const response = await axios.get(`users?page=${current.value}&per_page=${pageSize.value}`);
     const data = await response.data;
-    users.value = data.data;
     dataSource.value = data.data;
   } catch (error) {
     console.error(error);

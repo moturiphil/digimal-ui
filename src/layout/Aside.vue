@@ -5,11 +5,21 @@
     :theme="darkMode ? 'dark' : 'light'"
   >
     <a-menu-item-group key="pages">
-      <a-menu-item key="widgetDashboard">
-        <router-link to="/">
-          <sdFeatherIcons type="home" /> <span>Dashboard</span>
-        </router-link>
-      </a-menu-item>
+        <a-sub-menu key="widgetDashboard">
+          <template v-slot:title>
+              <sdFeatherIcons type="home" /> <span>Dashboards</span>
+          </template>
+           <a-menu-item key="widgetDashboard">
+              <router-link to="/">
+              Campaign Dashboard
+              </router-link>
+            </a-menu-item>
+          <a-menu-item key="widgetDashboard" v-if="true">
+            <router-link to="/MNEDashboard">
+              M & E Dashboard
+            </router-link>
+          </a-menu-item>
+        </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>
           <sdFeatherIcons type="globe" /><span>Campaigns</span>
@@ -86,11 +96,11 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <!-- <a-menu-item key="widgetHouseholdRegSummary">
-          <router-link to="/households/summary">
-            HouseHolds Summary
+        <a-menu-item key="widgetIncompleteHouseholdReg">
+          <router-link to="/households-registrations/incomplete">
+            Incomplete HouseHolds Registration
           </router-link>
-        </a-menu-item> -->
+        </a-menu-item>
         <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
           <router-link to="/household/validation">
             HouseHolds Validation
@@ -186,7 +196,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="database" /><span>Supply Chain</span>
         </template>
-          
+
         <a-sub-menu key="meds-issuance">
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>MEDS</span>
@@ -298,6 +308,11 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-menu-item v-if="isAdmin" key="massnet-admin">
+        <router-link to="/admin-massnet">
+          <sdFeatherIcons type="alert-triangle" /><span> Administrator </span>
+        </router-link>
+      </a-menu-item>
       <a-menu-item v-if="isAdmin" key="logs">
         <router-link to="/logs">
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
@@ -327,13 +342,13 @@ const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
   53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,78,17
 ];
-const createEventRoles = [53, 5, 3, 21, 37, 39];
+const createEventRoles = [53, 5, 3, 21, 37, 39, 22, 36];
 
 const viewEventRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
   36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
 ];
-const createActivityRoles = [53, 5, 3, 21, 37];
+const createActivityRoles = [53, 5, 3, 21, 37, 22, 36];
 
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,

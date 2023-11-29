@@ -460,6 +460,18 @@
                                   :format="dateFormat"
                                 />
                               </a-form-item>
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                              >
+                                <a-input
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.delivery_note_number
+                                  "
+                                  type="number"
+                                />
+                              </a-form-item>
                               <div class="record-form-actions text-right">
                                 <sdButton
                                   size="default"
@@ -776,6 +788,7 @@ export default defineComponent({
         date_returned: dayjs(returns_formState.date_returned).format(
           "YYYY-MM-DD"
         ),
+        delivery_note_number:returns_formState.delivery_note_number,
       };
       try {
         fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
@@ -861,7 +874,8 @@ export default defineComponent({
             } else {
               notification.error({
                 message: "Error",
-                description: "Only post supervisor can receive nets, contact SCMCC.",
+                description:
+                  "Only post supervisor can receive nets, contact SCMCC.",
               });
             }
             isModalOpen.value = false;
