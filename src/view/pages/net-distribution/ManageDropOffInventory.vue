@@ -168,7 +168,7 @@
                                     <sdButton
                                       @click="openReceiveModal(record.id)"
                                       type="success"
-                                      :disabled = "record.status == 1"
+                                      :disabled = "record.status == 1 || record.status == 2"
                                       size="extra-small">Receive</sdButton>
                                   </div>
                                 </td>
@@ -543,6 +543,18 @@
                             
                             </a-modal>
                             <!-- end of assigndropoff -->
+
+                            <!-- confirmation modal -->
+                            <a-modal
+                              title="Confirmation"
+                              :visible="isModalOpen_confirmation"
+                              @cancel="closeModalAll('confirmation')"
+                              width="50%"
+                              onOk={approveOrders}
+                              onCancel={handleCancel}
+        
+                              ></a-modal>
+                            <!-- end of confirmation -->
                         
                         </div>
                       </sdCards>
@@ -560,9 +572,11 @@
   <script>
   import { Main, BasicFormWrapper, TableWrapper } from "../../styled";
   import { SearchResultWrapper } from "./../style";
-  import { onMounted, ref, reactive, defineComponent } from "vue";
+  import { onMounted, ref, reactive, defineComponent,createVNode } from "vue";
   import authHeader from "../../../services/auth-header";
+  import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
   // import { useStore } from "vuex";
+  import { Modal } from 'ant-design-vue';
   import { notification } from "ant-design-vue";
   import { useRoute } from "vue-router";
   import dayjs from "dayjs";
@@ -748,6 +762,7 @@
       const isModalOpen_GO = ref(false); //generate order modal form
       const isModalOpen_assignPosts = ref(false); //assignpost modal form
       const isModalOpen_receiveNets = ref(false); //receive nets modal form
+      const isModalOpen_confirmation = ref(false); //confirmation modal form
       const openmodal = () => isModalOpen_issuenets.value = true;
       const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_id}`;
       const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
@@ -803,6 +818,9 @@
           case 'receiveNets':
             isModalOpen_receiveNets.value = true;
             break;
+          case 'confirmation':
+            isModalOpen_confirmation.value = true;
+            break;
         
           default:
             break;
@@ -823,11 +841,29 @@
           case 'receiveNets':
             isModalOpen_receiveNets.value = false;
             break;
+          case 'confirmation':
+            isModalOpen_confirmation.value = false;
+            break;
         
           default:
+            isModalOpen_assignPosts.value = false;
+            isModalOpen_confirmation.value = false;
+            isModalOpen_GO.value = false;
+            isModalOpen_receiveNets.value = false;
+
             break;
         }
 
+      }
+
+      const confirm = ()=>{
+        Modal.confirm({
+        title: 'Confirm',
+        icon: createVNode(ExclamationCircleOutlined),
+        content: 'Are you sure you want to approve all orders?',
+        okText: 'OK',
+        cancelText: 'Cancel',
+      });
       }
 
       const approveOrders =async()=>{
@@ -1037,6 +1073,47 @@
           });
         }
       }
+
+      // const fetchPostSummary = ()=>{
+      //   const dropoffid ={
+      //     "drop_off_point_id":drop_off_id
+      //   }
+      //   try {
+      //     fetch(`${process.env.VUE_APP_BASE_URL}/drop_off_point_posts_summary`,
+      //     {
+      //       method: "POST",
+      //       headers:{
+      //           "Content-Type": "application/json",
+      //           ...
+      //          authHeader()
+      //         },
+      //       body: JSON.stringify(dropoffid),
+      //     })
+      //     .then((response) => response.json())
+      //     .then(({success, data}) => {
+      //       if(success){
+      //         postSummary.value = data;
+      //       }else{
+      //         notification.info({
+      //           message: "Info",
+      //           description: `${data}`
+      //         });
+      //       }
+      //     })
+      //     .catch((error)=>{
+      //       notification.error({
+      //         message: "Error",
+      //         description: `${error}`
+      //       });
+      //       isModalOpen_issuenets.value = false;
+      //     })
+      //   } catch (error) {
+      //     notification.error({
+      //       message: "Error",
+      //       description: `${error}`
+      //     });
+      //   }
+      // }
 
       const fetchPostSummary = ()=>{
         const dropoffid ={
@@ -1401,6 +1478,7 @@
         handleChangeAssignPosts,
         filterOption,
         handleCancelGO,
+        confirm,
         activeClass,
         isModalOpen_issuenets,
         openmodal,
@@ -1408,6 +1486,7 @@
         handleOk,
         postSummary,
         serviceOrdersColumns,
+        isModalOpen_confirmation,
         closeModalAll,
         servicedOrders
       };
