@@ -1187,7 +1187,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
         pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
       },
       marker: {
-        radius: 8, // Set the radius to adjust the size of scatter plot dots
+        radius: 6, // Set the radius to adjust the size of scatter plot dots
       },
     }],
     responsive: {
@@ -1354,7 +1354,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
         pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
       },
       marker: {
-        radius: 8, // Set the radius to adjust the size of scatter plot dots
+        radius: 6, // Set the radius to adjust the size of scatter plot dots
       },
     }],
     responsive: {

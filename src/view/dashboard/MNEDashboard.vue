@@ -390,15 +390,18 @@ const fetchInitialChartData = async () => {
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
             )
-            let scatterData=[]
+            let scatterData = []
             newChartData.value.forEach((item, index) => {
                 let x = parseInt(item.nets_issued)
-                let y= parseInt(item.households_registered)
-                console.log(x,y)
-                scatterData.push([index, parseInt(x/y)?x:0])
-             })
-            NetsPerCapita(scatterData,
-                access_level.value.level.level_name,
+                let y = parseInt(item.households_registered)
+                scatterData.push([index, parseFloat(x / y).toFixed(2)?x:0])
+            })
+            NetsPerCapita(
+                newChartData.value.map(item => parseInt(item.households_registered)),//total population
+                newChartData.value.map(item => parseInt(item.nets_issued)),//issued
+                scatterData,
+                newChartData.value.map(item => item.name),//cats
+                access_level.value.level.level_name,//level
             )
         }).catch(error =>{
             console.log(error)
@@ -422,7 +425,7 @@ const handleChange = async (org_id, org_level) => {
 };
 const fetchChildData = async (org_id, org_level) => {
     let fetchUrl = `get_sub_counties_list`
-    let statUrl = `subcounty/stats`
+    let statUrl = `all_stats`
     if (org_level == 'country') {//get counties
         fetchUrl += `?parent_id=${org_id}`
         statUrl += `?org_id=${org_id}`
@@ -539,15 +542,18 @@ const fetchChildData = async (org_id, org_level) => {
                         newChartData.value.map(item => item.name),//cats
                         access_level.value.level.level_name,//level
                     )
-                    let scatterData = []
+                    let scatterData=[]
                     newChartData.value.forEach((item, index) => {
                         let x = parseInt(item.nets_issued)
                         let y = parseInt(item.households_registered)
-                        console.log(x, y)
-                        scatterData.push([index, parseInt(x / y) ? x : 0])
+                        scatterData.push([index,parseFloat(x/y).toFixed(2)?x:0])
                     })
-                    NetsPerCapita(scatterData,
-                       org_level,
+                    NetsPerCapita(
+                        newChartData.value.map(item => parseInt(item.households_registered)),//nets_required
+                        newChartData.value.map(item => parseInt(item.nets_issued)),//total population
+                        scatterData,
+                        newChartData.value.map(item => item.name),//cats
+                        access_level.value.level.level_name,//level
                     )
                 })
 
@@ -1037,77 +1043,142 @@ const netsReqvsDeliveredChart = (nets_required, nets_issued, cats, orglevel) => 
         }
     });
 }
-const NetsPerCapita = (data) => {
-    const dataset = data;
-    console.log(dataset)
-    function getTrendLine(data) {
-        const n = data.length;
-
-        let sumX = 0,
-            sumY = 0,
-            sumXY = 0,
-            sumX2 = 0;
-
-        // Calculate the sums needed for linear regression
-        for (let i = 0; i < n; i++) {
-            const [x, y] = data[i];
-            sumX += parseFloat(x);
-            sumY += parseFloat(y);
-            sumXY += parseFloat(x) * parseFloat(y);
-            sumX2 += parseFloat(x) ** 2;
-        }
-
-        // Calculate the slope of the trend line
-        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2);
-
-        // Calculate the intercept of the trend line
-        const intercept = (sumY - slope * sumX) / n;
-
-        const trendline = []; // Array to store the trend line data points
-
-        // Find the minimum and maximum x-values from the scatter plot data
-        const minX = Math.min(...data.map(([x]) => x));
-        const maxX = Math.max(...data.map(([x]) => x));
-
-        // Calculate the corresponding y-values for the trend line using the slope
-        // and intercept
-        trendline.push([minX, minX * slope + intercept]);
-        trendline.push([maxX, maxX * slope + intercept]);
-        return trendline;
-    }
-
-    Highcharts.chart('NetsPerCapitaChart', {
+const NetsPerCapita = (total_population, nets_issued, scatter_data, cats, orglevel) => {
+    console.log(scatter_data)
+   Highcharts.chart('NetsPerCapitaChart', {
+        chart: {
+            zoomType: 'xy'
+        },
         title: {
-            text: 'Nets PerCapita & Trends'
+            text: 'Nets PerCapita by '+orglevel,
+            align: 'left'
         },
-        xAxis: {
-            min: -0.5,
-            max: 5.5
+        xAxis: [{
+            categories: cats,
+            crosshair: true
+        }],
+        yAxis: [{ // Primary yAxis
+            labels: {
+                format: '{value}',
+                style: {
+                    color: Highcharts.getOptions().colors[2]
+                }
+            },
+            opposite: true
+
+        }, { // Secondary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'Count ',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+
+        }, { // Tertiary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'PerCapita',
+                style: {
+                    color: '#004225',
+                }
+            },
+            labels: {
+                style: {
+                    color: '#004225',
+                }
+            },
+            opposite: true
+        }],
+        tooltip: {
+            shared: true
         },
-        yAxis: {
-            min: 0
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            x: 80,
+            verticalAlign: 'top',
+            y: 55,
+            floating: true,
+            backgroundColor:
+                Highcharts.defaultOptions.legend.backgroundColor || // theme
+                'rgba(255,255,255,0.25)'
         },
         series: [{
-            type: 'line',
-            name: 'Trend Line',
-            data: getTrendLine(dataset),
+            name: 'Total population',
+            type: 'column',
+            yAxis: 1,
+            data: total_population,
+            tooltip: {
+                valueSuffix: ''
+            }
+
+        }, {
+            name: 'Nets Issued',
+            type: 'column',
+            yAxis: 1,
+            data: nets_issued,
+            color: '#4ADEDE',
             marker: {
                 enabled: false
             },
-            states: {
-                hover: {
-                    lineWidth: 0
-                }
-            },
-            enableMouseTracking: false
-        }, {
-            type: 'scatter',
-            name: 'Observations',
-            data: dataset,
-            marker: {
-                radius: 4
+            dashStyle: 'shortdot',
+            tooltip: {
+                valueSuffix: ''
             }
-        }]
+
+        }, {
+            name: 'PerCapita',
+            type: 'scatter',
+            data: scatter_data,
+            tooltip: {
+                pointFormat: '{point.name} <b>{point.y:.1f}</b>'
+            },
+            color: '#004225',
+            marker: {
+                radius: 6, // Set the radius to adjust the size of scatter plot dots
+            },
+
+        }],
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    legend: {
+                        floating: false,
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom',
+                        x: 0,
+                        y: 0
+                    },
+                    yAxis: [{
+                        labels: {
+                            align: 'right',
+                            x: 0,
+                            y: -6
+                        },
+                        showLastLabel: false
+                    }, {
+                        labels: {
+                            align: 'left',
+                            x: 0,
+                            y: -6
+                        },
+                        showLastLabel: false
+                    }, {
+                        visible: false
+                    }]
+                }
+            }]
+        }
     });
 
 }
