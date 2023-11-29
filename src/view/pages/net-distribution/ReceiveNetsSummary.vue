@@ -828,6 +828,7 @@ export default defineComponent({
             returns_formState.to_drop_off_point_id = "";
             returns_formState.number_of_nets = "";
             returns_formState.date_returned = "";
+            window.location.reload();
           })
           .catch((error) => {
             console.log(error);
@@ -1054,6 +1055,7 @@ export default defineComponent({
                 message: "Success",
                 description: `${message}`,
               });
+              window.location.reload();
             } else {
               notification.error({
                 message: "Error",
