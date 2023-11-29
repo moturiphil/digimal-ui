@@ -160,6 +160,16 @@ const routes = [
         component: () => import("@/view/pages/events/showEvent.vue"),
       },
       {
+        path: "/view/admin-events",
+        name: "view-event",
+        component: () => import("@/view/pages/events/adminEvent.vue"),
+      },
+      {
+        path: "/event/participant-otp/:id",
+        name: "participant-otp",
+        component: () => import("@/view/pages/events/participantOTP.vue"),
+      },
+      {
         path: "/event/details/:id",
         name: "view-details",
         component: () => import("@/view/pages/events/eventDetails.vue"),
@@ -502,6 +512,14 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/audit-logs/AuditLogs.vue"
+      ),
+  },
+  {
+    path: "/admin-massnet",
+    name: "massnet-admin",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/admin/Administrator.vue"
       ),
   },
   {
