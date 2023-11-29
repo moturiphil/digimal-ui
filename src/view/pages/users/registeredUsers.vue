@@ -34,43 +34,26 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-row class="" style="float:end;" :gutter="5">
+                <a-row class="" :gutter="5">
                   <a-space>
-                  <a-col v-if="filterAccessList.includes('country')" :xxl="3" :xl="6" :md="12" :sm="24">
-                    <a-select v-model:value="country" show-search placeholder="Select Country" style="width: 200px"
-                      :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+                  <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-select v-if="filterAccessList.includes('country')" v-model:value="country" show-search placeholder="Select Country" style="width: 100%" :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
                   </a-col>
-                  <a-col v-if="filterAccessList.includes('county')" :xxl="3" :xl="6" :md="12" :sm="24">
-                    <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
-                      :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
+                  <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-select v-if="filterAccessList.includes('county')" v-model:value="county" show-search placeholder="Select County" style="width: 100%" :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
                   </a-col>
-                  <a-col v-if="filterAccessList.includes('subcounty')">
-                    <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
-                      :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+                  <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-select v-if="filterAccessList.includes('subcounty')" v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 100%" :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
                   </a-col>
-                  <a-col v-if="filterAccessList.includes('ward')" :xxl="3" :xl="6" :md="12" :sm="24">
-                    <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
-                      :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
+                  <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-select v-if="filterAccessList.includes('ward')" v-model:value="ward" show-search placeholder="Select Ward" style="width: 100%" :options="wards" :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
                   </a-col>
-                  </a-space>
-                </a-row>
-                <br/>
-                <a-row style="float:end;" :gutter="5">
-                  <a-space>
-                  <a-col v-if="filterAccessList.includes('location')" :xxl="3" :xl="6" :md="12" :sm="24">
-                    <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
-                      :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+                  <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-select v-if="filterAccessList.includes('location')" v-model:value="location" show-search placeholder="Select Location" style="width: 100%" :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
                   </a-col>
-                  <a-col v-if="filterAccessList.includes('sublocation')" :xxl="3" :xl="6" :md="12" :sm="24">
-                    <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
-                      :options="sublocations" :filter-option="filterOption"
-                      @change="handleChange($event, 'sublocation')" ></a-select>
+                  <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-select v-if="filterAccessList.includes('sublocation')" v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 100%" :options="sublocations" :filter-option="filterOption" @change="handleChange($event, 'sublocation')"></a-select>
                   </a-col>
-                  <a-col v-if="filterAccessList.includes('village')" :xxl="3" :xl="6" :md="12" :sm="24">
-                      <a-select v-model:value="village" show-search placeholder="Select a Post" style="width: 200px"
-                        :options="villages" :filter-option="filterOption"
-                        @change="handleChange($event, 'village')" ></a-select>
-                    </a-col>
                   </a-space>
                 </a-row>
                 <a-divider></a-divider>
@@ -178,8 +161,8 @@ const sublocation = ref("Select Sublocation")
 const subcounty = ref("Select Subcounty")
 const location = ref("Select Location")
 const ward = ref("Select Ward")
-const villages = ref(null)
-const village=ref("Select a Post")
+//const villages = ref(null)
+//const village=ref("Select a Post")
 const org_ids = ref([])
 
 
@@ -204,7 +187,7 @@ const updateFilters = () => {
   // access_level.value.location.name = 'Kenya'
 
    if (access_level.value.level.id == 1) {
-    filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
     org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
     fetchCounties()
@@ -284,7 +267,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     masterListUrl += `&location=${location_id}`
     //clear fields
     sublocation.value = "Select Sub Location"
-    village.value="Select Post"
+    //village.value="Select Post"
   } else if (org_level == 'village') {
     masterListUrl += `&location=${location_id}`
   }
