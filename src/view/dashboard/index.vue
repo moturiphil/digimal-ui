@@ -737,7 +737,7 @@ const updateStats = async (org_id) => {
       totalhouseholds_served.value = data.households_served || 0;
       registered_users.value = data.registered_users || 0;
       household_population.value = data.all_hh_members || 0;
-      total_nets_required.value = data.nets_issued || 0;
+      total_nets_required.value = data.nets_required || 0;
       activities.value = data.activities || 0;
       // actual_allocation = data.
       // console.log(data.active_events);
