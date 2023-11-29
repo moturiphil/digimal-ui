@@ -296,12 +296,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
         counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get subcounties
         subcounties.value = data.map(x => ({

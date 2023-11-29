@@ -37,7 +37,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
-  console.log(user)
 
   if (to.meta.auth && (user_object == null)) {
     next({ path: "/auth/login" });
@@ -56,13 +55,13 @@ router.beforeEach((to, from, next) => {
       // User is not authenticated and trying to access the login page, allow navigation
       next();
     }
-  // if (user_object && user_object.token) {
-  //   // User has a token, allow navigation
-  //   next();
-  // } else {
-    // User is not logged in but is on the login page, allow navigation
+  if (user_object && user_object.token) {
+    // User has a token, allow navigation
     next();
-  //}
+  } else {
+    //User is not logged in but is on the login page, allow navigation
+    next();
+  }
   }
   window.scrollTo(0, 0);
 });
