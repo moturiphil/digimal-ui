@@ -162,6 +162,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
+    fixed: 'right',
+    width: 20,
     key: "households",
     slots: { customRender: "households" },
   },

@@ -65,7 +65,7 @@
                     Pending Confirmation
                   </a>
                 </li>
-                <li>
+                <li v-if="isCreator">
                   <a
                     class="button-container"
                     size="extra-small"
@@ -103,13 +103,13 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
-                            <template #actions="{ record }">
+                            <template #activity="{ record }">
                               <td>
-                                <div class="table-actions">
+                                <div class="table-actions" v-if="isCreator">
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
-                                    @click="removeOfficer(record.id)"
+                                    @click="removeOfficer(record.user_id)"
                                   >
                                     <span> Remove Officer </span>
                                     <sdFeatherIcons
@@ -152,6 +152,29 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
+                          <template #activity="{ record }">
+                              <td>
+                                <!-- Buttons for viewing confirmed and pending participants -->
+                                <div class="table-actions">
+                                  <!-- Button for viewing confirmed participants -->
+                                  <sdButton
+                                    class="btn-import"
+                                    type="warning"
+                                    size="small"
+                                    @click="resendSMS(record.id)"
+                                  >
+                                    <!-- {{
+                                      isLoading
+                                        ? "Loading..."
+                                        : isGenerating
+                                          ? "Processing ..."
+                                          : "Generate Payroll"
+                                    }} -->
+                                    Resend SMS
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -264,8 +287,10 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    key: "actions",
-    slots: { customRender: "actions" },
+    fixed: 'right',
+    width: 20,
+    key: "activity",
+    slots: { customRender: "activity" },
   },
 ];
 export default defineComponent({
@@ -287,11 +312,10 @@ export default defineComponent({
   },
   data() {
     const { query } = useRoute();
-
+    const created_by = query.created_by;
     const event_name = query.name;
     // const event_id = query.id;
-    const event_code = query.event_code;
-    console.log(event_code);
+    console.log(created_by);
     return {
       notData: this.searchData,
       current: 0,
@@ -370,6 +394,82 @@ export default defineComponent({
         link.parentNode.removeChild(link);
       } catch (error) {
         console.error(error);
+      }
+    };
+
+    const resendSMS = async (id) => {
+      console.log(id);
+      try {
+        const response = await fetch(
+          `${BASE_URL}/resend_activity_confirmation_reminder=${id}/${query.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        console.log(response);
+        if (response.status == 200) {
+          Modal.success({
+            title: "Success",
+            content: "SMS Confirmation Sent successfully",
+          });
+        } else {
+          Modal.error({
+            title: "Error",
+            content:
+              "Something went wrong during SMS resend",
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+
+    const removeOfficer = (id) => {
+      //   console.log("recordId", recordId.value);
+      console.log(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`);
+      try {
+        fetch(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: message,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((message) => {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          });
+      } catch (message) {
+        notification.error({
+          message: "Error",
+          description: `${message}`,
+        });
       }
     };
 
@@ -556,6 +656,15 @@ export default defineComponent({
       }
     });
 
+    const isCreator = computed(() => {
+      // const currentTime = new Date();
+      if (user.user.id == query.created_by) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+
     const generatePayroll = async () => {
       try {
         const response = await fetch(
@@ -618,7 +727,10 @@ export default defineComponent({
       handleCancel,
       officers,
       handleAddOfficers,
-      formState
+      formState,
+      isCreator,
+      resendSMS,
+      removeOfficer,
     };
   },
   // computed: {

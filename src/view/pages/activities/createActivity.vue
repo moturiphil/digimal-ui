@@ -78,11 +78,21 @@
                         </p>
                       </a-form-item>
 
-                      <a-form-item name="description" label="Description">
+                      <a-form-item
+                        name="description"
+                        label="Description"
+                        :rules="[
+                          {
+                            required: true,
+                            message: 'Please enter a description',
+                          },
+                        ]"
+                      >
                         <a-textarea
                           v-model:value="formState.description"
                           placeholder="Write a narrative that describes the activity of the campaign"
                           :rows="4"
+                          :required="true"
                         />
                         <p
                           class="errors"
