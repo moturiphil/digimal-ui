@@ -270,7 +270,7 @@ onMounted(async () => {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     updateFilters()
-    console.log(JSON.stringify(access_level.value.location));
+    // console.log(JSON.stringify(access_level.value.location));
   }
 });
 
@@ -311,13 +311,13 @@ const updateFilters = () => {
 
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  console.log(org_id)
-  console.log(org_ids.value)
+  // console.log(org_id)
+  // console.log(org_ids.value)
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
-  console.log(org)
+  // console.log(org)
   let parent_id = org[0] || 9
-  console.log(parent_id)
-  console.log(org_level)
+  // console.log(parent_id)
+  // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level)
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
@@ -399,7 +399,12 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
+       org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'location') {//get sublocations
         sublocations.value = data.map(x => ({
           value: x.org_id,
@@ -415,7 +420,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     }).then(async () => {
       await axios.get(`${masterListUrl}`)
         .then(response => {
-          console.log(response.data.data)
+          // console.log(response.data.data)
           let data = response.data.data.data;
           dataSource.value=data;
           // paginationOptions.value.total = response.data.data.length;
@@ -440,7 +445,7 @@ const fetchCounties = async () => {
         org_id: x.org_id,
         id: x.id
       }));
-      console.log(counties.value)
+      // console.log(counties.value)
     }).catch(error => {
       notification.error({
         message: `Error!`,
@@ -457,7 +462,7 @@ const fetchDistributions = () => {
   axios
     .get(API_URL)
     .then((response) => {
-      console.log(response.data.data.data);
+      // console.log(response.data.data.data);
       dataSource.value = response.data.data.data;
       // paginationOptions.value.total = response.data.data.length;
       total.value = parseInt(response.data.data.total);
@@ -521,7 +526,7 @@ const onPageChange = async (page) => {
         end_date: dayjs(formState.end_date).format("YYYY-MM-DD"),
       };
 
-      console.log(JSON.stringify(data));
+      // console.log(JSON.stringify(data));
 
       try {
         axios.post(`subcounty/start/distribution`,JSON.stringify(data))

@@ -36,43 +36,26 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
-                         <a-row class="" style="float:end;" :gutter="5">
+                         <a-row class="" :gutter="5">
                             <a-space>
-                            <a-col v-if="filterAccessList.includes('country')" :xxl="3" :xl="6" :md="12" :sm="24">
-                              <a-select v-model:value="country" show-search placeholder="Select Country" style="width: 200px"
-                                :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('country')" v-model:value="country" show-search placeholder="Select Country" style="width: 100%" :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
                             </a-col>
-                            <a-col v-if="filterAccessList.includes('county')" :xxl="3" :xl="6" :md="12" :sm="24">
-                              <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
-                                :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('county')" v-model:value="county" show-search placeholder="Select County" style="width: 100%" :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
                             </a-col>
-                            <a-col v-if="filterAccessList.includes('subcounty')">
-                              <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
-                                :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('subcounty')" v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 100%" :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
                             </a-col>
-                            <a-col v-if="filterAccessList.includes('ward')" :xxl="3" :xl="6" :md="12" :sm="24">
-                              <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
-                                :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('ward')" v-model:value="ward" show-search placeholder="Select Ward" style="width: 100%" :options="wards" :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
                             </a-col>
-                            </a-space>
-                          </a-row>
-                          <br/>
-                          <a-row style="float:end;" :gutter="5">
-                            <a-space>
-                            <a-col v-if="filterAccessList.includes('location')" :xxl="3" :xl="6" :md="12" :sm="24">
-                              <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
-                                :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('location')" v-model:value="location" show-search placeholder="Select Location" style="width: 100%" :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
                             </a-col>
-                            <a-col v-if="filterAccessList.includes('sublocation')" :xxl="3" :xl="6" :md="12" :sm="24">
-                              <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
-                                :options="sublocations" :filter-option="filterOption"
-                                @change="handleChange($event, 'sublocation')" ></a-select>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('sublocation')" v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 100%" :options="sublocations" :filter-option="filterOption" @change="handleChange($event, 'sublocation')"></a-select>
                             </a-col>
-                            <a-col v-if="filterAccessList.includes('village')" :xxl="3" :xl="6" :md="12" :sm="24">
-                                <a-select v-model:value="village" show-search placeholder="Select a Post" style="width: 200px"
-                                  :options="villages" :filter-option="filterOption"
-                                  @change="handleChange($event, 'village')" ></a-select>
-                              </a-col>
                             </a-space>
                           </a-row>
                           <a-divider></a-divider>
@@ -185,14 +168,14 @@ const subcounties = ref(null)
 const wards = ref(null)
 const locations = ref(null)
 const sublocations = ref(null)
-const villages = ref(null)
+// const villages = ref(null)
 const country = ref("Select Country")
 const county = ref("Select County")
 const sublocation = ref("Select Sublocation")
 const subcounty = ref("Select Subcounty")
 const location = ref("Select Location")
 const ward = ref("Select Ward")
-const village = ref("Select a Post")
+// const village = ref("Select a Post")
 const org_ids = ref([])
 
 const currentCounties = ref([
@@ -343,7 +326,12 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'subcounty') {//get wards
         wards.value = data.map(x => ({
           value: x.org_id,
@@ -360,7 +348,12 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       } else if (org_level == 'location') {//get sublocations
         sublocations.value = data.map(x => ({
           value: x.org_id,
