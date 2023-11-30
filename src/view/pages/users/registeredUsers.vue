@@ -170,13 +170,13 @@ onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters()
-    console.log(JSON.stringify(access_level.value.location));
+    // console.log(JSON.stringify(access_level.value.location));
   }
 });
 
 const handlePaginationChange = (newPage) => {
   current.value = newPage;
-  console.log(newPage);
+  // console.log(newPage);
   fetchUsers()
 };
 
@@ -218,10 +218,10 @@ const updateFilters = () => {
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
-  console.log(org)
+  // console.log(org)
   let parent_id = org[0] || 9
-  console.log(parent_id)
-  console.log(org_level)
+  // console.log(parent_id)
+  // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level)
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
@@ -324,7 +324,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     }).then(async () => {
       await axios.get(`${masterListUrl}`)
         .then(response => {
-          console.log(response.data)
+          // console.log(response.data)
           let data = response.data;
           const updatedData = data.data.map((record) => {
             let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
