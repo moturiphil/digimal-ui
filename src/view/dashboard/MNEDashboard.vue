@@ -390,19 +390,7 @@ const fetchInitialChartData = async () => {
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
             )
-            let scatterData = []
-            newChartData.value.forEach((item, index) => {
-                let x = parseInt(item.nets_issued)
-                let y = parseInt(item.households_registered)
-                scatterData.push([index, parseFloat(x / y).toFixed(2)?x:0])
-            })
-            NetsPerCapita(
-                newChartData.value.map(item => parseInt(item.households_registered)),//total population
-                newChartData.value.map(item => parseInt(item.nets_issued)),//issued
-                scatterData,
-                newChartData.value.map(item => item.name),//cats
-                access_level.value.level.level_name,//level
-            )
+            getPerCapitaData(newChartData.value, access_level.value.level.level_name)
         }).catch(error =>{
             console.log(error)
             notification.error({
@@ -425,7 +413,7 @@ const handleChange = async (org_id, org_level) => {
 };
 const fetchChildData = async (org_id, org_level) => {
     let fetchUrl = `get_sub_counties_list`
-    let statUrl = `all_stats`
+    let statUrl = `subcounty/stats`
     if (org_level == 'country') {//get counties
         fetchUrl += `?parent_id=${org_id}`
         statUrl += `?org_id=${org_id}`
@@ -540,21 +528,9 @@ const fetchChildData = async (org_id, org_level) => {
                         newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
                         newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
                         newChartData.value.map(item => item.name),//cats
-                        access_level.value.level.level_name,//level
+                        org_level,//level
                     )
-                    let scatterData=[]
-                    newChartData.value.forEach((item, index) => {
-                        let x = parseInt(item.nets_issued)
-                        let y = parseInt(item.households_registered)
-                        scatterData.push([index,parseFloat(x/y).toFixed(2)?x:0])
-                    })
-                    NetsPerCapita(
-                        newChartData.value.map(item => parseInt(item.households_registered)),//nets_required
-                        newChartData.value.map(item => parseInt(item.nets_issued)),//total population
-                        scatterData,
-                        newChartData.value.map(item => item.name),//cats
-                        access_level.value.level.level_name,//level
-                    )
+                    getPerCapitaData(newChartData.value,org_level)
                 })
 
         }).catch(error => {
@@ -563,6 +539,20 @@ const fetchChildData = async (org_id, org_level) => {
                 description: `${error}`,
             });
         });
+}
+const getPerCapitaData = (data, org_level) => {
+    let scatterData = [];
+    data.forEach((item, x) => {
+        let y = parseFloat(item.nets_issued_per_capita);
+        scatterData.push([x,parseFloat(y).toFixed(2)?y:0])
+    })
+    NetsPerCapita(
+        data.map(item => parseInt(item.all_hh_members)),//total population
+        data.map(item => parseInt(item.nets_issued)),//nets disributed
+        scatterData,//percapita
+        data.map(item => item.name),//cats
+        org_level,//level
+    )
 }
 const fetchCounties = async () => {
     axios.get('counties/')
@@ -1119,7 +1109,7 @@ const NetsPerCapita = (total_population, nets_issued, scatter_data, cats, orglev
             }
 
         }, {
-            name: 'Nets Issued',
+            name: 'Nets Distributed',
             type: 'column',
             yAxis: 1,
             data: nets_issued,
@@ -1135,15 +1125,15 @@ const NetsPerCapita = (total_population, nets_issued, scatter_data, cats, orglev
         }, {
             name: 'PerCapita',
             type: 'scatter',
+            yAxis: 2,
             data: scatter_data,
+            color: '#004225',
             tooltip: {
                 pointFormat: '{point.name} <b>{point.y:.1f}</b>'
             },
-            color: '#004225',
             marker: {
                 radius: 6, // Set the radius to adjust the size of scatter plot dots
             },
-
         }],
         responsive: {
             rules: [{
