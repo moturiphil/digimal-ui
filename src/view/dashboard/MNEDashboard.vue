@@ -402,11 +402,11 @@ const fetchInitialChartData = async () => {
 const handleChange = async (org_id, org_level) => {
     //fetch child data
     let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
-    console.log(org_id)
-    console.log(org_ids.value)
+    //console.log(org_id)
+    //console.log(org_ids.value)
     let parent_id = org[0] || 9
-    console.log(parent_id)
-    console.log(org_level)
+    //console.log(parent_id)
+    //console.log(org_level)
     fetchChildData(org_id, org_level)
     filterOrgId.value = parent_id
     fileterOrgeLevel.value = org_level
@@ -607,7 +607,7 @@ const exportChartsToPDF = async () => {
 };
 
 const TargetedvsCoveredChart = (data) => {
-    console.log(data)
+    //console.log(data)
    Highcharts.chart('TargetedvsCoveredChart', {
         chart: {
             type: 'pie',
@@ -1034,10 +1034,21 @@ const netsReqvsDeliveredChart = (nets_required, nets_issued, cats, orglevel) => 
     });
 }
 const NetsPerCapita = (total_population, nets_issued, scatter_data, cats, orglevel) => {
-    console.log(scatter_data)
+    //console.log(scatter_data)
    Highcharts.chart('NetsPerCapitaChart', {
         chart: {
             zoomType: 'xy'
+       },
+        credits: {
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target: '_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
         },
         title: {
             text: 'Nets PerCapita by '+orglevel,

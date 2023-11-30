@@ -562,11 +562,11 @@ const fetchInitialChartData = async () => {
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
-  console.log(org_id)
-  console.log(org_ids.value)
+  // console.log(org_id)
+  // console.log(org_ids.value)
   let parent_id = org[0] || 9
-  console.log(parent_id)
-  console.log(org_level)
+  // console.log(parent_id)
+  // console.log(org_level)
   fetchChildData(org_id, org_level)
   filterOrgId.value = parent_id
   fileterOrgeLevel.value = org_level
@@ -730,7 +730,7 @@ const updateStats = async (org_id) => {
   await axios.get(`all_stats?org_id=${org_id}`)
     .then(response => {
       const data = response.data;
-      console.log(data)
+      //console.log(data)
       active_events.value = data.events || 0;
       nets_distributed.value = data.nets_distributed || 0;
       registered_house_holds.value = data.registered_house_holds || 0;
