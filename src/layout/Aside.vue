@@ -46,10 +46,10 @@
           <router-link to="/events/event-view"> List Events </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu
+      <!-- <a-sub-menu
         key="activities"
         v-if="canCreateActivity || canViewActivities"
-      >
+      > -->
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
         </template>
