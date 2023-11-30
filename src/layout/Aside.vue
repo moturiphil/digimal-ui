@@ -63,7 +63,7 @@
             Create Activity
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetActivityPendingApproval" v-if="canCreateActivity">
+        <a-menu-item key="widgetActivityPendingApproval" v-if="canViewActivities">
           <router-link to="/activities/activity-pending-approval">
             Pending Approval
           </router-link>

@@ -406,6 +406,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
+    fixed: 'right',
+    width: 20,
     key: "payroll",
     slots: { customRender: "payroll" },
   },

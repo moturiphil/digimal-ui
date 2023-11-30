@@ -233,9 +233,11 @@ const columns = [
     key: "id",
   },
   {
-    title: "",
+    title: "Action",
     dataIndex: "",
     key: "events",
+    fixed: 'right',
+    width: 20,
     slots: { customRender: "events" },
   },
 ];
