@@ -745,7 +745,7 @@ export default defineComponent({
         from_post_id: trans_formState.from_post_id,
         to_post_id: trans_formState.to_post_id,
         number_of_nets: trans_formState.number_of_nets,
-        delivery_note_number: trans_formState.delivery_note_number, // s11_no
+        delivery_note_number: trans_formState.delivery_note_number,
         comment: trans_formState.comment,
       };
       console.log(JSON.stringify(data));
@@ -759,16 +759,16 @@ export default defineComponent({
           body: JSON.stringify(data),
         })
           .then((response) => response.json())
-          .then(({ success, data }) => {
+          .then(({ success, message }) => {
             if (success) {
               notification.success({
                 message: "Success",
-                description: `${data}`,
+                description: `${message}`,
               });
             } else {
               notification.error({
                 message: "Error",
-                description: `${data}`,
+                description: `${message}`,
               });
             }
             isModalOpen.value = false;

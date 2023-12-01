@@ -190,8 +190,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    fixed: 'right',
-    width: 20,
+    // fixed: 'right',
+    // width: 20,
     key: "activities",
     slots: { customRender: "activities" },
   },

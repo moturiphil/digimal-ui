@@ -399,6 +399,7 @@ export default defineComponent({
 
     const resendSMS = async (id) => {
       console.log(id);
+      console.log(query.id);
       try {
         const response = await fetch(
           `${BASE_URL}/resend_activity_confirmation_reminder=${id}/${query.id}`,

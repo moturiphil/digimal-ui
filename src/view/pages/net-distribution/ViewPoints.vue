@@ -156,8 +156,6 @@ const columns = [
     title: "Action",
     dataIndex: "",
     key: "point",
-    fixed: 'right',
-    width: 20,
     slots: { customRender: "point" },
   },
 ];
