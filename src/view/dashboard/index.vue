@@ -31,10 +31,15 @@
             <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
               :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
           </a-col>
-          <a-col v-if="filterAccessList.includes('sublocation')">
+          <a-col v-if="filterAccessList.includes('sublocation')" >
             <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
               :options="sublocations" :filter-option="filterOption"
               @change="handleChange($event, 'sublocation')"></a-select>
+          </a-col>
+          <a-col :style="{ padding: '2px', marging: '1px 0px 1px 0px', align:'center',justify:'center' }">
+            <a-button @click="fetchInitialChartData(),county='Select County',country='Select Country'" :style="{padding:'2px', background:'#24daa3',marging:'1px 0px 1px 0px', align: 'center', justify: 'center' }">
+              <ReloadOutlined />
+              Reset</a-button>
           </a-col>
         </a-row>
       </template>
@@ -252,6 +257,7 @@
             </figure>
           </a-col>
         </a-row>
+        <a-divider></a-divider>
         <a-row :gutter="25"  class="pdf-row">
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
               <figure class="highcharts-figure">
@@ -282,7 +288,8 @@
                   </tbody>
                 </table>
               </figure>
-            </a-col>
+          </a-col>
+          <a-divider></a-divider>
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
               <div id="netsReqvsIssuedChart"></div>
@@ -313,6 +320,7 @@
               </table>
             </figure>
           </a-col>
+          <a-divider></a-divider>
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <div>
               <a-row :gutter="16" v-if="!printMode">
@@ -371,6 +379,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 //import html2pdf from 'html2pdf.js';
 import { FilePdfOutlined } from '@ant-design/icons-vue';
+import { ReloadOutlined } from '@ant-design/icons-vue';
+
 import { useRouter } from 'vue-router';
 const router = useRouter()
 //exporting(Highcharts);
@@ -907,7 +917,8 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
       type: 'pie',
       options3d: {
         enabled: true,
-        alpha: 45
+        alpha: 45,
+        depth:10
       }
     },
     credits: {
@@ -959,6 +970,11 @@ const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
   Highcharts.chart('HouseHoldsServedbyCountyChart', {
     chart: {
       type: 'pie',
+      options3d: {
+        enabled: true,
+        alpha: 45,
+        depth: 10
+      }
     },
     credits: {
             text: 'Powered by HealthIT KE', // Custom text
@@ -1014,7 +1030,12 @@ const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
 const NetsIssuedbyCountyChart = (charData, orglevel) => {
   Highcharts.chart('NetsIssuedbyCountyChart', {
     chart: {
-      type: 'pie'
+      type: 'pie',
+      options3d: {
+        enabled: true,
+        alpha: 45,
+        depth: 10
+      }
     },
     credits: {
             text: 'Powered by HealthIT KE', // Custom text
@@ -1060,21 +1081,21 @@ const NetsIssuedbyCountyChart = (charData, orglevel) => {
   });
 }
 const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_level, cats, orglevel) => {
-  Highcharts.chart('netsReqvsIssuedChart', {
+ Highcharts.chart('netsReqvsIssuedChart', {
     chart: {
       zoomType: 'xy'
     },
     credits: {
-            text: 'Powered by HealthIT KE', // Custom text
-            href: 'https://unes.co.ke', // Custom link
-            target:'_blank',
-            position: {
-                align: 'right',
-                x: -10,
-                verticalAlign: 'bottom',
-                y: -5,
-            },
-        },
+      text: 'Powered by HealthIT KE', // Custom text
+      href: 'https://unes.co.ke', // Custom link
+      target: '_blank',
+      position: {
+        align: 'right',
+        x: -10,
+        verticalAlign: 'bottom',
+        y: -5,
+      },
+    },
     title: {
       text: `Comparison of Nets Required vs Nets Issued by ${orglevel}`,
       align: 'left'
@@ -1087,25 +1108,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       categories: cats,
       crosshair: true
     }],
-    yAxis: [{ // Primary yAxis
-      labels: {
-        format: '{value:.1f}%',
-        style: {
-          color: Highcharts.getOptions().colors[2]
-        }
-      },
-      title: {
-        text: 'Current Achievement',
-        style: {
-          color: '#004225'
-        }
-      },
-      max: 100,
-      min: 0,
-      opposite: true
-
-    }, { // Secondary yAxis
-      gridLineWidth: 0,
+    yAxis: [{
       title: {
         text: 'Count',
         style: {
@@ -1113,24 +1116,21 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
         }
       },
       labels: {
-        // format: '{value} mm',
         style: {
           color: Highcharts.getOptions().colors[0]
         }
       }
-
-    }, { // Tertiary yAxis
-      gridLineWidth: 0,
+    }, { // Secondary yAxis (for Achievement and Expected Achievement)
       title: {
-        text: '',
+        text: 'Achievement',
         style: {
-          color: Highcharts.getOptions().colors[1]
+          color: '#004225'
         }
       },
       labels: {
-        format: '{value:.1f} %',
+        format: '{value:.1f}%',
         style: {
-          color: Highcharts.getOptions().colors[1]
+          color: '#004225'
         }
       },
       max: 100,
@@ -1154,19 +1154,19 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
     series: [{
       name: 'Nets Required',
       type: 'column',
-      yAxis: 1,
+      yAxis: 0, // Assign to the Count axis
       data: nets_required,
       color: '#3498db',
     }, {
       name: 'Nets Issued',
       type: 'column',
-      yAxis: 1,
+      yAxis: 0, // Assign to the Count axis
       data: nets_issued,
       color: '#4ADEDE',
     }, {
       name: 'Expected Achievement',
       type: 'spline',
-      yAxis: 2,
+      yAxis: 1, // Assign to the Achievement axis
       data: target_level,
       color: Highcharts.getOptions().colors[1],
       marker: {
@@ -1180,14 +1180,11 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
     }, {
       name: 'Current Achievement',
       type: 'scatter',
-      yAxis: 2,
+      yAxis: 1, // Assign to the Achievement axis
       data: target_data,
       color: '#004225',
-       tooltip: {
-        pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
-      },
       marker: {
-        radius: 6, // Set the radius to adjust the size of scatter plot dots
+        radius: 6,
       },
     }],
     responsive: {
@@ -1225,173 +1222,155 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       }]
     }
   });
+
 }
 const householdRegvsServedChart = (registered, served, target_data, target_level, cats, orglevel) => {
-  Highcharts.chart('householdRegvsServedChart', {
+ Highcharts.chart('householdRegvsServedChart', {
     chart: {
-      zoomType: 'xy'
+        zoomType: 'xy'
     },
     credits: {
-            text: 'Powered by HealthIT KE', // Custom text
-            href: 'https://unes.co.ke', // Custom link
-            target:'_blank',
-            position: {
-                align: 'right',
-                x: -10,
-                verticalAlign: 'bottom',
-                y: -5,
-            },
+        text: 'Powered by HealthIT KE', // Custom text
+        href: 'https://unes.co.ke', // Custom link
+        target: '_blank',
+        position: {
+            align: 'right',
+            x: -10,
+            verticalAlign: 'bottom',
+            y: -5,
         },
+    },
     title: {
-      text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
-      align: 'left'
+        text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
+        align: 'left'
     },
     subtitle: {
-      text: 'Source:',
-      align: 'left'
+        text: 'Source:',
+        align: 'left'
     },
     xAxis: [{
-      categories: cats,
-      crosshair: true
+        categories: cats,
+        crosshair: true
     }],
-    yAxis: [{ // Primary yAxis
-      labels: {
-        format: '{value:.1f}%',
-        style: {
-          color: '#004225'
+    yAxis: [{
+        // Primary yAxis (Count)
+        title: {
+            text: 'Count',
+            style: {
+                color: Highcharts.getOptions().colors[0]
+            }
+        },
+        labels: {
+            style: {
+                color: Highcharts.getOptions().colors[0]
+            }
         }
-      },
-      title: {
-        text: 'Current Achievement',
-        style: {
-          color: '#004225'
-        }
-      },
-      max: 100,
-      min: 0,
-      opposite: true
-
-    }, { // Secondary yAxis
-      gridLineWidth: 0,
-      title: {
-        text: 'Count',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
-      },
-      labels: {
-        // format: '{value} mm',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
-      }
-
-    }, { // Tertiary yAxis
-      gridLineWidth: 0,
-      title: {
-        text: '',
-        style: {
-          color: Highcharts.getOptions().colors[1]
-        }
-      },
-      labels: {
-        format: '{value:.1f} %',
-        style: {
-          color: Highcharts.getOptions().colors[1]
-        }
-      },
-      max: 100,
-      min: 0,
-      opposite: true
+    }, {
+        // Secondary yAxis (Achievement and Expected Achievement)
+        title: {
+            text: 'Achievement',
+            style: {
+                color: '#004225'
+            }
+        },
+        labels: {
+            format: '{value:.1f}%',
+            style: {
+                color: '#004225'
+            }
+        },
+        max: 100,
+        min: 0,
+        opposite: true
     }],
     tooltip: {
-      shared: true
+        shared: true
     },
     legend: {
-      layout: 'horizontal',
-      align: 'center',
-      x: 80,
-      verticalAlign: 'top',
-      y: 20,
-      floating: true,
-      backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || // theme
-        'rgba(255,255,255,0.25)'
+        layout: 'horizontal',
+        align: 'center',
+        x: 80,
+        verticalAlign: 'top',
+        y: 20,
+        floating: true,
+        backgroundColor:
+            Highcharts.defaultOptions.legend.backgroundColor || 'rgba(255,255,255,0.25)'
     },
     series: [{
-      name: 'Registered Households',
-      type: 'column',
-      yAxis: 1,
-      data: registered,
-      color: '#3498db',
+        name: 'Registered Households',
+        type: 'column',
+        yAxis: 0, // Use the first yAxis (Count)
+        data: registered,
+        color: '#3498db'
     }, {
-      name: 'Served Households',
-      type: 'column',
-      yAxis: 1,
-      data: served,
-      color: '#4ADEDE',
+        name: 'Served Households',
+        type: 'column',
+        yAxis: 0, // Use the first yAxis (Count)
+        data: served,
+        color: '#4ADEDE'
     }, {
-      name: 'Expected Achievement',
-      type: 'spline',
-      yAxis: 2,
-      data: target_level,
-      color: Highcharts.getOptions().colors[1],
-      marker: {
-        enabled: false
-      },
-      dashStyle: 'shortdot',
-      tooltip: {
-        valueSuffix: ' %'
-      },
-      lineWidth: 6,
+        name: 'Expected Achievement',
+        type: 'spline',
+        yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
+        data: target_level,
+        color: Highcharts.getOptions().colors[1],
+        marker: {
+            enabled: false
+        },
+        dashStyle: 'shortdot',
+        tooltip: {
+            valueSuffix: ' %'
+        },
+        lineWidth: 6
     }, {
-      name: 'Current Achievement',
-      type: 'scatter',
-      yAxis: 2,
-      data: target_data,
-      color: '#004225',
-       tooltip: {
-        pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
-      },
-      marker: {
-        radius: 6, // Set the radius to adjust the size of scatter plot dots
-      },
+        name: 'Current Achievement',
+        type: 'scatter',
+        yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
+        data: target_data,
+        color: '#004225',
+        tooltip: {
+            pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
+        },
+        marker: {
+            radius: 6
+        }
     }],
     responsive: {
-      rules: [{
-        condition: {
-          maxWidth: 500
-        },
-        chartOptions: {
-          legend: {
-            floating: false,
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'bottom',
-            x: 0,
-            y: 0
-          },
-          yAxis: [{
-            labels: {
-              align: 'right',
-              x: 0,
-              y: -6
+        rules: [{
+            condition: {
+                maxWidth: 500
             },
-            showLastLabel: false
-          }, {
-            labels: {
-              align: 'left',
-              x: 0,
-              y: -6
-            },
-            showLastLabel: false
-          }, {
-            visible: false
-          }]
-        }
-      }]
+            chartOptions: {
+                legend: {
+                    floating: false,
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    x: 0,
+                    y: 0
+                },
+                yAxis: [{
+                    labels: {
+                        align: 'right',
+                        x: 0,
+                        y: -6
+                    },
+                    showLastLabel: false
+                }, {
+                    labels: {
+                        align: 'left',
+                        x: 0,
+                        y: -6
+                    },
+                    showLastLabel: false
+                }, {
+                    visible: false
+                }]
+            }
+        }]
     }
-  });
+});
+
 }
 </script>
 <style scoped>
