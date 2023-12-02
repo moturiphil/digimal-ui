@@ -29,6 +29,16 @@
           Download List &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
         </sdButton>
+        &nbsp;&nbsp;
+        <sdButton
+          class="btn-import"
+          type="warning"
+          @click="sendInvites"
+          size="small"
+        >
+          Send Invites &nbsp; &nbsp;
+          <sdFeatherIcons type="mail" size="extra-small" />
+        </sdButton>
       </div>
 
       <SearchResultWrapper>
@@ -559,6 +569,50 @@ export default defineComponent({
       add_officer: [],
     });
 
+    const sendInvites = async () => {
+      try {
+        console.log(query.id);
+        await fetch(`${process.env.VUE_APP_BASE_URL}/notify_activity_participants/${query.id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            console.log(message);
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: message,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((error) => {
+            notification.error({
+              message: "Error",
+              description: `${error}`,
+            });
+          });
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      }
+    }
+
     const handleAddOfficers = async () => {
       try {
         const data = {
@@ -732,6 +786,7 @@ export default defineComponent({
       isCreator,
       resendSMS,
       removeOfficer,
+      sendInvites,
     };
   },
   // computed: {
