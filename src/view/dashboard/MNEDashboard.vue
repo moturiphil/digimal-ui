@@ -41,6 +41,11 @@
                             style="width: 200px" :options="sublocations" :filter-option="filterOption"
                             @change="handleChange($event, 'sublocation')"></a-select>
                     </a-col>
+                    <a-col :style="{ padding: '2px', marging: '1px 0px 1px 0px', align: 'center', justify: 'center' }">
+                        <a-button @click="fetchInitialChartData(), county = 'Select County', country = 'Select Country'" :style="{ padding: '2px', background: '#24daa3', marging: '1px 0px 1px 0px', align: 'center', justify: 'center' }">
+                        <ReloadOutlined />
+                        Reset</a-button>
+                    </a-col>
                 </a-row>
             </template>
         </sdPageHeader>
@@ -240,6 +245,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 //import html2pdf from 'html2pdf.js';
 import { FilePdfOutlined } from '@ant-design/icons-vue';
+import { ReloadOutlined } from '@ant-design/icons-vue';
 
 exporting(Highcharts);
 //chart data
@@ -367,20 +373,20 @@ const fetchInitialChartData = async () => {
             TargetedvsCoveredChart([{name:"Counties Covered",y:10,sliced: true}, { name: "Gap", y: 12,sliced: true }],)//
             //registered,served,target_data,target_level,cats
             EstimatedvsRegisteredHouseholdpouplation(
-                newChartData.value.map(item => parseInt(item.households_registered)),//estimmated
-                newChartData.value.map(item => parseInt(item.households_served)),//registration
+                newChartData.value.map(item => parseInt(item.all_hh_members) + 10),//estimmated
+                newChartData.value.map(item => parseInt(item.all_hh_members)),//registration
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
             )
             EstimatedvsRegisteredHouseholds(
-               newChartData.value.map(item => parseInt(item.households_registered)),//estimmated
-               newChartData.value.map(item => parseInt(item.households_served)),//registration
+               newChartData.value.map(item => parseInt(item.all_hh_members) + 10),//estimmated
+               newChartData.value.map(item => parseInt(item.all_hh_members)),//registration
                newChartData.value.map(item => item.name),//cats
                access_level.value.level.level_name,//level
             )
             EstimatedvsRegisteredHouseholdSizeChart(
-                newChartData.value.map(item => parseInt(item.households_registered)),//estimmated
-                newChartData.value.map(item => parseInt(item.households_served)),//registration
+                newChartData.value.map(item => parseInt(item.avg_hh_size)+5),//estimmated
+                newChartData.value.map(item => parseInt(item.avg_hh_size)),//registration
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
             )
@@ -506,28 +512,28 @@ const fetchChildData = async (org_id, org_level) => {
                     }
                     fileterOrgeLevel.value = org_level
                     //column Subcounty comparison
-                    let rgstd = newChartData.value.map(item => parseInt(item.households_registered))//registered
-                    let srvd = newChartData.value.map(item => parseInt(item.households_served))//served
+                    let rgstd = newChartData.value.map(item => parseInt(item.all_hh_members))//registered
+                    let estmtd = newChartData.value.map(item => parseInt(item.households_served))//served
                     let cats = newChartData.value.map(item => item.name)//cats
                     org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
-                    EstimatedvsRegisteredHouseholdpouplation(rgstd,srvd,cats,org_level)
+                    EstimatedvsRegisteredHouseholdpouplation(estmtd,rgstd,cats,org_level)
                     //combine bar line bar Subcounty comparison
                     //pie chars Registered households by sub county
-                    let TargetedvsCoveredChartData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
+                    let TargetedvsCoveredChartData = newChartData.value.map(item => ({ name: item.name, y: item.all_hh_members }))
                     TargetedvsCoveredChart([{ name: "Counties Covered", y: 10 }, { name: "Gap", y: 12 }])
                     TargetedvsCoveredChartData.value = TargetedvsCoveredChartData
-                    EstimatedvsRegisteredHouseholds(rgstd, srvd, cats, org_level)
+                    EstimatedvsRegisteredHouseholds(estmtd, rgstd, cats, org_level)
                     fileterOrgeLevel.value = org_level
                     EstimatedvsRegisteredHouseholdSizeChart(
-                        rgstd,//estimmated
-                        srvd,//registration
+                        newChartData.value.map(item=>parseInt(item.avg_hh_size)+5),//estimmated
+                        newChartData.value.map(item => parseInt(item.avg_hh_size)),//registration
                         cats,//cats
                         org_level,//level
                     )
-                     netsReqvsDeliveredChart(
+                    netsReqvsDeliveredChart(
                         newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
                         newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
-                        newChartData.value.map(item => item.name),//cats
+                        cats,//cats
                         org_level,//level
                     )
                     getPerCapitaData(newChartData.value,org_level)
@@ -812,7 +818,7 @@ const EstimatedvsRegisteredHouseholds = (estimated, rgstd, cats, orglevel) => {
             data: estimated,
             name: 'Estimated Households',
             stack: 'Estimated',
-            color: '#4ADEDE',
+            color: '#3498db',//#
         }, {
             name: 'Registered Households',
             id: 'main',
@@ -829,7 +835,7 @@ const EstimatedvsRegisteredHouseholds = (estimated, rgstd, cats, orglevel) => {
             }],
             data: rgstd,
             stack: 'Registered',
-            color: '#3498db',//
+            color: '#4ADEDE',//
         }],
         exporting: {
             allowHTML: true
