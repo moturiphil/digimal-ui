@@ -914,12 +914,7 @@ const NetsDistributedwithTime = (data, org_level) => {
 const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
   Highcharts.chart('HouseholdsRegisteredbyCountyChart', {
     chart: {
-      type: 'pie',
-      options3d: {
-        enabled: true,
-        alpha: 45,
-        depth:10
-      }
+      type: 'pie'
     },
     credits: {
             text: 'Powered by HealthIT KE', // Custom text
@@ -948,8 +943,8 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
         allowPointSelect: true,
         borderWidth: 2,
         cursor: 'pointer',
-        innerSize: 40,
-        depth:10,
+        innerSize: 0,
+        depth:0,
         dataLabels: {
           enabled: true,
           format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
@@ -969,12 +964,7 @@ const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
 const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
   Highcharts.chart('HouseHoldsServedbyCountyChart', {
     chart: {
-      type: 'pie',
-      options3d: {
-        enabled: true,
-        alpha: 45,
-        depth: 10
-      }
+      type: 'pie'
     },
     credits: {
             text: 'Powered by HealthIT KE', // Custom text
@@ -1031,11 +1021,6 @@ const NetsIssuedbyCountyChart = (charData, orglevel) => {
   Highcharts.chart('NetsIssuedbyCountyChart', {
     chart: {
       type: 'pie',
-      options3d: {
-        enabled: true,
-        alpha: 45,
-        depth: 10
-      }
     },
     credits: {
             text: 'Powered by HealthIT KE', // Custom text
