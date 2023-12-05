@@ -16,8 +16,25 @@
             isLoading
               ? "Loading..."
               : isGenerating
-              ? "Processing ..."
-              : "Generate Payroll"
+                ? "Processing ..."
+                : "Generate Payroll"
+          }}
+        </sdButton>
+        &nbsp;
+        <sdButton
+          class="btn-import"
+          type="success"
+          size="small"
+          @click="generatePayroll"
+          v-if="isApprovedGenerator"
+          :disabled="isGenerating"
+        >
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+                ? "Processing ..."
+                : "Generate Draft Payroll"
           }}
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
@@ -452,7 +469,9 @@ export default defineComponent({
     const isApprovedGenerator = computed(() => {
       // const currentTime = new Date();
       if (
-        user.user.role_id === 53 ||  user.user.role_id === 63 ||  user.user.role_id === 64 
+        user.user.role_id === 53 ||
+        user.user.role_id === 63 ||
+        user.user.role_id === 64
       ) {
         return true;
       } else {
