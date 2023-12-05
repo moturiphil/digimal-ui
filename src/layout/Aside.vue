@@ -265,7 +265,7 @@
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
-      <a-sub-menu key="draft-payroll" v-if="canViewPayroll && isLevelOne">
+      <!-- <a-sub-menu key="draft-payroll" v-if="canViewPayroll && isLevelOne">
         <template v-slot:title>
           <sdFeatherIcons type="credit-card" /><span>Draft Payroll</span>
         </template>
@@ -295,7 +295,7 @@
             <router-link to="/pmi-draft-event-payroll">Draft Event Payroll </router-link>
           </a-menu-item>
         </a-sub-menu>
-      </a-sub-menu>
+      </a-sub-menu> -->
       <a-sub-menu
         key="user-management"
         v-if="isAdmin || canViewUsers || canViewMasterlist"

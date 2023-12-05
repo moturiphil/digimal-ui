@@ -19,7 +19,7 @@
                 : "Generate Payroll"
           }}
         </sdButton>
-        &nbsp;
+        <!-- &nbsp;
         <sdButton
           class="btn-import"
           type="success"
@@ -35,7 +35,7 @@
                 ? "Processing ..."
                 : "Generate Draft Payroll"
           }}
-        </sdButton>
+        </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
           class="btn-import"
