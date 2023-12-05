@@ -704,7 +704,7 @@ export default defineComponent({
 
     const isApprovedGenerator = computed(() => {
       // const currentTime = new Date();
-      if (user.user.role_id === 53 || user.user.role_id === 63) {
+      if (user.user.role_id === 53 || user.user.role_id === 63 || user.user.role_id === 4 || user.user.role_id === 59) {
         return true;
       } else {
         return false;
