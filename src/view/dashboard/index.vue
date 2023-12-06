@@ -124,7 +124,7 @@
                         <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_house_holds - totalhouseholds_served) }}</sdHeading></td>
                       </tr>
                       <tr>
-                        <td> <span class="stat-span"><strong>%</strong> of Nets Issued</span></td>
+                        <td> <span class="stat-span"><strong>%</strong> of Households Served</span></td>
                         <td> <sdHeading class="stat-title">{{ Number((totalhouseholds_served / registered_house_holds) * 100).toFixed(2) }}%</sdHeading></td>
                       </tr>
                   </tbody>
