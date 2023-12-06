@@ -364,8 +364,7 @@ const AddActivity = defineComponent({
         });
     };
 
-    // get users location
-    // const level_id = ref("");
+    // get users 
     const userData = JSON.parse(sessionStorage.getItem("user"));
     console.log(userData.user);
 
@@ -609,6 +608,7 @@ const AddActivity = defineComponent({
             });
           });
       } else {
+        console.log(userData);
         const values = {
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
@@ -634,7 +634,7 @@ const AddActivity = defineComponent({
             })
               .then((response) => response.json())
               .then(({ success, data }) => {
-                // console.log(data);
+                console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
                   router.push("activity-view");
