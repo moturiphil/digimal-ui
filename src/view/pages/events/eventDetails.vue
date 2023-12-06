@@ -16,9 +16,15 @@
             isLoading
               ? "Loading..."
               : isGenerating
-              ? "Processing ..."
-              : "Generate Payroll"
+                ? "Processing ..."
+                : "Generate Payroll"
           }}
+        </sdButton>
+        <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
+        <sdButton class="btn-import" type="success" size="small">
+          <router-link to="/events/add-stakeholder">
+            Add Stakeholder</router-link
+          >
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
@@ -252,15 +258,6 @@ export default defineComponent({
 
     console.log(query.event_code);
 
-    const eventEndDate = query.eventEndDate;
-
-    const formattedEndDate = new Date(eventEndDate);
-
-    console.log(formattedEndDate);
-
-    console.log(new Date());
-
-    console.log(new Date() >= eventEndDate);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
     const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
@@ -452,8 +449,20 @@ export default defineComponent({
     const isApprovedGenerator = computed(() => {
       // const currentTime = new Date();
       if (
-        user.user.role_id === 53 ||  user.user.role_id === 63 ||  user.user.role_id === 64 ||  user.user.role_id === 59 ||  user.user.role_id === 4 
+        user.user.role_id === 53 ||
+        user.user.role_id === 63 ||
+        user.user.role_id === 64 ||
+        user.user.role_id === 59 ||
+        user.user.role_id === 4
       ) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    console.log(user.user.org_types_id === 10);
+    const isSCHMT = computed(() => {
+      if (user.user.org_types_id === 10) {
         return true;
       } else {
         return false;
@@ -478,6 +487,7 @@ export default defineComponent({
       isModalOpen,
       handleOk,
       isGenerating,
+      isSCHMT,
     };
   },
   // computed: {
