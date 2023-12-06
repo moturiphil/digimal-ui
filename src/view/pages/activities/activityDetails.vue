@@ -442,7 +442,6 @@ export default defineComponent({
 
     const removeOfficer = (id) => {
       //   console.log("recordId", recordId.value);
-      console.log(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`);
       try {
         fetch(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`, {
           method: "POST",

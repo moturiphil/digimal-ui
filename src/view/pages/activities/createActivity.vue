@@ -364,8 +364,7 @@ const AddActivity = defineComponent({
         });
     };
 
-    // get users location
-    // const level_id = ref("");
+    // get users 
     const userData = JSON.parse(sessionStorage.getItem("user"));
     console.log(userData.user);
 
@@ -609,11 +608,12 @@ const AddActivity = defineComponent({
             });
           });
       } else {
+        console.log(userData);
         const values = {
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties.filter((county) => county !== ""),
-          subcounties: userData.user.sub_counties.filter((county) => county !== ""),
+          subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -634,7 +634,7 @@ const AddActivity = defineComponent({
             })
               .then((response) => response.json())
               .then(({ success, data }) => {
-                // console.log(data);
+                console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
                   router.push("activity-view");
