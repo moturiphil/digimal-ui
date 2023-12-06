@@ -19,6 +19,23 @@
                 : "Generate Payroll"
           }}
         </sdButton>
+        <!-- &nbsp;
+        <sdButton
+          class="btn-import"
+          type="success"
+          size="small"
+          @click="generatePayroll"
+          v-if="isApprovedGenerator"
+          :disabled="isGenerating"
+        >
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+                ? "Processing ..."
+                : "Generate Draft Payroll"
+          }}
+        </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
           class="btn-import"
@@ -162,7 +179,7 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
-                          <template #activity="{ record }">
+                            <template #activity="{ record }">
                               <td>
                                 <!-- Buttons for viewing confirmed and pending participants -->
                                 <div class="table-actions">
@@ -297,7 +314,7 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    fixed: 'right',
+    fixed: "right",
     width: 20,
     key: "activity",
     slots: { customRender: "activity" },
@@ -378,7 +395,7 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
     const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
     // const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
+    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/generateActivityParticipantCSV?activity_id=${query.code}`;
 
     const exportParticipants = async () => {
       try {
@@ -395,6 +412,7 @@ export default defineComponent({
         }
 
         const fileBlob = await response.blob();
+        console.log(response);
         const fileName = "Activity Participants.xlsx";
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(new Blob([fileBlob]));
@@ -430,8 +448,7 @@ export default defineComponent({
         } else {
           Modal.error({
             title: "Error",
-            content:
-              "Something went wrong during SMS resend",
+            content: "Something went wrong during SMS resend",
           });
         }
       } catch (error) {
@@ -439,17 +456,20 @@ export default defineComponent({
       }
     };
 
-
     const removeOfficer = (id) => {
       //   console.log("recordId", recordId.value);
+
       try {
-        fetch(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        })
+        fetch(
+          `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
           .then((response) => response.json())
           .then(({ success, message }) => {
             if (success == true) {
@@ -571,13 +591,16 @@ export default defineComponent({
     const sendInvites = async () => {
       try {
         console.log(query.id);
-        await fetch(`${process.env.VUE_APP_BASE_URL}/notify_activity_participants/${query.id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        })
+        await fetch(
+          `${process.env.VUE_APP_BASE_URL}/notify_activity_participants/${query.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
           .then((response) => response.json())
           .then(({ success, message }) => {
             console.log(message);
@@ -610,7 +633,7 @@ export default defineComponent({
           description: `${error}`,
         });
       }
-    }
+    };
 
     const handleAddOfficers = async () => {
       try {

@@ -613,7 +613,7 @@ const AddActivity = defineComponent({
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties.filter((county) => county !== ""),
-          subcounties: userData.user.sub_counties,
+          subcounties: userData.user.sub_counties.filter((county) => county !== ""),
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,

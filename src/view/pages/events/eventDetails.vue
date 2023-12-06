@@ -20,6 +20,23 @@
                 : "Generate Payroll"
           }}
         </sdButton>
+        &nbsp;
+        <!-- <sdButton
+          class="btn-import"
+          type="success"
+          size="small"
+          @click="generatePayroll"
+          v-if="isApprovedGenerator"
+          :disabled="isGenerating"
+        >
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+                ? "Processing ..."
+                : "Generate Draft Payroll"
+          }}
+        </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton class="btn-import" type="success" size="small">
           <router-link to="/events/add-stakeholder">
@@ -454,6 +471,7 @@ export default defineComponent({
         user.user.role_id === 64 ||
         user.user.role_id === 59 ||
         user.user.role_id === 4
+
       ) {
         return true;
       } else {

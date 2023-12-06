@@ -403,7 +403,7 @@ const fetchCounties = async () => {
       counties.value = response.data.map(x => ({
         value: x.org_id,
         label: x.name
-      })).filter(e => e.value == 'nK0A12Q7MvS');
+      }))
     }).catch(error => {
       notification.error({
         message: `Error!`,
