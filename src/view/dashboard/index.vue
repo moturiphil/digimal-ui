@@ -175,7 +175,7 @@
               <FilePdfOutlined /> Print Pdf
             </a-button>
          </a-row>
-        <a-row :gutter="5" v-show="wards !== null">
+        <a-row :gutter="5" v-if="wards !== null">
           <a-col :xxl="8" :md="8" :sm="24" :xs="24" class="pdf-row">
             <figure class="highcharts-figure">
               <div id="HouseholdsRegisteredbyCountyChart"></div>
@@ -281,12 +281,12 @@
               <table class="table table-responsive" v-if="printMode">
                 <thead>
                   <tr>
-                    <th v-for="item in NetsDistributedwithTimeData.map(item => item.date)" :key="item">{{ item }}</th>
+                    <th v-for="item in NetsDistributedwithTimeData.map(item => item)" :key="item">{{ item .date}}/Cummilative</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td v-for="item in NetsDistributedwithTimeData.map(item => item.no_of_nets)" :key="item">{{ item }}
+                    <td v-for="item in NetsDistributedwithTimeData.map(item => item)" :key="item">{{ item.no_of_nets }}/{{ item.nets_cumulative }}
                     </td>
                   </tr>
                 </tbody>
@@ -641,12 +641,14 @@ const fetchChildData = async (org_id, org_level) => {
           let pieOptionsData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
           let chartData = newChartData.value.map(item => ({ name: item.name, y: item.households_served }))
           let netsIssuedData = newChartData.value.map(item => ({ name: item.name, y: parseInt(item.nets_issued) }))
-          HouseHoldRegisteredbyCoountyChart(pieOptionsData, org_level)
-          HouseHoldRegisteredbyCoountyChartData.value = pieOptionsData
-          HouseHoldsServedbyCountyChart(chartData, org_level)
-          HouseHoldsServedbyCountyChartData.value = chartData
-          NetsIssuedbyCountyChart(netsIssuedData, org_level)
-          NetsIssuedbyCountyChartData.value = netsIssuedData
+          if (wards.value !=null) {
+            HouseHoldRegisteredbyCoountyChart(pieOptionsData, org_level)
+            HouseHoldRegisteredbyCoountyChartData.value = pieOptionsData
+            HouseHoldsServedbyCountyChart(chartData, org_level)
+            HouseHoldsServedbyCountyChartData.value = chartData
+            NetsIssuedbyCountyChart(netsIssuedData, org_level)
+            NetsIssuedbyCountyChartData.value = netsIssuedData
+          }
           fileterOrgeLevel.value = org_level
           fetchNetsDistributed()
         })
