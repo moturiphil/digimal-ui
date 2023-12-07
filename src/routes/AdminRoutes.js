@@ -240,11 +240,19 @@ const routes = [
       ),
     children: [
       {
-        path: "event-view",
-        name: "event-view",
+        path: "gf",
+        name: "gf",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewEvent.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewGFEvent.vue"
+          ),
+      },
+      {
+        path: "pmi",
+        name: "pmi",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewPMIEvent.vue"
           ),
       },
       {
