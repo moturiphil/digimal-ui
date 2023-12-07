@@ -677,7 +677,7 @@ const fetchChildData = async (org_id, org_level) => {
             newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_required
             newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
             newChartData.value.map(item => item.name),//cats
-            access_level.value.level.level_name,//level
+           fileterOrgeLevel.value,//level
           )
           NetsChartData.value = newChartData.value
           //pie chars Registered households by sub county
