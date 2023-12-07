@@ -45,15 +45,15 @@
       </template>
     </sdPageHeader>
     <a-row :gutter="25">
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless class="stat-card">
              <EChartCard>
               <div class="card-chunk">
               <CardBarChart2>
               <table class="stat-table">
-                <th><sHeading class="stat-title docorate" align="center">Digimal Stats</sHeading></th>
               <tbody>
                 <tr>
+                  <td rowspan="3"><sHeading class="stat-title" align="center">Digimal Stats</sHeading></td>
                   <td><span class="stat-span">Registered Users</span></td>
                   <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_users) }}</sdHeading></td>
                 </tr>
@@ -72,15 +72,15 @@
          </EChartCard>
         </sdCards>
       </a-col>
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless class="stat-card">
            <EChartCard>
             <div class="card-chunk">
             <CardBarChart2>
               <table class="stat-table">
-                <th><sHeading class="stat-title docorate" align="center">Nets</sHeading></th>
                 <tbody>
                   <tr>
+                    <td rowspan="4"><sHeading class="stat-title" align="center">Nets</sHeading></td>
                     <td> <span class="stat-span">Total Required</span></td>
                     <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required) }}</sdHeading></td>
                   </tr>
@@ -103,15 +103,15 @@
             </EChartCard>
         </sdCards>
       </a-col>
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless class="stat-card">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th><sHeading class="stat-title docorate" align="center">Households</sHeading></th>
                   <tbody>
                     <tr>
+                      <td rowspan="4"><sHeading class="stat-title" align="center">Households</sHeading></td>
                       <td><span class="stat-span">Total Registered</span></td>
                       <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_house_holds) }}</sdHeading></td>
                     </tr>
@@ -134,17 +134,15 @@
           </EChartCard>
         </sdCards>
       </a-col>
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
           <sdCards headless class="stat-card">
             <EChartCard>
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <thead>
-                      <th rowspan=""><sHeading class="stat-title docorate" align="center">Household Population</sHeading></th>
-                    </thead>
                     <tbody>
                       <tr>
+                        <td rowspan="4"><sHeading class="stat-title" align="center">Household Population</sHeading></td>
                         <td><span class="stat-span">Total Registered</span></td>
                         <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population) }}</sdHeading></td>
                       </tr>
@@ -820,21 +818,15 @@ const NetsDistributedwithTime = (data, org_level) => {
       },
     },
     yAxis: {
-      // Primary yAxis (Count)
       title: {
-        text: 'Count of Nets',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+        text: 'Number of Nets Distributed'
       },
       labels: {
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+        format: '{value}'
       }
     },
     tooltip: {
-      crosshairs:true,
+      crosshairs: true,
       shared: true
     },
     plotOptions: {
@@ -847,18 +839,16 @@ const NetsDistributedwithTime = (data, org_level) => {
       }
     },
     series: [{
-      name: 'Cumulative',//Cumulative
+      name: 'Total Nets Distributed',
       marker: {
         symbol: 'circle'
       },
-      yAxis:0,
-      data: data.map(item => parseInt(item.nets_cumulative))
+      data: data.map(item => parseInt(item.no_of_nets))
     },
     {
-      name: 'Daily Nets Distribution',
+      name: 'Cumulative',
       type: 'column',
       color: '#4ADEDE',
-      yAxis: 0,
       data: data.map(item => parseInt(item.no_of_nets))
     }]
   });
@@ -1346,24 +1336,13 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
   max-width: 100%;
   margin: 0 auto;
 }
-.stat-col{
-  margin-bottom: 10px;
-}
+
 .stat-title {
-  white-space: nowrap;
+  white-space: wrap;
   max-width: fit-content;
   font-size: 1.1rem;
   font-weight: bold;
   margin: 0 auto;
-  text-align: center;
-  max-width: 400px; /* Set your desired maximum width */
-  line-height: 1.5; /* Set your desired line height */
-}
-.docorate{
-  text-decoration: overline;
-  text-decoration-color: #d5dad7;
-  text-decoration-thickness: 10%;
-  text-overline-offset: 20%;
 }
 .stat-table{
   border-spacing: 0;
@@ -1371,12 +1350,9 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
   width: 100%; /* Make the table take up 100% of the parent container (card) */
   border-collapse: collapse; /* Remove spacing between table cells */
 }
-.stat-table td, .stat-table{
-  padding: 8px;
-  text-align: left;
-}
-.stat-table th{
-    text-align: center;
+.stat-table td, .stat-table th {
+  padding: 8px; /* Adjust the cell padding as needed */
+  text-align: left; /* Set text alignment to left */
 }
 .stat-table tr{
   margin:0px;
@@ -1390,12 +1366,6 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
   border-color: #d3efe7;
   color: #4b4d4c;
   margin: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center the content horizontally */
-  justify-content: center; /* Center the content vertically */
-  text-align: center; /* Center the text within the card */
-  box-sizing: border-box;
 }
 
 .d-inline{
@@ -1471,14 +1441,6 @@ box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Media query for responsiveness */
-@media only screen and (max-width: 600px) {
-  .stat-table td, .stat-table th {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
 
 @media screen and (max-width: 400px) {
   .stat-span {
