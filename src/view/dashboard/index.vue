@@ -227,7 +227,7 @@
           <a-divider></a-divider>
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
-              <div id="netsReqvsIssuedChart"></div>
+              <div id="netsReqvsIssuedChart"></div>netsReqvsDeliveredChart
               <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
                 <thead>
                   <tr>
@@ -255,6 +255,37 @@
               </table>
             </figure>
           </a-col>
+          <a-divider></a-divider>
+           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
+              <figure class="highcharts-figure">
+                <div id="netsReqvsDeliveredChart"></div>
+                <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
+                  <thead>
+                    <tr>
+                      <th v-for="item in NetsChartData" :key="item.name">{{ item.name }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td v-for="item in NetsChartData" :key="item.name">
+                        <table class="nested-table" style="max-width: 100%;">
+                          <tbody>
+                            <tr>
+                              <td style="font-weight:bold;font-style:italic;">Nets Delivered</td>
+                              <td style="font-weight:bold;font-style:italic;">Nets Issued</td>
+                            </tr>
+                            <tr>
+                              <td>{{ parseInt(item.nets_delivered) || 0 }}</td>
+                              <td>{{ parseInt(item.nets_issued) || 0 }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </figure>
+            </a-col>
           <a-divider></a-divider>
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <div>
@@ -479,6 +510,12 @@ const fetchInitialChartData = async () => {
         newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
       )
+      netsReqvsDeliveredChart(
+        newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_required
+        newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
+        newChartData.value.map(item => item.name),//cats
+        access_level.value.level.level_name,//level
+      )
       //registered,served,target_data,target_level,cats
       householdRegvsServedChart(
         newChartData.value.map(item => parseInt(item.households_registered)),//registered
@@ -636,6 +673,12 @@ const fetchChildData = async (org_id, org_level) => {
           householdRegvsServedChart(rgstd, srvd, rgstdvssvd, tgt1, labels1, fileterOrgeLevel.value)
           //combine bar line bar Subcounty comparison
           netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value)
+          netsReqvsDeliveredChart(
+            newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_required
+            newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
+            newChartData.value.map(item => item.name),//cats
+            access_level.value.level.level_name,//level
+          )
           NetsChartData.value = newChartData.value
           //pie chars Registered households by sub county
           let pieOptionsData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
@@ -1162,7 +1205,111 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       }]
     }
   });
-
+}
+const netsReqvsDeliveredChart = (nets_delivered, nets_issued, cats, orglevel) => {
+  Highcharts.chart('netsReqvsDeliveredChart', {
+    chart: {
+      zoomType: 'xy'
+    },
+    credits: {
+      text: 'Powered by HealthIT KE', // Custom text
+      href: 'https://unes.co.ke', // Custom link
+      target: '_blank',
+      position: {
+        align: 'right',
+        x: -10,
+        verticalAlign: 'bottom',
+        y: -5,
+      },
+    },
+    title: {
+      text: `Comparison of Nets Delivered vs Nets Issued by ${orglevel}`,
+      align: 'left'
+    },
+    subtitle: {
+      text: 'Source:',
+      align: 'left'
+    },
+    xAxis: [{
+      categories: cats,
+      crosshair: true
+    }],
+    yAxis: {
+      allowDecimals: false,
+      min: 0,
+      title: {
+        text: 'Count',
+        skew3d: true,
+        style: {
+          fontSize: '16px'
+        }
+      }
+    },
+    tooltip: {
+      shared: true,
+      headerFormat: '<span style="font-size: 15px">' +
+        '{series.chart.options.cats.(point.key).name}' +
+        '</span><br/>',
+      pointFormat: '<span style="color:{point.color}">\u25CF</span> ' +
+        '{series.name}: <b>{point.y} records</b><br/>'
+    },
+    legend: {
+      layout: 'horizontal',
+      align: 'center',
+      x: 80,
+      verticalAlign: 'top',
+      y: 20,
+      floating: true,
+      backgroundColor:
+        Highcharts.defaultOptions.legend.backgroundColor || // theme
+        'rgba(255,255,255,0.25)'
+    },
+    series: [{
+      name: 'Nets Delivered',
+      type: 'column',
+      data: nets_delivered,
+      color: '#3498db',
+    }, {
+      name: 'Nets Issued',
+      type: 'column',
+      data: nets_issued,
+      color: '#4ADEDE',
+    }],
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 500
+        },
+        chartOptions: {
+          legend: {
+            floating: false,
+            layout: 'horizontal',
+            align: 'center',
+            verticalAlign: 'bottom',
+            x: 0,
+            y: 0
+          },
+          yAxis: [{
+            labels: {
+              align: 'right',
+              x: 0,
+              y: -6
+            },
+            showLastLabel: false
+          }, {
+            labels: {
+              align: 'left',
+              x: 0,
+              y: -6
+            },
+            showLastLabel: false
+          }, {
+            visible: false
+          }]
+        }
+      }]
+    }
+  });
 }
 const householdRegvsServedChart = (registered, served, target_data, target_level, cats, orglevel) => {
  Highcharts.chart('householdRegvsServedChart', {
