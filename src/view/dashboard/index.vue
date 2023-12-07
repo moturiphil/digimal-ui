@@ -227,7 +227,7 @@
           <a-divider></a-divider>
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
-              <div id="netsReqvsIssuedChart"></div>netsReqvsDeliveredChart
+              <div id="netsReqvsIssuedChart"></div>
               <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
                 <thead>
                   <tr>
