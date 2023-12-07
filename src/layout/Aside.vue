@@ -5,21 +5,19 @@
     :theme="darkMode ? 'dark' : 'light'"
   >
     <a-menu-item-group key="pages">
-        <a-sub-menu key="widgetDashboard">
-          <template v-slot:title>
-              <sdFeatherIcons type="home" /> <span>Dashboards</span>
-          </template>
-           <a-menu-item key="widgetDashboard">
-              <router-link to="/">
-              Campaign Dashboard
-              </router-link>
-            </a-menu-item>
-          <!-- <a-menu-item key="widgetDashboard" v-if="true">
+      <a-sub-menu key="widgetDashboard">
+        <template v-slot:title>
+          <sdFeatherIcons type="home" /> <span>Dashboards</span>
+        </template>
+        <a-menu-item key="widgetDashboard">
+          <router-link to="/"> Campaign Dashboard </router-link>
+        </a-menu-item>
+        <!-- <a-menu-item key="widgetDashboard" v-if="true">
             <router-link to="/MNEDashboard">
               M & E Dashboard
             </router-link>
           </a-menu-item> -->
-        </a-sub-menu>
+      </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>
           <sdFeatherIcons type="globe" /><span>Campaigns</span>
@@ -42,9 +40,22 @@
         <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetListevents">
-          <router-link to="/events/event-view"> List Events </router-link>
-        </a-menu-item>
+        <a-sub-menu key="gf-events">
+          <template v-slot:title>
+            <sdFeatherIcons type="globe" /><span>Global Fund</span>
+          </template>
+          <a-menu-item key="widgetGFevents">
+            <router-link to="/events/gf"> GF Events </router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-sub-menu key="pmi-events">
+          <template v-slot:title>
+            <sdFeatherIcons type="radio" /><span>PMI</span>
+          </template>
+          <a-menu-item key="widgetPMIevents">
+            <router-link to="/events/pmi"> PMI Events </router-link>
+          </a-menu-item>
+        </a-sub-menu>
       </a-sub-menu>
       <a-sub-menu
         key="activities"
@@ -63,7 +74,10 @@
             Create Activity
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetActivityPendingApproval" v-if="canViewActivities">
+        <a-menu-item
+          key="widgetActivityPendingApproval"
+          v-if="canViewActivities"
+        >
           <router-link to="/activities/activity-pending-approval">
             Pending Approval
           </router-link>
@@ -144,10 +158,11 @@
             List Drop-off
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetDropOffPointReceives" v-if="canViewDropOffPoint">
-          <router-link to="/nets/drop-off">
-            Drop-off Receipts
-          </router-link>
+        <a-menu-item
+          key="widgetDropOffPointReceives"
+          v-if="canViewDropOffPoint"
+        >
+          <router-link to="/nets/drop-off"> Drop-off Receipts </router-link>
         </a-menu-item>
         <a-menu-item key="widgetListIssuance" v-if="canViewDropOffPoint">
           <router-link to="/nets/issuance-linelist">
@@ -202,9 +217,7 @@
             <sdFeatherIcons type="globe" /><span>MEDS</span>
           </template>
           <a-menu-item key="meds-orders">
-            <router-link to="/meds-orders"
-              >Orders
-            </router-link>
+            <router-link to="/meds-orders">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="meds-issues">
             <router-link to="/meds-issues">Issues </router-link>
@@ -215,9 +228,7 @@
             <sdFeatherIcons type="table" /><span>KEMSA</span>
           </template>
           <a-menu-item key="kemsa-orders/">
-            <router-link to="/orders/kemsa-order"
-              >Orders
-            </router-link>
+            <router-link to="/orders/kemsa-order">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="kemsa-issues">
             <router-link to="/orders/kemsa-issues">Issues </router-link>
@@ -371,7 +382,7 @@ import { fetchUserData, hasRole } from "../services/user-role";
 const adminRoles = [53];
 const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
-  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60,78,17
+  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60, 78, 17,
 ];
 const createEventRoles = [53, 5, 3, 21, 37, 39, 22, 36];
 
@@ -383,30 +394,30 @@ const createActivityRoles = [53, 5, 3, 21, 37, 22, 36];
 
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17,
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,
 ];
 const viewRegHHRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,
 ];
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,77, 78, 17
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,
 ];
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 78,17
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17,
 ];
 
 const viewDropoffPointsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35, 34
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34,
 ];
 
 const createDistributionPostRoles = [
@@ -415,19 +426,19 @@ const createDistributionPostRoles = [
 
 const viewDistributionPostRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35, 34
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34,
 ];
 
 const viewInventoryRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60,55,77, 35, 34
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34,
 ];
 
-const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78,17];
+const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78, 17];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37, 56,78, 17
+  42, 60, 34, 37, 56, 78, 17,
 ];
 
 const viewMasterlistsRoles = [56];

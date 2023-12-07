@@ -45,136 +45,201 @@
       </template>
     </sdPageHeader>
     <a-row :gutter="25">
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
-        <sdCards headless class="stat-card">
-             <EChartCard>
-              <div class="card-chunk">
-              <CardBarChart2>
-              <table class="stat-table">
-                <th><sHeading class="stat-title docorate" align="center">Digimal Stats</sHeading></th>
-              <tbody>
-                <tr>
-                  <td><span class="stat-span">Registered Users</span></td>
-                  <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_users) }}</sdHeading></td>
-                </tr>
-                <tr>
-                  <td><span class="stat-span">Active Activities</span></td>
-                  <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(activities) }}</sdHeading></td>
-                </tr>
-                <tr>
-                    <td><span class="stat-span">Active Events</span></td>
-                    <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(active_events) }}</sdHeading></td>
-                  </tr>
-              </tbody>
-            </table>
-         </CardBarChart2>
-         </div>
-         </EChartCard>
-        </sdCards>
-      </a-col>
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
-        <sdCards headless class="stat-card">
-           <EChartCard>
-            <div class="card-chunk">
-            <CardBarChart2>
-              <table class="stat-table">
-                <th><sHeading class="stat-title docorate" align="center">Nets</sHeading></th>
-                <tbody>
-                  <tr>
-                    <td> <span class="stat-span">Total Required</span></td>
-                    <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required) }}</sdHeading></td>
-                  </tr>
-                  <tr>
-                    <td> <span class="stat-span">Tota Distributed</span></td>
-                    <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(nets_distributed) }}</sdHeading></td>
-                  </tr>
-                  <tr>
-                      <td> <span class="stat-span">Total Remaining</span></td>
-                      <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required-nets_distributed) }}</sdHeading></td>
-                    </tr>
-                    <tr>
-                      <td> <span class="stat-span"><strong>%</strong> of Nets Issued</span></td>
-                      <td> <sdHeading class="stat-title">{{ Number((nets_distributed/ total_nets_required)*100).toFixed(2) }}%</sdHeading></td>
-                    </tr>
-                </tbody>
-              </table>
-            </CardBarChart2>
-            </div>
-            </EChartCard>
-        </sdCards>
-      </a-col>
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
         <sdCards headless class="stat-card">
           <EChartCard>
             <div class="card-chunk">
               <CardBarChart2>
-                <table class="stat-table">
-                  <th><sHeading class="stat-title docorate" align="center">Households</sHeading></th>
-                  <tbody>
-                    <tr>
-                      <td><span class="stat-span">Total Registered</span></td>
-                      <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_house_holds) }}</sdHeading></td>
-                    </tr>
-                    <tr>
-                      <td><span class="stat-span">Total Served</span></td>
-                      <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}</sdHeading></td>
-                    </tr>
-                    <tr>
-                        <td> <span class="stat-span">Total Remaining</span></td>
-                        <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_house_holds - totalhouseholds_served) }}</sdHeading></td>
-                      </tr>
-                      <tr>
-                        <td> <span class="stat-span"><strong>%</strong> of Nets Issued</span></td>
-                        <td> <sdHeading class="stat-title">{{ Number((totalhouseholds_served / registered_house_holds) * 100).toFixed(2) }}%</sdHeading></td>
-                      </tr>
-                  </tbody>
-                </table>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_users) }}</sdHeading>
+                <span class="stat-span">Registered Users</span>
               </CardBarChart2>
             </div>
           </EChartCard>
         </sdCards>
       </a-col>
-      <a-col :xxl="6" :md="12" :sm="12" :xs="24" class="stat-col">
-          <sdCards headless class="stat-card">
-            <EChartCard>
-              <div class="card-chunk">
-                <CardBarChart2>
-                  <table class="stat-table">
-                    <thead>
-                      <th rowspan=""><sHeading class="stat-title docorate" align="center">Household Population</sHeading></th>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><span class="stat-span">Total Registered</span></td>
-                        <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population) }}</sdHeading></td>
-                      </tr>
-                      <tr>
-                        <td><span class="stat-span">Total Served</span></td>
-                        <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}</sdHeading></td>
-                      </tr>
-                      <tr>
-                          <td> <span class="stat-span">Total Remaining</span></td>
-                          <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population - totalhouseholds_served) }}</sdHeading></td>
-                        </tr>
-                        <tr>
-                          <td> <span class="stat-span"><strong>%</strong> Served</span></td>
-                          <td> <sdHeading class="stat-title">{{ Number((totalhouseholds_served / household_population) * 100).toFixed(2) }}%</sdHeading></td>
-                        </tr>
-                    </tbody>
-                  </table>
-                </CardBarChart2>
-              </div>
-            </EChartCard>
-          </sdCards>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(activities) }}</sdHeading>
+                <span class="stat-span">Active Activities</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="downward" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Nets Distributed',
+                barPercentage: 1,
+              },
+              ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(active_events) }}</sdHeading>
+                <span class="stat-span">Active Events</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="upward" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Avg Orders',
+                barPercentage: 1,
+              },
+            ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required) }}</sdHeading>
+                <span class="stat-span">Total Nets Required</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Visitors',
+                barPercentage: 1,
+              },
+            ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_house_holds) }}</sdHeading>
+                <span class="stat-span">Registered HouseHolds</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Visitors',
+                barPercentage: 1,
+              },
+            ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}</sdHeading>
+                <span class="stat-span">Total HouseHolds Served</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Visitors',
+                barPercentage: 1,
+              },
+            ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population) }}</sdHeading>
+                <span class="stat-span">Total HouseHold Population</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="visitors" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Visitors',
+                barPercentage: 1,
+              },
+            ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
+      </a-col>
+      <a-col :xxl="6" :md="12" :sm="12" :xs="24">
+        <sdCards headless class="stat-card">
+          <EChartCard>
+            <div class="card-chunk">
+              <CardBarChart2>
+                <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(nets_distributed) }}</sdHeading>
+                <span class="stat-span">Nets Distributed</span>
+              </CardBarChart2>
+            </div>
+            <div class="card-chunk">
+              <Chart class="growth" :height="0" :labels="[]" :style="{
+                marginBottom: '-5',
+              }" :datasets="[
+              {
+                data: [],
+                backgroundColor: '#E8FAF4',
+                hoverBackgroundColor: '#20C997',
+                label: 'Orders',
+                barPercentage: 1,
+              },
+            ]" :options="chartOptions" />
+            </div>
+          </EChartCard>
+        </sdCards>
       </a-col>
     </a-row>
-    <div class="" justify="space-around" align="right">
+    <div class="">
+      <a-row :gutter="6">
+        <a-button @click="exportChartsToPDF()" :style="{panding:'2px',border:'solid 1px 2%'}">
+          <FilePdfOutlined /> Print Pdf
+        </a-button>
+      </a-row>
       <div id="printPDFDiv">
-         <a-row style="margin-top:10px;panding:1px;border:solid 1px 1px #6b055700">
-           <a-button @click="exportChartsToPDF()" :style="{ panding: '2px', border: 'solid 1px 2%' }">
-              <FilePdfOutlined /> Print Pdf
-            </a-button>
-         </a-row>
         <a-row :gutter="5" v-show="wards !== null">
           <a-col :xxl="8" :md="8" :sm="24" :xs="24" class="pdf-row">
             <figure class="highcharts-figure">
@@ -334,6 +399,7 @@ const HouseHoldsServedbyCountyChartData = ref([])
 const NetsIssuedbyCountyChartData = ref([])
 const NetsDistributedwithTimeData = ref([])
 var printMode = ref(false)
+const chartOptions = ref({})
 const totalhouseholds_served = ref([])
 
 //org levels
@@ -566,19 +632,19 @@ const fetchChildData = async (org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
         counties.value.splice(0, 1)
       } else if (org_level == 'county') {//get subcounties
         subcounties.value = data.map(x => ({
           value: x.org_id,
           label: x.name
         }));
-       org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
       } else if (org_level == 'subcounty') {//get wards
         wards.value = data.map(x => ({
           value: x.org_id,
@@ -595,12 +661,7 @@ const fetchChildData = async (org_id, org_level) => {
           value: x.org_id,
           label: x.name
         }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
+        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
       } else if (org_level == 'location') {//get sublocations
         sublocations.value = data.map(x => ({
           value: x.org_id,
@@ -820,21 +881,15 @@ const NetsDistributedwithTime = (data, org_level) => {
       },
     },
     yAxis: {
-      // Primary yAxis (Count)
       title: {
-        text: 'Count of Nets',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+        text: 'Number of Nets Distributed'
       },
       labels: {
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+        format: '{value}'
       }
     },
     tooltip: {
-      crosshairs:true,
+      crosshairs: true,
       shared: true
     },
     plotOptions: {
@@ -847,18 +902,10 @@ const NetsDistributedwithTime = (data, org_level) => {
       }
     },
     series: [{
-      name: 'Cumulative',//Cumulative
+      name: 'Total Nets Distributed',
       marker: {
         symbol: 'circle'
       },
-      yAxis:0,
-      data: data.map(item => parseInt(item.nets_cumulative))
-    },
-    {
-      name: 'Daily Nets Distribution',
-      type: 'column',
-      color: '#4ADEDE',
-      yAxis: 0,
       data: data.map(item => parseInt(item.no_of_nets))
     }]
   });
@@ -1100,7 +1147,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       type: 'column',
       yAxis: 0, // Assign to the Count axis
       data: nets_issued,
-      color: '#4ADEDE',//color: '#3498db',
+      color: '#4ADEDE',
     }, {
       name: 'Expected Achievement',
       type: 'spline',
@@ -1342,68 +1389,21 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
 }
 .stat-span {
   white-space: nowrap;
-  font-size: 1rem;
-  max-width: 100%;
-  margin: 0 auto;
-}
-.stat-col{
-  margin-bottom: 10px;
-}
-.stat-title {
-  white-space: nowrap;
-  max-width: fit-content;
   font-size: 1.1rem;
-  font-weight: bold;
-  margin: 0 auto;
-  text-align: center;
-  max-width: 400px; /* Set your desired maximum width */
-  line-height: 1.5; /* Set your desired line height */
-}
-.docorate{
-  text-decoration: overline;
-  text-decoration-color: #d5dad7;
-  text-decoration-thickness: 10%;
-  text-overline-offset: 20%;
-}
-.stat-table{
-  border-spacing: 0;
-  margin:auto;
-  width: 100%; /* Make the table take up 100% of the parent container (card) */
-  border-collapse: collapse; /* Remove spacing between table cells */
-}
-.stat-table td, .stat-table{
-  padding: 8px;
-  text-align: left;
-}
-.stat-table th{
-    text-align: center;
-}
-.stat-table tr{
-  margin:0px;
-  padding:0px;
-}
-.stat-card {
-  width: 100%;
-  height: 100%;
-  background: #ebedec;
-  border: solid;
-  border-color: #d3efe7;
-  color: #4b4d4c;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center the content horizontally */
-  justify-content: center; /* Center the content vertically */
-  text-align: center; /* Center the text within the card */
-  box-sizing: border-box;
 }
 
-.d-inline{
-display: inline-block;
-width: 100%;
-max-width: 100%;
-box-sizing: border-box;
+.stat-title {
+  font-size: 1.6rem;
+  font-weight: bold;
 }
+
+.stat-card {
+  background: #ebedec;
+  border: solid;
+  border-color: #24daa3;
+  color: #4b4d4c
+}
+
 .icon-color-white {
   color: white;
 }
@@ -1471,14 +1471,6 @@ box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Media query for responsiveness */
-@media only screen and (max-width: 600px) {
-  .stat-table td, .stat-table th {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
 
 @media screen and (max-width: 400px) {
   .stat-span {
