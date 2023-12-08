@@ -2,7 +2,7 @@
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Events">
       <template #subTitle>
-        
+
       </template>
       <template #buttons>
         <div class="search-box">
@@ -36,9 +36,10 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 50, showSizeChanger: true }"
-                  :dataSource="results"
+                  :pagination="{ pageSize: pageSize, current: currentPage, total: results.length }"
+                  :dataSource="currentResults"
                   :columns="columns"
+                  @change="handleTableChange($event)"
                 >
                   <template #events="{ record }">
                     <td>
@@ -188,13 +189,13 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
-import axios from "axios";
+<script setup>
+import axios from "@/Axiosconfig";
 import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent } from "vue";
+import { computed, onMounted, ref, defineProps,watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -240,35 +241,73 @@ const columns = [
   },
 ];
 
-const ViewPage = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
-  props: {
-    event: {
-      type: Object,
-      required: true,
-    },
+
+defineProps({
+  event: {
+    type: Object,
+    required: true,
   },
-  data() {
-    return {
-      visible: false,
-      confirmLoading: false,
-      modalType: "success",
-      colorVisible: false,
-      eventCode: "",
-      isStarting: false,
-      isStarted: false,
-      events: [], // an array of events fetched from the server
-      eventStatus: {}, // an object to keep track of the status of each event
-    };
-  },
-  methods: {
+});
+
+const {
+  state,
+  //dispatch
+} = useStore();
+//const crud = computed(() => state.crud.data);
+const isLoading = computed(() => state.crud.loading);
+//const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+const eventCode = ref("");
+const searchItem = ref("");
+let isModalOpen = ref(false);
+const isTrainerModalOpen = ref(false);
+const recordId = ref(null);
+const event_host = ref("");
+const event_facilitators = ref([]);
+const eventEndDate = ref("");
+var currentPage = ref(1);
+var pageSize = ref(50);
+var total = ref(0)
+const visible=ref(false)
+//const confirmLoading=ref(false)
+//const modalType=ref("success")
+const colorVisible=ref(false)
+const isStarting=ref(false)
+//const isStarted=ref(false)
+//const events=ref([]) // an array of events fetched from the server
+const eventStatus=ref({}) // an object to keep track of the status of each event
+//const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+
+
+const currentResults = computed(() => {
+  const startIndex = (currentPage.value - 1) * pageSize.value;
+  const endIndex = startIndex + pageSize.value;
+  return dataSource.value.slice(startIndex, endIndex);
+});
+
+watch(pageSize, () => {
+  currentPage.value = 1; // Reset to the first page when page size changes
+});
+
+const handleTableChange = async(pagination) => {
+  console.log(pagination)
+  currentPage.value = pagination.current;
+  pageSize.value = pagination.pageSize;
+   try {
+    const response = await axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`);
+    dataSource.value = response.data.data;
+    total.value = response.data.total;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
     // start an event == only host can start/close
-    async startEvent(id) {
+    const startEvent=async(id)=>{
       try {
-        this.isStarting = true;
+        isStarting.value = true;
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/event_start_trigger/${id}`,
+          `event_start_trigger/${id}`,
           {
             method: "GET",
             headers: authHeader(),
@@ -277,8 +316,8 @@ const ViewPage = defineComponent({
         const data = await response.json();
         console.log(data);
         if (data.status === true) {
-          this.eventStatus[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          eventStatus.value[id] = true;
+          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
           notification.success({
             message: "Event Started",
             description: data.message,
@@ -288,8 +327,8 @@ const ViewPage = defineComponent({
           });
           location.reload();
         } else {
-          this.eventStatus[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          eventStatus.value[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
           notification.error({
             message: "Event Not Started",
             description: data.message,
@@ -298,15 +337,15 @@ const ViewPage = defineComponent({
       } catch (error) {
         console.error(error);
       } finally {
-        this.isStarting = false;
+        isStarting.value = false;
       }
-    },
+    }
     // close an event == only host can start/close
-    async closeEvent(id) {
+    const closeEvent=async(id)=>{
       try {
-        this.isStarting = true;
+        isStarting.value = true;
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/event_close_trigger/${id}`,
+          `event_close_trigger/${id}`,
           {
             method: "GET",
             headers: authHeader(),
@@ -315,8 +354,8 @@ const ViewPage = defineComponent({
         const data = await response.json();
         console.log(data);
         if (data.status === true) {
-          this.eventStatus[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          eventStatus.value[id] = true;
+          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
           // notify the user
           notification.success({
             message: "Event Closed",
@@ -327,8 +366,8 @@ const ViewPage = defineComponent({
           });
           location.reload();
         } else {
-          this.eventStatus[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+          eventStatus.value[id] = false;
+          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
           notification.error({
             message: "Event Not Closed",
             description: "Only event host can close event",
@@ -338,45 +377,28 @@ const ViewPage = defineComponent({
       } catch (error) {
         console.error(error);
       } finally {
-        this.isStarting = true;
+       isStarting.value = true;
       }
-    },
-    handleCancel() {
-      this.isModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
-    handleTrainerCancel() {
-      this.isTrainerModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
-    handleOkTrainers() {
-      this.isTrainerModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
-    changeType(type) {
-      this.modalType = type;
-    },
-  },
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const eventCode = ref("");
-    const searchItem = ref("");
-    let isModalOpen = ref(false);
-    const isTrainerModalOpen = ref(false);
-    const recordId = ref(null);
-    const event_host = ref("");
-    const event_facilitators = ref([]);
-    const eventEndDate = ref("");
+}
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
-
+    const handleCancel=()=>{
+      isModalOpen.value = false;
+      visible.value = false;
+      colorVisible.value = false;
+    }
+  const handleTrainerCancel=()=>{
+      isTrainerModalOpen.value = false;
+      visible.value = false;
+      colorVisible.value = false;
+    }
+  const handleOkTrainers=()=>{
+      isTrainerModalOpen.value = false;
+      visible.value = false;
+      colorVisible.value = false;
+    }
+  // const changeType=(type)=>{
+  //     modalType.value = type;
+  //   }
     // participants registrations
     const handleRegistration = (id) => {
       isModalOpen.value = true;
@@ -395,7 +417,7 @@ const ViewPage = defineComponent({
       isTrainerModalOpen.value = true;
       try {
         const response = await axios.get(
-          `${API_URL}/event/${code}/facilitators`,
+          `event/${code}/facilitators`,
           {
             headers: authHeader(),
           }
@@ -417,7 +439,7 @@ const ViewPage = defineComponent({
       console.log(inputValue);
       try {
         const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/event/${recordId.value}/participant/${inputValue}/assign`,
+          `event/${recordId.value}/participant/${inputValue}/assign`,
           { headers: authHeader() }
         );
         console.log(response);
@@ -453,7 +475,7 @@ const ViewPage = defineComponent({
     // get all the events
     onMounted(() => {
       axios
-        .get(`${API_URL}/events/all`, {
+        .get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`, {
           headers: authHeader(),
         })
         .then((response) => {
@@ -488,7 +510,7 @@ const ViewPage = defineComponent({
       try {
         // Validate the event code
         const { data } = await axios.get(
-          `${API_URL}/events/all?event_code=${eventCode.value}`
+          `events/all?event_code=${eventCode.value}`
         );
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");
@@ -502,22 +524,22 @@ const ViewPage = defineComponent({
       }
     };
 
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
+    // const handleDelete = (id) => {
+    //   const confirm = window.confirm("Are you sure delete this?");
+    //   if (confirm) {
+    //     dispatch("axiosDataDelete", {
+    //       id,
+    //       getData: () => {
+    //         dispatch("axiosCrudGetData");
+    //       },
+    //     });
+    //   }
+    //   return false;
+    // };
 
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
+    // const onSelectChange = (selectedRowKey) => {
+    //   selectedRowKeys.value = selectedRowKey;
+    // };
 
     // search through the events table
     const results = computed(() => {
@@ -531,35 +553,10 @@ const ViewPage = defineComponent({
         });
       }
     });
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      results,
-      searchItem,
-      dataSource,
-      columns,
-      handleRegistration,
-      handleOk,
-      isModalOpen,
-      isTrainerModalOpen,
-      manageEvent,
-      event_host,
-      event_facilitators,
-      eventEndDate,
-    };
-  },
-});
-
-export default ViewPage;
+    // const rowSelection = {
+    //   selectedRowKeys,
+    //   onChange: onSelectChange,
+    // };
 </script>
 
 <style lang="css">
