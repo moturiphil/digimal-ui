@@ -36,10 +36,9 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: pageSize, current: currentPage, total: results.length }"
-                  :dataSource="currentResults"
+                  :pagination="false"
+                  :dataSource="dataSource"
                   :columns="columns"
-                  @change="handleTableChange($event)"
                 >
                   <template #events="{ record }">
                     <td>
@@ -59,12 +58,15 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/event/details/${record.id}`,
+                              name: `view-details`,
+                              params: {id: record.id},
                               query: {
-                                id: record.id,
-                                name: record.name,
-                                event_code: record.event_code,
-                                event_host_id: record.event_host_id,
+                                encryptedData: encodeURIComponent(encrypt({
+                                  id: record.id,
+                                  name: record.name,
+                                  event_code: record.event_code,
+                                  event_host_id: record.event_host_id,
+                                })),
                               },
                             }"
                           >
@@ -180,6 +182,14 @@
                     </td>
                   </template>
                 </a-table>
+                <a-pagination
+                  :current="currentPage"
+                  :total="datatotal"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  :pagination="true"
+                  @change="onPageChange($event)"
+                />
               </TableWrapper>
             </div>
           </sdCards>
@@ -194,7 +204,7 @@ import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps,watch } from "vue";
+import { computed, onMounted, ref, defineProps } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -264,8 +274,8 @@ const event_host = ref("");
 const event_facilitators = ref([]);
 //const eventEndDate = ref("");
 var currentPage = ref(1);
-var pageSize = ref(50);
-var total = ref(0)
+var pageSize = ref(100);
+var datatotal = ref(0)
 const visible=ref(false)
 //const confirmLoading=ref(false)
 //const modalType=ref("success")
@@ -274,32 +284,54 @@ const isStarting=ref(false)
 //const isStarted=ref(false)
 //const events=ref([]) // an array of events fetched from the server
 const eventStatus=ref({}) // an object to keep track of the status of each event
-//const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+//enrcrypt
+import { encrypt, decrypt } from '@/cryptoHelper';
+// Example usage
 
 
-const currentResults = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  return dataSource.value.slice(startIndex, endIndex);
-});
-
-watch(pageSize, () => {
-  currentPage.value = 1; // Reset to the first page when page size changes
-});
-
-const handleTableChange = async(pagination) => {
-  console.log(pagination)
-  currentPage.value = pagination.current;
-  pageSize.value = pagination.pageSize;
-   try {
-    const response = await axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`);
+const onPageChange = async (page) => {
+  currentPage.value = page
+  try {
+    const response = await axios.get(`events/all?page=${page}&per_page=${pageSize.value}`);
     dataSource.value = response.data.data;
-    total.value = response.data.total;
+    datatotal.value = response.data.pagination.total;
   } catch (error) {
     console.error(error);
   }
-};
+}
 
+// get all the events
+onMounted(() => {
+  getEvents()
+});
+
+const getEvents = () => {
+  axios
+    .get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      // dataSource.value = response.data.data;
+      // console.log(dataSource.value);
+      const filteredData = response.data.data.filter(
+        (item) => item.funding_source == 1
+      );
+      datatotal.value = response.data.pagination.total;
+      console.log(datatotal.value);
+      dataSource.value = filteredData
+      const originalText = dataSource.value.map(item => ({ id: item.id, name: item.name, event_code: item.event_code }))[0];
+      console.log(originalText);
+
+      const cipherText = encrypt(originalText);
+      console.log("Encrypted:", cipherText);
+
+      const decryptedText = decrypt(cipherText);
+      console.log("Decrypted:", decryptedText);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
     // start an event == only host can start/close
     const startEvent=async(id)=>{
       try {
@@ -470,25 +502,6 @@ const handleTableChange = async(pagination) => {
       }
     };
 
-    // get all the events
-    onMounted(() => {
-      axios
-        .get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          // dataSource.value = response.data.data;
-          // console.log(dataSource.value);
-          const filteredData = response.data.data.filter(
-            (item) => item.funding_source == 1
-          );
-          console.log(filteredData);
-          dataSource.value = filteredData
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
 
     // Handle when event code is incorrect
 
@@ -528,7 +541,8 @@ const handleTableChange = async(pagination) => {
     // };
 
     // search through the events table
-    const results = computed(() => {
+//const results =
+computed(() => {
       const query = searchItem.value.toLowerCase();
       const regex = new RegExp(query, "i");
       if (!query) {
