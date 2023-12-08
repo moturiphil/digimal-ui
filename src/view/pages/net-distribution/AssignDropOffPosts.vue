@@ -76,10 +76,10 @@ export default defineComponent({
     // const targetKeys = ref([]);
     const drop_off_point_id = query.id;
     const dropoffs = ref([]);
-    const targetKeys = ref([]);
     const dropoff_name = query.name;
     const posts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_point_id}`;
-    const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff?drop_off_point_id=${drop_off_point_id}`;
+    const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
+    const assignedPosts = [];
 
     const formState = reactive({
       drop_off_id: "",
@@ -112,7 +112,7 @@ export default defineComponent({
         }
 
         distribution_posts.value = posts;
-        console.log(distribution_posts.value);
+        console.log("distributions",distribution_posts.value);
       } catch (error) {
         notification.error({
           message: "Error",
@@ -155,33 +155,34 @@ export default defineComponent({
     };
 
     const fetchDropoffPosts = async () => {
+      const dropoffid = {
+        drop_off_point_id: drop_off_point_id,
+      };
       try {
-        const assignedPosts = [];
         const response = await fetch(drop_off_posts_url, {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
+          body: JSON.stringify(dropoffid),
         });
 
         const data = await response.json();
-
-        console.log(data.data);
-
         if (data.data) {
-          const posts_data = data.data;
-          for (let i = 0; i < posts_data.length; i++) {
-            const element = {
-              key: posts_data[i].distribution_post_id,
-              title: posts_data[i].name,
-            };
-            assignedPosts.push(element);
+          for (let i =0; i < data.data.length; i++) {
+          const element = {
+            key: data.data[i].distribution_post_id,
+            title: data.data[i].name,
+          };
+          distribution_posts.value.push(element);
           }
-          targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
-          console.log(targetKeys.value);
+          data.data.forEach((post) => {
+            assignedPosts.push(post.distribution_post_id);
+          });
+          this.targetKeys=assignedPosts
         } else {
-          console.error("Data or data.name is undefined:", data);
+          console.error("Error", data);
         }
       } catch (error) {
         notification.error({
@@ -192,7 +193,7 @@ export default defineComponent({
     };
 
     const handleChange = (newTargetKeys) => {
-      targetKeys.value = newTargetKeys; // Update directly
+      this.targetKeys= newTargetKeys; // Update directly
       formState.post_ids = newTargetKeys;
     };
 
@@ -234,8 +235,6 @@ export default defineComponent({
     };
 
     const filterOption = (inputValue, option) => {
-      console.log("inputValue:", inputValue);
-      console.log("option.title:", option.title);
       return option.title.indexOf(inputValue) > -1;
     };
 
@@ -243,7 +242,7 @@ export default defineComponent({
       isLoading,
       distribution_posts,
       formState,
-      targetKeys,
+      targetKeys:[],
       dropoff_name,
       handleSubmit,
       handleChange,

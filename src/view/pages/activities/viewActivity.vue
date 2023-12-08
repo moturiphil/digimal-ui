@@ -39,6 +39,7 @@
                                 id: record.id,
                                 name: record.name,
                                 code: record.activity_code,
+                                created_by: record.created_by,
                               },
                             }"
                             class="btn-icon"
@@ -108,6 +109,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
+    fixed: 'right',
+    width: 20,
     key: "activity",
     slots: { customRender: "activity" },
   },
@@ -154,6 +157,7 @@ const ActivityTable = defineComponent({
             sub_county_id: subCountyName,
           };
         });
+        console.log(dataSource.value);
       } catch (error) {
         console.error(error);
       }

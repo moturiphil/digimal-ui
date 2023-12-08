@@ -339,6 +339,16 @@
                                   type="number"
                                 />
                               </a-form-item>
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                              >
+                                <a-input
+                                  v-model:value="trans_formState.delivery_note_number"
+                                  placeholder="S11 No"
+                                  type="number"
+                                />
+                              </a-form-item>
                               <a-form-item name="comment" label="Comment">
                                 <a-input
                                   v-model:value="trans_formState.comment"
@@ -458,6 +468,18 @@
                                     returns_formState.date_returned
                                   "
                                   :format="dateFormat"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                              >
+                                <a-input
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.delivery_note_number
+                                  "
+                                  type="number"
                                 />
                               </a-form-item>
                               <div class="record-form-actions text-right">
@@ -723,6 +745,7 @@ export default defineComponent({
         from_post_id: trans_formState.from_post_id,
         to_post_id: trans_formState.to_post_id,
         number_of_nets: trans_formState.number_of_nets,
+        delivery_note_number: trans_formState.delivery_note_number,
         comment: trans_formState.comment,
       };
       console.log(JSON.stringify(data));
@@ -736,16 +759,16 @@ export default defineComponent({
           body: JSON.stringify(data),
         })
           .then((response) => response.json())
-          .then(({ success, data }) => {
+          .then(({ success, message }) => {
             if (success) {
               notification.success({
                 message: "Success",
-                description: `${data}`,
+                description: `${message}`,
               });
             } else {
               notification.error({
                 message: "Error",
-                description: `${data}`,
+                description: `${message}`,
               });
             }
             isModalOpen.value = false;
@@ -776,6 +799,7 @@ export default defineComponent({
         date_returned: dayjs(returns_formState.date_returned).format(
           "YYYY-MM-DD"
         ),
+        delivery_note_number:returns_formState.delivery_note_number,
       };
       try {
         fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
@@ -804,6 +828,7 @@ export default defineComponent({
             returns_formState.to_drop_off_point_id = "";
             returns_formState.number_of_nets = "";
             returns_formState.date_returned = "";
+            window.location.reload();
           })
           .catch((error) => {
             console.log(error);
@@ -861,7 +886,8 @@ export default defineComponent({
             } else {
               notification.error({
                 message: "Error",
-                description: "Only post supervisor can receive nets, contact SCMCC.",
+                description:
+                  "Only post supervisor can receive nets, contact SCMCC.",
               });
             }
             isModalOpen.value = false;
@@ -1029,6 +1055,7 @@ export default defineComponent({
                 message: "Success",
                 description: `${message}`,
               });
+              window.location.reload();
             } else {
               notification.error({
                 message: "Error",

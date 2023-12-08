@@ -79,6 +79,31 @@
                       </a-form-item>
 
                       <a-form-item
+                        name="description"
+                        label="Description"
+                        :rules="[
+                          {
+                            required: true,
+                            message: 'Please enter a description',
+                          },
+                        ]"
+                      >
+                        <a-textarea
+                          v-model:value="formState.description"
+                          placeholder="Write a narrative that describes the activity of the campaign"
+                          :rows="4"
+                          :required="true"
+                        />
+                        <p
+                          class="errors"
+                          style="color: red"
+                          v-if="!!errors.description"
+                        >
+                          {{ errors.description }}
+                        </p>
+                      </a-form-item>
+
+                      <a-form-item
                         name="counties"
                         label="Counties"
                         v-if="isNational"
@@ -232,20 +257,6 @@
                           {{ errors.activity_facilitator }}
                         </p>
                       </a-form-item>
-                      <a-form-item name="description" label="Description">
-                        <a-textarea
-                          v-model:value="formState.description"
-                          placeholder="Write a narrative that describes the activity of the campaign"
-                          :rows="4"
-                        />
-                        <p
-                          class="errors"
-                          style="color: red"
-                          v-if="!!errors.campaign_id"
-                        >
-                          {{ errors.campaign_id }}
-                        </p>
-                      </a-form-item>
 
                       <div class="record-form-actions text-right">
                         &nbsp;&nbsp;&nbsp;
@@ -259,8 +270,8 @@
                             isLoading
                               ? "Loading..."
                               : isSubmitting
-                              ? "Processing ..."
-                              : "Submit"
+                                ? "Processing ..."
+                                : "Submit"
                           }}
                         </sdButton>
                       </div>
@@ -353,8 +364,7 @@ const AddActivity = defineComponent({
         });
     };
 
-    // get users location
-    // const level_id = ref("");
+    // get users 
     const userData = JSON.parse(sessionStorage.getItem("user"));
     console.log(userData.user);
 
@@ -498,7 +508,7 @@ const AddActivity = defineComponent({
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties,
-          subcounties: userData.user.sub_counties,
+          subcounties: userData.user.sub_counties.filter((county) => county !== ""),
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -550,7 +560,7 @@ const AddActivity = defineComponent({
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties,
-          subcounties: formState.sub_counties,
+          subcounties: formState.sub_counties.filter((county) => county !== ""),
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -598,11 +608,12 @@ const AddActivity = defineComponent({
             });
           });
       } else {
+        console.log(userData);
         const values = {
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties.filter((county) => county !== ""),
-          subcounties: userData.user.sub_counties,
+          subcounties: userData.user.sub_counties.filter((county) => county !== ""),
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -623,7 +634,7 @@ const AddActivity = defineComponent({
             })
               .then((response) => response.json())
               .then(({ success, data }) => {
-                // console.log(data);
+                console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
                   router.push("activity-view");

@@ -3,30 +3,13 @@
     <sdPageHeader ghost :title="`${event_name} Activity`" />
     <Main>
       <div class="button-container">
-        <!-- <sdButton
-            class="btn-import"
-            type="success"
-            size="small"
-            @click="generatePayroll"
-            v-if="isApprovedGenerator"
-            :disabled="isGenerating"
-          >
-            {{
-              isLoading
-                ? "Loading..."
-                : isGenerating
-                  ? "Processing ..."
-                  : "Generate Payroll"
-            }}
-          </sdButton> -->
-        <!-- <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span> -->
         <sdButton
           class="btn-import"
-          type="success"
-          @click="exportParticipants"
+          type="warning"
+          @click="approveActivity"
           size="small"
         >
-          Approve Activity &nbsp; &nbsp;
+          Approve Activity
           <sdFeatherIcons type="check" size="extra-small" />
         </sdButton>
       </div>
@@ -45,26 +28,6 @@
                     Invited Officers
                   </a>
                 </li>
-                <!-- <li>
-                    <a
-                      :class="
-                        activeClass === 'confirmed' ? 'active' : 'deactivate'
-                      "
-                      @click="handleChange('confirmed')"
-                      href="#"
-                    >
-                      Confirmed Officers
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      :class="activeClass === 'pending' ? 'active' : 'deactivate'"
-                      @click="handleChange('pending')"
-                      href="#"
-                    >
-                      Pending Confirmation
-                    </a>
-                  </li> -->
                 <li>
                   <a
                     class="button-container"
@@ -109,10 +72,10 @@
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
-                                    @click="handleRemoveOfficer(record.id)"
+                                    @click="removeOfficer(record.user_id)"
                                   >
-                                    <span> Deassign Officer </span>
-                                    &nbsp;&nbsp;&nbsp;
+                                    <span> Remove Officer </span>
+
                                     <sdFeatherIcons
                                       type="x-circle"
                                       size="small"
@@ -210,56 +173,6 @@
                 </BasicFormWrapper>
               </a-modal>
               <!-- End of Assigning officer modal -->
-              <!-- Remove Officer Modal -->
-              <a-modal
-                title="Event Confirmation"
-                :visible="isModalOpen"
-                @ok="handleOk(recordId, inputValue)"
-                @cancel="handleCancel"
-                class="title-success"
-              >
-                <div>
-                  <p>Registration Confirmation processing</p>
-                  <input type="number" v-model="inputValue" />
-                </div>
-              </a-modal>
-              <a-modal
-                title="DeAssign Officer"
-                :visible="isAdditionModalOpen"
-                @ok="handleOkDeAssignOfficer"
-                @cancel="handleDeAssignOfficer"
-                class="title-success"
-              >
-                <div>
-                  <h4>
-                    <b>
-                      <u> Event Host </u>
-                    </b>
-                  </h4>
-                  <p>{{ event_host }}</p>
-                  <h4>
-                    <b>
-                      <u> Event Facilitators </u>
-                      <!-- <sdButton
-                                  size="extra-small"
-                                  type="info"
-                                  @click="manageEvent(record.event_code)"
-                                >
-                                  Add Trainer &nbsp; &nbsp;
-                                </sdButton> -->
-                    </b>
-                  </h4>
-                  <br />
-                  <ul>
-                    <li
-                      v-for="facilitator in event_facilitators"
-                      :key="facilitator"
-                    >
-                      {{ facilitator }}
-                    </li>
-                  </ul>
-                </div>
-              </a-modal>
             </sdCards>
           </a-col>
         </a-row>
@@ -382,8 +295,6 @@ export default defineComponent({
     const activeClass = ref("all");
     const { query } = useRoute();
     const isGenerating = computed(() => state.isGenerating);
-    const recordId = ref(null);
-    const isAdditionModalOpen = ref(false);
 
     const isModalOpen = ref(false);
 
@@ -397,32 +308,94 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
     const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
     // const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
+    const approve_activity_url = `${process.env.VUE_APP_BASE_URL}/approve_activity/${query.id}`;
 
-    const exportParticipants = async () => {
+    console.log(approve_activity_url);
+
+    const approveActivity = async () => {
       try {
-        const response = await fetch(export_participants_url, {
-          method: "GET",
+        await fetch(approve_activity_url, {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...authHeader(),
           },
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: message,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((message) => {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          });
+      } catch (message) {
+        notification.error({
+          message: "Error",
+          description: `${message}`,
         });
+      }
+    };
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
-
-        const fileBlob = await response.blob();
-        const fileName = "Activity Participants.xlsx";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
+    const removeOfficer = (id) => {
+      console.log(id);
+      //   console.log("recordId", recordId.value);
+      console.log(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`);
+      try {
+        fetch(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        })
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            if (success == true) {
+              notification.success({
+                message: "Success",
+                description: message,
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((message) => {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          });
+      } catch (message) {
+        notification.error({
+          message: "Error",
+          description: `${message}`,
+        });
       }
     };
 
@@ -439,19 +412,6 @@ export default defineComponent({
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
-
-    const handleRemoveOfficer = (id) => {
-      isAdditionModalOpen.value = true;
-      console.log("Event Code;", id);
-      recordId.value = id;
-      console.log("recordId", recordId.value);
-      try {
-        console.log("register");
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     onMounted(async () => {
       try {
         const response = await axios.get(API_URL, {
@@ -674,7 +634,7 @@ export default defineComponent({
       handleChange,
       activeClass,
       generatePayroll,
-      exportParticipants,
+      approveActivity,
       isApprovedGenerator,
       isModalOpen,
       handleOk,
@@ -684,8 +644,7 @@ export default defineComponent({
       officers,
       handleAddOfficers,
       formState,
-      handleRemoveOfficer,
-      isAdditionModalOpen,
+      removeOfficer,
     };
   },
   // computed: {

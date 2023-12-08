@@ -64,7 +64,6 @@
                 </a-table>
               </TableWrapper>
             </div>
-            <!-- Issue modal -->
             <a-modal
               title="Issue Nets"
               :visible="isModalOpen"
