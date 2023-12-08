@@ -153,7 +153,6 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent, reactive } from "vue";
-// import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 
@@ -191,6 +190,8 @@ const columns = [
   {
     title: "",
     dataIndex: "",
+    // fixed: 'right',
+    // width: 20,
     key: "activities",
     slots: { customRender: "activities" },
   },

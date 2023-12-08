@@ -1,9 +1,7 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Events">
-      <template #subTitle>
-        
-      </template>
+      <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -36,7 +34,7 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 50, showSizeChanger: true }"
+                  :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="results"
                   :columns="columns"
                 >
@@ -64,7 +62,6 @@
                                 name: record.name,
                                 event_code: record.event_code,
                                 event_host_id: record.event_host_id,
-                                eventEndDate: eventEndDate.toISOString(),
                               },
                             }"
                           >
@@ -200,7 +197,6 @@ import { notification } from "ant-design-vue";
 
 const router = useRouter();
 
-
 const columns = [
   {
     title: "Event Name",
@@ -233,7 +229,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "",
+    title: "Action",
     dataIndex: "",
     key: "events",
     slots: { customRender: "events" },
@@ -373,7 +369,6 @@ const ViewPage = defineComponent({
     const recordId = ref(null);
     const event_host = ref("");
     const event_facilitators = ref([]);
-    const eventEndDate = ref("");
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
@@ -457,25 +452,13 @@ const ViewPage = defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-          dataSource.value = response.data.data;
-          console.log(dataSource.value);
-          dataSource.value.forEach((event) => {
-            // Parse the start date string to a Date object
-            const startDate = new Date(event.start_date);
-
-            // Calculate the end date in milliseconds (at 12:00 PM)
-            const endDateInMilliseconds =
-              startDate.getTime() + event.number_of_days * 24 * 60 * 60 * 1000;
-
-            // Create a new Date object for the end date
-            const endDate = new Date(endDateInMilliseconds);
-
-            // Set the time components to 12:00 PM
-            endDate.setHours(12, 0, 0, 0);
-
-            eventEndDate.value = endDate;
-            console.log(eventEndDate.value);
-          });
+          // dataSource.value = response.data.data;
+          // console.log(dataSource.value);
+          const filteredData = response.data.data.filter(
+            (item) => item.funding_source == 1
+          );
+          console.log(filteredData);
+          dataSource.value = filteredData
         })
         .catch((error) => {
           console.error(error);
@@ -527,7 +510,12 @@ const ViewPage = defineComponent({
         return dataSource.value;
       } else {
         return dataSource.value.filter((event) => {
-          return regex.test(event.event_code) || regex.test(event.name)|| regex.test(event.location_id)|| regex.test(event.venue);
+          return (
+            regex.test(event.event_code) ||
+            regex.test(event.name) ||
+            regex.test(event.location_id) ||
+            regex.test(event.venue)
+          );
         });
       }
     });
@@ -554,7 +542,6 @@ const ViewPage = defineComponent({
       manageEvent,
       event_host,
       event_facilitators,
-      eventEndDate,
     };
   },
 });

@@ -72,7 +72,7 @@
                                   <sdButton
                                     @click="openReceiveModal(record.id)"
                                     type="success"
-                                    :disabled="record.status === 1"
+                                    :disabled="record.status === 1 || record.status === 2"
                                     size="extra-small">Receive</sdButton>
                                 </div>
                               </td>
@@ -208,7 +208,7 @@
                                 <div class="table-actions">
                                   <sdButton
                                     type="success"
-                                    :disabled="record.status === 1"
+                                    :disabled="record.status === 1 || record.status === 2"
                                     @click="cancelTransfer(record.id)"
                                     size="extra-small">Cancel</sdButton>
                                 </div>
@@ -351,34 +351,35 @@ export default defineComponent({
         comment: formState.comment
       };
       try {
-          fetch(`${process.env.VUE_APP_BASE_URL}/transfer_nets_from_drop_off_to_drop_off`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(data),
-          })
-          .then((response) => response.json())
-          .then(({success,data}) => {
-            if(success){
-              notification.success({
-                message: "Success",
-                description: `Transfer Successful`
-              });
-            }else{
-              notification.error({
-                message: "Error",
-                description: `${data}`
-              });
-            }
-            isModalOpen.value = false;
-            
-            formState.to_dropoff_id = "";
-            formState.number_of_nets = "";
-            formState.date_issued = "";
-            formState.comment = "";
+        fetch(`${process.env.VUE_APP_BASE_URL}/transfer_nets_from_drop_off_to_drop_off`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
+        .then((response) => response.json())
+        .then(({success,data}) => {
+          if(success){
+            notification.success({
+              message: "Success",
+              description: `Transfer Successful`
+            });
+          }else{
+            notification.error({
+              message: "Error",
+              description: `${data}`
+            });
+          }
+          isModalOpen.value = false;
+          
+          formState.to_dropoff_id = "";
+          formState.number_of_nets = "";
+          formState.date_issued = "";
+          formState.comment = "";
+          window.location.reload(); 
           }).catch((error)=>{
             notification.error({
               message: "Error",
@@ -480,7 +481,7 @@ export default defineComponent({
               });
             }
             isOpen.value = false;
-          //  window.location.reload();
+           window.location.reload();
           }).catch((error)=>{
             notification.error({
               message: "Error",
@@ -499,29 +500,29 @@ export default defineComponent({
     }
 
     const cancelTransfer = async(id)=>{
-
       try {
         await fetch(`${process.env.VUE_APP_BASE_URL}/cancel_net_transfer_to_drop_off_point/${id}`,{
           method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: null,
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: null,
         })
         .then(response =>response.json())
         .then(({success, message})=>{
           if(success){
-              notification.success({
-                message: "Success",
-                description: `${message}`
-              });
-            }else{
-              notification.error({
-                message: "Error",
-                description: `${message}`
-              });
-            }
+            notification.success({
+              message: "Success",
+              description: `${message}`
+            });
+          }else{
+            notification.error({
+              message: "Error",
+              description: `${message}`
+            });
+          }
+          window.location.reload();
         })
       } catch (error) {
         notification.error({

@@ -77,6 +77,11 @@
       key: "id",
     },
     {
+      title: "To Post Name",
+      dataIndex: "to_post_name",
+      key: "id",
+    },
+    {
       title: "Quantity Issued",
       dataIndex: "quantity_issued",
       key: "id",
@@ -113,7 +118,7 @@
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/linelist_net_issuance_to_post`,
             {
-              method: "GET",
+              method: "POST",
               headers: authHeader(),
             }
           );
