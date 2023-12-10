@@ -292,7 +292,7 @@ const handleTableChange = async(pagination) => {
   currentPage.value = pagination.current;
   pageSize.value = pagination.pageSize;
    try {
-    const response = await axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`);
+    const response = await axios.get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}`);
     dataSource.value = response.data.data;
     total.value = response.data.total;
   } catch (error) {
@@ -473,7 +473,7 @@ const handleTableChange = async(pagination) => {
     // get all the events
     onMounted(() => {
       axios
-        .get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`, {
+        .get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}`, {
           headers: authHeader(),
         })
         .then((response) => {
