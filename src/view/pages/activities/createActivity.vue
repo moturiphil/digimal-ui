@@ -435,7 +435,7 @@ const AddActivity = defineComponent({
     };
     const getUsers = async () => {
       axios
-        .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
+        .get(`${process.env.VUE_APP_BASE_URL}/activity_officers`, { headers: authHeader() })
         .then(function ({ data }) {
           // console.log({ data: data.data });
           users.value = data.data;
