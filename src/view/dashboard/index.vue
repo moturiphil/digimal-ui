@@ -150,15 +150,15 @@
                       </tr>
                       <tr>
                         <td><span class="stat-span">Total Served</span></td>
-                        <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}</sdHeading></td>
+                        <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(population_served) }}</sdHeading></td>
                       </tr>
                       <tr>
                           <td> <span class="stat-span">Total Remaining</span></td>
-                          <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population - totalhouseholds_served) }}</sdHeading></td>
+                          <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population - population_served) }}</sdHeading></td>
                         </tr>
                         <tr>
                           <td> <span class="stat-span"><strong>%</strong> of Population Served</span></td>
-                          <td> <sdHeading class="stat-title">{{ Number((totalhouseholds_served / household_population) * 100).toFixed(2) }}%</sdHeading></td>
+                          <td> <sdHeading class="stat-title">{{ Number((population_served / household_population) * 100).toFixed(2) }}%</sdHeading></td>
                         </tr>
                     </tbody>
                   </table>
