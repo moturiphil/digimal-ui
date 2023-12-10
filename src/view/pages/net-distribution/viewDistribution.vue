@@ -481,7 +481,7 @@ const handleCancel=()=>{
 const onPageChange = async (page) => {
        current.value=page
         try {
-          const response = await axios.get(`distribution_details/all?page=${page}&pageSize=${pageSize.value}`);
+          const response = await axios.get(`distribution_details/all?page=${page}&per_page=${pageSize.value}`);
           dataSource.value = response.data.data.data;
           total.value = response.data.data.total;
         } catch (error) {

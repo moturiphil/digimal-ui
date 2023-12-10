@@ -238,7 +238,7 @@ import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-import { useRouter } from "vue-router";
+// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import store from "../../../vuex/store";
 
@@ -257,15 +257,15 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    const router = useRouter();
+    // const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event/with_facilitator`;
 
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
 
-    const facilitator_url = `${process.env.VUE_APP_BASE_URL}/users`;
+    const facilitator_url = `${process.env.VUE_APP_BASE_URL}/activity_officers`;
 
-    const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
+    const trainer_url = `${process.env.VUE_APP_BASE_URL}/activity_officers`;
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
@@ -472,7 +472,7 @@ const AddNew = defineComponent({
             .then(({ success, data }) => {
               if (success) {
                 store.commit("setIsSubmitting", false);
-                router.push("event-view");
+                // router.push("event-create");
                 notification["success"]({
                   message: "Event Created",
                   description: `Event Created successfully. Your event code is ${data.event.event_code}`,

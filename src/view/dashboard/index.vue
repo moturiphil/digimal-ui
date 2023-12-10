@@ -272,7 +272,7 @@
                           <tbody>
                             <tr>
                               <td style="font-weight:bold;font-style:italic;">Nets Delivered</td>
-                              <td style="font-weight:bold;font-style:italic;">Nets Issued</td>
+                              <td style="font-weight:bold;font-style:italic;">Nets Distributed</td>
                             </tr>
                             <tr>
                               <td>{{ parseInt(item.nets_delivered) || 0 }}</td>
@@ -511,7 +511,7 @@ const fetchInitialChartData = async () => {
         access_level.value.level.level_name,//level
       )
       netsReqvsDeliveredChart(
-        newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_required
+        newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
         newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
         newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
@@ -674,7 +674,7 @@ const fetchChildData = async (org_id, org_level) => {
           //combine bar line bar Subcounty comparison
           netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value)
           netsReqvsDeliveredChart(
-            newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_required
+            newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
             newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
             newChartData.value.map(item => item.name),//cats
            fileterOrgeLevel.value,//level
