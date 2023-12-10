@@ -173,7 +173,7 @@ import {
   //defineComponent
 } from "vue";
 import authHeader from "../../../services/auth-header";
-import axios from "axios";
+import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
@@ -269,12 +269,12 @@ console.log(event_code);
 
     //const isModalOpen = ref(false);
 
-    console.log(query.event_code);
+    console.log(plainquery.event_code);
 
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`;
-    const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${query.event_code}`;
+    const API_URL = `events/${plainquery.event_code}/participants`;
+    const genetatePayrollURL = `generate_events_pay_roll?status=1&event_code=${plainquery.event_code}`;
+    const export_participants_url = `event_participants_export?event_code=${plainquery.event_code}`;
 
     const generatePayroll = async () => {
       store.commit("setIsGenerating", true);
