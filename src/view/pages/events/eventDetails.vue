@@ -164,16 +164,21 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import {
+  computed, onMounted, ref,
+  //reactive,
+  //defineComponent
+} from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
 import store from "../../../vuex/store";
+import { decrypt } from '@/cryptoHelper';
 
 const columns = [
   {
@@ -203,75 +208,66 @@ const columns = [
     key: "id",
   },
 ];
-export default defineComponent({
-  name: "Events Participants",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  computed: {
-    recordCount() {
-      return this.dataSource.length;
-    },
-    confirmedCount() {
-      return this.confirmed.length;
-    },
-    pendingCount() {
-      return this.pending.length;
-    },
-  },
-  data() {
-    const { query } = useRoute();
 
-    const event_name = query.name;
-    // const event_id = query.id;
-    const event_code = query.event_code;
-    console.log(event_code);
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      households: [],
-      event_name,
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-    handleCancel() {
-      this.isModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
-  },
-  setup() {
+const recordCount = computed(() => dataSource.value.length);
+const confirmedCount = computed(() => confirmed.value.length);
+const pendingCount = computed(() => pending.value.length);
+
+const { query } = useRoute();
+const plainquery = decrypt(decodeURIComponent(query.encryptedData))
+console.log(plainquery);
+const event_name = plainquery.name;
+// const event_id = query.id;
+const event_code = plainquery.event_code;
+console.log(event_code);
+// const notData = ref(null);
+// const current = ref(0);
+// const pageSize = ref(0);
+// const visible = ref(false);
+// const confirmLoading = ref(false);
+// const modalType = ref('primary');
+// const colorVisible = ref(false);
+// const households = ref([]);
+// const eventName = ref('');
+
+// const searchData = computed(() => {
+//   return this.$store.state.headerSearch.data;
+// });
+
+// const handleSearch = (searchText) => {
+//   const data = searchData.value.filter((item) =>
+//     item.title.toUpperCase().startsWith(searchText.toUpperCase())
+//   );
+//   notData.value = data;
+// };
+
+// const onShowSizeChange = (current, pageSize) => {
+//   current.value = current;
+//   pageSize.value = pageSize;
+// };
+
+// const handleCancel = () => {
+//   isModalOpen.value = false;
+//   visible.value = false;
+//   colorVisible.value = false;
+// };
+
+// // Watch for changes in searchData and update notData accordingly
+// watch(searchData, () => {
+//   handleSearch();
+// });
+
     const { state } = useStore();
-    const crud = computed(() => state.crud.data);
+    // const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
+    // const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const confirmed = ref([]);
     const pending = ref([]);
     const activeClass = ref("all");
-    const { query } = useRoute();
     const isGenerating = computed(() => state.isGenerating);
 
-    const isModalOpen = ref(false);
+    //const isModalOpen = ref(false);
 
     console.log(query.event_code);
 
@@ -349,15 +345,15 @@ export default defineComponent({
       }
     };
 
-    const handleOk = async (id, inputValue) => {
-      try {
-        console.log(inputValue);
-      } finally {
-        console.log(inputValue);
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen.value = true;
-      }
-    };
+    // const handleOk = async (id, inputValue) => {
+    //   try {
+    //     console.log(inputValue);
+    //   } finally {
+    //     console.log(inputValue);
+    //     inputValue = ""; // Clear inputValue after the modal is closed
+    //     isModalOpen.value = true;
+    //   }
+    // };
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -451,9 +447,9 @@ export default defineComponent({
     const user = JSON.parse(sessionStorage.getItem("user"));
     console.log(user.user.id);
 
-    const formState = reactive({
-      searchItem: "",
-    });
+    // const formState = reactive({
+    //   searchItem: "",
+    // });
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
       if (!user) {
@@ -479,7 +475,8 @@ export default defineComponent({
       }
     });
     console.log(user.user.org_types_id === 10);
-    const isSCHMT = computed(() => {
+// const isSCHMT =
+  computed(() => {
       if (user.user.org_types_id === 10) {
         return true;
       } else {
@@ -487,30 +484,7 @@ export default defineComponent({
       }
     });
 
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      confirmed,
-      pending,
-      columns,
-      formState,
-      filteredData,
-      handleChange,
-      activeClass,
-      generatePayroll,
-      exportParticipants,
-      isApprovedGenerator,
-      isModalOpen,
-      handleOk,
-      isGenerating,
-      isSCHMT,
-    };
-  },
-  // computed: {
-  // },
-});
+
 </script>
 
 <style>
