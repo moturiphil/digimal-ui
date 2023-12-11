@@ -317,7 +317,7 @@
         <a-menu-item v-if="isAdmin || canViewMasterlist" key="widgetMasterList">
           <router-link to="/masterlist">Masterlist </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetUsers" v-if="canViewUsers">
+        <a-menu-item key="widgetUsers">
           <router-link to="/registered-users">Users </router-link>
         </a-menu-item>
         <a-menu-item key="widgetCHP">
