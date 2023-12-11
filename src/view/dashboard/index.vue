@@ -93,7 +93,7 @@
                       <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required-nets_distributed) }}</sdHeading></td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span"><strong>%</strong> of Nets Issued</span></td>
+                      <td> <span class="stat-span"><strong>%</strong> of Nets Distributed</span></td>
                       <td> <sdHeading class="stat-title">{{ Number((nets_distributed/ total_nets_required)*100).toFixed(2) }}%</sdHeading></td>
                     </tr>
                 </tbody>
@@ -150,15 +150,15 @@
                       </tr>
                       <tr>
                         <td><span class="stat-span">Total Served</span></td>
-                        <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}</sdHeading></td>
+                        <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(population_served) }}</sdHeading></td>
                       </tr>
                       <tr>
                           <td> <span class="stat-span">Total Remaining</span></td>
-                          <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population - totalhouseholds_served) }}</sdHeading></td>
+                          <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population - population_served) }}</sdHeading></td>
                         </tr>
                         <tr>
-                          <td> <span class="stat-span"><strong>%</strong> Served</span></td>
-                          <td> <sdHeading class="stat-title">{{ Number((totalhouseholds_served / household_population) * 100).toFixed(2) }}%</sdHeading></td>
+                          <td> <span class="stat-span"><strong>%</strong> of Population Served</span></td>
+                          <td> <sdHeading class="stat-title">{{ Number((population_served / household_population) * 100).toFixed(2) }}%</sdHeading></td>
                         </tr>
                     </tbody>
                   </table>
@@ -241,7 +241,7 @@
                         <tbody>
                           <tr>
                             <td style="font-weight:bold;font-style:italic;">Nets Required</td>
-                            <td style="font-weight:bold;font-style:italic;">Nets Issued</td>
+                            <td style="font-weight:bold;font-style:italic;">Nets Distributed</td>
                           </tr>
                           <tr>
                             <td>{{ parseInt(item.nets_required) || 0 }}</td>
@@ -355,6 +355,7 @@ const nets_distributed = ref(0);
 const registered_house_holds = ref(0);
 const registered_users = ref(0);
 const household_population = ref(0);
+const population_served=ref(0);
 const total_nets_required = ref(0);
 const activities = ref(0);
 //chart data
@@ -729,6 +730,7 @@ const updateStats = async (org_id) => {
       nets_distributed.value = data.nets_distributed || 0;
       registered_house_holds.value = data.registered_house_holds || 0;
       totalhouseholds_served.value = data.households_served || 0;
+      population_served.value=data.population_served||0;
       registered_users.value = data.registered_users || 0;
       household_population.value = data.all_hh_members || 0;
       total_nets_required.value = data.nets_required || 0;
@@ -1032,7 +1034,7 @@ const NetsIssuedbyCountyChart = (charData, orglevel) => {
             },
         },
     title: {
-      text: `Nets Issued by ${orglevel}`,
+      text: `Nets Distributed by ${orglevel}`,
       align: 'left',
     },
     subtitle: {
@@ -1080,7 +1082,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       },
     },
     title: {
-      text: `Comparison of Nets Required vs Nets Issued by ${orglevel}`,
+      text: `Comparison of Nets Required vs Nets Distributed by ${orglevel}`,
       align: 'left'
     },
     subtitle: {
@@ -1141,7 +1143,7 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
       data: nets_required,
       color: '#3498db',
     }, {
-      name: 'Nets Issued',
+      name: 'Nets Distributed',
       type: 'column',
       yAxis: 0, // Assign to the Count axis
       data: nets_issued,
@@ -1223,7 +1225,7 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, cats, orglevel) 
       },
     },
     title: {
-      text: `Comparison of Nets Delivered vs Nets Issued by ${orglevel}`,
+      text: `Comparison of Nets Delivered vs Nets Distributed by ${orglevel}`,
       align: 'left'
     },
     subtitle: {
@@ -1270,7 +1272,7 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, cats, orglevel) 
       data: nets_delivered,
       color: '#3498db',
     }, {
-      name: 'Nets Issued',
+      name: 'Nets Distributed',
       type: 'column',
       data: nets_issued,
       color: '#4ADEDE',

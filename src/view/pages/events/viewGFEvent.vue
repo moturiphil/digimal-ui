@@ -200,7 +200,6 @@
 </template>
 <script setup>
 import axios from "@/Axiosconfig";
-import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
@@ -306,10 +305,7 @@ onMounted(() => {
 });
 
 const getEvents = () => {
-  axios
-    .get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`, {
-      headers: authHeader(),
-    })
+  axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`)
     .then((response) => {
       // dataSource.value = response.data.data;
       // console.log(dataSource.value);
@@ -336,14 +332,8 @@ const getEvents = () => {
     const startEvent=async(id)=>{
       try {
         isStarting.value = true;
-        const response = await fetch(
-          `event_start_trigger/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
+        const response = await axios.get(`event_start_trigger/${id}`);
+        const data = await response.data;
         console.log(data);
         if (data.status === true) {
           eventStatus.value[id] = true;
@@ -374,14 +364,8 @@ const getEvents = () => {
     const closeEvent=async(id)=>{
       try {
         isStarting.value = true;
-        const response = await fetch(
-          `event_close_trigger/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
+        const response = await axios.get( `event_close_trigger/${id}`);
+        const data = await response.data;
         console.log(data);
         if (data.status === true) {
           eventStatus.value[id] = true;
@@ -446,12 +430,7 @@ const getEvents = () => {
       console.log("console.log");
       isTrainerModalOpen.value = true;
       try {
-        const response = await axios.get(
-          `event/${code}/facilitators`,
-          {
-            headers: authHeader(),
-          }
-        );
+        const response = await axios.get(`event/${code}/facilitators`);
         const eventDetails = response.data.data;
         // Reset the arrays before adding new data
 
@@ -468,10 +447,7 @@ const getEvents = () => {
       console.log(recordId.value);
       console.log(inputValue);
       try {
-        const response = await axios.get(
-          `event/${recordId.value}/participant/${inputValue}/assign`,
-          { headers: authHeader() }
-        );
+        const response = await axios.get(`event/${recordId.value}/participant/${inputValue}/assign`);
         console.log(response);
         if (response.status == 200) {
           inputValue = "";
@@ -508,9 +484,7 @@ const getEvents = () => {
     async () => {
       try {
         // Validate the event code
-        const { data } = await axios.get(
-          `events/all?event_code=${eventCode.value}`
-        );
+        const { data } = await axios.get(`events/all?event_code=${eventCode.value}`);
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");
         }
