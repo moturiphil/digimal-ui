@@ -1,9 +1,7 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Events">
-      <template #subTitle>
-
-      </template>
+      <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -36,10 +34,9 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: pageSize, current: currentPage, total: results.length }"
-                  :dataSource="currentResults"
+                  :pagination="false"
+                  :dataSource="dataSource"
                   :columns="columns"
-                  @change="handleTableChange($event)"
                 >
                   <template #events="{ record }">
                     <td>
@@ -59,12 +56,17 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/event/details/${record.id}`,
+                              name: `view-details`,
+                              params: { id: record.id },
                               query: {
-                                id: record.id,
-                                name: record.name,
-                                event_code: record.event_code,
-                                event_host_id: record.event_host_id,
+                                encryptedData: encodeURIComponent(
+                                  encrypt({
+                                    id: record.id,
+                                    name: record.name,
+                                    event_code: record.event_code,
+                                    event_host_id: record.event_host_id,
+                                  })
+                                ),
                               },
                             }"
                           >
@@ -180,6 +182,14 @@
                     </td>
                   </template>
                 </a-table>
+                <a-pagination
+                  :current="currentPage"
+                  :total="datatotal"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  :pagination="true"
+                  @change="onPageChange($event)"
+                />
               </TableWrapper>
             </div>
           </sdCards>
@@ -190,11 +200,10 @@
 </template>
 <script setup>
 import axios from "@/Axiosconfig";
-import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps,watch } from "vue";
+import { computed, onMounted, ref, defineProps } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -239,7 +248,6 @@ const columns = [
   },
 ];
 
-
 defineProps({
   event: {
     type: Object,
@@ -265,289 +273,278 @@ const event_facilitators = ref([]);
 //const eventEndDate = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
-var total = ref(0)
-const visible=ref(false)
+var datatotal = ref(0);
+const visible = ref(false);
 //const confirmLoading=ref(false)
 //const modalType=ref("success")
-const colorVisible=ref(false)
-const isStarting=ref(false)
+const colorVisible = ref(false);
+const isStarting = ref(false);
 //const isStarted=ref(false)
 //const events=ref([]) // an array of events fetched from the server
-const eventStatus=ref({}) // an object to keep track of the status of each event
-//const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+const eventStatus = ref({}); // an object to keep track of the status of each event
+//enrcrypt
+import { encrypt, decrypt } from "@/cryptoHelper";
+// Example usage
 
-
-const currentResults = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  return dataSource.value.slice(startIndex, endIndex);
-});
-
-watch(pageSize, () => {
-  currentPage.value = 1; // Reset to the first page when page size changes
-});
-
-const handleTableChange = async(pagination) => {
-  console.log(pagination)
-  currentPage.value = pagination.current;
-  pageSize.value = pagination.pageSize;
-   try {
-    const response = await axios.get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}`);
+const onPageChange = async (page) => {
+  currentPage.value = page;
+  try {
+    const response = await axios.get(
+      `pmi_events?page=${page}&per_page=${pageSize.value}`
+    );
     dataSource.value = response.data.data;
-    total.value = response.data.total;
+    datatotal.value = response.data.pagination.total;
   } catch (error) {
     console.error(error);
   }
 };
 
-    // start an event == only host can start/close
-    const startEvent=async(id)=>{
-      try {
-        isStarting.value = true;
-        const response = await fetch(
-          `event_start_trigger/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.status === true) {
-          eventStatus.value[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          notification.success({
-            message: "Event Started",
-            description: data.message,
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000);
-          });
-          location.reload();
-        } else {
-          eventStatus.value[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          notification.error({
-            message: "Event Not Started",
-            description: data.message,
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        isStarting.value = false;
-      }
-    }
-    // close an event == only host can start/close
-    const closeEvent=async(id)=>{
-      try {
-        isStarting.value = true;
-        const response = await fetch(
-          `event_close_trigger/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.status === true) {
-          eventStatus.value[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          // notify the user
-          notification.success({
-            message: "Event Closed",
-            description: "Event has been closed successfully",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          eventStatus.value[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          notification.error({
-            message: "Event Not Closed",
-            description: "Only event host can close event",
-          });
-        }
-        // location.reload();
-      } catch (error) {
-        console.error(error);
-      } finally {
-       isStarting.value = true;
-      }
-}
+// get all the events
+onMounted(() => {
+  getEvents();
+});
 
-    const handleCancel=()=>{
-      isModalOpen.value = false;
-      visible.value = false;
-      colorVisible.value = false;
-    }
-  const handleTrainerCancel=()=>{
-      isTrainerModalOpen.value = false;
-      visible.value = false;
-      colorVisible.value = false;
-    }
-  const handleOkTrainers=()=>{
-      isTrainerModalOpen.value = false;
-      visible.value = false;
-      colorVisible.value = false;
-    }
-  // const changeType=(type)=>{
-  //     modalType.value = type;
-  //   }
-    // participants registrations
-    const handleRegistration = (id) => {
-      isModalOpen.value = true;
-      console.log("Event Code;", id);
-      recordId.value = id;
-      console.log("recordId", recordId.value);
-      try {
-        console.log("register");
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    const manageEvent = async (code) => {
-      console.log(code);
-      console.log("console.log");
-      isTrainerModalOpen.value = true;
-      try {
-        const response = await axios.get(
-          `event/${code}/facilitators`,
-          {
-            headers: authHeader(),
-          }
-        );
-        const eventDetails = response.data.data;
-        // Reset the arrays before adding new data
+const getEvents = () => {
+  axios
+    .get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}`)
+    .then((response) => {
+      // dataSource.value = response.data.data;
+      const filteredData = response.data.data.filter(
+        (item) => item.funding_source == 2
+      );
+      console.log(filteredData);
 
-        event_host.value = eventDetails.event_host;
-        event_facilitators.value = eventDetails.event_facilitators;
+      datatotal.value = response.data.pagination.total;
+      console.log(datatotal.value);
+      dataSource.value = filteredData;
+      const originalText = dataSource.value.map((item) => ({
+        id: item.id,
+        name: item.name,
+        event_code: item.event_code,
+      }))[0];
+      console.log(originalText);
 
-        console.log(event_host.value, event_facilitators.value);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    // confirm participant registration code
-    const handleOk = async (id, inputValue) => {
-      console.log(recordId.value);
-      console.log(inputValue);
-      try {
-        const response = await axios.get(
-          `event/${recordId.value}/participant/${inputValue}/assign`,
-          { headers: authHeader() }
-        );
-        console.log(response);
-        if (response.status == 200) {
-          inputValue = "";
-          notification.success({
-            message: "Success",
-            description: response.data.message,
-          });
-          inputValue = "";
-        } else if (response.status == 208) {
-          notification.info({
-            message: "Info",
-            description: response.data.message,
-          });
-          inputValue = "";
-        }
-      } catch (error) {
-        console.log(error);
-        notification.error({
-          message: "Error",
-          description:
-            "Participant Registration Failed, Registration Code does not exist",
-        });
-        inputValue = "";
-      } finally {
-        console.log(inputValue);
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen = true;
-      }
-    };
+      const cipherText = encrypt(originalText);
+      console.log("Encrypted:", cipherText);
 
-    // get all the events
-    onMounted(() => {
-      axios
-        .get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}`, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          // dataSource.value = response.data.data;
-          // console.log(dataSource.value);
-          const filteredData = response.data.data.filter(
-            (item) => item.funding_source == 2
-          );
-          console.log(filteredData);
-          dataSource.value = filteredData
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      const decryptedText = decrypt(cipherText);
+      console.log("Decrypted:", decryptedText);
+    })
+    .catch((error) => {
+      console.error(error);
     });
+};
+// start an event == only host can start/close
+const startEvent = async (id) => {
+  try {
+    isStarting.value = true;
+    const response = await axios.get(`event_start_trigger/${id}`);
+    const data = await response.data;
+    console.log(data);
+    if (data.status === true) {
+      eventStatus.value[id] = true;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      notification.success({
+        message: "Event Started",
+        description: data.message,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else {
+      eventStatus.value[id] = false;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      notification.error({
+        message: "Event Not Started",
+        description: data.message,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isStarting.value = false;
+  }
+};
+// close an event == only host can start/close
+const closeEvent = async (id) => {
+  try {
+    isStarting.value = true;
+    const response = await axios.get(`event_close_trigger/${id}`);
+    const data = await response.data;
+    console.log(data);
+    if (data.status === true) {
+      eventStatus.value[id] = true;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      // notify the user
+      notification.success({
+        message: "Event Closed",
+        description: "Event has been closed successfully",
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+      });
+      location.reload();
+    } else {
+      eventStatus.value[id] = false;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      notification.error({
+        message: "Event Not Closed",
+        description: "Only event host can close event",
+      });
+    }
+    // location.reload();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isStarting.value = true;
+  }
+};
 
-    // Handle when event code is incorrect
+const handleCancel = () => {
+  isModalOpen.value = false;
+  visible.value = false;
+  colorVisible.value = false;
+};
+const handleTrainerCancel = () => {
+  isTrainerModalOpen.value = false;
+  visible.value = false;
+  colorVisible.value = false;
+};
+const handleOkTrainers = () => {
+  isTrainerModalOpen.value = false;
+  visible.value = false;
+  colorVisible.value = false;
+};
+// const changeType=(type)=>{
+//     modalType.value = type;
+//   }
+// participants registrations
+const handleRegistration = (id) => {
+  isModalOpen.value = true;
+  console.log("Event Code;", id);
+  recordId.value = id;
+  console.log("recordId", recordId.value);
+  try {
+    console.log("register");
+  } catch (error) {
+    console.log(error);
+  }
+};
+const manageEvent = async (code) => {
+  console.log(code);
+  console.log("console.log");
+  isTrainerModalOpen.value = true;
+  try {
+    const response = await axios.get(`event/${code}/facilitators`);
+    const eventDetails = response.data.data;
+    // Reset the arrays before adding new data
 
-    async () => {
-      try {
-        // Validate the event code
-        const { data } = await axios.get(
-          `events/all?event_code=${eventCode.value}`
-        );
-        if (!data || data.length === 0) {
-          throw new Error("Invalid event code");
-        }
+    event_host.value = eventDetails.event_host;
+    event_facilitators.value = eventDetails.event_facilitators;
 
-        // Navigate to the event registration page
-        const eventId = data[0].id;
-        router.push(`/event/register/${eventId}`);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    // const handleDelete = (id) => {
-    //   const confirm = window.confirm("Are you sure delete this?");
-    //   if (confirm) {
-    //     dispatch("axiosDataDelete", {
-    //       id,
-    //       getData: () => {
-    //         dispatch("axiosCrudGetData");
-    //       },
-    //     });
-    //   }
-    //   return false;
-    // };
-
-    // const onSelectChange = (selectedRowKey) => {
-    //   selectedRowKeys.value = selectedRowKey;
-    // };
-
-    // search through the events table
-    const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return (
-            regex.test(event.event_code) ||
-            regex.test(event.name) ||
-            regex.test(event.location_id) ||
-            regex.test(event.venue)
-          );
-        });
-      }
+    console.log(event_host.value, event_facilitators.value);
+  } catch (error) {
+    console.error(error);
+  }
+};
+// confirm participant registration code
+const handleOk = async (id, inputValue) => {
+  console.log(recordId.value);
+  console.log(inputValue);
+  try {
+    const response = await axios.get(
+      `event/${recordId.value}/participant/${inputValue}/assign`
+    );
+    console.log(response);
+    if (response.status == 200) {
+      inputValue = "";
+      notification.success({
+        message: "Success",
+        description: response.data.message,
+      });
+      inputValue = "";
+    } else if (response.status == 208) {
+      notification.info({
+        message: "Info",
+        description: response.data.message,
+      });
+      inputValue = "";
+    }
+  } catch (error) {
+    console.log(error);
+    notification.error({
+      message: "Error",
+      description:
+        "Participant Registration Failed, Registration Code does not exist",
     });
-    // const rowSelection = {
-    //   selectedRowKeys,
-    //   onChange: onSelectChange,
-    // };
+    inputValue = "";
+  } finally {
+    console.log(inputValue);
+    inputValue = ""; // Clear inputValue after the modal is closed
+    isModalOpen = true;
+  }
+};
+
+// Handle when event code is incorrect
+
+async () => {
+  try {
+    // Validate the event code
+    const { data } = await axios.get(
+      `events/all?event_code=${eventCode.value}`
+    );
+    if (!data || data.length === 0) {
+      throw new Error("Invalid event code");
+    }
+
+    // Navigate to the event registration page
+    const eventId = data[0].id;
+    router.push(`/event/register/${eventId}`);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// const handleDelete = (id) => {
+//   const confirm = window.confirm("Are you sure delete this?");
+//   if (confirm) {
+//     dispatch("axiosDataDelete", {
+//       id,
+//       getData: () => {
+//         dispatch("axiosCrudGetData");
+//       },
+//     });
+//   }
+//   return false;
+// };
+
+// const onSelectChange = (selectedRowKey) => {
+//   selectedRowKeys.value = selectedRowKey;
+// };
+
+// search through the events table
+//const results =
+computed(() => {
+  const query = searchItem.value.toLowerCase();
+  const regex = new RegExp(query, "i");
+  if (!query) {
+    return dataSource.value;
+  } else {
+    return dataSource.value.filter((event) => {
+      return (
+        regex.test(event.event_code) ||
+        regex.test(event.name) ||
+        regex.test(event.location_id) ||
+        regex.test(event.venue)
+      );
+    });
+  }
+});
+// const rowSelection = {
+//   selectedRowKeys,
+//   onChange: onSelectChange,
+// };
 </script>
 
 <style lang="css">
