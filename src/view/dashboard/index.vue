@@ -355,6 +355,7 @@ const nets_distributed = ref(0);
 const registered_house_holds = ref(0);
 const registered_users = ref(0);
 const household_population = ref(0);
+const population_served=ref(0);
 const total_nets_required = ref(0);
 const activities = ref(0);
 //chart data
@@ -729,6 +730,7 @@ const updateStats = async (org_id) => {
       nets_distributed.value = data.nets_distributed || 0;
       registered_house_holds.value = data.registered_house_holds || 0;
       totalhouseholds_served.value = data.households_served || 0;
+      population_served.value=data.population_served||0;
       registered_users.value = data.registered_users || 0;
       household_population.value = data.all_hh_members || 0;
       total_nets_required.value = data.nets_required || 0;
