@@ -258,7 +258,7 @@
           <a-divider></a-divider>
            <a-col :xxl="24" :md="24" :sm="24" :xs="24">
               <figure class="highcharts-figure">
-                <div id="netsReqvsDeliveredChart"></div>
+                <div id="netsIssuedvsDeliveredChart"></div>
                 <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
                   <thead>
                     <tr>
@@ -510,8 +510,8 @@ const fetchInitialChartData = async () => {
         newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
       )
-      netsReqvsDeliveredChart(
-        newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
+      netsIssuedvsDeliveredChart(
+        newChartData.value.map(item => parseInt(item.nets_issued)),//nets_required
         newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
         newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
@@ -673,8 +673,8 @@ const fetchChildData = async (org_id, org_level) => {
           householdRegvsServedChart(rgstd, srvd, rgstdvssvd, tgt1, labels1, fileterOrgeLevel.value)
           //combine bar line bar Subcounty comparison
           netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value)
-          netsReqvsDeliveredChart(
-            newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
+          netsIssuedvsDeliveredChart(
+            newChartData.value.map(item => parseInt(item.nets_issued)),//nets_required
             newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
             newChartData.value.map(item => item.name),//cats
            fileterOrgeLevel.value,//level
@@ -1206,8 +1206,8 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
     }
   });
 }
-const netsReqvsDeliveredChart = (nets_delivered, nets_issued, cats, orglevel) => {
-  Highcharts.chart('netsReqvsDeliveredChart', {
+const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, cats, orglevel) => {
+  Highcharts.chart('netsIssuedvsDeliveredChart', {
     chart: {
       zoomType: 'xy'
     },
