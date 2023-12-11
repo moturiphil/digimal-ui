@@ -94,7 +94,7 @@
                     </tr>
                     <tr>
                       <td> <span class="stat-span"><strong>%</strong> of Nets Distributed</span></td>
-                      <td> <sdHeading class="stat-title">{{ Number((nets_distributed/ total_nets_required)*100).toFixed(2) }}%</sdHeading></td>
+                      <td> <sdHeading class="stat-title">{{ nets_distributed?Number((nets_distributed/ total_nets_required)*100).toFixed(2):0.00 }}%</sdHeading></td>
                     </tr>
                 </tbody>
               </table>
@@ -125,7 +125,7 @@
                       </tr>
                       <tr>
                         <td> <span class="stat-span"><strong>%</strong> of Households Served</span></td>
-                        <td> <sdHeading class="stat-title">{{ Number((totalhouseholds_served / registered_house_holds) * 100).toFixed(2) }}%</sdHeading></td>
+                        <td> <sdHeading class="stat-title">{{ totalhouseholds_served !=0?Number((totalhouseholds_served / registered_house_holds) * 100).toFixed(2):0.00}}%</sdHeading></td>
                       </tr>
                   </tbody>
                 </table>
@@ -158,7 +158,7 @@
                         </tr>
                         <tr>
                           <td> <span class="stat-span"><strong>%</strong> of Population Served</span></td>
-                          <td> <sdHeading class="stat-title">{{ Number((population_served / household_population) * 100).toFixed(2) }}%</sdHeading></td>
+                          <td> <sdHeading class="stat-title">{{ population_served !=0?Number((population_served / household_population) * 100).toFixed(2):0.00 }}%</sdHeading></td>
                         </tr>
                     </tbody>
                   </table>
@@ -721,20 +721,29 @@ const fetchCounties = async () => {
 const filterOption = (input, option) => {
   return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
+
+const convertObjectVlasToInt = (obj) => {
+  const result = {};
+  for (const key in obj) {
+    result[key] = parseInt(obj[key], 10);
+  }
+  return result;
+};
+
 const updateStats = async (org_id) => {
   await axios.get(`all_stats?org_id=${org_id}`)
     .then(response => {
-      const data = response.data;
+      const data = convertObjectVlasToInt(response.data)
       //console.log(data)
-      active_events.value = data.events || 0;
-      nets_distributed.value = data.nets_distributed || 0;
-      registered_house_holds.value = data.registered_house_holds || 0;
-      totalhouseholds_served.value = data.households_served || 0;
-      population_served.value=data.population_served||0;
-      registered_users.value = data.registered_users || 0;
-      household_population.value = data.all_hh_members || 0;
-      total_nets_required.value = data.nets_required || 0;
-      activities.value = data.activities || 0;
+      active_events.value = data.events?data.events:0;
+      nets_distributed.value = data.nets_distributed? data.nets_distributed:0;
+      registered_house_holds.value = data.registered_house_holds? data.registered_house_holds:0;
+      totalhouseholds_served.value = data.households_served? data.households_served:0;
+      population_served.value=data.population_served? data.population_served:0;
+      registered_users.value = data.registered_users? data.registered_users:0;
+      household_population.value = data.all_hh_members? data.all_hh_members:0;
+      total_nets_required.value = data.nets_required? data.nets_required:0;
+      activities.value = data.activities? data.activities:0;
       // actual_allocation = data.
       // console.log(data.active_events);
     }).catch(error => {
