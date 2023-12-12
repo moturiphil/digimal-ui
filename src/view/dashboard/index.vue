@@ -85,7 +85,7 @@
                     <td><sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required) }}</sdHeading></td>
                   </tr>
                   <tr>
-                    <td> <span class="stat-span">Tota Distributed</span></td>
+                    <td> <span class="stat-span">Total Distributed</span></td>
                     <td> <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(nets_distributed) }}</sdHeading></td>
                   </tr>
                   <tr>
