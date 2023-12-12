@@ -462,7 +462,6 @@ const capitalizeFirstLetter = (word) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
 
-
 const updateFilters = () => {
   // access_level.value.level.id = 3
   // access_level.value.location.org_id = 'BzFBYZhF5fx'
@@ -511,9 +510,17 @@ const fetchInitialChartData = async () => {
         newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
       )
+      let scatterData = [];
+      newChartData.value.forEach((item, index) => {
+        let x = parseInt(item.nets_delivered);
+        let y = parseInt(item.nets_issued);
+        let ratio=parseFloat(x/y).toFixed(2)
+        scatterData.push([index, ratio ? ratio : 0])
+      })
       netsIssuedvsDeliveredChart(
-        newChartData.value.map(item => parseInt(item.nets_issued)),//nets_required
-        newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
+        newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
+        newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
+        scatterData,//ratio
         newChartData.value.map(item => item.name),//cats
         access_level.value.level.level_name,//level
       )
@@ -674,9 +681,17 @@ const fetchChildData = async (org_id, org_level) => {
           householdRegvsServedChart(rgstd, srvd, rgstdvssvd, tgt1, labels1, fileterOrgeLevel.value)
           //combine bar line bar Subcounty comparison
           netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value)
+          let scatterData = [];
+          newChartData.value.forEach((item, index) => {
+            let x = parseInt(item.nets_delivered);
+            let y = parseInt(item.nets_issued);
+            let ratio = parseFloat(x / y).toFixed(2)
+            scatterData.push([index, ratio ? ratio : 0])
+          })
           netsIssuedvsDeliveredChart(
-            newChartData.value.map(item => parseInt(item.nets_issued)),//nets_required
-            newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_issued
+            newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
+            newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
+            scatterData,//ratio
             newChartData.value.map(item => item.name),//cats
            fileterOrgeLevel.value,//level
           )
@@ -1217,8 +1232,8 @@ const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_le
     }
   });
 }
-const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, cats, orglevel) => {
-  Highcharts.chart('netsIssuedvsDeliveredChart', {
+const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, scatter_data, cats, orglevel) => {
+   Highcharts.chart('netsIssuedvsDeliveredChart', {
     chart: {
       zoomType: 'xy'
     },
@@ -1234,42 +1249,60 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, cats, orglevel) 
       },
     },
     title: {
-      text: `Comparison of Nets Delivered vs Nets Distributed by ${orglevel}`,
-      align: 'left'
-    },
-    subtitle: {
-      text: 'Source:',
+      text: 'Nets Delivered vs Nets Distributed by ' + orglevel,
       align: 'left'
     },
     xAxis: [{
       categories: cats,
       crosshair: true
     }],
-    yAxis: {
-      allowDecimals: false,
-      min: 0,
-      title: {
-        text: 'Count',
-        skew3d: true,
+    yAxis: [{ // Primary yAxis
+      labels: {
+        format: '{value}',
         style: {
-          fontSize: '16px'
+          color: Highcharts.getOptions().colors[2]
+        }
+      },
+      opposite: true
+
+    }, { // Secondary yAxis
+      gridLineWidth: 0,
+      title: {
+        text: 'Count ',
+        style: {
+          color: Highcharts.getOptions().colors[0]
+        }
+      },
+      labels: {
+        style: {
+          color: Highcharts.getOptions().colors[0]
         }
       }
-    },
+
+    }, { // Tertiary yAxis
+      gridLineWidth: 0,
+      title: {
+        text: 'Distribution Effectiveness Ratio',
+        style: {
+          color: '#004225',
+        }
+      },
+      labels: {
+        style: {
+          color: '#004225',
+        }
+      },
+      opposite: true
+    }],
     tooltip: {
-      shared: true,
-      headerFormat: '<span style="font-size: 15px">' +
-        '{series.chart.options.cats.(point.key).name}' +
-        '</span><br/>',
-      pointFormat: '<span style="color:{point.color}">\u25CF</span> ' +
-        '{series.name}: <b>{point.y} records</b><br/>'
+      shared: true
     },
     legend: {
-      layout: 'horizontal',
-      align: 'center',
+      layout: 'vertical',
+      align: 'left',
       x: 80,
       verticalAlign: 'top',
-      y: 20,
+      y: 55,
       floating: true,
       backgroundColor:
         Highcharts.defaultOptions.legend.backgroundColor || // theme
@@ -1278,13 +1311,38 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, cats, orglevel) 
     series: [{
       name: 'Nets Delivered',
       type: 'column',
+      yAxis: 1,
       data: nets_delivered,
-      color: '#3498db',
+      tooltip: {
+        valueSuffix: ''
+      }
+
     }, {
       name: 'Nets Distributed',
       type: 'column',
+      yAxis: 1,
       data: nets_issued,
       color: '#4ADEDE',
+      marker: {
+        enabled: false
+      },
+      dashStyle: 'shortdot',
+      tooltip: {
+        valueSuffix: ''
+      }
+
+    }, {
+      name: 'Distribution Effectiveness Ratio',
+      type: 'scatter',
+      yAxis: 2,
+      data: scatter_data,
+      color: '#004225',
+      tooltip: {
+        pointFormat: '{point.name} <b>{point.y:.1f}</b>'
+      },
+      marker: {
+        radius: 6, // Set the radius to adjust the size of scatter plot dots
+      },
     }],
     responsive: {
       rules: [{
