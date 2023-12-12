@@ -430,7 +430,7 @@ export default defineComponent({
       console.log(query.id);
       try {
         const response = await fetch(
-          `${BASE_URL}/resend_activity_confirmation_reminder=${id}/${query.id}`,
+          `${BASE_URL}/resend_activity_confirmation_reminder/${id}/${query.id}`,
           {
             method: "GET",
             headers: {
@@ -688,7 +688,7 @@ export default defineComponent({
 
     const officersList = async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/activity_officers`, {
           method: "GET",
           headers: authHeader(),
         });

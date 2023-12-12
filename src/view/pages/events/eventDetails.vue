@@ -168,7 +168,9 @@
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
 import {
-  computed, onMounted, ref,
+  computed,
+  onMounted,
+  ref,
   //reactive,
   //defineComponent
 } from "vue";
@@ -178,7 +180,7 @@ import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
 import store from "../../../vuex/store";
-import { decrypt } from '@/cryptoHelper';
+import { decrypt } from "@/cryptoHelper";
 
 const columns = [
   {
@@ -214,7 +216,7 @@ const confirmedCount = computed(() => confirmed.value.length);
 const pendingCount = computed(() => pending.value.length);
 
 const { query } = useRoute();
-const plainquery = decrypt(decodeURIComponent(query.encryptedData))
+const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 console.log(plainquery);
 const event_name = plainquery.name;
 // const event_id = query.id;
@@ -257,234 +259,227 @@ console.log(event_code);
 //   handleSearch();
 // });
 
-    const { state } = useStore();
-    // const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    // const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const confirmed = ref([]);
-    const pending = ref([]);
-    const activeClass = ref("all");
-    const isGenerating = computed(() => state.isGenerating);
+const { state } = useStore();
+// const crud = computed(() => state.crud.data);
+const isLoading = computed(() => state.crud.loading);
+// const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+const confirmed = ref([]);
+const pending = ref([]);
+const activeClass = ref("all");
+const isGenerating = computed(() => state.isGenerating);
 
-    //const isModalOpen = ref(false);
+//const isModalOpen = ref(false);
 
-    console.log(plainquery.event_code);
+console.log(plainquery.event_code);
 
+const API_URL = `events/${plainquery.event_code}/participants`;
+const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
+const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
 
-    const API_URL = `events/${plainquery.event_code}/participants`;
-    const genetatePayrollURL = `generate_events_pay_roll?status=1&event_code=${plainquery.event_code}`;
-    const export_participants_url = `event_participants_export?event_code=${plainquery.event_code}`;
+console.log(genetatePayrollURL);
 
-    const generatePayroll = async () => {
-      store.commit("setIsGenerating", true);
-      try {
-        const response = await fetch(genetatePayrollURL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
-        console.log(response.status == 200);
-        if (response.status == 200) {
-          store.commit("setIsGenerating", true);
-          Modal.success({
-            title: "Success",
-            content: "Payroll Generated Successfully",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          store.commit("setIsGenerating", true);
-          Modal.error({
-            title: "Error",
-            content:
-              "Something went wrong, ensure you have assigned payroll matrix to the event",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
-          });
-          location.reload();
-        }
-      } catch (error) {
-        store.commit("setIsGenerating", true);
-        console.error(error);
-        await new Promise((resolve) => {
-          setTimeout(resolve, 4000); // Wait for 4 seconds (adjust the time as needed)
-        });
-        location.reload();
-      }
-    };
-    const exportParticipants = async () => {
-      try {
-        const response = await fetch(export_participants_url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
+const generatePayroll = async () => {
+  store.commit("setIsGenerating", true);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
-
-        const fileBlob = await response.blob();
-        const fileName = "Event Participants.xlsx";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    // const handleOk = async (id, inputValue) => {
-    //   try {
-    //     console.log(inputValue);
-    //   } finally {
-    //     console.log(inputValue);
-    //     inputValue = ""; // Clear inputValue after the modal is closed
-    //     isModalOpen.value = true;
-    //   }
-    // };
-
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-
-    onMounted(async () => {
-      try {
-        const response = await axios.get(API_URL, {
-          headers: authHeader(),
-        });
-        console.log(response.data.data);
-
-        const updatedData = response.data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
-          return {
-            ...record,
-            fullName,
-          };
-        });
-
-        dataSource.value = updatedData;
-
-        console.log(dataSource.value);
-      } catch (error) {
-        console.error(error);
-      }
-      try {
-        const response = await axios.get(API_URL + "?status=1", {
-          headers: authHeader(),
-        });
-        console.log(API_URL + "?status=1");
-
-        const updatedData = response.data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
-          return {
-            ...record,
-            fullName,
-          };
-        });
-
-        confirmed.value = updatedData;
-
-        console.log(confirmed.value.toRaw());
-      } catch (error) {
-        console.error(error);
-      }
-      try {
-        const response = await axios.get(API_URL + "?status=0", {
-          headers: authHeader(),
-        });
-        console.log(API_URL + "?status=0");
-        console.log(response.data.data);
-
-        const updatedData = response.data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          // fullName = fullName.toUpperCase();
-          return {
-            ...record,
-            fullName,
-          };
-        });
-
-        pending.value = updatedData;
-
-        console.log(pending.value);
-      } catch (error) {
-        console.error(error);
-      }
+  try {
+    const response = await axios.get(genetatePayrollURL, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
     });
 
-    const filteredData = computed(() => {
-      if (activeClass.value === "confirmed") {
-        console.log(confirmed.value);
-        return confirmed.value;
-      } else if (activeClass.value === "pending") {
-        console.log(dataSource.value);
-        return pending.value;
-      } else {
-        return dataSource.value;
-      }
+    if (response.status === 200) {
+      store.commit("setIsGenerating", false);
+      Modal.success({
+        title: "Success",
+        content: "Payroll Generated Successfully",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      location.reload();
+    } else {
+      handleErrorResponse();
+    }
+  } catch (error) {
+    console.error(error);
+    handleErrorResponse();
+  }
+};
+
+const handleErrorResponse = () => {
+  store.commit("setIsGenerating", false);
+  Modal.error({
+    title: "Error",
+    content:
+      "Something went wrong, ensure you have assigned payroll matrix to the event",
+  });
+  setTimeout(() => location.reload(), 4000);
+};
+const exportParticipants = async () => {
+  try {
+    const response = await fetch(export_participants_url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
     });
 
-    const level_id = ref("");
-    const role_id = ref("");
-    // const current = ref("");
-    const rt = useRouter();
+    if (!response.ok) {
+      throw new Error("Failed to fetch export data");
+    }
 
-    // const event_host_id = query.event_host_id;
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    console.log(user.user.id);
+    const fileBlob = await response.blob();
+    const fileName = "Event Participants.xlsx";
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-    // const formState = reactive({
-    //   searchItem: "",
-    // });
-    onMounted(() => {
-      const user = JSON.parse(sessionStorage.getItem("user"));
-      if (!user) {
-        rt.push({ path: "/auth/login" });
-      } else {
-        level_id.value = user.user.level_id;
-        role_id.value = user.user.role_id;
-      }
+// const handleOk = async (id, inputValue) => {
+//   try {
+//     console.log(inputValue);
+//   } finally {
+//     console.log(inputValue);
+//     inputValue = ""; // Clear inputValue after the modal is closed
+//     isModalOpen.value = true;
+//   }
+// };
+
+const handleChange = (tab) => {
+  activeClass.value = tab;
+};
+
+onMounted(async () => {
+  try {
+    const response = await axios.get(API_URL, {
+      headers: authHeader(),
     });
-    const isApprovedGenerator = computed(() => {
-      // const currentTime = new Date();
-      if (
-        user.user.role_id === 53 ||
-        user.user.role_id === 63 ||
-        user.user.role_id === 64 ||
-        user.user.role_id === 59 ||
-        user.user.role_id === 4
+    console.log(response.data.data);
 
-      ) {
-        return true;
-      } else {
-        return false;
-      }
+    const updatedData = response.data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      // fullName = fullName.toUpperCase();
+      return {
+        ...record,
+        fullName,
+      };
     });
-    console.log(user.user.org_types_id === 10);
+
+    dataSource.value = updatedData;
+
+    console.log(dataSource.value);
+  } catch (error) {
+    console.error(error);
+  }
+  try {
+    const response = await axios.get(API_URL + "?status=1", {
+      headers: authHeader(),
+    });
+    console.log(API_URL + "?status=1");
+
+    const updatedData = response.data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      // fullName = fullName.toUpperCase();
+      return {
+        ...record,
+        fullName,
+      };
+    });
+
+    confirmed.value = updatedData;
+
+    console.log(confirmed.value.toRaw());
+  } catch (error) {
+    console.error(error);
+  }
+  try {
+    const response = await axios.get(API_URL + "?status=0", {
+      headers: authHeader(),
+    });
+    console.log(API_URL + "?status=0");
+    console.log(response.data.data);
+
+    const updatedData = response.data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      // fullName = fullName.toUpperCase();
+      return {
+        ...record,
+        fullName,
+      };
+    });
+
+    pending.value = updatedData;
+
+    console.log(pending.value);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+const filteredData = computed(() => {
+  if (activeClass.value === "confirmed") {
+    console.log(confirmed.value);
+    return confirmed.value;
+  } else if (activeClass.value === "pending") {
+    console.log(dataSource.value);
+    return pending.value;
+  } else {
+    return dataSource.value;
+  }
+});
+
+const level_id = ref("");
+const role_id = ref("");
+// const current = ref("");
+const rt = useRouter();
+
+// const event_host_id = query.event_host_id;
+const user = JSON.parse(sessionStorage.getItem("user"));
+console.log(user.user.id);
+
+// const formState = reactive({
+//   searchItem: "",
+// });
+onMounted(() => {
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  if (!user) {
+    rt.push({ path: "/auth/login" });
+  } else {
+    level_id.value = user.user.level_id;
+    role_id.value = user.user.role_id;
+  }
+});
+const isApprovedGenerator = computed(() => {
+  // const currentTime = new Date();
+  if (
+    user.user.role_id === 53 ||
+    user.user.role_id === 63 ||
+    user.user.role_id === 64 ||
+    user.user.role_id === 59 ||
+    user.user.role_id === 4
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+});
+console.log(user.user.org_types_id === 10);
 // const isSCHMT =
-  computed(() => {
-      if (user.user.org_types_id === 10) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-
-
+computed(() => {
+  if (user.user.org_types_id === 10) {
+    return true;
+  } else {
+    return false;
+  }
+});
 </script>
 
 <style>

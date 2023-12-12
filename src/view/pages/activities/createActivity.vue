@@ -78,21 +78,11 @@
                         </p>
                       </a-form-item>
 
-                      <a-form-item
-                        name="description"
-                        label="Description"
-                        :rules="[
-                          {
-                            required: true,
-                            message: 'Please enter a description',
-                          },
-                        ]"
-                      >
+                      <a-form-item name="description" label="Description">
                         <a-textarea
                           v-model:value="formState.description"
                           placeholder="Write a narrative that describes the activity of the campaign"
                           :rows="4"
-                          :required="true"
                         />
                         <p
                           class="errors"
@@ -364,7 +354,8 @@ const AddActivity = defineComponent({
         });
     };
 
-    // get users 
+    // get users location
+    // const level_id = ref("");
     const userData = JSON.parse(sessionStorage.getItem("user"));
     console.log(userData.user);
 
@@ -435,7 +426,7 @@ const AddActivity = defineComponent({
     };
     const getUsers = async () => {
       axios
-        .get(`${process.env.VUE_APP_BASE_URL}/users`, { headers: authHeader() })
+        .get(`${process.env.VUE_APP_BASE_URL}/activity_officers`, { headers: authHeader() })
         .then(function ({ data }) {
           // console.log({ data: data.data });
           users.value = data.data;
@@ -508,7 +499,7 @@ const AddActivity = defineComponent({
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties,
-          subcounties: userData.user.sub_counties.filter((county) => county !== ""),
+          subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -560,7 +551,7 @@ const AddActivity = defineComponent({
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties,
-          subcounties: formState.sub_counties.filter((county) => county !== ""),
+          subcounties: formState.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -608,12 +599,11 @@ const AddActivity = defineComponent({
             });
           });
       } else {
-        console.log(userData);
         const values = {
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties.filter((county) => county !== ""),
-          subcounties: userData.user.sub_counties.filter((county) => county !== ""),
+          subcounties: userData.user.sub_counties,
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -634,7 +624,7 @@ const AddActivity = defineComponent({
             })
               .then((response) => response.json())
               .then(({ success, data }) => {
-                console.log(data);
+                // console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
                   router.push("activity-view");
