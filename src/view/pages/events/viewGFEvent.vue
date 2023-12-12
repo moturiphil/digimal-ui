@@ -203,7 +203,7 @@ import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps } from "vue";
+import { computed, onMounted, ref, defineProps,watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -298,14 +298,18 @@ const onPageChange = async (page) => {
     console.error(error);
   }
 }
-
+// search events
+watch(() => searchItem.value, (newValue) => {
+  searchItem.value=newValue;
+  getEvents();
+});
 // get all the events
 onMounted(() => {
   getEvents()
 });
 
 const getEvents = () => {
-  axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}`)
+  axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
     .then((response) => {
       // dataSource.value = response.data.data;
       // console.log(dataSource.value);
