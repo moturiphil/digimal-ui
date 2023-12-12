@@ -512,17 +512,18 @@ const fetchInitialChartData = async () => {
       )
       let scatterData = [];
       newChartData.value.forEach((item, index) => {
-        let x = parseInt(item.nets_delivered);
-        let y = parseInt(item.nets_issued);
-        let ratio=parseFloat(x/y).toFixed(2)
-        scatterData.push([index, ratio ? ratio : 0])
+        let x = parseInt(item.nets_issued);
+        let y = parseInt(item.nets_delivered);
+        let ratio = parseFloat((x / y)*100).toFixed(2)
+        scatterData.push([index, ratio >0 ? parseFloat(ratio) : 0])
       })
+      console.log(scatterData);
       netsIssuedvsDeliveredChart(
         newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
         newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
         scatterData,//ratio
         newChartData.value.map(item => item.name),//cats
-        access_level.value.level.level_name,//level
+        fileterOrgeLevel.value,//level
       )
       //registered,served,target_data,target_level,cats
       householdRegvsServedChart(
@@ -683,10 +684,10 @@ const fetchChildData = async (org_id, org_level) => {
           netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value)
           let scatterData = [];
           newChartData.value.forEach((item, index) => {
-            let x = parseInt(item.nets_delivered);
-            let y = parseInt(item.nets_issued);
-            let ratio = parseFloat(x / y).toFixed(2)
-            scatterData.push([index, ratio ? ratio : 0])
+            let x = parseInt(item.nets_issued);
+            let y = parseInt(item.nets_delivered);
+            let ratio = parseFloat((x / y)*100).toFixed(2)
+            scatterData.push([index, ratio >0 ? parseFloat(ratio) : 0])
           })
           console.log(scatterData);
           netsIssuedvsDeliveredChart(
@@ -694,7 +695,7 @@ const fetchChildData = async (org_id, org_level) => {
             newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
             scatterData,//ratio
             newChartData.value.map(item => item.name),//cats
-           fileterOrgeLevel.value,//level
+            fileterOrgeLevel.value,//level
           )
           NetsChartData.value = newChartData.value
           //pie chars Registered households by sub county
@@ -1283,7 +1284,7 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, scatter_data, ca
     }, { // Tertiary yAxis
       gridLineWidth: 0,
       title: {
-        text: 'Distribution Effectiveness Ratio',
+        text: 'Distribution Effectiveness',
         style: {
           color: '#004225',
         }
@@ -1303,7 +1304,7 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, scatter_data, ca
       align: 'left',
       x: 80,
       verticalAlign: 'top',
-      y: 55,
+      y: 20,
       floating: true,
       backgroundColor:
         Highcharts.defaultOptions.legend.backgroundColor || // theme
@@ -1333,13 +1334,13 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, scatter_data, ca
       }
 
     }, {
-      name: 'Distribution Effectiveness Ratio',
+      name: 'Distribution Effectiveness',
       type: 'scatter',
       yAxis: 2,
       data: scatter_data,
       color: '#004225',
       tooltip: {
-        pointFormat: '{point.name} <b>{point.y:.1f}</b>'
+        pointFormat: '{point.name} <b>{point.y:.2f}%</b>'
       },
       marker: {
         radius: 6, // Set the radius to adjust the size of scatter plot dots
