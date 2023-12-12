@@ -688,6 +688,7 @@ const fetchChildData = async (org_id, org_level) => {
             let ratio = parseFloat(x / y).toFixed(2)
             scatterData.push([index, ratio ? ratio : 0])
           })
+          console.log(scatterData);
           netsIssuedvsDeliveredChart(
             newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
             newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
