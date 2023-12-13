@@ -85,7 +85,7 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, watchEffect } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { notification } from "ant-design-vue";
 const columns = [
   {
@@ -414,7 +414,7 @@ const filterOption = (input, option) => {
 const fetchUsers = async () => {
   try {
     // Assuming you have an initial page number
-    const response = await axios.get(`users?page=${current.value}&per_page=${pageSize.value}`);
+    const response = await axios.get(`users?page=${current.value}&per_page=${pageSize.value}&query=${searchItem.value}`);
     const data = await response.data;
     dataSource.value = data.data;
   } catch (error) {
@@ -422,23 +422,11 @@ const fetchUsers = async () => {
   }
 }
 
-watchEffect(async()=>{
-  const query = searchItem.value.toLowerCase();
-  try {
-    if(!query) return dataSource.value;
-    if(query.length > 3){
-      const response = await axios.get(`users?query=${query}`);
-      const data = await response.json();
-      dataSource.value = data.data;
-    }
-
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: error.message,
-    });
-  }
-})
+// search events
+watch(() => searchItem.value, (newValue) => {
+  searchItem.value=newValue;
+  fetchUsers();
+});
 
 // const rowSelection = {
 //   selectedRowKeys,
