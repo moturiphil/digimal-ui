@@ -474,7 +474,6 @@ const getEvents = () => {
       }
     };
 
-
     // Handle when event code is incorrect
 
     async () => {
