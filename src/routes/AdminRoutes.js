@@ -273,12 +273,22 @@ const routes = [
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
+
       {
-        path: "activity-view",
-        name: "activity-view",
+        path: "gf",
+        name: "gf-activities",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewGFActivity.vue"
+          ),
+      },
+
+      {
+        path: "pmi",
+        name: "pmi-activities",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewPMIActivity.vue"
           ),
       },
 
