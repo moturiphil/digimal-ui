@@ -45,7 +45,7 @@
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
           <a-menu-item key="widgetGFevents">
-            <router-link to="/events/gf"> GF Events </router-link>
+            <router-link to="/events/gf"> List Events </router-link>
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="pmi-events">
@@ -53,7 +53,7 @@
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
           <a-menu-item key="widgetPMIevents">
-            <router-link to="/events/pmi"> PMI Events </router-link>
+            <router-link to="/events/pmi"> List Events </router-link>
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
@@ -82,11 +82,27 @@
             Pending Approval
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetsListActivity" v-if="canViewActivities">
+        <a-sub-menu key="gf-activities">
+          <template v-slot:title>
+            <sdFeatherIcons type="globe" /><span>GF</span>
+          </template>
+          <a-menu-item key="widgetPMIactivities">
+            <router-link to="/activities/gf"> List Activities</router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-sub-menu key="pmi-activities">
+          <template v-slot:title>
+            <sdFeatherIcons type="radio" /><span>PMI</span>
+          </template>
+          <a-menu-item key="widgetPMIactivities">
+            <router-link to="/activities/pmi"> List Activities</router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <!-- <a-menu-item key="widgetsListActivity" v-if="canViewActivities">
           <router-link to="/activities/activity-view">
             List Activities
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
       </a-sub-menu>
 
       <a-menu-item key="widgetListOrgUnits">

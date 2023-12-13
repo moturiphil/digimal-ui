@@ -289,6 +289,7 @@ const generatePayroll = async () => {
         ...authHeader(),
       },
     });
+    console.log(response);
 
     if (response.status === 200) {
       store.commit("setIsGenerating", false);
@@ -299,7 +300,7 @@ const generatePayroll = async () => {
       await new Promise((resolve) => setTimeout(resolve, 4000));
       location.reload();
     } else {
-      handleErrorResponse();
+      handleErrorResponse(response);
     }
   } catch (error) {
     console.error(error);
@@ -307,12 +308,13 @@ const generatePayroll = async () => {
   }
 };
 
-const handleErrorResponse = () => {
+const handleErrorResponse = (response) => {
+  console.log(response)
   store.commit("setIsGenerating", false);
   Modal.error({
     title: "Error",
     content:
-      "Something went wrong, ensure you have assigned payroll matrix to the event",
+      "Something went wrong, contact admin",
   });
   setTimeout(() => location.reload(), 4000);
 };

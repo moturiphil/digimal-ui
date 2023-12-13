@@ -133,7 +133,7 @@ const ActivityTable = defineComponent({
     onMounted(async () => {
       try {
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/activity`,
+          `${process.env.VUE_APP_BASE_URL}/gf_activities`,
           {
             method: "GET",
             headers: authHeader(),
