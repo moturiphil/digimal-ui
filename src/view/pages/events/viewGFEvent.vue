@@ -284,14 +284,14 @@ const isStarting=ref(false)
 //const events=ref([]) // an array of events fetched from the server
 const eventStatus=ref({}) // an object to keep track of the status of each event
 //enrcrypt
-import { encrypt, decrypt } from '@/cryptoHelper';
+import { encrypt } from '@/cryptoHelper';
 // Example usage
 
 
 const onPageChange = async (page) => {
   currentPage.value = page
   try {
-    const response = await axios.get(`events/all?page=${page}&per_page=${pageSize.value}`);
+    const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
     dataSource.value = response.data.data;
     datatotal.value = response.data.pagination.total;
   } catch (error) {
@@ -309,7 +309,7 @@ onMounted(() => {
 });
 
 const getEvents = () => {
-  axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
+  axios.get(`gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
     .then((response) => {
       // dataSource.value = response.data.data;
       // console.log(dataSource.value);
@@ -319,14 +319,6 @@ const getEvents = () => {
       datatotal.value = response.data.pagination.total;
       console.log(datatotal.value);
       dataSource.value = filteredData
-      const originalText = dataSource.value.map(item => ({ id: item.id, name: item.name, event_code: item.event_code }))[0];
-      console.log(originalText);
-
-      const cipherText = encrypt(originalText);
-      console.log("Encrypted:", cipherText);
-
-      const decryptedText = decrypt(cipherText);
-      console.log("Decrypted:", decryptedText);
     })
     .catch((error) => {
       console.error(error);
@@ -441,7 +433,7 @@ const getEvents = () => {
         event_host.value = eventDetails.event_host;
         event_facilitators.value = eventDetails.event_facilitators;
 
-        console.log(event_host.value, event_facilitators.value);
+        //console.log(event_host.value, event_facilitators.value);
       } catch (error) {
         console.error(error);
       }
@@ -452,7 +444,7 @@ const getEvents = () => {
       console.log(inputValue);
       try {
         const response = await axios.get(`event/${recordId.value}/participant/${inputValue}/assign`);
-        console.log(response);
+        //console.log(response);
         if (response.status == 200) {
           inputValue = "";
           notification.success({
@@ -488,7 +480,7 @@ const getEvents = () => {
     async () => {
       try {
         // Validate the event code
-        const { data } = await axios.get(`events/all?event_code=${eventCode.value}`);
+        const { data } = await axios.get(`gf_events?event_code=${eventCode.value}`);
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");
         }

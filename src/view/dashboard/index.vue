@@ -1290,10 +1290,13 @@ const netsIssuedvsDeliveredChart = (nets_issued,nets_delivered, scatter_data, ca
         }
       },
       labels: {
+        format: '{value:.2f}%',
         style: {
           color: '#004225',
         }
       },
+        max: 100,
+        min: 0,
       opposite: true
     }],
     tooltip: {

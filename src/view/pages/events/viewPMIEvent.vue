@@ -186,7 +186,7 @@
   </RecordViewWrapper>
 </template>
 <script>
-import axios from "axios";
+import axios from "@/Axiosconfig";
 import authHeader from "../../../services/auth-header";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
@@ -263,14 +263,8 @@ const ViewPage = defineComponent({
     async startEvent(id) {
       try {
         this.isStarting = true;
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/event_start_trigger/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
+        const response = await axios.get(`event_start_trigger/${id}`);
+        const data = await response.data;
         console.log(data);
         if (data.status === true) {
           this.eventStatus[id] = true;
@@ -301,14 +295,8 @@ const ViewPage = defineComponent({
     async closeEvent(id) {
       try {
         this.isStarting = true;
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/event_close_trigger/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
+        const response = await axios.get(`event_close_trigger/${id}`);
+        const data = await response.data;
         console.log(data);
         if (data.status === true) {
           this.eventStatus[id] = true;
@@ -448,9 +436,7 @@ const ViewPage = defineComponent({
     // get all the events
     onMounted(() => {
       axios
-        .get(`${API_URL}/events/all`, {
-          headers: authHeader(),
-        })
+        .get(`pmi_events`)
         .then((response) => {
           // dataSource.value = response.data.data;
           // console.log(dataSource.value);
@@ -470,9 +456,7 @@ const ViewPage = defineComponent({
     async () => {
       try {
         // Validate the event code
-        const { data } = await axios.get(
-          `${API_URL}/events/all?event_code=${eventCode.value}`
-        );
+        const { data } = await axios.get(`pmi_events?event_code=${eventCode.value}`);
         if (!data || data.length === 0) {
           throw new Error("Invalid event code");
         }
