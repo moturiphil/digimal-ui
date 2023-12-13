@@ -291,7 +291,7 @@ import { encrypt, decrypt } from '@/cryptoHelper';
 const onPageChange = async (page) => {
   currentPage.value = page
   try {
-    const response = await axios.get(`events/all?page=${page}&per_page=${pageSize.value}`);
+    const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
     dataSource.value = response.data.data;
     datatotal.value = response.data.pagination.total;
   } catch (error) {
@@ -309,7 +309,7 @@ onMounted(() => {
 });
 
 const getEvents = () => {
-  axios.get(`events/all?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
+  axios.get(`gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
     .then((response) => {
       // dataSource.value = response.data.data;
       // console.log(dataSource.value);
@@ -481,7 +481,6 @@ const getEvents = () => {
         isModalOpen = true;
       }
     };
-
 
     // Handle when event code is incorrect
 
