@@ -430,7 +430,7 @@ export default defineComponent({
       console.log(query.id);
       try {
         const response = await fetch(
-          `${BASE_URL}/resend_activity_confirmation_reminder/${id}/${query.id}`,
+          `${BASE_URL}/resend_activity_confirmation_reminder/${query.id}/${id}`,
           {
             method: "GET",
             headers: {
