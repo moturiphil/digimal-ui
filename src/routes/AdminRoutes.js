@@ -248,6 +248,14 @@ const routes = [
           ),
       },
       {
+        path: "event-view",
+        name: "event-view",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewEvents.vue"
+          ),
+      },
+      {
         path: "pmi",
         name: "pmi",
         component: () =>
@@ -273,6 +281,14 @@ const routes = [
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
+      {
+        path: "view-activities",
+        name: "view-activities",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
+          ),
+      },
 
       {
         path: "gf",

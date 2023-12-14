@@ -33,7 +33,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events">
+      <a-sub-menu key="events" v-if="isLevelOne">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -56,6 +56,17 @@
             <router-link to="/events/pmi"> List Events </router-link>
           </a-menu-item>
         </a-sub-menu>
+      </a-sub-menu>
+      <a-sub-menu key="events" v-if="!isLevelOne">
+        <template v-slot:title>
+          <sdFeatherIcons type="twitch" /><span>Events</span>
+        </template>
+        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
+          <router-link to="/events/event-create"> Create Event </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetGFevents">
+          <router-link to="/events/event-view"> List Events </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
         key="activities"
@@ -82,7 +93,7 @@
             Pending Approval
           </router-link>
         </a-menu-item>
-        <a-sub-menu key="gf-activities">
+        <a-sub-menu key="gf-activities" v-if="isLevelOne">
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>GF</span>
           </template>
@@ -90,7 +101,7 @@
             <router-link to="/activities/gf"> List Activities</router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-sub-menu key="pmi-activities">
+        <a-sub-menu key="pmi-activities" v-if="isLevelOne">
           <template v-slot:title>
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
@@ -98,11 +109,11 @@
             <router-link to="/activities/pmi"> List Activities</router-link>
           </a-menu-item>
         </a-sub-menu>
-        <!-- <a-menu-item key="widgetsListActivity" v-if="canViewActivities">
-          <router-link to="/activities/activity-view">
+        <a-menu-item key="widgetsListActivity" v-if="canViewActivities || !isLevelOne">
+          <router-link to="/activities/view-activities">
             List Activities
           </router-link>
-        </a-menu-item> -->
+        </a-menu-item>
       </a-sub-menu>
 
       <a-menu-item key="widgetListOrgUnits">
