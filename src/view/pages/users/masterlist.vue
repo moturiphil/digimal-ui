@@ -133,7 +133,7 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import {computed,onMounted,ref,watchEffect} from "vue";
+import {computed,onMounted,ref,watch} from "vue";
 import { notification } from "ant-design-vue";
 import { UploadOutlined } from '@ant-design/icons-vue';
 import axios from '@/Axiosconfig';
@@ -417,7 +417,7 @@ const filterOption = (input, option) => {
 
 const updateMasterList=async()=>{
     try {
-    const response = await axios.get(`masterlist_list`);
+    const response = await axios.get(`masterlist_list?query=${searchItem.value}`);
     const data = await response.data;
     const updatedData = data.data.map((record) => {
       let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
@@ -473,34 +473,13 @@ const handleDeletion = async (id) => {
     console.error(error);
   }
 };
-watchEffect(async() => {
-  const query = searchItem.value.toLowerCase();
 
-  try {
-    if(!query) return dataSource.value;
-    if(query.length > 3){
-
-      const response =  await axios.get(`masterlist_list?query=${query}`);
-      const data =  await response.data;
-      const updatedData = data.data.map((record) => {
-        let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
-        let status = record.status == 1 ? "validated" : "Not Validated";
-        return {
-          ...record,
-          fullName,
-          status,
-        };
-    });
-    dataSource.value = updatedData;
-    }
-
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: error.message,
-    });
-  }
+// search events
+watch(() => searchItem.value, (newValue) => {
+  searchItem.value=newValue;
+  updateMasterList();
 });
+
 
 </script>
 

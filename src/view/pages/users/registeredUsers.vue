@@ -58,18 +58,20 @@
                 </a-row>
                 <a-divider></a-divider>
                  <a-table
+                 :pagination="false"
                   :dataSource="dataSource"
                   :columns="columns"
                   @change="handleTableChange"
-                >
-                <template #pagination="{ pageSize}">
-                  <a-pagination
-                    :total="pageSize"
-                    v-model:current="current"
-                    @change="handlePaginationChange(current)"
-                  />
-                  </template>
+                >                 
                 </a-table>
+                <a-pagination
+                  :current="currentPage"
+                  :total="total"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  :pagination="true"
+                  @change="onPageChange($event)"
+                />
               </TableWrapper>
             </div>
           </sdCards>
@@ -85,7 +87,7 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, watchEffect } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { notification } from "ant-design-vue";
 const columns = [
   {
@@ -136,8 +138,9 @@ const columns = [
   },
 ];
 import axios from '@/Axiosconfig';
-const current = ref(1);
+const currentPage = ref(1);
 const pageSize = ref(100);
+const total = ref(0)
 
 const { state } = useStore();
 //const crud = computed(() => state.crud.data);
@@ -223,8 +226,8 @@ onMounted(async () => {
   }
 });
 
-const handlePaginationChange = (newPage) => {
-  current.value = newPage;
+const onPageChange = async (page) => {
+  currentPage.value = page;
   // console.log(newPage);
   fetchUsers()
 };
@@ -263,7 +266,6 @@ const updateFilters = () => {
   }
   fetchUsers()
 }
-
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
@@ -275,7 +277,7 @@ const handleChange = async (org_id, org_level) => {
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
   let fetchUrl = `get_sub_counties_list`
-  let masterListUrl = `users?page=${current.value}&per_page=${pageSize.value}`
+  let masterListUrl = `users?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
   if (org_level == 'country') {//get counties
     fetchUrl += `?parent_id=${org_id}`
     masterListUrl += `&location=${location_id}`
@@ -414,31 +416,20 @@ const filterOption = (input, option) => {
 const fetchUsers = async () => {
   try {
     // Assuming you have an initial page number
-    const response = await axios.get(`users?page=${current.value}&per_page=${pageSize.value}`);
+    const response = await axios.get(`users?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`);
     const data = await response.data;
+    total.value=parseInt(data.pagination.total);
     dataSource.value = data.data;
   } catch (error) {
     console.error(error);
   }
 }
 
-watchEffect(async()=>{
-  const query = searchItem.value.toLowerCase();
-  try {
-    if(!query) return dataSource.value;
-    if(query.length > 3){
-      const response = await axios.get(`users?query=${query}`);
-      const data = await response.json();
-      dataSource.value = data.data;
-    }
-
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: error.message,
-    });
-  }
-})
+// search events
+watch(() => searchItem.value, (newValue) => {
+  searchItem.value=newValue;
+  fetchUsers();
+});
 
 // const rowSelection = {
 //   selectedRowKeys,
