@@ -62,7 +62,7 @@
 
 <script>
 import { Main } from "../../styled";
-import { SearchResultWrapper } from "./../style";
+import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";

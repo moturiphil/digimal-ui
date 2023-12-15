@@ -97,7 +97,7 @@
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>GF</span>
           </template>
-          <a-menu-item key="widgetPMIactivities">
+          <a-menu-item key="widgetGFactivities">
             <router-link to="/activities/gf"> List Activities</router-link>
           </a-menu-item>
         </a-sub-menu>
@@ -250,7 +250,7 @@
             <router-link to="/meds-orders">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="meds-issues">
-            <router-link to="/meds-issues">Issues </router-link>
+            <router-link to="/meds-issues">Drop-off Deliveries</router-link>
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="kemsa-issuance">
@@ -258,10 +258,10 @@
             <sdFeatherIcons type="table" /><span>KEMSA</span>
           </template>
           <a-menu-item key="kemsa-orders/">
-            <router-link to="/orders/kemsa-order">Orders </router-link>
+            <router-link to="/kemsa/order">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="kemsa-issues">
-            <router-link to="/orders/kemsa-issues">Issues </router-link>
+            <router-link to="/kemsa/drop-off-deliveries">Drop-off Deliveries</router-link>
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
