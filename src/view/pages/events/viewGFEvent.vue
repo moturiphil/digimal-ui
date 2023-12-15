@@ -528,10 +528,6 @@ computed(() => {
         });
       }
     });
-    // const rowSelection = {
-    //   selectedRowKeys,
-    //   onChange: onSelectChange,
-    // };
 </script>
 
 <style lang="css">

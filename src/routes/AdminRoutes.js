@@ -91,7 +91,7 @@ const routes = [
         name: "meds-issues",
         component: () =>
           import(
-            /* webpackChunkName: "Business" */ "@/view/pages/users/stockStatus.vue"
+            /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/stockStatus.vue"
           ),
       },
       {
@@ -99,7 +99,23 @@ const routes = [
         name: "meds-orders",
         component: () =>
           import(
-            /* webpackChunkName: "Business" */ "@/view/pages/users/MedsOrders.vue"
+            /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/MedsOrders.vue"
+          ),
+      },
+      // {
+      //   path: "kemsa-orders",
+      //   name: "kemsa-orders",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/KEMSAOrders.vue"
+      //     ),
+      // },
+      {
+        path: "kemsa/drop-off-deliveries",
+        name: "kemsa-deliveries",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/KEMSADeliveries.vue"
           ),
       },
       {
