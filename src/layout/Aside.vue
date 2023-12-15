@@ -109,7 +109,10 @@
             <router-link to="/activities/pmi"> List Activities</router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-menu-item key="widgetsListActivity" v-if="canViewActivities || !isLevelOne">
+        <a-menu-item
+          key="widgetsListActivity"
+          v-if="canViewActivities && !isLevelOne"
+        >
           <router-link to="/activities/view-activities">
             List Activities
           </router-link>
