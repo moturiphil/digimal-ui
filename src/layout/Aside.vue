@@ -355,6 +355,11 @@
             >Registered CHP & VE
           </router-link>
         </a-menu-item>
+        <!-- <a-menu-item key="widgetCHA">
+          <router-link to="/users/cha"
+            >Registered CHA
+          </router-link>
+        </a-menu-item> -->
         <a-menu-item v-if="isAdmin" key="widgetRoles">
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>

@@ -161,8 +161,13 @@ const routes = [
         component: () => import("@/view/pages/users/addCHPVE.vue"),
       },
       {
+        path: "/users/cha",
+        name: "view-cha",
+        component: () => import("@/view/pages/users/registeredCHA.vue"),
+      },
+      {
         path: "/users/view-chp-ve",
-        name: "view-chp-ve",
+        name: "view-chp",
         component: () => import("@/view/pages/users/chpVE.vue"),
       },
       {

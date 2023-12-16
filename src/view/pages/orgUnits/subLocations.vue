@@ -61,12 +61,66 @@
                             &nbsp;&nbsp; View Villages
                           </router-link>
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          type="success"
+                          size="extra-small"
+                          @click="openModal(record.id)"
+                        >
+                          Assign Supervisor
+                        </sdButton>
                       </div>
                     </td>
                   </template>
                 </a-table>
               </TableWrapper>
             </div>
+            <!-- Assign supervisor -->
+            <a-modal
+              title="Assign Supervisor"
+              :visible="isModalOpen"
+              @cancel="handleCancel"
+              width="50%"
+              footer=""
+            >
+              <BasicFormWrapper>
+                <a-form
+                  class="add-record-form"
+                  :style="{ width: '100%' }"
+                  layout="vertical"
+                  name="addnew"
+                  :model="formState"
+                  @finish="handleSubmit"
+                >
+                  <a-form-item name="Supervisors" label="Select Supervisor">
+                    <a-select
+                      v-model:value="formState.user_id"
+                      show-search
+                      option-filter-prop="label"
+                      placeholder="Select one"
+                    >
+                      <a-select-option
+                        v-for="user in supervisors"
+                        :key="user.id"
+                        :value="user.id"
+                        :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
+                      >
+                        {{ user.first_name }} {{ user.last_name }}
+                        {{ user.other_name }} - {{ user.id_no }},{{
+                          user.role_id
+                        }}, {{ user.location_id }}
+                      </a-select-option>
+                    </a-select>
+                  </a-form-item>
+                  <div class="record-form-actions text-right">
+                    <sdButton size="default" htmlType="Save" type="success">
+                      {{ isLoading ? "Loading..." : "Submit" }}
+                    </sdButton>
+                  </div>
+                </a-form>
+              </BasicFormWrapper>
+            </a-modal>
+            <!-- End of assign supervisor -->
           </sdCards>
         </a-col>
       </a-row>
@@ -80,11 +134,12 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent, reactive } from "vue";
 // import axios from "axios";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
+import { notification } from "ant-design-vue";
 
 const columns = [
   //   {
@@ -108,6 +163,11 @@ const columns = [
     key: "org_id",
   },
   {
+    title: "Supervisor",
+    dataIndex: "N/A",
+    key: "supervisor",
+  },
+  {
     title: "",
     dataIndex: "",
     key: "units",
@@ -116,7 +176,6 @@ const columns = [
 ];
 
 const adminRoles = [53];
-
 
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
@@ -130,9 +189,30 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const { params, query } = useRoute();
     const searchItem = ref("");
+    const isModalOpen = ref(false);
+    const supervisors = ref([]);
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
+
+    const supervisorList = async () => {
+      try {
+        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/cha_users`, {
+          method: "GET",
+          headers: authHeader(),
+        });
+        const data = await response.json();
+
+        // Modify the structure of each supervisor to include a 'label' property
+        supervisors.value = data.data.map((user) => ({
+          ...user,
+          label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+        }));
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    supervisorList();
+
 
     console.log({ query, params });
     console.log(query.id);
@@ -154,6 +234,69 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     });
+
+    const formState = reactive({
+      post_id: "",
+      user_id: "",
+    });
+
+    const openModal = (id) => {
+      isModalOpen.value = true;
+      formState.sublocation_id = id;
+      console.log(isModalOpen.value);
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
+
+    const handleSubmit = async () => {
+      try {
+        const data = {
+          sublocation_id: formState.sublocation_id,
+          user_id: formState.user_id,
+        };
+        console.log(data);
+        await fetch(`${process.env.VUE_APP_BASE_URL}/sublocation_supervisor/assign`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then(({ status, message }) => {
+            if (status == 'Success') {
+              notification.success({
+                message: "Success",
+                description: 'SubLocation Assigned Supervisor Successfully',
+              });
+              isModalOpen.value = false;
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: `${message}`,
+              });
+            }
+            isModalOpen.value = false;
+          })
+          .catch((error) => {
+            notification.error({
+              message: "Error",
+              description: `${error}`,
+            });
+          });
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      }
+    };
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -191,7 +334,6 @@ const DragAndDropTable = defineComponent({
 
     const isAdmin = hasRole(adminRoles);
 
-
     return {
       crud,
       isLoading,
@@ -205,6 +347,12 @@ const DragAndDropTable = defineComponent({
       params,
       columns,
       isAdmin,
+      openModal,
+      handleCancel,
+      isModalOpen,
+      handleSubmit,
+      formState,
+      supervisors,
     };
   },
 });
