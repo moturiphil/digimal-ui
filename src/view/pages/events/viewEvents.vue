@@ -319,12 +319,9 @@ const getEvents = () => {
     .then((response) => {
       // dataSource.value = response.data.data;
       // console.log(dataSource.value);
-      const filteredData = response.data.data.filter(
-        (item) => item.funding_source == 1
-      );
       datatotal.value = response.data.pagination.total;
       console.log(datatotal.value);
-      dataSource.value = filteredData;
+      dataSource.value = response.data.data;
     })
     .catch((error) => {
       console.error(error);
