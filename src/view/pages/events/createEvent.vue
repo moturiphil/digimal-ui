@@ -214,8 +214,8 @@
                           isLoading
                             ? "Loading..."
                             : isSubmitting
-                            ? "Processing ..."
-                            : "Submit"
+                              ? "Processing ..."
+                              : "Submit"
                         }}
                       </sdButton>
                     </div>
@@ -413,7 +413,6 @@ const AddNew = defineComponent({
       campaign_id: null,
       name: null,
       county_id: "",
-      // location_type: null,
       facilitator_id: "",
       trainer_id: [],
       no_of_days: null,
@@ -444,7 +443,7 @@ const AddNew = defineComponent({
 
     const handleSubmit = () => {
       store.commit("setIsSubmitting", true);
-      if (formState.county_id=="") {
+      if (formState.county_id == "") {
         formState.county_id = user_data.user.location_id;
       }
       const data = {

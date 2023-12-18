@@ -130,6 +130,12 @@ const routes = [
           import("@/view/pages/net-distribution/AssignWorker.vue"),
       },
       {
+        path: "/sub-location/posts/:id",
+        name: "sub-location-posts",
+        component: () =>
+          import("@/view/pages/net-distribution/SubLocationPosts.vue"),
+      },
+      {
         path: "/view-worker",
         name: "view-worker",
         component: () =>

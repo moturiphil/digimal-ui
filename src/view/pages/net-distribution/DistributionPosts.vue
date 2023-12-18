@@ -239,10 +239,11 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     };
+    supervisorList();
+
 
     onMounted(async () => {
       try {
-        supervisorList();
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/posts_data`,
           {
