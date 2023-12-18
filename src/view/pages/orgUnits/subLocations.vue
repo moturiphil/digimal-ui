@@ -51,14 +51,18 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/org-units/villages/${record.org_id}`,
+                              path: `/sub-location/posts/${record.org_id}`,
+                              query: {
+                                name: record.name,
+                                id: record.id,
+                                org_id: record.org_id
+                              },
                             }"
                             class="btn-icon"
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View Villages
+                            &nbsp;&nbsp; View Posts
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -68,6 +72,22 @@
                           @click="openModal(record.id)"
                         >
                           Assign Supervisor
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/org-units/villages/${record.org_id}`,
+                              query: {
+                                name: record.name,
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            &nbsp;&nbsp; View Villages
+                          </router-link>
                         </sdButton>
                       </div>
                     </td>
@@ -192,13 +212,15 @@ const DragAndDropTable = defineComponent({
     const isModalOpen = ref(false);
     const supervisors = ref([]);
 
-
     const supervisorList = async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/cha_users`, {
-          method: "GET",
-          headers: authHeader(),
-        });
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/cha_users`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
         const data = await response.json();
 
         // Modify the structure of each supervisor to include a 'label' property
@@ -212,7 +234,6 @@ const DragAndDropTable = defineComponent({
     };
 
     supervisorList();
-
 
     console.log({ query, params });
     console.log(query.id);
@@ -257,20 +278,23 @@ const DragAndDropTable = defineComponent({
           user_id: formState.user_id,
         };
         console.log(data);
-        await fetch(`${process.env.VUE_APP_BASE_URL}/sublocation_supervisor/assign`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
+        await fetch(
+          `${process.env.VUE_APP_BASE_URL}/sublocation_supervisor/assign`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          }
+        )
           .then((response) => response.json())
           .then(({ status, message }) => {
-            if (status == 'Success') {
+            if (status == "Success") {
               notification.success({
                 message: "Success",
-                description: 'SubLocation Assigned Supervisor Successfully',
+                description: "SubLocation Assigned Supervisor Successfully",
               });
               isModalOpen.value = false;
               setTimeout(function () {
