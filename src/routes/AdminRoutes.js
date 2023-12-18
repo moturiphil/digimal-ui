@@ -91,7 +91,7 @@ const routes = [
         name: "meds-issues",
         component: () =>
           import(
-            /* webpackChunkName: "Business" */ "@/view/pages/users/stockStatus.vue"
+            /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/stockStatus.vue"
           ),
       },
       {
@@ -99,7 +99,23 @@ const routes = [
         name: "meds-orders",
         component: () =>
           import(
-            /* webpackChunkName: "Business" */ "@/view/pages/users/MedsOrders.vue"
+            /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/MedsOrders.vue"
+          ),
+      },
+      // {
+      //   path: "kemsa-orders",
+      //   name: "kemsa-orders",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/KEMSAOrders.vue"
+      //     ),
+      // },
+      {
+        path: "kemsa/drop-off-deliveries",
+        name: "kemsa-deliveries",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/supply-chain/KEMSADeliveries.vue"
           ),
       },
       {
@@ -145,8 +161,13 @@ const routes = [
         component: () => import("@/view/pages/users/addCHPVE.vue"),
       },
       {
+        path: "/users/cha",
+        name: "view-cha",
+        component: () => import("@/view/pages/users/registeredCHA.vue"),
+      },
+      {
         path: "/users/view-chp-ve",
-        name: "view-chp-ve",
+        name: "view-chp",
         component: () => import("@/view/pages/users/chpVE.vue"),
       },
       {
@@ -248,6 +269,14 @@ const routes = [
           ),
       },
       {
+        path: "event-view",
+        name: "event-view",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/events/viewEvents.vue"
+          ),
+      },
+      {
         path: "pmi",
         name: "pmi",
         component: () =>
@@ -274,11 +303,29 @@ const routes = [
       ),
     children: [
       {
-        path: "activity-view",
-        name: "activity-view",
+        path: "view-activities",
+        name: "view-activities",
         component: () =>
           import(
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
+          ),
+      },
+
+      {
+        path: "gf",
+        name: "gf-activities",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewGFActivity.vue"
+          ),
+      },
+
+      {
+        path: "pmi",
+        name: "pmi-activities",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewPMIActivity.vue"
           ),
       },
 

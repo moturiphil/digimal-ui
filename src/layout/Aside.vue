@@ -33,7 +33,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events">
+      <a-sub-menu key="events" v-if="isLevelOne">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -45,7 +45,7 @@
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
           <a-menu-item key="widgetGFevents">
-            <router-link to="/events/gf"> GF Events </router-link>
+            <router-link to="/events/gf"> List Events </router-link>
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="pmi-events">
@@ -53,9 +53,20 @@
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
           <a-menu-item key="widgetPMIevents">
-            <router-link to="/events/pmi"> PMI Events </router-link>
+            <router-link to="/events/pmi"> List Events </router-link>
           </a-menu-item>
         </a-sub-menu>
+      </a-sub-menu>
+      <a-sub-menu key="events" v-if="!isLevelOne">
+        <template v-slot:title>
+          <sdFeatherIcons type="twitch" /><span>Events</span>
+        </template>
+        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
+          <router-link to="/events/event-create"> Create Event </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetGFevents">
+          <router-link to="/events/event-view"> List Events </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
         key="activities"
@@ -82,8 +93,27 @@
             Pending Approval
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetsListActivity" v-if="canViewActivities">
-          <router-link to="/activities/activity-view">
+        <a-sub-menu key="gf-activities" v-if="isLevelOne">
+          <template v-slot:title>
+            <sdFeatherIcons type="globe" /><span>GF</span>
+          </template>
+          <a-menu-item key="widgetGFactivities">
+            <router-link to="/activities/gf"> List Activities</router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-sub-menu key="pmi-activities" v-if="isLevelOne">
+          <template v-slot:title>
+            <sdFeatherIcons type="radio" /><span>PMI</span>
+          </template>
+          <a-menu-item key="widgetPMIactivities">
+            <router-link to="/activities/pmi"> List Activities</router-link>
+          </a-menu-item>
+        </a-sub-menu>
+        <a-menu-item
+          key="widgetsListActivity"
+          v-if="canViewActivities && !isLevelOne"
+        >
+          <router-link to="/activities/view-activities">
             List Activities
           </router-link>
         </a-menu-item>
@@ -220,7 +250,7 @@
             <router-link to="/meds-orders">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="meds-issues">
-            <router-link to="/meds-issues">Issues </router-link>
+            <router-link to="/meds-issues">Drop-off Deliveries</router-link>
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="kemsa-issuance">
@@ -228,10 +258,10 @@
             <sdFeatherIcons type="table" /><span>KEMSA</span>
           </template>
           <a-menu-item key="kemsa-orders/">
-            <router-link to="/orders/kemsa-order">Orders </router-link>
+            <router-link to="/kemsa/order">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="kemsa-issues">
-            <router-link to="/orders/kemsa-issues">Issues </router-link>
+            <router-link to="/kemsa/drop-off-deliveries">Drop-off Deliveries</router-link>
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
@@ -325,6 +355,11 @@
             >Registered CHP & VE
           </router-link>
         </a-menu-item>
+        <!-- <a-menu-item key="widgetCHA">
+          <router-link to="/users/cha"
+            >Registered CHA
+          </router-link>
+        </a-menu-item> -->
         <a-menu-item v-if="isAdmin" key="widgetRoles">
           <router-link to="/user-roles">Roles </router-link>
         </a-menu-item>
