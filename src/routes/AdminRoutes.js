@@ -356,37 +356,6 @@ const routes = [
       },
     ],
   },
-  // {
-  //   name: 'activities-profile',
-  //   path: '/activity/dashboard',
-  //   component: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
-  //   children: [
-  //     {
-  //       path: 'overview',
-  //       name: 'overview',
-  //       components: {
-  //         default: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
-  //         child: () => import(/* webpackChunkName: "overview" */ '../view/apps/myProfile/overview/Overview.vue'),
-  //       },
-  //     },
-  //     {
-  //       path: 'timeline',
-  //       name: 'timeline',
-  //       components: {
-  //         default: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
-  //         child: () => import(/* webpackChunkName: "timeline" */ '../view/apps/myProfile/overview/Timeline.vue'),
-  //       },
-  //     },
-  //     {
-  //       path: 'activity',
-  //       name: 'activity',
-  //       components: {
-  //         default: () => import(/* webpackChunkName: "socialProfile" */ '../view/apps/myActivities/Index.vue'),
-  //         child: () => import(/* webpackChunkName: "activity" */ '../view/apps/myProfile/overview/Activity.vue'),
-  //       },
-  //     },
-  //   ],
-  // },
   {
     path: "/org-units/",
     name: "org-units",
@@ -476,6 +445,11 @@ const routes = [
     path: "/sub-county-units/chp-ve/:id",
     name: "/org-units-villages",
     component: () => import("../view/pages/users/subCountyCHPVillageElders.vue"),
+  },
+  {
+    path: "/sub-location/dashboard",
+    name: "/sub-location-dashboard",
+    component: () => import("../view/pages/orgUnits/CHADashboard.vue"),
   },
   // households/summary
   {
