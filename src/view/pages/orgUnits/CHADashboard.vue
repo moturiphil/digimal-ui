@@ -108,12 +108,12 @@ const transfersColumns = ref([
     dataIndex: "distribution_end_date",
     key: "id",
   },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
-  },
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",
+  //   key: "id",
+  //   slots: { customRender: "action" },
+  // },
 ]);
 
 const villagesColumns = ref([
@@ -142,12 +142,12 @@ const villagesColumns = ref([
     dataIndex: "no_of_registered_hh",
     key: "id",
   },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
-  },
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",
+  //   key: "id",
+  //   slots: { customRender: "action" },
+  // },
 ]);
 const villagesData = ref([]);
 
