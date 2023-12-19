@@ -184,7 +184,7 @@ const columns = [
   },
   {
     title: "Supervisor",
-    dataIndex: "N/A",
+    dataIndex: "supervisor",
     key: "supervisor",
   },
   {
