@@ -80,7 +80,6 @@ import { ref, onMounted, watch } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
 import authHeader from "../../../services/auth-header";
 
-
 const selectedKeys = ref(["2"]);
 
 const transfersColumns = ref([
@@ -158,74 +157,54 @@ const selectMenuItem = (key) => {
   selectedKeys.value = [key];
 };
 
-
-const watchSelectedKeys = watch(selectedKeys, async (newSelectedKeys) => {
-  if (newSelectedKeys[0] === '1') {
-    try {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
-        {
-          method: "GET",
-          headers: authHeader(),
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      subLocationData.value = data.data;
-    } catch (error) {
-      console.error(error);
-    }
-  } else if (newSelectedKeys[0] === '2') {
-    // Fetch data for Villages table
-    try {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/villages/list`,
-        {
-          method: "GET",
-          headers: authHeader(),
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      villagesData.value = data.data;
-    } catch (error) {
-      console.error(error);
-    }
+// Function to fetch village data
+const fetchVillagesData = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/villages/list`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+    villagesData.value = data.data;
+  } catch (error) {
+    console.error(error);
   }
+};
+
+// Function to fetch sub location data
+const fetchSubLocationData = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+    subLocationData.value = data.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Initial load: Fetch villages data
+onMounted(async () => {
+  await fetchVillagesData();
 });
 
-onMounted(async () => {
-  // Fetch data for Distribution Post table
-  // if (selectedKeys.value[0] === "1") {
-  //   console.log('hello world')
-  //   //   subLocationData.value = await fetchData('/transfers-endpoint');
-  //   const subLocationPosts = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
-  //         {
-  //           method: "GET",
-  //           headers: authHeader(),
-  //         }
-  //       );
-  //       const data = await response.json();
-  //       console.log(data)
-
-  //       subLocationData.value = data.data;
-
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-
-  //   // subLocationPosts();
-  // }
-
-  // Fetch data for Villages table
-  // if (selectedKeys.value[0] === "2") {
-  //   //   villagesData.value = await  fetchData('/villages-endpoint');
-  // }
-  stop(watchSelectedKeys);
+// Watch for changes in selectedKeys
+watch(selectedKeys, async (newSelectedKeys) => {
+  if (newSelectedKeys[0] === "1") {
+    await fetchSubLocationData();
+  } else if (newSelectedKeys[0] === "2") {
+    await fetchVillagesData();
+  }
 });
 </script>
 
