@@ -119,12 +119,24 @@
         </a-menu-item>
       </a-sub-menu>
 
-      <a-menu-item key="widgetListOrgUnits">
-        <router-link to="/org-units/view">
+      <a-sub-menu key="admin-units">
+        <template v-slot:title>
           <sdFeatherIcons type="cpu" />
-          <span>Administrative Units</span>
-        </router-link>
-      </a-menu-item>
+          <span>Administrative Units</span></template
+        >
+        <a-menu-item key="widgetListOrgUnits">
+          <router-link to="/org-units/view">
+            <sdFeatherIcons type="map" />
+            <span>Organization Units</span>
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetCHADash">
+          <router-link to="/sub-location/dashboard">
+            <sdFeatherIcons type="square" />
+            <span>CHAs Dashboard</span>
+          </router-link>
+        </a-menu-item>
+      </a-sub-menu>
 
       <a-sub-menu
         key="house-holds"
@@ -261,7 +273,9 @@
             <router-link to="/kemsa/order">Orders </router-link>
           </a-menu-item>
           <a-menu-item key="kemsa-issues">
-            <router-link to="/kemsa/drop-off-deliveries">Drop-off Deliveries</router-link>
+            <router-link to="/kemsa/drop-off-deliveries"
+              >Drop-off Deliveries</router-link
+            >
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
