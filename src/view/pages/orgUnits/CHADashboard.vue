@@ -47,11 +47,11 @@
       >
         <template v-if="selectedKeys[0] === '1'">
           <h2>Distribution Posts</h2>
-          <!-- <a-table :columns="transfersColumns" :data-source="transfersData" /> -->
+          <!-- <a-table :columns="transfersColumns" :data-source="subLocationData" /> -->
           <div class="table-responsive">
             <a-table
               :columns="transfersColumns"
-              :data-source="transfersData"
+              :data-source="subLocationData"
               :scroll="{ x: 'max-content' }"
             />
           </div>
@@ -76,42 +76,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
+import authHeader from "../../../services/auth-header";
+
 
 const selectedKeys = ref(["2"]);
 
 const transfersColumns = ref([
   {
-    title: "From Post",
-    dataIndex: "from_post_name",
+    title: "Distribution Post",
+    dataIndex: "name",
     key: "id",
   },
   {
-    title: "To Post",
-    dataIndex: "to_post_name",
+    title: "Post Code",
+    dataIndex: "post_code",
     key: "id",
   },
   {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
+    title: "Post Supervisor",
+    dataIndex: "post_supervisor_user_id",
     key: "id",
   },
   {
-    title: "Date of Transfer",
-    dataIndex: "date_issued",
+    title: "Distribution Start Date",
+    dataIndex: "distribution_start_date",
     key: "id",
   },
   {
-    title: "Issued By",
-    dataIndex: "issued_by",
+    title: "Distribution End Date",
+    dataIndex: "distribution_end_date",
     key: "id",
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "id",
-    slots: { customRender: "status" },
   },
   {
     title: "Action",
@@ -123,23 +119,28 @@ const transfersColumns = ref([
 
 const villagesColumns = ref([
   {
-    title: "From Post",
-    dataIndex: "from_post_name",
+    title: "Village",
+    dataIndex: "name",
     key: "id",
   },
   {
-    title: "To Post",
-    dataIndex: "to_post_name",
+    title: "Code",
+    dataIndex: "code",
     key: "id",
   },
   {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
+    title: "No of CHPs",
+    dataIndex: "no_of_chp_registered",
     key: "id",
   },
   {
-    title: "Date of Transfer",
-    dataIndex: "date_issued",
+    title: "No of Village Elders",
+    dataIndex: "no_of_ve_registered",
+    key: "id",
+  },
+  {
+    title: "No of Households",
+    dataIndex: "no_of_registered_hh",
     key: "id",
   },
   {
@@ -151,20 +152,80 @@ const villagesColumns = ref([
 ]);
 const villagesData = ref([]);
 
+const subLocationData = ref([]);
+
 const selectMenuItem = (key) => {
   selectedKeys.value = [key];
 };
 
+
+const watchSelectedKeys = watch(selectedKeys, async (newSelectedKeys) => {
+  if (newSelectedKeys[0] === '1') {
+    try {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
+        {
+          method: "GET",
+          headers: authHeader(),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      subLocationData.value = data.data;
+    } catch (error) {
+      console.error(error);
+    }
+  } else if (newSelectedKeys[0] === '2') {
+    // Fetch data for Villages table
+    try {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/villages/list`,
+        {
+          method: "GET",
+          headers: authHeader(),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      villagesData.value = data.data;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+});
+
 onMounted(async () => {
   // Fetch data for Distribution Post table
-  if (selectedKeys.value[0] === "1") {
-    //   transfersData.value = await fetchData('/transfers-endpoint');
-  }
+  // if (selectedKeys.value[0] === "1") {
+  //   console.log('hello world')
+  //   //   subLocationData.value = await fetchData('/transfers-endpoint');
+  //   const subLocationPosts = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
+  //         {
+  //           method: "GET",
+  //           headers: authHeader(),
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       console.log(data)
+
+  //       subLocationData.value = data.data;
+
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+
+  //   // subLocationPosts();
+  // }
 
   // Fetch data for Villages table
-  if (selectedKeys.value[0] === "2") {
-    //   villagesData.value = await  fetchData('/villages-endpoint');
-  }
+  // if (selectedKeys.value[0] === "2") {
+  //   //   villagesData.value = await  fetchData('/villages-endpoint');
+  // }
+  stop(watchSelectedKeys);
 });
 </script>
 
