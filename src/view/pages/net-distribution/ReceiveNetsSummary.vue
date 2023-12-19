@@ -344,7 +344,9 @@
                                 label="S11 No"
                               >
                                 <a-input
-                                  v-model:value="trans_formState.delivery_note_number"
+                                  v-model:value="
+                                    trans_formState.delivery_note_number
+                                  "
                                   placeholder="S11 No"
                                   type="number"
                                 />
@@ -799,7 +801,7 @@ export default defineComponent({
         date_returned: dayjs(returns_formState.date_returned).format(
           "YYYY-MM-DD"
         ),
-        delivery_note_number:returns_formState.delivery_note_number,
+        delivery_note_number: returns_formState.delivery_note_number,
       };
       try {
         fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
