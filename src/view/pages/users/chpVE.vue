@@ -318,11 +318,7 @@ const handleAssignment = (id) => {
 };
 
 const handleDeAssignment = (id) => {
-  const data = {
-    user_id: id,
-  };
-
-  axios.post(DEASSIGN_URL, JSON.stringify(data))
+  axios.post(DEASSIGN_URL, {user_id: id})
     .then((response) => response.data)
     .then(({ success }) => {
       if (success) {
@@ -358,7 +354,7 @@ const handleSubmit = () => {
     role_id: formState.role_id,
   };
 
-  axios.post(API_URL, JSON.stringify(data))
+  axios.post(API_URL,data)
     .then((response) => response.data)
     .then(({ success }) => {
       if (success) {
@@ -429,7 +425,7 @@ const getCounties = async () => {
 
 // sub_county
 const getSubCounties = async (org_id) => {
-  const response = await fetch(`get_sub_counties_list?parent_id=${org_id}`);
+  const response = await axios.get(`get_sub_counties_list?parent_id=${org_id}`);
   const data = await response.data;
   sub_counties.value = data.message;
 };
