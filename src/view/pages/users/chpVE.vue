@@ -277,6 +277,7 @@ const fetchCHVE = async () => {
   try {
     const response = await axios.get(`chp_ve?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`);
     const data = await response.data;
+    datatotal.value = response.data.pagination.total;
     const filteredUsers = data.data.filter((user) => {
       // Assuming there is a property in the user object indicating their role, e.g., user.role
       return user.role_id === "CHV" || user.role_id === "Village Elder";
