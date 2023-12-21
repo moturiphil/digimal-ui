@@ -114,10 +114,12 @@
                 >
                   <a-form-item name="Supervisors" label="Select Supervisor">
                     <a-select
-                      v-model:value="formState.user_id"
+                     v-model:value="formState.user_id"
                       show-search
                       option-filter-prop="label"
                       placeholder="Select one"
+                      :filter-option="filterOption"
+                      @search="handleSearch"
                     >
                       <a-select-option
                         v-for="user in supervisors"
@@ -150,16 +152,16 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent, reactive } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 // import axios from "axios";
 import { useRoute } from "vue-router";
-import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
 import { notification } from "ant-design-vue";
+import axios from '@/Axiosconfig'
 
 const columns = [
   //   {
@@ -196,76 +198,71 @@ const columns = [
 ];
 
 const adminRoles = [53];
-
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
-
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
+const { state,
+  //dispatch
+} = useStore();
+    //const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
+    // const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const { params, query } = useRoute();
     const searchItem = ref("");
     const isModalOpen = ref(false);
     const supervisors = ref([]);
 
-    const supervisorList = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/cha_users`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-
-        // Modify the structure of each supervisor to include a 'label' property
-        supervisors.value = data.data.map((user) => ({
-          ...user,
-          label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
-        }));
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    supervisorList();
 
     console.log({ query, params });
     console.log(query.id);
 
-    onMounted(async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        dataSource.value = data.message;
-        console.log(dataSource.value);
-      } catch (error) {
-        console.error(error);
-      }
-    });
+onMounted(async () => {
+  getSubcountyList();
+});
+
+const handleSearch = (value) => {
+  console.log(value)
+ searchItem.value = value;
+  supervisorList();
+};
+
+const getSubcountyList = async () => {
+  try {
+    const response = await axios.get(`get_sub_counties_list?parent_id=${params.id}`);
+    const data = await response.data;
+    console.log(data);
+    dataSource.value = data.message;
+    console.log(dataSource.value);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
     const formState = reactive({
       post_id: "",
       user_id: "",
+      searchItem:"",
     });
 
-    const openModal = (id) => {
+const openModal = (id) => {
+      supervisorList();
       isModalOpen.value = true;
       formState.sublocation_id = id;
       console.log(isModalOpen.value);
-    };
+};
+
+const supervisorList = async () => {
+  try {
+    const response = await axios.get(`cha_users?query=${searchItem.value}`);
+    const data = await response.data;
+
+    // Modify the structure of each supervisor to include a 'label' property
+    supervisors.value = data.data.map((user) => ({
+      ...user,
+      label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+};
 
     const handleCancel = () => {
       isModalOpen.value = false;
@@ -278,18 +275,8 @@ const DragAndDropTable = defineComponent({
           user_id: formState.user_id,
         };
         console.log(data);
-        await fetch(
-          `${process.env.VUE_APP_BASE_URL}/sublocation_supervisor/assign`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(data),
-          }
-        )
-          .then((response) => response.json())
+        await axios.post(`sublocation_supervisor/assign`,data)
+          .then((response) => response.data)
           .then(({ status, message }) => {
             if (status == "Success") {
               notification.success({
@@ -322,27 +309,27 @@ const DragAndDropTable = defineComponent({
       }
     };
 
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
+    // const handleDelete = (id) => {
+    //   const confirm = window.confirm("Are you sure delete this?");
+    //   if (confirm) {
+    //     dispatch("axiosDataDelete", {
+    //       id,
+    //       getData: () => {
+    //         dispatch("axiosCrudGetData");
+    //       },
+    //     });
+    //   }
+    //   return false;
+    // };
 
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
+    // const onSelectChange = (selectedRowKey) => {
+    //   selectedRowKeys.value = selectedRowKey;
+    // };
 
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
+    // const rowSelection = {
+    //   selectedRowKeys,
+    //   onChange: onSelectChange,
+    // };
 
     const results = computed(() => {
       const query = searchItem.value.toLowerCase();
@@ -356,30 +343,6 @@ const DragAndDropTable = defineComponent({
       }
     });
 
-    const isAdmin = hasRole(adminRoles);
+const isAdmin = hasRole(adminRoles);
 
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      dataSource,
-      results,
-      searchItem,
-      params,
-      columns,
-      isAdmin,
-      openModal,
-      handleCancel,
-      isModalOpen,
-      handleSubmit,
-      formState,
-      supervisors,
-    };
-  },
-});
-
-export default DragAndDropTable;
 </script>
