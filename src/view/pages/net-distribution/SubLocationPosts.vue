@@ -311,7 +311,7 @@ const getSublocationPosts = () => {
           sublocation_ids: [sublocation_id],
         };
         console.log(data);
-        await axios.get(`map_post_to_sublocation`,data)
+        await axios.post(`map_post_to_sublocation`,data)
           .then((response) => response.data)
           .then(({ success, message }) => {
             if (success == true) {
