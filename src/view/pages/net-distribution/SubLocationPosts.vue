@@ -200,7 +200,7 @@ const onPageChange = async (page) => {
 }
     const postList = async () => {
       try {
-        const response = await axios.get(`posts_data`);
+        const response = await axios.get(`get_location_posts/${query.id}`);
         const data = await response.data;
 
         console.log(data);
