@@ -68,8 +68,8 @@
                           <br />
                           <br />
                           <a-pagination
-                                :current="current"
-                                :total="total"
+                                :current="currentPage"
+                                :total="datatotal"
                                 :pageSize="pageSize"
                                 :showSizeChanger="true"
                                 :pagination="true"
@@ -92,8 +92,7 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, defineProps, watchEffect } from "vue";
-import authHeader from "../../../services/auth-header";
+import { computed, onMounted, ref, defineProps, watch} from "vue";
 import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
@@ -147,16 +146,15 @@ const columns = ref([
     slots: { customRender: "households" },
   },
 ]);
-var current = ref(1);
-var pageSize = ref(50);
-var total = ref(0)
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+const searchItem=ref("")
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
 const activeClass = ref("all");
-const searchItem = ref("");
 const total_households = ref(0);
-const API_URL = `household_validation?page=${current.value}&per_page=${pageSize.value}`;//sub_county_id=291
 
 //Drill down filters
 const access_level = ref({})
@@ -177,6 +175,7 @@ const location = ref("Select Location")
 const ward = ref("Select Ward")
 // const village = ref("Select a Post")
 const org_ids = ref([])
+
 
 const currentCounties = ref([
   'nK0A12Q7MvS',//homa bay
@@ -271,7 +270,7 @@ const handleChange = async (org_id, org_level) => {
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
   let fetchUrl = `get_sub_counties_list`
-  let masterListUrl = API_URL
+  let masterListUrl = `households?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
   if (org_level == 'country') {//get counties
     fetchUrl += `?parent_id=${org_id}`
     //masterListUrl += `&location=${location_id}`
@@ -373,7 +372,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
           let data = response.data.data.data;
           dataSource.value = data;
           // paginationOptions.value.total = response.data.data.length;
-          total.value = response.data.data.total;
+          datatotal.value = response.data.data.total;
           total_households.value = response.data.data.total;
         })
     }).catch(error => {
@@ -405,12 +404,12 @@ const fetchCounties = async () => {
 
 const fetchHouseholds = () => {
   axios
-    .get(API_URL)
+    .get(`households?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
     .then((response) => {
       console.log(response.data.data);
       dataSource.value = response.data.data.data;
       // paginationOptions.value.total = response.data.data.length;
-      paginationOptions.value.total = response.data.data.total;
+      datatotal.value= response.data.data.total;
       total_households.value  = response.data.data.total
     })
     .catch((error) => {
@@ -418,61 +417,11 @@ const fetchHouseholds = () => {
     });
 }
 
-const paginationOptions = ref({
-  pageSize: pageSize.value,
-  showSizeChanger: true,
-  current: current.value,
-  total: 0,
-  onChange: async (page, pageSize) => {
-    // Update the current page when the pagination changes
-    const query = searchItem.value.toLowerCase();
-
-    paginationOptions.value.current = page;
-
-    let url = ''
-    if(!query) url = `household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}`
-    else url = `household_validation?sub_county_id=291&page=${page}&pageSize=${pageSize}&query=${query}`
-
-    // Fetch data for the new page using the updated page number
-    try {
-      const response = await axios.get(url);
-      dataSource.value = response.data.data.data;
-      paginationOptions.value.total = response.data.data.total;
-    } catch (error) {
-      console.error(error);
-    }
-  },
-});
 
 
-watchEffect(async()=>{
-  const query = searchItem.value.toLowerCase();
-  try {
-    if(!query) return dataSource.value;
-    if(query.length> 3){
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=291&query=${query}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      dataSource.value = await data.data.data;
-      paginationOptions.value.total = await data.data.total;
-      // total_households.value.total = data.data.total
-      console.log(paginationOptions)
-    }
-  } catch (error) {
-    notification["error"]({
-      message: "Error",
-      description: `Error fetching households`,
-      duration: 5.5,
-    });
-  }
+watch(() => searchItem.value, (newValue) => {
+  searchItem.value=newValue;
+  fetchHouseholds();
 })
 
 </script>

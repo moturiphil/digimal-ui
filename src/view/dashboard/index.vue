@@ -355,12 +355,31 @@
                         v-model="dateFrom" placeholder="Select Date From" :format="dateFormat" />
                       <input type="date" v-model="dateTo"
                         :style="{ width: '100%', padding: '6px', margin: '1px', border: '2px solid  #CCCCFF' }"
-                        placeholder="Select Date To" @input="fetchNetsDistributed()" :format="dateFormat" />
+                        placeholder="Select Date To" @input="fetchNetsDistributed(),fetchHouseHoldsRegTrends()" :format="dateFormat" />
                     </div>
                   </a-space>
                 </a-col>
               </a-row>
             </div>
+            <figure class="highcharts-figure">
+              <div id="HouseHoldsRegistrationTrendsChart"></div>
+              <table class="table table-responsive" v-if="printMode">
+                <thead>
+                  <tr>
+                    <th v-for="item in NetsDistributedwithTimeData.map(item => item)" :key="item">
+                      {{ item.date }}/Cummilative</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td v-for="item in NetsDistributedwithTimeData.map(item => item)" :key="item">
+                      {{ item.no_of_nets }}/{{ item.nets_cumulative }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+            <a-divider></a-divider>
             <figure class="highcharts-figure">
               <div id="NetsDistributedwithTime"></div>
               <table class="table table-responsive" v-if="printMode">
@@ -421,6 +440,7 @@ const HouseHoldRegisteredbyCoountyChartData = ref([])
 const HouseHoldsServedbyCountyChartData = ref([])
 const NetsIssuedbyCountyChartData = ref([])
 const NetsDistributedwithTimeData = ref([])
+const HouseHoldsRegistrationTrendsData =ref([])
 var printMode = ref(false)
 const totalhouseholds_served = ref([])
 
@@ -470,7 +490,7 @@ const selectedCounties = ref([
   // "Vihiga County",
   // "West Pokot County",
   // "Turkana County",
-  // "Trans Nzoia County",
+  // "Trans Nzoia CounHouseHoldsRegistrationTrendsDataty",
   // "Narok County",
   // "Marsabit County",
   // "Baringo County",
@@ -597,7 +617,8 @@ const fetchInitialChartData = async () => {
       dateTo.value = moment(currentDate).format(dateFormat.value);
       fileterOrgeLevel.value = access_level.value.level.level_name
       NetsChartData.value = newChartData.value
-      fetchNetsDistributed()
+      fetchNetsDistributed();
+      fetchHouseHoldsRegTrends();
     }).catch(error => {
       notification.error({
         message: `Error!`,
@@ -617,6 +638,7 @@ const handleChange = async (org_id, org_level) => {
   filterOrgId.value = parent_id
   fileterOrgeLevel.value = org_level
   fetchNetsDistributed()
+  fetchHouseHoldsRegTrends()
 };
 const fetchChildData = async (org_id, org_level) => {
   updateStats(org_id)
@@ -768,6 +790,7 @@ const fetchChildData = async (org_id, org_level) => {
           }
           fileterOrgeLevel.value = org_level
           fetchNetsDistributed()
+          fetchHouseHoldsRegTrends()
         })
     }).catch(error => {
       notification.error({
@@ -895,6 +918,7 @@ const handleFilterChange = () => {
   }
   //fetch data
   fetchNetsDistributed()
+  fetchHouseHoldsRegTrends()
   // console.log(dateFrom)
   // console.log(dateTo)
 
@@ -915,9 +939,102 @@ const fetchNetsDistributed = () => {
         description: `${error}`,
       });
     })
-}
+}//HouseHoldsRegistrationTrends
 
-watch(selectedFilter, handleFilterChange)
+const fetchHouseHoldsRegTrends = () => {
+  //format date
+  dateFrom.value = moment(dateFrom.value).format(dateFormat.value)
+  dateTo.value = moment(dateTo.value).format(dateFormat.value)
+  axios.get(`household_registration_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
+    .then(response => {
+      let data = response.data.data.total_nets_distributed;
+      //console.log(data.map(item => item.date.toString()))
+      HouseHoldsRegistrationTrendsData.value = data
+      HouseHoldsRegistrationTrendsChart(data, fileterOrgeLevel.value)
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    })
+}//
+
+watch(selectedFilter, handleFilterChange)//HouseHoldsRegistrationTrends
+const HouseHoldsRegistrationTrendsChart = (data, org_level) => {
+  //console.log(data)
+  Highcharts.chart('HouseHoldsRegistrationTrendsChart', {
+    chart: {
+      type: 'spline',
+    },
+    credits: {
+      text: 'Powered by HealthIT KE', // Custom text
+      href: 'https://unes.co.ke', // Custom link
+      target: '_blank',
+      position: {
+        align: 'right',
+        x: -10,
+        verticalAlign: 'bottom',
+        y: -5,
+      },
+    },
+    title: {
+      text: `Households Registration trends by ${org_level}`,
+      align: 'left',
+    },
+    subtitle: {
+      text: ''
+    },
+    xAxis: {
+      categories: data.map(item => item.date.toString()),
+      title: {
+        text: ''
+      },
+    },
+    yAxis: {
+      // Primary yAxis (Count)
+      title: {
+        text: 'Households',
+        style: {
+          color: Highcharts.getOptions().colors[0]
+        }
+      },
+      labels: {
+        style: {
+          color: Highcharts.getOptions().colors[0]
+        }
+      }
+    },
+    tooltip: {
+      crosshairs: true,
+      shared: true
+    },
+    plotOptions: {
+      spline: {
+        marker: {
+          radius: 4,
+          lineColor: '#666666',
+          lineWidth: 1
+        }
+      }
+    },
+    series: [{
+      name: 'Cumulative',//Cumulative
+      marker: {
+        symbol: 'circle'
+      },
+      yAxis: 0,
+      data: data.map(item => parseInt(item.nets_cumulative))
+    },
+    {
+      name: 'Daily Household REgistration',
+      type: 'column',
+      color: '#4ADEDE',
+      yAxis: 0,
+      data: data.map(item => parseInt(item.no_of_nets))
+    }]
+  });
+
+}
 const NetsDistributedwithTime = (data, org_level) => {
   //console.log(data)
   Highcharts.chart('NetsDistributedwithTime', {
