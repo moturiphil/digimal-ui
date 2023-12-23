@@ -24,10 +24,7 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
-                            :pagination="{
-                              pageSize: 50,
-                              showSizeChanger: true,
-                            }"
+                            :pagination="false"
                             :dataSource="dataSource"
                             :columns="columns"
                           >
@@ -53,6 +50,14 @@
                               </td>
                             </template>
                           </a-table>
+                          <a-pagination
+                          :current="currentPage"
+                          :total="total"
+                          :pageSize="pageSize"
+                          :showSizeChanger="true"
+                          :pagination="true"
+                          @change="onPageChange($event)"
+                        />
                         </TableWrapper>
                       </div>
                     </sdCards>
@@ -112,13 +117,12 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-import authHeader from "../../../services/auth-header";
+import { computed, onMounted, ref, reactive } from "vue";
 // import worker from "../../../services/worker";
-import axios from "axios";
+import axios from '@/Axiosconfig';
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
@@ -158,30 +162,20 @@ const columns = [
     slots: { customRender: "matrix" },
   },
 ];
-export default defineComponent({
-  name: "SubLocationPosts",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-    };
-  },
-  methods: {},
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const orgTypeAssigned = ref([]);
-    const activeClass = ref("all");
+
+const currentPage = ref(1);
+const pageSize = ref(100);
+const total = ref(0)
+
+  // const visible=ref(false)
+  // confirmLoading=ref(false)
+  const { state } = useStore();
+  //const crud = computed(() => state.crud.data);
+  const isLoading = computed(() => state.crud.loading);
+  // const selectedRowKeys = ref([]);
+  const dataSource = ref([]);
+  // const orgTypeAssigned = ref([]);
+  const activeClass = ref("all");
 
     const { params, query } = useRoute();
 
@@ -190,29 +184,43 @@ export default defineComponent({
     console.log(matrix_id);
     const sublocation_name = query.name;
     const sublocation_id = query.id;
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/sub_location_posts?sub_location_org_id=${query.org_id}`;
     const isModalOpen = ref(false);
     const posts = ref([]);
 
     console.log(query)
 
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
+    // const handleChange = (tab) => {
+    //   activeClass.value = tab;
+    // };
+    onMounted(() => {//sub_location_posts?sub_location_org_id=${query.org_id}
+    getSublocationPosts();      
+    });
+    const onPageChange = async (page) => {
+        currentPage.value = page;
+        getSublocationPosts();
+        // console.log(newPage);
+      };
 
-    const postList = async () => {
+      const getSublocationPosts=()=>{
+        axios
+        .get(`sub_location_posts?sub_location_id=${query.org_id}`)
+        .then((response) => {
+          dataSource.value = response.data.data;
+          console.log(dataSource.value);
+        }).then(()=>{
+          postList();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+      }
+
+    const postList = async () => {//posts_data
       try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/posts_data`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-
+        const response = await axios.get(`get_location_posts/sub_location_id=${query.org_id}`);
+        const data = await response.data;
         console.log(data);
-
         // Modify the structure of each supervisor to include a 'label' property
         posts.value = data.data.map((post) => ({
           ...post,
@@ -224,32 +232,12 @@ export default defineComponent({
       }
     };
 
-    onMounted(() => {
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          dataSource.value = response.data.data;
-          console.log(dataSource.value);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-
-      //   // Delay the fetching of PostList by 1 seconds
-      setTimeout(() => {
-        postList();
-      }, 1000);
-    });
 
     const removeMatrix = async (id) => {
-      const removeMatrixUrl = `${process.env.VUE_APP_BASE_URL}/delete_event_matrix?matrix_id=${id}`;
+      const removeMatrixUrl = `delete_event_matrix?matrix_id=${id}`;
       console.log(id);
       try {
-        const response = await axios.delete(removeMatrixUrl, {
-          headers: authHeader(),
-        });
+        const response = await axios.delete(removeMatrixUrl);
 
         console.log(response.data);
 
@@ -275,37 +263,35 @@ export default defineComponent({
       }
     };
 
-    const removeOrgType = async (id) => {
-      const removeOrgTypeUrl = `${process.env.VUE_APP_BASE_URL}/delete_event_orgtype_matrix?matrix_id=${id}`;
-      console.log(id);
-      try {
-        const response = await axios.delete(removeOrgTypeUrl, {
-          headers: authHeader(),
-        });
+    // const removeOrgType = async (id) => {
+    //   const removeOrgTypeUrl = `delete_event_orgtype_matrix?matrix_id=${id}`;
+    //   console.log(id);
+    //   try {
+    //     const response = await axios.delete(removeOrgTypeUrl);
 
-        console.log(response.data);
+    //     console.log(response.data);
 
-        if (response.data.success) {
-          notification.success({
-            message: "Success",
-            description: response.data.message,
-          });
+    //     if (response.data.success) {
+    //       notification.success({
+    //         message: "Success",
+    //         description: response.data.message,
+    //       });
 
-          await new Promise((resolve) => {
-            setTimeout(resolve, 1500); // Wait for 1.5 seconds (adjust the time as needed)
-          });
+    //       await new Promise((resolve) => {
+    //         setTimeout(resolve, 1500); // Wait for 1.5 seconds (adjust the time as needed)
+    //       });
 
-          location.reload();
-        } else {
-          notification.error({
-            message: "Error",
-            description: response.data.message,
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    //       location.reload();
+    //     } else {
+    //       notification.error({
+    //         message: "Error",
+    //         description: response.data.message,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
 
     const openModal = (id) => {
       isModalOpen.value = true;
@@ -324,15 +310,8 @@ export default defineComponent({
           sublocation_ids: [sublocation_id],
         };
         console.log(data);
-        await fetch(`${process.env.VUE_APP_BASE_URL}/map_post_to_sublocation`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
+        await axios.post(`map_post_to_sublocation`,data)
+          .then((response) => response.data)
           .then(({ success, message }) => {
             if (success == true) {
               notification.success({
@@ -369,28 +348,4 @@ export default defineComponent({
       searchItem: "",
     });
 
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      columns,
-      formState,
-      // exportHouseHoldData,
-      handleChange,
-      activeClass,
-      sublocation_name,
-      removeMatrix,
-      orgTypeAssigned,
-      removeOrgType,
-      openModal,
-      handleCancel,
-      isModalOpen,
-      posts,
-      handleSubmit,
-    };
-  },
-  // computed: {
-  // },
-});
 </script>
