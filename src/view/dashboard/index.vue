@@ -947,7 +947,7 @@ const fetchHouseHoldsRegTrends = () => {
   dateTo.value = moment(dateTo.value).format(dateFormat.value)
   axios.get(`household_registration_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
-      let data = response.data.data.total_nets_distributed;
+      let data = response.data.data.household_registrations;
       //console.log(data.map(item => item.date.toString()))
       HouseHoldsRegistrationTrendsData.value = data
       HouseHoldsRegistrationTrendsChart(data, fileterOrgeLevel.value)
@@ -1023,14 +1023,14 @@ const HouseHoldsRegistrationTrendsChart = (data, org_level) => {
         symbol: 'circle'
       },
       yAxis: 0,
-      data: data.map(item => parseInt(item.nets_cumulative))
+      data: data.map(item => parseInt(item.registrations))
     },
     {
-      name: 'Daily Household REgistration',
+      name: 'Household Registrations',
       type: 'column',
       color: '#4ADEDE',
       yAxis: 0,
-      data: data.map(item => parseInt(item.no_of_nets))
+      data: data.map(item => parseInt(item.registrations))
     }]
   });
 
