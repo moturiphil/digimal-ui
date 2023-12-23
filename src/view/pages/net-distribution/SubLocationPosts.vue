@@ -52,7 +52,7 @@
                           </a-table>
                           <a-pagination
                           :current="currentPage"
-                          :total="total"
+                          :total="datatotal"
                           :pageSize="pageSize"
                           :showSizeChanger="true"
                           :pagination="true"
@@ -122,7 +122,7 @@ import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, reactive } from "vue";
 // import worker from "../../../services/worker";
-import axios from '@/Axiosconfig';
+import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
@@ -163,19 +163,20 @@ const columns = [
   },
 ];
 
-const currentPage = ref(1);
-const pageSize = ref(100);
-const total = ref(0)
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+// const notData=ref({})
+// const visible=ref(false)
+// const confirmLoading = ref(false)
 
-  // const visible=ref(false)
-  // confirmLoading=ref(false)
-  const { state } = useStore();
-  //const crud = computed(() => state.crud.data);
-  const isLoading = computed(() => state.crud.loading);
-  // const selectedRowKeys = ref([]);
-  const dataSource = ref([]);
-  // const orgTypeAssigned = ref([]);
-  const activeClass = ref("all");
+const { state } = useStore();
+// const crud = computed(() => state.crud.data);
+const isLoading = computed(() => state.crud.loading);
+// const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+// const orgTypeAssigned = ref([]);
+const activeClass = ref("all");
 
     const { params, query } = useRoute();
 
@@ -192,55 +193,52 @@ const total = ref(0)
     // const handleChange = (tab) => {
     //   activeClass.value = tab;
     // };
-    onMounted(() => {//sub_location_posts?sub_location_org_id=${query.org_id}
-    getSublocationPosts();      
+
+const onPageChange = async (page) => {
+  currentPage.value = page;
+  getSublocationPosts();
+}
+
+const postList = async () => {//posts_data
+  try {
+    const response = await axios.get(`get_location_posts/sub_location_id=${query.org_id}`);
+    const data = await response.data;
+    console.log(data);
+    // Modify the structure of each supervisor to include a 'label' property
+    posts.value = data.data.map((post) => ({
+      ...post,
+      label: `${post.name},`,
+      //    ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+onMounted(() => {
+  getSublocationPosts();
+});
+
+const getSublocationPosts = () => {
+      axios
+    .get(`sub_location_posts?sub_location_org_id=${query.org_id}`)
+    .then((response) => {
+      dataSource.value = response.data.data;
+      console.log(dataSource.value);
+    }).then(() => {
+      postList();
+    })
+    .catch((error) => {
+      console.error(error);
     });
-    const onPageChange = async (page) => {
-        currentPage.value = page;
-        getSublocationPosts();
-        // console.log(newPage);
-      };
-
-      const getSublocationPosts=()=>{
-        axios
-        .get(`sub_location_posts?sub_location_id=${query.org_id}`)
-        .then((response) => {
-          dataSource.value = response.data.data;
-          console.log(dataSource.value);
-        }).then(()=>{
-          postList();
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-
-      }
-
-    const postList = async () => {//posts_data
-      try {
-        const response = await axios.get(`get_location_posts/sub_location_id=${query.org_id}`);
-        const data = await response.data;
-        console.log(data);
-        // Modify the structure of each supervisor to include a 'label' property
-        posts.value = data.data.map((post) => ({
-          ...post,
-          label: `${post.name},`,
-          //    ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
-        }));
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
+    }
 
     const removeMatrix = async (id) => {
       const removeMatrixUrl = `delete_event_matrix?matrix_id=${id}`;
       console.log(id);
       try {
         const response = await axios.delete(removeMatrixUrl);
-
         console.log(response.data);
-
         if (response.data.success) {
           notification.success({
             message: "Success",
@@ -267,7 +265,9 @@ const total = ref(0)
     //   const removeOrgTypeUrl = `delete_event_orgtype_matrix?matrix_id=${id}`;
     //   console.log(id);
     //   try {
-    //     const response = await axios.delete(removeOrgTypeUrl);
+    //     const response = await axios.delete(removeOrgTypeUrl, {
+    //       headers: authHeader(),
+    //     });
 
     //     console.log(response.data);
 
@@ -347,5 +347,4 @@ const total = ref(0)
     const formState = reactive({
       searchItem: "",
     });
-
 </script>
