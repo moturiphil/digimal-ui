@@ -63,7 +63,7 @@
                         </figure>
                     </a-col>
                     <a-divider></a-divider> -->
-                    <a-col :xxl="24" :md="24" :sm="24" :xs="24">
+                    <!-- <a-col :xxl="24" :md="24" :sm="24" :xs="24">
                         <figure class="highcharts-figure">
                             <div id="EstimatedvsRegisteredHouseholdpouplation"></div>
                             <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
@@ -94,7 +94,7 @@
                                 </tbody>
                             </table>
                         </figure>
-                    </a-col>
+                    </a-col> -->
                     <a-divider></a-divider>
                     <a-col :xxl="24" :md="24" :sm="24" :xs="24">
                         <figure class="highcharts-figure">
@@ -438,10 +438,8 @@ var estimatedHouseholds=ref([
 
 const addEstimatedVars = (data) => {
   estimatedHouseholds.value.forEach((county) => {
-    console.log(county)
     const matchingCounty = data.find((item) => item.name.includes(county.name));
-    console.log(matchingCounty)
-      if (subcounties.value !==null) {
+      if (subcounties.value) {
         county.subcounties.forEach((subCounty) => {
           const matchingSubCounty = data.find((item) => item.name.includes(subCounty.name));
           if (matchingSubCounty) {
@@ -518,14 +516,22 @@ const fetchInitialChartData = async () => {
             //     newChartData.value.map(item => item.name),//cats
             //     access_level.value.level.level_name,//level
             // )
+            let scatterData = [];
+            newChartData.value.forEach((item, index) => {
+                let x = parseInt(item.households_registered);
+                let y = parseInt(item.estimated_households);
+                let ratio = parseFloat((x / y) * 100).toFixed(2)
+                scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0])
+            })
             EstimatedvsRegisteredHouseholds(
                newChartData.value.map(item => parseInt(item.estimated_households)),//estimmated
-               newChartData.value.map(item => parseInt(item.all_hh_members)),//registration
+               newChartData.value.map(item => parseInt(item.households_registered)),//registration
+               scatterData,
                newChartData.value.map(item => item.name),//cats
                access_level.value.level.level_name,//level
             )
             EstimatedvsRegisteredHouseholdSizeChart(
-                newChartData.value.map(item => parseInt(parseInt(item.estimated_households)/parseInt(item.households_registered))),//estimmated
+                newChartData.value.map(item => parseInt(parseInt(item.all_hh_members)/parseInt(item.estimated_households))),//estimmated
                 newChartData.value.map(item => parseInt(item.avg_hh_size)),//registration
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
@@ -664,22 +670,32 @@ const fetchChildData = async (org_id, org_level) => {
                     }
                     fileterOrgeLevel.value = org_level
                     //column Subcounty comparison
-                    let rgstd = newChartData.value.map(item => parseInt(item.all_hh_members))//registered
-                    let estmtd = newChartData.value.map(item => parseInt(item.households_served))//served
-                    let cats = newChartData.value.map(item => item.name)//cats
                     org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
-                    EstimatedvsRegisteredHouseholdpouplation(estmtd,rgstd,cats,org_level)
+                    // EstimatedvsRegisteredHouseholdpouplation(estmtd,rgstd,cats,org_level)
                     //combine bar line bar Subcounty comparison
                     //pie chars Registered households by sub county
                     // let TargetedvsCoveredChartData = newChartData.value.map(item => ({ name: item.name, y: item.all_hh_members }))
                     // // TargetedvsCoveredChart([{ name: "Counties Covered", y: 10 }, { name: "Gap", y: 12 }])
                     // TargetedvsCoveredChartData.value = TargetedvsCoveredChartData
-                    EstimatedvsRegisteredHouseholds(estmtd, rgstd, cats, org_level)
+                    let scatterData = [];
+                    newChartData.value.forEach((item, index) => {
+                        let x = parseInt(item.households_registered);
+                        let y = parseInt(item.estimated_households);
+                        let ratio = parseFloat((x / y) * 100).toFixed(2)
+                        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0])
+                    })
+                    EstimatedvsRegisteredHouseholds(
+                    newChartData.value.map(item => parseInt(item.estimated_households)),//estimmated
+                    newChartData.value.map(item => parseInt(item.households_registered)),//registration
+                    scatterData,
+                    newChartData.value.map(item => item.name),//cats
+                    org_level,//level
+                    )
                     fileterOrgeLevel.value = org_level
                     EstimatedvsRegisteredHouseholdSizeChart(
-                        newChartData.value.map(item=>parseInt(item.avg_hh_size)+5),//estimmated
+                        newChartData.value.map(item=>parseInt(parseInt(item.all_hh_members)/parseInt(item.estimated_households))),//estimmated
                         newChartData.value.map(item => parseInt(item.avg_hh_size)),//registration
-                        cats,//cats
+                        newChartData.value.map(item => item.name),//cats
                         org_level,//level
                     )
                     // netsReqvsDeliveredChart(
@@ -829,7 +845,7 @@ const HouseHoldsRegistrationTrendsChart = (data, org_level) => {
       },
     },
     title: {
-      text: `Households Registration trends by ${org_level}`,
+      text: `Households Registration trends at ${org_level} level`,
       align: 'left',
     },
     subtitle: {
@@ -924,197 +940,247 @@ const HouseHoldsRegistrationTrendsChart = (data, org_level) => {
 //         }]
 //     });
 // }
-const EstimatedvsRegisteredHouseholdpouplation = (estimated, rgstd, cats, orglevel) => {
-    Highcharts.chart('EstimatedvsRegisteredHouseholdpouplation', {
-        chart: {
-            type: 'column'
+// const EstimatedvsRegisteredHouseholdpouplation = (estimated, rgstd, cats, orglevel) => {
+//     Highcharts.chart('EstimatedvsRegisteredHouseholdpouplation', {
+//         chart: {
+//             type: 'column'
+//         },
+//         credits: {
+//             enabled:false,
+//         },
+//         // Custom option for templates
+//         cats,
+//         title: {
+//             text: 'Estimated Population vs Registered Population by ' + orglevel,
+//             align: 'left'
+//         },
+//         plotOptions: {
+//             series: {
+//                 grouping: false,
+//                 borderWidth: 0
+//             }
+//         },
+//         legend: {
+//             layout: 'horizontal',
+//             align: 'center',
+//             x: 80,
+//             verticalAlign: 'top',
+//             y: 10,
+//             floating: true,
+//             backgroundColor:
+//                 Highcharts.defaultOptions.legend.backgroundColor || // theme
+//                 'rgba(255,255,255,0.25)'
+//         },
+//         tooltip: {
+//             shared: true,
+//             headerFormat: '<span style="font-size: 15px">' +
+//                 '{series.chart.options.cats.(point.key).name}' +
+//                 '</span><br/>',
+//             pointFormat: '<span style="color:{point.color}">\u25CF</span> ' +
+//                 '{series.name}: <b>{point.y} records</b><br/>'
+//         },
+//         xAxis: {
+//             type: 'category',
+//             accessibility: {
+//                 description: 'Distribution by Administrative Level'
+//             },
+//             //max: 4,
+//             labels: {
+//                 useHTML: true,
+//                 animate: true,
+//                 format: '{chart.options.cats.(value)}<br>' +
+//                     '<span class="f32">' +
+//                     '<span style="display:inline-block;height:32px;vertical-align:text-top;" ' +
+//                     'class="flag {value}"></span></span>',
+//                 style: {
+//                     textAlign: 'center'
+//                 }
+//             }
+//         },
+//         yAxis: [{
+//             title: {
+//                 text: 'Population Count'
+//             },
+//             showFirstLabel: false
+//         }],
+//         series: [{
+//             color: '#3498db',
+//             pointPlacement: -0.2,
+//             linkedTo: 'main',
+//             data: estimated,
+//             name: 'Estimated Population'
+//         }, {
+//             name: 'Registered Population',
+//             id: 'main',
+//             dataSorting: {
+//                 enabled: true,
+//                 matchByName: true
+//             },
+//             dataLabels: [{
+//                 enabled: true,
+//                 inside: true,
+//                 style: {
+//                     fontSize: '16px'
+//                 }
+//             }],
+//             data: rgstd,
+//             color: '#4ADEDE',
+//         }],
+//         exporting: {
+//             allowHTML: true
+//         }
+//     });
+// }
+const EstimatedvsRegisteredHouseholds = (estimated, registered, scatter_data, cats, orglevel) => {
+  Highcharts.chart('EstimatedvsRegisteredHouseholds', {
+    chart: {
+      zoomType: 'xy'
+    },
+    credits: {
+      text: 'Powered by HealthIT KE', // Custom text
+      href: 'https://unes.co.ke', // Custom link
+      target: '_blank',
+      position: {
+        align: 'right',
+        x: -10,
+        verticalAlign: 'bottom',
+        y: -5,
+      },
+    },
+    title: {
+      text: 'Estimated Households vs Registered Hoseholds at ' + orglevel+' level',
+      align: 'left'
+    },
+    xAxis: [{
+      categories: cats,
+      crosshair: true
+    }],
+    yAxis: [{ // Primary yAxis
+      labels: {
+        format: '{value}',
+        style: {
+          color: Highcharts.getOptions().colors[2]
+        }
+      },
+      opposite: true
+
+    }, { // Secondary yAxis
+      gridLineWidth: 0,
+      title: {
+        text: 'Count ',
+        style: {
+          color: Highcharts.getOptions().colors[0]
+        }
+      },
+      labels: {
+        style: {
+          color: Highcharts.getOptions().colors[0]
+        }
+      }
+
+    }, { // Tertiary yAxis
+      gridLineWidth: 0,
+      title: {
+        text: 'Percentage registered',
+        style: {
+          color: '#004225',
+        }
+      },
+      labels: {
+        format: '{value:.2f}%',
+        style: {
+          color: '#004225',
+        }
+      },
+      max: 100,
+      min: 0,
+      opposite: true
+    }],
+    tooltip: {
+      shared: true
+    },
+    legend: {
+      layout: 'vertical',
+      align: 'left',
+      x: 80,
+      verticalAlign: 'top',
+      y: 20,
+      floating: true,
+      backgroundColor:
+        Highcharts.defaultOptions.legend.backgroundColor || // theme
+        'rgba(255,255,255,0.25)'
+    },
+    series: [{
+      name: 'Estimated Households',
+      type: 'column',
+      yAxis: 1,
+      data: estimated,
+      tooltip: {
+        valueSuffix: ''
+      }
+
+    }, {
+      name: 'Registered Households',
+      type: 'column',
+      yAxis: 1,
+      data: registered,
+      color: '#4ADEDE',
+      marker: {
+        enabled: false
+      },
+      dashStyle: 'shortdot',
+      tooltip: {
+        valueSuffix: ''
+      }
+
+    }, {
+      name: 'Precentage Registered',
+      type: 'scatter',
+      yAxis: 2,
+      data: scatter_data,
+      color: '#004225',
+      tooltip: {
+        pointFormat: '{point.name} <b>{point.y:.2f}%</b>'
+      },
+      marker: {
+        radius: 6, // Set the radius to adjust the size of scatter plot dots
+      },
+    }],
+    responsive: {
+      rules: [{
+        condition: {
+          maxWidth: 500
         },
-        credits: {
-            enabled:false,
-        },
-        // Custom option for templates
-        cats,
-        title: {
-            text: 'Estimated Population vs Registered Population by ' + orglevel,
-            align: 'left'
-        },
-        plotOptions: {
-            series: {
-                grouping: false,
-                borderWidth: 0
-            }
-        },
-        legend: {
+        chartOptions: {
+          legend: {
+            floating: false,
             layout: 'horizontal',
             align: 'center',
-            x: 80,
-            verticalAlign: 'top',
-            y: 10,
-            floating: true,
-            backgroundColor:
-                Highcharts.defaultOptions.legend.backgroundColor || // theme
-                'rgba(255,255,255,0.25)'
-        },
-        tooltip: {
-            shared: true,
-            headerFormat: '<span style="font-size: 15px">' +
-                '{series.chart.options.cats.(point.key).name}' +
-                '</span><br/>',
-            pointFormat: '<span style="color:{point.color}">\u25CF</span> ' +
-                '{series.name}: <b>{point.y} records</b><br/>'
-        },
-        xAxis: {
-            type: 'category',
-            accessibility: {
-                description: 'Distribution by Administrative Level'
-            },
-            //max: 4,
+            verticalAlign: 'bottom',
+            x: 0,
+            y: 0
+          },
+          yAxis: [{
             labels: {
-                useHTML: true,
-                animate: true,
-                format: '{chart.options.cats.(value)}<br>' +
-                    '<span class="f32">' +
-                    '<span style="display:inline-block;height:32px;vertical-align:text-top;" ' +
-                    'class="flag {value}"></span></span>',
-                style: {
-                    textAlign: 'center'
-                }
-            }
-        },
-        yAxis: [{
-            title: {
-                text: 'Population Count'
+              align: 'right',
+              x: 0,
+              y: -6
             },
-            showFirstLabel: false
-        }],
-        series: [{
-            color: '#3498db',
-            pointPlacement: -0.2,
-            linkedTo: 'main',
-            data: estimated,
-            name: 'Estimated Population'
-        }, {
-            name: 'Registered Population',
-            id: 'main',
-            dataSorting: {
-                enabled: true,
-                matchByName: true
-            },
-            dataLabels: [{
-                enabled: true,
-                inside: true,
-                style: {
-                    fontSize: '16px'
-                }
-            }],
-            data: rgstd,
-            color: '#4ADEDE',
-        }],
-        exporting: {
-            allowHTML: true
-        }
-    });
-}
-const EstimatedvsRegisteredHouseholds = (estimated, rgstd, cats, orglevel) => {
-    Highcharts.chart('EstimatedvsRegisteredHouseholds', {
-        chart: {
-            type: 'column'
-        },
-        credits: {
-            text: 'Powered by HealthIT KE', // Custom text
-            href: 'https://unes.co.ke', // Custom link
-            target:'_blank',
-            position: {
-                align: 'right',
-                x: -10,
-                verticalAlign: 'bottom',
-                y: -5,
-            },
-        },
-        // Custom option for templates
-        cats,
-        title: {
-            text: 'Estimated Households vs Registered Hoseholds by ' + orglevel,
-            align: 'left'
-        },
-        plotOptions: {
-            series: {
-                grouping: false,
-                borderWidth: 0
-            }
-        },
-        legend: {
-            layout: 'horizontal',
-            align: 'center',
-            x: 80,
-            verticalAlign: 'top',
-            y: 10,
-            floating: true,
-            backgroundColor:
-                Highcharts.defaultOptions.legend.backgroundColor || // theme
-                'rgba(255,255,255,0.25)'
-        },
-        tooltip: {
-            shared: true,
-            headerFormat: '<span style="font-size: 15px">' +
-                '{series.chart.options.cats.(point.key).name}' +
-                '</span><br/>',
-            pointFormat: '<span style="color:{point.color}">\u25CF</span> ' +
-                '{series.name}: <b>{point.y} records</b><br/>'
-        },
-        xAxis: {
-            type: 'category',
-            accessibility: {
-                description: 'Distribution by Administrative Level'
-            },
-            //max: 4,
+            showLastLabel: false
+          }, {
             labels: {
-                useHTML: true,
-                animate: true,
-                format: '{chart.options.cats.(value)}<br>' +
-                    '<span class="f32">' +
-                    '<span style="display:inline-block;height:32px;vertical-align:text-top;" ' +
-                    'class="flag {value}"></span></span>',
-                style: {
-                    textAlign: 'center'
-                }
-            }
-        },
-        yAxis: [{
-            title: {
-                text: 'Household Count'
+              align: 'left',
+              x: 0,
+              y: -6
             },
-            showFirstLabel: false
-        }],
-        series: [{
-            pointPlacement: -0.2,
-            linkedTo: 'main',
-            data: estimated,
-            name: 'Estimated Households',
-            stack: 'Estimated',
-            color: '#3498db',//#
-        }, {
-            name: 'Registered Households',
-            id: 'main',
-            dataSorting: {
-                enabled: true,
-                matchByName: true
-            },
-            dataLabels: [{
-                enabled: true,
-                inside: true,
-                style: {
-                    fontSize: '16px'
-                }
-            }],
-            data: rgstd,
-            stack: 'Registered',
-            color: '#4ADEDE',//
-        }],
-        exporting: {
-            allowHTML: true
+            showLastLabel: false
+          }, {
+            visible: false
+          }]
         }
-    });
+      }]
+    }
+  });
 }
 const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level) => {
     Highcharts.chart('EstimatedvsRegisteredHouseholdSizeChart', {
@@ -1141,7 +1207,7 @@ const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level)
         },
         cats,
         title: {
-            text: 'Estimated Household size vs Household size based registration by '+org_level,
+            text: 'Estimated Household size vs Household size based on registration at '+org_level+' level',
             align: 'left'
         },
 
@@ -1331,7 +1397,7 @@ const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level)
 //             },
 //         },
 //         title: {
-//             text: 'Nets PerCapita by '+orglevel,
+//             text: 'Nets PerCapita at '+orglevel+' level',
 //             align: 'left'
 //         },
 //         xAxis: [{
@@ -1461,7 +1527,6 @@ const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level)
 //             }]
 //         }
 //     });
-
 // }
 </script>
 <style scoped>
