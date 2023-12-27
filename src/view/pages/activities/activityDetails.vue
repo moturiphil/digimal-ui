@@ -395,7 +395,7 @@ export default defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
     const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
     // const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/generateActivityParticipantCSV?activity_id=${query.code}`;
+    const export_participants_url = `${process.env.VUE_APP_BASE_URL}/activity_participants_export?activity_code=${query.code}`;
 
     const exportParticipants = async () => {
       try {
@@ -413,7 +413,7 @@ export default defineComponent({
 
         const fileBlob = await response.blob();
         console.log(response);
-        const fileName = "Activity Participants.csv";
+        const fileName = "Activity Participants.xlsx";
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(new Blob([fileBlob]));
         link.setAttribute("download", fileName);
