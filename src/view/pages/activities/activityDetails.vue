@@ -413,7 +413,7 @@ export default defineComponent({
 
         const fileBlob = await response.blob();
         console.log(response);
-        const fileName = "Activity Participants.xlsx";
+        const fileName = "Activity Participants.csv";
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(new Blob([fileBlob]));
         link.setAttribute("download", fileName);

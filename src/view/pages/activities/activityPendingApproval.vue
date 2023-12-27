@@ -20,11 +20,8 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <!-- Activity data table -->
-                <a-table
-                  :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                >
+                <a-table :pagination="{ pageSize: 100, showSizeChanger: true }" :dataSource="dataSource"
+                  :columns="columns">
                   <!-- Custom template for activity column -->
                   <template #activity="{ record }">
                     <td>
@@ -32,19 +29,14 @@
                       <div class="table-actions">
                         <!-- Button for viewing confirmed participants -->
                         <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/activity/pending-approval-details/${record.id}`,
-                              query: {
-                                id: record.id,
-                                name: record.name,
-                                code: record.activity_code,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
+                          <router-link :to="{
+                            path: `/activity/pending-approval-details/${record.id}`,
+                            query: {
+                              id: record.id,
+                              name: record.name,
+                              code: record.activity_code,
+                            },
+                          }" class="btn-icon" type="info" shape="circle">
                             Activity Details
                           </router-link>
                         </sdButton>
@@ -143,7 +135,11 @@ const ActivityTable = defineComponent({
 
         // Format the data before assigning it to dataSource
         dataSource.value = data.data.data.map((item) => {
-          const countyName = item.county_id[0].name;
+          //const countyName = item.county_id[0].name;
+          const countyName =
+            item.county_id.length > 0
+              ? item.county_id.map((County) => County.name).join(", ")
+              : "N/A";
           const subCountyName =
             item.sub_county_id.length > 0
               ? item.sub_county_id.map((subCounty) => subCounty.name).join(", ")

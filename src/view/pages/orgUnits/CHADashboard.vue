@@ -47,6 +47,7 @@
       >
         <template v-if="selectedKeys[0] === '1'">
           <h2>Distribution Posts</h2>
+<<<<<<< HEAD
           <!-- <a-table :columns="transfersColumns" :data-source="transfersData" /> -->
           <div class="table-responsive">
             <a-table
@@ -54,6 +55,26 @@
               :data-source="transfersData"
               :scroll="{ x: 'max-content' }"
             />
+=======
+          <!-- <a-table :columns="transfersColumns" :data-source="subLocationData" /> -->
+          <div class="table-responsive">
+            <TableWrapper>
+            <a-table
+              :columns="transfersColumns"
+              :data-source="subLocationData"
+              :scroll="{ x: 'max-content' }"
+              :pagination="false"
+            />
+            <a-pagination
+              :current="currentPage"
+              :total="datatotal"
+              :pageSize="pageSize"
+              :showSizeChanger="true"
+              :pagination="true"
+              @change="onLTablePageChange($event)"
+            />
+            </TableWrapper>
+>>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
           </div>
         </template>
         <template v-else-if="selectedKeys[0] === '2'">
@@ -76,13 +97,25 @@
 </template>
 
 <script setup>
+<<<<<<< HEAD
 import { ref, onMounted } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
+=======
+import { ref, onMounted, watch } from "vue";
+//   import { fetchData } from "@/api"; // Replace with your actual API module
+import axios from "@/Axiosconfig";
+import { TableWrapper } from "../../styled";
+
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0)
+>>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
 
 const selectedKeys = ref(["2"]);
 
 const transfersColumns = ref([
   {
+<<<<<<< HEAD
     title: "From Post",
     dataIndex: "from_post_name",
     key: "id",
@@ -119,10 +152,43 @@ const transfersColumns = ref([
     key: "id",
     slots: { customRender: "action" },
   },
+=======
+    title: "Distribution Post",
+    dataIndex: "name",
+    key: "id",
+  },
+  {
+    title: "Post Code",
+    dataIndex: "post_code",
+    key: "id",
+  },
+  {
+    title: "Post Supervisor",
+    dataIndex: "post_supervisor_user_id",
+    key: "id",
+  },
+  {
+    title: "Distribution Start Date",
+    dataIndex: "distribution_start_date",
+    key: "id",
+  },
+  {
+    title: "Distribution End Date",
+    dataIndex: "distribution_end_date",
+    key: "id",
+  },
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",
+  //   key: "id",
+  //   slots: { customRender: "action" },
+  // },
+>>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
 ]);
 
 const villagesColumns = ref([
   {
+<<<<<<< HEAD
     title: "From Post",
     dataIndex: "from_post_name",
     key: "id",
@@ -151,10 +217,49 @@ const villagesColumns = ref([
 ]);
 const villagesData = ref([]);
 
+=======
+    title: "Village",
+    dataIndex: "name",
+    key: "id",
+  },
+  {
+    title: "Code",
+    dataIndex: "code",
+    key: "id",
+  },
+  {
+    title: "No of CHPs",
+    dataIndex: "no_of_chp_registered",
+    key: "id",
+  },
+  {
+    title: "No of Village Elders",
+    dataIndex: "no_of_ve_registered",
+    key: "id",
+  },
+  {
+    title: "No of Households",
+    dataIndex: "no_of_registered_hh",
+    key: "id",
+  },
+  // {
+  //   title: "Action",
+  //   dataIndex: "action",
+  //   key: "id",
+  //   slots: { customRender: "action" },
+  // },
+]);
+
+const villagesData = ref([]);
+
+const subLocationData = ref([]);
+
+>>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
 const selectMenuItem = (key) => {
   selectedKeys.value = [key];
 };
 
+<<<<<<< HEAD
 onMounted(async () => {
   // Fetch data for Distribution Post table
   if (selectedKeys.value[0] === "1") {
@@ -164,6 +269,53 @@ onMounted(async () => {
   // Fetch data for Villages table
   if (selectedKeys.value[0] === "2") {
     //   villagesData.value = await  fetchData('/villages-endpoint');
+=======
+// Initial load: Fetch villages data
+onMounted(async () => {
+  await fetchVillagesData();
+});
+
+const onLTablePageChange = async (page) => {
+  currentPage.value = page
+  try {
+    const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
+    subLocationData.value = response.data.data;
+    datatotal.value = response.data.pagination.total;
+  } catch (error) {
+    console.error(error);
+  }
+}
+// Function to fetch village data
+const fetchVillagesData = async () => {
+  try {
+    const response = await axios.get(`villages/list`);
+    const data = await response.data;
+    console.log(data);
+    villagesData.value = data.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Function to fetch sub location data
+const fetchSubLocationData = async () => {
+  try {
+    const response = await axios.get(`sub_location_posts`);
+    const data = await response.data;
+    console.log(data);
+    subLocationData.value = data.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Watch for changes in selectedKeys
+watch(selectedKeys, async (newSelectedKeys) => {
+  if (newSelectedKeys[0] === "1") {
+    await fetchSubLocationData();
+  } else if (newSelectedKeys[0] === "2") {
+    await fetchVillagesData();
+>>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
   }
 });
 </script>
