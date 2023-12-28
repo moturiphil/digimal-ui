@@ -614,53 +614,65 @@ const fetchChildData = async (org_id, org_level) => {
     }
     await axios.get(`${fetchUrl}`)
         .then(response => {
-            let data = response.data.message;
-            if (org_level == 'country') {//get counties
-                counties.value = data.map(x => ({
-                    value: x.org_id,
-                    label: x.name
-                }));
-                org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
-                counties.value.splice(0, 1)
-            } else if (org_level == 'county') {//get subcounties
-                subcounties.value = data.map(x => ({
-                    value: x.org_id,
-                    label: x.name
-                }));
-                org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
-            } else if (org_level == 'subcounty') {//get wards
-                wards.value = data.map(x => ({
-                    value: x.org_id,
-                    label: x.name
-                }));
-                org_ids.value = [
-                    ...org_ids.value,
-                    ...data
-                        .map(x => ({ org_id: x.org_id, id: x.id }))
-                        .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-                ];
-            } else if (org_level == 'ward') {//get locations
-                locations.value = data.map(x => ({
-                    value: x.org_id,
-                    label: x.name
-                }));
-                org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
-            } else if (org_level == 'location') {//get sublocations
-                sublocations.value = data.map(x => ({
-                    value: x.org_id,
-                    label: x.name
-                }));
-                org_ids.value = [
-                    ...org_ids.value,
-                    ...data
-                        .map(x => ({ org_id: x.org_id, id: x.id }))
-                        .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-                ];
-            }
+        let data = response.data.message;
+        if (org_level == 'country') {//get counties
+        counties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
+        counties.value.splice(0, 1)
+      } else if (org_level == 'county') {//get subcounties
+        subcounties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'subcounty') {//get wards
+        wards.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'ward') {//get locations
+        locations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'location') {//get sublocations
+        sublocations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      }
         }).then(async () => {
             await axios.get(`${statUrl}`)
                 .then(response => {
                     let data=response.data.data
+                    fileterOrgeLevel.value = org_level
+                    org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
                     //data=data.filter(e=>selectedCounties.value.includes(e.name))
                     let newdata=addEstimatedVars(data)
                     console.log(newdata)
@@ -668,9 +680,7 @@ const fetchChildData = async (org_id, org_level) => {
                     if (org_level === 'country') {
                         newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
                     }
-                    fileterOrgeLevel.value = org_level
                     //column Subcounty comparison
-                    org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
                     // EstimatedvsRegisteredHouseholdpouplation(estmtd,rgstd,cats,org_level)
                     //combine bar line bar Subcounty comparison
                     //pie chars Registered households by sub county
