@@ -222,42 +222,6 @@ const event_name = plainquery.name;
 // const event_id = query.id;
 const event_code = plainquery.event_code;
 console.log(event_code);
-// const notData = ref(null);
-// const current = ref(0);
-// const pageSize = ref(0);
-// const visible = ref(false);
-// const confirmLoading = ref(false);
-// const modalType = ref('primary');
-// const colorVisible = ref(false);
-// const households = ref([]);
-// const eventName = ref('');
-
-// const searchData = computed(() => {
-//   return this.$store.state.headerSearch.data;
-// });
-
-// const handleSearch = (searchText) => {
-//   const data = searchData.value.filter((item) =>
-//     item.title.toUpperCase().startsWith(searchText.toUpperCase())
-//   );
-//   notData.value = data;
-// };
-
-// const onShowSizeChange = (current, pageSize) => {
-//   current.value = current;
-//   pageSize.value = pageSize;
-// };
-
-// const handleCancel = () => {
-//   isModalOpen.value = false;
-//   visible.value = false;
-//   colorVisible.value = false;
-// };
-
-// // Watch for changes in searchData and update notData accordingly
-// watch(searchData, () => {
-//   handleSearch();
-// });
 
 const { state } = useStore();
 // const crud = computed(() => state.crud.data);

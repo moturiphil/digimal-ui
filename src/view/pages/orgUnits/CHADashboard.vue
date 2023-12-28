@@ -49,13 +49,36 @@
           <h2>Distribution Posts</h2>
           <!-- <a-table :columns="transfersColumns" :data-source="subLocationData" /> -->
           <div class="table-responsive">
-            <TableWrapper>
             <a-table
               :columns="transfersColumns"
               :data-source="subLocationData"
               :scroll="{ x: 'max-content' }"
               :pagination="false"
-            />
+            >
+              <template #posts="{ record }">
+                <td>
+                  <!-- Buttons for viewing confirmed and pending participants -->
+                  <div class="table-actions">
+                    <!-- Button for viewing confirmed participants -->
+                    <sdButton size="extra-small" type="success">
+                      <router-link
+                        :to="{
+                          path: `/posts/hh/${record.id}`,
+                          query: {
+                            id: record.id,
+                          },
+                        }"
+                        class="btn-icon"
+                        type="info"
+                        shape="circle"
+                      >
+                        View Households
+                      </router-link>
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
             <a-pagination
               :current="currentPage"
               :total="datatotal"
@@ -64,7 +87,6 @@
               :pagination="true"
               @change="onLTablePageChange($event)"
             />
-            </TableWrapper>
           </div>
         </template>
         <template v-else-if="selectedKeys[0] === '2'">
@@ -75,7 +97,31 @@
               :columns="villagesColumns"
               :data-source="villagesData"
               :scroll="{ x: 'max-content' }"
-            />
+            >
+              <template #villages="{ record }">
+                <td>
+                  <!-- Buttons for viewing confirmed and pending participants -->
+                  <div class="table-actions">
+                    <!-- Button for viewing confirmed participants -->
+                    <sdButton size="extra-small" type="success">
+                      <router-link
+                        :to="{
+                          path: `/villages/hh/${record.id}`,
+                          query: {
+                            id: record.id,
+                          },
+                        }"
+                        class="btn-icon"
+                        type="info"
+                        shape="circle"
+                      >
+                        View Households
+                      </router-link>
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
           </div>
         </template>
       </div>
@@ -90,11 +136,11 @@
 import { ref, onMounted, watch } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
 import axios from "@/Axiosconfig";
-import { TableWrapper } from "../../styled";
+// import { TableWrapper } from "../../styled";
 
 var currentPage = ref(1);
 var pageSize = ref(100);
-var datatotal = ref(0)
+var datatotal = ref(0);
 
 const selectedKeys = ref(["2"]);
 
@@ -124,12 +170,12 @@ const transfersColumns = ref([
     dataIndex: "distribution_end_date",
     key: "id",
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "posts",
+    slots: { customRender: "posts" },
+  },
 ]);
 
 const villagesColumns = ref([
@@ -158,12 +204,12 @@ const villagesColumns = ref([
     dataIndex: "no_of_registered_hh",
     key: "id",
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "villages",
+    slots: { customRender: "villages" },
+  },
 ]);
 
 const villagesData = ref([]);
@@ -180,15 +226,17 @@ onMounted(async () => {
 });
 
 const onLTablePageChange = async (page) => {
-  currentPage.value = page
+  currentPage.value = page;
   try {
-    const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
+    const response = await axios.get(
+      `gf_events?page=${page}&per_page=${pageSize.value}`
+    );
     subLocationData.value = response.data.data;
     datatotal.value = response.data.pagination.total;
   } catch (error) {
     console.error(error);
   }
-}
+};
 // Function to fetch village data
 const fetchVillagesData = async () => {
   try {
