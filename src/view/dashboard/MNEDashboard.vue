@@ -824,7 +824,7 @@ const fetchHouseHoldsRegTrends = () => {
   //format date
   dateFrom.value = moment(dateFrom.value).format(dateFormat.value)
   dateTo.value = moment(dateTo.value).format(dateFormat.value)
-  axios.get(`household_registration_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
+  axios.get(`household_registration_trends?location_id=1&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
       let data = response.data.data.household_registrations;
       //console.log(data.map(item => item.date.toString()))
