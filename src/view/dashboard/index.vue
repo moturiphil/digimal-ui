@@ -597,7 +597,7 @@ const fetchInitialChartData = async () => {
       dateTo.value = moment(currentDate).format(dateFormat.value);
       fileterOrgeLevel.value = access_level.value.level.level_name
       NetsChartData.value = newChartData.value
-      fetchNetsDistributed()
+      fetchNetsDistributed();
     }).catch(error => {
       notification.error({
         message: `Error!`,
@@ -859,9 +859,6 @@ const exportChartsToPDF = async () => {
   // printMode.value = false;
   window.location.reload()
 };
-
-// Call the function to export charts to PDF
-//exportChartsToPDF();
 //chart functions
 const handleFilterChange = () => {
   const currentDate = new Date();
@@ -895,9 +892,6 @@ const handleFilterChange = () => {
   }
   //fetch data
   fetchNetsDistributed()
-  // console.log(dateFrom)
-  // console.log(dateTo)
-
 }
 const fetchNetsDistributed = () => {
   //format date
@@ -916,6 +910,8 @@ const fetchNetsDistributed = () => {
       });
     })
 }
+
+
 
 watch(selectedFilter, handleFilterChange)
 const NetsDistributedwithTime = (data, org_level) => {

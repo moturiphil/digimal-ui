@@ -49,11 +49,22 @@
           <h2>Distribution Posts</h2>
           <!-- <a-table :columns="transfersColumns" :data-source="subLocationData" /> -->
           <div class="table-responsive">
+            <TableWrapper>
             <a-table
               :columns="transfersColumns"
               :data-source="subLocationData"
               :scroll="{ x: 'max-content' }"
+              :pagination="false"
             />
+            <a-pagination
+              :current="currentPage"
+              :total="datatotal"
+              :pageSize="pageSize"
+              :showSizeChanger="true"
+              :pagination="true"
+              @change="onLTablePageChange($event)"
+            />
+            </TableWrapper>
           </div>
         </template>
         <template v-else-if="selectedKeys[0] === '2'">
@@ -78,7 +89,12 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
-import authHeader from "../../../services/auth-header";
+import axios from "@/Axiosconfig";
+import { TableWrapper } from "../../styled";
+
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0)
 
 const selectedKeys = ref(["2"]);
 
@@ -149,6 +165,7 @@ const villagesColumns = ref([
   //   slots: { customRender: "action" },
   // },
 ]);
+
 const villagesData = ref([]);
 
 const subLocationData = ref([]);
@@ -157,17 +174,26 @@ const selectMenuItem = (key) => {
   selectedKeys.value = [key];
 };
 
+// Initial load: Fetch villages data
+onMounted(async () => {
+  await fetchVillagesData();
+});
+
+const onLTablePageChange = async (page) => {
+  currentPage.value = page
+  try {
+    const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
+    subLocationData.value = response.data.data;
+    datatotal.value = response.data.pagination.total;
+  } catch (error) {
+    console.error(error);
+  }
+}
 // Function to fetch village data
 const fetchVillagesData = async () => {
   try {
-    const response = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/villages/list`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    );
-    const data = await response.json();
+    const response = await axios.get(`villages/list`);
+    const data = await response.data;
     console.log(data);
     villagesData.value = data.data;
   } catch (error) {
@@ -178,25 +204,14 @@ const fetchVillagesData = async () => {
 // Function to fetch sub location data
 const fetchSubLocationData = async () => {
   try {
-    const response = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    );
-    const data = await response.json();
+    const response = await axios.get(`sub_location_posts`);
+    const data = await response.data;
     console.log(data);
     subLocationData.value = data.data;
   } catch (error) {
     console.error(error);
   }
 };
-
-// Initial load: Fetch villages data
-onMounted(async () => {
-  await fetchVillagesData();
-});
 
 // Watch for changes in selectedKeys
 watch(selectedKeys, async (newSelectedKeys) => {

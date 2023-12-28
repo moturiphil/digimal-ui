@@ -9,13 +9,10 @@
           <span class="search-icon">
             <sdFeatherIcons type="search" size="14" />
           </span>
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name/code/supervisor"
-          /></div
-      ></template>
+          <a-input v-model:value="searchItem" type="text" name="dataSource"
+            placeholder="Search by name/code/supervisor" />
+        </div>
+      </template>
     </sdPageHeader>
     <Main>
       <a-row :gutter="15">
@@ -27,63 +24,75 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="{ pageSize: 200, showSizeChanger: true }"
-                  :dataSource="results"
-                  :columns="columns"
-                >
+                <a-row class="" :gutter="5">
+                  <a-space>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select v-if="filterAccessList.includes('country')" v-model:value="country" show-search
+                        placeholder="Select Country" style="width: 100%" :options="countries"
+                        :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select v-if="filterAccessList.includes('county')" v-model:value="county" show-search
+                        placeholder="Select County" style="width: 100%" :options="counties" :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select v-if="filterAccessList.includes('subcounty')" v-model:value="subcounty" show-search
+                        placeholder="Select Sub County" style="width: 100%" :options="subcounties"
+                        :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select v-if="filterAccessList.includes('ward')" v-model:value="ward" show-search
+                        placeholder="Select Ward" style="width: 100%" :options="wards" :filter-option="filterOption"
+                        @change="handleChange($event, 'ward')"></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select v-if="filterAccessList.includes('location')" v-model:value="location" show-search
+                        placeholder="Select Location" style="width: 100%" :options="locations"
+                        :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select v-if="filterAccessList.includes('sublocation')" v-model:value="sublocation" show-search
+                        placeholder="Select Sub Location" style="width: 100%" :options="sublocations"
+                        :filter-option="filterOption" @change="handleChange($event, 'sublocation')"></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-divider></a-divider>
+                <a-table :pagination="false" :dataSource="results" :columns="columns">
                   <template #activities="{ record }">
                     <td>
                       <div class="table-actions">
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
-                          <router-link
-                            :to="{
-                              // path: `/nets/receive-post-nets`,
-                              path: `/nets/receive-nets-summary`,
-                              query: { id: record.id, name: record.name },
-                            }"
-                            class="btn-icon"
-                            type="success"
-                            shape="circle"
-                          >
+                          <router-link :to="{
+                            // path: `/nets/receive-post-nets`,
+                            path: `/nets/receive-nets-summary`,
+                            query: { id: record.id, name: record.name },
+                          }" class="btn-icon" type="success" shape="circle">
                             <!-- <sdFeatherIcons type="mail" size="16" /> -->
                             &nbsp;&nbsp; Manage Inventory
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
-                          <router-link
-                            :to="{
-                              path: `/view-worker`,
-                              query: { id: record.id },
-                            }"
-                            class="btn-icon"
-                            type="success"
-                            shape="circle"
-                          >
+                          <router-link :to="{
+                            path: `/view-worker`,
+                            query: { id: record.id },
+                          }" class="btn-icon" type="success" shape="circle">
                             View Post Workers
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton
-                          type="success"
-                          size="extra-small"
-                          @click="openModal(record.id)"
-                        >
+                        <sdButton type="success" size="extra-small" @click="openModal(record.id)">
                           Assign Supervisor
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton type="success" size="extra-small">
-                          <router-link
-                            :to="{
-                              path: `/nets/verify-post-nets`,
-                              query: { id: record.id, name: record.name },
-                            }"
-                            class="btn-icon"
-                            type="success"
-                            shape="circle"
-                          >
+                          <router-link :to="{
+                            path: `/nets/verify-post-nets`,
+                            query: { id: record.id, name: record.name },
+                          }" class="btn-icon" type="success" shape="circle">
                             Bale Verification
                           </router-link>
                         </sdButton>
@@ -91,38 +100,26 @@
                     </td>
                   </template>
                 </a-table>
+                <a-pagination
+                  :current="current"
+                  :total="total"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  :pagination="true"
+                  @change="onPageChange($event)"
+                />
               </TableWrapper>
             </div>
             <!-- Assign supervisor -->
-            <a-modal
-              title="Assign Supervisor"
-              :visible="isModalOpen"
-              @cancel="handleCancel"
-              width="50%"
-              footer=""
-            >
+            <a-modal title="Assign Supervisor" :visible="isModalOpen" @cancel="handleCancel" width="50%" footer="">
               <BasicFormWrapper>
-                <a-form
-                  class="add-record-form"
-                  :style="{ width: '100%' }"
-                  layout="vertical"
-                  name="addnew"
-                  :model="formState"
-                  @finish="handleSubmit"
-                >
+                <a-form class="add-record-form" :style="{ width: '100%' }" layout="vertical" name="addnew"
+                  :model="formState" @finish="handleSubmit">
                   <a-form-item name="Supervisors" label="Select Supervisor">
-                    <a-select
-                      v-model:value="formState.user_id"
-                      show-search
-                      option-filter-prop="label"
-                      placeholder="Select one"
-                    >
-                      <a-select-option
-                        v-for="user in supervisors"
-                        :key="user.id"
-                        :value="user.id"
-                        :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
-                      >
+                    <a-select v-model:value="formState.user_id" show-search option-filter-prop="label"
+                      placeholder="Select one">
+                      <a-select-option v-for="user in supervisors" :key="user.id" :value="user.id"
+                        :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`">
                         {{ user.first_name }} {{ user.last_name }}
                         {{ user.other_name }} - {{ user.id_no }},{{
                           user.role_id
@@ -148,13 +145,13 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent, reactive } from "vue";
-import authHeader from "../../../services/auth-header";
+import { computed, onMounted, ref, reactive,watch } from "vue";
 import { notification } from "ant-design-vue";
+import axios from "@/Axiosconfig"
 
 const columns = [
   // {
@@ -197,311 +194,484 @@ const columns = [
   },
 ];
 
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
+// const isStarting = ref(false)
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+const distributionStatus = ref({})
+// const posts = ref([])
+const { state } = useStore();
+// const crud = computed(() => state.crud.data);
+const isLoading = computed(() => state.crud.loading);
+// const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+const supervisors = ref([]);
+const searchItem = ref("");
+const isModalOpen = ref(false);
 
-  data() {
-    return {
-      isStarting: false,
-      distributionStatus: {},
-      posts: [],
-    };
-  },
+//org levels
+const access_level = ref({})
+const filterAccessList = ref([])
+const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }])
+const counties = ref(null)
+const subcounties = ref(null)
+const wards = ref(null)
+const locations = ref(null)
+const sublocations = ref(null)
+const country = ref("Select Country")
+const county = ref("Select County")
+const sublocation = ref("Select Sublocation")
+const subcounty = ref("Select Subcounty")
+const location = ref("Select Location")
+const ward = ref("Select Ward")
+const org_ids = ref([])
 
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const supervisors = ref([]);
-    const searchItem = ref("");
-    const isModalOpen = ref(false);
+const currentCounties = ref([
+  'nK0A12Q7MvS',//homa bay
+  'sPkRcDvhGWA',//kisii
+  'uepLTG8wGWJ',//nyamira
+  // 'u4t9H8XyU9P',//siaya
+  // 'fVra3Pwta0Q',//migori
+  // 'Tvf1zgVZ0K4',//busia
+  // 'NjWSbQTwys4',//lamu
+  // 'nrI2khZx3d0',//kilifi
+  // 'JsH2bnvNt2d',//tan river
+  // 'N7YETT3A9r1',//kwale
+  // 'QyGNX2DpR4h',//taita taveta
+  // 'wsBsC6gjHvn',// mombasa
+  // 'KGHhQ5GLd4k',//
+  // 'BjC1xL40gHo',//kakamega
+  // 'sANMZ3lpqGs',//vihiga
+  // 'XWALbfAPa6n',//west pokot
+  // 'kphDeKClFch',//turkana
+  // 'mThvosEflAU',//trans nzoia
+  // 'kqJ83J2D72s',//naraok
+  // 'Eey8fT4Im3y',//marsabit
+  // 'vvOK1BxTbet',//baringo
+  // 'Ulj33KBau7V',
+])
+//   const api_url = UserService;
+//   console.log(api_url);
+onMounted(async () => {
+  if (sessionStorage.getItem("user") != null) {
+    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    updateFilters()
+    // console.log(JSON.stringify(access_level.value.location));
+  }
+});
+const onPageChange = async (page) => {
+  currentPage.value = page
+  fetchDistributionsPosts();
+}
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
+watch(searchItem.value, (newvalue) => {
+  searchItem.value = newvalue;
+  fetchDistributionsPosts();
+}
 
-    const supervisorList = async () => {
-      try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-          method: "GET",
-          headers: authHeader(),
-        });
-        const data = await response.json();
+)
+const updateFilters = () => {
+  // access_level.value.level.level_name = 'national'
+  // access_level.value.location.id = 1
+  // access_level.value.location.org_id = 'HfVjCurKxh2'
+  // access_level.value.location.name = 'Kenya'
 
-        // Modify the structure of each supervisor to include a 'label' property
-        supervisors.value = data.data.map((user) => ({
-          ...user,
-          label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+  if (access_level.value.level.id == 1) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    fetchCounties()
+  } else if (access_level.value.level.id == 2) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 3) {
+    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation', 'village']
+    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 4) {
+    filterAccessList.value = ['ward', 'location', 'sublocation', 'village']
+    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 5) {
+    filterAccessList.value = ['location', 'sublocation', 'village']
+    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 6) {
+    filterAccessList.value = ['sublocation', 'village']
+    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  }
+  fetchDistributionsPosts()
+}
+
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  // console.log(org_id)
+  // console.log(org_ids.value)
+  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
+  // console.log(org)
+  let parent_id = org[0] || 9
+  // console.log(parent_id)
+  // console.log(org_level)
+  fetchChildData(parent_id, org_id, org_level)
+};
+const fetchChildData = async (location_id, org_id, org_level) => {
+  let fetchUrl = `get_sub_counties_list`
+  let masterListUrl = `posts_data?per_page=${pageSize.value}&page=${currentPage.value}`
+  if (org_level == 'country') {//get counties
+    fetchUrl += `?parent_id=${org_id}`
+    //masterListUrl += `&location=${location_id}`
+    //clear fields
+    county.value = "Select County"
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'county') {//get subcounties
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&county=${location_id}`
+    //clear fields
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'subcounty') {//get wards
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&sub_county=${location_id}`
+    //clear fields
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'ward') {//get locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&ward=${location_id}`
+    //clear fields
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'location') {//get sub locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'sublocation') {//get sublocations stats
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&sublocation=${location_id}`
+  }
+  await axios.get(`${fetchUrl}`)
+    .then(response => {
+      let data = response.data.message;
+      if (org_level == 'country') {//get counties
+        counties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
         }));
-      } catch (error) {
-        console.error(error);
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
+        counties.value.splice(0, 1)
+      } else if (org_level == 'county') {//get subcounties
+        subcounties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'subcounty') {//get wards
+        wards.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'ward') {//get locations
+        locations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'location') {//get sublocations
+        sublocations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
       }
-    };
-    supervisorList();
-
-
-    onMounted(async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/posts_data`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        dataSource.value = data.data;
-        // console.log(dataSource.value);
-        this.distributionStatus = {};
-        console.log(this.distributionStatus);
-        for (const post of dataSource.value) {
-          this.distributionStatus[post.id] = post.status;
-          console.log(post.status);
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    }).then(async () => {
+      await axios.get(`${masterListUrl}`)
+        .then(response => {
+          // console.log(response.data.data)
+          let data = response.data.data.data;
+          dataSource.value = data;
+          // paginationOptions.value.total = response.data.data.length;
+          datatotal.value = response.data.data.total;
+        })
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     });
+}
+const fetchCounties = async () => {
+  axios.get('counties/')
+    .then(response => {
+      counties.value = response.data.map(x => ({
+        value: x.org_id,
+        label: x.name
+      })).filter(e => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = response.data.map(x => ({
+        org_id: x.org_id,
+        id: x.id
+      }));
+      // console.log(counties.value)
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    })
+}
+const filterOption = (input, option) => {
+  return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+};
+const supervisorList = async () => {
+  try {
+    const response = await axios.get(`users`);
+    const data = await response.data;
 
-    const formState = reactive({
-      post_id: "",
-      user_id: "",
-    });
+    // Modify the structure of each supervisor to include a 'label' property
+    supervisors.value = data.data.map((user) => ({
+      ...user,
+      label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+};
+supervisorList();
 
-    const openModal = (id) => {
-      isModalOpen.value = true;
-      formState.post_id = id;
-      console.log(isModalOpen.value);
+const fetchDistributionsPosts = async () => {
+  try {
+    const response = await axios.get(`posts_data?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`);
+    const data = await response.data;
+    dataSource.value = data.data;
+    // console.log(dataSource.value);
+    distributionStatus.value = {};
+    console.log(distributionStatus.value);
+    for (const post of dataSource.value) {
+      distributionStatus.value[post.id] = post.status;
+      console.log(post.status);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+const formState = reactive({
+  post_id: "",
+  user_id: "",
+});
+
+const openModal = (id) => {
+  isModalOpen.value = true;
+  formState.post_id = id;
+  console.log(isModalOpen.value);
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
+// const handleDelete = (id) => {
+//   const confirm = window.confirm("Are you sure delete this?");
+//   if (confirm) {
+//     dispatch("axiosDataDelete", {
+//       id,
+//       getData: () => {
+//         dispatch("axiosCrudGetData");
+//       },
+//     });
+//   }
+//   return false;
+// };
+
+// const notifyHH = async (id) => {
+//   console.log(id);
+//   try {
+//     const response = await axios.post(`notify_households?post_id=${id}`,{});
+//     const data = await response.data;
+//     console.log(data);
+//     if (data.success == true) {
+//       notification.success({
+//         message: "Success",
+//         description: data.message,
+//       });
+//       window.location.reload();
+//     } else {
+//       notification.error({
+//         message: "Error",
+//         description: data.message,
+//       });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+
+const handleSubmit = async () => {
+  try {
+    const data = {
+      post_id: formState.post_id,
+      user_id: formState.user_id,
     };
-
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
-
-    const notifyHH = async (id) => {
-      console.log(id);
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/notify_households?post_id=${id}`,
-          {
-            method: "POST",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.success == true) {
+    console.log(data);
+    await axios.post(`assign_post_supervisor`, data)
+      .then((response) => response.data)
+      .then(({ status, data }) => {
+        if (status == true) {
           notification.success({
             message: "Success",
-            description: data.message,
+            description: data,
           });
-          window.location.reload();
+          isModalOpen.value = false;
+          setTimeout(function () {
+            window.location.reload();
+          }, 3000);
         } else {
           notification.error({
             message: "Error",
-            description: data.message,
+            description: `${status}`,
           });
         }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const handleSubmit = async () => {
-      try {
-        const data = {
-          post_id: formState.post_id,
-          user_id: formState.user_id,
-        };
-        console.log(data);
-        await fetch(`${process.env.VUE_APP_BASE_URL}/assign_post_supervisor`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then(({ status, data }) => {
-            if (status == true) {
-              notification.success({
-                message: "Success",
-                description: data,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${status}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-          });
-      } catch (error) {
+        isModalOpen.value = false;
+      })
+      .catch((error) => {
         notification.error({
           message: "Error",
           description: `${error}`,
         });
-      }
-    };
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return (
-            regex.test(event.name) ||
-            regex.test(event.distribution_sub_county) ||
-            regex.test(event.distribution_ward) ||
-            regex.test(event.distribution_sublocation_id) ||
-            regex.test(event.distribution_location_id)
-          );
-        });
-      }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
     });
+  }
+};
 
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      supervisors,
-      isModalOpen,
-      handleDelete,
-      handleCancel,
-      handleSubmit,
-      rowSelection,
-      onSelectChange,
-      openModal,
-      formState,
-      results,
-      searchItem,
-      columns,
-      notifyHH,
-    };
-  },
+// const onSelectChange = (selectedRowKey) => {
+//   selectedRowKeys.value = selectedRowKey;
+// };
 
-  methods: {
-    async startDistribution(id) {
-      try {
-        this.isStarting = true;
-        console.log(id);
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/start_distribution/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        if (data.status === true) {
-          // this.eventStatus[id] = true;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          notification.success({
-            message: "Distribution Started",
-            description: data.message,
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          // this.eventStatus[id] = false;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          notification.error({
-            message: "Distribution Not Started",
-            description: data.message,
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.isStarting = false;
-      }
-    },
-    async closeDistribution(id) {
-      try {
-        this.isStarting = true;
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/close_distribution/${id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log("******************************************");
-        console.log("******************************************");
-        console.log(data);
-        if (data.status === true) {
-          // this.eventStatus[id] = true;
-          // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          // notify the user
-          notification.success({
-            message: "Distribution Closed",
-            description: "Event has been closed successfully",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          this.eventStatus[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-          notification.error({
-            message: "Event Not Closed",
-            description: "Only event host or facilitator can close event",
-          });
-          // await new Promise((resolve) => {
-          // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          // });
-        }
-        // location.reload();
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.isStarting = true;
-      }
-    },
-  },
+// const rowSelection = {
+//   selectedRowKeys,
+//   onChange: onSelectChange,
+// };
+
+const results = computed(() => {
+  const query = searchItem.value.toLowerCase();
+  const regex = new RegExp(query, "i");
+  if (!query) {
+    return dataSource.value;
+  } else {
+    return dataSource.value.filter((event) => {
+      return (
+        regex.test(event.name) ||
+        regex.test(event.distribution_sub_county) ||
+        regex.test(event.distribution_ward) ||
+        regex.test(event.distribution_sublocation_id) ||
+        regex.test(event.distribution_location_id)
+      );
+    });
+  }
 });
+// const startDistribution = async (id) => {
+//   try {
+//     isStarting.value = true;
+//     console.log(id);
+//     const response = await axios.get(`start_distribution/${id}`);
+//     const data = await response.data;
+//     console.log(data);
+//     if (data.status === true) {
+//       // this.eventStatus[id] = true;
+//       // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+//       notification.success({
+//         message: "Distribution Started",
+//         description: data.message,
+//       });
+//       await new Promise((resolve) => {
+//         setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+//       });
+//       window.location.reload();
+//     } else {
+//       // this.eventStatus[id] = false;
+//       // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+//       notification.error({
+//         message: "Distribution Not Started",
+//         description: data.message,
+//       });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//   } finally {
+//     isStarting.value = false;
+//   }
+// }
 
-export default DragAndDropTable;
+// const closeDistribution = async (id) => {
+//   try {
+//     isStarting.value = true;
+//     const response = await axios.get(`close_distribution/${id}`);
+//     const data = await response.data;
+//     console.log("******************************************");
+//     console.log("******************************************");
+//     console.log(data);
+//     if (data.status === true) {
+//       // this.eventStatus[id] = true;
+//       // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+//       // notify the user
+//       notification.success({
+//         message: "Distribution Closed",
+//         description: "Event has been closed successfully",
+//       });
+//       await new Promise((resolve) => {
+//         setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+//       });
+//       window.location.reload();
+//     } else {
+//       this.eventStatus[id] = false;
+//       localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
+//       notification.error({
+//         message: "Event Not Closed",
+//         description: "Only event host or facilitator can close event",
+//       });
+//       // await new Promise((resolve) => {
+//       // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+//       // });
+//     }
+//     // location.reload();
+//   } catch (error) {
+//     console.error(error);
+//   } finally {
+//     this.isStarting = true;
+//   }
+// }
 </script>
