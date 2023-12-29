@@ -40,9 +40,22 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions"></div>
+                            <template #households="{ record }">
+                              <td :style="{ 'margin-left': '3px' }">
+                                <div class="table-actions">
+                                  <sdButton
+                                    type="check"
+                                    size="16"
+                                    @click="
+                                      handleVerify(record.id, record.hh_size)
+                                    "
+                                  >
+                                    &nbsp;&nbsp;
+                                    <span class="badge badge-green"
+                                      >&nbsp;&nbsp; Verify</span
+                                    >
+                                  </sdButton>
+                                </div>
                               </td>
                             </template>
                           </a-table>
@@ -53,6 +66,19 @@
                 </a-row>
               </div>
             </sdCards>
+            <a-modal
+              title="HouseHold Size Validation"
+              :visible="isModalOpen"
+              @ok="handleOk(recordId, inputValue)"
+              @cancel="handleCancel"
+              class="title-success"
+            >
+              <div>
+                <h4>HouseHold Size Verification</h4>
+                <p>HH Size: {{ inputValue }}</p>
+                <input type="number" v-model="inputValue" />
+              </div>
+            </a-modal>
           </a-col>
         </a-row>
       </SearchResultWrapper>
@@ -69,7 +95,6 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
-
 
 const columns = [
   {
@@ -112,6 +137,12 @@ const columns = [
     dataIndex: "created_at_time",
     key: "id_no",
   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "households",
+    slots: { customRender: "households" },
+  },
 ];
 export default defineComponent({
   name: "HouseHold Validation",
@@ -145,6 +176,11 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    handleCancel() {
+      this.isModalOpen = false;
+      this.visible = false;
+      this.colorVisible = false;
+    },
   },
   setup() {
     const { state } = useStore();
@@ -156,7 +192,9 @@ export default defineComponent({
     const searchItem = ref("");
     const logs = ref([]);
     const { query } = useRoute();
-
+    const inputValue = ref("");
+    const household_id = ref("");
+    const isModalOpen = ref(false);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/posts_households?post_id=${query.id}`;
 
@@ -212,6 +250,69 @@ export default defineComponent({
       }
     });
 
+    const handleVerify = (hh_id, hh_size) => {
+      console.log({ hh_id, hh_size });
+      inputValue.value = hh_size;
+      isModalOpen.value = true;
+      household_id.value = hh_id;
+    };
+
+    const handleOk = async (id, inputValue) => {
+      try {
+        const house_id = household_id.value;
+
+        // Call the authHeader() function to get the authorization token
+        const headers = authHeader();
+
+        // Construct the URL
+        const url = `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`;
+
+        // Make the fetch request
+        fetch(url, {
+          method: "PATCH",
+          headers: {
+            ...headers,
+            "Content-Type": "application/json", // Add any necessary headers
+          },
+          // body: JSON.stringify(data), // If you need to send a request body, add it here
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json(); // Parse the JSON response
+            }
+            throw new Error("Network response was not ok.");
+          })
+          .then((data) => {
+            console.log(data); // Handle the successful response data here
+            notification["success"]({
+              message: "HouseHold Verified",
+              description: `HouseHold has been verified successfully`,
+              duration: 5.5,
+            });
+            // location.reload();
+          })
+          .catch((error) => {
+            // Handle errors here
+            console.error(
+              "There has been a problem with your fetch operation:",
+              error
+            );
+            notification["error"]({
+              message: "HouseHold Not Verified",
+              description: `HouseHold verification failed`,
+              duration: 5.5,
+            });
+          })
+          .finally(() => {
+            inputValue = ""; // Clear inputValue after the modal is closed
+            isModalOpen.value = false;
+          });
+      } catch (error) {
+        // Handle exceptions here
+        console.error("Error:", error);
+      }
+    };
+
     return {
       crud,
       isLoading,
@@ -221,8 +322,14 @@ export default defineComponent({
       columns,
       handleChange,
       activeClass,
-      // handleVerify,
+      handleVerify,
+      handleOk,
+      isModalOpen,
     };
+  },
+  props: {
+    recordId: Number,
+    hh_size: Number,
   },
 });
 </script>

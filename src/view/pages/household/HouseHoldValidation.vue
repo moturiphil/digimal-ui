@@ -117,31 +117,20 @@
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
                                   <sdButton
-                                    type="check"
-                                    size="16"
+                                    size="extra-small"
+                                    type="success"
                                     @click="
                                       handleVerify(record.id, record.hh_size)
                                     "
                                   >
                                     &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
+                                    Verify
                                   </sdButton>
                                 </div>
                               </td>
                             </template>
                             <br />
                             <br />
-                            <!-- <a-pagination
-                              :current="paginationOptions.current"
-                              :total="paginationOptions.total"
-                              :pageSize="paginationOptions.pageSize"
-                              :showSizeChanger="
-                                paginationOptions.showSizeChanger
-                              "
-                              @change="paginationOptions.onChange"
-                            /> -->
                           </a-table>
                         </TableWrapper>
                         <br />
@@ -195,7 +184,7 @@ import {
   reactive,
   defineComponent,
   watch,
-watchEffect,
+  watchEffect,
 } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
@@ -322,7 +311,7 @@ export default defineComponent({
 
     onMounted(() => {
       fetchData(); // Initial data fetch
-      fetchOutliers(); 
+      fetchOutliers();
     });
 
     const paginationOptions = ref({
@@ -334,18 +323,16 @@ export default defineComponent({
         // Update the current page when the pagination changes
         const query = searchItem.value.toLowerCase();
         paginationOptions.value.current = page;
-        let url =''
+        let url = "";
 
-        if(!query) {
+        if (!query) {
           url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}`;
         } else {
           url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}&query=${query}`;
         }
         // Fetch data for the new page using the updated page number
         try {
-          const response = await axios.get(url,
-            { headers: authHeader() }
-          );
+          const response = await axios.get(url, { headers: authHeader() });
           dataSource.value = response.data.data.data;
           paginationOptions.value.total = response.data.data.total;
         } catch (error) {
@@ -355,7 +342,6 @@ export default defineComponent({
     });
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}`;
-
 
     // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
 
@@ -546,37 +532,36 @@ export default defineComponent({
       }
     });
 
-    watchEffect(async()=>{
+    watchEffect(async () => {
       const query = searchItem.value.toLowerCase();
-      
+
       try {
-        if(!query){ 
+        if (!query) {
           dataSource.value = household_validations.value;
           return dataSource.value;
         }
-        if(query.length > 3){
-          const response = await fetch(`${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&query=${query}`,
-          {
-            method: "GET",
-            headers:{
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          } 
-        );
-        const data = await response.json();
-        dataSource.value = data.data.data;
-        paginationOptions.value.total = data.data.total;
+        if (query.length > 3) {
+          const response = await fetch(
+            `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&query=${query}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+            }
+          );
+          const data = await response.json();
+          dataSource.value = data.data.data;
+          paginationOptions.value.total = data.data.total;
         }
-        
       } catch (error) {
         notification.error({
           message: "Error",
           description: error.message,
         });
-        
       }
-    })
+    });
 
     return {
       crud,
@@ -597,7 +582,7 @@ export default defineComponent({
       results,
       searchItem,
       paginationOptions,
-      searchResults
+      searchResults,
     };
   },
   props: {

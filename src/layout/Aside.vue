@@ -152,14 +152,14 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetIncompleteHouseholdReg">
-          <router-link to="/households-registrations/incomplete">
-            Incomplete HouseHolds Registration
-          </router-link>
-        </a-menu-item>
         <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
           <router-link to="/household/validation">
             HouseHolds Validation
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetIncompleteHouseholdReg">
+          <router-link to="/households-registrations/incomplete">
+            Incomplete HouseHolds Registration
           </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
