@@ -554,6 +554,8 @@ const fetchInitialChartData = async () => {
   axios.get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(response => {
       newChartData.value = response.data.data;
+      fileterOrgeLevel.value = access_level.value.level.level_name
+      filterOrgId.value=access_level.value.level.id
       if (access_level.value.level.id === 1) {
         newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
       }
@@ -595,7 +597,6 @@ const fetchInitialChartData = async () => {
       //console.log(currentDate.getFullYear())
       dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
       dateTo.value = moment(currentDate).format(dateFormat.value);
-      fileterOrgeLevel.value = access_level.value.level.level_name
       NetsChartData.value = newChartData.value
       fetchNetsDistributed();
     }).catch(error => {
@@ -610,7 +611,7 @@ const handleChange = async (org_id, org_level) => {
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
   // console.log(org_id)
   // console.log(org_ids.value)
-  let parent_id = org[0] || 9
+  let parent_id = org[0] || 1
   // console.log(parent_id)
   // console.log(org_level)
   fetchChildData(org_id, org_level)
