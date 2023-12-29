@@ -216,6 +216,14 @@ onMounted(async () => {
   }
 });
 
+const onPageChange = async (page) => {
+  currentPage.value = page
+  try {
+    fetchHouseholds()
+  } catch (error) {
+    console.error(error);
+  }
+}
 // const handlePaginationChange = (newPage) => {
 //   current.value = newPage;
 //   console.log(newPage);

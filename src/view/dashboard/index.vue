@@ -611,7 +611,7 @@ const handleChange = async (org_id, org_level) => {
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
   // console.log(org_id)
   // console.log(org_ids.value)
-  let parent_id = org[0] || 9
+  let parent_id = org[0] || 1
   // console.log(parent_id)
   // console.log(org_level)
   fetchChildData(org_id, org_level)
