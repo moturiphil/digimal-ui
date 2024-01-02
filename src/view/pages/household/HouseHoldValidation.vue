@@ -22,7 +22,7 @@
           <a-col :xs="24">
             <div class="search-filter-menu">
               <ul>
-                <li>
+                <!-- <li>
                   <a
                     :class="activeClass === 'all' ? 'active' : 'deactivate'"
                     @click="handleChange('all')"
@@ -30,8 +30,8 @@
                   >
                     All HouseHolds
                   </a>
-                </li>
-                <li>
+                </li> -->
+                <!-- <li>
                   <a
                     :class="
                       activeClass === 'approved' ? 'active' : 'deactivate'
@@ -41,11 +41,11 @@
                   >
                     Approved HouseHolds
                   </a>
-                </li>
+                </li> -->
                 <li>
                   <a
                     :class="
-                      activeClass === 'outliers' ? 'active' : 'deactivate'
+                      activeClass === 'outliers' ? 'active' : 'active'
                     "
                     @click="handleChange('outliers')"
                     href="#"
@@ -69,48 +69,33 @@
                       <div v-else>
                         <TableWrapper
                           class="table-data-view table-responsive"
-                          v-show="activeClass === 'all'"
                         >
+                        <a-row class="" :gutter="5">
+                            <a-space>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('country')" v-model:value="country" show-search placeholder="Select Country" style="width: 100%" :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+                            </a-col>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('county')" v-model:value="county" show-search placeholder="Select County" style="width: 100%" :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
+                            </a-col>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('subcounty')" v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 100%" :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+                            </a-col>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('ward')" v-model:value="ward" show-search placeholder="Select Ward" style="width: 100%" :options="wards" :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
+                            </a-col>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('location')" v-model:value="location" show-search placeholder="Select Location" style="width: 100%" :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+                            </a-col>
+                            <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                              <a-select v-if="filterAccessList.includes('sublocation')" v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 100%" :options="sublocations" :filter-option="filterOption" @change="handleChange($event, 'sublocation')"></a-select>
+                            </a-col>
+                            </a-space>
+                          </a-row>
+                          <a-divider></a-divider>
                           <a-table
                             :pagination="false"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                          </a-table>
-                          <br />
-                          <br />
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'approved'"
-                        >
-                          <a-table
-                            :pagination="false"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                            <br />
-                            <br />
-                            <!-- <a-pagination
-                              :current="paginationOptions.current"
-                              :total="paginationOptions.total"
-                              :pageSize="paginationOptions.pageSize"
-                              :showSizeChanger="
-                                paginationOptions.showSizeChanger
-                              "
-                              @change="paginationOptions.onChange"
-                          /> -->
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'outliers'"
-                        >
-                          <a-table
-                            :pagination="false"
-                            :dataSource="searchResults"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                             <template #households="{ record }">
@@ -133,26 +118,16 @@
                             </template>
                             <br />
                             <br />
-                            <!-- <a-pagination
-                              :current="paginationOptions.current"
-                              :total="paginationOptions.total"
-                              :pageSize="paginationOptions.pageSize"
-                              :showSizeChanger="
-                                paginationOptions.showSizeChanger
-                              "
-                              @change="paginationOptions.onChange"
-                            /> -->
                           </a-table>
-                        </TableWrapper>
-                        <br />
-                        <br />
-                        <a-pagination
-                          :current="paginationOptions.current"
-                          :total="paginationOptions.total"
-                          :pageSize="paginationOptions.pageSize"
-                          :showSizeChanger="paginationOptions.showSizeChanger"
-                          @change="paginationOptions.onChange"
+                          <a-pagination
+                          :current="currentPage"
+                          :total="datatotal"
+                          :pageSize="pageSize"
+                          :showSizeChanger="true"
+                          :pagination="true"
+                          @change="onPageChange($event)"
                         />
+                        </TableWrapper>
                       </div>
                     </sdCards>
                   </a-col>
@@ -185,20 +160,17 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
 import {
   computed,
   onMounted,
   ref,
-  reactive,
-  defineComponent,
+ // reactive,
   watch,
-watchEffect,
 } from "vue";
-import authHeader from "../../../services/auth-header";
-import axios from "axios";
+import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
@@ -254,63 +226,99 @@ const columns = [
     slots: { customRender: "households" },
   },
 ];
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      households: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-    handleCancel() {
-      this.isModalOpen = false;
-      this.visible = false;
-      this.colorVisible = false;
-    },
-  },
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const isModalOpen = ref(false);
-    const inputValue = ref("");
-    const household_id = ref("");
-    const searchItem = ref("");
-    const level_id = ref("");
-    const role_id = ref("");
-    const rt = useRouter();
-    const outliers = ref([]);
-    const household_validations = ref([]);
-    const location_id = ref("");
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+const visible=ref(false)
+const colorVisible=ref(false)
+const { state } = useStore();
+const isLoading = computed(() => state.crud.loading);
+const dataSource = ref([]);
+const isModalOpen = ref(false);
+const inputValue = ref("");
+const household_id = ref("");
+const searchItem = ref("");
+const level_id = ref("");
+const role_id = ref("");
+const rt = useRouter();
+const household_validations = ref([]);
+const location_id = ref("");
+const access_level = ref({})
 
-    const user = JSON.parse(sessionStorage.getItem("user"));
+const filterAccessList = ref([])
+//org levels
+const countries = ref([{ value: { id: 1, org_id: 'HfVjCurKxh2' }, label: "Kenya" }])
+const counties = ref(null)
+const subcounties = ref(null)
+const wards = ref(null)
+const locations = ref(null)
+const sublocations = ref(null)
+// const villages = ref(null)
+const county = ref("Select County")
+const sublocation = ref("Select Sublocation")
+const subcounty = ref("Select Subcounty")
+const location = ref("Select Location")
+const ward = ref("Select Ward")
+// const village = ref("Select a Post")
+const org_ids = ref([])
+
+
+const currentCounties = ref([
+  'nK0A12Q7MvS',//homa bay
+  'sPkRcDvhGWA',//kisii
+  'uepLTG8wGWJ',//nyamira
+  // 'u4t9H8XyU9P',//siaya
+  // 'fVra3Pwta0Q',//migori
+  // 'Tvf1zgVZ0K4',//busia
+  // 'NjWSbQTwys4',//lamu
+  // 'nrI2khZx3d0',//kilifi
+  // 'JsH2bnvNt2d',//tan river
+  // 'N7YETT3A9r1',//kwale
+  // 'QyGNX2DpR4h',//taita taveta
+  // 'wsBsC6gjHvn',// mombasa
+  // 'KGHhQ5GLd4k',//
+  // 'BjC1xL40gHo',//kakamega
+  // 'sANMZ3lpqGs',//vihiga
+  // 'XWALbfAPa6n',//west pokot
+  // 'kphDeKClFch',//turkana
+  // 'mThvosEflAU',//trans nzoia
+  // 'kqJ83J2D72s',//naraok
+  // 'Eey8fT4Im3y',//marsabit
+  // 'vvOK1BxTbet',//baringo
+  // 'Ulj33KBau7V',
+])
+
+// const notData=ref({})
+// const current=ref(0)
+// const pageSize=ref(0)
+// const visible=ref(false)
+// const confirmLoading=ref(false)
+// const modalType=ref("primary")
+// const colorVisible=ref(false)
+// const households=ref([])
+// const { state } = useStore();
+// const isLoading = computed(() => state.crud.loading); 
+const user = JSON.parse(sessionStorage.getItem("user"));
+
+  //  const handleSearch=(searchText)=> {
+  //     const data = searchData.value.filter((item) =>
+  //       item.title.toUpperCase().startsWith(searchText.toUpperCase())
+  //     );
+  //     notData.value = data;
+  //   }
+    // const onShowSizeChange=(current, pageSize)=>{
+    //   current.value = current;
+    //   pageSize.value = pageSize;
+    // }
+    // const searchData=()=> {
+    //   return store.state.headerSearch.data;
+    // }
+    const handleCancel=()=> {
+    isModalOpen.value = false;
+    visible.value = false;
+    colorVisible.value = false;
+    }
+
     if (!user) {
       rt.push({ path: "/auth/login" });
     } else {
@@ -321,137 +329,222 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+      location_id.value=access_level.value.location.id
+      filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
       fetchData(); // Initial data fetch
-      fetchOutliers(); 
+      updateFilters(); 
     });
 
-    const paginationOptions = ref({
-      pageSize: 100,
-      showSizeChanger: true,
-      current: 1,
-      total: 0,
-      onChange: async (page, pageSize) => {
-        // Update the current page when the pagination changes
-        const query = searchItem.value.toLowerCase();
-        paginationOptions.value.current = page;
-        let url =''
+    const updateFilters = () => {
+  // access_level.value.level.level_name = 'national'
+  // access_level.value.location.id = 1
+  // access_level.value.location.org_id = 'HfVjCurKxh2'
+  // access_level.value.location.name = 'Kenya'
 
-        if(!query) {
-          url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}`;
-        } else {
-          url = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${page}&pageSize=${pageSize}&query=${query}`;
-        }
-        // Fetch data for the new page using the updated page number
-        try {
-          const response = await axios.get(url,
-            { headers: authHeader() }
-          );
-          dataSource.value = response.data.data.data;
-          paginationOptions.value.total = response.data.data.total;
-        } catch (error) {
-          console.error(error);
-        }
-      },
+   if (access_level.value.level.id == 1) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
+    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    fetchCounties()
+  } else if (access_level.value.level.id == 2) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation']
+    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 3) {
+    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation']
+    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 4) {
+    filterAccessList.value = ['ward', 'location', 'sublocation']
+    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 5) {
+    filterAccessList.value = ['location', 'sublocation']
+    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  } else if (access_level.value.level.id == 6) {
+    filterAccessList.value = ['sublocation']
+    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
+    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+  }
+  fetchOutliers()
+}
+  const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
+  let parent_id = org[0] || 9
+  fetchChildData(parent_id, org_id, org_level)
+};
+
+const fetchChildData = async (location_id, org_id, org_level) => {
+  currentPage.value=1
+  let fetchUrl = `get_sub_counties_list`
+  let masterListUrl = `household_outliers?location_id=${location_id}&page=${currentPage.value}&pageSize=${pageSize.value}`
+  if (org_level == 'country') {//get counties
+    fetchUrl += `?parent_id=${org_id}`
+    //masterListUrl += `&location=${location_id}`
+    //clear fields
+    county.value = "Select County"
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'county') {//get subcounties
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&county=${location_id}`
+    //clear fields
+    subcounty.value = "Select SubCounty"
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'subcounty') {//get wards
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&sub_county=${location_id}`
+    //clear fields
+    ward.value = " Select Ward"
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'ward') {//get locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&ward=${location_id}`
+    //clear fields
+    location.value = "Select Location"
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'location') {//get sub locatios
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&location=${location_id}`
+    //clear fields
+    sublocation.value = "Select Sub Location"
+  } else if (org_level == 'sublocation') {//get sublocations stats
+    fetchUrl += `?parent_id=${org_id}`
+    masterListUrl += `&sublocation=${location_id}`
+  }
+  await axios.get(`${fetchUrl}`)
+    .then(response => {
+      let data = response.data.message;
+      if (org_level == 'country') {//get counties
+        counties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
+        counties.value.splice(0, 1)
+      } else if (org_level == 'county') {//get subcounties
+        subcounties.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'subcounty') {//get wards
+        wards.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'ward') {//get locations
+        locations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      } else if (org_level == 'location') {//get sublocations
+        sublocations.value = data.map(x => ({
+          value: x.org_id,
+          label: x.name
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map(x => ({ org_id: x.org_id, id: x.id }))
+            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+        ];
+      }
+    }).then(async () => {
+      await axios.get(`${masterListUrl}`)
+        .then(response => {
+          let data = response.data.data.data;
+          datatotal.value = response.data.data.total;
+          dataSource.value = data;
+        })
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     });
+}
+const fetchCounties = async () => {
+  axios.get('counties/')
+    .then(response => {
+      counties.value = response.data.map(x => ({
+        value: x.org_id,
+        label: x.name
+      })).filter(e => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = response.data.map(x => ({
+        org_id: x.org_id,
+        id: x.id
+      }));
+      console.log(counties.value)
+    }).catch(error => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    })
+}
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}`;
-
-
-    // const households_url = `${process.env.VUE_APP_BASE_URL}/generateHHCSV`;
-
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
-
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
-
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };   household_outliers
+const onPageChange = async (page) => {
+  currentPage.value = page
+  try {
+    fetchOutliers()
+  } catch (error) {
+    console.error(error);
+  }
+}
+    const API_URL = `household_validation?sub_county_id=${location_id.value}`;
 
     const fetchOutliers = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/household_outliers?sub_county_id=${location_id.value}&page=${paginationOptions.value.current}&pageSize=${paginationOptions.value.pageSize}`,
-          { headers: authHeader() }
-        );
-
-        outliers.value = response.data.data.data;
+        const response = await axios.get(`household_outliers?location_id=${location_id.value}&page=${currentPage.value}&pageSize=${pageSize.value}&query=${searchItem.value}`);
+        dataSource.value = response.data.data.data;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        // Call the asynchronous function to fetch data
-        return outliers.value;
-      } else {
-        return dataSource.value;
-      }
-    });
-
-    // const filteredData = computed(() => {
-    //   if (activeClass.value === "approved") {
-    //     return dataSource.value.filter((item) => item.isVerified === 1);
-    //   } else if (activeClass.value === "outliers") {
-    //     return dataSource.value.filter((item) => item.isVerified === 0);
-    //   } else {
-    //     return dataSource.value;
-    //   }
-    // });
-
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-
     const fetchData = async () => {
       try {
-        const response = await axios.get(API_URL, {
-          headers: authHeader(),
-        });
+        const response = await axios.get(API_URL);
         household_validations.value = response.data.data.data;
         dataSource.value = response.data.data.data;
-        paginationOptions.value.total = response.data.data.total;
+        datatotal.value = response.data.data.total;
       } catch (error) {
         console.error(error);
       }
     };
 
     // Watch for changes in the activeClass and refetch data accordingly
-    watch(activeClass, async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&page=${paginationOptions.value.current}&pageSize=${paginationOptions.value.pageSize}`,
-          { headers: authHeader() }
-        );
-        dataSource.value = response.data.data.data;
-        console.log(dataSource.value);
-        paginationOptions.value.total = response.data.data.total;
-      } catch (error) {
-        console.error(error);
-      }
-    });
+    watch(searchItem.value, async (newValue) => {
+      searchItem.value=newValue
+      fetchOutliers()
+    })
+
     const handleVerify = (hh_id, hh_size) => {
       console.log({ hh_id, hh_size });
       inputValue.value = hh_size;
@@ -462,36 +555,27 @@ export default defineComponent({
     const handleOk = async (id, inputValue) => {
       try {
         const house_id = household_id.value;
-
-        // Call the authHeader() function to get the authorization token
-        const headers = authHeader();
-
         // Construct the URL
-        const url = `${process.env.VUE_APP_BASE_URL}/verify_household?house_id=${house_id}&inputValue=${inputValue}`;
+        const url = `verify_household?house_id=${house_id}&inputValue=${inputValue}`;
 
         // Make the fetch request
-        fetch(url, {
-          method: "PATCH",
-          headers: {
-            ...headers,
-            "Content-Type": "application/json", // Add any necessary headers
-          },
-          // body: JSON.stringify(data), // If you need to send a request body, add it here
-        })
+        axios.patch(url)
           .then((response) => {
-            if (response.ok) {
-              return response.json(); // Parse the JSON response
+            if (response.data.success==true) {
+              return response.data; // Parse the JSON response
             }
             throw new Error("Network response was not ok.");
           })
           .then((data) => {
-            console.log(data); // Handle the successful response data here
+            console.log(data); // Handle the successful response data heregit pull
             notification["success"]({
               message: "HouseHold Verified",
               description: `HouseHold has been verified successfully`,
               duration: 5.5,
-            });
-            // location.reload();
+            })
+            setTimeout(()=>{
+              window.location.reload()
+            },5000)
           })
           .catch((error) => {
             // Handle errors here
@@ -514,97 +598,6 @@ export default defineComponent({
         console.error("Error:", error);
       }
     };
-
-    const formState = reactive({
-      searchItem: "",
-    });
-
-    const results = computed(() => {
-      const start =
-        (paginationOptions.value.current - 1) *
-        paginationOptions.value.pageSize;
-      const end = start + paginationOptions.value.pageSize;
-      return filteredData.value.slice(start, end);
-    });
-
-    const searchResults = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((user) => {
-          return (
-            regex.test(user.first_name) ||
-            regex.test(user.middle_name) ||
-            regex.test(user.last_name) ||
-            regex.test(user.id_no) ||
-            regex.test(user.phone_no) ||
-            regex.test(user.post_id)
-          );
-        });
-      }
-    });
-
-    watchEffect(async()=>{
-      const query = searchItem.value.toLowerCase();
-      
-      try {
-        if(!query){ 
-          dataSource.value = household_validations.value;
-          return dataSource.value;
-        }
-        if(query.length > 3){
-          const response = await fetch(`${process.env.VUE_APP_BASE_URL}/household_validation?sub_county_id=${location_id.value}&query=${query}`,
-          {
-            method: "GET",
-            headers:{
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          } 
-        );
-        const data = await response.json();
-        dataSource.value = data.data.data;
-        paginationOptions.value.total = data.data.total;
-        }
-        
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-        
-      }
-    })
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      columns,
-      formState,
-      // exportHouseHoldData,
-      filteredData,
-      handleChange,
-      activeClass,
-      handleVerify,
-      isModalOpen,
-      inputValue,
-      household_id,
-      handleOk,
-      results,
-      searchItem,
-      paginationOptions,
-      searchResults
-    };
-  },
-  props: {
-    recordId: Number,
-    hh_size: Number,
-  },
-});
 </script>
 <style>
 .badge-green {
