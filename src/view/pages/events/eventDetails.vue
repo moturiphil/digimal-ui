@@ -117,6 +117,21 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
+                            <template #participants="{ record }">
+                              <td>
+                                <!-- Buttons for viewing confirmed and pending participants -->
+                                <div class="table-actions">
+                                  <!-- Button for viewing confirmed participants -->
+                                  <sdButton
+                                    size="extra-small"
+                                    type="danger"
+                                    @click="voidParticipant(record.id)"
+                                  >
+                                    Void Participant
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
 
@@ -152,6 +167,32 @@
                           </a-table>
                         </TableWrapper>
                       </div>
+                      <!-- Void Participants Modal -->
+                      <a-modal
+                        title="Void Participant"
+                        :visible="isModalOpen"
+                        @cancel="handleCancel"
+                        width="20%"
+                      >
+                        <p>Are you sure you want to void participant?</p>
+                        <template #footer>
+                          <a-button
+                            key="cancel"
+                            type="warning"
+                            @click="handleCancel"
+                          >
+                            Cancel
+                          </a-button>
+                          <a-button
+                            key="confirm"
+                            type="danger"
+                            @click="handleVoid"
+                          >
+                            Confirm
+                          </a-button>
+                        </template>
+                      </a-modal>
+                      <!-- End void participant modal -->
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -181,6 +222,7 @@ import { Modal } from "ant-design-vue";
 import { useRoute, useRouter } from "vue-router";
 import store from "../../../vuex/store";
 import { decrypt } from "@/cryptoHelper";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -209,6 +251,12 @@ const columns = [
     dataIndex: "no_of_days",
     key: "id",
   },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "participants",
+    slots: { customRender: "participants" },
+  },
 ];
 
 const recordCount = computed(() => dataSource.value.length);
@@ -232,16 +280,17 @@ const confirmed = ref([]);
 const pending = ref([]);
 const activeClass = ref("all");
 const isGenerating = computed(() => state.isGenerating);
+const isModalOpen = ref(false);
+const participant_id = ref("");
 
 //const isModalOpen = ref(false);
 
-console.log(plainquery.event_code);
+console.log(plainquery.id);
 
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
-
-console.log(genetatePayrollURL);
+//void_event_participant/{event_id}/{event_user_id}
 
 const generatePayroll = async () => {
   store.commit("setIsGenerating", true);
@@ -272,13 +321,59 @@ const generatePayroll = async () => {
   }
 };
 
+const voidParticipant = (id) => {
+  isModalOpen.value = true;
+  console.log(id);
+  participant_id.value = id;
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
+const handleVoid = async () => {
+  console.log(participant_id.value);
+  try {
+    console.log("testing at this point");
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/void_event_participant/${plainquery.id}/${participant_id.value}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+
+    if (data.status === true) {
+      notification.success({
+        message: "Participant voided successfully",
+        description: data.message,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else {
+      notification.error({
+        message: "Participant voiding not successful",
+        description: data.message,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const handleErrorResponse = (response) => {
-  console.log(response)
+  console.log(response);
   store.commit("setIsGenerating", false);
   Modal.error({
     title: "Error",
-    content:
-      "Something went wrong, contact admin",
+    content: "Something went wrong, contact admin",
   });
   setTimeout(() => location.reload(), 4000);
 };

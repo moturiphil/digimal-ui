@@ -174,7 +174,7 @@
               <a-row>
                 <a-col :md="12" :xs="24">
                   <span class="admin-footer__copyright"
-                    >2023 © DigiMal</span
+                    >2024 © DigiMal</span
                   >
                 </a-col>
                 <a-col :md="12" :xs="24">
