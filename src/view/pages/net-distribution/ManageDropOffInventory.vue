@@ -887,7 +887,7 @@
             if(success){
               notification.success({
                 message: "Success",
-                description: `${data}`
+                description: `${message}`
               });
             }
             else{
