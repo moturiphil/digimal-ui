@@ -291,7 +291,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     sublocation.value = "Select Sub Location"
   } else if (org_level == 'county') {//get subcounties
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&county=${location_id}`
+    masterListUrl += `&location_id=${location_id}`
     //clear fields
     subcounty.value = "Select SubCounty"
     ward.value = " Select Ward"
@@ -299,25 +299,25 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     sublocation.value = "Select Sub Location"
   } else if (org_level == 'subcounty') {//get wards
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&sub_county=${location_id}`
+    masterListUrl += `&location_id=${location_id}`
     //clear fields
     ward.value = " Select Ward"
     location.value = "Select Location"
     sublocation.value = "Select Sub Location"
   } else if (org_level == 'ward') {//get locatios
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&ward=${location_id}`
+    masterListUrl += `&location_id=${location_id}`
     //clear fields
     location.value = "Select Location"
     sublocation.value = "Select Sub Location"
   } else if (org_level == 'location') {//get sub locatios
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&location=${location_id}`
+    masterListUrl += `&location_id=${location_id}`
     //clear fields
     sublocation.value = "Select Sub Location"
   } else if (org_level == 'sublocation') {//get sublocations stats
     fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&sublocation=${location_id}`
+    masterListUrl += `&location_id=${location_id}`
   }
   await axios.get(`${fetchUrl}`)
     .then(response => {
