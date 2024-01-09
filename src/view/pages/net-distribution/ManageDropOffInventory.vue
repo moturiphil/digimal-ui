@@ -882,16 +882,18 @@
             body: JSON.stringify(data),
           })
           .then((response) => response.json())
-          .then(({success, data}) => {
+          .then(({success, data, message}) => {
+            console.log({success, data, message})
             if(success){
               notification.success({
                 message: "Success",
                 description: `${data}`
               });
-            }else{
+            }
+            else{
               notification.info({
                 message: "Info",
-                description: `${data}`
+                description: `${message}`
               });
             }
           })
