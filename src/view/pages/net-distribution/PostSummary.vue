@@ -105,19 +105,34 @@
       key: "name",
     },
     {
-      title: "Nets Required",
-      dataIndex: "nets_required",
-      key: "nets_required",
-    },
-    {
       title: "Number of Households",
       dataIndex: "number_of_households",
       key: "hh_no",
     },
     {
+      title: "Nets Required",
+      dataIndex: "nets_required",
+      key: "nets_required",
+    },
+    {
       title: "Nets Received",
       dataIndex: "nets_received",
       key: "nets_received",
+    },
+    {
+      title: "Nets To Issued ",
+      dataIndex: "nets_issued",
+      key: "nets_sent_to_dropoff",
+    },
+    {
+      title: "Nets To Drop-off",
+      dataIndex: "nets_sent_to_dropoff",
+      key: "nets_sent_to_dropoff",
+    },
+    {
+      title: "Balance",
+      dataIndex: "balance",
+      key: "balance",
     },
     {
       title: "",
