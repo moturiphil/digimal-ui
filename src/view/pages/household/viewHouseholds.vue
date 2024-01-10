@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="HouseHolds Registered" >
+    <sdPageHeader ghost title="HouseHolds" >
      <template #buttons>
         <div class="search-box">
           <a-input
@@ -216,6 +216,14 @@ onMounted(async () => {
   }
 });
 
+const onPageChange = async (page) => {
+  currentPage.value = page
+  try {
+    fetchHouseholds()
+  } catch (error) {
+    console.error(error);
+  }
+}
 // const handlePaginationChange = (newPage) => {
 //   current.value = newPage;
 //   console.log(newPage);
@@ -269,6 +277,7 @@ const handleChange = async (org_id, org_level) => {
   fetchChildData(parent_id, org_id, org_level)
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
+  currentPage.value=1
   let fetchUrl = `get_sub_counties_list`
   let masterListUrl = `households?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
   if (org_level == 'country') {//get counties
