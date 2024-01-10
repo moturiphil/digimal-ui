@@ -467,6 +467,22 @@ const routes = [
       ),
   },
   {
+    path: "/villages/hh/:id",
+    name: "hh-villages",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/villagesHousehold.vue"
+      ),
+  },
+  {
+    path: "/posts/hh/:id",
+    name: "hh-posts",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/postsHousehold.vue"
+      ),
+  },
+  {
     path: "/chp-hh-registered/:id",
     name: "chp-hh-registered",
     component: () =>

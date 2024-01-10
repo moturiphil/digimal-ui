@@ -152,14 +152,14 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetIncompleteHouseholdReg">
-          <router-link to="/households-registrations/incomplete">
-            Incomplete HouseHolds Registration
-          </router-link>
-        </a-menu-item>
         <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
           <router-link to="/household/validation">
             HouseHolds Validation
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetIncompleteHouseholdReg">
+          <router-link to="/households-registrations/incomplete">
+            Incomplete HouseHolds Registration
           </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
@@ -456,7 +456,7 @@ const viewRegHHRoles = [
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,35
 ];
 
 const viewNetsDistributedRoles = [

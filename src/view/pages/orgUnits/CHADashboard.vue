@@ -47,24 +47,38 @@
       >
         <template v-if="selectedKeys[0] === '1'">
           <h2>Distribution Posts</h2>
-<<<<<<< HEAD
-          <!-- <a-table :columns="transfersColumns" :data-source="transfersData" /> -->
-          <div class="table-responsive">
-            <a-table
-              :columns="transfersColumns"
-              :data-source="transfersData"
-              :scroll="{ x: 'max-content' }"
-            />
-=======
           <!-- <a-table :columns="transfersColumns" :data-source="subLocationData" /> -->
           <div class="table-responsive">
-            <TableWrapper>
             <a-table
               :columns="transfersColumns"
               :data-source="subLocationData"
               :scroll="{ x: 'max-content' }"
               :pagination="false"
-            />
+            >
+              <template #posts="{ record }">
+                <td>
+                  <!-- Buttons for viewing confirmed and pending participants -->
+                  <div class="table-actions">
+                    <!-- Button for viewing confirmed participants -->
+                    <sdButton size="extra-small" type="success">
+                      <router-link
+                        :to="{
+                          path: `/posts/hh/${record.id}`,
+                          query: {
+                            id: record.id,
+                          },
+                        }"
+                        class="btn-icon"
+                        type="info"
+                        shape="circle"
+                      >
+                        View Households
+                      </router-link>
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
             <a-pagination
               :current="currentPage"
               :total="datatotal"
@@ -73,8 +87,6 @@
               :pagination="true"
               @change="onLTablePageChange($event)"
             />
-            </TableWrapper>
->>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
           </div>
         </template>
         <template v-else-if="selectedKeys[0] === '2'">
@@ -85,7 +97,31 @@
               :columns="villagesColumns"
               :data-source="villagesData"
               :scroll="{ x: 'max-content' }"
-            />
+            >
+              <template #villages="{ record }">
+                <td>
+                  <!-- Buttons for viewing confirmed and pending participants -->
+                  <div class="table-actions">
+                    <!-- Button for viewing confirmed participants -->
+                    <sdButton size="extra-small" type="success">
+                      <router-link
+                        :to="{
+                          path: `/villages/hh/${record.id}`,
+                          query: {
+                            id: record.id,
+                          },
+                        }"
+                        class="btn-icon"
+                        type="info"
+                        shape="circle"
+                      >
+                        View Households
+                      </router-link>
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
           </div>
         </template>
       </div>
@@ -97,62 +133,19 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
-import { ref, onMounted } from "vue";
-//   import { fetchData } from "@/api"; // Replace with your actual API module
-=======
 import { ref, onMounted, watch } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
 import axios from "@/Axiosconfig";
-import { TableWrapper } from "../../styled";
+// import { TableWrapper } from "../../styled";
 
 var currentPage = ref(1);
 var pageSize = ref(100);
-var datatotal = ref(0)
->>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
+var datatotal = ref(0);
 
 const selectedKeys = ref(["2"]);
 
 const transfersColumns = ref([
   {
-<<<<<<< HEAD
-    title: "From Post",
-    dataIndex: "from_post_name",
-    key: "id",
-  },
-  {
-    title: "To Post",
-    dataIndex: "to_post_name",
-    key: "id",
-  },
-  {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
-    key: "id",
-  },
-  {
-    title: "Date of Transfer",
-    dataIndex: "date_issued",
-    key: "id",
-  },
-  {
-    title: "Issued By",
-    dataIndex: "issued_by",
-    key: "id",
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "id",
-    slots: { customRender: "status" },
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
-  },
-=======
     title: "Distribution Post",
     dataIndex: "name",
     key: "id",
@@ -177,47 +170,16 @@ const transfersColumns = ref([
     dataIndex: "distribution_end_date",
     key: "id",
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // },
->>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "posts",
+    slots: { customRender: "posts" },
+  },
 ]);
 
 const villagesColumns = ref([
   {
-<<<<<<< HEAD
-    title: "From Post",
-    dataIndex: "from_post_name",
-    key: "id",
-  },
-  {
-    title: "To Post",
-    dataIndex: "to_post_name",
-    key: "id",
-  },
-  {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
-    key: "id",
-  },
-  {
-    title: "Date of Transfer",
-    dataIndex: "date_issued",
-    key: "id",
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
-  },
-]);
-const villagesData = ref([]);
-
-=======
     title: "Village",
     dataIndex: "name",
     key: "id",
@@ -242,49 +204,39 @@ const villagesData = ref([]);
     dataIndex: "no_of_registered_hh",
     key: "id",
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "villages",
+    slots: { customRender: "villages" },
+  },
 ]);
 
 const villagesData = ref([]);
 
 const subLocationData = ref([]);
 
->>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
 const selectMenuItem = (key) => {
   selectedKeys.value = [key];
 };
 
-<<<<<<< HEAD
-onMounted(async () => {
-  // Fetch data for Distribution Post table
-  if (selectedKeys.value[0] === "1") {
-    //   transfersData.value = await fetchData('/transfers-endpoint');
-  }
-
-  // Fetch data for Villages table
-  if (selectedKeys.value[0] === "2") {
-    //   villagesData.value = await  fetchData('/villages-endpoint');
-=======
 // Initial load: Fetch villages data
 onMounted(async () => {
   await fetchVillagesData();
 });
 
 const onLTablePageChange = async (page) => {
-  currentPage.value = page
+  currentPage.value = page;
   try {
-    const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
+    const response = await axios.get(
+      `gf_events?page=${page}&per_page=${pageSize.value}`
+    );
     subLocationData.value = response.data.data;
     datatotal.value = response.data.pagination.total;
   } catch (error) {
     console.error(error);
   }
-}
+};
 // Function to fetch village data
 const fetchVillagesData = async () => {
   try {
@@ -315,7 +267,6 @@ watch(selectedKeys, async (newSelectedKeys) => {
     await fetchSubLocationData();
   } else if (newSelectedKeys[0] === "2") {
     await fetchVillagesData();
->>>>>>> 8ca2064aa6fd523e50298f8e3ea8d96100e5d3ff
   }
 });
 </script>
