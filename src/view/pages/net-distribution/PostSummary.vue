@@ -286,7 +286,7 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'county') {//get subcounties
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&location_id=${location_id}`
+      masterUrl += `&county=${location_id}`
       //clear fields
       subcounty.value = "Select SubCounty"
       ward.value = " Select Ward"
@@ -294,14 +294,14 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'subcounty') {//get wards
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&location_id=${location_id}`
+      masterUrl += `&subcounty=${location_id}`
       //clear fields
       ward.value = " Select Ward"
       location.value = "Select Location"
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'ward') {//get locatios
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&location_id=${location_id}`
+      masterUrl += `&ward=${location_id}`
       //clear fields
       location.value = "Select Location"
       sublocation.value = "Select Sub Location"
@@ -312,7 +312,7 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'sublocation') {//get sublocations stats
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&location_id=${location_id}`
+      masterUrl += `&sublocation_id=${location_id}`
     }
     await axios.get(`${fetchUrl}`)
       .then(response => {
@@ -408,7 +408,6 @@
     axios
       .get(`get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
       .then((response) => {
-        console.log(response.data.data);
         dataSource.value = response.data.data;
         datatotal.value= response.data.pagination.total;
         total_households.value  = response.data.pagination.total
