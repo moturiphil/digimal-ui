@@ -468,7 +468,7 @@
                                       <a-select-option value="2">MEDS</a-select-option>
                                     </a-select>
                                   </a-form-item>
-                                  <a-form-item name="product_code" label="Product Code">
+                                  <a-form-item name="product_code" label="Product">
                                     <a-select
                                       v-model:value="newOrder.product_code"
                                       placeholder="Select Product"
@@ -476,10 +476,10 @@
                                     >
                                       <a-select-option
                                         v-for="product in productList"
-                                        :key="product.id"
-                                        v-model:value="product.item_code"
+                                        :key="product.product_code"
+                                        v-model:value="product.product_code"
                                       >
-                                        {{ product.item_code }}
+                                        {{ product.product_code }}
                                       </a-select-option>
                                     </a-select>
                                   </a-form-item>
@@ -639,11 +639,11 @@
       dataIndex: "post_code",
       key: "id",
     },
-    {
-      title: "Product Code",
-      dataIndex: "product_code",
-      key: "id",
-    },
+    // {
+    //   title: "Product Code",
+    //   dataIndex: "product_code",
+    //   key: "id",
+    // },
     {
       title: "Product Name",
       dataIndex: "product_name",
@@ -882,16 +882,18 @@
             body: JSON.stringify(data),
           })
           .then((response) => response.json())
-          .then(({success, data}) => {
+          .then(({success, data, message}) => {
+            console.log({success, data, message})
             if(success){
               notification.success({
                 message: "Success",
-                description: `${data}`
+                description: `${message}`
               });
-            }else{
+            }
+            else{
               notification.info({
                 message: "Info",
-                description: `${data}`
+                description: `${message}`
               });
             }
           })
@@ -1299,13 +1301,14 @@
 
       const getProductList = ()=>{
         try {
-          fetch(`${process.env.VUE_APP_BASE_URL}/product_code_list`,
+          fetch(`${process.env.VUE_APP_BASE_URL}/product_code_list/17`,
           {
             method: "GET",
             headers: authHeader(),
           })
           .then((response) => response.json())
           .then((data) => {
+            console.log(data.data);
             productList.value = data.data;
           });
         } catch (error) {
@@ -1317,8 +1320,9 @@
       }
 
       const handleProductChange = (value)=>{
-        const product = productList.value.find((product) => product.item_code === value);
-        newOrder.product_name = product.item_name;
+        console.log(value);
+        const product = productList.value.find((product) => product.product_code === value);
+        newOrder.product_name = product.product_name;
       }
 
       const clearSelected = (checked) => {
@@ -1337,6 +1341,7 @@
           product_code: newOrder.product_code,
           product_name: newOrder.product_name,
         };
+        console.log(JSON.stringify(data));
         // newOrder.checked ? data.post_id = newOrder.post_id : data.drop_off_point_id = drop_off_id
         if (!newOrder.checked){
           data.post_id = newOrder.post_id;
@@ -1359,6 +1364,7 @@
           )
             .then((response) => response.json())
             .then(({ success, message }) => {
+              console.log({success, message});
               if (success) {
                 notification.success({
                   message: "Success",
