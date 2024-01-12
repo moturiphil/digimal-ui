@@ -194,7 +194,7 @@
                             </figure>
                         </a-col> -->
                         <a-col :xxl="24" :md="24" :sm="24" :xs="24">
-                            <!-- <figure class="highcharts-figure">
+                            <figure class="highcharts-figure">
                                 <div id="NetsPerCapitaChart"></div>
                                 <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
                                     <thead>
@@ -222,7 +222,7 @@
                                     </tbody>
                                 </table>
                             </figure>
-                            <a-divider></a-divider> -->
+                            <a-divider></a-divider>
                             <div>
                              <a-row :gutter="16" v-if="!printMode">
                                 <a-col :span="12" style="display:flex;flex-direction:row;">
@@ -544,7 +544,7 @@ const fetchInitialChartData = async () => {
             //     newChartData.value.map(item => item.name),//cats
             //     access_level.value.level.level_name,//level
             // )
-            // getPerCapitaData(newChartData.value, access_level.value.level.level_name)
+            getPerCapitaData(newChartData.value, access_level.value.level.level_name)
             let currentDate = new Date()
             //console.log(currentDate.getFullYear())
             dateFrom.value = moment(new Date(`2023-11-20`)).format(dateFormat.value)
@@ -716,7 +716,7 @@ const fetchChildData = async (org_id, org_level) => {
                     //     cats,//cats
                     //     org_level,//level
                     // )
-                    // getPerCapitaData(newChartData.value,org_level)
+                    getPerCapitaData(newChartData.value,org_level)
                     fetchHouseHoldsRegTrends()
                 })
         }).catch(error => {
@@ -726,20 +726,20 @@ const fetchChildData = async (org_id, org_level) => {
             });
         });
 }
-// const getPerCapitaData = (data, org_level) => {
-//     let scatterData = [];
-//     data.forEach((item, x) => {
-//         let y = parseFloat(item.nets_issued_per_capita);
-//         scatterData.push([x,parseFloat(y).toFixed(2)?y:0])
-//     })
-    // NetsPerCapita(
-    //     data.map(item => parseInt(item.all_hh_members)),//total population
-    //     data.map(item => parseInt(item.nets_issued)),//nets disributed
-    //     scatterData,//percapita
-    //     data.map(item => item.name),//cats
-    //     org_level,//level
-    // )
-//}
+const getPerCapitaData = (data, org_level) => {
+    let scatterData = [];
+    data.forEach((item, x) => {
+        let y = parseFloat(item.nets_issued_per_capita);
+        scatterData.push([x,parseFloat(y).toFixed(2)?y:0])
+    })
+    NetsPerCapita(
+        data.map(item => parseInt(item.all_hh_members)),//total population
+        data.map(item => parseInt(item.nets_issued)),//nets disributed
+        scatterData,//percapita
+        data.map(item => item.name),//cats
+        org_level,//level
+    )
+}
 const fetchCounties = async () => {
     axios.get('counties/')
         .then(response => {
@@ -1406,155 +1406,155 @@ const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level)
 //         }
 //     });
 // }
-// const NetsPerCapita = (total_population, nets_issued, scatter_data, cats, orglevel) => {
-//     //console.log(scatter_data)
-//    Highcharts.chart('NetsPerCapitaChart', {
-//         chart: {
-//             zoomType: 'xy'
-//        },
-//         credits: {
-//             text: 'Powered by HealthIT KE', // Custom text
-//             href: 'https://unes.co.ke', // Custom link
-//             target: '_blank',
-//             position: {
-//                 align: 'right',
-//                 x: -10,
-//                 verticalAlign: 'bottom',
-//                 y: -5,
-//             },
-//         },
-//         title: {
-//             text: 'Nets PerCapita at '+orglevel+' level',
-//             align: 'left'
-//         },
-//         xAxis: [{
-//             categories: cats,
-//             crosshair: true
-//         }],
-//         yAxis: [{ // Primary yAxis
-//             labels: {
-//                 format: '{value}',
-//                 style: {
-//                     color: Highcharts.getOptions().colors[2]
-//                 }
-//             },
-//             opposite: true
+const NetsPerCapita = (total_population, nets_issued, scatter_data, cats, orglevel) => {
+    //console.log(scatter_data)
+   Highcharts.chart('NetsPerCapitaChart', {
+        chart: {
+            zoomType: 'xy'
+       },
+        credits: {
+            text: 'Powered by HealthIT KE', // Custom text
+            href: 'https://unes.co.ke', // Custom link
+            target: '_blank',
+            position: {
+                align: 'right',
+                x: -10,
+                verticalAlign: 'bottom',
+                y: -5,
+            },
+        },
+        title: {
+            text: 'Nets PerCapita at '+orglevel+' level',
+            align: 'left'
+        },
+        xAxis: [{
+            categories: cats,
+            crosshair: true
+        }],
+        yAxis: [{ // Primary yAxis
+            labels: {
+                format: '{value}',
+                style: {
+                    color: Highcharts.getOptions().colors[2]
+                }
+            },
+            opposite: true
 
-//         }, { // Secondary yAxis
-//             gridLineWidth: 0,
-//             title: {
-//                 text: 'Count ',
-//                 style: {
-//                     color: Highcharts.getOptions().colors[0]
-//                 }
-//             },
-//             labels: {
-//                 style: {
-//                     color: Highcharts.getOptions().colors[0]
-//                 }
-//             }
+        }, { // Secondary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'Count ',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
 
-//         }, { // Tertiary yAxis
-//             gridLineWidth: 0,
-//             title: {
-//                 text: 'PerCapita',
-//                 style: {
-//                     color: '#004225',
-//                 }
-//             },
-//             labels: {
-//                 style: {
-//                     color: '#004225',
-//                 }
-//             },
-//             opposite: true
-//         }],
-//         tooltip: {
-//             shared: true
-//         },
-//         legend: {
-//             layout: 'vertical',
-//             align: 'left',
-//             x: 80,
-//             verticalAlign: 'top',
-//             y: 55,
-//             floating: true,
-//             backgroundColor:
-//                 Highcharts.defaultOptions.legend.backgroundColor || // theme
-//                 'rgba(255,255,255,0.25)'
-//         },
-//         series: [{
-//             name: 'Total population',
-//             type: 'column',
-//             yAxis: 1,
-//             data: total_population,
-//             tooltip: {
-//                 valueSuffix: ''
-//             }
+        }, { // Tertiary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'PerCapita',
+                style: {
+                    color: '#004225',
+                }
+            },
+            labels: {
+                style: {
+                    color: '#004225',
+                }
+            },
+            opposite: true
+        }],
+        tooltip: {
+            shared: true
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            x: 80,
+            verticalAlign: 'top',
+            y: 55,
+            floating: true,
+            backgroundColor:
+                Highcharts.defaultOptions.legend.backgroundColor || // theme
+                'rgba(255,255,255,0.25)'
+        },
+        series: [{
+            name: 'Total population',
+            type: 'column',
+            yAxis: 1,
+            data: total_population,
+            tooltip: {
+                valueSuffix: ''
+            }
 
-//         }, {
-//             name: 'Nets Distributed',
-//             type: 'column',
-//             yAxis: 1,
-//             data: nets_issued,
-//             color: '#4ADEDE',
-//             marker: {
-//                 enabled: false
-//             },
-//             dashStyle: 'shortdot',
-//             tooltip: {
-//                 valueSuffix: ''
-//             }
+        }, {
+            name: 'Nets Distributed',
+            type: 'column',
+            yAxis: 1,
+            data: nets_issued,
+            color: '#4ADEDE',
+            marker: {
+                enabled: false
+            },
+            dashStyle: 'shortdot',
+            tooltip: {
+                valueSuffix: ''
+            }
 
-//         }, {
-//             name: 'PerCapita',
-//             type: 'scatter',
-//             yAxis: 2,
-//             data: scatter_data,
-//  training           color: '#004225',
-//             tooltip: {
-//                 pointFormat: '{point.name} <b>{point.y:.1f}</b>'
-//             },
-//             marker: {
-//                 radius: 6, // Set the radius to adjust the size of scatter plot dots
-//             },
-//         }],
-//         responsive: {
-//             rules: [{
-//                 condition: {
-//                     maxWidth: 500
-//                 },
-//                 chartOptions: {
-//                     legend: {
-//                         floating: false,
-//                         layout: 'horizontal',
-//                         align: 'center',
-//                         verticalAlign: 'bottom',
-//                         x: 0,
-//                         y: 0
-//                     },
-//                     yAxis: [{
-//                         labels: {
-//                             align: 'right',
-//                             x: 0,
-//                             y: -6
-//                         },
-//                         showLastLabel: false
-//                     }, {
-//                         labels: {
-//                             align: 'left',
-//                             x: 0,
-//                             y: -6
-//                         },
-//                         showLastLabel: false
-//                     }, {
-//                         visible: false
-//                     }]
-//                 }
-//             }]
-//         }
-//     });
-// }
+        }, {
+            name: 'PerCapita',
+            type: 'scatter',
+            yAxis: 2,
+            data: scatter_data,
+            color: '#004225',
+            tooltip: {
+                pointFormat: '{point.name} <b>{point.y:.1f}</b>'
+            },
+            marker: {
+                radius: 6, // Set the radius to adjust the size of scatter plot dots
+            },
+        }],
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    legend: {
+                        floating: false,
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom',
+                        x: 0,
+                        y: 0
+                    },
+                    yAxis: [{
+                        labels: {
+                            align: 'right',
+                            x: 0,
+                            y: -6
+                        },
+                        showLastLabel: false
+                    }, {
+                        labels: {
+                            align: 'left',
+                            x: 0,
+                            y: -6
+                        },
+                        showLastLabel: false
+                    }, {
+                        visible: false
+                    }]
+                }
+            }]
+        }
+    });
+}
 </script>
 <style scoped>
 /* Make charts responsive */
