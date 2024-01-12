@@ -274,7 +274,7 @@
   const fetchChildData = async (location_id, org_id, org_level) => {
     currentPage.value=1
     let fetchUrl = `get_sub_counties_list`
-    let masterListUrl = `get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+    let masterUrl = `get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
     if (org_level == 'country') {//get counties
       fetchUrl += `?parent_id=${org_id}`
       //masterListUrl += `&location=${location_id}`
@@ -286,7 +286,7 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'county') {//get subcounties
       fetchUrl += `?parent_id=${org_id}`
-      masterListUrl += `&location_id=${location_id}`
+      masterUrl += `&county=${location_id}`
       //clear fields
       subcounty.value = "Select SubCounty"
       ward.value = " Select Ward"
@@ -294,25 +294,25 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'subcounty') {//get wards
       fetchUrl += `?parent_id=${org_id}`
-      masterListUrl += `&location_id=${location_id}`
+      masterUrl += `&subcounty=${location_id}`
       //clear fields
       ward.value = " Select Ward"
       location.value = "Select Location"
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'ward') {//get locatios
       fetchUrl += `?parent_id=${org_id}`
-      masterListUrl += `&location_id=${location_id}`
+      masterUrl += `&ward=${location_id}`
       //clear fields
       location.value = "Select Location"
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'location') {//get sub locatios
       fetchUrl += `?parent_id=${org_id}`
-      masterListUrl += `&location_id=${location_id}`
+      masterUrl += `&location_id=${location_id}`
       //clear fields
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'sublocation') {//get sublocations stats
       fetchUrl += `?parent_id=${org_id}`
-      masterListUrl += `&location_id=${location_id}`
+      masterUrl += `&sublocation_id=${location_id}`
     }
     await axios.get(`${fetchUrl}`)
       .then(response => {
@@ -370,15 +370,12 @@
           ];
         }
       }).then(async () => {
-        await axios.get(`${masterListUrl}`)
+        await axios.get(`${masterUrl}`)
           .then(response => {
-            console.log(response.data.data)
-            let data = response.data.data.data;
+            let data = response.data.data;
             dataSource.value = data;
-            // paginationOptions.value.total = response.data.data.length;
-            console.log(response.data.pagination.total);
             datatotal.value = response.data.pagination.total;
-            total_households.value = response.data.data.total;
+            total_households.value = response.data.pagination.total;
           })
       }).catch(error => {
         notification.error({
@@ -411,12 +408,9 @@
     axios
       .get(`get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
       .then((response) => {
-        console.log(response.data.data);
         dataSource.value = response.data.data;
-        // paginationOptions.value.total = response.data.data.length;
         datatotal.value= response.data.pagination.total;
-        console.log(response.data.pagination.total);
-        total_households.value  = response.data.data.total
+        total_households.value  = response.data.pagination.total
       })
       .catch((error) => {
         console.error(error);
