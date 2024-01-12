@@ -102,7 +102,7 @@
                 </a-table>
                 <a-pagination
                   :current="current"
-                  :total="total"
+                  :total="datatotal"
                   :pageSize="pageSize"
                   :showSizeChanger="true"
                   :pagination="true"
@@ -318,6 +318,7 @@ const handleChange = async (org_id, org_level) => {
   fetchChildData(parent_id, org_id, org_level)
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
+  currentPage.value=1
   let fetchUrl = `get_sub_counties_list`
   let masterListUrl = `posts_data?per_page=${pageSize.value}&page=${currentPage.value}`
   if (org_level == 'country') {//get counties
@@ -418,10 +419,10 @@ const fetchChildData = async (location_id, org_id, org_level) => {
       await axios.get(`${masterListUrl}`)
         .then(response => {
           // console.log(response.data.data)
-          let data = response.data.data.data;
+          let data = response.data.data;
           dataSource.value = data;
           // paginationOptions.value.total = response.data.data.length;
-          datatotal.value = response.data.data.total;
+          datatotal.value = response.data.pagination.total;
         })
     }).catch(error => {
       notification.error({
@@ -473,6 +474,7 @@ const fetchDistributionsPosts = async () => {
     const response = await axios.get(`posts_data?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`);
     const data = await response.data;
     dataSource.value = data.data;
+    datatotal.value=data.pagination.total;
     // console.log(dataSource.value);
     distributionStatus.value = {};
     console.log(distributionStatus.value);
