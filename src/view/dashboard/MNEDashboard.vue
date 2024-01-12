@@ -521,9 +521,10 @@ const fetchInitialChartData = async () => {
             newChartData.value.forEach((item, index) => {
                 let x = parseInt(item.households_registered);
                 let y = parseInt(item.estimated_households);
-                let ratio = parseFloat((x / y) * 100).toFixed(2)
+                let ratio = parseFloat((x / y) * 100).toFixed(1)
                 scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0])
             })
+            console.log(scatterData)
             EstimatedvsRegisteredHouseholds(
                newChartData.value.map(item => parseInt(item.estimated_households)),//estimmated
                newChartData.value.map(item => parseInt(item.households_registered)),//registration
@@ -546,7 +547,7 @@ const fetchInitialChartData = async () => {
             // getPerCapitaData(newChartData.value, access_level.value.level.level_name)
             let currentDate = new Date()
             //console.log(currentDate.getFullYear())
-            dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
+            dateFrom.value = moment(new Date(`2023-11-20`)).format(dateFormat.value)
             dateTo.value = moment(currentDate).format(dateFormat.value);
             HouseHoldsRegistrationTrendsData.value = newChartData.value
             fetchHouseHoldsRegTrends()
@@ -691,9 +692,10 @@ const fetchChildData = async (org_id, org_level) => {
                     newChartData.value.forEach((item, index) => {
                         let x = parseInt(item.households_registered);
                         let y = parseInt(item.estimated_households);
-                        let ratio = parseFloat((x / y) * 100).toFixed(2)
+                        let ratio = parseFloat((x / y) * 100).toFixed(1)
                         scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0])
                     })
+                    console.log(scatterData)
                     EstimatedvsRegisteredHouseholds(
                     newChartData.value.map(item => parseInt(item.estimated_households)),//estimmated
                     newChartData.value.map(item => parseInt(item.households_registered)),//registration
@@ -823,6 +825,7 @@ const handleFilterChange = () => {
 const fetchHouseHoldsRegTrends = () => {
   //format date
   dateFrom.value = moment(dateFrom.value).format(dateFormat.value)
+  dateFrom.value = moment(new Date(`2023-11-20`)).format(dateFormat.value)
   dateTo.value = moment(dateTo.value).format(dateFormat.value)
   axios.get(`household_registration_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
@@ -842,6 +845,13 @@ const HouseHoldsRegistrationTrendsChart = (data, org_level) => {
   Highcharts.chart('HouseHoldsRegistrationTrendsChart', {
     chart: {
       type: 'spline',
+      options3d: {
+        enabled: true,
+        alpha: 0,
+        beta: 15,
+        viewDistance: 100,
+        depth: 40
+    }
     },
     credits: {
       text: 'Powered by HealthIT KE', // Custom text
@@ -1044,7 +1054,14 @@ const HouseHoldsRegistrationTrendsChart = (data, org_level) => {
 const EstimatedvsRegisteredHouseholds = (estimated, registered, scatter_data, cats, orglevel) => {
   Highcharts.chart('EstimatedvsRegisteredHouseholds', {
     chart: {
-      zoomType: 'xy'
+      zoomType: 'xy',
+      options3d: {
+        enabled: true,
+        alpha: 0,
+        beta: 15,
+        viewDistance: 100,
+        depth: 40
+    }
     },
     credits: {
       text: 'Powered by HealthIT KE', // Custom text
@@ -1097,7 +1114,7 @@ const EstimatedvsRegisteredHouseholds = (estimated, registered, scatter_data, ca
         }
       },
       labels: {
-        format: '{value:.2f}%',
+        format: '{value:.1f}%',
         style: {
           color: '#004225',
         }
@@ -1150,7 +1167,7 @@ const EstimatedvsRegisteredHouseholds = (estimated, registered, scatter_data, ca
       data: scatter_data,
       color: '#004225',
       tooltip: {
-        pointFormat: '{point.name} <b>{point.y:.2f}%</b>'
+        pointFormat: '{point.name} <b>{point.y:.1f}%</b>'
       },
       marker: {
         radius: 6, // Set the radius to adjust the size of scatter plot dots
@@ -1494,7 +1511,7 @@ const EstimatedvsRegisteredHouseholdSizeChart = (estimated,rgstd,cats,org_level)
 //             type: 'scatter',
 //             yAxis: 2,
 //             data: scatter_data,
-//             color: '#004225',
+//  training           color: '#004225',
 //             tooltip: {
 //                 pointFormat: '{point.name} <b>{point.y:.1f}</b>'
 //             },
