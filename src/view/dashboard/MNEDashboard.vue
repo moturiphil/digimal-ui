@@ -532,9 +532,19 @@ const fetchInitialChartData = async () => {
                newChartData.value.map(item => item.name),//cats
                access_level.value.level.level_name,//level
             )
+            let estimated_hh=[]
+            let registered_hh=[]
+            newChartData.value.forEach((item)=>{
+                let estmtd=parseFloat(parseInt(item.all_hh_members)/parseInt(item.estimated_households)).toFixed(1)
+                let regstd=parseFloat(item.avg_hh_size).toFixed(1)
+                estimated_hh.push(parseFloat(estmtd))
+                registered_hh.push(parseFloat(regstd))
+            })
+            console.log(estimated_hh)
+            console.log(registered_hh)
             EstimatedvsRegisteredHouseholdSizeChart(
-                newChartData.value.map(item => parseInt(parseInt(item.all_hh_members)/parseInt(item.estimated_households))),//estimmated
-                newChartData.value.map(item => parseInt(item.avg_hh_size)),//registration
+                estimated_hh,//estimmated
+                registered_hh,//registration
                 newChartData.value.map(item => item.name),//cats
                 access_level.value.level.level_name,//level
             )
@@ -547,7 +557,7 @@ const fetchInitialChartData = async () => {
             getPerCapitaData(newChartData.value, access_level.value.level.level_name)
             let currentDate = new Date()
             //console.log(currentDate.getFullYear())
-            dateFrom.value = moment(new Date(`2023-11-20`)).format(dateFormat.value)
+            dateFrom.value = moment(new Date(`2023-12-20`)).format(dateFormat.value)
             dateTo.value = moment(currentDate).format(dateFormat.value);
             HouseHoldsRegistrationTrendsData.value = newChartData.value
             fetchHouseHoldsRegTrends()
@@ -825,7 +835,7 @@ const handleFilterChange = () => {
 const fetchHouseHoldsRegTrends = () => {
   //format date
   dateFrom.value = moment(dateFrom.value).format(dateFormat.value)
-  dateFrom.value = moment(new Date(`2023-11-20`)).format(dateFormat.value)
+  dateFrom.value = moment(new Date(`2023-12-20`)).format(dateFormat.value)
   dateTo.value = moment(dateTo.value).format(dateFormat.value)
   axios.get(`household_registration_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
