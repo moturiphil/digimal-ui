@@ -611,7 +611,7 @@ const handleChange = async (org_id, org_level) => {
   let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
   // console.log(org_id)
   // console.log(org_ids.value)
-  let parent_id = org[0] || 1
+  let parent_id = org[0] || 9
   // console.log(parent_id)
   // console.log(org_level)
   fetchChildData(org_id, org_level)
@@ -887,7 +887,7 @@ const handleFilterChange = () => {
       dateTo.value = currentDate
       break;
     default:
-      dateFrom.value = new Date(`${currentDate.getFullYear()}-11-15`)
+      dateFrom.value =  moment(new Date(`2023-11-15`)).format(dateFormat.value)
       dateTo.value = currentDate
       break;
   }
@@ -896,7 +896,7 @@ const handleFilterChange = () => {
 }
 const fetchNetsDistributed = () => {
   //format date
-  dateFrom.value = moment(dateFrom.value).format(dateFormat.value)
+  dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
   dateTo.value = moment(dateTo.value).format(dateFormat.value)
   axios.get(`distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
