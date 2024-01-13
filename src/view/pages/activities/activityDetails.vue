@@ -308,7 +308,7 @@ const columns = [
   },
   {
     title: "Confirmed Days",
-    dataIndex: "no_of_days",
+    dataIndex: "confirmed_days",
     key: "id",
   },
   {
