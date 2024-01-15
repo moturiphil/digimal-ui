@@ -1,7 +1,6 @@
 <template>
   <Main>
-  <sdPageHeader title="Assign Worker">
-  </sdPageHeader>
+    <sdPageHeader title="Assign Worker"> </sdPageHeader>
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
@@ -27,6 +26,7 @@
                         option-filter-prop="label"
                         @blur="validate('received_by')"
                         @keypress="validate('received_by')"
+                        @search="handleWorkerSearch"
                       >
                         <a-select-option
                           v-for="manager in users"
@@ -35,11 +35,17 @@
                           :label="`${manager.first_name} ${manager.last_name} -${manager.role_id} `"
                         >
                           {{ manager.first_name }}
-                          {{ manager.last_name }} - {{manager.id_no}},
-                          {{ manager.role_id }}, {{manager.location_id}}
+                          {{ manager.last_name }} - {{ manager.id_no }},
+                          {{ manager.role_id }}, {{ manager.location_id }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red;" v-if="!!errors.received_by" >{{errors.received_by}}</p>
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.received_by"
+                      >
+                        {{ errors.received_by }}
+                      </p>
                     </a-form-item>
 
                     <div class="record-form-actions text-right">
@@ -83,6 +89,7 @@ const AddNew = defineComponent({
     const API_URL = `${process.env.VUE_APP_BASE_URL}/add_post_workers`;
     const router = useRouter();
     const { query } = useRoute();
+    const searchWorkerItem = ref("");
 
     const parameters = { query };
 
@@ -105,10 +112,12 @@ const AddNew = defineComponent({
     });
 
     const ArticleSchema = Yup.object().shape({
-      received_by: Yup.array().min(1, "At least 1 post worker is required").required(),
-     });
+      received_by: Yup.array()
+        .min(1, "At least 1 post worker is required")
+        .required(),
+    });
 
-     const validate=(field)=> {
+    const validate = (field) => {
       ArticleSchema.validateAt(field, formState)
         .then(() => (this.errors[field] = ""))
         .catch((err) => {
@@ -156,15 +165,24 @@ const AddNew = defineComponent({
 
     //users
     const getUsers = async () => {
-      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/users?query=${searchWorkerItem.value}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
       const data = await response.json();
       this.users = data.data;
+    };
+
+    const handleWorkerSearch = (value) => {
+      console.log(value);
+      searchWorkerItem.value = value;
+      getUsers();
     };
 
     onMounted(() => {
@@ -184,40 +202,40 @@ const AddNew = defineComponent({
       // const workersProxy = values.workers;
       // const workersArray = Object.values(workersProxy); // [2, 4]
 
-      ArticleSchema.validate(this.formState, {abortEarly: false})
-      .then(()=>{
-        this.errors = {};
-        fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(values),
-      })
-        .then((response) => response.json())
-        .then(({ status, data }) => {
-          console.log(data);
-          if (status) {
-            router.push(`/view-worker?id=${post_id}`);
-            notification["success"]({
-              message: "Post Workers Added",
-              description: "Post Workers have been successfully assigner",
-              duration: 5.5,
+      ArticleSchema.validate(this.formState, { abortEarly: false })
+        .then(() => {
+          this.errors = {};
+          fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(values),
+          })
+            .then((response) => response.json())
+            .then(({ status, data }) => {
+              console.log(data);
+              if (status) {
+                router.push(`/view-worker?id=${post_id}`);
+                notification["success"]({
+                  message: "Post Workers Added",
+                  description: "Post Workers have been successfully assigner",
+                  duration: 5.5,
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
             });
-          }
         })
-        .catch((error) => {
-          console.error("Error:", error);
+        .catch((err) => {
+          const errors = {};
+          err.inner.forEach((e) => {
+            errors[e.path] = e.message;
+          });
+          this.errors = errors;
         });
-      })
-      .catch((err) => {
-        const errors = {};
-        err.inner.forEach((e) => {
-          errors[e.path] = e.message;
-        });
-        this.errors = errors;
-      });
     };
 
     return {
@@ -237,6 +255,7 @@ const AddNew = defineComponent({
       villages,
       posts,
       users,
+      handleWorkerSearch,
     };
   },
 });
