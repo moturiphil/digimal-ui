@@ -554,6 +554,8 @@ const fetchInitialChartData = async () => {
   axios.get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(response => {
       newChartData.value = response.data.data;
+      fileterOrgeLevel.value = access_level.value.level.level_name
+      filterOrgId.value=access_level.value.level.id
       if (access_level.value.level.id === 1) {
         newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
       }
@@ -595,9 +597,8 @@ const fetchInitialChartData = async () => {
       //console.log(currentDate.getFullYear())
       dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
       dateTo.value = moment(currentDate).format(dateFormat.value);
-      fileterOrgeLevel.value = access_level.value.level.level_name
       NetsChartData.value = newChartData.value
-      fetchNetsDistributed()
+      fetchNetsDistributed();
     }).catch(error => {
       notification.error({
         message: `Error!`,
@@ -859,9 +860,6 @@ const exportChartsToPDF = async () => {
   // printMode.value = false;
   window.location.reload()
 };
-
-// Call the function to export charts to PDF
-//exportChartsToPDF();
 //chart functions
 const handleFilterChange = () => {
   const currentDate = new Date();
@@ -889,19 +887,16 @@ const handleFilterChange = () => {
       dateTo.value = currentDate
       break;
     default:
-      dateFrom.value = new Date(`${currentDate.getFullYear()}-11-15`)
+      dateFrom.value =  moment(new Date(`2023-11-15`)).format(dateFormat.value)
       dateTo.value = currentDate
       break;
   }
   //fetch data
   fetchNetsDistributed()
-  // console.log(dateFrom)
-  // console.log(dateTo)
-
 }
 const fetchNetsDistributed = () => {
   //format date
-  dateFrom.value = moment(dateFrom.value).format(dateFormat.value)
+  dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
   dateTo.value = moment(dateTo.value).format(dateFormat.value)
   axios.get(`distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
     .then(response => {
@@ -916,6 +911,8 @@ const fetchNetsDistributed = () => {
       });
     })
 }
+
+
 
 watch(selectedFilter, handleFilterChange)
 const NetsDistributedwithTime = (data, org_level) => {
