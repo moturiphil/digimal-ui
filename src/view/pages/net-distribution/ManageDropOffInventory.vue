@@ -1035,8 +1035,8 @@ const fetchReturnedNets = async () => {
         if (success) {
           returnedNets.value = data;
         } else {
-          notification.error({
-            message: "Error",
+          notification.warning({
+            message: "Info",
             description: `${data}`,
           });
         }
