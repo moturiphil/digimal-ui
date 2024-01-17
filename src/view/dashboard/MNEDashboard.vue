@@ -115,6 +115,10 @@
           <FilePdfOutlined /> Print Pdf
         </a-button>
       </a-row>
+      <a-row style="margin-top: 20px" v-if="chartsLoading">
+        <a-timeline pending="Charts loading, please wait...." :reverse="false">
+        </a-timeline>
+      </a-row>
       <div id="printPDFDiv">
         <a-row :gutter="10" class="pdf-row">
           <!-- <a-col :xxl="24" :md="24" :sm="24" :xs="24">
@@ -414,6 +418,7 @@ import html2canvas from "html2canvas";
 //import html2pdf from 'html2pdf.js';
 import { FilePdfOutlined } from "@ant-design/icons-vue";
 import { ReloadOutlined } from "@ant-design/icons-vue";
+const chartsLoading = ref(false);
 
 exporting(Highcharts);
 //chart data
@@ -600,6 +605,7 @@ onMounted(async () => {
   if (sessionStorage.getItem("user")) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     await updateFilters();
+    chartsLoading.value = true;
     await fetchInitialChartData();
   }
 });
@@ -698,6 +704,7 @@ const fetchInitialChartData = async () => {
   await axios
     .get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
     .then(async (response) => {
+      chartsLoading.value = false;
       let data = response.data.data;
       data = data.filter((e) => selectedCounties.value.includes(e.name));
       let newdata = await addEstimatedVars(data);
@@ -778,10 +785,9 @@ const handleChange = async (org_id, org_level) => {
   let parent_id = org[0] || 1;
   //console.log(parent_id)
   //console.log(org_level)
-  await fetchChildData(org_id, org_level);
   filterOrgId.value = parent_id;
   fileterOrgeLevel.value = org_level;
-  await fetchHouseHoldsRegTrends();
+  await fetchChildData(org_id, org_level);
 };
 const fetchChildData = async (org_id, org_level) => {
   let fetchUrl = `get_sub_counties_list`;
@@ -959,7 +965,7 @@ const fetchChildData = async (org_id, org_level) => {
         //     org_level,//level
         // )
         await getPerCapitaData(newChartData.value, org_level);
-        await fetchHouseHoldsRegTrends();
+        await fetchHouseHoldsRegTrends(dateFrom.value);
       });
     })
     .catch((error) => {
@@ -1084,12 +1090,11 @@ const handleFilterChange = async () => {
       dateTo.value = currentDate;
       break;
   }
-  await fetchHouseHoldsRegTrends();
+  await fetchHouseHoldsRegTrends(dateFrom.value);
 };
-const fetchHouseHoldsRegTrends = async () => {
+const fetchHouseHoldsRegTrends = async (fromDate = new Date(`2023-12-20`)) => {
   //format date
-  dateFrom.value = moment(dateFrom.value).format(dateFormat.value);
-  dateFrom.value = moment(new Date(`2023-12-20`)).format(dateFormat.value);
+  dateFrom.value = moment(fromDate).format(dateFormat.value);
   dateTo.value = moment(dateTo.value).format(dateFormat.value);
   await axios
     .get(

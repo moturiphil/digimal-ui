@@ -543,7 +543,7 @@
                           border: '2px solid  #CCCCFF',
                         }"
                         placeholder="Select Date To"
-                        @input="fetchNetsDistributed()"
+                        @input="fetchNetsDistributed(), fetchHouseHoldsRegTrends()"
                         :format="dateFormat"
                       />
                     </div>
@@ -551,6 +551,34 @@
                 </a-col>
               </a-row>
             </div>
+            <figure class="highcharts-figure">
+              <div id="HouseHoldsRegistrationTrendsChart"></div>
+              <table class="table table-responsive" v-if="printMode">
+                <thead>
+                  <tr>
+                    <th
+                      v-for="item in NHouseHoldsRegistrationTrendsData.map(
+                        (item) => item
+                      )"
+                      :key="item"
+                    >
+                      {{ item.date }}/Cummilative
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td
+                      v-for="item in HouseHoldsRegistrationTrendsData.map((item) => item)"
+                      :key="item"
+                    >
+                      {{ item.registrations }}/{{ item.cumulative }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+            <a-divider></a-divider>
             <figure class="highcharts-figure">
               <div id="NetsDistributedwithTime"></div>
               <table class="table table-responsive" v-if="printMode">
@@ -624,6 +652,7 @@ const HouseHoldRegisteredbyCoountyChartData = ref([]);
 const HouseHoldsServedbyCountyChartData = ref([]);
 const NetsIssuedbyCountyChartData = ref([]);
 const NetsDistributedwithTimeData = ref([]);
+const HouseHoldsRegistrationTrendsData = ref([]);
 var printMode = ref(false);
 const totalhouseholds_served = ref([]);
 
@@ -720,7 +749,6 @@ onMounted(async () => {
     chartsLoading.value = true;
     await fetchInitialChartData();
     await updateStats(access_level.value.location.org_id);
-    await handleFilterChange();
   } else {
     router.push("/login");
   }
@@ -830,6 +858,8 @@ const fetchInitialChartData = async () => {
           selectedCounties.value.includes(e.name.toString())
         );
       }
+      await fetchNetsDistributed();
+      await fetchHouseHoldsRegTrends();
       //nets_required,nets_issued,target_data,target_level,cats
       await netsReqvsIssuedChart(
         newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
@@ -882,7 +912,6 @@ const fetchInitialChartData = async () => {
       dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
       dateTo.value = moment(currentDate).format(dateFormat.value);
       NetsChartData.value = newChartData.value;
-      await fetchNetsDistributed();
     })
     .catch((error) => {
       console.log(error);
@@ -900,10 +929,11 @@ const handleChange = async (org_id, org_level) => {
   let parent_id = org[0] || 9;
   // console.log(parent_id)
   // console.log(org_level)
-  await fetchChildData(org_id, org_level);
   filterOrgId.value = parent_id;
   fileterOrgeLevel.value = org_level;
-  await fetchNetsDistributed();
+  await fetchChildData(org_id, org_level);
+  await fetchNetsDistributed(dateFrom.value);
+  await fetchHouseHoldsRegTrends(dateFrom.value);
 };
 const fetchChildData = async (org_id, org_level) => {
   await updateStats(org_id);
@@ -1114,7 +1144,6 @@ const fetchChildData = async (org_id, org_level) => {
           NetsIssuedbyCountyChartData.value = netsIssuedData;
         }
         fileterOrgeLevel.value = org_level;
-        await fetchNetsDistributed();
       });
     })
     .catch((error) => {
@@ -1268,14 +1297,36 @@ const handleFilterChange = async () => {
         break;
     }
     //fetch data
-    await fetchNetsDistributed();
+    await fetchNetsDistributed(dateFrom.value);
+    await fetchHouseHoldsRegTrends(dateFrom.value);
   } catch (e) {
     console.log(e);
   }
 };
-const fetchNetsDistributed = async () => {
+const fetchHouseHoldsRegTrends = async (fromDate = new Date(`2023-11-02`)) => {
   //format date
-  dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+  dateFrom.value = moment(fromDate).format(dateFormat.value);
+  dateTo.value = moment(dateTo.value).format(dateFormat.value);
+  await axios
+    .get(
+      `household_registration_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`
+    )
+    .then(async (response) => {
+      let data = response.data.data.household_registrations;
+      //console.log(data.map(item => item.date.toString()))
+      HouseHoldsRegistrationTrendsData.value = data;
+      await HouseHoldsRegistrationTrendsChart(data, fileterOrgeLevel.value);
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+const fetchNetsDistributed = async (fromDate = new Date(`2023-11-15`)) => {
+  //format date
+  dateFrom.value = moment(fromDate).format(dateFormat.value);
   dateTo.value = moment(dateTo.value).format(dateFormat.value);
   await axios
     .get(
@@ -1297,6 +1348,92 @@ const fetchNetsDistributed = async () => {
 };
 
 watch(selectedFilter, handleFilterChange);
+const HouseHoldsRegistrationTrendsChart = async (data, org_level) => {
+  try {
+    Highcharts.chart("HouseHoldsRegistrationTrendsChart", {
+      chart: {
+        type: "spline",
+        options3d: {
+          enabled: true,
+          alpha: 0,
+          beta: 15,
+          viewDistance: 100,
+          depth: 40,
+        },
+      },
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
+        },
+      },
+      title: {
+        text: `Households Registration trends at ${org_level} level`,
+        align: "left",
+      },
+      subtitle: {
+        text: "",
+      },
+      xAxis: {
+        categories: data.map((item) => item.date.toString()),
+        title: {
+          text: "",
+        },
+      },
+      yAxis: {
+        // Primary yAxis (Count)
+        title: {
+          text: "Households",
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+        labels: {
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+      },
+      tooltip: {
+        crosshairs: true,
+        shared: true,
+      },
+      plotOptions: {
+        spline: {
+          marker: {
+            radius: 4,
+            lineColor: "#666666",
+            lineWidth: 1,
+          },
+        },
+      },
+      series: [
+        {
+          name: "Cumulative", //Cumulative
+          marker: {
+            symbol: "circle",
+          },
+          yAxis: 0,
+          data: data.map((item) => parseInt(item.registrations_cumulative)),
+        },
+        {
+          name: "Household Registrations",
+          type: "column",
+          color: "#4ADEDE",
+          yAxis: 0,
+          data: data.map((item) => parseInt(item.registrations)),
+        },
+      ],
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
 const NetsDistributedwithTime = async (data, org_level) => {
   try {
     Highcharts.chart("NetsDistributedwithTime", {

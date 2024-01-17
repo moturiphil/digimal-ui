@@ -95,17 +95,19 @@
   </a-form>
 </template>
 <script setup>
-import { onMounted, defineProps, reactive } from "vue";
-//import { notification } from "ant-design-vue";
+import { onMounted, defineProps, reactive, defineEmits } from "vue";
+import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
+const emit = defineEmits(["close-editmodal"]);
 onMounted(() => {});
 const props = defineProps({
   formFields: Object,
 });
 const formState = reactive(props.formFields);
 console.log(props.formFields);
-const editUser = () => {
+const editUser = async () => {
   const data = {
+    id: formState.id,
     first_name: formState.first_name,
     middle_name: formState.middle_name,
     last_name: formState.last_name,
@@ -115,9 +117,32 @@ const editUser = () => {
     id_no: formState.id_no,
     phone_no: formState.phone_no,
   };
-  axios.post(`users`, data).then((response) => {
-    console.log(response.data);
-  });
+  await axios
+    .post(`update_user_details/${formState.id}/`, data)
+    .then(async (response) => {
+      notification.success({
+        message: `Success!`,
+        description: `${response.data.message}`,
+      });
+      await axios
+        .post(`update_user_details/${formState.id}/${formState.id_no}/`, {
+          id_no: formState.id_no,
+        })
+        .then((res) => {
+          emit("close-editmodal", false);
+          notification.success({
+            message: `Success!`,
+            description: `${res.data.message}`,
+          });
+        });
+    })
+    .catch((e) => {
+      notification.error({
+        message: `User Update Error!`,
+        description: `${e}`,
+      });
+      console.log(e);
+    });
 };
 </script>
 
