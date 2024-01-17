@@ -12,33 +12,93 @@
         </div>
         <a-row>
           <a-col v-if="filterAccessList.includes('country')">
-            <a-select v-model:value="country" show-search placeholder="Select Country" style="width: 200px"
-              :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
+            <a-select
+              v-model:value="country"
+              show-search
+              placeholder="Select Country"
+              style="width: 200px"
+              :options="countries"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'country')"
+            ></a-select>
           </a-col>
           <a-col v-if="filterAccessList.includes('county')">
-            <a-select v-model:value="county" show-search placeholder="Select County" style="width: 200px"
-              :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
+            <a-select
+              v-model:value="county"
+              show-search
+              placeholder="Select County"
+              style="width: 200px"
+              :options="counties"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'county')"
+            ></a-select>
           </a-col>
           <a-col v-if="filterAccessList.includes('subcounty')">
-            <a-select v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 200px"
-              :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
+            <a-select
+              v-model:value="subcounty"
+              show-search
+              placeholder="Select Sub County"
+              style="width: 200px"
+              :options="subcounties"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'subcounty')"
+            ></a-select>
           </a-col>
           <a-col v-if="filterAccessList.includes('ward')">
-            <a-select v-model:value="ward" show-search placeholder="Select Ward" style="width: 200px" :options="wards"
-              :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
+            <a-select
+              v-model:value="ward"
+              show-search
+              placeholder="Select Ward"
+              style="width: 200px"
+              :options="wards"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'ward')"
+            ></a-select>
           </a-col>
           <a-col v-if="filterAccessList.includes('location')">
-            <a-select v-model:value="location" show-search placeholder="Select Location" style="width: 200px"
-              :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
+            <a-select
+              v-model:value="location"
+              show-search
+              placeholder="Select Location"
+              style="width: 200px"
+              :options="locations"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'location')"
+            ></a-select>
           </a-col>
           <a-col v-if="filterAccessList.includes('sublocation')">
-            <a-select v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 200px"
-              :options="sublocations" :filter-option="filterOption"
-              @change="handleChange($event, 'sublocation')"></a-select>
+            <a-select
+              v-model:value="sublocation"
+              show-search
+              placeholder="Select Sub Location"
+              style="width: 200px"
+              :options="sublocations"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'sublocation')"
+            ></a-select>
           </a-col>
-          <a-col :style="{ padding: '2px', marging: '1px 0px 1px 0px', align: 'center', justify: 'center' }">
-            <a-button @click="fetchInitialChartData(), county = 'Select County', country = 'Select Country'"
-              :style="{ padding: '2px', background: '#24daa3', marging: '1px 0px 1px 0px', align: 'center', justify: 'center' }">
+          <a-col
+            :style="{
+              padding: '2px',
+              marging: '1px 0px 1px 0px',
+              align: 'center',
+              justify: 'center',
+            }"
+          >
+            <a-button
+              @click="
+                fetchInitialChartData(),
+                  (county = 'Select County'),
+                  (country = 'Select Country')
+              "
+              :style="{
+                padding: '2px',
+                background: '#24daa3',
+                marging: '1px 0px 1px 0px',
+                align: 'center',
+                justify: 'center',
+              }"
+            >
               <ReloadOutlined />
               Reset
             </a-button>
@@ -54,25 +114,33 @@
               <CardBarChart2>
                 <table class="stat-table">
                   <th>
-                    <sHeading class="stat-title docorate" align="center">Digimal Stats</sHeading>
+                    <sHeading class="stat-title docorate" align="center"
+                      >Digimal Stats</sHeading
+                    >
                   </th>
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Registered Users</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_users) }}</sdHeading>
+                        <sdHeading class="stat-title">{{
+                          new Intl.NumberFormat().format(registered_users)
+                        }}</sdHeading>
                       </td>
                     </tr>
                     <tr>
                       <td><span class="stat-span">Active Activities</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(activities) }}</sdHeading>
+                        <sdHeading class="stat-title">{{
+                          new Intl.NumberFormat().format(activities)
+                        }}</sdHeading>
                       </td>
                     </tr>
                     <tr>
                       <td><span class="stat-span">Active Events</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(active_events) }}</sdHeading>
+                        <sdHeading class="stat-title">{{
+                          new Intl.NumberFormat().format(active_events)
+                        }}</sdHeading>
                       </td>
                     </tr>
                   </tbody>
@@ -93,30 +161,48 @@
                   </th>
                   <tbody>
                     <tr>
-                      <td> <span class="stat-span">Total Required</span></td>
+                      <td><span class="stat-span">Total Required</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(total_nets_required) }}
+                        <sdHeading class="stat-title"
+                          >{{ new Intl.NumberFormat().format(total_nets_required) }}
                         </sdHeading>
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span">Total Distributed</span></td>
+                      <td><span class="stat-span">Total Distributed</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(nets_distributed) }}</sdHeading>
+                        <sdHeading class="stat-title">{{
+                          new Intl.NumberFormat().format(nets_distributed)
+                        }}</sdHeading>
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span">Total Remaining</span></td>
+                      <td><span class="stat-span">Total Remaining</span></td>
                       <td>
                         <sdHeading class="stat-title">
-                          {{ new Intl.NumberFormat().format(total_nets_required - nets_distributed) }}</sdHeading>
+                          {{
+                            new Intl.NumberFormat().format(
+                              total_nets_required - nets_distributed
+                            )
+                          }}</sdHeading
+                        >
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span"><strong>%</strong> of Nets Distributed</span></td>
+                      <td>
+                        <span class="stat-span"
+                          ><strong>%</strong> of Nets Distributed</span
+                        >
+                      </td>
                       <td>
                         <sdHeading class="stat-title">
-                          {{ nets_distributed ? Number((nets_distributed / total_nets_required) * 100).toFixed(2) : 0.00 }}%
+                          {{
+                            nets_distributed
+                              ? Number(
+                                  (nets_distributed / total_nets_required) * 100
+                                ).toFixed(2)
+                              : 0.0
+                          }}%
                         </sdHeading>
                       </td>
                     </tr>
@@ -134,36 +220,54 @@
               <CardBarChart2>
                 <table class="stat-table">
                   <th>
-                    <sHeading class="stat-title docorate" align="center">Households</sHeading>
+                    <sHeading class="stat-title docorate" align="center"
+                      >Households</sHeading
+                    >
                   </th>
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Registered</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(registered_house_holds) }}
+                        <sdHeading class="stat-title"
+                          >{{ new Intl.NumberFormat().format(registered_house_holds) }}
                         </sdHeading>
                       </td>
                     </tr>
                     <tr>
                       <td><span class="stat-span">Total Served</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(totalhouseholds_served) }}
+                        <sdHeading class="stat-title"
+                          >{{ new Intl.NumberFormat().format(totalhouseholds_served) }}
                         </sdHeading>
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span">Total Remaining</span></td>
+                      <td><span class="stat-span">Total Remaining</span></td>
                       <td>
                         <sdHeading class="stat-title">
-                          {{ new Intl.NumberFormat().format(registered_house_holds - totalhouseholds_served) }}
+                          {{
+                            new Intl.NumberFormat().format(
+                              registered_house_holds - totalhouseholds_served
+                            )
+                          }}
                         </sdHeading>
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span"><strong>%</strong> of Households Served</span></td>
+                      <td>
+                        <span class="stat-span"
+                          ><strong>%</strong> of Households Served</span
+                        >
+                      </td>
                       <td>
                         <sdHeading class="stat-title">
-                          {{ totalhouseholds_served != 0 ? Number((totalhouseholds_served / registered_house_holds) * 100).toFixed(2) : 0.00 }}%
+                          {{
+                            totalhouseholds_served != 0
+                              ? Number(
+                                  (totalhouseholds_served / registered_house_holds) * 100
+                                ).toFixed(2)
+                              : 0.0
+                          }}%
                         </sdHeading>
                       </td>
                     </tr>
@@ -182,35 +286,55 @@
                 <table class="stat-table">
                   <thead>
                     <th rowspan="">
-                      <sHeading class="stat-title docorate" align="center">Household Population</sHeading>
+                      <sHeading class="stat-title docorate" align="center"
+                        >Household Population</sHeading
+                      >
                     </th>
                   </thead>
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Registered</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(household_population) }}
+                        <sdHeading class="stat-title"
+                          >{{ new Intl.NumberFormat().format(household_population) }}
                         </sdHeading>
                       </td>
                     </tr>
                     <tr>
                       <td><span class="stat-span">Total Served</span></td>
                       <td>
-                        <sdHeading class="stat-title">{{ new Intl.NumberFormat().format(population_served) }}</sdHeading>
+                        <sdHeading class="stat-title">{{
+                          new Intl.NumberFormat().format(population_served)
+                        }}</sdHeading>
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span">Total Remaining</span></td>
+                      <td><span class="stat-span">Total Remaining</span></td>
                       <td>
                         <sdHeading class="stat-title">
-                          {{ new Intl.NumberFormat().format(household_population - population_served) }}</sdHeading>
+                          {{
+                            new Intl.NumberFormat().format(
+                              household_population - population_served
+                            )
+                          }}</sdHeading
+                        >
                       </td>
                     </tr>
                     <tr>
-                      <td> <span class="stat-span"><strong>%</strong> of Population Served</span></td>
+                      <td>
+                        <span class="stat-span"
+                          ><strong>%</strong> of Population Served</span
+                        >
+                      </td>
                       <td>
                         <sdHeading class="stat-title">
-                          {{ population_served != 0 ? Number((population_served / household_population) * 100).toFixed(2) : 0.00 }}%
+                          {{
+                            population_served != 0
+                              ? Number(
+                                  (population_served / household_population) * 100
+                                ).toFixed(2)
+                              : 0.0
+                          }}%
                         </sdHeading>
                       </td>
                     </tr>
@@ -224,8 +348,11 @@
     </a-row>
     <div class="" justify="space-around" align="right">
       <div id="printPDFDiv">
-        <a-row style="margin-top:10px;panding:1px;border:solid 1px 1px #6b055700">
-          <a-button @click="exportChartsToPDF()" :style="{ panding: '2px', border: 'solid 1px 2%' }">
+        <a-row style="margin-top: 10px; panding: 1px; border: solid 1px 1px #6b055700">
+          <a-button
+            @click="exportChartsToPDF()"
+            :style="{ panding: '2px', border: 'solid 1px 2%' }"
+          >
             <FilePdfOutlined /> Print Pdf
           </a-button>
         </a-row>
@@ -251,20 +378,30 @@
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
               <div id="householdRegvsServedChart"></div>
-              <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
+              <table
+                class="table nested-table table-responsive"
+                style="max-width: 100%"
+                v-if="printMode"
+              >
                 <thead>
                   <tr>
-                    <th v-for="item in NetsChartData" :key="item.name">{{ item.name }}</th>
+                    <th v-for="item in NetsChartData" :key="item.name">
+                      {{ item.name }}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td v-for="item in NetsChartData" :key="item.name">
-                      <table class="nested-table" style="max-width: 100%;">
+                      <table class="nested-table" style="max-width: 100%">
                         <tbody>
                           <tr>
-                            <td style="font-weight:bold;font-style:italic;">Households Registered</td>
-                            <td style="font-weight:bold;font-style:italic;">Households Served</td>
+                            <td style="font-weight: bold; font-style: italic">
+                              Households Registered
+                            </td>
+                            <td style="font-weight: bold; font-style: italic">
+                              Households Served
+                            </td>
                           </tr>
                           <tr>
                             <td>{{ parseInt(item.households_registered) || 0 }}</td>
@@ -282,20 +419,30 @@
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
               <div id="netsReqvsIssuedChart"></div>
-              <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
+              <table
+                class="table nested-table table-responsive"
+                style="max-width: 100%"
+                v-if="printMode"
+              >
                 <thead>
                   <tr>
-                    <th v-for="item in NetsChartData" :key="item.name">{{ item.name }}</th>
+                    <th v-for="item in NetsChartData" :key="item.name">
+                      {{ item.name }}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td v-for="item in NetsChartData" :key="item.name">
-                      <table class="nested-table" style="max-width: 100%;">
+                      <table class="nested-table" style="max-width: 100%">
                         <tbody>
                           <tr>
-                            <td style="font-weight:bold;font-style:italic;">Nets Required</td>
-                            <td style="font-weight:bold;font-style:italic;">Nets Distributed</td>
+                            <td style="font-weight: bold; font-style: italic">
+                              Nets Required
+                            </td>
+                            <td style="font-weight: bold; font-style: italic">
+                              Nets Distributed
+                            </td>
                           </tr>
                           <tr>
                             <td>{{ parseInt(item.nets_required) || 0 }}</td>
@@ -313,20 +460,30 @@
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <figure class="highcharts-figure">
               <div id="netsIssuedvsDeliveredChart"></div>
-              <table class="table nested-table table-responsive" style="max-width: 100%;" v-if="printMode">
+              <table
+                class="table nested-table table-responsive"
+                style="max-width: 100%"
+                v-if="printMode"
+              >
                 <thead>
                   <tr>
-                    <th v-for="item in NetsChartData" :key="item.name">{{ item.name }}</th>
+                    <th v-for="item in NetsChartData" :key="item.name">
+                      {{ item.name }}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td v-for="item in NetsChartData" :key="item.name">
-                      <table class="nested-table" style="max-width: 100%;">
+                      <table class="nested-table" style="max-width: 100%">
                         <tbody>
                           <tr>
-                            <td style="font-weight:bold;font-style:italic;">Nets Delivered</td>
-                            <td style="font-weight:bold;font-style:italic;">Nets Distributed</td>
+                            <td style="font-weight: bold; font-style: italic">
+                              Nets Delivered
+                            </td>
+                            <td style="font-weight: bold; font-style: italic">
+                              Nets Distributed
+                            </td>
                           </tr>
                           <tr>
                             <td>{{ parseInt(item.nets_delivered) || 0 }}</td>
@@ -344,18 +501,47 @@
           <a-col :xxl="24" :md="24" :sm="24" :xs="24">
             <div>
               <a-row :gutter="16" v-if="!printMode">
-                <a-col :span="12" style="display:flex;flex-direction:row;">
+                <a-col :span="12" style="display: flex; flex-direction: row">
                   <a-space direction="horizontal" :size="5">
-                    <a-select v-model:value="selectedFilter" show-search placeholder="Select Filter"
-                      style="width: 200px;height:100%;" :options="dateFilters" :filter-option="filterOption"
-                      @change="handleFilterChange($event)"></a-select>
-                    <div :span="12" v-if="selectedFilter === 'custom'" style="display:flex;flex-direction:row;">
-                      <input type="date"
-                        :style="{ width: '100%', padding: '6px', margin: '1px', border: '2px solid  #CCCCFF' }"
-                        v-model="dateFrom" placeholder="Select Date From" :format="dateFormat" />
-                      <input type="date" v-model="dateTo"
-                        :style="{ width: '100%', padding: '6px', margin: '1px', border: '2px solid  #CCCCFF' }"
-                        placeholder="Select Date To" @input="fetchNetsDistributed()" :format="dateFormat" />
+                    <a-select
+                      v-model:value="selectedFilter"
+                      show-search
+                      placeholder="Select Filter"
+                      style="width: 200px; height: 100%"
+                      :options="dateFilters"
+                      :filter-option="filterOption"
+                      @change="handleFilterChange($event)"
+                    ></a-select>
+                    <div
+                      :span="12"
+                      v-if="selectedFilter === 'custom'"
+                      style="display: flex; flex-direction: row"
+                    >
+                      <input
+                        type="date"
+                        :style="{
+                          width: '100%',
+                          padding: '6px',
+                          margin: '1px',
+                          border: '2px solid  #CCCCFF',
+                        }"
+                        v-model="dateFrom"
+                        placeholder="Select Date From"
+                        :format="dateFormat"
+                      />
+                      <input
+                        type="date"
+                        v-model="dateTo"
+                        :style="{
+                          width: '100%',
+                          padding: '6px',
+                          margin: '1px',
+                          border: '2px solid  #CCCCFF',
+                        }"
+                        placeholder="Select Date To"
+                        @input="fetchNetsDistributed()"
+                        :format="dateFormat"
+                      />
                     </div>
                   </a-space>
                 </a-col>
@@ -366,13 +552,20 @@
               <table class="table table-responsive" v-if="printMode">
                 <thead>
                   <tr>
-                    <th v-for="item in NetsDistributedwithTimeData.map(item => item)" :key="item">
-                      {{ item.date }}/Cummilative</th>
+                    <th
+                      v-for="item in NetsDistributedwithTimeData.map((item) => item)"
+                      :key="item"
+                    >
+                      {{ item.date }}/Cummilative
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td v-for="item in NetsDistributedwithTimeData.map(item => item)" :key="item">
+                    <td
+                      v-for="item in NetsDistributedwithTimeData.map((item) => item)"
+                      :key="item"
+                    >
                       {{ item.no_of_nets }}/{{ item.nets_cumulative }}
                     </td>
                   </tr>
@@ -383,8 +576,14 @@
         </a-row>
       </div>
     </div>
-    <a-notification :message="errorMessage" type="error" :description="errorDescription" :showIcon="true" :duration="0"
-      :style="{ width: '100%' }" />
+    <a-notification
+      :message="errorMessage"
+      type="error"
+      :description="errorDescription"
+      :showIcon="true"
+      :duration="0"
+      :style="{ width: '100%' }"
+    />
   </Main>
 </template>
 <script setup>
@@ -392,19 +591,19 @@ import { CardBarChart2, EChartCard } from "./style";
 import { Main } from "../styled";
 //import { defineComponent } from "vue"; //defineAsyncComponent
 //import authHeader from "../../services/auth-header";
-import Highcharts from 'highcharts';
-import axios from '@/Axiosconfig';
+import Highcharts from "highcharts";
+import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
-import { onMounted, ref, watch } from 'vue';
-import moment from "moment"
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { onMounted, ref, watch } from "vue";
+import moment from "moment";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 //import html2pdf from 'html2pdf.js';
-import { FilePdfOutlined } from '@ant-design/icons-vue';
-import { ReloadOutlined } from '@ant-design/icons-vue';
+import { FilePdfOutlined } from "@ant-design/icons-vue";
+import { ReloadOutlined } from "@ant-design/icons-vue";
 
-import { useRouter } from 'vue-router';
-const router = useRouter()
+import { useRouter } from "vue-router";
+const router = useRouter();
 //exporting(Highcharts);
 const active_events = ref(0);
 const nets_distributed = ref(0);
@@ -415,41 +614,48 @@ const population_served = ref(0);
 const total_nets_required = ref(0);
 const activities = ref(0);
 //chart data
-const newChartData = ref([])
-const NetsChartData = ref([])
-const HouseHoldRegisteredbyCoountyChartData = ref([])
-const HouseHoldsServedbyCountyChartData = ref([])
-const NetsIssuedbyCountyChartData = ref([])
-const NetsDistributedwithTimeData = ref([])
-var printMode = ref(false)
-const totalhouseholds_served = ref([])
+const newChartData = ref([]);
+const NetsChartData = ref([]);
+const HouseHoldRegisteredbyCoountyChartData = ref([]);
+const HouseHoldsServedbyCountyChartData = ref([]);
+const NetsIssuedbyCountyChartData = ref([]);
+const NetsDistributedwithTimeData = ref([]);
+var printMode = ref(false);
+const totalhouseholds_served = ref([]);
 
 //org levels
-const access_level = ref({})
-const filterAccessList = ref([])
-const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }])
-const counties = ref(null)
-const subcounties = ref(null)
-const wards = ref(null)
-const locations = ref(null)
-const sublocations = ref(null)
-const country = ref("Select Country")
-const county = ref("Select County")
-const sublocation = ref("Select Sublocation")
-const subcounty = ref("Select Subcounty")
-const location = ref("Select Location")
-const ward = ref("Select Ward")
+const access_level = ref({});
+const filterAccessList = ref([]);
+const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
+const counties = ref(null);
+const subcounties = ref(null);
+const wards = ref(null);
+const locations = ref(null);
+const sublocations = ref(null);
+const country = ref("Select Country");
+const county = ref("Select County");
+const sublocation = ref("Select Sublocation");
+const subcounty = ref("Select Subcounty");
+const location = ref("Select Location");
+const ward = ref("Select Ward");
 
 //Nets with Time
-const dateFormat = ref('YYYY-MM-DD');
-var selectedFilter = ref('month');
-var filterOrgId = ref(9)
-var fileterOrgeLevel = ref("")
-var dateFrom = ref(new Date())
-var dateTo = ref(new Date())
+const dateFormat = ref("YYYY-MM-DD");
+var selectedFilter = ref("month");
+var filterOrgId = ref(9);
+var fileterOrgeLevel = ref("");
+var dateFrom = ref(new Date());
+var dateTo = ref(new Date());
 
-const org_ids = ref([])
-const dateFilters = ref([{ value: 'year', label: 'Past 1 Year' }, { value: 'month', label: 'Past 1 Month' }, { value: 'week', label: 'Past 1 Week' }, { value: '3day', label: 'Past 3 Days' }, { value: 'day', label: 'Past 1 Day' }, { value: 'custom', label: 'Custom' }])
+const org_ids = ref([]);
+const dateFilters = ref([
+  { value: "year", label: "Past 1 Year" },
+  { value: "month", label: "Past 1 Month" },
+  { value: "week", label: "Past 1 Week" },
+  { value: "3day", label: "Past 3 Days" },
+  { value: "day", label: "Past 1 Day" },
+  { value: "custom", label: "Custom" },
+]);
 
 const selectedCounties = ref([
   "Homa Bay County",
@@ -475,11 +681,11 @@ const selectedCounties = ref([
   // "Marsabit County",
   // "Baringo County",
   // "Kirinyaga County"
-])
+]);
 const currentCounties = ref([
-  'nK0A12Q7MvS',//homa bay
-  'sPkRcDvhGWA',//kisii
-  'uepLTG8wGWJ',//nyamira
+  "nK0A12Q7MvS", //homa bay
+  "sPkRcDvhGWA", //kisii
+  "uepLTG8wGWJ", //nyamira
   // 'u4t9H8XyU9P',//siaya
   // 'fVra3Pwta0Q',//migori
   // 'Tvf1zgVZ0K4',//busia
@@ -499,19 +705,19 @@ const currentCounties = ref([
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
   // 'Ulj33KBau7V',
-])
+]);
 
 onMounted(async () => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
   if (user_object != null) {
     access_level.value = user_object.user;
-    updateFilters()
-    fetchInitialChartData()
-    updateStats(access_level.value.location.org_id)
-    handleFilterChange()
+    updateFilters();
+    fetchInitialChartData();
+    updateStats(access_level.value.location.org_id);
+    handleFilterChange();
   } else {
-    router.push("/login")
+    router.push("/login");
   }
 });
 const capitalizeFirstLetter = (word) => {
@@ -524,274 +730,417 @@ const updateFilters = () => {
   // access_level.value.location.name = 'Kabondo Kasipul Sub County'
 
   if (access_level.value.level.id == 1) {
-    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-    fetchCounties()
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    countries.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+    ];
+    fetchCounties();
   } else if (access_level.value.level.id == 2) {
-    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    counties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+    ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation', 'village']
-    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["subcounty", "ward", "location", "sublocation", "village"];
+    subcounties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+    ];
   } else if (access_level.value.level.id == 4) {
-    filterAccessList.value = ['ward', 'location', 'sublocation', 'village']
-    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["ward", "location", "sublocation", "village"];
+    wards.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+    ];
   } else if (access_level.value.level.id == 5) {
-    filterAccessList.value = ['location', 'sublocation', 'village']
-    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["location", "sublocation", "village"];
+    locations.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+    ];
   } else if (access_level.value.level.id == 6) {
-    filterAccessList.value = ['sublocation', 'village']
-    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["sublocation", "village"];
+    sublocations.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+    ];
   }
-}
+};
 const fetchInitialChartData = async () => {
-  axios.get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
-    .then(response => {
+  axios
+    .get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
+    .then((response) => {
       newChartData.value = response.data.data;
-      fileterOrgeLevel.value = access_level.value.level.level_name
-      filterOrgId.value=access_level.value.level.id
+      fileterOrgeLevel.value = access_level.value.level.level_name;
+      filterOrgId.value = access_level.value.level.id;
       if (access_level.value.level.id === 1) {
-        newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
+        newChartData.value = newChartData.value.filter((e) =>
+          selectedCounties.value.includes(e.name.toString())
+        );
       }
       //nets_required,nets_issued,target_data,target_level,cats
       netsReqvsIssuedChart(
-        newChartData.value.map(item => parseInt(item.nets_required)),//nets_required
-        newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
-        newChartData.value.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100),//(nets_issued/nets_required)*100
-        newChartData.value.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100),//(nets_required/nets_required)*100
-        newChartData.value.map(item => item.name),//cats
-        access_level.value.level.level_name,//level
-      )
+        newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
+        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+        newChartData.value.map(
+          (item) => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+        ), //(nets_issued/nets_required)*100
+        newChartData.value.map(
+          (item) => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+        ), //(nets_required/nets_required)*100
+        newChartData.value.map((item) => item.name), //cats
+        access_level.value.level.level_name //level
+      );
       let scatterData = [];
       newChartData.value.forEach((item, index) => {
         let x = parseInt(item.nets_issued);
         let y = parseInt(item.nets_delivered);
-        let ratio = parseFloat((x / y) * 100).toFixed(2)
-        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0])
-      })
+        let ratio = parseFloat((x / y) * 100).toFixed(2);
+        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
+      });
       console.log(scatterData);
       netsIssuedvsDeliveredChart(
-        newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
-        newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
-        scatterData,//ratio
-        newChartData.value.map(item => item.name),//cats
-        fileterOrgeLevel.value,//level
-      )
+        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+        newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
+        scatterData, //ratio
+        newChartData.value.map((item) => item.name), //cats
+        fileterOrgeLevel.value //level
+      );
       //registered,served,target_data,target_level,cats
       householdRegvsServedChart(
-        newChartData.value.map(item => parseInt(item.households_registered)),//registered
-        newChartData.value.map(item => parseInt(item.households_served)),//served
-        newChartData.value.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100),//(registered/served)*100
-        newChartData.value.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100),//(registered/registered)*100
-        newChartData.value.map(item => item.name),//cats
-        access_level.value.level.level_name,//level
-      )
+        newChartData.value.map((item) => parseInt(item.households_registered)), //registered
+        newChartData.value.map((item) => parseInt(item.households_served)), //served
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_served) / parseInt(item.households_registered)) *
+            100
+        ), //(registered/served)*100
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_registered) /
+              parseInt(item.households_registered)) *
+            100
+        ), //(registered/registered)*100
+        newChartData.value.map((item) => item.name), //cats
+        access_level.value.level.level_name //level
+      );
 
-      let currentDate = new Date()
+      let currentDate = new Date();
       //console.log(currentDate.getFullYear())
-      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
+      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
       dateTo.value = moment(currentDate).format(dateFormat.value);
-      NetsChartData.value = newChartData.value
+      NetsChartData.value = newChartData.value;
       fetchNetsDistributed();
-    }).catch(error => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
     })
-}
+    .catch((error) => {
+      console.log(error);
+      // notification.error({
+      //   message: `Error!`,
+      //   description: `${error}`,
+      // });
+    });
+};
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
+  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
   // console.log(org_id)
   // console.log(org_ids.value)
-  let parent_id = org[0] || 9
+  let parent_id = org[0] || 9;
   // console.log(parent_id)
   // console.log(org_level)
-  fetchChildData(org_id, org_level)
-  filterOrgId.value = parent_id
-  fileterOrgeLevel.value = org_level
-  fetchNetsDistributed()
+  fetchChildData(org_id, org_level);
+  filterOrgId.value = parent_id;
+  fileterOrgeLevel.value = org_level;
+  fetchNetsDistributed();
 };
 const fetchChildData = async (org_id, org_level) => {
-  updateStats(org_id)
-  let fetchUrl = `get_sub_counties_list`
-  let statUrl = `subcounty/stats`
-  if (org_level == 'country') {//get counties
-    fetchUrl += `?parent_id=${org_id}`
-    statUrl += `?org_id=${org_id}`
+  updateStats(org_id);
+  let fetchUrl = `get_sub_counties_list`;
+  let statUrl = `subcounty/stats`;
+  if (org_level == "country") {
+    //get counties
+    fetchUrl += `?parent_id=${org_id}`;
+    statUrl += `?org_id=${org_id}`;
     //clear fields
-    county.value = "Select County"
-    subcounty.value = "Select SubCounty"
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'county') {//get subcounties
-    fetchUrl += `?parent_id=${org_id}`
-    statUrl += `?org_id=${org_id}`
+    county.value = "Select County";
+    subcounty.value = "Select SubCounty";
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    statUrl += `?org_id=${org_id}`;
     //clear fields
-    subcounty.value = "Select SubCounty"
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'subcounty') {//get wards
-    fetchUrl += `?parent_id=${org_id}`
-    statUrl += `?org_id=${org_id}`
+    subcounty.value = "Select SubCounty";
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "subcounty") {
+    //get wards
+    fetchUrl += `?parent_id=${org_id}`;
+    statUrl += `?org_id=${org_id}`;
     //clear fields
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'ward') {//get locatios
-    fetchUrl += `?parent_id=${org_id}`
-    statUrl += `?org_id=${org_id}`
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "ward") {
+    //get locatios
+    fetchUrl += `?parent_id=${org_id}`;
+    statUrl += `?org_id=${org_id}`;
     //clear fields
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'location') {//get sub locatios
-    fetchUrl += `?parent_id=${org_id}`
-    statUrl += `?org_id=${org_id}`
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "location") {
+    //get sub locatios
+    fetchUrl += `?parent_id=${org_id}`;
+    statUrl += `?org_id=${org_id}`;
     //clear fields
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'sublocation') {//get sublocations stats
-    statUrl += `?org_id=${org_id}`
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "sublocation") {
+    //get sublocations stats
+    statUrl += `?org_id=${org_id}`;
   }
-  await axios.get(`${fetchUrl}`)
-    .then(response => {
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
       let data = response.data.message;
-      if (org_level == 'country') {//get counties
-        counties.value = data.map(x => ({
+      if (org_level == "country") {
+        //get counties
+        counties.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
-        }));
-        org_ids.value = [...org_ids.value, ...data.map(x => ({ org_id: x.org_id, id: x.id }))];
-        counties.value.splice(0, 1)
-      } else if (org_level == 'county') {//get subcounties
-        subcounties.value = data.map(x => ({
-          value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+          ...data.map((x) => ({ org_id: x.org_id, id: x.id })),
         ];
-      } else if (org_level == 'subcounty') {//get wards
-        wards.value = data.map(x => ({
+        counties.value.splice(0, 1);
+      } else if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+            ),
         ];
-      } else if (org_level == 'ward') {//get locations
-        locations.value = data.map(x => ({
+      } else if (org_level == "subcounty") {
+        //get wards
+        wards.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+            ),
         ];
-      } else if (org_level == 'location') {//get sublocations
-        sublocations.value = data.map(x => ({
+      } else if (org_level == "ward") {
+        //get locations
+        locations.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+            ),
+        ];
+      } else if (org_level == "location") {
+        //get sublocations
+        sublocations.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+            ),
         ];
       }
-    }).then(async () => {
-      await axios.get(`${statUrl}`)
-        .then(response => {
-          newChartData.value = response.data.data;
-          if (org_level === 'country') {
-            newChartData.value = newChartData.value.filter(e => selectedCounties.value.includes(e.name.toString()));
-          }
-          let rq = newChartData.value.map(item => parseInt(item.nets_required))//nets_required
-          let isd = newChartData.value.map(item => parseInt(item.nets_issued))//nets_issued
-          let isdvsrq = newChartData.value.map(item => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100)//(nets_issued/nets_required)*100
-          let tgt = newChartData.value.map(item => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100)//(nets_required/nets_required)*100
-          let labels = newChartData.value.map(item => item.name)//cats
-          fileterOrgeLevel.value = org_level
-          //column Subcounty comparison
-          let rgstd = newChartData.value.map(item => parseInt(item.households_registered))//registered
-          let srvd = newChartData.value.map(item => parseInt(item.households_served))//served
-          let rgstdvssvd = newChartData.value.map(item => (parseInt(item.households_served) / parseInt(item.households_registered)) * 100)//(registered/served)*100
-          let tgt1 = newChartData.value.map(item => (parseInt(item.households_registered) / parseInt(item.households_registered)) * 100)//(registered/registered)*100
-          let labels1 = newChartData.value.map(item => item.name)//cats
-          org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
-          householdRegvsServedChart(rgstd, srvd, rgstdvssvd, tgt1, labels1, fileterOrgeLevel.value)
-          //combine bar line bar Subcounty comparison
-          netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value)
-          let scatterData = [];
-          newChartData.value.forEach((item, index) => {
-            let x = parseInt(item.nets_issued);
-            let y = parseInt(item.nets_delivered);
-            let ratio = parseFloat((x / y) * 100).toFixed(2)
-            scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0])
-          })
-          console.log(scatterData);
-          netsIssuedvsDeliveredChart(
-            newChartData.value.map(item => parseInt(item.nets_issued)),//nets_issued
-            newChartData.value.map(item => parseInt(item.nets_delivered)),//nets_delivered
-            scatterData,//ratio
-            newChartData.value.map(item => item.name),//cats
-            fileterOrgeLevel.value,//level
-          )
-          NetsChartData.value = newChartData.value
-          //pie chars Registered households by sub county
-          let pieOptionsData = newChartData.value.map(item => ({ name: item.name, y: item.households_registered }))
-          let chartData = newChartData.value.map(item => ({ name: item.name, y: item.households_served }))
-          let netsIssuedData = newChartData.value.map(item => ({ name: item.name, y: parseInt(item.nets_issued) }))
-          if (wards.value != null) {
-            HouseHoldRegisteredbyCoountyChart(pieOptionsData, org_level)
-            HouseHoldRegisteredbyCoountyChartData.value = pieOptionsData
-            HouseHoldsServedbyCountyChart(chartData, org_level)
-            HouseHoldsServedbyCountyChartData.value = chartData
-            NetsIssuedbyCountyChart(netsIssuedData, org_level)
-            NetsIssuedbyCountyChartData.value = netsIssuedData
-          }
-          fileterOrgeLevel.value = org_level
-          fetchNetsDistributed()
-        })
-    }).catch(error => {
+    })
+    .then(async () => {
+      await axios.get(`${statUrl}`).then((response) => {
+        newChartData.value = response.data.data;
+        if (org_level === "country") {
+          newChartData.value = newChartData.value.filter((e) =>
+            selectedCounties.value.includes(e.name.toString())
+          );
+        }
+        let rq = newChartData.value.map((item) => parseInt(item.nets_required)); //nets_required
+        let isd = newChartData.value.map((item) => parseInt(item.nets_issued)); //nets_issued
+        let isdvsrq = newChartData.value.map(
+          (item) => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+        ); //(nets_issued/nets_required)*100
+        let tgt = newChartData.value.map(
+          (item) => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+        ); //(nets_required/nets_required)*100
+        let labels = newChartData.value.map((item) => item.name); //cats
+        fileterOrgeLevel.value = org_level;
+        //column Subcounty comparison
+        let rgstd = newChartData.value.map((item) =>
+          parseInt(item.households_registered)
+        ); //registered
+        let srvd = newChartData.value.map((item) => parseInt(item.households_served)); //served
+        let rgstdvssvd = newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_served) / parseInt(item.households_registered)) *
+            100
+        ); //(registered/served)*100
+        let tgt1 = newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_registered) /
+              parseInt(item.households_registered)) *
+            100
+        ); //(registered/registered)*100
+        let labels1 = newChartData.value.map((item) => item.name); //cats
+        org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
+        householdRegvsServedChart(
+          rgstd,
+          srvd,
+          rgstdvssvd,
+          tgt1,
+          labels1,
+          fileterOrgeLevel.value
+        );
+        //combine bar line bar Subcounty comparison
+        netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value);
+        let scatterData = [];
+        newChartData.value.forEach((item, index) => {
+          let x = parseInt(item.nets_issued);
+          let y = parseInt(item.nets_delivered);
+          let ratio = parseFloat((x / y) * 100).toFixed(2);
+          scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
+        });
+        console.log(scatterData);
+        netsIssuedvsDeliveredChart(
+          newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+          newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
+          scatterData, //ratio
+          newChartData.value.map((item) => item.name), //cats
+          fileterOrgeLevel.value //level
+        );
+        NetsChartData.value = newChartData.value;
+        //pie chars Registered households by sub county
+        let pieOptionsData = newChartData.value.map((item) => ({
+          name: item.name,
+          y: item.households_registered,
+        }));
+        let chartData = newChartData.value.map((item) => ({
+          name: item.name,
+          y: item.households_served,
+        }));
+        let netsIssuedData = newChartData.value.map((item) => ({
+          name: item.name,
+          y: parseInt(item.nets_issued),
+        }));
+        if (wards.value != null) {
+          HouseHoldRegisteredbyCoountyChart(pieOptionsData, org_level);
+          HouseHoldRegisteredbyCoountyChartData.value = pieOptionsData;
+          HouseHoldsServedbyCountyChart(chartData, org_level);
+          HouseHoldsServedbyCountyChartData.value = chartData;
+          NetsIssuedbyCountyChart(netsIssuedData, org_level);
+          NetsIssuedbyCountyChartData.value = netsIssuedData;
+        }
+        fileterOrgeLevel.value = org_level;
+        fetchNetsDistributed();
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      //notification.error({
+      // message: `Error!`,
+      // description: `${error}`,
+      //});
+    });
+};
+const fetchCounties = async () => {
+  axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data
+        .map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }))
+        .filter((e) => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = [
+        ...org_ids.value,
+        ...response.data.map((x) => ({ org_id: x.org_id, id: x.id })),
+      ];
+    })
+    .catch((error) => {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
     });
-}
-const fetchCounties = async () => {
-  axios.get('counties/')
-    .then(response => {
-      counties.value = response.data.map(x => ({
-        value: x.org_id,
-        label: x.name
-      })).filter(e => currentCounties.value.includes(e.value.toString()));
-      org_ids.value = [...org_ids.value, ...response.data.map(x => ({ org_id: x.org_id, id: x.id }))];
-    }).catch(error => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
-    })
-}
+};
 const filterOption = (input, option) => {
   return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
@@ -805,13 +1154,16 @@ const convertObjectVlasToInt = (obj) => {
 };
 
 const updateStats = async (org_id) => {
-  await axios.get(`all_stats?org_id=${org_id}`)
-    .then(response => {
-      const data = convertObjectVlasToInt(response.data)
+  await axios
+    .get(`all_stats?org_id=${org_id}`)
+    .then((response) => {
+      const data = convertObjectVlasToInt(response.data);
       //console.log(data)
       active_events.value = data.events ? data.events : 0;
       nets_distributed.value = data.nets_distributed ? data.nets_distributed : 0;
-      registered_house_holds.value = data.registered_house_holds ? data.registered_house_holds : 0;
+      registered_house_holds.value = data.registered_house_holds
+        ? data.registered_house_holds
+        : 0;
       totalhouseholds_served.value = data.households_served ? data.households_served : 0;
       population_served.value = data.population_served ? data.population_served : 0;
       registered_users.value = data.registered_users ? data.registered_users : 0;
@@ -820,35 +1172,36 @@ const updateStats = async (org_id) => {
       activities.value = data.activities ? data.activities : 0;
       // actual_allocation = data.
       // console.log(data.active_events);
-    }).catch(error => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
+    })
+    .catch((error) => {
+      // notification.error({
+      //   message: `Error!`,
+      //   description: `${error}`,
+      // });
       console.error(error);
     });
-}
+};
 //chart pdf reports
 // Function to export multiple charts to a single PDF
 const exportChartsToPDF = async () => {
   printMode.value = true;
-  const content = document.getElementById('printPDFDiv');
+  const content = document.getElementById("printPDFDiv");
 
   // Create a new jsPDF instance
   const pdf = new jsPDF({
-    orientation: 'potrait',
-    unit: 'mm',
-    format: 'a4',
+    orientation: "potrait",
+    unit: "mm",
+    format: "a4",
   });
   // Get all rows in the content
-  const rows = content.querySelectorAll('.pdf-row');
+  const rows = content.querySelectorAll(".pdf-row");
   // Loop through ev row
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     // Use html2canvas to convert the row to a canvas
     const canvas = await html2canvas(row);
     // Add the canvas as an image to the PDF
-    pdf.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 10, 10, 190, 277);
+    pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 10, 10, 190, 277);
     // If there are more rows, add a new page for the next row
     if (i < rows.length - 1) {
       pdf.addPage();
@@ -856,9 +1209,9 @@ const exportChartsToPDF = async () => {
   }
   // Save or display the PDF
   // You can modify this part based on your specific needs
-  pdf.save('export.pdf');
+  pdf.save("export.pdf");
   // printMode.value = false;
-  window.location.reload()
+  window.location.reload();
 };
 //chart functions
 const handleFilterChange = () => {
@@ -866,726 +1219,811 @@ const handleFilterChange = () => {
   //console.log(selectedFilter.value)
 
   switch (selectedFilter.value) {
-    case 'year':
-      dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-15`)
-      dateTo.value = currentDate
+    case "year":
+      dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
+      dateTo.value = currentDate;
       break;
-    case 'month':
-      dateFrom.value = new Date(`${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`)
-      dateTo.value = currentDate
+    case "month":
+      dateFrom.value = new Date(
+        `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`
+      );
+      dateTo.value = currentDate;
       break;
-    case 'week':
-      dateFrom.value = new Date(`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate() - 7}`)
-      dateTo.value = currentDate
+    case "week":
+      dateFrom.value = new Date(
+        `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+          currentDate.getDate() - 7
+        }`
+      );
+      dateTo.value = currentDate;
       break;
-    case '3day':
-      dateFrom.value = new Date(`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate() - 3}`)
-      dateTo.value = currentDate
+    case "3day":
+      dateFrom.value = new Date(
+        `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+          currentDate.getDate() - 3
+        }`
+      );
+      dateTo.value = currentDate;
       break;
-    case 'day':
-      dateFrom.value = new Date(`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate() - 1}`)
-      dateTo.value = currentDate
+    case "day":
+      dateFrom.value = new Date(
+        `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+          currentDate.getDate() - 1
+        }`
+      );
+      dateTo.value = currentDate;
       break;
     default:
-      dateFrom.value =  moment(new Date(`2023-11-15`)).format(dateFormat.value)
-      dateTo.value = currentDate
+      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+      dateTo.value = currentDate;
       break;
   }
   //fetch data
-  fetchNetsDistributed()
-}
+  fetchNetsDistributed();
+};
 const fetchNetsDistributed = () => {
   //format date
-  dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value)
-  dateTo.value = moment(dateTo.value).format(dateFormat.value)
-  axios.get(`distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`)
-    .then(response => {
+  dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+  dateTo.value = moment(dateTo.value).format(dateFormat.value);
+  axios
+    .get(
+      `distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`
+    )
+    .then((response) => {
       let data = response.data.data.total_nets_distributed;
       //console.log(data.map(item => item.date.toString()))
-      NetsDistributedwithTimeData.value = data
-      NetsDistributedwithTime(data, fileterOrgeLevel.value)
-    }).catch(error => {
+      NetsDistributedwithTimeData.value = data;
+      NetsDistributedwithTime(data, fileterOrgeLevel.value);
+    })
+    .catch((error) => {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
-    })
-}
+    });
+};
 
-
-
-watch(selectedFilter, handleFilterChange)
+watch(selectedFilter, handleFilterChange);
 const NetsDistributedwithTime = (data, org_level) => {
   //console.log(data)
-  Highcharts.chart('NetsDistributedwithTime', {
+  Highcharts.chart("NetsDistributedwithTime", {
     chart: {
-      type: 'spline',
+      type: "spline",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
       text: `Nets Distributed with Time by ${org_level}`,
-      align: 'left',
+      align: "left",
     },
     subtitle: {
-      text: ''
+      text: "",
     },
     xAxis: {
-      categories: data.map(item => item.date.toString()),
+      categories: data.map((item) => item.date.toString()),
       title: {
-        text: ''
+        text: "",
       },
     },
     yAxis: {
       // Primary yAxis (Count)
       title: {
-        text: 'Count of Nets',
+        text: "Count of Nets",
         style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+          color: Highcharts.getOptions().colors[0],
+        },
       },
       labels: {
         style: {
-          color: Highcharts.getOptions().colors[0]
-        }
-      }
+          color: Highcharts.getOptions().colors[0],
+        },
+      },
     },
     tooltip: {
       crosshairs: true,
-      shared: true
+      shared: true,
     },
     plotOptions: {
       spline: {
         marker: {
           radius: 4,
-          lineColor: '#666666',
-          lineWidth: 1
-        }
-      }
-    },
-    series: [{
-      name: 'Cumulative',//Cumulative
-      marker: {
-        symbol: 'circle'
+          lineColor: "#666666",
+          lineWidth: 1,
+        },
       },
-      yAxis: 0,
-      data: data.map(item => parseInt(item.nets_cumulative))
     },
-    {
-      name: 'Daily Nets Distribution',
-      type: 'column',
-      color: '#4ADEDE',
-      yAxis: 0,
-      data: data.map(item => parseInt(item.no_of_nets))
-    }]
+    series: [
+      {
+        name: "Cumulative", //Cumulative
+        marker: {
+          symbol: "circle",
+        },
+        yAxis: 0,
+        data: data.map((item) => parseInt(item.nets_cumulative)),
+      },
+      {
+        name: "Daily Nets Distribution",
+        type: "column",
+        color: "#4ADEDE",
+        yAxis: 0,
+        data: data.map((item) => parseInt(item.no_of_nets)),
+      },
+    ],
   });
-
-}
+};
 const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
-  Highcharts.chart('HouseholdsRegisteredbyCountyChart', {
+  Highcharts.chart("HouseholdsRegisteredbyCountyChart", {
     chart: {
-      type: 'pie'
+      type: "pie",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
       text: `Households Registered by ${orglevel}`,
-      align: 'left',
+      align: "left",
     },
     subtitle: {
       text: orglevel,
-      align: 'left'
+      align: "left",
     },
     tooltip: {
-      valueSuffix: ''
+      valueSuffix: "",
     },
     plotOptions: {
       pie: {
         allowPointSelect: true,
         borderWidth: 2,
-        cursor: 'pointer',
+        cursor: "pointer",
         innerSize: 0,
         depth: 0,
         dataLabels: {
           enabled: true,
-          format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
-          distance: 20
-        }
-      }
+          format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+          distance: 20,
+        },
+      },
     },
     series: [
       {
-        name: 'Count',
+        name: "Count",
         colorByPoint: true,
         data: data,
-      }
+      },
     ],
   });
-}
+};
 const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
-  Highcharts.chart('HouseHoldsServedbyCountyChart', {
+  Highcharts.chart("HouseHoldsServedbyCountyChart", {
     chart: {
-      type: 'pie'
+      type: "pie",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
       text: `Households Served by ${orglevel}`,
-      align: 'left'
+      align: "left",
     },
     subtitle: {
       text: orglevel,
-      align: 'left'
+      align: "left",
     },
     tooltip: {
-      pointFormat: '{point.name}: <b>{point.y}</b>'
+      pointFormat: "{point.name}: <b>{point.y}</b>",
     },
     accessibility: {
       point: {
-        valueSuffix: '%'
-      }
+        valueSuffix: "%",
+      },
     },
     plotOptions: {
       pie: {
         allowPointSelect: true,
         borderWidth: 2,
-        cursor: 'pointer',
+        cursor: "pointer",
         dataLabels: {
           enabled: true,
-          format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
-          distance: 20
-        }
-      }
-    },
-    series: [{
-      // Disable mouse tracking on load, enable after custom animation
-      enableMouseTracking: false,
-      animation: {
-        duration: 2000
+          format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+          distance: 20,
+        },
       },
-      colorByPoint: true,
-      data: charData,
-    }]
+    },
+    series: [
+      {
+        // Disable mouse tracking on load, enable after custom animation
+        enableMouseTracking: false,
+        animation: {
+          duration: 2000,
+        },
+        colorByPoint: true,
+        data: charData,
+      },
+    ],
   });
-
-}
+};
 const NetsIssuedbyCountyChart = (charData, orglevel) => {
-  Highcharts.chart('NetsIssuedbyCountyChart', {
+  Highcharts.chart("NetsIssuedbyCountyChart", {
     chart: {
-      type: 'pie',
+      type: "pie",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
       text: `Nets Distributed by ${orglevel}`,
-      align: 'left',
+      align: "left",
     },
     subtitle: {
       text: orglevel,
-      align: 'left'
+      align: "left",
     },
     tooltip: {
-      valueSuffix: ''
+      valueSuffix: "",
     },
     plotOptions: {
       pie: {
         allowPointSelect: true,
         borderWidth: 2,
-        cursor: 'pointer',
+        cursor: "pointer",
         dataLabels: {
           enabled: true,
-          format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
-          distance: 20
-        }
-      }
+          format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+          distance: 20,
+        },
+      },
     },
     series: [
       {
-        name: 'Count',
+        name: "Count",
         colorByPoint: true,
         data: charData,
-      }
-    ]
+      },
+    ],
   });
-}
-const netsReqvsIssuedChart = (nets_required, nets_issued, target_data, target_level, cats, orglevel) => {
-  Highcharts.chart('netsReqvsIssuedChart', {
+};
+const netsReqvsIssuedChart = (
+  nets_required,
+  nets_issued,
+  target_data,
+  target_level,
+  cats,
+  orglevel
+) => {
+  Highcharts.chart("netsReqvsIssuedChart", {
     chart: {
-      zoomType: 'xy'
+      zoomType: "xy",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
       text: `Comparison of Nets Required vs Nets Distributed by ${orglevel}`,
-      align: 'left'
+      align: "left",
     },
     subtitle: {
-      text: 'Source:',
-      align: 'left'
+      text: "Source:",
+      align: "left",
     },
-    xAxis: [{
-      categories: cats,
-      crosshair: true
-    }],
-    yAxis: [{
-      title: {
-        text: 'Count',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+    xAxis: [
+      {
+        categories: cats,
+        crosshair: true,
       },
-      labels: {
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
-      }
-    }, { // Secondary yAxis (for Achievement and Expected Achievement)
-      title: {
-        text: 'Achievement',
-        style: {
-          color: '#004225'
-        }
+    ],
+    yAxis: [
+      {
+        title: {
+          text: "Count",
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+        labels: {
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
       },
-      labels: {
-        format: '{value:.1f}%',
-        style: {
-          color: '#004225'
-        }
+      {
+        // Secondary yAxis (for Achievement and Expected Achievement)
+        title: {
+          text: "Achievement",
+          style: {
+            color: "#004225",
+          },
+        },
+        labels: {
+          format: "{value:.1f}%",
+          style: {
+            color: "#004225",
+          },
+        },
+        max: 100,
+        min: 0,
+        opposite: true,
       },
-      max: 100,
-      min: 0,
-      opposite: true
-    }],
+    ],
     tooltip: {
-      shared: true
+      shared: true,
     },
     legend: {
-      layout: 'horizontal',
-      align: 'center',
+      layout: "horizontal",
+      align: "center",
       x: 80,
-      verticalAlign: 'top',
+      verticalAlign: "top",
       y: 20,
       floating: true,
       backgroundColor:
         Highcharts.defaultOptions.legend.backgroundColor || // theme
-        'rgba(255,255,255,0.25)'
+        "rgba(255,255,255,0.25)",
     },
-    series: [{
-      name: 'Nets Required',
-      type: 'column',
-      yAxis: 0, // Assign to the Count axis
-      data: nets_required,
-      color: '#3498db',
-    }, {
-      name: 'Nets Distributed',
-      type: 'column',
-      yAxis: 0, // Assign to the Count axis
-      data: nets_issued,
-      color: '#4ADEDE',//color: '#3498db',
-    }, {
-      name: 'Expected Achievement',
-      type: 'spline',
-      yAxis: 1, // Assign to the Achievement axis
-      data: target_level,
-      color: Highcharts.getOptions().colors[1],
-      marker: {
-        enabled: false
+    series: [
+      {
+        name: "Nets Required",
+        type: "column",
+        yAxis: 0, // Assign to the Count axis
+        data: nets_required,
+        color: "#3498db",
       },
-      dashStyle: 'shortdot',
-      tooltip: {
-        valueSuffix: ' %'
+      {
+        name: "Nets Distributed",
+        type: "column",
+        yAxis: 0, // Assign to the Count axis
+        data: nets_issued,
+        color: "#4ADEDE", //color: '#3498db',
       },
-      lineWidth: 6,
-    }, {
-      name: 'Current Achievement',
-      type: 'scatter',
-      yAxis: 1, // Assign to the Achievement axis
-      data: target_data,
-      color: '#004225',
-      marker: {
-        radius: 6,
-      },
-    }],
-    responsive: {
-      rules: [{
-        condition: {
-          maxWidth: 500
+      {
+        name: "Expected Achievement",
+        type: "spline",
+        yAxis: 1, // Assign to the Achievement axis
+        data: target_level,
+        color: Highcharts.getOptions().colors[1],
+        marker: {
+          enabled: false,
         },
-        chartOptions: {
-          legend: {
-            floating: false,
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'bottom',
-            x: 0,
-            y: 0
+        dashStyle: "shortdot",
+        tooltip: {
+          valueSuffix: " %",
+        },
+        lineWidth: 6,
+      },
+      {
+        name: "Current Achievement",
+        type: "scatter",
+        yAxis: 1, // Assign to the Achievement axis
+        data: target_data,
+        color: "#004225",
+        marker: {
+          radius: 6,
+        },
+      },
+    ],
+    responsive: {
+      rules: [
+        {
+          condition: {
+            maxWidth: 500,
           },
-          yAxis: [{
-            labels: {
-              align: 'right',
+          chartOptions: {
+            legend: {
+              floating: false,
+              layout: "horizontal",
+              align: "center",
+              verticalAlign: "bottom",
               x: 0,
-              y: -6
+              y: 0,
             },
-            showLastLabel: false
-          }, {
-            labels: {
-              align: 'left',
-              x: 0,
-              y: -6
-            },
-            showLastLabel: false
-          }, {
-            visible: false
-          }]
-        }
-      }]
-    }
+            yAxis: [
+              {
+                labels: {
+                  align: "right",
+                  x: 0,
+                  y: -6,
+                },
+                showLastLabel: false,
+              },
+              {
+                labels: {
+                  align: "left",
+                  x: 0,
+                  y: -6,
+                },
+                showLastLabel: false,
+              },
+              {
+                visible: false,
+              },
+            ],
+          },
+        },
+      ],
+    },
   });
-}
-const netsIssuedvsDeliveredChart = (nets_issued, nets_delivered, scatter_data, cats, orglevel) => {
-  Highcharts.chart('netsIssuedvsDeliveredChart', {
+};
+const netsIssuedvsDeliveredChart = (
+  nets_issued,
+  nets_delivered,
+  scatter_data,
+  cats,
+  orglevel
+) => {
+  Highcharts.chart("netsIssuedvsDeliveredChart", {
     chart: {
-      zoomType: 'xy'
+      zoomType: "xy",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
-      text: 'Nets Delivered vs Nets Distributed by ' + orglevel,
-      align: 'left'
+      text: "Nets Delivered vs Nets Distributed by " + orglevel,
+      align: "left",
     },
-    xAxis: [{
-      categories: cats,
-      crosshair: true
-    }],
-    yAxis: [{ // Primary yAxis
-      labels: {
-        format: '{value}',
-        style: {
-          color: Highcharts.getOptions().colors[2]
-        }
+    xAxis: [
+      {
+        categories: cats,
+        crosshair: true,
       },
-      opposite: true
-
-    }, { // Secondary yAxis
-      gridLineWidth: 0,
-      title: {
-        text: 'Count ',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+    ],
+    yAxis: [
+      {
+        // Primary yAxis
+        labels: {
+          format: "{value}",
+          style: {
+            color: Highcharts.getOptions().colors[2],
+          },
+        },
+        opposite: true,
       },
-      labels: {
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
-      }
-
-    }, { // Tertiary yAxis
-      gridLineWidth: 0,
-      title: {
-        text: 'Distribution Effectiveness',
-        style: {
-          color: '#004225',
-        }
+      {
+        // Secondary yAxis
+        gridLineWidth: 0,
+        title: {
+          text: "Count ",
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+        labels: {
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
       },
-      labels: {
-        format: '{value:.2f}%',
-        style: {
-          color: '#004225',
-        }
+      {
+        // Tertiary yAxis
+        gridLineWidth: 0,
+        title: {
+          text: "Distribution Effectiveness",
+          style: {
+            color: "#004225",
+          },
+        },
+        labels: {
+          format: "{value:.2f}%",
+          style: {
+            color: "#004225",
+          },
+        },
+        max: 100,
+        min: 0,
+        opposite: true,
       },
-      max: 100,
-      min: 0,
-      opposite: true
-    }],
+    ],
     tooltip: {
-      shared: true
+      shared: true,
     },
     legend: {
-      layout: 'vertical',
-      align: 'left',
+      layout: "vertical",
+      align: "left",
       x: 80,
-      verticalAlign: 'top',
+      verticalAlign: "top",
       y: 20,
       floating: true,
       backgroundColor:
         Highcharts.defaultOptions.legend.backgroundColor || // theme
-        'rgba(255,255,255,0.25)'
+        "rgba(255,255,255,0.25)",
     },
-    series: [{
-      name: 'Nets Delivered',
-      type: 'column',
-      yAxis: 1,
-      data: nets_delivered,
-      tooltip: {
-        valueSuffix: ''
-      }
-
-    }, {
-      name: 'Nets Distributed',
-      type: 'column',
-      yAxis: 1,
-      data: nets_issued,
-      color: '#4ADEDE',
-      marker: {
-        enabled: false
-      },
-      dashStyle: 'shortdot',
-      tooltip: {
-        valueSuffix: ''
-      }
-
-    }, {
-      name: 'Distribution Effectiveness',
-      type: 'scatter',
-      yAxis: 2,
-      data: scatter_data,
-      color: '#004225',
-      tooltip: {
-        pointFormat: '{point.name} <b>{point.y:.2f}%</b>'
-      },
-      marker: {
-        radius: 6, // Set the radius to adjust the size of scatter plot dots
-      },
-    }],
-    responsive: {
-      rules: [{
-        condition: {
-          maxWidth: 500
+    series: [
+      {
+        name: "Nets Delivered",
+        type: "column",
+        yAxis: 1,
+        data: nets_delivered,
+        tooltip: {
+          valueSuffix: "",
         },
-        chartOptions: {
-          legend: {
-            floating: false,
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'bottom',
-            x: 0,
-            y: 0
+      },
+      {
+        name: "Nets Distributed",
+        type: "column",
+        yAxis: 1,
+        data: nets_issued,
+        color: "#4ADEDE",
+        marker: {
+          enabled: false,
+        },
+        dashStyle: "shortdot",
+        tooltip: {
+          valueSuffix: "",
+        },
+      },
+      {
+        name: "Distribution Effectiveness",
+        type: "scatter",
+        yAxis: 2,
+        data: scatter_data,
+        color: "#004225",
+        tooltip: {
+          pointFormat: "{point.name} <b>{point.y:.2f}%</b>",
+        },
+        marker: {
+          radius: 6, // Set the radius to adjust the size of scatter plot dots
+        },
+      },
+    ],
+    responsive: {
+      rules: [
+        {
+          condition: {
+            maxWidth: 500,
           },
-          yAxis: [{
-            labels: {
-              align: 'right',
+          chartOptions: {
+            legend: {
+              floating: false,
+              layout: "horizontal",
+              align: "center",
+              verticalAlign: "bottom",
               x: 0,
-              y: -6
+              y: 0,
             },
-            showLastLabel: false
-          }, {
-            labels: {
-              align: 'left',
-              x: 0,
-              y: -6
-            },
-            showLastLabel: false
-          }, {
-            visible: false
-          }]
-        }
-      }]
-    }
+            yAxis: [
+              {
+                labels: {
+                  align: "right",
+                  x: 0,
+                  y: -6,
+                },
+                showLastLabel: false,
+              },
+              {
+                labels: {
+                  align: "left",
+                  x: 0,
+                  y: -6,
+                },
+                showLastLabel: false,
+              },
+              {
+                visible: false,
+              },
+            ],
+          },
+        },
+      ],
+    },
   });
-}
-const householdRegvsServedChart = (registered, served, target_data, target_level, cats, orglevel) => {
-  Highcharts.chart('householdRegvsServedChart', {
+};
+const householdRegvsServedChart = (
+  registered,
+  served,
+  target_data,
+  target_level,
+  cats,
+  orglevel
+) => {
+  Highcharts.chart("householdRegvsServedChart", {
     chart: {
-      zoomType: 'xy'
+      zoomType: "xy",
     },
     credits: {
-      text: 'Powered by HealthIT KE', // Custom text
-      href: 'https://unes.co.ke', // Custom link
-      target: '_blank',
+      text: "Powered by HealthIT KE", // Custom text
+      href: "https://unes.co.ke", // Custom link
+      target: "_blank",
       position: {
-        align: 'right',
+        align: "right",
         x: -10,
-        verticalAlign: 'bottom',
+        verticalAlign: "bottom",
         y: -5,
       },
     },
     title: {
       text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
-      align: 'left'
+      align: "left",
     },
     subtitle: {
-      text: 'Source:',
-      align: 'left'
+      text: "Source:",
+      align: "left",
     },
-    xAxis: [{
-      categories: cats,
-      crosshair: true
-    }],
-    yAxis: [{
-      // Primary yAxis (Count)
-      title: {
-        text: 'Count',
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
+    xAxis: [
+      {
+        categories: cats,
+        crosshair: true,
       },
-      labels: {
-        style: {
-          color: Highcharts.getOptions().colors[0]
-        }
-      }
-    }, {
-      // Secondary yAxis (Achievement and Expected Achievement)
-      title: {
-        text: 'Achievement',
-        style: {
-          color: '#004225'
-        }
+    ],
+    yAxis: [
+      {
+        // Primary yAxis (Count)
+        title: {
+          text: "Count",
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+        labels: {
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
       },
-      labels: {
-        format: '{value:.1f}%',
-        style: {
-          color: '#004225'
-        }
+      {
+        // Secondary yAxis (Achievement and Expected Achievement)
+        title: {
+          text: "Achievement",
+          style: {
+            color: "#004225",
+          },
+        },
+        labels: {
+          format: "{value:.1f}%",
+          style: {
+            color: "#004225",
+          },
+        },
+        max: 100,
+        min: 0,
+        opposite: true,
       },
-      max: 100,
-      min: 0,
-      opposite: true
-    }],
+    ],
     tooltip: {
-      shared: true
+      shared: true,
     },
     legend: {
-      layout: 'horizontal',
-      align: 'center',
+      layout: "horizontal",
+      align: "center",
       x: 80,
-      verticalAlign: 'top',
+      verticalAlign: "top",
       y: 20,
       floating: true,
       backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || 'rgba(255,255,255,0.25)'
+        Highcharts.defaultOptions.legend.backgroundColor || "rgba(255,255,255,0.25)",
     },
-    series: [{
-      name: 'Registered Households',
-      type: 'column',
-      yAxis: 0, // Use the first yAxis (Count)
-      data: registered,
-      color: '#3498db'
-    }, {
-      name: 'Served Households',
-      type: 'column',
-      yAxis: 0, // Use the first yAxis (Count)
-      data: served,
-      color: '#4ADEDE'
-    }, {
-      name: 'Expected Achievement',
-      type: 'spline',
-      yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
-      data: target_level,
-      color: Highcharts.getOptions().colors[1],
-      marker: {
-        enabled: false
+    series: [
+      {
+        name: "Registered Households",
+        type: "column",
+        yAxis: 0, // Use the first yAxis (Count)
+        data: registered,
+        color: "#3498db",
       },
-      dashStyle: 'shortdot',
-      tooltip: {
-        valueSuffix: ' %'
+      {
+        name: "Served Households",
+        type: "column",
+        yAxis: 0, // Use the first yAxis (Count)
+        data: served,
+        color: "#4ADEDE",
       },
-      lineWidth: 6
-    }, {
-      name: 'Current Achievement',
-      type: 'scatter',
-      yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
-      data: target_data,
-      color: '#004225',
-      tooltip: {
-        pointFormat: '{point.name}: <b>{point.y:.1f}%</b>'
-      },
-      marker: {
-        radius: 6
-      }
-    }],
-    responsive: {
-      rules: [{
-        condition: {
-          maxWidth: 500
+      {
+        name: "Expected Achievement",
+        type: "spline",
+        yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
+        data: target_level,
+        color: Highcharts.getOptions().colors[1],
+        marker: {
+          enabled: false,
         },
-        chartOptions: {
-          legend: {
-            floating: false,
-            layout: 'horizontal',
-            align: 'center',
-            verticalAlign: 'bottom',
-            x: 0,
-            y: 0
+        dashStyle: "shortdot",
+        tooltip: {
+          valueSuffix: " %",
+        },
+        lineWidth: 6,
+      },
+      {
+        name: "Current Achievement",
+        type: "scatter",
+        yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
+        data: target_data,
+        color: "#004225",
+        tooltip: {
+          pointFormat: "{point.name}: <b>{point.y:.1f}%</b>",
+        },
+        marker: {
+          radius: 6,
+        },
+      },
+    ],
+    responsive: {
+      rules: [
+        {
+          condition: {
+            maxWidth: 500,
           },
-          yAxis: [{
-            labels: {
-              align: 'right',
+          chartOptions: {
+            legend: {
+              floating: false,
+              layout: "horizontal",
+              align: "center",
+              verticalAlign: "bottom",
               x: 0,
-              y: -6
+              y: 0,
             },
-            showLastLabel: false
-          }, {
-            labels: {
-              align: 'left',
-              x: 0,
-              y: -6
-            },
-            showLastLabel: false
-          }, {
-            visible: false
-          }]
-        }
-      }]
-    }
+            yAxis: [
+              {
+                labels: {
+                  align: "right",
+                  x: 0,
+                  y: -6,
+                },
+                showLastLabel: false,
+              },
+              {
+                labels: {
+                  align: "left",
+                  x: 0,
+                  y: -6,
+                },
+                showLastLabel: false,
+              },
+              {
+                visible: false,
+              },
+            ],
+          },
+        },
+      ],
+    },
   });
-
-}
+};
 </script>
 <style scoped>
 /* Make charts responsive */
@@ -1745,7 +2183,7 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
   border-bottom: 2px solid #dee2e6;
 }
 
-.table tbody+tbody {
+.table tbody + tbody {
   border-top: 2px solid #ffffff;
 }
 
@@ -1769,7 +2207,6 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
 
 /* Media query for responsiveness */
 @media only screen and (max-width: 600px) {
-
   .stat-table td,
   .stat-table th {
     display: block;
@@ -1789,4 +2226,5 @@ const householdRegvsServedChart = (registered, served, target_data, target_level
   .chart-container {
     /* Adjust any additional styles for smaller screens */
   }
-}</style>
+}
+</style>
