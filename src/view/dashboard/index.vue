@@ -1439,6 +1439,13 @@ const NetsDistributedwithTime = async (data, org_level) => {
     Highcharts.chart("NetsDistributedwithTime", {
       chart: {
         type: "spline",
+        options3d: {
+          enabled: true,
+          alpha: 0,
+          beta: 15,
+          viewDistance: 100,
+          depth: 40,
+        },
       },
       credits: {
         text: "Powered by HealthIT KE", // Custom text
@@ -1518,6 +1525,13 @@ const HouseHoldRegisteredbyCoountyChart = async (data, orglevel) => {
     Highcharts.chart("HouseholdsRegisteredbyCountyChart", {
       chart: {
         type: "pie",
+        options3d: {
+          enabled: true,
+          alpha: 0,
+          beta: 15,
+          viewDistance: 100,
+          depth: 40,
+        },
       },
       credits: {
         text: "Powered by HealthIT KE", // Custom text
@@ -1862,6 +1876,13 @@ const netsIssuedvsDeliveredChart = async (
     Highcharts.chart("netsIssuedvsDeliveredChart", {
       chart: {
         zoomType: "xy",
+        // options3d: {
+        //   enabled: true,
+        //   alpha: 0,
+        //   beta: 15,
+        //   viewDistance: 100,
+        //   depth: 40,
+        // },
       },
       credits: {
         text: "Powered by HealthIT KE", // Custom text

@@ -1736,6 +1736,13 @@ const NetsPerCapita = async (
     Highcharts.chart("NetsPerCapitaChart", {
       chart: {
         zoomType: "xy",
+        options3d: {
+          enabled: true,
+          alpha: 0,
+          beta: 15,
+          viewDistance: 100,
+          depth: 40,
+        },
       },
       credits: {
         text: "Powered by HealthIT KE", // Custom text
