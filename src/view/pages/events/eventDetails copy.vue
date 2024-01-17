@@ -1,6 +1,6 @@
 <template>
   <ProjectDetailsWrapper>
-    <sdPageHeader :title="`${event_name} Event`"></sdPageHeader>
+    <sdPageHeader :title="`${event_name} Event - ${event_code}`"></sdPageHeader>
     <Main>
       <sdButton class="btn-import" type="success" @click="generatePayroll">
         Generate Payroll
@@ -59,7 +59,7 @@
     </Main>
   </ProjectDetailsWrapper>
 </template>
-<script>
+<script setup>
 import { ProjectDetailsWrapper } from "./overview/style";
 import { Main } from "../../styled";
 // import { useStore } from "vuex";

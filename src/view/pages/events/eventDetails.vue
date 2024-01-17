@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="`${event_name} Event`" />
+    <sdPageHeader ghost :title="`${event_name} Event - ${event_code}`" />
     <Main>
       <div class="button-container">
         <sdButton
@@ -16,8 +16,8 @@
             isLoading
               ? "Loading..."
               : isGenerating
-                ? "Processing ..."
-                : "Generate Payroll"
+              ? "Processing ..."
+              : "Generate Payroll"
           }}
         </sdButton>
         &nbsp;
@@ -39,9 +39,7 @@
         </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton class="btn-import" type="success" size="small">
-          <router-link to="/events/add-stakeholder">
-            Add Stakeholder</router-link
-          >
+          <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
@@ -71,9 +69,7 @@
                 </li>
                 <li>
                   <a
-                    :class="
-                      activeClass === 'confirmed' ? 'active' : 'deactivate'
-                    "
+                    :class="activeClass === 'confirmed' ? 'active' : 'deactivate'"
                     @click="handleChange('confirmed')"
                     href="#"
                   >
@@ -176,18 +172,10 @@
                       >
                         <p>Are you sure you want to void participant?</p>
                         <template #footer>
-                          <a-button
-                            key="cancel"
-                            type="warning"
-                            @click="handleCancel"
-                          >
+                          <a-button key="cancel" type="warning" @click="handleCancel">
                             Cancel
                           </a-button>
-                          <a-button
-                            key="confirm"
-                            type="danger"
-                            @click="handleVoid"
-                          >
+                          <a-button key="confirm" type="danger" @click="handleVoid">
                             Confirm
                           </a-button>
                         </template>
