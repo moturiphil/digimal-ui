@@ -356,6 +356,10 @@
             <FilePdfOutlined /> Print Pdf
           </a-button>
         </a-row>
+        <a-row style="margin-top: 20px" v-if="chartsLoading">
+          <a-timeline pending="Charts loading, please wait...." :reverse="false">
+          </a-timeline>
+        </a-row>
         <a-row :gutter="5" v-if="wards !== null">
           <a-col :xxl="8" :md="8" :sm="24" :xs="24" class="pdf-row">
             <figure class="highcharts-figure">
@@ -601,10 +605,10 @@ import html2canvas from "html2canvas";
 //import html2pdf from 'html2pdf.js';
 import { FilePdfOutlined } from "@ant-design/icons-vue";
 import { ReloadOutlined } from "@ant-design/icons-vue";
-
 import { useRouter } from "vue-router";
 const router = useRouter();
 //exporting(Highcharts);
+const chartsLoading = ref(false);
 const active_events = ref(0);
 const nets_distributed = ref(0);
 const registered_house_holds = ref(0);
@@ -712,19 +716,20 @@ onMounted(async () => {
   const user_object = JSON.parse(user);
   if (user_object != null) {
     access_level.value = user_object.user;
-    updateFilters();
-    fetchInitialChartData();
-    updateStats(access_level.value.location.org_id);
-    handleFilterChange();
+    await updateFilters();
+    chartsLoading.value = true;
+    await fetchInitialChartData();
+    await updateStats(access_level.value.location.org_id);
+    await handleFilterChange();
   } else {
     router.push("/login");
   }
 });
-const capitalizeFirstLetter = (word) => {
-  return word.charAt(0).toUpperCase() + word.slice(1);
+const capitalizeFirstLetter = async (word) => {
+  return (await word.charAt(0).toUpperCase()) + word.slice(1);
 };
 
-const updateFilters = () => {
+const updateFilters = async () => {
   // access_level.value.level.id = 3
   // access_level.value.location.org_id = 'BzFBYZhF5fx'
   // access_level.value.location.name = 'Kabondo Kasipul Sub County'
@@ -747,7 +752,7 @@ const updateFilters = () => {
     org_ids.value = [
       { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
-    fetchCounties();
+    await fetchCounties();
   } else if (access_level.value.level.id == 2) {
     filterAccessList.value = [
       "county",
@@ -813,9 +818,10 @@ const updateFilters = () => {
   }
 };
 const fetchInitialChartData = async () => {
-  axios
+  await axios
     .get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
-    .then((response) => {
+    .then(async (response) => {
+      chartsLoading.value = false;
       newChartData.value = response.data.data;
       fileterOrgeLevel.value = access_level.value.level.level_name;
       filterOrgId.value = access_level.value.level.id;
@@ -825,7 +831,7 @@ const fetchInitialChartData = async () => {
         );
       }
       //nets_required,nets_issued,target_data,target_level,cats
-      netsReqvsIssuedChart(
+      await netsReqvsIssuedChart(
         newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
         newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
         newChartData.value.map(
@@ -845,7 +851,7 @@ const fetchInitialChartData = async () => {
         scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
       });
       console.log(scatterData);
-      netsIssuedvsDeliveredChart(
+      await netsIssuedvsDeliveredChart(
         newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
         newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
         scatterData, //ratio
@@ -853,7 +859,7 @@ const fetchInitialChartData = async () => {
         fileterOrgeLevel.value //level
       );
       //registered,served,target_data,target_level,cats
-      householdRegvsServedChart(
+      await householdRegvsServedChart(
         newChartData.value.map((item) => parseInt(item.households_registered)), //registered
         newChartData.value.map((item) => parseInt(item.households_served)), //served
         newChartData.value.map(
@@ -876,7 +882,7 @@ const fetchInitialChartData = async () => {
       dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
       dateTo.value = moment(currentDate).format(dateFormat.value);
       NetsChartData.value = newChartData.value;
-      fetchNetsDistributed();
+      await fetchNetsDistributed();
     })
     .catch((error) => {
       console.log(error);
@@ -888,19 +894,19 @@ const fetchInitialChartData = async () => {
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
   // console.log(org_id)
   // console.log(org_ids.value)
   let parent_id = org[0] || 9;
   // console.log(parent_id)
   // console.log(org_level)
-  fetchChildData(org_id, org_level);
+  await fetchChildData(org_id, org_level);
   filterOrgId.value = parent_id;
   fileterOrgeLevel.value = org_level;
-  fetchNetsDistributed();
+  await fetchNetsDistributed();
 };
 const fetchChildData = async (org_id, org_level) => {
-  updateStats(org_id);
+  await updateStats(org_id);
   let fetchUrl = `get_sub_counties_list`;
   let statUrl = `subcounty/stats`;
   if (org_level == "country") {
@@ -1025,7 +1031,7 @@ const fetchChildData = async (org_id, org_level) => {
       }
     })
     .then(async () => {
-      await axios.get(`${statUrl}`).then((response) => {
+      await axios.get(`${statUrl}`).then(async (response) => {
         newChartData.value = response.data.data;
         if (org_level === "country") {
           newChartData.value = newChartData.value.filter((e) =>
@@ -1059,8 +1065,8 @@ const fetchChildData = async (org_id, org_level) => {
             100
         ); //(registered/registered)*100
         let labels1 = newChartData.value.map((item) => item.name); //cats
-        org_level = capitalizeFirstLetter(fileterOrgeLevel.value);
-        householdRegvsServedChart(
+        org_level = await capitalizeFirstLetter(fileterOrgeLevel.value);
+        await householdRegvsServedChart(
           rgstd,
           srvd,
           rgstdvssvd,
@@ -1069,7 +1075,7 @@ const fetchChildData = async (org_id, org_level) => {
           fileterOrgeLevel.value
         );
         //combine bar line bar Subcounty comparison
-        netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value);
+        await netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value);
         let scatterData = [];
         newChartData.value.forEach((item, index) => {
           let x = parseInt(item.nets_issued);
@@ -1078,7 +1084,7 @@ const fetchChildData = async (org_id, org_level) => {
           scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
         });
         console.log(scatterData);
-        netsIssuedvsDeliveredChart(
+        await netsIssuedvsDeliveredChart(
           newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
           newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
           scatterData, //ratio
@@ -1100,15 +1106,15 @@ const fetchChildData = async (org_id, org_level) => {
           y: parseInt(item.nets_issued),
         }));
         if (wards.value != null) {
-          HouseHoldRegisteredbyCoountyChart(pieOptionsData, org_level);
+          await HouseHoldRegisteredbyCoountyChart(pieOptionsData, org_level);
           HouseHoldRegisteredbyCoountyChartData.value = pieOptionsData;
-          HouseHoldsServedbyCountyChart(chartData, org_level);
+          await HouseHoldsServedbyCountyChart(chartData, org_level);
           HouseHoldsServedbyCountyChartData.value = chartData;
-          NetsIssuedbyCountyChart(netsIssuedData, org_level);
+          await NetsIssuedbyCountyChart(netsIssuedData, org_level);
           NetsIssuedbyCountyChartData.value = netsIssuedData;
         }
         fileterOrgeLevel.value = org_level;
-        fetchNetsDistributed();
+        await fetchNetsDistributed();
       });
     })
     .catch((error) => {
@@ -1120,7 +1126,7 @@ const fetchChildData = async (org_id, org_level) => {
     });
 };
 const fetchCounties = async () => {
-  axios
+  await axios
     .get("counties/")
     .then((response) => {
       counties.value = response.data
@@ -1141,8 +1147,8 @@ const fetchCounties = async () => {
       });
     });
 };
-const filterOption = (input, option) => {
-  return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+const filterOption = async (input, option) => {
+  return (await option.value.toLowerCase().indexOf(input.toLowerCase())) >= 0;
 };
 
 const convertObjectVlasToInt = (obj) => {
@@ -1156,8 +1162,8 @@ const convertObjectVlasToInt = (obj) => {
 const updateStats = async (org_id) => {
   await axios
     .get(`all_stats?org_id=${org_id}`)
-    .then((response) => {
-      const data = convertObjectVlasToInt(response.data);
+    .then(async (response) => {
+      const data = await convertObjectVlasToInt(response.data);
       //console.log(data)
       active_events.value = data.events ? data.events : 0;
       nets_distributed.value = data.nets_distributed ? data.nets_distributed : 0;
@@ -1184,338 +1190,360 @@ const updateStats = async (org_id) => {
 //chart pdf reports
 // Function to export multiple charts to a single PDF
 const exportChartsToPDF = async () => {
-  printMode.value = true;
-  const content = document.getElementById("printPDFDiv");
-
-  // Create a new jsPDF instance
-  const pdf = new jsPDF({
-    orientation: "potrait",
-    unit: "mm",
-    format: "a4",
-  });
-  // Get all rows in the content
-  const rows = content.querySelectorAll(".pdf-row");
-  // Loop through ev row
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    // Use html2canvas to convert the row to a canvas
-    const canvas = await html2canvas(row);
-    // Add the canvas as an image to the PDF
-    pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 10, 10, 190, 277);
-    // If there are more rows, add a new page for the next row
-    if (i < rows.length - 1) {
-      pdf.addPage();
+  try {
+    printMode.value = true;
+    const content = await document.getElementById("printPDFDiv");
+    // Create a new jsPDF instance
+    const pdf = new jsPDF({
+      orientation: "potrait",
+      unit: "mm",
+      format: "a4",
+    });
+    // Get all rows in the content
+    const rows = await content.querySelectorAll(".pdf-row");
+    // Loop through ev row
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      // Use html2canvas to convert the row to a canvas
+      const canvas = await html2canvas(row);
+      // Add the canvas as an image to the PDF
+      await pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 10, 10, 190, 277);
+      // If there are more rows, add a new page for the next row
+      if (i < rows.length - 1) {
+        await pdf.addPage();
+      }
     }
+    // Save or display the PDF
+    // You can modify this part based on your specific needs
+    pdf.save("export.pdf");
+    // printMode.value = false;
+    window.location.reload();
+  } catch (e) {
+    console.log(e);
   }
-  // Save or display the PDF
-  // You can modify this part based on your specific needs
-  pdf.save("export.pdf");
-  // printMode.value = false;
-  window.location.reload();
 };
 //chart functions
-const handleFilterChange = () => {
-  const currentDate = new Date();
-  //console.log(selectedFilter.value)
-
-  switch (selectedFilter.value) {
-    case "year":
-      dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
-      dateTo.value = currentDate;
-      break;
-    case "month":
-      dateFrom.value = new Date(
-        `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`
-      );
-      dateTo.value = currentDate;
-      break;
-    case "week":
-      dateFrom.value = new Date(
-        `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
-          currentDate.getDate() - 7
-        }`
-      );
-      dateTo.value = currentDate;
-      break;
-    case "3day":
-      dateFrom.value = new Date(
-        `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
-          currentDate.getDate() - 3
-        }`
-      );
-      dateTo.value = currentDate;
-      break;
-    case "day":
-      dateFrom.value = new Date(
-        `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
-          currentDate.getDate() - 1
-        }`
-      );
-      dateTo.value = currentDate;
-      break;
-    default:
-      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
-      dateTo.value = currentDate;
-      break;
+const handleFilterChange = async () => {
+  try {
+    const currentDate = new Date();
+    //console.log(selectedFilter.value)
+    switch (selectedFilter.value) {
+      case "year":
+        dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
+        dateTo.value = currentDate;
+        break;
+      case "month":
+        dateFrom.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`
+        );
+        dateTo.value = currentDate;
+        break;
+      case "week":
+        dateFrom.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+            currentDate.getDate() - 7
+          }`
+        );
+        dateTo.value = currentDate;
+        break;
+      case "3day":
+        dateFrom.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+            currentDate.getDate() - 3
+          }`
+        );
+        dateTo.value = currentDate;
+        break;
+      case "day":
+        dateFrom.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+            currentDate.getDate() - 1
+          }`
+        );
+        dateTo.value = currentDate;
+        break;
+      default:
+        dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+        dateTo.value = currentDate;
+        break;
+    }
+    //fetch data
+    await fetchNetsDistributed();
+  } catch (e) {
+    console.log(e);
   }
-  //fetch data
-  fetchNetsDistributed();
 };
-const fetchNetsDistributed = () => {
+const fetchNetsDistributed = async () => {
   //format date
   dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
   dateTo.value = moment(dateTo.value).format(dateFormat.value);
-  axios
+  await axios
     .get(
       `distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`
     )
-    .then((response) => {
+    .then(async (response) => {
       let data = response.data.data.total_nets_distributed;
       //console.log(data.map(item => item.date.toString()))
       NetsDistributedwithTimeData.value = data;
-      NetsDistributedwithTime(data, fileterOrgeLevel.value);
+      await NetsDistributedwithTime(data, fileterOrgeLevel.value);
     })
     .catch((error) => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
+      console.log(error);
+      // notification.error({
+      //   message: `Error!`,
+      //   description: `${error}`,
+      // });
     });
 };
 
 watch(selectedFilter, handleFilterChange);
-const NetsDistributedwithTime = (data, org_level) => {
-  //console.log(data)
-  Highcharts.chart("NetsDistributedwithTime", {
-    chart: {
-      type: "spline",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+const NetsDistributedwithTime = async (data, org_level) => {
+  try {
+    Highcharts.chart("NetsDistributedwithTime", {
+      chart: {
+        type: "spline",
       },
-    },
-    title: {
-      text: `Nets Distributed with Time by ${org_level}`,
-      align: "left",
-    },
-    subtitle: {
-      text: "",
-    },
-    xAxis: {
-      categories: data.map((item) => item.date.toString()),
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
+        },
+      },
       title: {
+        text: `Nets Distributed with Time by ${org_level}`,
+        align: "left",
+      },
+      subtitle: {
         text: "",
       },
-    },
-    yAxis: {
-      // Primary yAxis (Count)
+      xAxis: {
+        categories: data.map((item) => item.date.toString()),
+        title: {
+          text: "",
+        },
+      },
+      yAxis: {
+        // Primary yAxis (Count)
+        title: {
+          text: "Count of Nets",
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+        labels: {
+          style: {
+            color: Highcharts.getOptions().colors[0],
+          },
+        },
+      },
+      tooltip: {
+        crosshairs: true,
+        shared: true,
+      },
+      plotOptions: {
+        spline: {
+          marker: {
+            radius: 4,
+            lineColor: "#666666",
+            lineWidth: 1,
+          },
+        },
+      },
+      series: [
+        {
+          name: "Cumulative", //Cumulative
+          marker: {
+            symbol: "circle",
+          },
+          yAxis: 0,
+          data: data.map((item) => parseInt(item.nets_cumulative)),
+        },
+        {
+          name: "Daily Nets Distribution",
+          type: "column",
+          color: "#4ADEDE",
+          yAxis: 0,
+          data: data.map((item) => parseInt(item.no_of_nets)),
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+const HouseHoldRegisteredbyCoountyChart = async (data, orglevel) => {
+  try {
+    Highcharts.chart("HouseholdsRegisteredbyCountyChart", {
+      chart: {
+        type: "pie",
+      },
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
+        },
+      },
       title: {
-        text: "Count of Nets",
-        style: {
-          color: Highcharts.getOptions().colors[0],
+        text: `Households Registered by ${orglevel}`,
+        align: "left",
+      },
+      subtitle: {
+        text: orglevel,
+        align: "left",
+      },
+      tooltip: {
+        valueSuffix: "",
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          borderWidth: 2,
+          cursor: "pointer",
+          innerSize: 0,
+          depth: 0,
+          dataLabels: {
+            enabled: true,
+            format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+            distance: 20,
+          },
         },
       },
-      labels: {
-        style: {
-          color: Highcharts.getOptions().colors[0],
+      series: [
+        {
+          name: "Count",
+          colorByPoint: true,
+          data: data,
         },
-      },
-    },
-    tooltip: {
-      crosshairs: true,
-      shared: true,
-    },
-    plotOptions: {
-      spline: {
-        marker: {
-          radius: 4,
-          lineColor: "#666666",
-          lineWidth: 1,
-        },
-      },
-    },
-    series: [
-      {
-        name: "Cumulative", //Cumulative
-        marker: {
-          symbol: "circle",
-        },
-        yAxis: 0,
-        data: data.map((item) => parseInt(item.nets_cumulative)),
-      },
-      {
-        name: "Daily Nets Distribution",
-        type: "column",
-        color: "#4ADEDE",
-        yAxis: 0,
-        data: data.map((item) => parseInt(item.no_of_nets)),
-      },
-    ],
-  });
+      ],
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
-const HouseHoldRegisteredbyCoountyChart = (data, orglevel) => {
-  Highcharts.chart("HouseholdsRegisteredbyCountyChart", {
-    chart: {
-      type: "pie",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+const HouseHoldsServedbyCountyChart = async (charData, orglevel) => {
+  try {
+    Highcharts.chart("HouseHoldsServedbyCountyChart", {
+      chart: {
+        type: "pie",
       },
-    },
-    title: {
-      text: `Households Registered by ${orglevel}`,
-      align: "left",
-    },
-    subtitle: {
-      text: orglevel,
-      align: "left",
-    },
-    tooltip: {
-      valueSuffix: "",
-    },
-    plotOptions: {
-      pie: {
-        allowPointSelect: true,
-        borderWidth: 2,
-        cursor: "pointer",
-        innerSize: 0,
-        depth: 0,
-        dataLabels: {
-          enabled: true,
-          format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
-          distance: 20,
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
         },
       },
-    },
-    series: [
-      {
-        name: "Count",
-        colorByPoint: true,
-        data: data,
+      title: {
+        text: `Households Served by ${orglevel}`,
+        align: "left",
       },
-    ],
-  });
-};
-const HouseHoldsServedbyCountyChart = (charData, orglevel) => {
-  Highcharts.chart("HouseHoldsServedbyCountyChart", {
-    chart: {
-      type: "pie",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+      subtitle: {
+        text: orglevel,
+        align: "left",
       },
-    },
-    title: {
-      text: `Households Served by ${orglevel}`,
-      align: "left",
-    },
-    subtitle: {
-      text: orglevel,
-      align: "left",
-    },
-    tooltip: {
-      pointFormat: "{point.name}: <b>{point.y}</b>",
-    },
-    accessibility: {
-      point: {
-        valueSuffix: "%",
+      tooltip: {
+        pointFormat: "{point.name}: <b>{point.y}</b>",
       },
-    },
-    plotOptions: {
-      pie: {
-        allowPointSelect: true,
-        borderWidth: 2,
-        cursor: "pointer",
-        dataLabels: {
-          enabled: true,
-          format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
-          distance: 20,
+      accessibility: {
+        point: {
+          valueSuffix: "%",
         },
       },
-    },
-    series: [
-      {
-        // Disable mouse tracking on load, enable after custom animation
-        enableMouseTracking: false,
-        animation: {
-          duration: 2000,
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          borderWidth: 2,
+          cursor: "pointer",
+          dataLabels: {
+            enabled: true,
+            format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+            distance: 20,
+          },
         },
-        colorByPoint: true,
-        data: charData,
       },
-    ],
-  });
+      series: [
+        {
+          // Disable mouse tracking on load, enable after custom animation
+          enableMouseTracking: false,
+          animation: {
+            duration: 2000,
+          },
+          colorByPoint: true,
+          data: charData,
+        },
+      ],
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
 const NetsIssuedbyCountyChart = (charData, orglevel) => {
-  Highcharts.chart("NetsIssuedbyCountyChart", {
-    chart: {
-      type: "pie",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+  try {
+    Highcharts.chart("NetsIssuedbyCountyChart", {
+      chart: {
+        type: "pie",
       },
-    },
-    title: {
-      text: `Nets Distributed by ${orglevel}`,
-      align: "left",
-    },
-    subtitle: {
-      text: orglevel,
-      align: "left",
-    },
-    tooltip: {
-      valueSuffix: "",
-    },
-    plotOptions: {
-      pie: {
-        allowPointSelect: true,
-        borderWidth: 2,
-        cursor: "pointer",
-        dataLabels: {
-          enabled: true,
-          format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
-          distance: 20,
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
         },
       },
-    },
-    series: [
-      {
-        name: "Count",
-        colorByPoint: true,
-        data: charData,
+      title: {
+        text: `Nets Distributed by ${orglevel}`,
+        align: "left",
       },
-    ],
-  });
+      subtitle: {
+        text: orglevel,
+        align: "left",
+      },
+      tooltip: {
+        valueSuffix: "",
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          borderWidth: 2,
+          cursor: "pointer",
+          dataLabels: {
+            enabled: true,
+            format: "<b>{point.name}</b><br>{point.percentage:.1f}%",
+            distance: 20,
+          },
+        },
+      },
+      series: [
+        {
+          name: "Count",
+          colorByPoint: true,
+          data: charData,
+        },
+      ],
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
-const netsReqvsIssuedChart = (
+const netsReqvsIssuedChart = async (
   nets_required,
   nets_issued,
   target_data,
@@ -1523,338 +1551,346 @@ const netsReqvsIssuedChart = (
   cats,
   orglevel
 ) => {
-  Highcharts.chart("netsReqvsIssuedChart", {
-    chart: {
-      zoomType: "xy",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+  try {
+    Highcharts.chart("netsReqvsIssuedChart", {
+      chart: {
+        zoomType: "xy",
       },
-    },
-    title: {
-      text: `Comparison of Nets Required vs Nets Distributed by ${orglevel}`,
-      align: "left",
-    },
-    subtitle: {
-      text: "Source:",
-      align: "left",
-    },
-    xAxis: [
-      {
-        categories: cats,
-        crosshair: true,
-      },
-    ],
-    yAxis: [
-      {
-        title: {
-          text: "Count",
-          style: {
-            color: Highcharts.getOptions().colors[0],
-          },
-        },
-        labels: {
-          style: {
-            color: Highcharts.getOptions().colors[0],
-          },
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
         },
       },
-      {
-        // Secondary yAxis (for Achievement and Expected Achievement)
-        title: {
-          text: "Achievement",
-          style: {
-            color: "#004225",
-          },
-        },
-        labels: {
-          format: "{value:.1f}%",
-          style: {
-            color: "#004225",
-          },
-        },
-        max: 100,
-        min: 0,
-        opposite: true,
+      title: {
+        text: `Comparison of Nets Required vs Nets Distributed by ${orglevel}`,
+        align: "left",
       },
-    ],
-    tooltip: {
-      shared: true,
-    },
-    legend: {
-      layout: "horizontal",
-      align: "center",
-      x: 80,
-      verticalAlign: "top",
-      y: 20,
-      floating: true,
-      backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || // theme
-        "rgba(255,255,255,0.25)",
-    },
-    series: [
-      {
-        name: "Nets Required",
-        type: "column",
-        yAxis: 0, // Assign to the Count axis
-        data: nets_required,
-        color: "#3498db",
+      subtitle: {
+        text: "Source:",
+        align: "left",
       },
-      {
-        name: "Nets Distributed",
-        type: "column",
-        yAxis: 0, // Assign to the Count axis
-        data: nets_issued,
-        color: "#4ADEDE", //color: '#3498db',
-      },
-      {
-        name: "Expected Achievement",
-        type: "spline",
-        yAxis: 1, // Assign to the Achievement axis
-        data: target_level,
-        color: Highcharts.getOptions().colors[1],
-        marker: {
-          enabled: false,
-        },
-        dashStyle: "shortdot",
-        tooltip: {
-          valueSuffix: " %",
-        },
-        lineWidth: 6,
-      },
-      {
-        name: "Current Achievement",
-        type: "scatter",
-        yAxis: 1, // Assign to the Achievement axis
-        data: target_data,
-        color: "#004225",
-        marker: {
-          radius: 6,
-        },
-      },
-    ],
-    responsive: {
-      rules: [
+      xAxis: [
         {
-          condition: {
-            maxWidth: 500,
-          },
-          chartOptions: {
-            legend: {
-              floating: false,
-              layout: "horizontal",
-              align: "center",
-              verticalAlign: "bottom",
-              x: 0,
-              y: 0,
+          categories: cats,
+          crosshair: true,
+        },
+      ],
+      yAxis: [
+        {
+          title: {
+            text: "Count",
+            style: {
+              color: Highcharts.getOptions().colors[0],
             },
-            yAxis: [
-              {
-                labels: {
-                  align: "right",
-                  x: 0,
-                  y: -6,
-                },
-                showLastLabel: false,
-              },
-              {
-                labels: {
-                  align: "left",
-                  x: 0,
-                  y: -6,
-                },
-                showLastLabel: false,
-              },
-              {
-                visible: false,
-              },
-            ],
+          },
+          labels: {
+            style: {
+              color: Highcharts.getOptions().colors[0],
+            },
+          },
+        },
+        {
+          // Secondary yAxis (for Achievement and Expected Achievement)
+          title: {
+            text: "Achievement",
+            style: {
+              color: "#004225",
+            },
+          },
+          labels: {
+            format: "{value:.1f}%",
+            style: {
+              color: "#004225",
+            },
+          },
+          max: 100,
+          min: 0,
+          opposite: true,
+        },
+      ],
+      tooltip: {
+        shared: true,
+      },
+      legend: {
+        layout: "horizontal",
+        align: "center",
+        x: 80,
+        verticalAlign: "top",
+        y: 20,
+        floating: true,
+        backgroundColor:
+          Highcharts.defaultOptions.legend.backgroundColor || // theme
+          "rgba(255,255,255,0.25)",
+      },
+      series: [
+        {
+          name: "Nets Required",
+          type: "column",
+          yAxis: 0, // Assign to the Count axis
+          data: nets_required,
+          color: "#3498db",
+        },
+        {
+          name: "Nets Distributed",
+          type: "column",
+          yAxis: 0, // Assign to the Count axis
+          data: nets_issued,
+          color: "#4ADEDE", //color: '#3498db',
+        },
+        {
+          name: "Expected Achievement",
+          type: "spline",
+          yAxis: 1, // Assign to the Achievement axis
+          data: target_level,
+          color: Highcharts.getOptions().colors[1],
+          marker: {
+            enabled: false,
+          },
+          dashStyle: "shortdot",
+          tooltip: {
+            valueSuffix: " %",
+          },
+          lineWidth: 6,
+        },
+        {
+          name: "Current Achievement",
+          type: "scatter",
+          yAxis: 1, // Assign to the Achievement axis
+          data: target_data,
+          color: "#004225",
+          marker: {
+            radius: 6,
           },
         },
       ],
-    },
-  });
+      responsive: {
+        rules: [
+          {
+            condition: {
+              maxWidth: 500,
+            },
+            chartOptions: {
+              legend: {
+                floating: false,
+                layout: "horizontal",
+                align: "center",
+                verticalAlign: "bottom",
+                x: 0,
+                y: 0,
+              },
+              yAxis: [
+                {
+                  labels: {
+                    align: "right",
+                    x: 0,
+                    y: -6,
+                  },
+                  showLastLabel: false,
+                },
+                {
+                  labels: {
+                    align: "left",
+                    x: 0,
+                    y: -6,
+                  },
+                  showLastLabel: false,
+                },
+                {
+                  visible: false,
+                },
+              ],
+            },
+          },
+        ],
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
-const netsIssuedvsDeliveredChart = (
+const netsIssuedvsDeliveredChart = async (
   nets_issued,
   nets_delivered,
   scatter_data,
   cats,
   orglevel
 ) => {
-  Highcharts.chart("netsIssuedvsDeliveredChart", {
-    chart: {
-      zoomType: "xy",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+  try {
+    Highcharts.chart("netsIssuedvsDeliveredChart", {
+      chart: {
+        zoomType: "xy",
       },
-    },
-    title: {
-      text: "Nets Delivered vs Nets Distributed by " + orglevel,
-      align: "left",
-    },
-    xAxis: [
-      {
-        categories: cats,
-        crosshair: true,
-      },
-    ],
-    yAxis: [
-      {
-        // Primary yAxis
-        labels: {
-          format: "{value}",
-          style: {
-            color: Highcharts.getOptions().colors[2],
-          },
-        },
-        opposite: true,
-      },
-      {
-        // Secondary yAxis
-        gridLineWidth: 0,
-        title: {
-          text: "Count ",
-          style: {
-            color: Highcharts.getOptions().colors[0],
-          },
-        },
-        labels: {
-          style: {
-            color: Highcharts.getOptions().colors[0],
-          },
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
         },
       },
-      {
-        // Tertiary yAxis
-        gridLineWidth: 0,
-        title: {
-          text: "Distribution Effectiveness",
-          style: {
-            color: "#004225",
-          },
-        },
-        labels: {
-          format: "{value:.2f}%",
-          style: {
-            color: "#004225",
-          },
-        },
-        max: 100,
-        min: 0,
-        opposite: true,
+      title: {
+        text: "Nets Delivered vs Nets Distributed by " + orglevel,
+        align: "left",
       },
-    ],
-    tooltip: {
-      shared: true,
-    },
-    legend: {
-      layout: "vertical",
-      align: "left",
-      x: 80,
-      verticalAlign: "top",
-      y: 20,
-      floating: true,
-      backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || // theme
-        "rgba(255,255,255,0.25)",
-    },
-    series: [
-      {
-        name: "Nets Delivered",
-        type: "column",
-        yAxis: 1,
-        data: nets_delivered,
-        tooltip: {
-          valueSuffix: "",
-        },
-      },
-      {
-        name: "Nets Distributed",
-        type: "column",
-        yAxis: 1,
-        data: nets_issued,
-        color: "#4ADEDE",
-        marker: {
-          enabled: false,
-        },
-        dashStyle: "shortdot",
-        tooltip: {
-          valueSuffix: "",
-        },
-      },
-      {
-        name: "Distribution Effectiveness",
-        type: "scatter",
-        yAxis: 2,
-        data: scatter_data,
-        color: "#004225",
-        tooltip: {
-          pointFormat: "{point.name} <b>{point.y:.2f}%</b>",
-        },
-        marker: {
-          radius: 6, // Set the radius to adjust the size of scatter plot dots
-        },
-      },
-    ],
-    responsive: {
-      rules: [
+      xAxis: [
         {
-          condition: {
-            maxWidth: 500,
-          },
-          chartOptions: {
-            legend: {
-              floating: false,
-              layout: "horizontal",
-              align: "center",
-              verticalAlign: "bottom",
-              x: 0,
-              y: 0,
+          categories: cats,
+          crosshair: true,
+        },
+      ],
+      yAxis: [
+        {
+          // Primary yAxis
+          labels: {
+            format: "{value}",
+            style: {
+              color: Highcharts.getOptions().colors[2],
             },
-            yAxis: [
-              {
-                labels: {
-                  align: "right",
-                  x: 0,
-                  y: -6,
-                },
-                showLastLabel: false,
-              },
-              {
-                labels: {
-                  align: "left",
-                  x: 0,
-                  y: -6,
-                },
-                showLastLabel: false,
-              },
-              {
-                visible: false,
-              },
-            ],
+          },
+          opposite: true,
+        },
+        {
+          // Secondary yAxis
+          gridLineWidth: 0,
+          title: {
+            text: "Count ",
+            style: {
+              color: Highcharts.getOptions().colors[0],
+            },
+          },
+          labels: {
+            style: {
+              color: Highcharts.getOptions().colors[0],
+            },
+          },
+        },
+        {
+          // Tertiary yAxis
+          gridLineWidth: 0,
+          title: {
+            text: "Distribution Effectiveness",
+            style: {
+              color: "#004225",
+            },
+          },
+          labels: {
+            format: "{value:.2f}%",
+            style: {
+              color: "#004225",
+            },
+          },
+          max: 100,
+          min: 0,
+          opposite: true,
+        },
+      ],
+      tooltip: {
+        shared: true,
+      },
+      legend: {
+        layout: "vertical",
+        align: "left",
+        x: 80,
+        verticalAlign: "top",
+        y: 20,
+        floating: true,
+        backgroundColor:
+          Highcharts.defaultOptions.legend.backgroundColor || // theme
+          "rgba(255,255,255,0.25)",
+      },
+      series: [
+        {
+          name: "Nets Delivered",
+          type: "column",
+          yAxis: 1,
+          data: nets_delivered,
+          tooltip: {
+            valueSuffix: "",
+          },
+        },
+        {
+          name: "Nets Distributed",
+          type: "column",
+          yAxis: 1,
+          data: nets_issued,
+          color: "#4ADEDE",
+          marker: {
+            enabled: false,
+          },
+          dashStyle: "shortdot",
+          tooltip: {
+            valueSuffix: "",
+          },
+        },
+        {
+          name: "Distribution Effectiveness",
+          type: "scatter",
+          yAxis: 2,
+          data: scatter_data,
+          color: "#004225",
+          tooltip: {
+            pointFormat: "{point.name} <b>{point.y:.2f}%</b>",
+          },
+          marker: {
+            radius: 6, // Set the radius to adjust the size of scatter plot dots
           },
         },
       ],
-    },
-  });
+      responsive: {
+        rules: [
+          {
+            condition: {
+              maxWidth: 500,
+            },
+            chartOptions: {
+              legend: {
+                floating: false,
+                layout: "horizontal",
+                align: "center",
+                verticalAlign: "bottom",
+                x: 0,
+                y: 0,
+              },
+              yAxis: [
+                {
+                  labels: {
+                    align: "right",
+                    x: 0,
+                    y: -6,
+                  },
+                  showLastLabel: false,
+                },
+                {
+                  labels: {
+                    align: "left",
+                    x: 0,
+                    y: -6,
+                  },
+                  showLastLabel: false,
+                },
+                {
+                  visible: false,
+                },
+              ],
+            },
+          },
+        ],
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
-const householdRegvsServedChart = (
+const householdRegvsServedChart = async (
   registered,
   served,
   target_data,
@@ -1862,167 +1898,171 @@ const householdRegvsServedChart = (
   cats,
   orglevel
 ) => {
-  Highcharts.chart("householdRegvsServedChart", {
-    chart: {
-      zoomType: "xy",
-    },
-    credits: {
-      text: "Powered by HealthIT KE", // Custom text
-      href: "https://unes.co.ke", // Custom link
-      target: "_blank",
-      position: {
-        align: "right",
-        x: -10,
-        verticalAlign: "bottom",
-        y: -5,
+  try {
+    Highcharts.chart("householdRegvsServedChart", {
+      chart: {
+        zoomType: "xy",
       },
-    },
-    title: {
-      text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
-      align: "left",
-    },
-    subtitle: {
-      text: "Source:",
-      align: "left",
-    },
-    xAxis: [
-      {
-        categories: cats,
-        crosshair: true,
-      },
-    ],
-    yAxis: [
-      {
-        // Primary yAxis (Count)
-        title: {
-          text: "Count",
-          style: {
-            color: Highcharts.getOptions().colors[0],
-          },
-        },
-        labels: {
-          style: {
-            color: Highcharts.getOptions().colors[0],
-          },
+      credits: {
+        text: "Powered by HealthIT KE", // Custom text
+        href: "https://unes.co.ke", // Custom link
+        target: "_blank",
+        position: {
+          align: "right",
+          x: -10,
+          verticalAlign: "bottom",
+          y: -5,
         },
       },
-      {
-        // Secondary yAxis (Achievement and Expected Achievement)
-        title: {
-          text: "Achievement",
-          style: {
-            color: "#004225",
-          },
-        },
-        labels: {
-          format: "{value:.1f}%",
-          style: {
-            color: "#004225",
-          },
-        },
-        max: 100,
-        min: 0,
-        opposite: true,
+      title: {
+        text: `Comparison of Households Registered vs Households Served by ${orglevel}`,
+        align: "left",
       },
-    ],
-    tooltip: {
-      shared: true,
-    },
-    legend: {
-      layout: "horizontal",
-      align: "center",
-      x: 80,
-      verticalAlign: "top",
-      y: 20,
-      floating: true,
-      backgroundColor:
-        Highcharts.defaultOptions.legend.backgroundColor || "rgba(255,255,255,0.25)",
-    },
-    series: [
-      {
-        name: "Registered Households",
-        type: "column",
-        yAxis: 0, // Use the first yAxis (Count)
-        data: registered,
-        color: "#3498db",
+      subtitle: {
+        text: "Source:",
+        align: "left",
       },
-      {
-        name: "Served Households",
-        type: "column",
-        yAxis: 0, // Use the first yAxis (Count)
-        data: served,
-        color: "#4ADEDE",
-      },
-      {
-        name: "Expected Achievement",
-        type: "spline",
-        yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
-        data: target_level,
-        color: Highcharts.getOptions().colors[1],
-        marker: {
-          enabled: false,
-        },
-        dashStyle: "shortdot",
-        tooltip: {
-          valueSuffix: " %",
-        },
-        lineWidth: 6,
-      },
-      {
-        name: "Current Achievement",
-        type: "scatter",
-        yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
-        data: target_data,
-        color: "#004225",
-        tooltip: {
-          pointFormat: "{point.name}: <b>{point.y:.1f}%</b>",
-        },
-        marker: {
-          radius: 6,
-        },
-      },
-    ],
-    responsive: {
-      rules: [
+      xAxis: [
         {
-          condition: {
-            maxWidth: 500,
-          },
-          chartOptions: {
-            legend: {
-              floating: false,
-              layout: "horizontal",
-              align: "center",
-              verticalAlign: "bottom",
-              x: 0,
-              y: 0,
+          categories: cats,
+          crosshair: true,
+        },
+      ],
+      yAxis: [
+        {
+          // Primary yAxis (Count)
+          title: {
+            text: "Count",
+            style: {
+              color: Highcharts.getOptions().colors[0],
             },
-            yAxis: [
-              {
-                labels: {
-                  align: "right",
-                  x: 0,
-                  y: -6,
-                },
-                showLastLabel: false,
-              },
-              {
-                labels: {
-                  align: "left",
-                  x: 0,
-                  y: -6,
-                },
-                showLastLabel: false,
-              },
-              {
-                visible: false,
-              },
-            ],
+          },
+          labels: {
+            style: {
+              color: Highcharts.getOptions().colors[0],
+            },
+          },
+        },
+        {
+          // Secondary yAxis (Achievement and Expected Achievement)
+          title: {
+            text: "Achievement",
+            style: {
+              color: "#004225",
+            },
+          },
+          labels: {
+            format: "{value:.1f}%",
+            style: {
+              color: "#004225",
+            },
+          },
+          max: 100,
+          min: 0,
+          opposite: true,
+        },
+      ],
+      tooltip: {
+        shared: true,
+      },
+      legend: {
+        layout: "horizontal",
+        align: "center",
+        x: 80,
+        verticalAlign: "top",
+        y: 20,
+        floating: true,
+        backgroundColor:
+          Highcharts.defaultOptions.legend.backgroundColor || "rgba(255,255,255,0.25)",
+      },
+      series: [
+        {
+          name: "Registered Households",
+          type: "column",
+          yAxis: 0, // Use the first yAxis (Count)
+          data: registered,
+          color: "#3498db",
+        },
+        {
+          name: "Served Households",
+          type: "column",
+          yAxis: 0, // Use the first yAxis (Count)
+          data: served,
+          color: "#4ADEDE",
+        },
+        {
+          name: "Expected Achievement",
+          type: "spline",
+          yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
+          data: target_level,
+          color: Highcharts.getOptions().colors[1],
+          marker: {
+            enabled: false,
+          },
+          dashStyle: "shortdot",
+          tooltip: {
+            valueSuffix: " %",
+          },
+          lineWidth: 6,
+        },
+        {
+          name: "Current Achievement",
+          type: "scatter",
+          yAxis: 1, // Use the second yAxis (Achievement and Expected Achievement)
+          data: target_data,
+          color: "#004225",
+          tooltip: {
+            pointFormat: "{point.name}: <b>{point.y:.1f}%</b>",
+          },
+          marker: {
+            radius: 6,
           },
         },
       ],
-    },
-  });
+      responsive: {
+        rules: [
+          {
+            condition: {
+              maxWidth: 500,
+            },
+            chartOptions: {
+              legend: {
+                floating: false,
+                layout: "horizontal",
+                align: "center",
+                verticalAlign: "bottom",
+                x: 0,
+                y: 0,
+              },
+              yAxis: [
+                {
+                  labels: {
+                    align: "right",
+                    x: 0,
+                    y: -6,
+                  },
+                  showLastLabel: false,
+                },
+                {
+                  labels: {
+                    align: "left",
+                    x: 0,
+                    y: -6,
+                  },
+                  showLastLabel: false,
+                },
+                {
+                  visible: false,
+                },
+              ],
+            },
+          },
+        ],
+      },
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
 </script>
 <style scoped>
