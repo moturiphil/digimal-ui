@@ -12,7 +12,7 @@
         <a-menu-item key="widgetDashboard">
           <router-link to="/"> Campaign Dashboard </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetDashboard" v-if="true">
+        <a-menu-item key="widgetM&EDashboard" v-if="true">
             <router-link to="/MNEDashboard">
               M & E Dashboard
             </router-link>
