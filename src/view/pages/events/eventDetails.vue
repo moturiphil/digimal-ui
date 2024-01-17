@@ -7,7 +7,7 @@
           v-if="isApprovedGenerator"
           class="btn-import"
           type="success"
-          size="small"
+          size="extra-small"
           @click="generatePayroll"
           :disabled="isGenerating"
         >
@@ -38,7 +38,7 @@
           }}
         </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
-        <sdButton class="btn-import" type="success" size="small">
+        <sdButton class="btn-import" type="success" size="extra-small">
           <router-link to="/events/add-stakeholder">
             Add Stakeholder</router-link
           >
@@ -48,10 +48,19 @@
           class="btn-import"
           type="success"
           @click="exportParticipants"
-          size="small"
+          size="extra-small"
         >
           Download List &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
+        </sdButton>
+        <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
+        <sdButton
+          class="btn-import"
+          type="warning"
+          @click="openModal()"
+          size="extra-small"
+        >
+          Archive Event &nbsp; &nbsp;
         </sdButton>
       </div>
 
@@ -193,6 +202,33 @@
                         </template>
                       </a-modal>
                       <!-- End void participant modal -->
+
+                      <!-- Archive Event Modal -->
+                      <a-modal
+                        title="Archive Event"
+                        :visible="isArchiveModalOpen"
+                        @cancel="handleCancelArchive"
+                        width="20%"
+                      >
+                        <p>Are you sure you want to archive event? <br> <br> By confirming this, the event will not be available to users.</p>
+                        <template #footer>
+                          <a-button
+                            key="cancel"
+                            type="warning"
+                            @click="handleCancelArchive"
+                          >
+                            Cancel
+                          </a-button>
+                          <a-button
+                            key="confirm"
+                            type="danger"
+                            @click="handleArchiveEvent"
+                          >
+                            Confirm
+                          </a-button>
+                        </template>
+                      </a-modal>
+                      <!-- End Archive Event modal -->
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -269,6 +305,7 @@ console.log(plainquery);
 const event_name = plainquery.name;
 // const event_id = query.id;
 const event_code = plainquery.event_code;
+const router = useRouter();
 console.log(event_code);
 
 const { state } = useStore();
@@ -281,6 +318,7 @@ const pending = ref([]);
 const activeClass = ref("all");
 const isGenerating = computed(() => state.isGenerating);
 const isModalOpen = ref(false);
+const isArchiveModalOpen = ref(false);
 const participant_id = ref("");
 
 //const isModalOpen = ref(false);
@@ -368,6 +406,44 @@ const handleVoid = async () => {
   }
 };
 
+const handleArchiveEvent = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/event/archive?id=${plainquery.id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+
+    if (data.success === true) {
+      notification.success({
+        message: 'Success!',
+        description: data.data,
+      });
+      isArchiveModalOpen.value = true;
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      router.back();
+    } else {
+      notification.error({
+        message: "Error!",
+        description: data.data,
+      });
+      isArchiveModalOpen.value = false;
+      router.back();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const handleErrorResponse = (response) => {
   console.log(response);
   store.commit("setIsGenerating", false);
@@ -376,6 +452,15 @@ const handleErrorResponse = (response) => {
     content: "Something went wrong, contact admin",
   });
   setTimeout(() => location.reload(), 4000);
+};
+const openModal = () => {
+  console.log("archive modal");
+  isArchiveModalOpen.value = true;
+  // formState.post_id = id;
+};
+
+const handleCancelArchive = () => {
+  isArchiveModalOpen.value = false;
 };
 const exportParticipants = async () => {
   try {
