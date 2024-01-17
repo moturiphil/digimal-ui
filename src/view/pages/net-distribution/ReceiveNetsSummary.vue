@@ -389,6 +389,35 @@
                               @finish="receiveNets"
                             >
                               <a-form-item
+                                name="no_of_bales"
+                                label="No of Bales"
+                              >
+                                <a-input
+                                  :style="{ width: '100%' }"
+                                  v-model:value="formState.no_of_bales"
+                                  type= "number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="no_of_loose_pieces"
+                                label="No of Loose Pieces"
+                              >
+                                <a-input
+                                  :style="{ width: '100%' }"
+                                  v-model:value="formState.no_of_loose_pieces"
+                                  type= "number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="receptor_comment"
+                                label="Comment"
+                              >
+                                <a-input
+                                  :style="{ width: '100%' }"
+                                  v-model:value="formState.receptor_comment"
+                                />
+                              </a-form-item>
+                              <a-form-item
                                 name="date_received"
                                 label="Date Received"
                               >
@@ -698,6 +727,7 @@ export default defineComponent({
     };
 
     const openReceiveModal = (type, id) => {
+      console.log({type, id});
       type === "receive"
         ? ((formState.distribution_id = id),
           (transaction_type.value = "receive"))
@@ -950,6 +980,7 @@ export default defineComponent({
           .then((response) => response.json())
           .then(({ success, data }) => {
             if (success) {
+              console.log(data);
               data.length > 0
                 ? (fromDropoffpoint.value = data)
                 : (fromDropoffpoint.value = []);

@@ -158,11 +158,11 @@
                               pageSize: 50,
                               showSizeChanger: true,
                             }"
-                            :dataSource="returnedNets"
+                            :dataSource="servicedOrders"
                             :columns="columns"
                           >
                             <template v-slot:title>
-                              <h3><u>Returned Nets</u></h3>
+                              <h3><u>Nets Delivered to Post</u></h3>
                             </template>
                             <template #action="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
@@ -638,40 +638,25 @@ const dateFormat = "YYYY-MM-DD";
 
 const columns = [
   {
-    title: "From Post",
-    dataIndex: "from_post_id_name",
+    title: "To Post Name",
+    dataIndex: "to_post_name",
     key: "id",
   },
   {
-    title: "To Drop Off Point",
-    dataIndex: "to_drop_off_point_name",
+    title: "Quantity Issued",
+    dataIndex: "quantity_issued",
     key: "id",
   },
   {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
+    title: "Issue Date",
+    dataIndex: "issue_date",
     key: "id",
   },
   {
-    title: "Date Returned",
-    dataIndex: "date_returned",
+    title: "Status",
+    dataIndex: "status",
+    slots: { customRender: "status" },
     key: "id",
-  },
-  {
-    title: "Returned By",
-    dataIndex: "returned_by",
-    key: "id",
-  },
-  // {
-  //   title: "Status",
-  //   dataIndex: "status",
-  //   key: "id",
-  // },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
   },
 ];
 
