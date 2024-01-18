@@ -350,10 +350,14 @@ const onPageChange = async (page) => {
   fetchDistributionsPosts();
 };
 
-watch(searchItem.value, (newvalue) => {
-  searchItem.value = newvalue;
-  fetchDistributionsPosts();
-});
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    currentPage.value = 1;
+    searchItem.value = newValue;
+    fetchDistributionsPosts();
+  }
+);
 const updateFilters = () => {
   // access_level.value.level.level_name = 'national'
   // access_level.value.location.id = 1
