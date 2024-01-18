@@ -127,7 +127,9 @@
           <ul>
             <li>
               <a
-                :class="activeClass === 'posts_summary' ? 'active' : 'deactivate'"
+                :class="
+                  activeClass === 'posts_summary' ? 'active' : 'deactivate'
+                "
                 @click="handleChange('posts_summary')"
                 href="#"
                 :hidden="activeTransaction !== 'post_orders'"
@@ -147,7 +149,9 @@
             </li>
             <li>
               <a
-                :class="activeClass === 'serviced_orders' ? 'active' : 'deactivate'"
+                :class="
+                  activeClass === 'serviced_orders' ? 'active' : 'deactivate'
+                "
                 @click="handleChange('serviced_orders')"
                 href="#"
                 :hidden="activeTransaction !== 'post_orders'"
@@ -195,7 +199,9 @@
                                   <sdButton
                                     @click="openReceiveModal(record.id)"
                                     type="success"
-                                    :disabled="record.status == 1 || record.status == 2"
+                                    :disabled="
+                                      record.status == 1 || record.status == 2
+                                    "
                                     size="extra-small"
                                     >Receive</sdButton
                                   >
@@ -214,7 +220,9 @@
                           <sdButton
                             class="button-container"
                             style="float: right; margin-bottom: 10px"
-                            :class="activeClass === 'orders' ? 'active' : 'deactivate'"
+                            :class="
+                              activeClass === 'orders' ? 'active' : 'deactivate'
+                            "
                             @click="approveOrders()"
                             href="#"
                             size="extra-small"
@@ -247,7 +255,9 @@
                             <template #status="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <span v-if="record.status == 6" class="badge badge-blue"
+                                  <span
+                                    v-if="record.status == 6"
+                                    class="badge badge-blue"
                                     >Submitted</span
                                   >
                                   <span
@@ -275,11 +285,26 @@
                           <sdButton
                             class="button-container"
                             style="float: right; margin-bottom: 10px"
-                            :class="activeClass === 'orders' ? 'active' : 'deactivate'"
+                            :class="
+                              activeClass === 'orders' ? 'active' : 'deactivate'
+                            "
                             @click="openGO()"
                             href="#"
                             size="extra-small"
                             type="warning"
+                            v-if="generations > 0"
+                          >
+                            Generate New Order
+                          </sdButton>
+                          <sdButton
+                            class="button-container"
+                            style="float: right; margin-bottom: 10px"
+                            @click="openGO()"
+                            href="#"
+                            size="extra-small"
+                            type="warning"
+                            :disabled="true"
+                            v-if="generations <= 0"
                           >
                             Generate New Order
                           </sdButton>
@@ -342,7 +367,10 @@
                               :model="formState"
                               @finish="receiveNets"
                             >
-                              <a-form-item name="date_received" label="Date Received">
+                              <a-form-item
+                                name="date_received"
+                                label="Date Received"
+                              >
                                 <a-date-picker
                                   :style="{ width: '100%' }"
                                   v-model:value="formState.date_received"
@@ -350,7 +378,11 @@
                                 />
                               </a-form-item>
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -395,11 +427,18 @@
                                   v-model:value="formState.bale_size"
                                   placeholder="Select Bale Size"
                                 >
-                                  <a-select-option value="40">40</a-select-option>
-                                  <a-select-option value="50">50</a-select-option>
+                                  <a-select-option value="40"
+                                    >40</a-select-option
+                                  >
+                                  <a-select-option value="50"
+                                    >50</a-select-option
+                                  >
                                 </a-select>
                               </a-form-item>
-                              <a-form-item name="no_of_bales" label="Number of bales">
+                              <a-form-item
+                                name="no_of_bales"
+                                label="Number of bales"
+                              >
                                 <a-input
                                   v-model:value="formState.number_of_bales"
                                   placeholder="Number of bales"
@@ -428,7 +467,11 @@
                                 />
                               </a-form-item>
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -454,7 +497,10 @@
                               :model="newOrder"
                               @finish="generateOrders"
                             >
-                              <a-form-item name="check" label="Generate for all posts">
+                              <a-form-item
+                                name="check"
+                                label="Generate for all posts"
+                              >
                                 <a-checkbox
                                   v-model:checked="checked"
                                   @change="clearSelected(checked)"
@@ -501,11 +547,18 @@
                                   v-model:value="newOrder.source"
                                   placeholder="Select Source"
                                 >
-                                  <a-select-option value="1">KEMSA</a-select-option>
-                                  <a-select-option value="2">MEDS</a-select-option>
+                                  <a-select-option value="1"
+                                    >KEMSA</a-select-option
+                                  >
+                                  <a-select-option value="2"
+                                    >MEDS</a-select-option
+                                  >
                                 </a-select>
                               </a-form-item>
-                              <a-form-item name="product_code" label="Product Code">
+                              <a-form-item
+                                name="product_code"
+                                label="Product Code"
+                              >
                                 <a-select
                                   v-model:value="newOrder.product_code"
                                   placeholder="Select Product"
@@ -513,15 +566,18 @@
                                 >
                                   <a-select-option
                                     v-for="product in productList"
-                                        :key="product.product_code"
-                                        v-model:value="product.product_code"
+                                    :key="product.product_code"
+                                    v-model:value="product.product_code"
                                   >
-                                        {{ product.product_code }}
+                                    {{ product.product_code }}
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
 
-                              <a-form-item name="product_name" label="Product Name">
+                              <a-form-item
+                                name="product_name"
+                                label="Product Name"
+                              >
                                 <a-input
                                   v-model:value="newOrder.product_name"
                                   placeholder="Product Name"
@@ -529,7 +585,11 @@
                                 />
                               </a-form-item>
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -571,7 +631,11 @@
                                 </a-transfer>
                               </a-form-item>
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -697,11 +761,11 @@ const postOrdersColumns = [
     dataIndex: "date_ordered",
     key: "id",
   },
-  {
-    title: "Ordered By",
-    dataIndex: "ordered_by",
-    key: "id",
-  },
+  // {
+  //   title: "Ordered By",
+  //   dataIndex: "ordered_by",
+  //   key: "id",
+  // },
   {
     title: "Status",
     dataIndex: "status",
@@ -841,9 +905,12 @@ const getBannerAlerts = async () => {
       .then(({ success, data }) => {
         drop_off_summary_data.value = data.drop_off_summary;
         console.log(drop_off_summary_data);
-        approvals.value = drop_off_summary_data.value.ordering_summary.pending_approval;
-        deliveries.value = drop_off_summary_data.value.ordering_summary.pending_receipt_at_post
-        generations.value = drop_off_summary_data.value.ordering_summary.pending_generation
+        approvals.value =
+          drop_off_summary_data.value.ordering_summary.pending_approval;
+        deliveries.value =
+          drop_off_summary_data.value.ordering_summary.pending_receipt_at_post;
+        generations.value =
+          drop_off_summary_data.value.ordering_summary.pending_generation;
         if (success) {
           notification.success({
             message: "Success",
@@ -957,14 +1024,17 @@ const approveOrders = async () => {
     drop_off_point_id: drop_off_id,
   };
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/approve_orders_per_drop_off_point`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-      body: JSON.stringify(data),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/approve_orders_per_drop_off_point`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      }
+    )
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
@@ -1082,10 +1152,13 @@ const fetchPosts = async () => {
 
 const fetchReturnedNets = async () => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/returned_nets_list/${query.id}`, {
-      method: "GET",
-      headers: authHeader(),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/returned_nets_list/${query.id}`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
@@ -1129,8 +1202,8 @@ const fetchPostOrders = () => {
       .then(({ success, data }) => {
         if (success) {
           const orders = [];
-          data.forEach(i => {
-            i.source = (i.source==1) ? "KEMSA" : "MEDS";
+          data.forEach((i) => {
+            i.source = i.source == 1 ? "KEMSA" : "MEDS";
             orders.push(i);
           });
           postOrders.value = orders;
@@ -1336,14 +1409,17 @@ const handleIssue = async () => {
     };
 
     console.log(JSON.stringify(data));
-    await fetch(`${process.env.VUE_APP_BASE_URL}/issue_nets_from_drop_off_to_post`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-      body: JSON.stringify(data),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/issue_nets_from_drop_off_to_post`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      }
+    )
       .then((response) => response.json())
       .then(({ success, message }) => {
         if (success) {
@@ -1392,11 +1468,13 @@ const getProductList = () => {
   }
 };
 
-      const handleProductChange = (value)=>{
-        console.log(value);
-        const product = productList.value.find((product) => product.product_code === value);
-        newOrder.product_name = product.product_name;
-      }
+const handleProductChange = (value) => {
+  console.log(value);
+  const product = productList.value.find(
+    (product) => product.product_code === value
+  );
+  newOrder.product_name = product.product_name;
+};
 
 const clearSelected = (checked) => {
   if (checked) {
@@ -1466,19 +1544,23 @@ const fetchServicedOrders = async () => {
     drop_off_point_id: drop_off_id,
   };
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/linelist_net_issuance_to_post`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-      body: JSON.stringify(dropoffid),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/linelist_net_issuance_to_post`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(dropoffid),
+      }
+    )
       .then((response) => response.json())
       .then(({ data }) => {
         // servicedOrders.value = data;
         servicedOrders.value = data.map((serviced_order) => {
-          const statusText = serviced_order.status === 1 ? "Delivered" : "Received";
+          const statusText =
+            serviced_order.status === 1 ? "Delivered" : "Received";
           return { ...serviced_order, status: statusText };
         });
       })
@@ -1501,14 +1583,17 @@ const fetchServicedOrders = async () => {
 .badge-green {
   background-color: #1ec997;
   color: white;
+  text-align: center; /* Center the text */
   /* padding: 2px;
       border-radius: 3px; */
   /* size */
   font-size: 12px;
 }
+
 .badge-blue {
   background-color: rgb(0, 140, 255);
   color: white;
+  text-align: center; /* Center the text */
   /* padding: 2px;
       border-radius: 3px; */
   /* size */
@@ -1517,6 +1602,7 @@ const fetchServicedOrders = async () => {
 .badge-red {
   background-color: #f0506e;
   color: white;
+  text-align: center; /* Center the text */
   /* padding: 2px;
       border-radius: 3px; */
   /* size */
