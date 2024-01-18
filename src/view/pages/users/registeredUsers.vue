@@ -157,9 +157,13 @@
           :visible="userEditModalopen"
           title="Edit User"
           width="1000px"
-          @cancel="handleEditUserCancel"
+          @cancel="handleEditUserCancel(false)"
         >
-          <UserEditForm :formFields="userEditFieds" />
+          <template #footer></template>
+          <UserEditForm
+            :formFields="userEditFieds"
+            v-on:close-editmodal="handleEditUserCancel(false)"
+          />
         </a-modal>
       </div>
     </Main>
@@ -174,6 +178,11 @@ import { notification } from "ant-design-vue";
 import { PoweroffOutlined, EditOutlined } from "@ant-design/icons-vue";
 import UserEditForm from "./EdiUsers.vue";
 const columns = [
+  {
+    title: "#",
+    dataIndex: "id",
+    key: "id",
+  },
   {
     title: "First Name",
     dataIndex: "first_name",
@@ -227,6 +236,7 @@ const columns = [
 ];
 //user edit fields
 const userEditFieds = reactive({
+  id: 1,
   first_name: "",
   middle_name: "",
   last_name: "",
@@ -325,8 +335,8 @@ onMounted(async () => {
   }
 });
 //modal functions
-const handleEditUserCancel = () => {
-  userEditModalopen.value = false;
+const handleEditUserCancel = (value) => {
+  userEditModalopen.value = value;
 };
 const onPageChange = async (page) => {
   currentPage.value = page;
@@ -614,6 +624,7 @@ const fetchUsers = async () => {
 
 const edit = (record) => {
   userEditModalopen.value = true;
+  userEditFieds.id = record.id;
   userEditFieds.first_name = record.first_name;
   userEditFieds.middle_name = record.middle_name;
   userEditFieds.last_name = record.last_name;
