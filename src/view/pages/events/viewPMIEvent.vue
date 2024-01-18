@@ -30,7 +30,13 @@
               <TableWrapper class="table-data-view table-responsive">
                 <a-row class="" :gutter="3">
                   <a-space>
-                    <a-col :xxl="28" :xl="28" :md="28" :sm="28">
+                    <a-col
+                      :xxl="28"
+                      :xl="28"
+                      :md="28"
+                      :sm="28"
+                      v-if="allowedLevels.includes('county')"
+                    >
                       <a-select
                         v-model:value="county"
                         show-search
@@ -41,7 +47,13 @@
                         @change="handleChange($event, 'county')"
                       ></a-select>
                     </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-col
+                      :xxl="24"
+                      :xl="24"
+                      :md="24"
+                      :sm="24"
+                      v-if="allowedLevels.includes('subcounty')"
+                    >
                       <a-select
                         v-model:value="subcounty"
                         show-search
@@ -311,11 +323,35 @@ import { encrypt, decrypt } from "@/cryptoHelper";
 const counties = ref(null);
 const subcounties = ref(null);
 const events = ref([]);
-
-onMounted(() => {
+const allowedLevels = ref([]);
+const access_level = ref(null);
+// Fetch activity data from the API endpoint on component mount
+onMounted(async () => {
+  const user = sessionStorage.getItem("user");
+  const user_object = JSON.parse(user);
+  if (user_object != null) {
+    access_level.value = user_object.user;
+    await updateFilters();
+  }
   getEvents();
-  fetchCounties();
 });
+const updateFilters = async () => {
+  // access_level.value.level.id = 3
+  // access_level.value.location.org_id = 'BzFBYZhF5fx'
+  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
+  if (access_level.value.level.id == 1) {
+    allowedLevels.value = ["county", "subcounty"];
+    await fetchCounties();
+  } else if (access_level.value.level.id == 2) {
+    allowedLevels.value = ["county", "subcounty"];
+    counties.value = [
+      {
+        value: access_level.value.location.id,
+        label: access_level.value.location.name,
+      },
+    ];
+  }
+};
 
 const handleChange = async (value_code, org_level) => {
   fetchChildData(value_code, org_level);
@@ -328,15 +364,15 @@ const fetchChildData = async (value_code, org_level) => {
     //get subcounties
     fetchUrl += `?parent_id=${value_code}`;
     //get county activities
-    masterUrl += `&county=${value_code}`;
+    masterUrl += `&location_id=${value_code}`;
   } else if (org_level == "subcounty") {
     //get subcounty activities
     fetchUrl += `?parent_id=${value_code}`;
-    masterUrl += `&subcounty=${value_code}`;
+    masterUrl += `&location_id=${value_code}`;
   }
   if (org_level == "event") {
     //get activities
-    masterUrl += `&event_code=${value_code}`;
+    masterUrl += `&event_list_id=${value_code}`;
   }
   await axios
     .get(`${fetchUrl}`)
@@ -345,7 +381,7 @@ const fetchChildData = async (value_code, org_level) => {
       if (org_level == "county") {
         //get subcounties
         subcounties.value = data.map((x) => ({
-          value: x.org_id,
+          value: x.id,
           label: x.name,
         }));
       }
@@ -369,7 +405,7 @@ const fetchCounties = async () => {
     .get("counties/")
     .then((response) => {
       counties.value = response.data.map((x) => ({
-        value: x.org_id,
+        value: x.id,
         label: x.name,
       }));
       // console.log(counties.value)
@@ -414,7 +450,7 @@ const getEvents = () => {
     .then((response) => {
       // dataSource.value = response.data.data;
       events.value = response.data.data.map((x) => ({
-        value: x.event_code,
+        value: x.event_list_id,
         label: x.name,
       }));
       const filteredData = response.data.data.filter((item) => item.funding_source == 2);

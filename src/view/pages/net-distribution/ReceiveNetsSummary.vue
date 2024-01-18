@@ -263,6 +263,13 @@
                         </TableWrapper>
                         <!-- end of Net TransfersOut table -->
 
+                        <!--Distribution Post Summary-->
+                        <DistributionPostSummary
+                          :post_id="query.id"
+                          v-if="activeClass === 'do_post_summary'"
+                        />
+                        <!--End Distribution Post Summary-->
+
                         <!-- Transfer modal -->
                         <a-modal
                           title="New Transfer"
@@ -451,6 +458,7 @@
 import { Main, BasicFormWrapper } from "../../styled";
 import { SearchResultWrapper } from "./../style";
 import { onMounted, ref, reactive } from "vue";
+import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
 import authHeader from "../../../services/auth-header";
 // import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
