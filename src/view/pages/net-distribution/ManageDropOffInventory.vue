@@ -115,7 +115,7 @@
             </a-col>
             <a-col class="alert-col">
               <a-alert
-                :message="`You have ${deliveries} Pending Deliveries`"
+                :message="`You have ${deliveries} distributions Pending Receipt at post`"
                 type="warning"
                 closable
                 @close="onClose"
@@ -781,6 +781,8 @@ const targetKeys = ref([]);
 const { query } = useRoute();
 const drop_off_name = query.name;
 const drop_off_id = query.id;
+const county_id = query.county;
+console.log(county_id);
 // const drop_off_campaign = query.campaign_id;
 const checked = ref(false);
 // const handleOk = async () => (isModalOpen_issuenets.value = false);
@@ -839,6 +841,8 @@ const getBannerAlerts = async () => {
         drop_off_summary_data.value = data.drop_off_summary;
         console.log(drop_off_summary_data);
         approvals.value = drop_off_summary_data.value.ordering_summary.pending_approval;
+        deliveries.value = drop_off_summary_data.value.ordering_summary.pending_receipt_at_post
+        generations.value = drop_off_summary_data.value.ordering_summary.pending_generation
         if (success) {
           notification.success({
             message: "Success",
@@ -1366,7 +1370,7 @@ const handleIssue = async () => {
 
 const getProductList = () => {
   try {
-    fetch(`${process.env.VUE_APP_BASE_URL}/product_code_list`, {
+    fetch(`${process.env.VUE_APP_BASE_URL}/product_code_list/${county_id}`, {
       method: "GET",
       headers: authHeader(),
     })

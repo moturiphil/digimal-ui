@@ -40,6 +40,7 @@
                                 id: record.id,
                                 name: record.name,
                                 campaign_id: record.campaign_id,
+                                county: record.county,
                               },
                             }"
                             class="btn-icon"
