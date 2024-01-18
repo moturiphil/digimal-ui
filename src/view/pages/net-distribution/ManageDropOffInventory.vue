@@ -107,7 +107,15 @@
             </a-col>
             <a-col class="alert-col">
               <a-alert
-                :message="`You have ${approvals} Pending Approvals`"
+                :message="`You have ${approvals} Pending Order Approvals`"
+                type="warning"
+                closable
+                @close="onClose"
+              />
+            </a-col>
+            <a-col class="alert-col">
+              <a-alert
+                :message="`You have ${pending_receipt_at_post} Pending Receipt`"
                 type="warning"
                 closable
                 @close="onClose"
@@ -768,6 +776,7 @@ const activeTransaction = ref("nets_returned");
 const deliveries = ref(0);
 const generations = ref(0);
 const approvals = ref(0);
+const pending_receipt_at_post = ref(0);
 const postdata = ref([]);
 const returnedNets = ref([]);
 const postOrders = ref([]);
@@ -839,6 +848,8 @@ const getBannerAlerts = async () => {
         drop_off_summary_data.value = data.drop_off_summary;
         console.log(drop_off_summary_data);
         approvals.value = drop_off_summary_data.value.ordering_summary.pending_approval;
+        pending_receipt_at_post.value =
+          drop_off_summary_data.value.ordering_summary.pending_receipt_at_post;
         if (success) {
           notification.success({
             message: "Success",

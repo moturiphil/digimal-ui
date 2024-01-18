@@ -144,8 +144,6 @@
                           <span> Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
-                        
-                        
                       </div>
                     </td>
                   </template>
@@ -161,40 +159,37 @@
               </TableWrapper>
               <!-- view trainers modal -->
               <a-modal
-                  title="Event Trainers"
-                  :visible="isTrainerModalOpen"
-                  @ok="handleOkTrainers"
-                  @cancel="handleTrainerCancel"
-                  class="title-success"
-                >
-                  <div>
-                    <h4>
-                      <b>
-                        <u> Event Host </u>
-                      </b>
-                    </h4>
-                    <p>{{ event_host }}</p>
-                    <h4>
-                      <b>
-                        <u> Event Facilitators </u>
-                        <!-- <sdButton
+                title="Event Trainers"
+                :visible="isTrainerModalOpen"
+                @ok="handleOkTrainers"
+                @cancel="handleTrainerCancel"
+                class="title-success"
+              >
+                <div>
+                  <h4>
+                    <b>
+                      <u> Event Host </u>
+                    </b>
+                  </h4>
+                  <p>{{ event_host }}</p>
+                  <h4>
+                    <b>
+                      <u> Event Facilitators </u>
+                      <!-- <sdButton
                           size="extra-small"
                           type="info"
                           @click="manageEvent(record.event_code)"
                         >
                           Add Trainer &nbsp; &nbsp;
                         </sdButton> -->
-                      </b>
-                    </h4>
-                    <br />
-                    <ul>
-                      <li
-                        v-for="facilitator in event_facilitators"
-                        :key="facilitator"
-                      >
-                        {{ facilitator }}
-                      </li>
-                      <!-- <li>
+                    </b>
+                  </h4>
+                  <br />
+                  <ul>
+                    <li v-for="facilitator in event_facilitators" :key="facilitator">
+                      {{ facilitator }}
+                    </li>
+                    <!-- <li>
                         <sdButton
                           class="spaced-button"
                           size="extra-small"
@@ -215,9 +210,9 @@
                             />
                           </sdButton>
                         </sdButton> -->
-                      <!-- </li> -->
-                    </ul>
-                  </div>
+                    <!-- </li> -->
+                  </ul>
+                </div>
               </a-modal>
 
               <!-- register -->
@@ -320,6 +315,7 @@ const subcounties = ref(null);
 const events = ref([]);
 const allowedLevels = ref([]);
 const access_level = ref(null);
+const org_ids = ref([]);
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
   const user = sessionStorage.getItem("user");
@@ -347,27 +343,28 @@ const updateFilters = async () => {
     ];
   }
 };
-// Example usage
-const handleChange = async (value_code, org_level) => {
-  fetchChildData(value_code, org_level);
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let parent_id = org[0] || 9;
+  fetchChildData(parent_id, org_id, org_level);
 };
-const fetchChildData = async (value_code, org_level) => {
+const fetchChildData = async (parent_id, org_id, org_level) => {
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
   let masterUrl = `gf_events?per_page=${pageSize.value}&page=${currentPage.value}`;
   if (org_level == "county") {
     //get subcounties
-    fetchUrl += `?parent_id=${value_code}`;
+    fetchUrl += `?parent_id=${org_id}`;
     //get county activities
-    masterUrl += `&location_id=${value_code}`;
+    masterUrl += `&location_id=${parent_id}`;
   } else if (org_level == "subcounty") {
     //get subcounty activities
-    fetchUrl += `?parent_id=${value_code}`;
-    masterUrl += `&location_id=${value_code}`;
-  }
-  if (org_level == "event") {
+    fetchUrl += `?parent_id=${org_id}`;
+    masterUrl += `&location_id=${parent_id}`;
+  } else if (org_level == "event") {
     //get activities
-    masterUrl += `&event_list_id=${value_code}`;
+    masterUrl += `&event_list=${org_id}`;
   }
   await axios
     .get(`${fetchUrl}`)
@@ -376,9 +373,13 @@ const fetchChildData = async (value_code, org_level) => {
       if (org_level == "county") {
         //get subcounties
         subcounties.value = data.map((x) => ({
-          value: x.id,
+          value: x.org_id,
           label: x.name,
         }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data.map((x) => ({ org_id: x.org_id, id: x.id })),
+        ];
       }
     })
     .then(async () => {
@@ -400,9 +401,13 @@ const fetchCounties = async () => {
     .get("counties/")
     .then((response) => {
       counties.value = response.data.map((x) => ({
-        value: x.id,
+        value: x.org_id,
         label: x.name,
       }));
+      org_ids.value = [
+        ...org_ids.value,
+        ...response.data.map((x) => ({ org_id: x.org_id, id: x.id })),
+      ];
       // console.log(counties.value)
     })
     .catch((error) => {
