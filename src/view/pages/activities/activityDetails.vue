@@ -6,7 +6,7 @@
         <sdButton
           class="btn-import"
           type="success"
-          size="small"
+          size="extra-small"
           @click="generatePayroll"
           v-if="isApprovedGenerator"
           :disabled="isGenerating"
@@ -15,8 +15,8 @@
             isLoading
               ? "Loading..."
               : isGenerating
-              ? "Processing ..."
-              : "Generate Payroll"
+                ? "Processing ..."
+                : "Generate Payroll"
           }}
         </sdButton>
         <!-- &nbsp;
@@ -41,15 +41,29 @@
           class="btn-import"
           type="success"
           @click="exportParticipants"
-          size="small"
+          size="extra-small"
         >
           Download List &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
         </sdButton>
         &nbsp;&nbsp;
-        <sdButton class="btn-import" type="warning" @click="sendInvites" size="small">
+        <sdButton
+          class="btn-import"
+          type="warning"
+          @click="sendInvites"
+          size="extra-small"
+        >
           Send Invites &nbsp; &nbsp;
           <sdFeatherIcons type="mail" size="extra-small" />
+        </sdButton>
+        &nbsp; &nbsp;
+        <sdButton
+          class="btn-import"
+          type="warning"
+          @click="openArchiveModal()"
+          size="extra-small"
+        >
+          Archive Event &nbsp; &nbsp;
         </sdButton>
       </div>
 
@@ -69,7 +83,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeClass === 'confirmed' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'confirmed' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('confirmed')"
                     href="#"
                   >
@@ -132,7 +148,10 @@
                                     @click="removeOfficer(record.user_id)"
                                   >
                                     <span> Remove Officer </span>
-                                    <sdFeatherIcons type="x-circle" size="small" />
+                                    <sdFeatherIcons
+                                      type="x-circle"
+                                      size="small"
+                                    />
                                   </sdButton>
                                 </div>
                               </td>
@@ -216,7 +235,10 @@
                     :model="formState"
                     @finish="handleAddOfficers"
                   >
-                    <a-form-item name="add_officer" label="Add Officer to Activity">
+                    <a-form-item
+                      name="add_officer"
+                      label="Add Officer to Activity"
+                    >
                       <a-select
                         placeholder="Add Officer(s)"
                         v-model:value="formState.add_officer"
@@ -246,6 +268,37 @@
                 </BasicFormWrapper>
               </a-modal>
               <!-- End of Assigning officer modal -->
+
+              <!-- Archive Event Modal -->
+              <a-modal
+                title="Archive Activity"
+                :visible="isArchiveModalOpen"
+                @cancel="handleCancelArchive"
+                width="20%"
+              >
+                <p>
+                  Are you sure you want to archive activity? <br />
+                  <br />
+                  By confirming this, the event will not be available to users.
+                </p>
+                <template #footer>
+                  <a-button
+                    key="cancel"
+                    type="warning"
+                    @click="handleCancelArchive"
+                  >
+                    Cancel
+                  </a-button>
+                  <a-button
+                    key="confirm"
+                    type="danger"
+                    @click="handleArchiveActivity"
+                  >
+                    Confirm
+                  </a-button>
+                </template>
+              </a-modal>
+              <!-- End Archive Event modal -->
             </sdCards>
           </a-col>
         </a-row>
@@ -261,7 +314,7 @@ import { computed, onMounted, ref, reactive } from "vue";
 import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { Modal } from "ant-design-vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import store from "../../../vuex/store";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
@@ -316,6 +369,9 @@ const officers = ref([]);
 const activeClass = ref("all");
 const { query } = useRoute();
 const isGenerating = computed(() => state.isGenerating);
+const isArchiveModalOpen = ref(false);
+const router = useRouter();
+
 
 const isModalOpen = ref(false);
 
@@ -388,6 +444,54 @@ const resendSMS = async (id) => {
         title: "Error",
         content: "Something went wrong during SMS resend",
       });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const openArchiveModal = () => {
+  console.log(query.id);
+  isArchiveModalOpen.value = true;
+  // formState.post_id = id;
+};
+
+const handleCancelArchive = () => {
+  isArchiveModalOpen.value = false;
+};
+
+const handleArchiveActivity = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/activity/archive?id=${query.id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+
+    if (data.success === true) {
+      notification.success({
+        message: 'Success!',
+        description: data.data,
+      });
+      isArchiveModalOpen.value = true;
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      router.back();
+    } else {
+      notification.error({
+        message: "Error!",
+        description: data.data,
+      });
+      isArchiveModalOpen.value = false;
+      router.back();
     }
   } catch (error) {
     console.error(error);

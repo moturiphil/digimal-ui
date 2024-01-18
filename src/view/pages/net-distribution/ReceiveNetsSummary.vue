@@ -9,7 +9,9 @@
               <ul>
                 <li>
                   <a
-                    :class="activeTransaction === 'receive' ? 'active' : 'deactivate'"
+                    :class="
+                      activeTransaction === 'receive' ? 'active' : 'deactivate'
+                    "
                     @click="handleTransactions('receive')"
                     href="#"
                   >
@@ -18,7 +20,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeTransaction === 'transfer' ? 'active' : 'deactivate'"
+                    :class="
+                      activeTransaction === 'transfer' ? 'active' : 'deactivate'
+                    "
                     @click="handleTransactions('transfer')"
                     href="#"
                   >
@@ -27,7 +31,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeTransaction === 'return' ? 'active' : 'deactivate'"
+                    :class="
+                      activeTransaction === 'return' ? 'active' : 'deactivate'
+                    "
                     @click="handleTransactions('return')"
                     href="#"
                   >
@@ -40,7 +46,9 @@
               <ul>
                 <li>
                   <a
-                    :class="activeClass === 'do_point' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'do_point' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('do_point')"
                     href="#"
                     :hidden="activeTransaction !== 'receive'"
@@ -50,7 +58,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeClass === 'warehouse' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'warehouse' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('warehouse')"
                     href="#"
                     :hidden="activeTransaction !== 'receive'"
@@ -60,7 +70,11 @@
                 </li>
                 <li>
                   <a
-                    :class="activeClass === 'do_post_summary' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'do_post_summary'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('do_post_summary')"
                     href="#"
                     :hidden="activeTransaction !== 'receive'"
@@ -70,7 +84,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeClass === 'transfer_ins' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'transfer_ins' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('transfer_ins')"
                     href="#"
                     :hidden="activeTransaction !== 'transfer'"
@@ -80,7 +96,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeClass === 'transfer_outs' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'transfer_outs' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('transfer_outs')"
                     href="#"
                     :hidden="activeTransaction !== 'transfer'"
@@ -130,7 +148,10 @@
                                   &nbsp;&nbsp;
                                   <sdButton
                                     @click="
-                                      openReceiveModal(`receive`, record.distribution_id)
+                                      openReceiveModal(
+                                        `receive`,
+                                        record.distribution_id
+                                      )
                                     "
                                     type="success"
                                     :disabled="record.status === 1"
@@ -194,7 +215,9 @@
                                     class="badge badge-warning"
                                     >Cancelled</span
                                   >
-                                  <span v-else class="badge badge-red">Pending</span>
+                                  <span v-else class="badge badge-red"
+                                    >Pending</span
+                                  >
                                 </div>
                               </td>
                             </template>
@@ -203,9 +226,13 @@
                                 <div class="table-actions">
                                   &nbsp;&nbsp;
                                   <sdButton
-                                    @click="openReceiveModal(`transfers`, record.id)"
+                                    @click="
+                                      openReceiveModal(`transfers`, record.id)
+                                    "
                                     type="success"
-                                    :disabled="record.status == 1 || record.status == 2"
+                                    :disabled="
+                                      record.status == 1 || record.status == 2
+                                    "
                                     size="extra-small"
                                     >Receive</sdButton
                                   >
@@ -242,7 +269,9 @@
                                     class="badge badge-warning"
                                     >Cancelled</span
                                   >
-                                  <span v-else class="badge badge-red">Pending</span>
+                                  <span v-else class="badge badge-red"
+                                    >Pending</span
+                                  >
                                 </div>
                               </td>
                             </template>
@@ -251,7 +280,9 @@
                                 <div class="table-actions">
                                   <sdButton
                                     type="success"
-                                    :disabled="record.status == 1 || record.status == 2"
+                                    :disabled="
+                                      record.status == 1 || record.status == 2
+                                    "
                                     @click="cancelTransfer(record.id)"
                                     size="extra-small"
                                     >Cancel</sdButton
@@ -287,7 +318,10 @@
                               :model="trans_formState"
                               @finish="handleTransfer"
                             >
-                              <a-form-item name="from_post_id" label="From Post">
+                              <a-form-item
+                                name="from_post_id"
+                                label="From Post"
+                              >
                                 <a-select
                                   placeholder="Select  Post "
                                   v-model:value="trans_formState.from_post_id"
@@ -316,16 +350,24 @@
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
-                              <a-form-item name="no_of_nets" label="Number of nets">
+                              <a-form-item
+                                name="no_of_nets"
+                                label="Number of nets"
+                              >
                                 <a-input
                                   v-model:value="trans_formState.number_of_nets"
                                   placeholder="Number of nets"
                                   type="number"
                                 />
                               </a-form-item>
-                              <a-form-item name="delivery_note_number" label="S11 No">
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                              >
                                 <a-input
-                                  v-model:value="trans_formState.delivery_note_number"
+                                  v-model:value="
+                                    trans_formState.delivery_note_number
+                                  "
                                   placeholder="S11 No"
                                   type="number"
                                 />
@@ -337,7 +379,11 @@
                                 />
                               </a-form-item>
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -363,15 +409,64 @@
                               :model="formState"
                               @finish="receiveNets"
                             >
-                              <a-form-item name="date_received" label="Date Received">
+                              <a-form-item name="bale_size" label="Bale Size">
+                                <a-select
+                                  v-model:value="formState.bale_size"
+                                  placeholder="Select Bale Size"
+                                >
+                                  <a-select-option value="40"
+                                    >40</a-select-option
+                                  >
+                                  <a-select-option value="50"
+                                    >50</a-select-option
+                                  >
+                                </a-select>
+                              </a-form-item>
+                              <a-form-item
+                                name="no_of_bales"
+                                label="Number of bales"
+                              >
+                                <a-input
+                                  v-model:value="formState.number_of_bales"
+                                  placeholder="Number of bales"
+                                  type="number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="no_of_pieces"
+                                label="Number of Loose Pieces"
+                              >
+                                <a-input
+                                  v-model:value="formState.no_of_pieces"
+                                  placeholder="Enter number of pieces"
+                                  type="number"
+                                  @change="validateNoOfPieces"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="date_received"
+                                label="Date Received"
+                              >
                                 <a-date-picker
                                   :style="{ width: '100%' }"
                                   v-model:value="formState.date_received"
                                   :format="dateFormat"
                                 />
                               </a-form-item>
+
+                              <a-form-item name="comment" label="Comment">
+                                <a-input
+                                  v-model:value="trans_formState.comment"
+                                  placeholder="Comment"
+                                />
+                              </a-form-item>
+
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -397,10 +492,15 @@
                               :model="returns_formState"
                               @finish="handleReturns"
                             >
-                              <a-form-item name="to_drop_off" label="To Drop Off Point">
+                              <a-form-item
+                                name="to_drop_off"
+                                label="To Drop Off Point"
+                              >
                                 <a-select
                                   placeholder="Select Drop Off Point "
-                                  v-model:value="returns_formState.to_drop_off_point_id"
+                                  v-model:value="
+                                    returns_formState.to_drop_off_point_id
+                                  "
                                 >
                                   <a-select-option
                                     v-for="dp in dropoffpoints"
@@ -411,29 +511,48 @@
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
-                              <a-form-item name="no_of_nets" label="Number of nets">
+                              <a-form-item
+                                name="no_of_nets"
+                                label="Number of nets"
+                              >
                                 <a-input
-                                  v-model:value="returns_formState.number_of_nets"
+                                  v-model:value="
+                                    returns_formState.number_of_nets
+                                  "
                                   placeholder="Number of nets"
                                   type="number"
                                 />
                               </a-form-item>
-                              <a-form-item name="date_returned" label="Date Returned">
+                              <a-form-item
+                                name="date_returned"
+                                label="Date Returned"
+                              >
                                 <a-date-picker
                                   :style="{ width: '100%' }"
-                                  v-model:value="returns_formState.date_returned"
+                                  v-model:value="
+                                    returns_formState.date_returned
+                                  "
                                   :format="dateFormat"
                                 />
                               </a-form-item>
-                              <a-form-item name="delivery_note_number" label="S11 No">
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                              >
                                 <a-input
                                   :style="{ width: '100%' }"
-                                  v-model:value="returns_formState.delivery_note_number"
+                                  v-model:value="
+                                    returns_formState.delivery_note_number
+                                  "
                                   type="number"
                                 />
                               </a-form-item>
                               <div class="record-form-actions text-right">
-                                <sdButton size="default" htmlType="Save" type="success">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
                               </div>
@@ -634,16 +753,17 @@ const handleTransactions = (tab) => {
   tab === "receive"
     ? handleChange("do_point")
     : tab === "transfer"
-    ? handleChange("transfer_ins")
-    : tab === "return"
-    ? openReturnsModal()
-    : null;
+      ? handleChange("transfer_ins")
+      : tab === "return"
+        ? openReturnsModal()
+        : null;
 };
 
 const openReceiveModal = (type, id) => {
   type === "receive"
     ? ((formState.distribution_id = id), (transaction_type.value = "receive"))
-    : ((trans_formState.transfer_id = id), (transaction_type.value = "transfers"));
+    : ((trans_formState.transfer_id = id),
+      (transaction_type.value = "transfers"));
   isOpen.value = true;
 };
 
@@ -790,6 +910,10 @@ const receiveNets = async () => {
   const data = {
     transfer_id: trans_formState.transfer_id,
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+    bale_size: formState.bale_size,
+    number_of_bales: formState.number_of_bales,
+    loose_pieces: formState.loose_pieces,
+    comment: formState.comment,
     status: 1,
   };
   const rec_data = {
@@ -799,14 +923,14 @@ const receiveNets = async () => {
     transaction_type.value === "transfers"
       ? data
       : transaction_type.value === "receive"
-      ? rec_data
-      : null;
+        ? rec_data
+        : null;
   const url =
     transaction_type.value === "transfers"
       ? "receive_nets_from_post"
       : transaction_type.value === "receive"
-      ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
-      : null;
+        ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
+        : null;
 
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
@@ -827,7 +951,8 @@ const receiveNets = async () => {
         } else {
           notification.error({
             message: "Error",
-            description: "Only post supervisor can receive nets, contact SCMCC.",
+            description:
+              "Only post supervisor can receive nets, contact SCMCC.",
           });
         }
         isModalOpen.value = false;
@@ -850,10 +975,13 @@ const receiveNets = async () => {
 
 const receiveFromDropOff = async () => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/1`, {
-      method: "GET",
-      headers: authHeader(),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/1`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
@@ -877,10 +1005,13 @@ const receiveFromDropOff = async () => {
 
 const fetchTransferOuts = async () => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/1`, {
-      method: "GET",
-      headers: authHeader(),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/1`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
@@ -908,10 +1039,13 @@ const fetchTransferOuts = async () => {
 
 const fetchTransferIns = async () => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/2`, {
-      method: "GET",
-      headers: authHeader(),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/2`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
@@ -940,14 +1074,17 @@ const fetchTransferIns = async () => {
 
 const cancelTransfer = async (id) => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/cancel_post_net_transfer/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-      body: null,
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/cancel_post_net_transfer/${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: null,
+      }
+    )
       .then((response) => response.json())
       .then(({ success, message }) => {
         if (success) {
