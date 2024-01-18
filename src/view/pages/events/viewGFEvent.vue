@@ -28,6 +28,43 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
+                <a-row class="" :gutter="3">
+                  <a-space>
+                    <a-col :xxl="28" :xl="28" :md="28" :sm="28">
+                      <a-select
+                        v-model:value="county"
+                        show-search
+                        placeholder="Select County"
+                        style="width: 100%"
+                        :options="counties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-model:value="subcounty"
+                        show-search
+                        placeholder="Select Sub County"
+                        style="width: 100%"
+                        :options="subcounties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'subcounty')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-model:value="gfevent"
+                        show-search
+                        placeholder="Select an Activity"
+                        style="width: 100%"
+                        :options="events"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'event')"
+                      ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
                 <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
                   <template #events="{ record }">
                     <td>
@@ -191,7 +228,7 @@ import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -236,13 +273,6 @@ const columns = [
   },
 ];
 
-defineProps({
-  event: {
-    type: Object,
-    required: true,
-  },
-});
-
 const {
   state,
   //dispatch
@@ -263,17 +293,83 @@ var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const visible = ref(false);
-//const confirmLoading=ref(false)
-//const modalType=ref("success")
 const colorVisible = ref(false);
 const isStarting = ref(false);
-//const isStarted=ref(false)
-//const events=ref([]) // an array of events fetched from the server
 const eventStatus = ref({}); // an object to keep track of the status of each event
+const counties = ref(null);
+const subcounties = ref(null);
+const events = ref([]);
 //enrcrypt
 import { encrypt } from "@/cryptoHelper";
+onMounted(() => {
+  getEvents();
+  fetchCounties();
+});
 // Example usage
-
+const handleChange = async (value_code, org_level) => {
+  fetchChildData(value_code, org_level);
+};
+const fetchChildData = async (value_code, org_level) => {
+  currentPage.value = 1;
+  let fetchUrl = `get_sub_counties_list`;
+  let masterUrl = `gf_events?per_page=${pageSize.value}&page=${currentPage.value}`;
+  if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${value_code}`;
+    //get county activities
+    masterUrl += `&county=${value_code}`;
+  } else if (org_level == "subcounty") {
+    //get subcounty activities
+    fetchUrl += `?parent_id=${value_code}`;
+    masterUrl += `&subcounty=${value_code}`;
+  }
+  if (org_level == "event") {
+    //get activities
+    masterUrl += `&event_code=${value_code}`;
+  }
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
+      let data = response.data.message;
+      if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+      }
+    })
+    .then(async () => {
+      await axios.get(`${masterUrl}`).then((response) => {
+        let data = response.data.data;
+        dataSource.value = data;
+        datatotal.value = response.data.pagination.total;
+      });
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+const fetchCounties = async () => {
+  await axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data.map((x) => ({
+        value: x.org_id,
+        label: x.name,
+      }));
+      // console.log(counties.value)
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
 const onPageChange = async (page) => {
   currentPage.value = page;
   try {
@@ -293,9 +389,6 @@ watch(
   }
 );
 // get all the events
-onMounted(() => {
-  getEvents();
-});
 
 const getEvents = () => {
   axios
@@ -304,7 +397,11 @@ const getEvents = () => {
     )
     .then((response) => {
       // dataSource.value = response.data.data;
-      // console.log(dataSource.value);
+      // console.log(dataSource.value);\
+      events.value = response.data.data.map((x) => ({
+        value: x.event_code,
+        label: x.name,
+      }));
       const filteredData = response.data.data.filter((item) => item.funding_source == 1);
       datatotal.value = response.data.pagination.total;
       console.log(datatotal.value);
