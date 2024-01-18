@@ -99,6 +99,16 @@ const props = defineProps({
 console.log(props);
 const columns = [
   {
+    title: "Nets Ordered",
+    dataIndex: "nets_ordered",
+    key: "nets_ordered",
+  },
+  {
+    title: "Nets Supplied",
+    dataIndex: "nets_supplied",
+    key: "nets_supplied",
+  },
+  {
     title: "Nets Received",
     dataIndex: "nets_received",
     key: "nets_received",
@@ -109,10 +119,24 @@ const columns = [
     key: "nets_distributed",
   },
   {
+    title: "Nets Balance",
+    dataIndex: "undistributed_nets_balance",
+    key: "undistributed_nets_balance",
+  },
+  {
+    title: "Households Registered",
+    dataIndex: "households_registered",
+    key: "households_registered",
+  },
+  {
     title: "Households Served",
     dataIndex: "households_served",
     key: "households_served",
-    // slots: { customRender: "activities" },
+  },
+  {
+    title: "Unserved Households Served",
+    dataIndex: "unserved_households",
+    key: "unserved_households",
   },
 ];
 
