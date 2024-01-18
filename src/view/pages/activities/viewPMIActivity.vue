@@ -334,12 +334,14 @@ const fetchPMIActivities = async () => {
     }));
     // Format the data before assigning it to dataSource
     dataSource.value = data.data.map((item) => {
-      const countyName = item.county_id[0].name;
+      const countyName =
+        item.county_id.length > 0
+          ? item.county_id.map((county) => county.name).join(",")
+          : "N/A";
       const subCountyName =
         item.sub_county_id.length > 0
           ? item.sub_county_id.map((subCounty) => subCounty.name).join(", ")
           : "N/A";
-
       return {
         ...item,
         county_id: countyName,
