@@ -447,6 +447,13 @@
                                 />
                               </a-form-item>
 
+                              <a-form-item name="comment" label="Comment">
+                                <a-input
+                                  v-model:value="trans_formState.comment"
+                                  placeholder="Comment"
+                                />
+                              </a-form-item>
+
                               <div class="record-form-actions text-right">
                                 <sdButton
                                   size="default"
@@ -898,6 +905,7 @@ const receiveNets = async () => {
     bale_size: formState.bale_size,
     number_of_bales: formState.number_of_bales,
     loose_pieces: formState.loose_pieces,
+    comment: formState.comment,
     status: 1,
   };
   const rec_data = {
