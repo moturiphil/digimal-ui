@@ -271,13 +271,13 @@
 
               <!-- Archive Event Modal -->
               <a-modal
-                title="Archive Event"
+                title="Archive Activity"
                 :visible="isArchiveModalOpen"
                 @cancel="handleCancelArchive"
                 width="20%"
               >
                 <p>
-                  Are you sure you want to archive event? <br />
+                  Are you sure you want to archive activity? <br />
                   <br />
                   By confirming this, the event will not be available to users.
                 </p>
