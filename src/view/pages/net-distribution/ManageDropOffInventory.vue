@@ -454,14 +454,14 @@
                               :model="newOrder"
                               @finish="generateOrders"
                             >
-                              <a-form-item name="check" label="Generate for all posts?">
+                              <a-form-item name="check" label="Generate for all posts">
                                 <a-checkbox
                                   v-model:checked="checked"
                                   @change="clearSelected(checked)"
                                   >For all</a-checkbox
                                 >
                               </a-form-item>
-                              <a-form-item name="post_id" label="Post">
+                              <!-- <a-form-item name="post_id" label="Post">
                                 <a-select
                                   placeholder="Select  Post "
                                   v-model:value="newOrder.post_id"
@@ -476,11 +476,12 @@
                                     :key="post.id"
                                     v-model:value="post.id"
                                     :label="`${post.name} - ${post.code}`"
+                                    :disabled="true"
                                   >
                                     {{ post.name }}
                                   </a-select-option>
                                 </a-select>
-                              </a-form-item>
+                              </a-form-item> -->
                               <a-form-item name="order_type" label="Order type">
                                 <!-- <a-select
                                       v-model:value="newOrder.order_type"
@@ -512,10 +513,10 @@
                                 >
                                   <a-select-option
                                     v-for="product in productList"
-                                    :key="product.id"
-                                    v-model:value="product.item_code"
+                                        :key="product.product_code"
+                                        v-model:value="product.product_code"
                                   >
-                                    {{ product.item_code }}
+                                        {{ product.product_code }}
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
@@ -677,8 +678,8 @@ const postOrdersColumns = [
     key: "id",
   },
   {
-    title: "Product Code",
-    dataIndex: "product_code",
+    title: "Fulfiller",
+    dataIndex: "source",
     key: "id",
   },
   {
@@ -1127,7 +1128,12 @@ const fetchPostOrders = () => {
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
-          postOrders.value = data;
+          const orders = [];
+          data.forEach(i => {
+            i.source = (i.source==1) ? "KEMSA" : "MEDS";
+            orders.push(i);
+          });
+          postOrders.value = orders;
         } else {
           notification.info({
             message: "Info",
@@ -1386,10 +1392,11 @@ const getProductList = () => {
   }
 };
 
-const handleProductChange = (value) => {
-  const product = productList.value.find((product) => product.item_code === value);
-  newOrder.product_name = product.item_name;
-};
+      const handleProductChange = (value)=>{
+        console.log(value);
+        const product = productList.value.find((product) => product.product_code === value);
+        newOrder.product_name = product.product_name;
+      }
 
 const clearSelected = (checked) => {
   if (checked) {
