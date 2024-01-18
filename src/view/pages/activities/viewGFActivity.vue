@@ -234,12 +234,12 @@ const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
   let parent_id = org[0] || 9;
-  fetchChildData(parent_id, org_id, org_level);
+  await fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (parent_id, org_id, org_level) => {
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
-  let masterUrl = `pmi_activities?per_page=${pageSize.value}&page=${currentPage.value}`;
+  let masterUrl = `gf_activities?per_page=${pageSize.value}&page=${currentPage.value}`;
   if (org_level == "county") {
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
@@ -270,11 +270,34 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
       }
     })
     .then(async () => {
-      await axios.get(`${masterUrl}`).then((response) => {
-        let data = response.data.data;
-        dataSource.value = data;
+      try {
+        const response = await axios.get(masterUrl);
+        const data = await response.data;
         datatotal.value = response.data.pagination.total;
-      });
+        activities.value = data.data.map((x) => ({
+          value: x.activity_list_id,
+          label: x.name,
+        }));
+        // Format the data before assigning it to dataSource
+        dataSource.value = data.data.map((item) => {
+          const countyName =
+            item.county_id.length > 0
+              ? item.county_id.map((county) => county.name).join(",")
+              : "N/A";
+          const subCountyName =
+            item.sub_county_id.length > 0
+              ? item.sub_county_id.map((subCounty) => subCounty.name).join(", ")
+              : "N/A";
+          return {
+            ...item,
+            county_id: countyName,
+            sub_county_id: subCountyName,
+          };
+        });
+        console.log(dataSource.value);
+      } catch (error) {
+        console.error(error);
+      }
     })
     .catch((error) => {
       notification.error({
@@ -348,7 +371,6 @@ const fetchGFActivities = async () => {
         sub_county_id: subCountyName,
       };
     });
-    console.log(dataSource.value);
   } catch (error) {
     console.error(error);
   }

@@ -270,11 +270,34 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
       }
     })
     .then(async () => {
-      await axios.get(`${masterUrl}`).then((response) => {
-        let data = response.data.data;
-        dataSource.value = data;
+      try {
+        const response = await axios.get(masterUrl);
+        const data = await response.data;
         datatotal.value = response.data.pagination.total;
-      });
+        activities.value = data.data.map((x) => ({
+          value: x.activity_list_id,
+          label: x.name,
+        }));
+        // Format the data before assigning it to dataSource
+        dataSource.value = data.data.map((item) => {
+          const countyName =
+            item.county_id.length > 0
+              ? item.county_id.map((county) => county.name).join(",")
+              : "N/A";
+          const subCountyName =
+            item.sub_county_id.length > 0
+              ? item.sub_county_id.map((subCounty) => subCounty.name).join(", ")
+              : "N/A";
+          return {
+            ...item,
+            county_id: countyName,
+            sub_county_id: subCountyName,
+          };
+        });
+        console.log(dataSource.value);
+      } catch (error) {
+        console.error(error);
+      }
     })
     .catch((error) => {
       notification.error({
