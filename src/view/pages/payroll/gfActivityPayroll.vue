@@ -162,6 +162,33 @@
                                 </div>
                               </td>
                             </template>
+                            <!---modals-->
+                            <div class="modal">
+                              <a-modal
+                                layout="inline"
+                                :visible="openVoidModal"
+                                title="Confirm Void Payroll"
+                                @ok="actionVoidPayroll"
+                                @cancel="handleVoidCancel"
+                              >
+                                <template #footer>
+                                  <a-button key="back" @click="handleVoidCancel"
+                                    >No, Take me back!</a-button
+                                  >
+                                  <a-button
+                                    key="submit"
+                                    style="background: orange; color: aliceblue"
+                                    :loading="loading"
+                                    @click="actionVoidPayroll"
+                                    >Yes, Void it!</a-button
+                                  >
+                                </template>
+                                <h4>
+                                  Are you sure you want to void Payroll,Amount
+                                  <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                </h4>
+                              </a-modal>
+                            </div>
                           </a-table>
                         </TableWrapper>
 
@@ -345,31 +372,6 @@
             </sdCards>
           </a-col>
         </a-row>
-        <!---modals-->
-        <div class="modal">
-          <a-modal
-            layout="inline"
-            :visible="openVoidModal"
-            title="Confirm Void Payroll"
-            @ok="actionVoidPayroll"
-            @cancel="handleVoidCancel"
-          >
-            <template #footer>
-              <a-button key="back" @click="handleVoidCancel">No, Take me back!</a-button>
-              <a-button
-                key="submit"
-                style="background: orange; color: aliceblue"
-                :loading="loading"
-                @click="actionVoidPayroll"
-                >Yes, Void it!</a-button
-              >
-            </template>
-            <h4>
-              Are you sure you want to void Payroll,Amount
-              <b>KShs.{{ voidPayroll.total_amount }}</b>
-            </h4>
-          </a-modal>
-        </div>
       </SearchResultWrapper>
     </Main>
   </div>
