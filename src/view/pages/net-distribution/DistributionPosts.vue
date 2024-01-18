@@ -105,7 +105,7 @@
                   </a-space>
                 </a-row>
                 <a-divider></a-divider>
-                <a-table :pagination="false" :dataSource="results" :columns="columns">
+                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
                   <template #activities="{ record }">
                     <td>
                       <div class="table-actions">
@@ -349,7 +349,6 @@ const onPageChange = async (page) => {
   currentPage.value = page;
   fetchDistributionsPosts();
 };
-
 watch(
   () => searchItem.value,
   (newValue) => {
@@ -786,25 +785,6 @@ const handleSubmit = async () => {
 //   selectedRowKeys,
 //   onChange: onSelectChange,
 // };
-
-const results = computed(() => {
-  const query = searchItem.value.toLowerCase();
-  const regex = new RegExp(query, "i");
-  if (!query) {
-    return dataSource.value;
-  } else {
-    return dataSource.value.filter((event) => {
-      return (
-        regex.test(event.name) ||
-        regex.test(event.id_no) ||
-        regex.test(event.distribution_sub_county) ||
-        regex.test(event.distribution_ward) ||
-        regex.test(event.distribution_sublocation_id) ||
-        regex.test(event.distribution_location_id)
-      );
-    });
-  }
-});
 
 // const startDistribution = async (id) => {
 //   try {
