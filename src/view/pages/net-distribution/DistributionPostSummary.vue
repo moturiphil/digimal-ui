@@ -134,7 +134,7 @@ const columns = [
     key: "households_served",
   },
   {
-    title: "Households Served",
+    title: "Unserved Households Served",
     dataIndex: "unserved_households",
     key: "unserved_households",
   },
