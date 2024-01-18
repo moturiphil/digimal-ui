@@ -120,6 +120,30 @@
                                     <DeleteRowOutlined />
                                     <span>&nbsp;&nbsp;Void</span>
                                   </sdButton>
+                                  <!---modals-->
+                                  <a-modal
+                                    :visible="openVoidModal"
+                                    title="Confirm Void Payroll"
+                                    @ok="actionVoidPayroll"
+                                    @cancel="handleVoidCancel"
+                                    width="20%"
+                                  >
+                                    <template #footer>
+                                      <a-button key="back" @click="handleVoidCancel"
+                                        >No, Take me back!</a-button
+                                      >
+                                      <a-button
+                                        key="submit"
+                                        style="background: orange; color: aliceblue"
+                                        @click="actionVoidPayroll"
+                                        >Yes, Void it!</a-button
+                                      >
+                                    </template>
+                                    <h4>
+                                      Are you sure you want to void Payroll,Amount
+                                      <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                    </h4>
+                                  </a-modal>
                                 </div>
                               </td>
                               <td :style="{ 'margin-left': '4px' }">
@@ -181,32 +205,6 @@
                                 </div>
                               </td>
                             </template>
-                            <!---modals-->
-                            <div class="modal">
-                              <a-modal
-                                :visible="openVoidModal"
-                                title="Confirm Void Payroll"
-                                @ok="actionVoidPayroll"
-                                @cancel="handleVoidCancel"
-                              >
-                                <template #footer>
-                                  <a-button key="back" @click="handleVoidCancel"
-                                    >No, Take me back!</a-button
-                                  >
-                                  <a-button
-                                    key="submit"
-                                    style="background: orange; color: aliceblue"
-                                    :loading="loading"
-                                    @click="actionVoidPayroll"
-                                    >Yes, Void it!</a-button
-                                  >
-                                </template>
-                                <h4>
-                                  Are you sure you want to void Payroll,Amount
-                                  <b>KShs.{{ voidPayroll.total_amount }}</b>
-                                </h4>
-                              </a-modal>
-                            </div>
                           </a-table>
                         </TableWrapper>
 

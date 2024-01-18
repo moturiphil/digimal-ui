@@ -13,12 +13,7 @@
             type="text"
             name="dataSource"
             placeholder="Search by name code, venue or location"
-            style="
-              font-size: 15px;
-              width: 100%;
-              max-width: 300px;
-              height: 2.5rem;
-            "
+            style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
           />
         </div>
       </template>
@@ -33,11 +28,44 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="false"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                >
+                <a-row class="" :gutter="3">
+                  <a-space>
+                    <a-col :xxl="28" :xl="28" :md="28" :sm="28">
+                      <a-select
+                        v-model:value="county"
+                        show-search
+                        placeholder="Select County"
+                        style="width: 100%"
+                        :options="counties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-model:value="subcounty"
+                        show-search
+                        placeholder="Select Sub County"
+                        style="width: 100%"
+                        :options="subcounties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'subcounty')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-model:value="pmievent"
+                        show-search
+                        placeholder="Select an Activity"
+                        style="width: 100%"
+                        :options="events"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'event')"
+                      ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
@@ -87,10 +115,7 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
-                          v-if="
-                            !record.status &&
-                            record.payroll_status === 'Pending'
-                          "
+                          v-if="!record.status && record.payroll_status === 'Pending'"
                         >
                           <sdFeatherIcons type="play-circle" size="small" />
                           <span>Start Event </span>
@@ -203,7 +228,7 @@ import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps,watch } from "vue";
+import { computed, onMounted, ref, defineProps, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -280,11 +305,82 @@ const visible = ref(false);
 const colorVisible = ref(false);
 const isStarting = ref(false);
 //const isStarted=ref(false)
-//const events=ref([]) // an array of events fetched from the server
 const eventStatus = ref({}); // an object to keep track of the status of each event
 //enrcrypt
 import { encrypt, decrypt } from "@/cryptoHelper";
-// Example usage
+const counties = ref(null);
+const subcounties = ref(null);
+const events = ref([]);
+
+onMounted(() => {
+  getEvents();
+  fetchCounties();
+});
+
+const handleChange = async (value_code, org_level) => {
+  fetchChildData(value_code, org_level);
+};
+const fetchChildData = async (value_code, org_level) => {
+  currentPage.value = 1;
+  let fetchUrl = `get_sub_counties_list`;
+  let masterUrl = `pmi_events?per_page=${pageSize.value}&page=${currentPage.value}`;
+  if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${value_code}`;
+    //get county activities
+    masterUrl += `&county=${value_code}`;
+  } else if (org_level == "subcounty") {
+    //get subcounty activities
+    fetchUrl += `?parent_id=${value_code}`;
+    masterUrl += `&subcounty=${value_code}`;
+  }
+  if (org_level == "event") {
+    //get activities
+    masterUrl += `&event_code=${value_code}`;
+  }
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
+      let data = response.data.message;
+      if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+      }
+    })
+    .then(async () => {
+      await axios.get(`${masterUrl}`).then((response) => {
+        let data = response.data.data;
+        dataSource.value = data;
+        datatotal.value = response.data.pagination.total;
+      });
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+const fetchCounties = async () => {
+  await axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data.map((x) => ({
+        value: x.org_id,
+        label: x.name,
+      }));
+      // console.log(counties.value)
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
 
 const onPageChange = async (page) => {
   currentPage.value = page;
@@ -300,24 +396,28 @@ const onPageChange = async (page) => {
 };
 
 // search events
-watch(() => searchItem.value, (newValue) => {
-  searchItem.value=newValue;
-  getEvents();
-});
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    searchItem.value = newValue;
+    getEvents();
+  }
+);
 
 // get all the events
-onMounted(() => {
-  getEvents();
-});
 
 const getEvents = () => {
   axios
-    .get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
+    .get(
+      `pmi_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+    )
     .then((response) => {
       // dataSource.value = response.data.data;
-      const filteredData = response.data.data.filter(
-        (item) => item.funding_source == 2
-      );
+      events.value = response.data.data.map((x) => ({
+        value: x.event_code,
+        label: x.name,
+      }));
+      const filteredData = response.data.data.filter((item) => item.funding_source == 2);
       console.log(filteredData);
 
       datatotal.value = response.data.pagination.total;
@@ -481,8 +581,7 @@ const handleOk = async (id, inputValue) => {
     console.log(error);
     notification.error({
       message: "Error",
-      description:
-        "Participant Registration Failed, Registration Code does not exist",
+      description: "Participant Registration Failed, Registration Code does not exist",
     });
     inputValue = "";
   } finally {
@@ -497,9 +596,7 @@ const handleOk = async (id, inputValue) => {
 async () => {
   try {
     // Validate the event code
-    const { data } = await axios.get(
-      `events/all?event_code=${eventCode.value}`
-    );
+    const { data } = await axios.get(`events/all?event_code=${eventCode.value}`);
     if (!data || data.length === 0) {
       throw new Error("Invalid event code");
     }
