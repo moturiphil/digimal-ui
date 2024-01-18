@@ -1,37 +1,37 @@
 <template>
-  <div>
-    <sdPageHeader ghost title="Event Payroll">
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            style="
-              border: 1px solid #151414;
-              padding: 8px;
-              border-radius: 5px;
-              align-items: center;
-              justify-items: center;
-            "
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name"
-          />
-        </div>
-      </template>
-    </sdPageHeader>
+  <div class="">
+    <SearchResultWrapper>
+      <sdPageHeader ghost title="Event Payroll">
+        <template #buttons>
+          <div class="search-box">
+            <a-input
+              style="
+                border: 1px solid #151414;
+                padding: 8px;
+                border-radius: 5px;
+                align-items: center;
+                justify-items: center;
+              "
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by name"
+            />
+          </div>
+        </template>
+      </sdPageHeader>
 
-    <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
+      <Main>
+        <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
       </sdButton>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
-      <router-link v-bind:to="'event-payroll-matrix'">
-        <sdButton type="success" v-if="isAdmin">
-          <sdFeatherIcons size="" class="icon-color-white" />
-          Assign Payroll Matrix
-        </sdButton>
-      </router-link>
-      <SearchResultWrapper>
+        <router-link v-bind:to="'event-payroll-matrix'">
+          <sdButton type="success" v-if="isAdmin">
+            <sdFeatherIcons size="" class="icon-color-white" />
+            Assign Payroll Matrix
+          </sdButton>
+        </router-link>
         <a-row :gutter="25">
           <a-col :xs="24">
             <div class="search-filter-menu">
@@ -182,6 +182,33 @@
                                 </div>
                               </td>
                             </template>
+                            <!---modals-->
+                            <div class="modal">
+                              <a-modal
+                                layout="inline"
+                                :visible="openVoidModal"
+                                title="Confirm Void Payroll"
+                                @ok="actionVoidPayroll"
+                                @cancel="handleVoidCancel"
+                              >
+                                <template #footer>
+                                  <a-button key="back" @click="handleVoidCancel"
+                                    >No, Take me back!</a-button
+                                  >
+                                  <a-button
+                                    key="submit"
+                                    style="background: orange; color: aliceblue"
+                                    :loading="loading"
+                                    @click="actionVoidPayroll"
+                                    >Yes, Void it!</a-button
+                                  >
+                                </template>
+                                <h4>
+                                  Are you sure you want to void Payroll,Amount
+                                  <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                </h4>
+                              </a-modal>
+                            </div>
                           </a-table>
                         </TableWrapper>
 
@@ -382,33 +409,8 @@
             </sdCards>
           </a-col>
         </a-row>
-        <!---modals-->
-        <div class="modal">
-          <a-modal
-            layout="inline"
-            :visible="openVoidModal"
-            title="Confirm Void Payroll"
-            @ok="actionVoidPayroll"
-            @cancel="handleVoidCancel"
-          >
-            <template #footer>
-              <a-button key="back" @click="handleVoidCancel">No, Take me back!</a-button>
-              <a-button
-                key="submit"
-                style="background: orange; color: aliceblue"
-                :loading="loading"
-                @click="actionVoidPayroll"
-                >Yes, Void it!</a-button
-              >
-            </template>
-            <h4>
-              Are you sure you want to void Payroll,Amount
-              <b>KShs.{{ voidPayroll.total_amount }}</b>
-            </h4>
-          </a-modal>
-        </div>
-      </SearchResultWrapper>
-    </Main>
+      </Main>
+    </SearchResultWrapper>
   </div>
 </template>
 

@@ -144,6 +144,20 @@
                   @change="onPageChange($event)"
                 />
               </TableWrapper>
+              <div class="modal">
+                <a-modal
+                  :visible="userEditModalopen"
+                  title="Edit User"
+                  width="1000px"
+                  @cancel="handleEditUserCancel(false)"
+                >
+                  <template #footer></template>
+                  <UserEditForm
+                    :formFields="userEditFieds"
+                    v-on:close-editmodal="handleEditUserCancel(false)"
+                  />
+                </a-modal>
+              </div>
             </div>
           </sdCards>
         </a-col>
@@ -151,21 +165,6 @@
       <a-col :xs="24">
         <DragAndDropTable />
       </a-col>
-      <div class="modal">
-        <a-modal
-          layout="inline"
-          :visible="userEditModalopen"
-          title="Edit User"
-          width="1000px"
-          @cancel="handleEditUserCancel(false)"
-        >
-          <template #footer></template>
-          <UserEditForm
-            :formFields="userEditFieds"
-            v-on:close-editmodal="handleEditUserCancel(false)"
-          />
-        </a-modal>
-      </div>
     </Main>
   </RecordViewWrapper>
 </template>
