@@ -912,11 +912,16 @@ const receiveNets = async () => {
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
     status: 1,
   };
+  const quantity_received = (Number(formState.number_of_bales) * Number(formState.bale_size)) + Number(formState.no_of_pieces);
+
+
+  console.log(quantity_received);
   const rec_data = {
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
     bale_size: formState.bale_size,
-    number_of_bales: formState.number_of_bales,
+    no_of_bales: formState.number_of_bales,
     loose_pieces: formState.no_of_pieces,
+    quantity_received: quantity_received,
     receptor_comment: formState.comment,
   };
   const payload = transaction_type.value === "transfers" ? data : transaction_type.value === "receive" ? rec_data : null;
@@ -928,6 +933,8 @@ const receiveNets = async () => {
         : null;
 
   console.log(JSON.stringify(payload));
+  console.log(formState.distribution_id);
+  console.log(url);
 
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
