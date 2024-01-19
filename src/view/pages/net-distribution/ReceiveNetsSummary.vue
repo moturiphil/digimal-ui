@@ -456,7 +456,7 @@
 
                               <a-form-item name="comment" label="Comment">
                                 <a-input
-                                  v-model:value="trans_formState.comment"
+                                  v-model:value="formState.comment"
                                   placeholder="Comment"
                                 />
                               </a-form-item>
@@ -910,27 +910,24 @@ const receiveNets = async () => {
   const data = {
     transfer_id: trans_formState.transfer_id,
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-    bale_size: formState.bale_size,
-    number_of_bales: formState.number_of_bales,
-    loose_pieces: formState.loose_pieces,
-    comment: formState.comment,
     status: 1,
   };
   const rec_data = {
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+    bale_size: formState.bale_size,
+    number_of_bales: formState.number_of_bales,
+    loose_pieces: formState.no_of_pieces,
+    receptor_comment: formState.comment,
   };
-  const payload =
-    transaction_type.value === "transfers"
-      ? data
-      : transaction_type.value === "receive"
-        ? rec_data
-        : null;
+  const payload = transaction_type.value === "transfers" ? data : transaction_type.value === "receive" ? rec_data : null;
   const url =
     transaction_type.value === "transfers"
       ? "receive_nets_from_post"
       : transaction_type.value === "receive"
         ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
         : null;
+
+  console.log(JSON.stringify(payload));
 
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
