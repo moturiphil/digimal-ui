@@ -155,11 +155,11 @@
             HouseHolds Validation
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetIncompleteHouseholdReg">
+        <!-- <a-menu-item key="widgetIncompleteHouseholdReg">
           <router-link to="/households-registrations/incomplete">
             Incomplete HouseHolds Registration
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
           <router-link to="/hh-nets-distributed">
             Nets Distributed
