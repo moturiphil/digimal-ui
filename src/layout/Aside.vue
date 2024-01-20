@@ -12,11 +12,9 @@
         <a-menu-item key="widgetDashboard">
           <router-link to="/"> Campaign Dashboard </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetDashboard" v-if="true">
-            <router-link to="/MNEDashboard">
-              M & E Dashboard
-            </router-link>
-          </a-menu-item>
+        <a-menu-item key="widgetM&EDashboard" v-if="true">
+          <router-link to="/MNEDashboard"> M & E Dashboard </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>
@@ -157,11 +155,11 @@
             HouseHolds Validation
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetIncompleteHouseholdReg">
+        <!-- <a-menu-item key="widgetIncompleteHouseholdReg">
           <router-link to="/households-registrations/incomplete">
             Incomplete HouseHolds Registration
           </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
           <router-link to="/hh-nets-distributed">
             Nets Distributed
@@ -242,9 +240,9 @@
             Dropoff-Point Nets
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetNetsReceived">
+        <!-- <a-menu-item key="widgetNetsReceived">
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item key="widgetPostSummary">
           <router-link to="/nets/post-summary"> Posts Summary </router-link>
         </a-menu-item>
@@ -451,11 +449,13 @@ const viewOrgUnitsRoles = [
 ];
 const viewRegHHRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+
   36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,35,65
 ];
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+
   36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,35,65
 ];
 
@@ -475,6 +475,7 @@ const createDistributionPostRoles = [
 
 const viewDistributionPostRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+
   36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 34, 44,55,65
 ];
 
@@ -488,6 +489,7 @@ const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78, 17];
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
   42, 60, 34, 37, 56, 78, 17, 44, 35, 79, 65
+
 ];
 
 const viewMasterlistsRoles = [56];

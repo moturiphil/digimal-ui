@@ -39,11 +39,7 @@
                           {{ campaign.name }}
                         </a-select-option>
                       </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.campaign_id"
-                      >
+                      <p class="errors" style="color: red" v-if="!!errors.campaign_id">
                         {{ errors.campaign_id }}
                       </p>
                     </a-form-item>
@@ -72,11 +68,7 @@
                         {{ errors.name }}
                       </p>
                     </a-form-item>
-                    <a-form-item
-                      name="county_id"
-                      label="County"
-                      v-if="isLevelOne"
-                    >
+                    <a-form-item name="county_id" label="County" v-if="isLevelOne">
                       <a-select
                         size="large"
                         name="basic-select"
@@ -88,9 +80,7 @@
                         option-filter-prop="label"
                         v-if="!loading"
                       >
-                        <a-select-option value=""
-                          >Select an option</a-select-option
-                        >
+                        <a-select-option value="">Select an option</a-select-option>
                         <a-select-option
                           v-for="county in counties"
                           :value="county.id"
@@ -130,11 +120,7 @@
                           {{ facilitator.role_id }}
                         </a-select-option>
                       </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.facilitator_id"
-                      >
+                      <p class="errors" style="color: red" v-if="!!errors.facilitator_id">
                         {{ errors.facilitator_id }}
                       </p>
                     </a-form-item>
@@ -161,11 +147,7 @@
                           {{ trainer.last_name }} - {{ trainer.role_id }}
                         </a-select-option>
                       </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.trainer_id"
-                      >
+                      <p class="errors" style="color: red" v-if="!!errors.trainer_id">
                         {{ errors.trainer_id }}
                       </p>
                     </a-form-item>
@@ -179,11 +161,7 @@
                         @blur="validate('no_of_days')"
                         @keypress="validate('no_of_days')"
                       />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.no_of_days"
-                      >
+                      <p class="errors" style="color: red" v-if="!!errors.no_of_days">
                         {{ errors.no_of_days }}
                       </p>
                     </a-form-item>
@@ -195,11 +173,7 @@
                         @blur="validate('venue')"
                         @keypress="validate('venue')"
                       />
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.venue"
-                      >
+                      <p class="errors" style="color: red" v-if="!!errors.venue">
                         {{ errors.venue }}
                       </p>
                     </a-form-item>
@@ -214,8 +188,8 @@
                           isLoading
                             ? "Loading..."
                             : isSubmitting
-                              ? "Processing ..."
-                              : "Submit"
+                            ? "Processing ..."
+                            : "Submit"
                         }}
                       </sdButton>
                     </div>
@@ -424,9 +398,7 @@ const AddNew = defineComponent({
       name: Yup.string().required("Name is required"),
       // county_id: Yup.string().required(),
       facilitator_id: Yup.string().required("Host is required"),
-      trainer_id: Yup.array()
-        .min(1, "At least 1 facilitator required")
-        .required(),
+      trainer_id: Yup.array().min(1, "At least 1 facilitator required").required(),
       no_of_days: Yup.number().required("No of days is required"),
       venue: Yup.string().required("Venue is required"),
     });

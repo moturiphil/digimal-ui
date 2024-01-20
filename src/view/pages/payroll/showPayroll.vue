@@ -2,6 +2,15 @@
   <div>
     <sdPageHeader ghost title="Activity Payroll" />
     <Main>
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportPayrollList"
+        size="small"
+      >
+        Download List &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -160,7 +169,6 @@ import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
 
-
 const columns = [
   {
     title: "Name",
@@ -256,6 +264,8 @@ export default defineComponent({
     console.log(query.id);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
 
+    const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
+
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
         console.log(dataSource.value);
@@ -266,6 +276,33 @@ export default defineComponent({
         return dataSource.value;
       }
     });
+
+    const exportPayrollList = async () => {
+      try {
+        const response = await fetch(export_pay_list_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "Payroll Participants.xlsx";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -336,6 +373,7 @@ export default defineComponent({
       handleChange,
       activeClass,
       handleVerify,
+      exportPayrollList,
     };
   },
   // computed: {

@@ -107,77 +107,6 @@
                           <span> Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <a-modal
-                          title="Event Confirmation"
-                          :visible="isModalOpen"
-                          @ok="handleOk(recordId, inputValue)"
-                          @cancel="handleCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <p>Registration Confirmation processing</p>
-                            <input type="number" v-model="inputValue" />
-                          </div>
-                        </a-modal>
-                        <a-modal
-                          title="Event Trainers"
-                          :visible="isTrainerModalOpen"
-                          @ok="handleOkTrainers"
-                          @cancel="handleTrainerCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <h4>
-                              <b>
-                                <u> Event Host </u>
-                              </b>
-                            </h4>
-                            <p>{{ event_host }}</p>
-                            <h4>
-                              <b>
-                                <u> Event Facilitators </u>
-                                <!-- <sdButton
-                                    size="extra-small"
-                                    type="info"
-                                    @click="manageEvent(record.event_code)"
-                                  >
-                                    Add Trainer &nbsp; &nbsp;
-                                  </sdButton> -->
-                              </b>
-                            </h4>
-                            <br />
-                            <ul>
-                              <li
-                                v-for="facilitator in event_facilitators"
-                                :key="facilitator"
-                              >
-                                {{ facilitator }}
-                              </li>
-                              <!-- <li>
-                                  <sdButton
-                                    class="spaced-button"
-                                    size="extra-small"
-                                    type="success"
-                                    outlined
-                                    v-for="facilitator in event_facilitators"
-                                    :key="facilitator"
-                                  >
-                                    {{ facilitator }}
-                                    <sdButton
-                                      class="remove-button"
-                                      size="extra-small"
-                                      type="danger"
-                                    >
-                                      <sdFeatherIcons
-                                        type="trash-2"
-                                        size="small"
-                                      />
-                                    </sdButton>
-                                  </sdButton> -->
-                              <!-- </li> -->
-                            </ul>
-                          </div>
-                        </a-modal>
                       </div>
                     </td>
                   </template>
@@ -195,6 +124,52 @@
           </sdCards>
         </a-col>
       </a-row>
+      <a-modal
+        title="Event Confirmation"
+        :visible="isModalOpen"
+        @ok="handleOk(recordId, inputValue)"
+        @cancel="handleCancel"
+        class="title-success"
+      >
+        <div>
+          <p>Registration Confirmation processing</p>
+          <input type="number" v-model="inputValue" />
+        </div>
+      </a-modal>
+      <a-modal
+        title="Event Trainers"
+        :visible="isTrainerModalOpen"
+        @ok="handleOkTrainers"
+        @cancel="handleTrainerCancel"
+        class="title-success"
+      >
+        <div>
+          <h4>
+            <b>
+              <u> Event Host </u>
+            </b>
+          </h4>
+          <p>{{ event_host }}</p>
+          <h4>
+            <b>
+              <u> Event Facilitators </u>
+              <!-- <sdButton
+                                    size="extra-small"
+                                    type="info"
+                                    @click="manageEvent(record.event_code)"
+                                  >
+                                    Add Trainer &nbsp; &nbsp;
+                                  </sdButton> -->
+            </b>
+          </h4>
+          <br />
+          <ul>
+            <li v-for="facilitator in event_facilitators" :key="facilitator">
+              {{ facilitator }}
+            </li>
+          </ul>
+        </div>
+      </a-modal>
     </Main>
   </RecordViewWrapper>
 </template>

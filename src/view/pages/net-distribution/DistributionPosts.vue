@@ -105,11 +105,7 @@
                   </a-space>
                 </a-row>
                 <a-divider></a-divider>
-                <a-table
-                  :pagination="false"
-                  :dataSource="results"
-                  :columns="columns"
-                >
+                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
                   <template #activities="{ record }">
                     <td>
                       <div class="table-actions">
@@ -210,10 +206,8 @@
                         :value="user.id"
                         :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
                       >
-                        {{ user.first_name }} {{ user.last_name }}
-                        {{ user.other_name }} - {{ user.id_no }},{{
-                          user.role_id
-                        }}, {{ user.location_id }}
+                        {{ user.first_name }} {{ user.last_name }} {{ user.other_name }} -
+                        {{ user.id_no }},{{ user.role_id }}, {{ user.location_id }}
                       </a-select-option>
                     </a-select>
                   </a-form-item>
@@ -355,11 +349,14 @@ const onPageChange = async (page) => {
   currentPage.value = page;
   fetchDistributionsPosts();
 };
-
-watch(searchItem.value, (newvalue) => {
-  searchItem.value = newvalue;
-  fetchDistributionsPosts();
-});
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    currentPage.value = 1;
+    searchItem.value = newValue;
+    fetchDistributionsPosts();
+  }
+);
 const updateFilters = () => {
   // access_level.value.level.level_name = 'national'
   // access_level.value.location.id = 1
@@ -410,13 +407,7 @@ const updateFilters = () => {
       },
     ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = [
-      "subcounty",
-      "ward",
-      "location",
-      "sublocation",
-      "village",
-    ];
+    filterAccessList.value = ["subcounty", "ward", "location", "sublocation", "village"];
     subcounties.value = [
       {
         value: access_level.value.location.org_id,
@@ -559,9 +550,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       } else if (org_level == "subcounty") {
@@ -576,9 +565,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       } else if (org_level == "ward") {
@@ -593,9 +580,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       } else if (org_level == "location") {
@@ -610,9 +595,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       }
@@ -674,7 +657,6 @@ const supervisorList = async () => {
   }
 };
 supervisorList();
-
 
 const handleSupervisorSearch = (value) => {
   console.log(value);
@@ -803,25 +785,6 @@ const handleSubmit = async () => {
 //   selectedRowKeys,
 //   onChange: onSelectChange,
 // };
-
-const results = computed(() => {
-  const query = searchItem.value.toLowerCase();
-  const regex = new RegExp(query, "i");
-  if (!query) {
-    return dataSource.value;
-  } else {
-    return dataSource.value.filter((event) => {
-      return (
-        regex.test(event.name) ||
-        regex.test(event.id_no) ||
-        regex.test(event.distribution_sub_county) ||
-        regex.test(event.distribution_ward) ||
-        regex.test(event.distribution_sublocation_id) ||
-        regex.test(event.distribution_location_id)
-      );
-    });
-  }
-});
 
 // const startDistribution = async (id) => {
 //   try {

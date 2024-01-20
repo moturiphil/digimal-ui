@@ -1,32 +1,37 @@
 <template>
-  <div>
-    <sdPageHeader ghost title="Event Payroll">
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name"
-          />
-        </div>
-      </template>
+  <div class="">
+    <SearchResultWrapper>
+      <sdPageHeader ghost title="Event Payroll">
+        <template #buttons>
+          <div class="search-box">
+            <a-input
+              style="
+                border: 1px solid #151414;
+                padding: 8px;
+                border-radius: 5px;
+                align-items: center;
+                justify-items: center;
+              "
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by name"
+            />
+          </div>
+        </template>
+      </sdPageHeader>
 
-    </sdPageHeader>
-
-    <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
+      <Main>
+        <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
         Export Payroll Data
       </sdButton>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
-      <router-link v-bind:to="'event-payroll-matrix'">
-        <sdButton type="success" v-if="isAdmin">
-          <sdFeatherIcons size="" class="icon-color-white" />
-          Assign Payroll Matrix
-        </sdButton>
-      </router-link>
-      <SearchResultWrapper>
+        <router-link v-bind:to="'event-payroll-matrix'">
+          <sdButton type="success" v-if="isAdmin">
+            <sdFeatherIcons size="" class="icon-color-white" />
+            Assign Payroll Matrix
+          </sdButton>
+        </router-link>
         <a-row :gutter="25">
           <a-col :xs="24">
             <div class="search-filter-menu">
@@ -42,9 +47,7 @@
                 </li>
                 <li v-if="isValidator">
                   <a
-                    :class="
-                      activeClass === 'not_validated' ? 'active' : 'deactivate'
-                    "
+                    :class="activeClass === 'not_validated' ? 'active' : 'deactivate'"
                     @click="handleChange('not_validated')"
                     href="#"
                   >
@@ -53,11 +56,7 @@
                 </li>
                 <li v-if="isApprover">
                   <a
-                    :class="
-                      activeClass === 'pending_approval'
-                        ? 'active'
-                        : 'deactivate'
-                    "
+                    :class="activeClass === 'pending_approval' ? 'active' : 'deactivate'"
                     @click="handleChange('pending_approval')"
                     href="#"
                   >
@@ -66,11 +65,7 @@
                 </li>
                 <li v-if="isAdminAccountant">
                   <a
-                    :class="
-                      activeClass === 'pending_payment'
-                        ? 'active'
-                        : 'deactivate'
-                    "
+                    :class="activeClass === 'pending_payment' ? 'active' : 'deactivate'"
                     @click="handleChange('pending_payment')"
                     href="#"
                   >
@@ -113,10 +108,50 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
+                              <td
+                                :style="{ 'margin-left': '3px' }"
+                                v-show="record.payment_status === 'Not Paid'"
+                              >
+                                <div class="table-actions">
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    @click="showVoidModal(record)"
+                                  >
+                                    <DeleteRowOutlined />
+                                    <span>&nbsp;&nbsp;Void</span>
+                                  </sdButton>
+                                </div>
+                                <!---modals-->
+                                <a-modal
+                                  layout="inline"
+                                  :visible="openVoidModal"
+                                  title="Confirm Void Payroll"
+                                  @ok="actionVoidPayroll"
+                                  @cancel="handleVoidCancel"
+                                >
+                                  <template #footer>
+                                    <a-button key="back" @click="handleVoidCancel"
+                                      >No, Take me back!</a-button
+                                    >
+                                    <a-button
+                                      key="submit"
+                                      style="background: orange; color: aliceblue"
+                                      :loading="loading"
+                                      @click="actionVoidPayroll"
+                                      >Yes, Void it!</a-button
+                                    >
+                                  </template>
+                                  <h4>
+                                    Are you sure you want to void Payroll,Amount
+                                    <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                  </h4>
+                                </a-modal>
+                              </td>
                               <td :style="{ 'margin-left': '4px' }">
                                 <div class="table-actions">
                                   <sdButton
-                                    size="small"
+                                    size="extra-small"
                                     type="success"
                                     @click="handleVerify(record.id)"
                                   >
@@ -149,10 +184,7 @@
                                   >
                                     <div>
                                       <p>Payment transaction processing</p>
-                                      <input
-                                        type="number"
-                                        v-model="inputValue"
-                                      />
+                                      <input type="number" v-model="inputValue" />
                                     </div>
                                     <template v-slot:footer>
                                       <a-button
@@ -167,9 +199,7 @@
                                             : "Pay"
                                         }}</a-button
                                       >
-                                      <a-button
-                                        @click="handleCancel()"
-                                        type="danger"
+                                      <a-button @click="handleCancel()" type="danger"
                                         >Cancel Payment</a-button
                                       >
                                     </template>
@@ -377,20 +407,57 @@
             </sdCards>
           </a-col>
         </a-row>
-      </SearchResultWrapper>
-    </Main>
+      </Main>
+    </SearchResultWrapper>
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
-import authHeader from "../../../services/auth-header";
-import axios from "axios";
+import { computed, onMounted, ref, watchEffect } from "vue";
+import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import store from "../../../vuex/store";
+import { DeleteRowOutlined } from "@ant-design/icons-vue";
+
+const openVoidModal = ref(false);
+const voidPayroll = ref(null);
+
+const showVoidModal = (record) => {
+  voidPayroll.value = record;
+  openVoidModal.value = true;
+};
+const handleVoidCancel = () => {
+  openVoidModal.value = false;
+};
+const actionVoidPayroll = async () => {
+  await axios
+    .post(`void_events_payroll_summaries/${voidPayroll.value.id}`)
+    .then((response) => {
+      openVoidModal.value = false;
+      console.log(response);
+      if (response.data.success == true) {
+        notification.success({
+          message: "Success",
+          description: response.data.message,
+        });
+      } else if (response.data.success == false) {
+        notification.warning({
+          message: "Info",
+          description: response.data.message,
+        });
+      }
+    })
+    .catch((e) => {
+      notification.error({
+        message: "Error!",
+        description: e.toString(),
+      });
+      console.log(e);
+    });
+};
 
 const columns = [
   {
@@ -424,7 +491,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "Paid",
+    title: "Status",
     dataIndex: "payment_status",
     key: "id",
   },
@@ -436,404 +503,286 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    fixed: 'right',
+    fixed: "right",
     width: 20,
     key: "payroll",
     slots: { customRender: "payroll" },
   },
 ];
-export default defineComponent({
-  name: "Payroll",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      payroll: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-  },
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    // const payload = ref([]);
-    const activeClass = ref("all");
-    const recordId = ref(null);
-    const isPaying = computed(() => state.isPaying);
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
-    const isModalOpen = ref(false);
-    const inputValue = ref("");
-    const role_id = ref("");
-    const searchItem = ref("")
-    const eventspayroll = ref([])
-    const user = JSON.parse(sessionStorage.getItem("user"));
 
-    watchEffect(async()=>{
-      const query = searchItem.value.toLowerCase();
-      try {
-        if(!query) 
-        {
-          dataSource.value = eventspayroll.value;
-          return dataSource.value
-        }
-        // return dataSource.value;
-        if(query.length > 3){
-          const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary?query=${query}`,
-            {
-              method: "GET",
-              headers: authHeader(),
-            }
-          );
+const { state } = useStore();
+const isLoading = computed(() => state.crud.loading);
+const dataSource = ref([]);
+// const payload = ref([]);
+const activeClass = ref("all");
+const recordId = ref(null);
+const isPaying = computed(() => state.isPaying);
+const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_summary`;
+const isModalOpen = ref(false);
+const inputValue = ref("");
+const role_id = ref("");
+const searchItem = ref("");
+const eventspayroll = ref([]);
+const user = JSON.parse(sessionStorage.getItem("user"));
 
-          const data = await response.json();
-          const events = []
-          data.data.forEach((item) => {
-            if (item.funding_source === 1) {
-              events.push(item);
-            }
-          });
-          dataSource.value = events;
-          dataSource.value.forEach((item) => {
-            item.status = item.status === 1 ? "Validated" : "Not Validated";
-            item.payment_status =
-              item.payment_status === 1 ? "Paid" : "Not Paid";
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
-
-        }
-        
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-      }
-    })
-
-    const filter = (data)=>{
-
-      switch (activeClass.value) {
-        case "all":
-          return data;
-        
-        case "not_validated":
-          return data.filter(
-            (item) => item.status === "Not Validated"
-          );
-        
-        case "not_approved":
-          return data.filter(
-            (item) => item.status === "Validated" && item.approval_status === 0
-          );
-        
-        case "pending_approval":
-          return data.filter(
-            (item) =>
-              item.approval_status === "Not Approved" &&
-              item.status === "Validated"
-          );
-        
-        case "pending_payment":
-          return data.filter(
-            (item) =>
-              item.approval_status === "Approved" &&
-              item.payment_status === "Not Paid"
-          );
-
-        case "paid":
-          return data.filter(
-            (item) =>
-              item.payment_status === "Paid" &&
-              item.approval_status === "Approved" &&
-              item.status === "Validated"
-          );
-
-        default:
-          return data
-      }
-
+watchEffect(async () => {
+  const query = searchItem.value.toLowerCase();
+  try {
+    if (!query) {
+      dataSource.value = eventspayroll.value;
+      return dataSource.value;
     }
+    // return dataSource.value;
+    if (query.length > 3) {
+      const response = await axios.get(`event_pay_roll_summary?query=${query}`);
 
-    const filteredData = computed(() => {
-      return filter(dataSource.value);
+      const data = await response.data;
+      const events = [];
+      data.data.forEach((item) => {
+        if (item.funding_source === 1) {
+          events.push(item);
+        }
+      });
+      dataSource.value = events;
+      dataSource.value.forEach((item) => {
+        item.status = item.status === 1 ? "Validated" : "Not Validated";
+        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
+        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: error.message,
     });
+  }
+});
 
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-    
-    // handle payment
-    const handlePay = (id) => {
-      isModalOpen.value = true;
-      recordId.value = id;
-      try {
-           axios
-          .post(
-            `${process.env.VUE_APP_BASE_URL}/payment_otp`,
-            {
-              payroll_summary_id: id,
-              payment_type: "Event",
-            },
-            { headers: authHeader() }
-          )
-          .then((responsePromise) => {
-            return responsePromise.data;
-          })
-          .then((data) => {
-            if (data.success == true) {
-              notification.success({
-                message: "Success",
-                description: "OTP Sent Successfully",
-              });
-            }
-          });
+const filter = (data) => {
+  switch (activeClass.value) {
+    case "all":
+      return data;
 
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    case "not_validated":
+      return data.filter((item) => item.status === "Not Validated");
 
-    const handleValidation = (id) => {
-      try {
-       axios
-          .post(
-            `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`,
-            {
-              payroll_id: id,
-            },
-            { headers: authHeader() }
-          )
-          .then((responsePromise) => {
-            return responsePromise.data;
-          })
-          .then((data) => {
-            console.log(data);
-            if (data.success == true) {
-              notification.success({
-                message: "Success",
-                description: "Payroll Validated Successfully",
-              });
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: "Payroll Validation Failed",
-              });
-            }
-          });
+    case "not_approved":
+      return data.filter(
+        (item) => item.status === "Validated" && item.approval_status === 0
+      );
 
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    case "pending_approval":
+      return data.filter(
+        (item) => item.approval_status === "Not Approved" && item.status === "Validated"
+      );
 
-    const handleApproval = (id) => {
-      try {
-           axios
-          .post(
-            `${process.env.VUE_APP_BASE_URL}/event_payroll_approval`,
-            {
-              payroll_id: id,
-            },
-            { headers: authHeader() }
-          )
-          .then((responsePromise) => {
-            return responsePromise.data;
-          })
-          .then((data) => {
-            console.log(data);
-            if (data.success == true) {
-              notification.success({
-                message: "Success",
-                description: "Payroll Approved Successfully",
-              });
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: "Payroll Approval Failed",
-              });
-            }
-          });
+    case "pending_payment":
+      return data.filter(
+        (item) =>
+          item.approval_status === "Approved" && item.payment_status === "Not Paid"
+      );
 
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    case "paid":
+      return data.filter(
+        (item) =>
+          item.payment_status === "Paid" &&
+          item.approval_status === "Approved" &&
+          item.status === "Validated"
+      );
 
-    const handleOk = async (id, inputValue) => {
-      store.commit("setIsPaying", true);
-      try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
-          { headers: authHeader() }
-        );
-        if (response.status == 200) {
-          store.commit("setIsPaying", true);
+    default:
+      return data;
+  }
+};
+
+const filteredData = computed(() => {
+  return filter(dataSource.value);
+});
+
+const handleChange = (tab) => {
+  activeClass.value = tab;
+};
+
+// handle payment
+const handlePay = (id) => {
+  isModalOpen.value = true;
+  recordId.value = id;
+  try {
+    axios
+      .post(`payment_otp`, {
+        payroll_summary_id: id,
+        payment_type: "Event",
+      })
+      .then((responsePromise) => {
+        return responsePromise.data;
+      })
+      .then((data) => {
+        if (data.success == true) {
           notification.success({
             message: "Success",
-            description: "Payment processed successful",
+            description: "OTP Sent Successfully",
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleValidation = (id) => {
+  try {
+    axios
+      .post(`event_payroll_validation`, {
+        payroll_id: id,
+      })
+      .then((responsePromise) => {
+        return responsePromise.data;
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.success == true) {
+          notification.success({
+            message: "Success",
+            description: "Payroll Validated Successfully",
           });
           setTimeout(function () {
             location.reload();
           }, 3000);
-
-          axios
-            .post(
-              `${process.env.VUE_APP_BASE_URL}/event_payroll_payment`,
-              {
-                payroll_id: recordId.value,
-              },
-              { headers: authHeader() }
-            )
-            .then((responsePromise) => {
-              return responsePromise.data;
-            })
-            .then((data) => {
-              if (data.success == true) {
-                notification.success({
-                  message: "Success",
-                  description:
-                    "Payment Approved Successfully, Enter OTP to complete payment",
-                });
-              }
-            });
+        } else {
+          notification.error({
+            message: "Error",
+            description: "Payroll Validation Failed",
+          });
         }
-      } catch (error) {
-        store.commit("setIsPaying", true);
-        notification.error({
-          message: "Error",
-          description: "Payment failed",
-        });
-        setTimeout(function () {
-          location.reload();
-        }, 3000);
-      }
-      isModalOpen.value = false;
-    };
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
+const handleApproval = (id) => {
+  try {
+    axios
+      .post(`event_payroll_approval`, {
+        payroll_id: id,
+      })
+      .then((responsePromise) => {
+        return responsePromise.data;
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.success == true) {
+          notification.success({
+            message: "Success",
+            description: "Payroll Approved Successfully",
+          });
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: "Payroll Approval Failed",
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-    onMounted(() => {
+const handleOk = async (id, inputValue) => {
+  store.commit("setIsPaying", true);
+  try {
+    const response = await axios.get(
+      `pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`
+    );
+    if (response.status == 200) {
+      store.commit("setIsPaying", true);
+      notification.success({
+        message: "Success",
+        description: "Payment processed successful",
+      });
+      setTimeout(function () {
+        location.reload();
+      }, 3000);
+
       axios
-        .get(API_URL, {
-          headers: authHeader(),
+        .post(`event_payroll_payment`, {
+          payroll_id: recordId.value,
         })
-        .then((response) => {
-          let payload = response.data.data;
-
-          const filteredItems = [];
-          payload.forEach((item) => {
-            if (item.funding_source === 1) {
-              filteredItems.push(item);
-            }
-          });
-          eventspayroll.value=filteredItems
-          eventspayroll.value.forEach((item) => {
-            item.status = item.status === 1 ? "Validated" : "Not Validated";
-            item.payment_status =
-              item.payment_status === 1 ? "Paid" : "Not Paid";
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
-          dataSource.value = eventspayroll.value;
+        .then((responsePromise) => {
+          return responsePromise.data;
         })
-        .catch((error) => {
-          console.error(error);
+        .then((data) => {
+          if (data.success == true) {
+            notification.success({
+              message: "Success",
+              description: "Payment Approved Successfully, Enter OTP to complete payment",
+            });
+          }
         });
+    }
+  } catch (error) {
+    store.commit("setIsPaying", true);
+    notification.error({
+      message: "Error",
+      description: "Payment failed",
     });
-    const handleVerify = (record) => {
-      console.log(record);
-    };
-    role_id.value = user.user.role_id;
+    setTimeout(function () {
+      location.reload();
+    }, 3000);
+  }
+  isModalOpen.value = false;
+};
 
-    const isValidator = computed(() => {
-      return (
-        role_id.value === 63 || role_id.value === 53 || role_id.value === 4
-      );
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
+onMounted(() => {
+  axios
+    .get(API_URL)
+    .then((response) => {
+      let payload = response.data.data;
+
+      const filteredItems = [];
+      payload.forEach((item) => {
+        if (item.funding_source === 1) {
+          filteredItems.push(item);
+        }
+      });
+      eventspayroll.value = filteredItems;
+      eventspayroll.value.forEach((item) => {
+        item.status = item.status === 1 ? "Validated" : "Not Validated";
+        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
+        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+      });
+      dataSource.value = eventspayroll.value;
+    })
+    .catch((error) => {
+      console.error(error);
     });
+});
+const handleVerify = (record) => {
+  console.log(record);
+};
+role_id.value = user.user.role_id;
 
-    const isApprover = computed(() => {
-      return (
-        role_id.value === 64 || role_id.value === 53 || role_id.value === 59
-      );
-    });
+const isValidator = computed(() => {
+  return role_id.value === 63 || role_id.value === 53 || role_id.value === 4;
+});
 
-    const isAdminAccountant = computed(() => {
-      return (
-        role_id.value === 65 || role_id.value === 53 || role_id.value === 1
-      );
-    });
+const isApprover = computed(() => {
+  return role_id.value === 64 || role_id.value === 53 || role_id.value === 59;
+});
 
-    const isAdmin = computed(() => {
-      return role_id.value === 53;
-    });
+const isAdminAccountant = computed(() => {
+  return role_id.value === 65 || role_id.value === 53 || role_id.value === 1;
+});
 
-    const formState = reactive({
-      searchItem: "",
-    });
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      columns,
-      formState,
-      filteredData,
-      searchItem,
-      handleChange,
-      activeClass,
-      handleVerify,
-      isModalOpen,
-      inputValue,
-      handlePay,
-      handleValidation,
-      handleApproval,
-      handleOk,
-      handleCancel,
-      isValidator,
-      isApprover,
-      isAdminAccountant,
-      isAdmin,
-      isPaying,
-    };
-  },
-  // computed: {
-  // },
+const isAdmin = computed(() => {
+  return role_id.value === 53;
 });
 </script>
 <style scoped>

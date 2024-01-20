@@ -13,12 +13,7 @@
             type="text"
             name="dataSource"
             placeholder="Search by name code, venue or location"
-            style="
-              font-size: 15px;
-              width: 100%;
-              max-width: 300px;
-              height: 2.5rem;
-            "
+            style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
           />
         </div>
       </template>
@@ -33,11 +28,56 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="false"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                >
+                <a-row class="" :gutter="3">
+                  <a-space>
+                    <a-col
+                      :xxl="28"
+                      :xl="28"
+                      :md="28"
+                      :sm="28"
+                      v-if="allowedLevels.includes('county')"
+                    >
+                      <a-select
+                        v-model:value="county"
+                        show-search
+                        placeholder="Select County"
+                        style="width: 100%"
+                        :options="counties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"
+                      ></a-select>
+                    </a-col>
+                    <a-col
+                      :xxl="24"
+                      :xl="24"
+                      :md="24"
+                      :sm="24"
+                      v-if="allowedLevels.includes('subcounty')"
+                    >
+                      <a-select
+                        v-model:value="subcounty"
+                        show-search
+                        placeholder="Select Sub County"
+                        style="width: 100%"
+                        :options="subcounties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'subcounty')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-model:value="pmievent"
+                        show-search
+                        placeholder="Select an Activity"
+                        style="width: 100%"
+                        :options="events"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'event')"
+                      ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
@@ -87,10 +127,7 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
-                          v-if="
-                            !record.status &&
-                            record.payroll_status === 'Pending'
-                          "
+                          v-if="!record.status && record.payroll_status === 'Pending'"
                         >
                           <sdFeatherIcons type="play-circle" size="small" />
                           <span>Start Event </span>
@@ -107,77 +144,6 @@
                           <span> Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <a-modal
-                          title="Event Confirmation"
-                          :visible="isModalOpen"
-                          @ok="handleOk(recordId, inputValue)"
-                          @cancel="handleCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <p>Registration Confirmation processing</p>
-                            <input type="number" v-model="inputValue" />
-                          </div>
-                        </a-modal>
-                        <a-modal
-                          title="Event Trainers"
-                          :visible="isTrainerModalOpen"
-                          @ok="handleOkTrainers"
-                          @cancel="handleTrainerCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <h4>
-                              <b>
-                                <u> Event Host </u>
-                              </b>
-                            </h4>
-                            <p>{{ event_host }}</p>
-                            <h4>
-                              <b>
-                                <u> Event Facilitators </u>
-                                <!-- <sdButton
-                                  size="extra-small"
-                                  type="info"
-                                  @click="manageEvent(record.event_code)"
-                                >
-                                  Add Trainer &nbsp; &nbsp;
-                                </sdButton> -->
-                              </b>
-                            </h4>
-                            <br />
-                            <ul>
-                              <li
-                                v-for="facilitator in event_facilitators"
-                                :key="facilitator"
-                              >
-                                {{ facilitator }}
-                              </li>
-                              <!-- <li>
-                                <sdButton
-                                  class="spaced-button"
-                                  size="extra-small"
-                                  type="success"
-                                  outlined
-                                  v-for="facilitator in event_facilitators"
-                                  :key="facilitator"
-                                >
-                                  {{ facilitator }}
-                                  <sdButton
-                                    class="remove-button"
-                                    size="extra-small"
-                                    type="danger"
-                                  >
-                                    <sdFeatherIcons
-                                      type="trash-2"
-                                      size="small"
-                                    />
-                                  </sdButton>
-                                </sdButton> -->
-                              <!-- </li> -->
-                            </ul>
-                          </div>
-                        </a-modal>
                       </div>
                     </td>
                   </template>
@@ -191,6 +157,77 @@
                   @change="onPageChange($event)"
                 />
               </TableWrapper>
+              <!-- Register -->
+              <a-modal
+                title="Event Confirmation"
+                :visible="isModalOpen"
+                @ok="handleOk(recordId, inputValue)"
+                @cancel="handleCancel"
+                class="title-success"
+              >
+                <div>
+                  <p>Registration Confirmation processing</p>
+                  <input type="number" v-model="inputValue" />
+                </div>
+              </a-modal>
+
+              <!-- view trainers -->
+              <a-modal
+                title="Event Trainers"
+                :visible="isTrainerModalOpen"
+                @ok="handleOkTrainers"
+                @cancel="handleTrainerCancel"
+                class="title-success"
+              >
+                <div>
+                  <h4>
+                    <b>
+                      <u> Event Host </u>
+                    </b>
+                  </h4>
+                  <p>{{ event_host }}</p>
+                  <h4>
+                    <b>
+                      <u> Event Facilitators </u>
+                      <!-- <sdButton
+                        size="extra-small"
+                        type="info"
+                        @click="manageEvent(record.event_code)"
+                      >
+                        Add Trainer &nbsp; &nbsp;
+                      </sdButton> -->
+                    </b>
+                  </h4>
+                  <br />
+                  <ul>
+                    <li v-for="facilitator in event_facilitators" :key="facilitator">
+                      {{ facilitator }}
+                    </li>
+                    <!-- <li>
+                      <sdButton
+                        class="spaced-button"
+                        size="extra-small"
+                        type="success"
+                        outlined
+                        v-for="facilitator in event_facilitators"
+                        :key="facilitator"
+                      >
+                        {{ facilitator }}
+                        <sdButton
+                          class="remove-button"
+                          size="extra-small"
+                          type="danger"
+                        >
+                          <sdFeatherIcons
+                            type="trash-2"
+                            size="small"
+                          />
+                        </sdButton>
+                      </sdButton> -->
+                    <!-- </li> -->
+                  </ul>
+                </div>
+              </a-modal>
             </div>
           </sdCards>
         </a-col>
@@ -203,7 +240,7 @@ import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps,watch } from "vue";
+import { computed, onMounted, ref, defineProps, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -280,12 +317,116 @@ const visible = ref(false);
 const colorVisible = ref(false);
 const isStarting = ref(false);
 //const isStarted=ref(false)
-//const events=ref([]) // an array of events fetched from the server
 const eventStatus = ref({}); // an object to keep track of the status of each event
 //enrcrypt
 import { encrypt, decrypt } from "@/cryptoHelper";
-// Example usage
-
+const counties = ref(null);
+const subcounties = ref(null);
+const events = ref([]);
+const allowedLevels = ref([]);
+const access_level = ref(null);
+const org_ids = ref([]);
+// Fetch activity data from the API endpoint on component mount
+onMounted(async () => {
+  const user = sessionStorage.getItem("user");
+  const user_object = JSON.parse(user);
+  if (user_object != null) {
+    access_level.value = user_object.user;
+    await updateFilters();
+  }
+  getEvents();
+});
+const updateFilters = async () => {
+  // access_level.value.level.id = 3
+  // access_level.value.location.org_id = 'BzFBYZhF5fx'
+  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
+  if (access_level.value.level.id == 1) {
+    allowedLevels.value = ["county", "subcounty"];
+    await fetchCounties();
+  } else if (access_level.value.level.id == 2) {
+    allowedLevels.value = ["county", "subcounty"];
+    counties.value = [
+      {
+        value: access_level.value.location.id,
+        label: access_level.value.location.name,
+      },
+    ];
+  }
+};
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let parent_id = org[0] || 9;
+  fetchChildData(parent_id, org_id, org_level);
+};
+const fetchChildData = async (parent_id, org_id, org_level) => {
+  currentPage.value = 1;
+  let fetchUrl = `get_sub_counties_list`;
+  let masterUrl = `gf_events?per_page=${pageSize.value}&page=${currentPage.value}`;
+  if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    //get county activities
+    masterUrl += `&location_id=${parent_id}`;
+  } else if (org_level == "subcounty") {
+    //get subcounty activities
+    fetchUrl += `?parent_id=${org_id}`;
+    masterUrl += `&location_id=${parent_id}`;
+  } else if (org_level == "event") {
+    //get activities
+    masterUrl += `&event_list=${org_id}`;
+  }
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
+      let data = response.data.message;
+      if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data.map((x) => ({ org_id: x.org_id, id: x.id })),
+        ];
+      }
+    })
+    .then(async () => {
+      await axios.get(`${masterUrl}`).then((response) => {
+        let data = response.data.data;
+        dataSource.value = data;
+        datatotal.value = response.data.pagination.total;
+      });
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+const fetchCounties = async () => {
+  await axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data.map((x) => ({
+        value: x.org_id,
+        label: x.name,
+      }));
+      org_ids.value = [
+        ...org_ids.value,
+        ...response.data.map((x) => ({ org_id: x.org_id, id: x.id })),
+      ];
+      // console.log(counties.value)
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
 const onPageChange = async (page) => {
   currentPage.value = page;
   try {
@@ -300,24 +441,28 @@ const onPageChange = async (page) => {
 };
 
 // search events
-watch(() => searchItem.value, (newValue) => {
-  searchItem.value=newValue;
-  getEvents();
-});
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    searchItem.value = newValue;
+    getEvents();
+  }
+);
 
 // get all the events
-onMounted(() => {
-  getEvents();
-});
 
 const getEvents = () => {
   axios
-    .get(`pmi_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
+    .get(
+      `pmi_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+    )
     .then((response) => {
       // dataSource.value = response.data.data;
-      const filteredData = response.data.data.filter(
-        (item) => item.funding_source == 2
-      );
+      events.value = response.data.data.map((x) => ({
+        value: x.event_list_id,
+        label: x.name,
+      }));
+      const filteredData = response.data.data.filter((item) => item.funding_source == 2);
       console.log(filteredData);
 
       datatotal.value = response.data.pagination.total;
@@ -481,8 +626,7 @@ const handleOk = async (id, inputValue) => {
     console.log(error);
     notification.error({
       message: "Error",
-      description:
-        "Participant Registration Failed, Registration Code does not exist",
+      description: "Participant Registration Failed, Registration Code does not exist",
     });
     inputValue = "";
   } finally {
@@ -497,9 +641,7 @@ const handleOk = async (id, inputValue) => {
 async () => {
   try {
     // Validate the event code
-    const { data } = await axios.get(
-      `events/all?event_code=${eventCode.value}`
-    );
+    const { data } = await axios.get(`events/all?event_code=${eventCode.value}`);
     if (!data || data.length === 0) {
       throw new Error("Invalid event code");
     }
