@@ -123,7 +123,7 @@
             </a-col>
             <a-col class="alert-col">
               <a-alert
-                :message="`You have ${deliveries} distributions Pending Receipt at post`"
+                :message="`You have ${deliveries} deliveries received at post`"
                 type="warning"
                 closable
                 @close="onClose"
