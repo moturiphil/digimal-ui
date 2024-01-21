@@ -120,12 +120,12 @@
       key: "nets_received",
     },
     {
-      title: "Nets To Issued ",
+      title: "Nets Issued",
       dataIndex: "nets_issued",
-      key: "nets_sent_to_dropoff",
+      key: "nets_issued",
     },
     {
-      title: "Nets To Drop-off",
+      title: "Returned To Drop-off",
       dataIndex: "nets_sent_to_dropoff",
       key: "nets_sent_to_dropoff",
     },
