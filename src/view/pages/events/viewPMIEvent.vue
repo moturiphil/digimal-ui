@@ -68,7 +68,7 @@
                       <a-select
                         v-model:value="pmievent"
                         show-search
-                        placeholder="Select an Activity"
+                        placeholder="Select an Event"
                         style="width: 100%"
                         :options="events"
                         :filter-option="filterOption"
@@ -374,7 +374,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     masterUrl += `&location_id=${parent_id}`;
   } else if (org_level == "event") {
     //get activities
-    masterUrl += `&event_list=${org_id}`;
+    masterUrl += `&location_id=${parent_id}&event_list=${org_id}`;
   }
   await axios
     .get(`${fetchUrl}`)
