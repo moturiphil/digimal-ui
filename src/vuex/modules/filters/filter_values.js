@@ -2,6 +2,7 @@
 const state = () => ({
     county_id: 17,
     sub_county_id: 60,
+    location_id:9,
 });
 
 const actions = {
@@ -15,9 +16,11 @@ const actions = {
 const mutations = {
     async setCountyId(state, id) {
         state.county_id = id;
+        state.location_id=id
     },
     async setSubCountyId(state, id) {
         state.sub_county_id = id;
+        state.location_id = id;
     }
 }
 export default {

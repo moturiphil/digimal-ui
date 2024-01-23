@@ -316,6 +316,8 @@ const events = ref([]);
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
+const store = useStore();
+
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
   const user = sessionStorage.getItem("user");
@@ -353,18 +355,24 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
   let masterUrl = `gf_events?per_page=${pageSize.value}&page=${currentPage.value}`;
+  var location_id = store.state.filters.location_id;
   if (org_level == "county") {
+    store.dispatch("getCountyId", parent_id);
+    location_id = store.state.filters.location_id;
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
     //get county activities
-    masterUrl += `&location_id=${parent_id}`;
+    masterUrl += `&location_id=${location_id}`;
   } else if (org_level == "subcounty") {
+    store.dispatch("getSubCountyId", parent_id);
+    location_id = store.state.filters.location_id;
     //get subcounty activities
     fetchUrl += `?parent_id=${org_id}`;
-    masterUrl += `&location_id=${parent_id}`;
+    masterUrl += `&location_id=${location_id}`;
   } else if (org_level == "event") {
     //get activities
-    masterUrl += `&location_id=${parent_id}&event_list=${org_id}`;
+    location_id = store.state.filters.location_id;
+    masterUrl += `&location_id=${location_id}&event_list=${org_id}`;
   }
   await axios
     .get(`${fetchUrl}`)
