@@ -35,28 +35,84 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
-                        <a-row class="" :gutter="5">
-                          <a-space>
-                          <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                            <a-select v-if="filterAccessList.includes('country')" v-model:value="country" show-search placeholder="Select Country" style="width: 100%" :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
-                          </a-col>
-                          <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                            <a-select v-if="filterAccessList.includes('county')" v-model:value="county" show-search placeholder="Select County" style="width: 100%" :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
-                          </a-col>
-                          <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                            <a-select v-if="filterAccessList.includes('subcounty')" v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 100%" :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
-                          </a-col>
-                          <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                            <a-select v-if="filterAccessList.includes('ward')" v-model:value="ward" show-search placeholder="Select Ward" style="width: 100%" :options="wards" :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
-                          </a-col>
-                          <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                            <a-select v-if="filterAccessList.includes('location')" v-model:value="location" show-search placeholder="Select Location" style="width: 100%" :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
-                          </a-col>
-                          <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                            <a-select v-if="filterAccessList.includes('sublocation')" v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 100%" :options="sublocations" :filter-option="filterOption" @change="handleChange($event, 'sublocation')"></a-select>
-                          </a-col>
-                          </a-space>
-                        </a-row>
+                          <a-row class="" :gutter="5">
+                            <a-space>
+                              <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                                <a-select
+                                  v-if="filterAccessList.includes('country')"
+                                  v-model:value="country"
+                                  show-search
+                                  placeholder="Select Country"
+                                  style="width: 100%"
+                                  :options="countries"
+                                  :filter-option="filterOption"
+                                  @change="handleChange($event, 'country')"
+                                ></a-select>
+                              </a-col>
+                              <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                                <a-select
+                                  v-if="filterAccessList.includes('county')"
+                                  v-model:value="county"
+                                  show-search
+                                  placeholder="Select County"
+                                  style="width: 100%"
+                                  :options="counties"
+                                  :filter-option="filterOption"
+                                  @change="handleChange($event, 'county')"
+                                ></a-select>
+                              </a-col>
+                              <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                                <a-select
+                                  v-if="filterAccessList.includes('subcounty')"
+                                  v-model:value="subcounty"
+                                  show-search
+                                  placeholder="Select Sub County"
+                                  style="width: 100%"
+                                  :options="subcounties"
+                                  :filter-option="filterOption"
+                                  @change="handleChange($event, 'subcounty')"
+                                ></a-select>
+                              </a-col>
+                              <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                                <a-select
+                                  v-if="filterAccessList.includes('ward')"
+                                  v-model:value="ward"
+                                  show-search
+                                  placeholder="Select Ward"
+                                  style="width: 100%"
+                                  :options="wards"
+                                  :filter-option="filterOption"
+                                  @change="handleChange($event, 'ward')"
+                                ></a-select>
+                              </a-col>
+                              <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                                <a-select
+                                  v-if="filterAccessList.includes('location')"
+                                  v-model:value="location"
+                                  show-search
+                                  placeholder="Select Location"
+                                  style="width: 100%"
+                                  :options="locations"
+                                  :filter-option="filterOption"
+                                  @change="handleChange($event, 'location')"
+                                ></a-select>
+                              </a-col>
+                              <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                                <a-select
+                                  v-if="
+                                    filterAccessList.includes('sublocation')
+                                  "
+                                  v-model:value="sublocation"
+                                  show-search
+                                  placeholder="Select Sub Location"
+                                  style="width: 100%"
+                                  :options="sublocations"
+                                  :filter-option="filterOption"
+                                  @change="handleChange($event, 'sublocation')"
+                                ></a-select>
+                              </a-col>
+                            </a-space>
+                          </a-row>
                           <a-divider></a-divider>
                           <a-table
                             :pagination="false"
@@ -93,10 +149,7 @@
                             :model="formState"
                             @finish="handleStartDistribution"
                           >
-                            <a-form-item
-                              name="start_date"
-                              label="Start Date"
-                            >
+                            <a-form-item name="start_date" label="Start Date">
                               <a-date-picker
                                 :style="{ width: '100%' }"
                                 v-model:value="formState.start_date"
@@ -104,10 +157,7 @@
                               />
                             </a-form-item>
 
-                            <a-form-item
-                              name="end_date"
-                              label="end_date"
-                            >
+                            <a-form-item name="end_date" label="end_date">
                               <a-date-picker
                                 :style="{ width: '100%' }"
                                 v-model:value="formState.end_date"
@@ -184,9 +234,9 @@ const columns = ref([
 
 var current = ref(1);
 var pageSize = ref(50);
-var total=ref(0)
-var visible=ref(false)
-var colorVisible=ref(false)
+var total = ref(0);
+var visible = ref(false);
+var colorVisible = ref(false);
 const { state } = useStore();
 var isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
@@ -194,56 +244,59 @@ const activeClass = ref("all");
 const isModalOpen = ref(false);
 const total_households = ref(0);
 const API_URL = `distribution_details/all?page=${current.value}&pageSize=${pageSize.value}`;
+const dist_status = ref(false);
 
 //const households_url = `generateHHCSV`;
 //Drill down filters
-const access_level = ref({})
-const filterAccessList = ref([])
+const access_level = ref({});
+const filterAccessList = ref([]);
 //org levels
-const countries = ref([{ value: { id: 1, org_id: 'HfVjCurKxh2' }, label: "Kenya" }])
-const counties = ref(null)
-const subcounties = ref(null)
-const wards = ref(null)
-const locations = ref(null)
-const sublocations = ref(null)
+const countries = ref([
+  { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
+]);
+const counties = ref(null);
+const subcounties = ref(null);
+const wards = ref(null);
+const locations = ref(null);
+const sublocations = ref(null);
 // const villages = ref(null)
-const country = ref("Select Country")
-const county = ref("Select County")
-const sublocation = ref("Select Sublocation")
-const subcounty = ref("Select Subcounty")
-const location = ref("Select Location")
-const ward = ref("Select Ward")
+const country = ref("Select Country");
+const county = ref("Select County");
+const sublocation = ref("Select Sublocation");
+const subcounty = ref("Select Subcounty");
+const location = ref("Select Location");
+const ward = ref("Select Ward");
 // const village = ref("Select a Post")
-const org_ids = ref([])
+const org_ids = ref([]);
 // const selectedCounties = ref([
 //   "Homa Bay County",
 //   "Kisii County",
 //   "Nyamira County",
-  // "Kisumu County",
-  // "Siaya County",
-  // "Busia County",
-  // "Migori County",
-  // "Lamu County",
-  // "Kilifi County",
-  // "Tana River County",
-  // "Kwale County",
-  // "Taita Taveta County",
-  // "Mombasa County",
-  // "Bungoma County",
-  // "Kakamega County",
-  // "Vihiga County",
-  // "West Pokot County",
-  // "Turkana County",
-  // "Trans Nzoia County",
-  // "Narok County",
-  // "Marsabit County",
-  // "Baringo County",
-  // "Kirinyaga County"
+// "Kisumu County",
+// "Siaya County",
+// "Busia County",
+// "Migori County",
+// "Lamu County",
+// "Kilifi County",
+// "Tana River County",
+// "Kwale County",
+// "Taita Taveta County",
+// "Mombasa County",
+// "Bungoma County",
+// "Kakamega County",
+// "Vihiga County",
+// "West Pokot County",
+// "Turkana County",
+// "Trans Nzoia County",
+// "Narok County",
+// "Marsabit County",
+// "Baringo County",
+// "Kirinyaga County"
 //])
 const currentCounties = ref([
-  'nK0A12Q7MvS',//homa bay
-  'sPkRcDvhGWA',//kisii
-  'uepLTG8wGWJ',//nyamira
+  "nK0A12Q7MvS", //homa bay
+  "sPkRcDvhGWA", //kisii
+  "uepLTG8wGWJ", //nyamira
   // 'u4t9H8XyU9P',//siaya
   // 'fVra3Pwta0Q',//migori
   // 'Tvf1zgVZ0K4',//busia
@@ -263,13 +316,13 @@ const currentCounties = ref([
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
   // 'Ulj33KBau7V',
-])
+]);
 
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    updateFilters()
+    updateFilters();
     // console.log(JSON.stringify(access_level.value.location));
   }
 });
@@ -281,182 +334,298 @@ const updateFilters = () => {
   // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
-    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-    fetchCounties()
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    countries.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+    fetchCounties();
   } else if (access_level.value.level.id == 2) {
-    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    counties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation', 'village']
-    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-  } else if (access_level.value.level.id ==4) {
-    filterAccessList.value = ['ward', 'location', 'sublocation', 'village']
-    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = [
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    subcounties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+  } else if (access_level.value.level.id == 4) {
+    filterAccessList.value = ["ward", "location", "sublocation", "village"];
+    wards.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 5) {
-    filterAccessList.value = ['location', 'sublocation', 'village']
-    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["location", "sublocation", "village"];
+    locations.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 6) {
-    filterAccessList.value = ['sublocation', 'village']
-    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["sublocation", "village"];
+    sublocations.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   }
-  fetchDistributions()
-}
+  fetchDistributions();
+};
 
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   // console.log(org_id)
   // console.log(org_ids.value)
-  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
+  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
   // console.log(org)
-  let parent_id = org[0] || 9
+  let parent_id = org[0] || 9;
   // console.log(parent_id)
   // console.log(org_level)
-  fetchChildData(parent_id, org_id, org_level)
+  fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
-  let fetchUrl = `get_sub_counties_list`
-  let masterListUrl = API_URL
-  if (org_level == 'country') {//get counties
-    fetchUrl += `?parent_id=${org_id}`
+  let fetchUrl = `get_sub_counties_list`;
+  let masterListUrl = API_URL;
+  if (org_level == "country") {
+    //get counties
+    fetchUrl += `?parent_id=${org_id}`;
     //masterListUrl += `&location=${location_id}`
     //clear fields
-    county.value = "Select County"
-    subcounty.value = "Select SubCounty"
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'county') {//get subcounties
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&county=${location_id}`
+    county.value = "Select County";
+    subcounty.value = "Select SubCounty";
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&county=${location_id}`;
     //clear fields
-    subcounty.value = "Select SubCounty"
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'subcounty') {//get wards
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&sub_county=${location_id}`
+    subcounty.value = "Select SubCounty";
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "subcounty") {
+    //get wards
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&sub_county=${location_id}`;
     //clear fields
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'ward') {//get locatios
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&ward=${location_id}`
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "ward") {
+    //get locatios
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&ward=${location_id}`;
     //clear fields
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'location') {//get sub locatios
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&location=${location_id}`
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "location") {
+    //get sub locatios
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&location=${location_id}`;
     //clear fields
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'sublocation') {//get sublocations stats
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `&sublocation=${location_id}`
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "sublocation") {
+    //get sublocations stats
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&sublocation=${location_id}`;
   }
-  await axios.get(`${fetchUrl}`)
-    .then(response => {
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
       let data = response.data.message;
-      if (org_level == 'country') {//get counties
-        counties.value = data.map(x => ({
+      if (org_level == "country") {
+        //get counties
+        counties.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
-        org_ids.value = data.map(x => ({ org_id: x.org_id, id: x.id }))
-        counties.value.splice(0, 1)
-      } else if (org_level == 'county') {//get subcounties
-        subcounties.value = data.map(x => ({
+        org_ids.value = data.map((x) => ({ org_id: x.org_id, id: x.id }));
+        counties.value.splice(0, 1);
+      } else if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
-      } else if (org_level == 'subcounty') {//get wards
-        wards.value = data.map(x => ({
-          value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
         ];
-      } else if (org_level == 'ward') {//get locations
-        locations.value = data.map(x => ({
+      } else if (org_level == "subcounty") {
+        //get wards
+        wards.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
-        }));
-       org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
-      } else if (org_level == 'location') {//get sublocations
-        sublocations.value = data.map(x => ({
-          value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } else if (org_level == "ward") {
+        //get locations
+        locations.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } else if (org_level == "location") {
+        //get sublocations
+        sublocations.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
         ];
       }
-    }).then(async () => {
-      await axios.get(`${masterListUrl}`)
-        .then(response => {
-          // console.log(response.data.data)
-          let data = response.data.data.data;
-          dataSource.value=data;
-          // paginationOptions.value.total = response.data.data.length;
-          total.value = response.data.data.total;
-          total_households.value= response.data.data.total;
-        })
-    }).catch(error => {
+    })
+    .then(async () => {
+      await axios.get(`${masterListUrl}`).then((response) => {
+        // console.log(response.data.data)
+        let data = response.data.data.data;
+        dataSource.value = data;
+        // paginationOptions.value.total = response.data.data.length;
+        total.value = response.data.data.total;
+        total_households.value = response.data.data.total;
+      });
+    })
+    .catch((error) => {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
     });
-}
+};
 const fetchCounties = async () => {
-  axios.get('counties/')
-    .then(response => {
-      counties.value = response.data.map(x => ({
-        value: x.org_id,
-        label: x.name
-      })).filter(e => currentCounties.value.includes(e.value.toString()));
-      org_ids.value = response.data.map(x => ({
+  axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data
+        .map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }))
+        .filter((e) => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = response.data.map((x) => ({
         org_id: x.org_id,
-        id: x.id
+        id: x.id,
       }));
       // console.log(counties.value)
-    }).catch(error => {
+    })
+    .catch((error) => {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
-    })
-}
+    });
+};
 const filterOption = (input, option) => {
   return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
-
 
 const fetchDistributions = () => {
   axios
@@ -466,100 +635,140 @@ const fetchDistributions = () => {
       dataSource.value = response.data.data.data;
       // paginationOptions.value.total = response.data.data.length;
       total.value = parseInt(response.data.data.total);
-      total_households.value  = response.data.data.total;
+      total_households.value = response.data.data.total;
     })
     .catch((error) => {
       console.error(error);
     });
-}
-const handleCancel=()=>{
+};
+const handleCancel = () => {
   isModalOpen.value = false;
   visible.value = false;
   colorVisible.value = false;
-}
+};
 
 const onPageChange = async (page) => {
-       current.value=page
-        try {
-          const response = await axios.get(`distribution_details/all?page=${page}&per_page=${pageSize.value}`);
-          dataSource.value = response.data.data.data;
-          total.value = response.data.data.total;
-        } catch (error) {
-          console.error(error);
-        }
-      }
+  current.value = page;
+  try {
+    const response = await axios.get(
+      `distribution_details/all?page=${page}&per_page=${pageSize.value}`
+    );
+    dataSource.value = response.data.data.data;
+    total.value = response.data.data.total;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-    // const exportHouseHoldData = async () => {
-    //   try {
-    //     const response = await fetch(households_url, {
-    //       method: "GET",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         ...authHeader(),
-    //       },
-    //     });
 
-    //     if (!response.ok) {
-    //       throw new Error("Failed to fetch export data");
-    //     }
+const openModal = () => {
+  isModalOpen.value = true;
+};
 
-    //     const fileBlob = await response.blob();
-    //     const fileName = "households.csv";
-    //     const link = document.createElement("a");
-    //     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-    //     link.setAttribute("download", fileName);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     link.parentNode.removeChild(link);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
+const handleStartDistribution = async () => {
+  const data = {
+    start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
+    end_date: dayjs(formState.end_date).format("YYYY-MM-DD"),
+  };
 
-    const openModal = () => {
-      isModalOpen.value = true;
-    };
+  console.log("Data to be sent:", data);
 
-    const handleStartDistribution = async () => {
-      const data = {
-        start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
-        end_date: dayjs(formState.end_date).format("YYYY-MM-DD"),
-      };
+  try {
+    const response = await axios.post(
+      `subcounty/start/distribution`,
+      data // Send the data directly, no need for JSON.stringify
+    );
 
-      // console.log(JSON.stringify(data));
+    console.log("Server response:", response.data);
 
-      try {
-        axios.post(`subcounty/start/distribution`,JSON.stringify(data))
-          .then((response) => response.data)
-          .then(({ success, data }) => {
-            if (success) {
-              notification.success({
-                message: "Success",
-                description: `Distribution Started successfully`,
-              });
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${data}`,
-              });
-            }
-            isModalOpen.value = false;
-            //  window.location.reload();
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-            isModalOpen.value = false;
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
+    if (response.data.success == true) {
+      dist_status.value = true;
+      console.log(dist_status.value);
+      notification.success({
+        message: "Success",
+        description: "Distribution started successfully",
+      });
+    } else {
+      notification.error({
+        message: "Error",
+        description: response.data.message || "Unknown error",
+      });
+    }
+  } catch (error) {
+    console.error("Error posting data:", error);
+
+    notification.error({
+      message: "Error",
+      description: "Failed to start distribution. Please try again." + error,
+    });
+  }
+};
+
+const handleClosetDistribution = async () => {
+
+
+  try {
+    const response = await axios.get(
+      `subcounty/start/distribution`
+    );
+
+    console.log("Server response:", response.data);
+
+    if (response.data.success == true) {
+      dist_status.value = true;
+      console.log(dist_status.value);
+      notification.success({
+        message: "Success",
+        description: "Distribution Closed successfully",
+      });
+    } else {
+      notification.error({
+        message: "Error",
+        description: response.data.message || "Unknown error",
+      });
+    }
+  } catch (error) {
+    console.error("Error posting data:", error);
+
+    notification.error({
+      message: "Error",
+      description: "Failed to start distribution. Please try again." + error,
+    });
+  }
+};
+
+const handleDistributionStatus = async () => {
+
+  try {
+    const response = await axios.get(
+      `subcounty/start/distribution`,
+      data // Send the data directly, no need for JSON.stringify
+    );
+
+    console.log("Server response:", response.data);
+
+    if (response.data.success == true) {
+      dist_status.value = true;
+      console.log(dist_status.value);
+      notification.success({
+        message: "Success",
+        description: "Distribution started successfully",
+      });
+    } else {
+      notification.error({
+        message: "Error",
+        description: response.data.message || "Unknown error",
+      });
+    }
+  } catch (error) {
+    console.error("Error posting data:", error);
+
+    notification.error({
+      message: "Error",
+      description: "Failed to start distribution. Please try again." + error,
+    });
+  }
+};
 
 const formState = reactive({
   searchItem: "",
