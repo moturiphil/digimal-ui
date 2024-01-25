@@ -704,71 +704,71 @@ const handleStartDistribution = async () => {
   }
 };
 
-const handleClosetDistribution = async () => {
+// const handleCloseDistribution = async () => {
 
 
-  try {
-    const response = await axios.get(
-      `subcounty/start/distribution`
-    );
+//   try {
+//     const response = await axios.get(
+//       `subcounty/start/distribution`
+//     );
 
-    console.log("Server response:", response.data);
+//     console.log("Server response:", response.data);
 
-    if (response.data.success == true) {
-      dist_status.value = true;
-      console.log(dist_status.value);
-      notification.success({
-        message: "Success",
-        description: "Distribution Closed successfully",
-      });
-    } else {
-      notification.error({
-        message: "Error",
-        description: response.data.message || "Unknown error",
-      });
-    }
-  } catch (error) {
-    console.error("Error posting data:", error);
+//     if (response.data.success == true) {
+//       dist_status.value = true;
+//       console.log(dist_status.value);
+//       notification.success({
+//         message: "Success",
+//         description: "Distribution Closed successfully",
+//       });
+//     } else {
+//       notification.error({
+//         message: "Error",
+//         description: response.data.message || "Unknown error",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error posting data:", error);
 
-    notification.error({
-      message: "Error",
-      description: "Failed to start distribution. Please try again." + error,
-    });
-  }
-};
+//     notification.error({
+//       message: "Error",
+//       description: "Failed to start distribution. Please try again." + error,
+//     });
+//   }
+// };
 
-const handleDistributionStatus = async () => {
+// const handleDistributionStatus = async () => {
 
-  try {
-    const response = await axios.get(
-      `subcounty/start/distribution`,
-      data // Send the data directly, no need for JSON.stringify
-    );
+//   try {
+//     const response = await axios.get(
+//       `subcounty/start/distribution`,
+//       data // Send the data directly, no need for JSON.stringify
+//     );
 
-    console.log("Server response:", response.data);
+//     console.log("Server response:", response.data);
 
-    if (response.data.success == true) {
-      dist_status.value = true;
-      console.log(dist_status.value);
-      notification.success({
-        message: "Success",
-        description: "Distribution started successfully",
-      });
-    } else {
-      notification.error({
-        message: "Error",
-        description: response.data.message || "Unknown error",
-      });
-    }
-  } catch (error) {
-    console.error("Error posting data:", error);
+//     if (response.data.success == true) {
+//       dist_status.value = true;
+//       console.log(dist_status.value);
+//       notification.success({
+//         message: "Success",
+//         description: "Distribution started successfully",
+//       });
+//     } else {
+//       notification.error({
+//         message: "Error",
+//         description: response.data.message || "Unknown error",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error posting data:", error);
 
-    notification.error({
-      message: "Error",
-      description: "Failed to start distribution. Please try again." + error,
-    });
-  }
-};
+//     notification.error({
+//       message: "Error",
+//       description: "Failed to start distribution. Please try again." + error,
+//     });
+//   }
+// };
 
 const formState = reactive({
   searchItem: "",
