@@ -946,17 +946,18 @@ const receiveNets = async () => {
       body: JSON.stringify(payload),
     })
       .then((response) => response.json())
-      .then(({ success }) => {
+      .then(({ success, data, message }) => {
+        console.log({ success, data, message });
         if (success) {
           notification.success({
             message: "Success",
-            description: `Received successfully`,
+            description: message,
           });
         } else {
           notification.error({
             message: "Error",
             description:
-              "Only post supervisor can receive nets, contact SCMCC.",
+              message,
           });
         }
         isModalOpen.value = false;
