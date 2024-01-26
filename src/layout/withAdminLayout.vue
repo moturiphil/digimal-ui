@@ -23,9 +23,9 @@
             >
               <img
                 :src="
-                  require(`../static/img/icon/${
-                    collapsed ? 'right.svg' : 'left.svg'
-                  }`)
+                  require(
+                    `../static/img/icon/${collapsed ? 'right.svg' : 'left.svg'}`
+                  )
                 "
                 alt="menu"
               />
@@ -43,9 +43,12 @@
           </a-col>
           <a-col :lg="!topMenu ? 14 : 15" :md="8" :sm="0" :xs="0">
             <TopMenu v-if="topMenu && innerWidth > 991" />
+            <router-link to="/search-hh">
+              <sdButton type="success" size="extra-small">Search HH</sdButton>
+            </router-link>
           </a-col>
 
-          <a-col :lg="6" :md="10" :sm="0" :xs="0">
+          <a-col :lg="6" :md="8" :sm="0" :xs="0">
             <TopMenuSearch v-if="topMenu && innerWidth > 991">
               <div class="top-right-wrap d-flex">
                 <a
@@ -137,7 +140,7 @@
             >
               <!-- <p class="sidebar-nav-title">MAIN MENU</p>  :toggleCollapsed="toggleCollapsedMobile" -->
               <AsideItems
-              :toggleCollapsed="toggleCollapsedMobile"
+                :toggleCollapsed="toggleCollapsedMobile"
                 :topMenu="topMenu"
                 :rtl="rtl"
                 :darkMode="darkMode"
@@ -173,9 +176,7 @@
             >
               <a-row>
                 <a-col :md="12" :xs="24">
-                  <span class="admin-footer__copyright"
-                    >2024 © DigiMal</span
-                  >
+                  <span class="admin-footer__copyright">2024 © DigiMal</span>
                 </a-col>
                 <a-col :md="12" :xs="24">
                   <div class="admin-footer__links"></div>

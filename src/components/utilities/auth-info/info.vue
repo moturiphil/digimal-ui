@@ -1,46 +1,8 @@
 <template>
   <InfoWraper>
-    <!-- <Message /> -->
-    <!-- <Notification /> -->
-    <!-- <Settings /> -->
-    <!-- <Support /> -->
     <div class="nav-author">
       <sdDropdown placement="bottomRight" :action="['click']">
-        <template v-slot:overlay>
-          <!-- <NavAuth>
-            <router-link @click="() => onFlagChangeHandle('english')" to="#">
-              <img
-                :src="require('../../../static/img/flag/english.png')"
-                alt=""
-              />
-              <span>English</span>
-            </router-link>
-            <router-link @click="() => onFlagChangeHandle('germany')" to="#">
-              <img
-                :src="require('../../../static/img/flag/germany.png')"
-                alt=""
-              />
-              <span>Germany</span>
-            </router-link>
-            <router-link @click="() => onFlagChangeHandle('spain')" to="#">
-              <img
-                :src="require('../../../static/img/flag/spain.png')"
-                alt=""
-              />
-              <span>Spain</span>
-            </router-link>
-            <router-link @click="() => onFlagChangeHandle('african')" to="#">
-              <img
-                :src="require('../../../static/img/flag/african.png')"
-                alt=""
-              />
-              <span>Turky</span>
-            </router-link>
-          </NavAuth> -->
-        </template>
-        <!-- <a to="#" class="head-example">
-          <img :src="require(`../../../static/img/flag/${flag}.png`)" alt="" />
-        </a> -->
+        <template v-slot:overlay> </template>
       </sdDropdown>
     </div>
 
@@ -53,11 +15,6 @@
         <a @click="SignOut" class="user-dropdwon__bottomAction" href="#">
           <LogoutOutlined /> Log Out
         </a>
-        <template>
-          <a @click="signOut" class="user-dropdown__bottomAction" href="#">
-            <i class="logout-icon"><LogoutOutlined /></i> Sign Out
-          </a>
-        </template>
       </sdPopover>
     </div>
   </InfoWraper>
