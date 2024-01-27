@@ -207,6 +207,8 @@ export default defineComponent({
       console.log(hh.id);
       console.log(inputValue);
 
+      console.log(`${BASE_URL}/update_household_record`);
+
       try {
         const response = await axios.post(
           `${BASE_URL}/update_household_record`,
@@ -240,7 +242,7 @@ export default defineComponent({
           description: "Error Updating Household ID No",
         });
       } finally {
-        inputValue = ""; // Clear inputValue after the modal is closed
+        inputValue = ""; 
         isModalOpen = true;
       }
     };
