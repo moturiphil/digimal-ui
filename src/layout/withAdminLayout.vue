@@ -44,7 +44,8 @@
           <a-col :lg="!topMenu ? 14 : 15" :md="8" :sm="0" :xs="0">
             <TopMenu v-if="topMenu && innerWidth > 991" />
             <router-link to="/search-hh">
-              <sdButton type="success" size="extra-small">Search HH</sdButton>
+              <sdButton type="success" size="extra-small"><sdFeatherIcons type="search" /><span>Search Household</span></sdButton>
+              
             </router-link>
           </a-col>
 
