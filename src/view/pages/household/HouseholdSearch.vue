@@ -43,14 +43,14 @@
         <div v-else>No data available</div>
       </SearchResultWrapper>
       <a-modal
-        title="Update HH ID No"
+        title="Update Household ID No"
         :visible="isModalOpen"
         @ok="handleOk(recordId, inputValue)"
         @cancel="handleCancel"
         class="title-success"
       >
         <div>
-          <p>Registration Confirmation processing</p>
+          <p>Enter the correct Household ID No</p>
           <input type="number" v-model="inputValue" />
         </div>
       </a-modal>
@@ -131,12 +131,22 @@ export default defineComponent({
 
     const recordId = ref(null);
 
-    const visible = ref("");
+    const visible = ref(false);
 
     const handleSearch = async () => {
       try {
         isLoading.value = true;
         const trimmedSearchItem = searchItem.value.trim();
+
+        // Check if the input is a 10-digit number
+        const isNumeric = /^\d+$/.test(trimmedSearchItem);
+        if (trimmedSearchItem.length !== 10 || !isNumeric) {
+          notification.error({
+            message: "Please enter a 10-digit number.",
+          });
+          return;
+        }
+
         console.log(trimmedSearchItem);
 
         const response = await axios.get(
@@ -153,6 +163,7 @@ export default defineComponent({
 
         // Clear existing data and push new data to maintain reactivity
         // dataSource.value = hh;
+
         dataSource.value = Array.isArray(hh) ? hh : [hh];
 
         console.log("Final DataSource:", dataSource.value);
@@ -217,7 +228,7 @@ export default defineComponent({
             id_no: inputValue,
           },
           {
-            headers: authHeader(), 
+            headers: authHeader(),
           }
         );
 
@@ -242,7 +253,7 @@ export default defineComponent({
           description: "Error Updating Household ID No",
         });
       } finally {
-        inputValue = ""; 
+        inputValue = "";
         isModalOpen = true;
       }
     };
@@ -257,6 +268,7 @@ export default defineComponent({
       handleCancel,
       isModalOpen,
       handleOk,
+      visible,
     };
   },
 });
