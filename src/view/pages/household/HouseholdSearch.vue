@@ -13,7 +13,7 @@
             @search="handleSearch"
           />
         </div>
-        <!-- Conditional rendering of the table -->
+        <!-- Conditional rendering of the table" -->
         <a-table
           v-if="dataSource.length > 0"
           :pagination="{
@@ -22,38 +22,38 @@
           }"
           :dataSource="dataSource"
           :columns="columns"
-          @change="handleTableChange"
         >
           <template #action="{ record }">
-            <span>
-              <a @click="edit(record)"
-                ><EditOutlined style="color: rgb(14, 176, 14)" />
-              </a>
-              <span> | </span>
-              <a @click="deleteUser(record)"
-                ><PoweroffOutlined style="color: rgb(231, 99, 43)"
-              /></a>
-            </span>
+            <td>
+              <div class="table-actions">
+                <sdButton
+                  @click="handleUpdate(record)"
+                  size="extra-small"
+                  type="success"
+                >
+                  <sdFeatherIcons type="edit-3" size="small" />
+                  &nbsp; Update ID No
+                </sdButton>
+              </div>
+            </td>
           </template>
         </a-table>
 
         <!-- Display a message if no data is available -->
         <div v-else>No data available</div>
       </SearchResultWrapper>
-      <div class="modal">
-        <a-modal
-          :visible="userEditModalopen"
-          title="Edit User"
-          width="1000px"
-          @cancel="handleEditUserCancel(false)"
-        >
-          <template #footer></template>
-          <UserEditForm
-            :formFields="userEditFieds"
-            v-on:close-editmodal="handleEditUserCancel(false)"
-          />
-        </a-modal>
-      </div>
+      <a-modal
+        title="Update HH ID No"
+        :visible="isModalOpen"
+        @ok="handleOk(recordId, inputValue)"
+        @cancel="handleCancel"
+        class="title-success"
+      >
+        <div>
+          <p>Registration Confirmation processing</p>
+          <input type="number" v-model="inputValue" />
+        </div>
+      </a-modal>
     </Main>
   </div>
 </template>
@@ -61,11 +61,10 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { onMounted, ref, defineComponent, reactive } from "vue";
+import { onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { notification } from "ant-design-vue";
-import UserEditForm from "./EditHH.vue";
 
 export default defineComponent({
   name: "HouseHoldValidation",
@@ -80,48 +79,38 @@ export default defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/search_household`;
 
-    const userEditModalopen = ref(false);
+    const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
 
     const columns = [
       {
-        title: "First name",
+        title: "First Name",
         dataIndex: "first_name",
-        key: "id_no",
+        key: "first_name",
       },
       {
-        title: "Last name",
+        title: "Middle Name",
+        dataIndex: "middle_name",
+        key: "middle_name",
+      },
+      {
+        title: "Last Name",
         dataIndex: "last_name",
+        key: "last_name",
+      },
+      {
+        title: "ID No",
+        dataIndex: "id_no",
         key: "id_no",
       },
       {
-        title: "Phone number",
+        title: "Phone No",
         dataIndex: "phone_no",
-        key: "id_no",
+        key: "phone_no",
       },
       {
-        title: "Household size",
-        dataIndex: "hh_size",
-        key: "id_no",
-      },
-      {
-        title: "Village",
-        dataIndex: "location_id",
-        key: "id_no",
-      },
-      {
-        title: "CHP",
-        dataIndex: "chw_id",
-        key: "id_no",
-      },
-      {
-        title: "CHP Phone Number",
-        dataIndex: "chw_phone_no",
-        key: "id_no",
-      },
-      {
-        title: "Timestamp",
-        dataIndex: "created_at_time",
-        key: "id_no",
+        title: "Nets Allocated",
+        dataIndex: "actual_allocation",
+        key: "actual_allocation",
       },
       {
         title: "Action",
@@ -129,34 +118,6 @@ export default defineComponent({
         slots: { customRender: "action" },
       },
     ];
-    const userEditFieds = reactive({
-      id: 1,
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      location_id: "",
-      org_types_id: "HealthIT",
-      role_id: "",
-      id_no: "",
-      phone_no: "",
-    });
-
-    const handleEditUserCancel = (value) => {
-      userEditModalopen.value = value;
-    };
-
-    const edit = (record) => {
-      userEditModalopen.value = true;
-      userEditFieds.id = record.id;
-      userEditFieds.first_name = record.first_name;
-      userEditFieds.middle_name = record.middle_name;
-      userEditFieds.last_name = record.last_name;
-      userEditFieds.org_types_id = record.org_types_id;
-      userEditFieds.location_id = record.location_id;
-      userEditFieds.role_id = record.role_id;
-      (userEditFieds.id_no = record.id_no),
-        (userEditFieds.phone_no = record.phone_no);
-    };
 
     onMounted(() => {
       // Your existing onMounted logic
@@ -165,6 +126,12 @@ export default defineComponent({
     // Function to handle the search
 
     const dataSource = ref([]);
+
+    let isModalOpen = ref(false);
+
+    const recordId = ref(null);
+
+    const visible = ref("");
 
     const handleSearch = async () => {
       try {
@@ -217,15 +184,77 @@ export default defineComponent({
       }
     };
 
+    const handleUpdate = (id) => {
+      console.log(id);
+      isModalOpen.value = true;
+      console.log("Event Code;", id);
+      recordId.value = id;
+      console.log("recordId", recordId.value);
+      try {
+        console.log("register");
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+      visible.value = false;
+    };
+
+    const handleOk = async (id, inputValue) => {
+      const hh = recordId.value;
+      console.log(hh.id);
+      console.log(inputValue);
+
+      try {
+        const response = await axios.post(
+          `${BASE_URL}/update_household_record`,
+          {
+            hh_id: hh.id,
+            id_no: inputValue,
+          },
+          {
+            headers: authHeader(), 
+          }
+        );
+
+        console.log(response);
+
+        if (response.data.success === true) {
+          inputValue = "";
+          notification.success({
+            message: "Success",
+            description: response.data.message,
+          });
+        } else {
+          notification.info({
+            message: "Error",
+            description: response.data.message,
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        notification.error({
+          message: "Error",
+          description: "Error Updating Household ID No",
+        });
+      } finally {
+        inputValue = ""; // Clear inputValue after the modal is closed
+        isModalOpen = true;
+      }
+    };
+
     return {
       isLoading,
       dataSource,
       searchItem,
       handleSearch,
       columns,
-      edit,
-      handleEditUserCancel,
-      UserEditForm,
+      handleUpdate,
+      handleCancel,
+      isModalOpen,
+      handleOk,
     };
   },
 });

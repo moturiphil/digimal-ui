@@ -154,12 +154,12 @@
             <b>
               <u> Event Facilitators </u>
               <!-- <sdButton
-                                    size="extra-small"
-                                    type="info"
-                                    @click="manageEvent(record.event_code)"
-                                  >
-                                    Add Trainer &nbsp; &nbsp;
-                                  </sdButton> -->
+                size="extra-small"
+                type="info"
+                @click="manageEvent(record.event_code)"
+              >
+                Add Trainer &nbsp; &nbsp;
+              </sdButton> -->
             </b>
           </h4>
           <br />
