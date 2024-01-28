@@ -157,14 +157,18 @@
               <CardBarChart2>
                 <table class="stat-table">
                   <th>
-                    <sHeading class="stat-title docorate" align="center">Nets</sHeading>
+                    <sHeading class="stat-title docorate" align="center"
+                      >Nets</sHeading
+                    >
                   </th>
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Required</span></td>
                       <td>
                         <sdHeading class="stat-title"
-                          >{{ new Intl.NumberFormat().format(total_nets_required) }}
+                          >{{
+                            new Intl.NumberFormat().format(total_nets_required)
+                          }}
                         </sdHeading>
                       </td>
                     </tr>
@@ -229,7 +233,11 @@
                       <td><span class="stat-span">Total Registered</span></td>
                       <td>
                         <sdHeading class="stat-title"
-                          >{{ new Intl.NumberFormat().format(registered_house_holds) }}
+                          >{{
+                            new Intl.NumberFormat().format(
+                              registered_house_holds
+                            )
+                          }}
                         </sdHeading>
                       </td>
                     </tr>
@@ -237,7 +245,11 @@
                       <td><span class="stat-span">Total Served</span></td>
                       <td>
                         <sdHeading class="stat-title"
-                          >{{ new Intl.NumberFormat().format(totalhouseholds_served) }}
+                          >{{
+                            new Intl.NumberFormat().format(
+                              totalhouseholds_served
+                            )
+                          }}
                         </sdHeading>
                       </td>
                     </tr>
@@ -264,7 +276,9 @@
                           {{
                             totalhouseholds_served != 0
                               ? Number(
-                                  (totalhouseholds_served / registered_house_holds) * 100
+                                  (totalhouseholds_served /
+                                    registered_house_holds) *
+                                    100
                                 ).toFixed(2)
                               : 0.0
                           }}%
@@ -296,7 +310,9 @@
                       <td><span class="stat-span">Total Registered</span></td>
                       <td>
                         <sdHeading class="stat-title"
-                          >{{ new Intl.NumberFormat().format(household_population) }}
+                          >{{
+                            new Intl.NumberFormat().format(household_population)
+                          }}
                         </sdHeading>
                       </td>
                     </tr>
@@ -331,7 +347,8 @@
                           {{
                             population_served != 0
                               ? Number(
-                                  (population_served / household_population) * 100
+                                  (population_served / household_population) *
+                                    100
                                 ).toFixed(2)
                               : 0.0
                           }}%
@@ -348,7 +365,13 @@
     </a-row>
     <div class="" justify="space-around" align="right">
       <div id="printPDFDiv">
-        <a-row style="margin-top: 10px; panding: 1px; border: solid 1px 1px #6b055700">
+        <a-row
+          style="
+            margin-top: 10px;
+            panding: 1px;
+            border: solid 1px 1px #6b055700;
+          "
+        >
           <a-button
             @click="exportChartsToPDF()"
             :style="{ panding: '2px', border: 'solid 1px 2%' }"
@@ -357,7 +380,10 @@
           </a-button>
         </a-row>
         <a-row style="margin-top: 20px" v-if="chartsLoading">
-          <a-timeline pending="Charts loading, please wait...." :reverse="false">
+          <a-timeline
+            pending="Charts loading, please wait...."
+            :reverse="false"
+          >
           </a-timeline>
         </a-row>
         <a-row :gutter="5" v-if="wards !== null">
@@ -408,8 +434,12 @@
                             </td>
                           </tr>
                           <tr>
-                            <td>{{ parseInt(item.households_registered) || 0 }}</td>
-                            <td>{{ parseInt(item.house_holds_served) || 0 }}</td>
+                            <td>
+                              {{ parseInt(item.households_registered) || 0 }}
+                            </td>
+                            <td>
+                              {{ parseInt(item.house_holds_served) || 0 }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -543,7 +573,9 @@
                           border: '2px solid  #CCCCFF',
                         }"
                         placeholder="Select Date To"
-                        @input="fetchNetsDistributed(), fetchHouseHoldsRegTrends()"
+                        @input="
+                          fetchNetsDistributed(), fetchHouseHoldsRegTrends()
+                        "
                         :format="dateFormat"
                       />
                     </div>
@@ -569,7 +601,9 @@
                 <tbody>
                   <tr>
                     <td
-                      v-for="item in HouseHoldsRegistrationTrendsData.map((item) => item)"
+                      v-for="item in HouseHoldsRegistrationTrendsData.map(
+                        (item) => item
+                      )"
                       :key="item"
                     >
                       {{ item.registrations }}/{{ item.cumulative }}
@@ -585,7 +619,9 @@
                 <thead>
                   <tr>
                     <th
-                      v-for="item in NetsDistributedwithTimeData.map((item) => item)"
+                      v-for="item in NetsDistributedwithTimeData.map(
+                        (item) => item
+                      )"
                       :key="item"
                     >
                       {{ item.date }}/Cummilative
@@ -595,7 +631,9 @@
                 <tbody>
                   <tr>
                     <td
-                      v-for="item in NetsDistributedwithTimeData.map((item) => item)"
+                      v-for="item in NetsDistributedwithTimeData.map(
+                        (item) => item
+                      )"
                       :key="item"
                     >
                       {{ item.no_of_nets }}/{{ item.nets_cumulative }}
@@ -778,7 +816,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
     await fetchCounties();
   } else if (access_level.value.level.id == 2) {
@@ -797,10 +838,19 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = ["subcounty", "ward", "location", "sublocation", "village"];
+    filterAccessList.value = [
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
     subcounties.value = [
       {
         value: access_level.value.location.org_id,
@@ -808,7 +858,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 4) {
     filterAccessList.value = ["ward", "location", "sublocation", "village"];
@@ -819,7 +872,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 5) {
     filterAccessList.value = ["location", "sublocation", "village"];
@@ -830,7 +886,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 6) {
     filterAccessList.value = ["sublocation", "village"];
@@ -841,7 +900,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   }
 };
@@ -865,10 +927,12 @@ const fetchInitialChartData = async () => {
         newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
         newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
         newChartData.value.map(
-          (item) => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+          (item) =>
+            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
         ), //(nets_issued/nets_required)*100
         newChartData.value.map(
-          (item) => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+          (item) =>
+            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
         ), //(nets_required/nets_required)*100
         newChartData.value.map((item) => item.name), //cats
         access_level.value.level.level_name //level
@@ -894,7 +958,8 @@ const fetchInitialChartData = async () => {
         newChartData.value.map((item) => parseInt(item.households_served)), //served
         newChartData.value.map(
           (item) =>
-            (parseInt(item.households_served) / parseInt(item.households_registered)) *
+            (parseInt(item.households_served) /
+              parseInt(item.households_registered)) *
             100
         ), //(registered/served)*100
         newChartData.value.map(
@@ -923,7 +988,9 @@ const fetchInitialChartData = async () => {
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let org = await org_ids.value
+    .filter((x) => x.org_id === org_id)
+    .map((e) => e.id);
   // console.log(org_id)
   // console.log(org_ids.value)
   let parent_id = org[0] || 9;
@@ -1010,7 +1077,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "subcounty") {
@@ -1025,7 +1094,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "ward") {
@@ -1040,7 +1111,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "location") {
@@ -1055,7 +1128,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       }
@@ -1071,10 +1146,12 @@ const fetchChildData = async (org_id, org_level) => {
         let rq = newChartData.value.map((item) => parseInt(item.nets_required)); //nets_required
         let isd = newChartData.value.map((item) => parseInt(item.nets_issued)); //nets_issued
         let isdvsrq = newChartData.value.map(
-          (item) => (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+          (item) =>
+            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
         ); //(nets_issued/nets_required)*100
         let tgt = newChartData.value.map(
-          (item) => (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+          (item) =>
+            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
         ); //(nets_required/nets_required)*100
         let labels = newChartData.value.map((item) => item.name); //cats
         fileterOrgeLevel.value = org_level;
@@ -1082,10 +1159,13 @@ const fetchChildData = async (org_id, org_level) => {
         let rgstd = newChartData.value.map((item) =>
           parseInt(item.households_registered)
         ); //registered
-        let srvd = newChartData.value.map((item) => parseInt(item.households_served)); //served
+        let srvd = newChartData.value.map((item) =>
+          parseInt(item.households_served)
+        ); //served
         let rgstdvssvd = newChartData.value.map(
           (item) =>
-            (parseInt(item.households_served) / parseInt(item.households_registered)) *
+            (parseInt(item.households_served) /
+              parseInt(item.households_registered)) *
             100
         ); //(registered/served)*100
         let tgt1 = newChartData.value.map(
@@ -1105,7 +1185,14 @@ const fetchChildData = async (org_id, org_level) => {
           fileterOrgeLevel.value
         );
         //combine bar line bar Subcounty comparison
-        await netsReqvsIssuedChart(rq, isd, isdvsrq, tgt, labels, fileterOrgeLevel.value);
+        await netsReqvsIssuedChart(
+          rq,
+          isd,
+          isdvsrq,
+          tgt,
+          labels,
+          fileterOrgeLevel.value
+        );
         let scatterData = [];
         newChartData.value.forEach((item, index) => {
           let x = parseInt(item.nets_issued);
@@ -1195,14 +1282,24 @@ const updateStats = async (org_id) => {
       const data = await convertObjectVlasToInt(response.data);
       //console.log(data)
       active_events.value = data.events ? data.events : 0;
-      nets_distributed.value = data.nets_distributed ? data.nets_distributed : 0;
+      nets_distributed.value = data.nets_distributed
+        ? data.nets_distributed
+        : 0;
       registered_house_holds.value = data.registered_house_holds
         ? data.registered_house_holds
         : 0;
-      totalhouseholds_served.value = data.households_served ? data.households_served : 0;
-      population_served.value = data.population_served ? data.population_served : 0;
-      registered_users.value = data.registered_users ? data.registered_users : 0;
-      household_population.value = data.all_hh_members ? data.all_hh_members : 0;
+      totalhouseholds_served.value = data.households_served
+        ? data.households_served
+        : 0;
+      population_served.value = data.population_served
+        ? data.population_served
+        : 0;
+      registered_users.value = data.registered_users
+        ? data.registered_users
+        : 0;
+      household_population.value = data.all_hh_members
+        ? data.all_hh_members
+        : 0;
       total_nets_required.value = data.nets_required ? data.nets_required : 0;
       activities.value = data.activities ? data.activities : 0;
       // actual_allocation = data.
@@ -1236,7 +1333,14 @@ const exportChartsToPDF = async () => {
       // Use html2canvas to convert the row to a canvas
       const canvas = await html2canvas(row);
       // Add the canvas as an image to the PDF
-      await pdf.addImage(canvas.toDataURL("image/jpeg"), "JPEG", 10, 10, 190, 277);
+      await pdf.addImage(
+        canvas.toDataURL("image/jpeg"),
+        "JPEG",
+        10,
+        10,
+        190,
+        277
+      );
       // If there are more rows, add a new page for the next row
       if (i < rows.length - 1) {
         await pdf.addPage();
@@ -1292,7 +1396,9 @@ const handleFilterChange = async () => {
         dateTo.value = currentDate;
         break;
       default:
-        dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+        dateFrom.value = moment(new Date(`2023-11-15`)).format(
+          dateFormat.value
+        );
         dateTo.value = currentDate;
         break;
     }
@@ -2131,7 +2237,8 @@ const householdRegvsServedChart = async (
         y: 20,
         floating: true,
         backgroundColor:
-          Highcharts.defaultOptions.legend.backgroundColor || "rgba(255,255,255,0.25)",
+          Highcharts.defaultOptions.legend.backgroundColor ||
+          "rgba(255,255,255,0.25)",
       },
       series: [
         {

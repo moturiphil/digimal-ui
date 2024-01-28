@@ -125,7 +125,8 @@ const editUser = async () => {
         description: `${response.data.message}`,
       });
       await axios
-        .post(`update_user_details/${formState.id}/${props.formFields.id_no}/`, {
+        .post(`update_user_id_no/${formState.id}/${props.formFields.id_no}/`, {
+          id: formState.id,
           id_no: formState.id_no,
         })
         .then((res) => {
