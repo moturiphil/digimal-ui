@@ -491,7 +491,7 @@ const viewUsersRoles = [
   42, 60, 34, 37, 56, 78, 17, 44, 35, 79, 65, 78,
 ];
 
-const viewMasterlistsRoles = [56];
+const viewMasterlistsRoles = [56, 7, 3 ];
 
 const createDropOffPoint = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
