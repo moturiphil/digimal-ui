@@ -25,9 +25,9 @@
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
-
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
+                <h3>Distribution Summary</h3>
                 <a-table :pagination="true" :dataSource="dataSource" :columns="columns">
                 </a-table>
               </TableWrapper>
@@ -78,6 +78,37 @@
             <!-- End of assign supervisor -->
           </sdCards>
         </a-col>
+        <a-col class="w-100" :md="24">
+          <sdCards headless>
+            <div v-if="isLoading" class="spin">
+              <a-spin />
+            </div>
+            <div v-else>
+              <TableWrapper class="table-data-view table-responsive">
+                <h3 style="">
+                  Total Pending Distribution <strong>{{ pending_hh_count }}</strong>
+                </h3>
+                <a-table
+                  :pagination="true"
+                  :dataSource="pending_hh_data"
+                  :columns="pending_hh_cols"
+                >
+                  <template #phone_no="{ record }">
+                    <div>
+                      {{
+                        `${record.hh_phone_number.substring(0, 2)}${"*".repeat(
+                          record.hh_phone_number.length - 4
+                        )}${record.hh_phone_number.substring(
+                          record.hh_phone_number.length - 2
+                        )}`
+                      }}
+                    </div>
+                  </template>
+                </a-table>
+              </TableWrapper>
+            </div>
+          </sdCards>
+        </a-col>
       </a-row>
       <a-col :xs="24">
         <DragAndDropTable />
@@ -96,7 +127,25 @@ import axios from "@/Axiosconfig";
 const props = defineProps({
   post_id: Number,
 });
-console.log(props);
+const pending_hh_cols = ref([
+  {
+    title: "ID",
+    dataIndex: "hh_id",
+    key: "hh_id",
+  },
+  {
+    title: "Phone Number",
+    dataIndex: "hh_phone_number",
+    key: "hh_phone_number",
+    slots: { customRender: "phone_no" },
+  },
+  {
+    title: "Name",
+    dataIndex: "hh_name",
+    key: "hh_name",
+  },
+]);
+
 const columns = [
   {
     title: "Nets Ordered",
@@ -146,6 +195,8 @@ const isLoading = computed(() => state.crud.loading);
 // const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const supervisors = ref([]);
+const pending_hh_data = ref([]);
+const pending_hh_count = ref(0);
 const searchItem = ref("");
 const isModalOpen = ref(false);
 
@@ -155,10 +206,22 @@ onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     fetchDistributionsPostsSummary();
-    //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    // console.log(JSON.stringify(access_level.value.location));
+    fetchPendingHHData();
   }
 });
+
+const fetchPendingHHData = async () => {
+  try {
+    const response = await axios.get(
+      `hh_per_post_pending_collection?post_id=${props.post_id}`
+    );
+    const data = await response.data;
+    pending_hh_data.value = data.households;
+    pending_hh_count.value = data.hh_pending_count || 0;
+  } catch (error) {
+    console.error(error);
+  }
+};
 const fetchDistributionsPostsSummary = async () => {
   try {
     const response = await axios.get(
