@@ -123,7 +123,16 @@
                   :columns="columns"
                   @change="handleTableChange"
                 >
-                  <template #action="{ record }">
+                  <template #idno="{ record }">
+                    <div>
+                      {{
+                        `${record.id_no.substring(0, 1)}${"*".repeat(
+                          record.id_no.length - 2
+                        )}${record.id_no.substring(record.id_no.length - 1)}`
+                      }}
+                    </div>
+                  </template>
+                  <template #action="{ record }" v-if="allowedRole">
                     <span>
                       <a @click="edit(record)"
                         ><EditOutlined style="color: rgb(14, 176, 14)" />
@@ -183,6 +192,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "ID Number",
+    key: "id_no",
+    slots: { customRender: "idno" },
+  },
+  {
     title: "First Name",
     dataIndex: "first_name",
     key: "id",
@@ -196,11 +210,6 @@ const columns = [
     title: "Last Name",
     dataIndex: "last_name",
     key: "id",
-  },
-  {
-    title: "ID No",
-    dataIndex: "id_no",
-    key: "id_no",
   },
   {
     title: "Level",
@@ -276,6 +285,8 @@ const ward = ref("Select Ward");
 //const village=ref("Select a Post")
 const org_ids = ref([]);
 const userEditModalopen = ref(false);
+const allowedRole = ref(true);
+const alloweRoleids = ref(["3", "7", "56", "53"]);
 // const selectedCounties = ref([
 //   "Homa Bay County",
 //   "Kisii County",
@@ -329,6 +340,11 @@ const userEditModalopen = ref(false);
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    allowedRole.value = alloweRoleids.value.includes(
+      access_level.value.role_id.toString()
+    )
+      ? true
+      : false;
     updateFilters();
     // console.log(JSON.stringify(access_level.value.location));
   }

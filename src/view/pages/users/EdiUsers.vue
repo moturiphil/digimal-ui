@@ -71,7 +71,11 @@
     <a-row :gutter="24">
       <a-col :span="12">
         <a-form-item label="Phone" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }">
-          <a-input v-model:value="formState.phone_no" placeholder="Phone"></a-input>
+          <a-input
+            v-model:value="formState.phone_no"
+            placeholder="Phone"
+            :disabled="allowedRole"
+          ></a-input>
         </a-form-item>
       </a-col>
       <a-col :span="12">
@@ -95,16 +99,27 @@
   </a-form>
 </template>
 <script setup>
-import { onMounted, defineProps, reactive, defineEmits } from "vue";
+import { onMounted, defineProps, reactive, ref, defineEmits } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 const emit = defineEmits(["close-editmodal"]);
-onMounted(() => {});
+const allowedRole = ref(true);
+const alloweRoleids = ref(["3", "7", "56", "53"]);
 const props = defineProps({
   formFields: Object,
 });
 const formState = reactive(props.formFields);
-console.log(props.formFields);
+
+onMounted(() => {
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  console.log(user.user.role_id);
+  if (user != null) {
+    allowedRole.value = alloweRoleids.value.includes(user.user.role_id.toString())
+      ? false
+      : true;
+  }
+});
+
 const editUser = async () => {
   const data = {
     id: formState.id,
