@@ -372,7 +372,6 @@ const isGenerating = computed(() => state.isGenerating);
 const isArchiveModalOpen = ref(false);
 const router = useRouter();
 
-
 const isModalOpen = ref(false);
 
 console.log(query.id);
@@ -477,7 +476,7 @@ const handleArchiveActivity = async () => {
 
     if (data.success === true) {
       notification.success({
-        message: 'Success!',
+        message: "Success!",
         description: data.data,
       });
       isArchiveModalOpen.value = true;
@@ -499,41 +498,34 @@ const handleArchiveActivity = async () => {
 };
 
 const removeOfficer = (id) => {
-  //   console.log("recordId", recordId.value);
-
-  try {
-    fetch(`deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`)
-      .then((response) => response.data)
-      .then(({ success, message }) => {
-        if (success == true) {
-          notification.success({
-            message: "Success",
-            description: message,
-          });
-          isModalOpen.value = false;
-          setTimeout(function () {
-            location.reload();
-          }, 3000);
-        } else {
-          notification.error({
-            message: "Error",
-            description: `${message}`,
-          });
-        }
+  axios
+    .post(
+      `/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`
+    )
+    .then((response) => {
+      const { success, message } = response.data;
+      if (success === true) {
+        notification.success({
+          message: "Success",
+          description: message,
+        });
         isModalOpen.value = false;
-      })
-      .catch((message) => {
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      } else {
         notification.error({
           message: "Error",
           description: `${message}`,
         });
+      }
+    })
+    .catch((error) => {
+      notification.error({
+        message: "Error",
+        description: `${error.message || "Unknown error"}`,
       });
-  } catch (message) {
-    notification.error({
-      message: "Error",
-      description: `${message}`,
     });
-  }
 };
 
 const handleChange = (tab) => {

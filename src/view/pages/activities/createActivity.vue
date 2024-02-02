@@ -523,7 +523,7 @@ const AddActivity = defineComponent({
                 // console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
-                  router.push("activity-pending-approval"); //http://localhost:8080/activities/activity-pending-approval
+                  router.push("activity-pending-approval");
                   notification["success"]({
                     message: "Activity Created",
                     description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
