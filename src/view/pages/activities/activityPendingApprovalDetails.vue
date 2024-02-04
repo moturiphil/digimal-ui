@@ -151,6 +151,7 @@
                         show-search
                         option-filter-prop="label"
                         mode="multiple"
+                        @search="handleOfficerSearch"
                       >
                         <a-select-option
                           v-for="officer in officers"
@@ -295,6 +296,7 @@ export default defineComponent({
     const activeClass = ref("all");
     const { query } = useRoute();
     const isGenerating = computed(() => state.isGenerating);
+    const searchOfficerItem = ref("");
 
     const isModalOpen = ref(false);
 
@@ -357,15 +359,20 @@ export default defineComponent({
     const removeOfficer = (id) => {
       console.log(id);
       //   console.log("recordId", recordId.value);
-      console.log(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`);
+      console.log(
+        `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`
+      );
       try {
-        fetch(`${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        })
+        fetch(
+          `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
           .then((response) => response.json())
           .then(({ success, message }) => {
             if (success == true) {
@@ -536,10 +543,13 @@ export default defineComponent({
 
     const officersList = async () => {
       try {
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users`, {
-          method: "GET",
-          headers: authHeader(),
-        });
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/users?query=${searchOfficerItem.value}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
         const data = await response.json();
 
         console.log(data);
@@ -555,6 +565,12 @@ export default defineComponent({
     };
 
     officersList();
+
+    const handleOfficerSearch = (value) => {
+      console.log(value);
+      searchOfficerItem.value = value;
+      officersList();
+    };
 
     const filteredData = computed(() => {
       if (activeClass.value === "confirmed") {
@@ -645,6 +661,8 @@ export default defineComponent({
       handleAddOfficers,
       formState,
       removeOfficer,
+      handleOfficerSearch,
+      searchOfficerItem
     };
   },
   // computed: {

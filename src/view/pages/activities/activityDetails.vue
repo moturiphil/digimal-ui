@@ -246,6 +246,7 @@
                         show-search
                         option-filter-prop="label"
                         mode="multiple"
+                        @search="handleOfficerSearch"
                       >
                         <a-select-option
                           v-for="officer in officers"
@@ -371,10 +372,10 @@ const { query } = useRoute();
 const isGenerating = computed(() => state.isGenerating);
 const isArchiveModalOpen = ref(false);
 const router = useRouter();
+const searchOfficerItem = ref("");
 
 const isModalOpen = ref(false);
 
-console.log(query.id);
 
 const activity_code = ref(query.code);
 
@@ -681,7 +682,7 @@ const handleAddOfficers = async () => {
 
 const officersList = async () => {
   try {
-    const response = await axios.get(`activity_officers`);
+    const response = await axios.get(`users?query=${searchOfficerItem.value}`);
     const data = await response.data;
 
     console.log(data);
@@ -697,6 +698,12 @@ const officersList = async () => {
 };
 
 officersList();
+
+const handleOfficerSearch = (value) => {
+  console.log(value);
+  searchOfficerItem.value = value;
+  officersList();
+};
 
 const filteredData = computed(() => {
   if (activeClass.value === "confirmed") {
