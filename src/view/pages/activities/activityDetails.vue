@@ -222,7 +222,7 @@
               <a-modal
                 title="Add Officers"
                 :visible="isModalOpen"
-                @cancel="handleCancelReceive"
+                @cancel="handleCancel"
                 width="50%"
                 footer=""
               >
@@ -458,6 +458,10 @@ const openArchiveModal = () => {
 
 const handleCancelArchive = () => {
   isArchiveModalOpen.value = false;
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
 };
 
 const handleArchiveActivity = async () => {

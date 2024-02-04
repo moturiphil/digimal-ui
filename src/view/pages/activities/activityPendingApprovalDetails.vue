@@ -127,7 +127,7 @@
               <a-modal
                 title="Add Officers"
                 :visible="isModalOpen"
-                @cancel="handleCancelReceive"
+                @cancel="handleCancel"
                 width="50%"
                 footer=""
               >
