@@ -397,7 +397,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item v-if="isAdmin" key="massnet-admin">
+      <a-menu-item v-if="isAdmin || isTechSupport" key="massnet-admin">
         <router-link to="/admin-massnet">
           <sdFeatherIcons type="alert-triangle" /><span> Administrator </span>
         </router-link>
@@ -427,6 +427,8 @@ import { useRoute, useRouter } from "vue-router";
 import { fetchUserData, hasRole } from "../services/user-role";
 
 const adminRoles = [53];
+
+const techSupportRoles = [56];
 const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
   53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60, 78, 17,
@@ -526,6 +528,7 @@ export default defineComponent({
     // user roles
     const isAIEHolder = hasRole(1);
     const isAdmin = hasRole(adminRoles);
+    const isTechSupport = hasRole(techSupportRoles);
     const canCreateCampaign = hasRole(createCampaignRoles);
     const canViewCampaign = hasRole(viewCampaignRoles);
     const canCreateEvent = hasRole(createEventRoles);
@@ -610,6 +613,7 @@ export default defineComponent({
       role_id,
       isLevelOne,
       isAdmin,
+      isTechSupport,
       isAIEHolder,
       canViewCampaign,
       canCreateEvent,
