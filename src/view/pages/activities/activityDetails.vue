@@ -222,7 +222,7 @@
               <a-modal
                 title="Add Officers"
                 :visible="isModalOpen"
-                @cancel="handleCancelReceive"
+                @cancel="handleCancel"
                 width="50%"
                 footer=""
               >
@@ -246,6 +246,7 @@
                         show-search
                         option-filter-prop="label"
                         mode="multiple"
+                        @search="handleOfficerSearch"
                       >
                         <a-select-option
                           v-for="officer in officers"
@@ -371,11 +372,10 @@ const { query } = useRoute();
 const isGenerating = computed(() => state.isGenerating);
 const isArchiveModalOpen = ref(false);
 const router = useRouter();
-
+const searchOfficerItem = ref("");
 
 const isModalOpen = ref(false);
 
-console.log(query.id);
 
 const activity_code = ref(query.code);
 
@@ -460,6 +460,10 @@ const handleCancelArchive = () => {
   isArchiveModalOpen.value = false;
 };
 
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
 const handleArchiveActivity = async () => {
   try {
     const response = await fetch(
@@ -477,7 +481,7 @@ const handleArchiveActivity = async () => {
 
     if (data.success === true) {
       notification.success({
-        message: 'Success!',
+        message: "Success!",
         description: data.data,
       });
       isArchiveModalOpen.value = true;
@@ -499,41 +503,34 @@ const handleArchiveActivity = async () => {
 };
 
 const removeOfficer = (id) => {
-  //   console.log("recordId", recordId.value);
-
-  try {
-    fetch(`deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`)
-      .then((response) => response.data)
-      .then(({ success, message }) => {
-        if (success == true) {
-          notification.success({
-            message: "Success",
-            description: message,
-          });
-          isModalOpen.value = false;
-          setTimeout(function () {
-            location.reload();
-          }, 3000);
-        } else {
-          notification.error({
-            message: "Error",
-            description: `${message}`,
-          });
-        }
+  axios
+    .post(
+      `/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`
+    )
+    .then((response) => {
+      const { success, message } = response.data;
+      if (success === true) {
+        notification.success({
+          message: "Success",
+          description: message,
+        });
         isModalOpen.value = false;
-      })
-      .catch((message) => {
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      } else {
         notification.error({
           message: "Error",
           description: `${message}`,
         });
+      }
+    })
+    .catch((error) => {
+      notification.error({
+        message: "Error",
+        description: `${error.message || "Unknown error"}`,
       });
-  } catch (message) {
-    notification.error({
-      message: "Error",
-      description: `${message}`,
     });
-  }
 };
 
 const handleChange = (tab) => {
@@ -689,7 +686,7 @@ const handleAddOfficers = async () => {
 
 const officersList = async () => {
   try {
-    const response = await axios.get(`activity_officers`);
+    const response = await axios.get(`users?query=${searchOfficerItem.value}`);
     const data = await response.data;
 
     console.log(data);
@@ -705,6 +702,12 @@ const officersList = async () => {
 };
 
 officersList();
+
+const handleOfficerSearch = (value) => {
+  console.log(value);
+  searchOfficerItem.value = value;
+  officersList();
+};
 
 const filteredData = computed(() => {
   if (activeClass.value === "confirmed") {

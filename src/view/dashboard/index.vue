@@ -732,10 +732,10 @@ const selectedCounties = ref([
   "Homa Bay County",
   "Kisii County",
   "Nyamira County",
-  // "Kisumu County",
-  // "Siaya County",
+  "Kisumu County",
+  "Siaya County",
   // "Busia County",
-  // "Migori County",
+  "Migori County",
   // "Lamu County",
   // "Kilifi County",
   // "Tana River County",
@@ -757,8 +757,9 @@ const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
   "sPkRcDvhGWA", //kisii
   "uepLTG8wGWJ", //nyamira
-  // 'u4t9H8XyU9P',//siaya
-  // 'fVra3Pwta0Q',//migori
+  "tAbBVBbueqD", //kisumu
+  "u4t9H8XyU9P", //siaya
+  "fVra3Pwta0Q", //migori
   // 'Tvf1zgVZ0K4',//busia
   // 'NjWSbQTwys4',//lamu
   // 'nrI2khZx3d0',//kilifi

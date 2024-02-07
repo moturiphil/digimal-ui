@@ -191,11 +191,11 @@ const columns = [
     dataIndex: "id",
     key: "id",
   },
-  {
-    title: "ID Number",
-    key: "id_no",
-    slots: { customRender: "idno" },
-  },
+  // {
+  //   title: "ID Number",
+  //   key: "id_no",
+  //   slots: { customRender: "idno" },
+  // },
   {
     title: "First Name",
     dataIndex: "first_name",
@@ -286,7 +286,7 @@ const ward = ref("Select Ward");
 const org_ids = ref([]);
 const userEditModalopen = ref(false);
 const allowedRole = ref(true);
-const alloweRoleids = ref(["3", "7", "56", "53"]);
+const alloweRoleids = ref(["3", "7", "56", "53", "37"]);
 // const selectedCounties = ref([
 //   "Homa Bay County",
 //   "Kisii County",
