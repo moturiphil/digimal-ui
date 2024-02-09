@@ -123,7 +123,7 @@
             </a-col>
             <a-col class="alert-col">
               <a-alert
-                :message="`You have ${deliveries} distributions Pending Receipt at post`"
+                :message="`You have ${deliveries} deliveries received at post`"
                 type="warning"
                 closable
                 @close="onClose"
@@ -403,7 +403,7 @@
                         <a-modal
                           title="Issue Nets"
                           :visible="isModalOpen_issuenets"
-                          @cancel="handleCancelReceive"
+                          @cancel="handleCanceIssue"
                           width="50%"
                           footer=""
                         >
@@ -859,7 +859,7 @@ const county_id = query.county;
 console.log(county_id);
 // const drop_off_campaign = query.campaign_id;
 const checked = ref(false);
-// const handleOk = async () => (isModalOpen_issuenets.value = false);
+const handleCanceIssue = async () => (isModalOpen_issuenets.value = false);
 const handleCancelReceive = () => (isOpen.value = false);
 const handleChange = (tab) => (activeClass.value = tab);
 const isOpen = ref(false);
