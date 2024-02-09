@@ -116,7 +116,7 @@ const columns = [
   },
 ];
 
-const adminRoles = [53];
+const adminRoles = [53, 56];
 
 
 const DragAndDropTable = defineComponent({
