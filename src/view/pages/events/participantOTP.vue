@@ -125,7 +125,7 @@
       key: "id",
     },
     {
-      title: "OTP",
+      title: "Registration Code",
       dataIndex: "otp",
       key: "id",
     },

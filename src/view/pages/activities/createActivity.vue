@@ -523,7 +523,7 @@ const AddActivity = defineComponent({
                 // console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
-                  router.push("activity-view");
+                  router.push("activity-pending-approval");
                   notification["success"]({
                     message: "Activity Created",
                     description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
@@ -551,7 +551,7 @@ const AddActivity = defineComponent({
           campaign_id: formState.campaign_id,
           activity_list_id: formState.activity_id,
           counties: formState.counties,
-          subcounties: formState.sub_counties,
+          subcounties: formState.sub_counties.filter((sub_counties) => sub_counties !== ""),
           start_date: dayjs(formState.start_date).format("YYYY-MM-DD"),
           number_of_officers: formState.number_of_officers,
           number_of_days: formState.number_of_days,
@@ -575,7 +575,7 @@ const AddActivity = defineComponent({
                 // console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
-                  router.push("activity-view");
+                  router.push("activity-pending-approval");
                   notification["success"]({
                     message: "Activity Created",
                     description: `Activity Created successfully. Your activity code is ${data.activity_code}`,
@@ -627,7 +627,7 @@ const AddActivity = defineComponent({
                 // console.log(data);
                 if (success) {
                   store.commit("setIsSubmitting", false);
-                  router.push("activity-view");
+                  router.push("activity-pending-approval");
                   notification["success"]({
                     message: "Activity Created",
                     description: `Activity Created successfully. Your activity code is ${data.activity_code}`,

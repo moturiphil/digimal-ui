@@ -183,7 +183,7 @@ const columns = [
     key: "households_served",
   },
   {
-    title: "Unserved Households Served",
+    title: "Pending Households",
     dataIndex: "unserved_households",
     key: "unserved_households",
   },
