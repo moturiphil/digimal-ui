@@ -99,9 +99,7 @@
                               </a-col>
                               <a-col :xxl="24" :xl="24" :md="24" :sm="24">
                                 <a-select
-                                  v-if="
-                                    filterAccessList.includes('sublocation')
-                                  "
+                                  v-if="filterAccessList.includes('sublocation')"
                                   v-model:value="sublocation"
                                   show-search
                                   placeholder="Select Sub Location"
@@ -165,11 +163,7 @@
                               />
                             </a-form-item>
                             <div class="record-form-actions text-right">
-                              <sdButton
-                                size="default"
-                                htmlType="Save"
-                                type="success"
-                              >
+                              <sdButton size="default" htmlType="Save" type="success">
                                 {{ isLoading ? "Loading..." : "Submit" }}
                               </sdButton>
                             </div>
@@ -244,16 +238,13 @@ const activeClass = ref("all");
 const isModalOpen = ref(false);
 const total_households = ref(0);
 const API_URL = `distribution_details/all?page=${current.value}&pageSize=${pageSize.value}`;
-const dist_status = ref(false);
 
 //const households_url = `generateHHCSV`;
 //Drill down filters
 const access_level = ref({});
 const filterAccessList = ref([]);
 //org levels
-const countries = ref([
-  { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
-]);
+const countries = ref([{ value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" }]);
 const counties = ref(null);
 const subcounties = ref(null);
 const wards = ref(null);
@@ -297,15 +288,16 @@ const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
   "sPkRcDvhGWA", //kisii
   "uepLTG8wGWJ", //nyamira
-  // 'u4t9H8XyU9P',//siaya
-  // 'fVra3Pwta0Q',//migori
+  "tAbBVBbueqD", //kisumu
+  "u4t9H8XyU9P", //siaya
+  "fVra3Pwta0Q", //migori
   // 'Tvf1zgVZ0K4',//busia
   // 'NjWSbQTwys4',//lamu
   // 'nrI2khZx3d0',//kilifi
   // 'JsH2bnvNt2d',//tan river
   // 'N7YETT3A9r1',//kwale
   // 'QyGNX2DpR4h',//taita taveta
-  // 'wsBsC6gjHvn',// mombasa
+  "wsBsC6gjHvn", // mombasa
   // 'KGHhQ5GLd4k',//
   // 'BjC1xL40gHo',//kakamega
   // 'sANMZ3lpqGs',//vihiga
@@ -317,7 +309,6 @@ const currentCounties = ref([
   // 'vvOK1BxTbet',//baringo
   // 'Ulj33KBau7V',
 ]);
-
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
@@ -349,10 +340,7 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
     fetchCounties();
   } else if (access_level.value.level.id == 2) {
@@ -371,19 +359,10 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = [
-      "subcounty",
-      "ward",
-      "location",
-      "sublocation",
-      "village",
-    ];
+    filterAccessList.value = ["subcounty", "ward", "location", "sublocation", "village"];
     subcounties.value = [
       {
         value: access_level.value.location.org_id,
@@ -391,10 +370,7 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
   } else if (access_level.value.level.id == 4) {
     filterAccessList.value = ["ward", "location", "sublocation", "village"];
@@ -405,10 +381,7 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
   } else if (access_level.value.level.id == 5) {
     filterAccessList.value = ["location", "sublocation", "village"];
@@ -419,10 +392,7 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
   } else if (access_level.value.level.id == 6) {
     filterAccessList.value = ["sublocation", "village"];
@@ -433,10 +403,7 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
+      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
     ];
   }
   fetchDistributions();
@@ -525,9 +492,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       } else if (org_level == "subcounty") {
@@ -542,9 +507,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       } else if (org_level == "ward") {
@@ -559,9 +522,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       } else if (org_level == "location") {
@@ -576,9 +537,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
+                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
             ),
         ];
       }
@@ -660,6 +619,32 @@ const onPageChange = async (page) => {
   }
 };
 
+// const exportHouseHoldData = async () => {
+//   try {
+//     const response = await fetch(households_url, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         ...authHeader(),
+//       },
+//     });
+
+//     if (!response.ok) {
+//       throw new Error("Failed to fetch export data");
+//     }
+
+//     const fileBlob = await response.blob();
+//     const fileName = "households.csv";
+//     const link = document.createElement("a");
+//     link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+//     link.setAttribute("download", fileName);
+//     document.body.appendChild(link);
+//     link.click();
+//     link.parentNode.removeChild(link);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 const openModal = () => {
   isModalOpen.value = true;
@@ -671,104 +656,41 @@ const handleStartDistribution = async () => {
     end_date: dayjs(formState.end_date).format("YYYY-MM-DD"),
   };
 
-  console.log("Data to be sent:", data);
+  // console.log(JSON.stringify(data));
 
   try {
-    const response = await axios.post(
-      `subcounty/start/distribution`,
-      data // Send the data directly, no need for JSON.stringify
-    );
-
-    console.log("Server response:", response.data);
-
-    if (response.data.success == true) {
-      dist_status.value = true;
-      console.log(dist_status.value);
-      notification.success({
-        message: "Success",
-        description: "Distribution started successfully",
+    axios
+      .post(`subcounty/start/distribution`, JSON.stringify(data))
+      .then((response) => response.data)
+      .then(({ success, data }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `Distribution Started successfully`,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data}`,
+          });
+        }
+        isModalOpen.value = false;
+        //  window.location.reload();
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
       });
-    } else {
-      notification.error({
-        message: "Error",
-        description: response.data.message || "Unknown error",
-      });
-    }
   } catch (error) {
-    console.error("Error posting data:", error);
-
     notification.error({
       message: "Error",
-      description: "Failed to start distribution. Please try again." + error,
+      description: `${error}`,
     });
   }
 };
-
-// const handleCloseDistribution = async () => {
-
-
-//   try {
-//     const response = await axios.get(
-//       `subcounty/start/distribution`
-//     );
-
-//     console.log("Server response:", response.data);
-
-//     if (response.data.success == true) {
-//       dist_status.value = true;
-//       console.log(dist_status.value);
-//       notification.success({
-//         message: "Success",
-//         description: "Distribution Closed successfully",
-//       });
-//     } else {
-//       notification.error({
-//         message: "Error",
-//         description: response.data.message || "Unknown error",
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error posting data:", error);
-
-//     notification.error({
-//       message: "Error",
-//       description: "Failed to start distribution. Please try again." + error,
-//     });
-//   }
-// };
-
-// const handleDistributionStatus = async () => {
-
-//   try {
-//     const response = await axios.get(
-//       `subcounty/start/distribution`,
-//       data // Send the data directly, no need for JSON.stringify
-//     );
-
-//     console.log("Server response:", response.data);
-
-//     if (response.data.success == true) {
-//       dist_status.value = true;
-//       console.log(dist_status.value);
-//       notification.success({
-//         message: "Success",
-//         description: "Distribution started successfully",
-//       });
-//     } else {
-//       notification.error({
-//         message: "Error",
-//         description: response.data.message || "Unknown error",
-//       });
-//     }
-//   } catch (error) {
-//     console.error("Error posting data:", error);
-
-//     notification.error({
-//       message: "Error",
-//       description: "Failed to start distribution. Please try again." + error,
-//     });
-//   }
-// };
 
 const formState = reactive({
   searchItem: "",
