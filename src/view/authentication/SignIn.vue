@@ -42,8 +42,8 @@
           </a>
         </div> -->
         <!-- <div> -->
-          <!-- Check if the current URL is the training instance -->
-          <!-- <div v-if="isTrainingInstance">
+        <!-- Check if the current URL is the training instance -->
+        <!-- <div v-if="isTrainingInstance">
             You are on the training instance.
             <a href="https://digimal.uonbi.ac.ke" target="_blank"
               >Go to Live Instance</a
@@ -57,10 +57,22 @@
             htmlType="submit"
             :loading="isLoading"
             type="success"
-            size="large"
+            size="small"
           >
             Sign In
           </sdButton>
+          &nbsp;&nbsp;
+          <router-link to="/auth/chp-login">
+            <sdButton
+              class="btn-signin"
+              htmlType="submit"
+              :loading="isLoading"
+              type="success"
+              size="small"
+            >
+              CHP Login
+            </sdButton>
+          </router-link>
         </a-form-item>
         <p class="form-divider"></p>
       </a-form>

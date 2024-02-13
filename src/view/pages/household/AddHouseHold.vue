@@ -330,6 +330,10 @@ const AddNewHH = defineComponent({
       }
     };
 
+    // const chw = sessionStorage.getItem("user", JSON.stringify(user));
+
+    // console.log(chw);
+
     const data = {
       first_name: formState.first_name,
       middle_name: formState.middle_name,
@@ -338,19 +342,21 @@ const AddNewHH = defineComponent({
       phone_no: formState.phone_no,
       otp: formState.otp,
       hh_size: formState.members,
+      is_chp_login: true,
     };
 
     sessionStorage.setItem("household", JSON.stringify(data));
 
     const handleSubmit = () => {
       const data = {
-        // otp: formState.otp,
+        otp: formState.otp,
         first_name: formState.first_name,
         middle_name: formState.middle_name,
         last_name: formState.last_name,
         phone_no: formState.phone_no,
         id_no: formState.id_no,
         hh_size: formState.members,
+        is_chp_login: true,
       };
 
       sessionStorage.setItem("household", JSON.stringify(data));
@@ -365,7 +371,7 @@ const AddNewHH = defineComponent({
       if (!this.household_otp) {
         ArticleSchema.validate(this.formState, { abortEarly: false })
           .then(() => {
-            fetch(`${API_URL}/get_hh_otp`, {
+            fetch(`${API_URL}/web_hh_otp`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -384,9 +390,9 @@ const AddNewHH = defineComponent({
                   });
                   this.household_otp = true;
 
-                  const household_data = sessionStorage.getItem("household");
+                  // const household_data = sessionStorage.getItem("household");
 
-                  console.log(household_data);
+                  // console.log(household_data);
 
                   fetch(`${API_URL}/create_household`, {
                     method: "POST",
@@ -394,7 +400,7 @@ const AddNewHH = defineComponent({
                       "Content-Type": "application/json",
                       ...authHeader(),
                     },
-                    body: JSON.stringify(household_data),
+                    body: JSON.stringify(data),
                   })
                     .then((response) => response.json())
                     .then(({ success, message }) => {
@@ -402,11 +408,11 @@ const AddNewHH = defineComponent({
                       if (success == true) {
                         store.commit("setIsSubmitting", false);
                         notification["success"]({
-                          message: "Household Created",
+                          message: "Household Created, pending OTP Validation",
                           description: message,
                           duration: 5.5,
                         });
-                        location.reload();
+                        // location.reload();
                       }
                       // show error message from the api response
                       else {
@@ -477,7 +483,7 @@ const AddNewHH = defineComponent({
                 description: message,
                 duration: 5.5,
               });
-              location.reload();
+              // location.reload();
             }
             // show error message from the api response
             else {

@@ -23,13 +23,23 @@ const routes = [
         /* webpackChunkName: "forgotPassword" */ "@/view/authentication/UserRegistration.vue"
       ),
   },
+
+  {
+    path: "chp-login",
+    name: "chp-login",
+    component: () =>
+      import(
+        /* webpackChunkName: "forgotPassword" */ "@/view/authentication/CHPLogin.vue"
+      ),
+  },
   {
     path: "/:a_part",
     redirect: (to) => {
       const a_code = to.query.a_code;
       return {
         name: "register",
-        params: { a_part: to.params.a_part },
+        params: { a_part: to.params.
+          _part },
         query: { a_code: a_code },
       };
     },
