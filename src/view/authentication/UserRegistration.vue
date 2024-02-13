@@ -28,7 +28,7 @@
             class="btn-reset"
             htmlType="submit"
             type="success"
-            size="large"
+            size="small"
           >
             {{ showOtpInput ? "Verify OTP" : "Send OTP" }}
           </sdButton>

@@ -38,6 +38,8 @@ router.beforeEach((to, from, next) => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
 
+  // const is_chp_otp = sessionStorage.getItem("is_chp_otp");
+
   if (to.meta.auth && (user_object == null)) {
     next({ path: "/auth/login" });
   } else {
