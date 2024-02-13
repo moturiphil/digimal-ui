@@ -62,7 +62,7 @@
                     >
                       <a-input
                         v-model:value="formState.id_no"
-                        placeholder="7-8 digits"
+                        placeholder="6-8 digits"
                         type="number"
                         @blur="validate('id_no')"
                         @keypress="validate('id_no')"
@@ -83,7 +83,7 @@
                     >
                       <a-input
                         v-model:value="formState.confirm_id_no"
-                        placeholder="7-8 digits"
+                        placeholder="6-8 digits"
                         type="number"
                         @blur="validate('confirm_id_no')"
                         @keypress="validate('confirm_id_no')"
@@ -164,6 +164,30 @@
                         v-if="!!errors.members"
                       >
                         {{ errors.members }}
+                      </p>
+                    </a-form-item>
+
+                    <a-form-item name="campaign_id" label="Campaign Name">
+                      <a-select
+                        v-model:value="formState.post"
+                        v-if="!loading"
+                        placeholder="Select Post"
+                        @blur="validate('post_id')"
+                        @keypress="validate('post_id')"
+                        show-search
+                        option-filter-prop="label"
+                      >
+                        <a-select-option
+                          v-for="post in posts"
+                          :key="post.id"
+                          :value="post.id"
+                          :label="`${post.name}`"
+                        >
+                          {{ post.name }}
+                        </a-select-option>
+                      </a-select>
+                      <p class="errors" style="color: red" v-if="!!errors.post">
+                        {{ errors.post }}
                       </p>
                     </a-form-item>
 
@@ -270,19 +294,12 @@ const AddNewHH = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
-    const { gender, organizations, loading, counties, roles, events_list } =
-      reactive({
-        gender: [
-          { id: "M", name: "Male" },
-          { id: "F", name: "Female" },
-        ],
-        loading: true,
-        organizations: [],
-        counties: [],
-        sub_county_id: "",
-        events_list: [],
-        roles: "",
-      });
+    const { first_name, middle_name, last_name, members, loading } = reactive({
+      first_name: "",
+      middle_name: "",
+      last_name: "",
+      members: [],
+    });
 
     const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -290,7 +307,16 @@ const AddNewHH = defineComponent({
 
     const isLevelOne = user_level_id === 1;
 
-    console.log(isLevelOne);
+    console.log(user);
+    const chp = user.user;
+
+    const chp_name = chp.first_name + " " + chp.last_name;
+
+    const chp_village = chp.location.name;
+
+    const chp_village_id = chp.location.id;
+
+    console.log(chp_village);
 
     const formState = reactive({
       gender: null,
@@ -342,7 +368,6 @@ const AddNewHH = defineComponent({
       phone_no: formState.phone_no,
       otp: formState.otp,
       hh_size: formState.members,
-      is_chp_login: true,
     };
 
     sessionStorage.setItem("household", JSON.stringify(data));
@@ -356,7 +381,7 @@ const AddNewHH = defineComponent({
         phone_no: formState.phone_no,
         id_no: formState.id_no,
         hh_size: formState.members,
-        is_chp_login: true,
+        village_id: chp_village_id,
       };
 
       sessionStorage.setItem("household", JSON.stringify(data));
@@ -514,25 +539,23 @@ const AddNewHH = defineComponent({
       join,
       handleSubmit,
       formState,
-      gender,
-      organizations,
+      first_name,
+      middle_name,
+      last_name,
+      members,
       loading,
-      counties,
+      chp_village,
+      chp_name,
       // handleChange,
-      events_list,
+
       validate,
       isLevelOne,
       household_otp,
-      roles,
       errors: {
-        gender: null,
-        name: null,
-        county_id: "",
-        location_type: null,
-        facilitator_id: "",
-        organization: null,
-        no_of_days: null,
-        venue: "",
+        first_name,
+        middle_name,
+        last_name,
+        members,
       },
     };
   },

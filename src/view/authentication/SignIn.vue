@@ -32,25 +32,6 @@
             New User?
           </router-link>
         </div>
-        <!-- <div class="auth-form-action">
-          <a
-            class=""
-            href="https://training.digimal.uonbi.ac.ke"
-            target="_blank"
-          >
-            Training Instance
-          </a>
-        </div> -->
-        <!-- <div> -->
-        <!-- Check if the current URL is the training instance -->
-        <!-- <div v-if="isTrainingInstance">
-            You are on the training instance.
-            <a href="https://digimal.uonbi.ac.ke" target="_blank"
-              >Go to Live Instance</a
-            >
-          </div>
-          <div v-else>You are on the live instance.</div>
-        </div> -->
         <a-form-item>
           <sdButton
             class="btn-signin"
@@ -334,3 +315,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+
+  /* Add styles for small screens */
+  @media (max-width: 768px) {
+    .btn-signin {
+      margin-bottom: 15px;
+      margin-left: 10px;
+    }
+  }
+</style>
