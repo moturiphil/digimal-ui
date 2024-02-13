@@ -64,6 +64,9 @@ export default {
     const showOtpInput = ref(false);
 
     const handleSubmit = async () => {
+      //*********************************
+      //  Send CHP OTP ******************
+      //*********************************
       if (!showOtpInput.value) {
         const values = {
           id_no: formState.id_no,
@@ -83,6 +86,8 @@ export default {
             response.status === 201
           ) {
             sessionStorage.setItem("id_no", values.id_no);
+          } else if (response.status === 422) {
+            console.log("Status 422");
           } else {
             notification.error({
               message: "Error",
@@ -114,26 +119,26 @@ export default {
         }
       } else {
         // Verify user input against sessionly stored OTP
-        // const generatedOTP = sessionStorage.getItem("otp");
+        //*********************************
+        //  Verify OTP input **************
+        //*********************************
         const userOTP = formState.otp;
         sessionStorage.setItem("otp", userOTP);
-        console.log(userOTP);
         // console.log(generatedOTP);
         if (userOTP) {
-          console.log("executing");
           const values = {
             otp: formState.otp,
           };
           const response = await axios.post(VALIDATE_URL, values);
-          sessionStorage.setItem("user", JSON.stringify(response.data));
-           router.push("/add-household");
-          console.log('Before Response'+ response);
-          notification.info({
-            message: "Log in successfully",
-            description: response.message,
-          });
-
-         
+          console.log(response);
+          if (response.status === 200) {
+            sessionStorage.setItem("user", JSON.stringify(response.data));
+            router.push("/add-household");
+            notification.success({
+              message: "Confirmation",
+              description: response.data.message,
+            });
+          }
         } else {
           console.log("OTP does not match");
           notification.info({
