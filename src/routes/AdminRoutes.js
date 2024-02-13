@@ -514,6 +514,14 @@ const routes = [
       ),
   },
   {
+    path: "/add-household",
+    name: "add-hh",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/AddHouseHold.vue"
+      ),
+  },
+  {
     path: "/gf-activity-payroll",
     name: "activity-payroll",
     component: () =>
