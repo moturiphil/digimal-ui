@@ -1,6 +1,6 @@
 <template>
   <Main>
-    <sdPageHeader ghost :title="`Add Household to ${chp_village}`" /> 
+    <sdPageHeader ghost :title="`Add Household from ${chp_village}`" />
 
     <a-row :gutter="15">
       <a-col :xs="24">
@@ -298,20 +298,19 @@ const AddNewHH = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
-    const { gender,  loading, counties, events_list, posts } =
-      reactive({
-        gender: [
-          { id: "M", name: "Male" },
-          { id: "F", name: "Female" },
-        ],
-        loading: true,
-        organizations: [],
-        counties: [],
-        sub_county_id: "",
-        events_list: [],
-        roles: "",
-        posts: [],
-      });
+    const { gender, loading, counties, events_list, posts } = reactive({
+      gender: [
+        { id: "M", name: "Male" },
+        { id: "F", name: "Female" },
+      ],
+      loading: true,
+      organizations: [],
+      counties: [],
+      sub_county_id: "",
+      events_list: [],
+      roles: "",
+      posts: [],
+    });
 
     const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -328,6 +327,7 @@ const AddNewHH = defineComponent({
 
     const chp_village_id = chp.location.id;
 
+    console.log(user.data.posts[0].id);
 
     const formState = reactive({
       gender: null,
@@ -380,6 +380,8 @@ const AddNewHH = defineComponent({
       otp: formState.otp,
       hh_size: formState.members,
       village_id: chp_village_id,
+      post_id: user.data.posts[0].id,
+      chw_id: chp.id,
     };
 
     sessionStorage.setItem("household", JSON.stringify(data));
@@ -394,6 +396,8 @@ const AddNewHH = defineComponent({
         id_no: formState.id_no,
         hh_size: formState.members,
         village_id: chp_village_id,
+        post_id: user.data.posts[0].id,
+        chw_id: chp.id,
       };
 
       sessionStorage.setItem("household", JSON.stringify(data));
