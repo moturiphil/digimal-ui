@@ -1,6 +1,6 @@
 <template>
   <Main>
-    <sdPageHeader title="Add Household"> </sdPageHeader>
+    <sdPageHeader ghost :title="`Add Household to ${chp_village}`" /> 
 
     <a-row :gutter="15">
       <a-col :xs="24">
@@ -167,11 +167,11 @@
                       </p>
                     </a-form-item>
 
-                    <a-form-item name="campaign_id" label="Campaign Name">
+                    <!-- <a-form-item name="campaign_id" label="Distribution Post">
                       <a-select
                         v-model:value="formState.post"
                         v-if="!loading"
-                        placeholder="Select Post"
+                        placeholder="Select Post for Household"
                         @blur="validate('post_id')"
                         @keypress="validate('post_id')"
                         show-search
@@ -186,10 +186,14 @@
                           {{ post.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red" v-if="!!errors.post">
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.post"
+                      >
                         {{ errors.post }}
                       </p>
-                    </a-form-item>
+                    </a-form-item> -->
 
                     <a-form-item
                       name="otp"
@@ -294,12 +298,20 @@ const AddNewHH = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
-    const { first_name, middle_name, last_name, members, loading } = reactive({
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      members: [],
-    });
+    const { gender,  loading, counties, events_list, posts } =
+      reactive({
+        gender: [
+          { id: "M", name: "Male" },
+          { id: "F", name: "Female" },
+        ],
+        loading: true,
+        organizations: [],
+        counties: [],
+        sub_county_id: "",
+        events_list: [],
+        roles: "",
+        posts: [],
+      });
 
     const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -316,7 +328,6 @@ const AddNewHH = defineComponent({
 
     const chp_village_id = chp.location.id;
 
-    console.log(chp_village);
 
     const formState = reactive({
       gender: null,
@@ -368,6 +379,7 @@ const AddNewHH = defineComponent({
       phone_no: formState.phone_no,
       otp: formState.otp,
       hh_size: formState.members,
+      village_id: chp_village_id,
     };
 
     sessionStorage.setItem("household", JSON.stringify(data));
@@ -539,23 +551,26 @@ const AddNewHH = defineComponent({
       join,
       handleSubmit,
       formState,
-      first_name,
-      middle_name,
-      last_name,
-      members,
-      loading,
-      chp_village,
+      gender,
       chp_name,
+      chp_village,
+      loading,
+      counties,
       // handleChange,
-
+      events_list,
       validate,
       isLevelOne,
       household_otp,
+      posts,
       errors: {
-        first_name,
-        middle_name,
-        last_name,
-        members,
+        gender: null,
+        name: null,
+        county_id: "",
+        location_type: null,
+        facilitator_id: "",
+        organization: null,
+        no_of_days: null,
+        venue: "",
       },
     };
   },
