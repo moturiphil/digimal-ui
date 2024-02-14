@@ -167,33 +167,23 @@
                       </p>
                     </a-form-item>
 
-                    <!-- <a-form-item name="campaign_id" label="Distribution Post">
+                    <a-form-item name="post_id" label="Distribution Post">
                       <a-select
-                        v-model:value="formState.post"
-                        v-if="!loading"
-                        placeholder="Select Post for Household"
-                        @blur="validate('post_id')"
-                        @keypress="validate('post_id')"
-                        show-search
+                        name="basic-select"
+                        class="sDash_fullwidth-select"
+                        placeholder="Select distribution posts"
+                        v-model:value="formState.post_id"
                         option-filter-prop="label"
                       >
                         <a-select-option
                           v-for="post in posts"
-                          :key="post.id"
                           :value="post.id"
-                          :label="`${post.name}`"
+                          :key="post.id"
+                          :label="post.post"
+                          >{{ post.post }}</a-select-option
                         >
-                          {{ post.name }}
-                        </a-select-option>
                       </a-select>
-                      <p
-                        class="errors"
-                        style="color: red"
-                        v-if="!!errors.post"
-                      >
-                        {{ errors.post }}
-                      </p>
-                    </a-form-item> -->
+                    </a-form-item>
 
                     <a-form-item
                       name="otp"
@@ -292,13 +282,14 @@ const AddNewHH = defineComponent({
     const apiUrl = computed(() => state.crud.url);
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
+    const posts = ref([]);
     const household_otp = ref(false);
 
     // const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
-    const { gender, loading, counties, events_list, posts } = reactive({
+    const { gender, loading, counties, events_list } = reactive({
       gender: [
         { id: "M", name: "Male" },
         { id: "F", name: "Female" },
@@ -309,7 +300,6 @@ const AddNewHH = defineComponent({
       sub_county_id: "",
       events_list: [],
       roles: "",
-      posts: [],
     });
 
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -328,6 +318,10 @@ const AddNewHH = defineComponent({
     const chp_village_id = chp.location.id;
 
     console.log(user.data.posts[0].id);
+
+    posts.value = user.data.posts;
+
+    console.log(posts.value);
 
     const formState = reactive({
       gender: null,
@@ -380,7 +374,7 @@ const AddNewHH = defineComponent({
       otp: formState.otp,
       hh_size: formState.members,
       village_id: chp_village_id,
-      post_id: user.data.posts[0].id,
+      post_id: formState.post_id,
       chw_id: chp.id,
     };
 
@@ -396,7 +390,7 @@ const AddNewHH = defineComponent({
         id_no: formState.id_no,
         hh_size: formState.members,
         village_id: chp_village_id,
-        post_id: user.data.posts[0].id,
+        post_id: formState.post_id,
         chw_id: chp.id,
       };
 
@@ -546,6 +540,8 @@ const AddNewHH = defineComponent({
           });
       }
     };
+
+    console.log(posts);
 
     return {
       isLoading,
