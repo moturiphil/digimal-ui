@@ -3,7 +3,7 @@ let inactivityTimeout;
 export function resetInactivityTimer() {
   clearTimeout(inactivityTimeout);
   
-  inactivityTimeout = setTimeout(logoutUser, 300000); // 5 minutes
+  inactivityTimeout = setTimeout(logoutUser, 1500000); // 25 minutes
 }
 
 function logoutUser() {
