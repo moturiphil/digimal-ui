@@ -317,38 +317,7 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-      </a-sub-menu>
-      <!-- <a-sub-menu key="draft-payroll" v-if="canViewPayroll && isLevelOne">
-        <template v-slot:title>
-          <sdFeatherIcons type="credit-card" /><span>Draft Payroll</span>
-        </template>
-        <a-sub-menu key="gf-draft-payroll">
-          <template v-slot:title>
-            <sdFeatherIcons type="globe" /><span>Global Fund Draft</span>
-          </template>
-          <a-menu-item key="gf-draft-activity-payroll">
-            <router-link to="/gf-activity-payroll"
-              >Draft Activity Payroll
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="gf-draft-event-payroll">
-            <router-link to="/gf-event-payroll">Draft Event Payroll</router-link>
-          </a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="pmi-draft-payrolly">
-          <template v-slot:title>
-            <sdFeatherIcons type="radio" /><span>PMI Draft</span>
-          </template>
-          <a-menu-item key="pmi-draft-activity-payroll">
-            <router-link to="/pmi-draft-activity-payroll"
-              >Draft Activity Payroll
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="pmi-draft-event-payroll">
-            <router-link to="/pmi-draft-event-payroll">Draft Event Payroll </router-link>
-          </a-menu-item>
-        </a-sub-menu>
-      </a-sub-menu> -->
+      </a-sub-menu> 
       <a-sub-menu
         key="user-management"
         v-if="isAdmin || canViewUsers || canViewMasterlist"
