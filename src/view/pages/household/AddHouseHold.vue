@@ -96,6 +96,9 @@
                       >
                         {{ errors.confirm_id_no }}
                       </p>
+                      <p v-if="pastingNotAllowed" style="color: red">
+                        Pasting is not allowed in this field.
+                      </p>
                     </a-form-item>
 
                     <a-form-item
@@ -192,7 +195,7 @@
                     >
                       <a-input
                         v-model:value="formState.otp"
-                        placeholder="OTP."
+                        placeholder="OTP expires at the end of the day."
                         type="number"
                       />
                     </a-form-item>
@@ -316,8 +319,6 @@ const AddNewHH = defineComponent({
     const chp_village = chp.location.name;
 
     const chp_village_id = chp.location.id;
-
-    console.log(user.data.posts[0].id);
 
     posts.value = user.data.posts;
 
@@ -452,8 +453,8 @@ const AddNewHH = defineComponent({
                       // show error message from the api response
                       else {
                         store.commit("setIsSubmitting", false);
-                        notification["error"]({
-                          message: "Error!",
+                        notification["info"]({
+                          message: "Info!",
                           description: message,
                           duration: 5.5,
                         });
@@ -461,8 +462,8 @@ const AddNewHH = defineComponent({
                     })
                     .catch((error) => {
                       store.commit("setIsSubmitting", false);
-                      notification["error"]({
-                        message: "Error!",
+                      notification["info"]({
+                        message: "Info!",
                         description: `${error}`,
                         duration: 5.5,
                       });
@@ -561,6 +562,7 @@ const AddNewHH = defineComponent({
       validate,
       isLevelOne,
       household_otp,
+      pastingNotAllowed: false,
       posts,
       errors: {
         gender: null,
@@ -573,6 +575,18 @@ const AddNewHH = defineComponent({
         venue: "",
       },
     };
+  },
+  methods: {
+    onPaste(event) {
+      // Prevent pasting into the confirm id no field
+      event.preventDefault();
+      this.pastingNotAllowed = true;
+
+      // Hide the message after a certain period 3 seconds
+      setTimeout(() => {
+        this.pastingNotAllowed = false;
+      }, 3000);
+    },
   },
 });
 

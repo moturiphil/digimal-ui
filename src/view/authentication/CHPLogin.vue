@@ -113,7 +113,7 @@ export default {
             notification.info({
               message: "Info",
               description:
-                "You are not a registered user, please contact the technical support team.",
+                "You are not a registered chp, please contact the technical support team.",
             });
           }
         }
