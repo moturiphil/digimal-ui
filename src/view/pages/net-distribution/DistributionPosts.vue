@@ -105,7 +105,11 @@
                   </a-space>
                 </a-row>
                 <a-divider></a-divider>
-                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
+                <a-table
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                >
                   <template #activities="{ record }">
                     <td>
                       <div class="table-actions">
@@ -206,8 +210,10 @@
                         :value="user.id"
                         :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
                       >
-                        {{ user.first_name }} {{ user.last_name }} {{ user.other_name }} -
-                        {{ user.id_no }},{{ user.role_id }}, {{ user.location_id }}
+                        {{ user.first_name }} {{ user.last_name }}
+                        {{ user.other_name }} - {{ user.id_no }},{{
+                          user.role_id
+                        }}, {{ user.location_id }}
                       </a-select-option>
                     </a-select>
                   </a-form-item>
@@ -408,7 +414,13 @@ const updateFilters = () => {
       },
     ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = ["subcounty", "ward", "location", "sublocation", "village"];
+    filterAccessList.value = [
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
     subcounties.value = [
       {
         value: access_level.value.location.org_id,
@@ -551,7 +563,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "subcounty") {
@@ -566,7 +580,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "ward") {
@@ -581,7 +597,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "location") {
@@ -596,7 +614,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       }
@@ -645,7 +665,9 @@ const filterOption = (input, option) => {
 };
 const supervisorList = async () => {
   try {
-    const response = await axios.get(`users?query=${searchsupervisorItem.value}`);
+    const response = await axios.get(
+      `users?query=${searchsupervisorItem.value}`
+    );
     const data = await response.data;
 
     // Modify the structure of each supervisor to include a 'label' property
