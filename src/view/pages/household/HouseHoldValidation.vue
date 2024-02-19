@@ -322,7 +322,7 @@ const currentCounties = ref([
   // 'nrI2khZx3d0',//kilifi
   // 'JsH2bnvNt2d',//tan river
   // 'N7YETT3A9r1',//kwale
-  // 'QyGNX2DpR4h',//taita taveta
+  'QyGNX2DpR4h',//taita taveta
   "wsBsC6gjHvn", // mombasa
   // 'KGHhQ5GLd4k',//
   // 'BjC1xL40gHo',//kakamega
