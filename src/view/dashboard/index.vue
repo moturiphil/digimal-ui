@@ -764,9 +764,9 @@ const currentCounties = ref([
   // 'NjWSbQTwys4',//lamu
   // 'nrI2khZx3d0',//kilifi
   // 'JsH2bnvNt2d',//tan river
-  'N7YETT3A9r1',//kwale
-  'QyGNX2DpR4h',//taita taveta
-  'wsBsC6gjHvn',// mombasa
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
+  "wsBsC6gjHvn", // mombasa
   // 'KGHhQ5GLd4k',//
   // 'BjC1xL40gHo',//kakamega
   // 'sANMZ3lpqGs',//vihiga
@@ -987,6 +987,7 @@ const fetchInitialChartData = async () => {
       // });
     });
 };
+
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   let org = await org_ids.value
@@ -1236,10 +1237,6 @@ const fetchChildData = async (org_id, org_level) => {
     })
     .catch((error) => {
       console.log(error);
-      //notification.error({
-      // message: `Error!`,
-      // description: `${error}`,
-      //});
     });
 };
 const fetchCounties = async () => {
