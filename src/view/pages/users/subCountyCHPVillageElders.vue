@@ -162,6 +162,16 @@ const columns = [
     key: "id",
   },
   {
+    title: "Village Post",
+    dataIndex: "village_post",
+    key: "id",
+  },
+  {
+    title: "Post Supervisor",
+    dataIndex: "post_supervisor",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     key: "units",
@@ -182,7 +192,7 @@ const DragAndDropTable = defineComponent({
     const searchItem = ref("");
     const { query } = useRoute();
     const posts = ref([]);
-    const post_id = ref("");
+    const village_id = ref("");
 
     const sub_county_name = query.name;
 
@@ -192,7 +202,7 @@ const DragAndDropTable = defineComponent({
     const openModal = (id) => {
       isModalOpen.value = true;
       console.log(id);
-      post_id.value = id;
+      village_id.value = id;
       // formState.post_id = id;
       console.log(isModalOpen.value);
     };
@@ -229,17 +239,22 @@ const DragAndDropTable = defineComponent({
       try {
         const data = {
           post_id: formState.post_id,
-          village_id: location_id,
+          village_id: village_id.value,
         };
 
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/assign_village_post`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(), // Include authentication headers from authHeader()
-          },
-          body: JSON.stringify(data),
-        });
+        console.log(data);
+
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/assign_village_post`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(), // Include authentication headers from authHeader()
+            },
+            body: JSON.stringify(data),
+          }
+        );
 
         console.log(response);
 
