@@ -362,7 +362,7 @@ const handleChange = async (org_id, org_level) => {
 const fetchChildData = async (parent_id, org_id, org_level) => {
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
-  let masterUrl = `gf_events?per_page=${pageSize.value}&page=${currentPage.value}`;
+  let masterUrl = `pmi_events?per_page=${pageSize.value}&page=${currentPage.value}`;
   if (org_level == "county") {
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;

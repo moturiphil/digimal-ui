@@ -173,6 +173,7 @@
   
   
   const currentCounties = ref([
+    'tAbBVBbueqD', // Kisumu 
     'nK0A12Q7MvS',//homa bay
     'sPkRcDvhGWA',//kisii
     'uepLTG8wGWJ',//nyamira
