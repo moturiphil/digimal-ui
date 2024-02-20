@@ -199,12 +199,41 @@ const DragAndDropTable = defineComponent({
     const location_id = query.id;
     const isModalOpen = ref(false);
 
-    const openModal = (id) => {
+    const openModal = async (id) => {
       isModalOpen.value = true;
-      console.log(id);
       village_id.value = id;
-      // formState.post_id = id;
-      console.log(isModalOpen.value);
+
+      try {
+        console.log(village_id.value);
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/sublocation_posts?village_id=${village_id.value}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+
+        if (!response.ok) {
+          // Handle error if the response status is not OK
+          console.error(`Error: ${response.statusText}`);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        // Assuming posts is an array, you may need to adjust accordingly
+        posts.value = data.data;
+
+
+        // this.loading = false;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Handle error
+      }
     };
 
     const handleCancel = () => {
@@ -213,27 +242,27 @@ const DragAndDropTable = defineComponent({
 
     console.log(query);
 
-    const getPosts = async () => {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/posts_data`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data.data);
-      posts.value = data.data;
-      // this.posts = data.map((post) => ({
-      //   ...post,
-      // }));
-      // this.loading = false;
-    };
+    // const getPosts = async () => {
+    //   const response = await fetch(
+    //     `${process.env.VUE_APP_BASE_URL}/sublocation_posts?village_id=${village_id.value}`,
+    //     {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         ...authHeader(),
+    //       },
+    //     }
+    //   );
+    //   const data = await response.json();
+    //   console.log(data);
+    //   posts.value = data.post_name;
+    //   // this.posts = data.map((post) => ({
+    //   //   ...post,
+    //   // }));
+    //   // this.loading = false;
+    // };
 
-    getPosts();
+    // getPosts();
 
     const handleSubmit = async () => {
       try {
