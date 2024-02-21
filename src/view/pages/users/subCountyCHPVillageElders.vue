@@ -60,6 +60,7 @@
                               path: `/village-hh/${record.id}`,
                               query: {
                                 id: record.id,
+                                name: record.name,
                               },
                             }"
                           >
@@ -161,6 +162,16 @@ const columns = [
     dataIndex: "no_of_chp_registered",
     key: "id",
   },
+  // {
+  //   title: "Village Post",
+  //   dataIndex: "village_post",
+  //   key: "id",
+  // },
+  // {
+  //   title: "Post Supervisor",
+  //   dataIndex: "post_supervisor",
+  //   key: "id",
+  // },
   {
     title: "",
     dataIndex: "",
@@ -182,19 +193,48 @@ const DragAndDropTable = defineComponent({
     const searchItem = ref("");
     const { query } = useRoute();
     const posts = ref([]);
-    const post_id = ref("");
+    const village_id = ref("");
 
     const sub_county_name = query.name;
 
     const location_id = query.id;
     const isModalOpen = ref(false);
 
-    const openModal = (id) => {
+    const openModal = async (id) => {
       isModalOpen.value = true;
-      console.log(id);
-      post_id.value = id;
-      // formState.post_id = id;
-      console.log(isModalOpen.value);
+      village_id.value = id;
+
+      try {
+        console.log(village_id.value);
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/sublocation_posts?village_id=${village_id.value}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+
+        if (!response.ok) {
+          // Handle error if the response status is not OK
+          console.error(`Error: ${response.statusText}`);
+          return;
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        // Assuming posts is an array, you may need to adjust accordingly
+        posts.value = data.data;
+
+
+        // this.loading = false;
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Handle error
+      }
     };
 
     const handleCancel = () => {
@@ -203,43 +243,48 @@ const DragAndDropTable = defineComponent({
 
     console.log(query);
 
-    const getPosts = async () => {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/posts_data`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data.data);
-      posts.value = data.data;
-      // this.posts = data.map((post) => ({
-      //   ...post,
-      // }));
-      // this.loading = false;
-    };
+    // const getPosts = async () => {
+    //   const response = await fetch(
+    //     `${process.env.VUE_APP_BASE_URL}/sublocation_posts?village_id=${village_id.value}`,
+    //     {
+    //       method: "GET",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         ...authHeader(),
+    //       },
+    //     }
+    //   );
+    //   const data = await response.json();
+    //   console.log(data);
+    //   posts.value = data.post_name;
+    //   // this.posts = data.map((post) => ({
+    //   //   ...post,
+    //   // }));
+    //   // this.loading = false;
+    // };
 
-    getPosts();
+    // getPosts();
 
     const handleSubmit = async () => {
       try {
         const data = {
           post_id: formState.post_id,
-          village_id: location_id,
+          village_id: village_id.value,
         };
 
-        const response = await fetch(`${process.env.VUE_APP_BASE_URL}/assign_village_post`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(), // Include authentication headers from authHeader()
-          },
-          body: JSON.stringify(data),
-        });
+        console.log(data);
+
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/assign_village_post`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(), // Include authentication headers from authHeader()
+            },
+            body: JSON.stringify(data),
+          }
+        );
 
         console.log(response);
 

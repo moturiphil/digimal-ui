@@ -31,7 +31,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="isLevelOne">
+      <a-sub-menu key="events" v-if="isLevelOne  || isAIEHolder">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -68,7 +68,7 @@
       </a-sub-menu>
       <a-sub-menu
         key="activities"
-        v-if="canCreateActivity || canViewActivities"
+        v-if="canCreateActivity || canViewActivities  || isAIEHolder"
       >
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
