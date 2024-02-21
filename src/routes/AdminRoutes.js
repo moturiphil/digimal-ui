@@ -6,35 +6,28 @@ const routes = [
     name: "dashboard",
     component: () =>
       import(
-        /* webpackChunkName: "Dashboard" */ "@/view/dashboard/Dashboard.vue"//
+        /* webpackChunkName: "Dashboard" */ "@/view/dashboard/Dashboard.vue" //
       ),
     children: [
       {
         path: "/",
         name: "home",
-        component: () =>
-          import("@/view/dashboard"),
+        component: () => import("@/view/dashboard"),
         meta: { auth: true },
       },
       {
         path: "/search-hh",
         name: "search-hh",
-        component: () =>
-          import("@/view/pages/household/HouseholdSearch.vue"),
-        meta: { auth: true },
-      },
-      {
-        path: "/village-hh",
-        name: "village-hh",
-        component: () =>
-          import("@/view/pages/household/HouseholdSearch.vue"),
+        component: () => import("@/view/pages/household/HouseholdSearch.vue"),
         meta: { auth: true },
       },
       {
         path: "/MNEDashboard",
         name: "MNEDashboard",
         component: () =>
-          import(/* webpackChunkName: "Home" */ "@/view/dashboard/MNEDashboard"),
+          import(
+            /* webpackChunkName: "Home" */ "@/view/dashboard/MNEDashboard"
+          ),
       },
       {
         path: "registered-users",
@@ -152,8 +145,7 @@ const routes = [
       {
         path: "/view-worker",
         name: "view-worker",
-        component: () =>
-          import("@/view/pages/net-distribution/ViewWorker.vue"),
+        component: () => import("@/view/pages/net-distribution/ViewWorker.vue"),
       },
       {
         path: "/campaigns/create-campaign",
@@ -223,8 +215,7 @@ const routes = [
       {
         path: "/activity/details/:id",
         name: "activity-details",
-        component: () =>
-          import("@/view/pages/activities/activityDetails.vue"),
+        component: () => import("@/view/pages/activities/activityDetails.vue"),
       },
       {
         path: "dashboard/my-activities/",
@@ -464,7 +455,8 @@ const routes = [
   {
     path: "/sub-county-units/chp-ve/:id",
     name: "/org-units-villages",
-    component: () => import("../view/pages/users/subCountyCHPVillageElders.vue"),
+    component: () =>
+      import("../view/pages/users/subCountyCHPVillageElders.vue"),
   },
   {
     path: "/sub-location/dashboard",
@@ -486,6 +478,14 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/household/villagesHousehold.vue"
+      ),
+  },
+  {
+    path: "/village-hh/:id",
+    name: "village-hh",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/villageHouseholds.vue"
       ),
   },
   {
