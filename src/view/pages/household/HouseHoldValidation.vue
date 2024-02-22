@@ -130,7 +130,9 @@
                               </a-col>
                               <a-col :xxl="24" :xl="24" :md="24" :sm="24">
                                 <a-select
-                                  v-if="filterAccessList.includes('sublocation')"
+                                  v-if="
+                                    filterAccessList.includes('sublocation')
+                                  "
                                   v-model:value="sublocation"
                                   show-search
                                   placeholder="Select Sub Location"
@@ -154,7 +156,9 @@
                                   <sdButton
                                     type="check"
                                     size="16"
-                                    @click="handleVerify(record.id, record.hh_size)"
+                                    @click="
+                                      handleVerify(record.id, record.hh_size)
+                                    "
                                   >
                                     &nbsp;&nbsp;
                                     <span class="badge badge-green"
@@ -253,6 +257,11 @@ const columns = [
     key: "id_no",
   },
   {
+    title: "Distribution Post",
+    dataIndex: "post_id",
+    key: "id_no",
+  },
+  {
     title: "CHP",
     dataIndex: "chw_id",
     key: "id_no",
@@ -295,7 +304,9 @@ const access_level = ref({});
 
 const filterAccessList = ref([]);
 //org levels
-const countries = ref([{ value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" }]);
+const countries = ref([
+  { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
+]);
 const counties = ref(null);
 const subcounties = ref(null);
 const wards = ref(null);
@@ -397,7 +408,13 @@ const updateFilters = () => {
   // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
-    filterAccessList.value = ["county", "subcounty", "ward", "location", "sublocation"];
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+    ];
     countries.value = [
       {
         value: access_level.value.location.org_id,
@@ -405,11 +422,20 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
     fetchCounties();
   } else if (access_level.value.level.id == 2) {
-    filterAccessList.value = ["county", "subcounty", "ward", "location", "sublocation"];
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+    ];
     counties.value = [
       {
         value: access_level.value.location.org_id,
@@ -417,7 +443,10 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 3) {
     filterAccessList.value = ["subcounty", "ward", "location", "sublocation"];
@@ -428,7 +457,10 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 4) {
     filterAccessList.value = ["ward", "location", "sublocation"];
@@ -439,7 +471,10 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 5) {
     filterAccessList.value = ["location", "sublocation"];
@@ -450,7 +485,10 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 6) {
     filterAccessList.value = ["sublocation"];
@@ -461,7 +499,10 @@ const updateFilters = () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   }
   fetchOutliers();
@@ -546,7 +587,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "subcounty") {
@@ -561,7 +604,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "ward") {
@@ -576,7 +621,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "location") {
@@ -591,7 +638,9 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       }
@@ -707,7 +756,10 @@ const handleOk = async (id, inputValue) => {
       })
       .catch((error) => {
         // Handle errors here
-        console.error("There has been a problem with your fetch operation:", error);
+        console.error(
+          "There has been a problem with your fetch operation:",
+          error
+        );
         notification["error"]({
           message: "HouseHold Not Verified",
           description: `HouseHold verification failed`,

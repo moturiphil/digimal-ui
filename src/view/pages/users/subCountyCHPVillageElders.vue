@@ -60,6 +60,7 @@
                               path: `/village-hh/${record.id}`,
                               query: {
                                 id: record.id,
+                                name: record.name,
                               },
                             }"
                           >
@@ -161,16 +162,16 @@ const columns = [
     dataIndex: "no_of_chp_registered",
     key: "id",
   },
-  {
-    title: "Village Post",
-    dataIndex: "village_post",
-    key: "id",
-  },
-  {
-    title: "Post Supervisor",
-    dataIndex: "post_supervisor",
-    key: "id",
-  },
+  // {
+  //   title: "Village Post",
+  //   dataIndex: "village_post",
+  //   key: "id",
+  // },
+  // {
+  //   title: "Post Supervisor",
+  //   dataIndex: "post_supervisor",
+  //   key: "id",
+  // },
   {
     title: "",
     dataIndex: "",
