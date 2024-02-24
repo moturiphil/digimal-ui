@@ -550,11 +550,11 @@ const activateOfficer = (id) => {
       `/activate_officer?activity_id=${query.id}&user_id=${id}`
     )
     .then((response) => {
-      const { success, message } = response.data;
+      const { success, data } = response.data;
       if (success === true) {
         notification.success({
           message: "Success",
-          description: message,
+          description: data,
         });
         isModalOpen.value = false;
         setTimeout(() => {
