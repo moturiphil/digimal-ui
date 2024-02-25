@@ -563,7 +563,7 @@ const activateOfficer = (id) => {
       } else {
         notification.error({
           message: "Error",
-          description: `${message}`,
+          description: `${data}`,
         });
       }
     })
