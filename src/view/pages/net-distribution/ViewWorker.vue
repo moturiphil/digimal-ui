@@ -172,10 +172,33 @@
                       {{ errors.gender }}
                     </p>
                   </a-form-item>
+                  <a-form-item name="Shift" label="Shift">
+                    <a-select
+                      v-model:value="formState.shift"
+                      v-if="!loading"
+                      placeholder="Select Shift"
+                      @blur="validate('shift')"
+                      @keypress="validate('shift')"
+                      show-search
+                      option-filter-prop="label"
+                    >
+                      <a-select-option
+                        v-for="s in shift"
+                        :key="s.id"
+                        :value="s.id"
+                        :label="`${s.name}`"
+                      >
+                        {{ s.name }}
+                      </a-select-option>
+                    </a-select>
+                    <p class="errors" style="color: red" v-if="!!errors.shift">
+                      {{ errors.shift }}
+                    </p>
+                  </a-form-item>
                   <a-form-item
                     name="otp"
-                    label="Stakeholder OTP"
-                    v-if="stakeholder_otp"
+                    label="Security OTP"
+                    v-if="security_otp"
                   >
                     <a-input
                       v-model:value="formState.otp"
@@ -204,7 +227,7 @@
                       type="success"
                       :disabled="isSubmitting"
                       @click="handleButtonClick"
-                      v-if="!stakeholder_otp"
+                      v-if="!security_otp"
                     >
                       {{
                         isLoading
@@ -220,7 +243,7 @@
                       type="success"
                       :disabled="isSubmitting"
                       @click="handleButtonClick"
-                      v-if="stakeholder_otp"
+                      v-if="security_otp"
                     >
                       {{
                         isLoading
@@ -304,21 +327,31 @@ const DragAndDropTable = defineComponent({
     const postdata = ref([]);
     const { query } = useRoute();
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
-    const stakeholder_otp = ref(false);
+    const security_otp = ref(false);
 
-    const { gender } =
-      reactive({
-        gender: [
-          { id: "M", name: "Male" },
-          { id: "F", name: "Female" },
-        ],
-      });
+
+    const { gender } = reactive({
+      gender: [
+        { id: "M", name: "Male" },
+        { id: "F", name: "Female" },
+      ],
+    });
+    const { shift } = reactive({
+      shift: [
+        { id: "D", name: "Day" },
+        { id: "N", name: "Shift" },
+      ],
+    });
 
     const formState = reactive({
       gender: [
-          { id: "M", name: "Male" },
-          { id: "F", name: "Female" },
-        ],
+        { id: "M", name: "Male" },
+        { id: "F", name: "Female" },
+      ],
+      shift: [
+        { id: "D", name: "Day" },
+        { id: "N", name: "Night" },
+      ],
       first_name: null,
       middle_name: null,
       last_name: null,
@@ -378,6 +411,7 @@ const DragAndDropTable = defineComponent({
         .matches(regex, "Invalid Safaricom phone number")
         .required("Phone No is required"),
       gender: Yup.string().required("Gender is required"),
+      shift: Yup.string().required("Shift is required"),
     });
 
     const validate = (field) => {
@@ -446,7 +480,9 @@ const DragAndDropTable = defineComponent({
         id_no: formState.id_no,
         phone_no: formState.phone_no,
         gender: formState.gender,
+        shift: formState.shift,
         otp: formState.otp,
+        post_id: post_id,
       };
 
       sessionStorage.setItem("stakeholder", JSON.stringify(data));
@@ -458,7 +494,7 @@ const DragAndDropTable = defineComponent({
       };
       console.log(JSON.stringify(sendotp));
 
-      if (!this.stakeholder_otp) {
+      if (!this.security_otp) {
         ArticleSchema.validate(this.formState, { abortEarly: false })
           .then(() => {
             fetch(`${API_URL}/security/get_otp`, {
@@ -478,7 +514,7 @@ const DragAndDropTable = defineComponent({
                     description: message,
                     duration: 5.5,
                   });
-                  this.stakeholder_otp = true;
+                  this.security_otp = true;
 
                   const stakeholder_data =
                     sessionStorage.getItem("stakeholder");
@@ -516,7 +552,7 @@ const DragAndDropTable = defineComponent({
             });
           });
       } else {
-        console.log(data);
+        console.log(JSON.stringify(data));
         fetch(`${API_URL}/security/create`, {
           method: "POST",
           headers: {
@@ -589,8 +625,9 @@ const DragAndDropTable = defineComponent({
       removeMatrix,
       validate,
       handleSubmit,
-      stakeholder_otp,
+      security_otp,
       gender,
+      shift,
       errors: {
         gender: null,
         name: null,
@@ -599,6 +636,7 @@ const DragAndDropTable = defineComponent({
         facilitator_id: "",
         no_of_days: null,
         venue: "",
+        shift: null
       },
     };
   },
