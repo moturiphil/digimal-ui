@@ -339,7 +339,7 @@ const DragAndDropTable = defineComponent({
     const { shift } = reactive({
       shift: [
         { id: "D", name: "Day" },
-        { id: "N", name: "Shift" },
+        { id: "N", name: "Night" },
       ],
     });
 
