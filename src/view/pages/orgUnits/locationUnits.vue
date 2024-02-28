@@ -57,9 +57,17 @@
                             type="info"
                             shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
                             &nbsp;&nbsp; View Sub-Locations
                           </router-link>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          class="button-container"
+                          size="extra-small"
+                          type="success"
+                          @click="openModal()"
+                        >
+                          Re-assing Location
                         </sdButton>
                       </div>
                     </td>
@@ -67,6 +75,61 @@
                 </a-table>
               </TableWrapper>
             </div>
+            <a-modal
+              title="Re-assign Location to Ward"
+              :visible="isModalOpen"
+              @cancel="handleCancel"
+              width="50%"
+              footer=""
+            >
+              <BasicFormWrapper>
+                <a-form
+                  class="add-record-form"
+                  :style="{ width: '100%' }"
+                  layout="vertical"
+                  name="addnew"
+                  :model="formState"
+                  @finish="handleSubmit"
+                >
+                  <a-form-item name="ward_id" label="Ward">
+                    <a-select
+                      size="large"
+                      name="basic-select"
+                      class="sDash_fullwidth-select"
+                      placeholder="Select Ward"
+                      v-model:value="formState.ward_id"
+                    >
+                      <a-select-option value=""
+                        >Select an option</a-select-option
+                      >
+                      <a-select-option
+                        v-for="ward in wards"
+                        :value="ward.org_id"
+                        :key="ward.id"
+                        >{{ ward.name }}</a-select-option
+                      >
+                    </a-select>
+                  </a-form-item>
+
+                  <div class="record-form-actions text-right">
+                    <sdButton
+                      size="default"
+                      htmlType="Save"
+                      type="success"
+                      :disabled="isSubmitting"
+                    >
+                      {{
+                        isLoading
+                          ? "Loading..."
+                          : isSubmitting
+                            ? "Processing ..."
+                            : "Assign"
+                      }}
+                    </sdButton>
+                  </div>
+                </a-form>
+              </BasicFormWrapper>
+            </a-modal>
           </sdCards>
         </a-col>
       </a-row>
@@ -80,12 +143,13 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent, reactive } from "vue";
 // import axios from "axios";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
-
+import { notification } from "ant-design-vue";
+import store from "../../../vuex/store";
 
 const columns = [
   //   {
@@ -118,7 +182,6 @@ const columns = [
 
 const adminRoles = [53, 56];
 
-
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
   components: { RecordViewWrapper, Main },
@@ -131,6 +194,8 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const { params, query } = useRoute();
     const searchItem = ref("");
+    const isModalOpen = ref(false);
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
     console.log({ query, params });
     console.log(query.id);
@@ -152,6 +217,17 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     });
+    const formState = reactive({
+      village: null,
+    });
+
+    const openModal = () => {
+      isModalOpen.value = true;
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -189,6 +265,58 @@ const DragAndDropTable = defineComponent({
 
     const isAdmin = hasRole(adminRoles);
 
+    const handleSubmit = () => {
+      const data = {
+        location_code: formState.village,
+      };
+
+      // sessionStorage.setItem("stakeholder", JSON.stringify(data));
+      // store.commit("setIsSubmitting", true);
+      // const sendotp = {
+      //   first_name: formState.first_name,
+      //   last_name: formState.last_name,
+      //   phone_no: formState.phone_no,
+      // };
+      // console.log(JSON.stringify(sendotp));
+      console.log(JSON.stringify(data));
+      fetch(`${API_URL}/user/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success, message }) => {
+          console.log(message);
+          if (success == true) {
+            store.commit("setIsSubmitting", false);
+            notification["success"]({
+              message: "Record Created",
+              description: message,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            store.commit("setIsSubmitting", false);
+            notification["error"]({
+              message: "Error!",
+              description: message,
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
 
     return {
       crud,
@@ -202,6 +330,11 @@ const DragAndDropTable = defineComponent({
       searchItem,
       columns,
       isAdmin,
+      openModal,
+      isModalOpen,
+      handleCancel,
+      formState,
+      handleSubmit,
     };
   },
 });

@@ -59,11 +59,11 @@
                 </a-table>
               </TableWrapper>
             </div>
-            <!-- Issue modal -->
+            <!-- Add Security modal -->
             <a-modal
               title="Add Security"
               :visible="isModalOpen"
-              @cancel="handleCancelReceive"
+              @cancel="handleCancel"
               width="50%"
               footer=""
             >
@@ -593,7 +593,7 @@ const DragAndDropTable = defineComponent({
       }
     };
 
-    const handleCancelReceive = () => {
+    const handleCancel = () => {
       isModalOpen.value = false;
     };
 
@@ -609,7 +609,7 @@ const DragAndDropTable = defineComponent({
     return {
       dateFormat,
       postdata,
-      handleCancelReceive,
+      handleCancel,
       openModal,
       isModalOpen,
       crud,
