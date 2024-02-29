@@ -207,7 +207,7 @@ const DragAndDropTable = defineComponent({
       try {
         console.log(village_id.value);
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/sublocation_posts?village_id=${village_id.value}`,
+          `${process.env.VUE_APP_BASE_URL}/location_posts?village_id=${village_id.value}`,
           {
             method: "GET",
             headers: {

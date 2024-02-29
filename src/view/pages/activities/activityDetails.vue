@@ -146,12 +146,17 @@
                                     size="extra-small"
                                     type="danger"
                                     @click="removeOfficer(record.user_id)"
+                                    v-show="record.status === 'Active' "
                                   >
                                     <span> Remove Officer </span>
-                                    <sdFeatherIcons
-                                      type="x-circle"
-                                      size="small"
-                                    />
+                                  </sdButton>
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    @click="activateOfficer(record.user_id)"
+                                    v-show="record.status === 'Inactive' "
+                                  >
+                                    <span> Activate Officer </span>
                                   </sdButton>
                                 </div>
                               </td>
@@ -353,6 +358,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Status",
+    dataIndex: "status",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     fixed: "right",
@@ -450,6 +460,7 @@ const resendSMS = async (id) => {
   }
 };
 
+
 const openArchiveModal = () => {
   console.log(query.id);
   isArchiveModalOpen.value = true;
@@ -533,6 +544,37 @@ const removeOfficer = (id) => {
     });
 };
 
+const activateOfficer = (id) => {
+  axios
+    .post(
+      `/activate_officer?activity_id=${query.id}&user_id=${id}`
+    )
+    .then((response) => {
+      const { success, data } = response.data;
+      if (success === true) {
+        notification.success({
+          message: "Success",
+          description: data,
+        });
+        isModalOpen.value = false;
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      } else {
+        notification.error({
+          message: "Error",
+          description: `${data}`,
+        });
+      }
+    })
+    .catch((error) => {
+      notification.error({
+        message: "Error",
+        description: `${error.message || "Unknown error"}`,
+      });
+    });
+};
+
 const handleChange = (tab) => {
   activeClass.value = tab;
 };
@@ -544,9 +586,14 @@ onMounted(async () => {
 
     const updatedData = response.data.data.map((record) => {
       let fullName = `${record.first_name} ${record.last_name}`;
+
+      // check if status = 0 return inactive else return active
+      let status = record.status == 0 ? 'Inactive' : 'Active';
+
       return {
         ...record,
         fullName,
+        status,
       };
     });
 

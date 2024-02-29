@@ -290,6 +290,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'posts_summary'"
                         >
+                        <!--v-if="generations > 0"  -->
                           <sdButton
                             class="button-container"
                             style="float: right; margin-bottom: 10px"
@@ -300,11 +301,10 @@
                             href="#"
                             size="extra-small"
                             type="warning"
-                            v-if="generations > 0"
                           >
                             Generate New Order
                           </sdButton>
-                          <sdButton
+                          <!-- <sdButton
                             class="button-container"
                             style="float: right; margin-bottom: 10px"
                             @click="openGO()"
@@ -315,7 +315,7 @@
                             v-if="generations <= 0"
                           >
                             Generate New Order
-                          </sdButton>
+                          </sdButton> -->
                           <a-table
                             :pagination="{
                               pageSize: 40,

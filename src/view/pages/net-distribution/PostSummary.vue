@@ -295,7 +295,7 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'subcounty') {//get wards
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&subcounty=${location_id}`
+      masterUrl += `&sub_county=${location_id}`
       //clear fields
       ward.value = " Select Ward"
       location.value = "Select Location"
@@ -308,12 +308,12 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'location') {//get sub locatios
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&location_id=${location_id}`
+      masterUrl += `&location=${location_id}`
       //clear fields
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'sublocation') {//get sublocations stats
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&sublocation_id=${location_id}`
+      masterUrl += `&sub_location=${location_id}`
     }
     await axios.get(`${fetchUrl}`)
       .then(response => {
