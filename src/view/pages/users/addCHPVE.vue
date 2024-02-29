@@ -301,8 +301,8 @@
                           isLoading
                             ? "Loading..."
                             : isSubmitting
-                            ? "Processing ..."
-                            : "Verify OTP"
+                              ? "Processing ..."
+                              : "Verify OTP"
                         }}
                       </sdButton>
                       <sdButton
@@ -317,8 +317,8 @@
                           isLoading
                             ? "Loading..."
                             : isSubmitting
-                            ? "Processing ..."
-                            : "Submit"
+                              ? "Processing ..."
+                              : "Submit"
                         }}
                       </sdButton>
                     </div>
@@ -375,12 +375,12 @@ const AddNew = defineComponent({
       organizations,
       loading,
       counties,
-      roles,
-      events_list,
       sub_counties,
       wards,
       locations,
       sub_locations,
+      roles,
+      events_list,
       villages,
     } = reactive({
       gender: [
@@ -529,30 +529,16 @@ const AddNew = defineComponent({
     };
 
     const getCounties = async () => {
-      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/get_counties`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      });
-
-      // const getLocations = async (org_id) => {
-      //   console.log(org_id);
-      //   const response = await fetch(
-      //     `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${org_id}`,
-      //     {
-      //       method: "GET",
-      //       headers: {
-      //         "Content-Type": "application/json",
-      //         ...authHeader(),
-      //       },
-      //     }
-      //   );
-      //   const data = await response.json();
-      //   console.log(data);
-      //   this.locations = data.message;
-      // };
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/get_counties`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
 
       const data = await response.json();
       this.counties = data.map((county) => ({

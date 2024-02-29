@@ -27,7 +27,6 @@
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
-
             <!-- Table displaying activity data when not loading -->
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
