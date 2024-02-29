@@ -40,6 +40,7 @@
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
+                  :scroll="{ x: 50 }" :expand-column-width="100"
                 >
                   <template #workers="{ record }">
                     <td>
@@ -49,9 +50,18 @@
                           type="danger"
                           :disabled="isStarting"
                           @click="removeMatrix(record.id)"
-                          v-if="!record.status"
                         >
                           <span> De-Assign Post Worker </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          size="extra-small"
+                          type="success"
+                          :disabled="isStarting"
+                          @click="openShiftModal(record.id)"
+                          v-if="record.role_id == 'Security Guard - Post'"
+                        >
+                          <span> Edit Shift </span>
                         </sdButton>
                       </div>
                     </td>
@@ -258,6 +268,67 @@
               </BasicFormWrapper>
             </a-modal>
             <!-- End of Issue modal -->
+
+            <!-- Edit Security shift modal -->
+            <a-modal
+              title="Edit Security Shift"
+              :visible="isModalShiftOpen"
+              @cancel="handleShiftCancel"
+              width="20%"
+              footer=""
+            >
+              <BasicFormWrapper>
+                <a-form
+                  class="add-record-form"
+                  :style="{ width: '100%' }"
+                  layout="vertical"
+                  name="addnew"
+                  :model="formState"
+                  @finish="handleSubmitShift"
+                >
+                  <a-form-item name="Shift" label="Shift">
+                    <a-select
+                      v-model:value="formState.shift"
+                      v-if="!loading"
+                      placeholder="Select Shift"
+                      @blur="validate('shift')"
+                      @keypress="validate('shift')"
+                      show-search
+                      option-filter-prop="label"
+                    >
+                      <a-select-option
+                        v-for="s in shift"
+                        :key="s.id"
+                        :value="s.id"
+                        :label="`${s.name}`"
+                      >
+                        {{ s.name }}
+                      </a-select-option>
+                    </a-select>
+                    <p class="errors" style="color: red" v-if="!!errors.shift">
+                      {{ errors.shift }}
+                    </p>
+                  </a-form-item>
+                  <div class="record-form-actions text-right">
+                    <sdButton
+                      size="default"
+                      htmlType="Save"
+                      type="success"
+                      :disabled="isSubmitting"
+                    >
+                      {{
+                        isLoading
+                          ? "Loading..."
+                          : isSubmitting
+                            ? "Processing ..."
+                            : "Update Shift"
+                      }}
+                    </sdButton>
+                  </div>
+                </a-form>
+              </BasicFormWrapper>
+            </a-modal>
+            <!-- End of Update Guard Shift modal -->
           </sdCards>
         </a-col>
       </a-row>
@@ -291,6 +362,16 @@ const columns = [
     key: "id",
   },
   {
+    title: "Phone No",
+    dataIndex: "phone_no",
+    key: "phone_no",
+  },
+  {
+    title: "ID No",
+    dataIndex: "id_no",
+    key: "id_no",
+  },
+  {
     title: "Location",
     dataIndex: "location_id",
     key: "id",
@@ -300,11 +381,16 @@ const columns = [
     dataIndex: "role_id",
     key: "id",
   },
-  // {
-  //   title: "Drop off Manager",
-  //   dataIndex: "drop_off_manager",
-  //   key: "id",
-  // },
+  {
+    title: "Shift",
+    dataIndex: "shift",
+    key: "id",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "id",
+  },
   {
     title: "Action",
     dataIndex: "",
@@ -328,6 +414,8 @@ const DragAndDropTable = defineComponent({
     const { query } = useRoute();
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
     const security_otp = ref(false);
+    const isModalShiftOpen = ref(false);
+    const post_guard = ref("");
 
 
     const { gender } = reactive({
@@ -384,6 +472,11 @@ const DragAndDropTable = defineComponent({
 
     const openModal = () => {
       isModalOpen.value = true;
+    };
+
+    const openShiftModal = (id) => {
+      post_guard.value = id;
+      isModalShiftOpen.value = true;
     };
 
     const handleDelete = (id) => {
@@ -593,8 +686,59 @@ const DragAndDropTable = defineComponent({
       }
     };
 
+    const handleSubmitShift = () => {
+      const data = {
+        guard_id: post_guard.value,
+        shift_id: formState.shift,
+        distribution_post_id: post_id,
+      };
+
+      console.log(JSON.stringify(data));
+      fetch(`${API_URL}/edit_guard_shift`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success, message }) => {
+          console.log(message);
+          if (success == true) {
+            store.commit("setIsSubmitting", false);
+            notification["success"]({
+              message: "Post Security Shift Updated Successfully",
+              description: message,
+              duration: 5.5,
+            });
+          }
+          // show error message from the api response
+          else {
+            store.commit("setIsSubmitting", false);
+            notification["error"]({
+              message: "Error!",
+              description: message,
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
+
     const handleCancel = () => {
       isModalOpen.value = false;
+    };
+
+    const handleShiftCancel = () => {
+      isModalShiftOpen.value = false;
     };
 
     const onSelectChange = (selectedRowKey) => {
@@ -612,6 +756,9 @@ const DragAndDropTable = defineComponent({
       handleCancel,
       openModal,
       isModalOpen,
+      handleShiftCancel,
+      openShiftModal,
+      isModalShiftOpen,
       crud,
       isLoading,
       selectedRowKeys,
@@ -623,6 +770,7 @@ const DragAndDropTable = defineComponent({
       formState,
       post_id,
       removeMatrix,
+      handleSubmitShift,
       validate,
       handleSubmit,
       security_otp,
@@ -636,7 +784,7 @@ const DragAndDropTable = defineComponent({
         facilitator_id: "",
         no_of_days: null,
         venue: "",
-        shift: null
+        shift: null,
       },
     };
   },
