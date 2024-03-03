@@ -169,11 +169,6 @@ const dateFormat = "YYYY-MM-DD";
 
 const columns = [
   {
-    title: "Post Name",
-    dataIndex: "post_name",
-    key: "id",
-  },
-  {
     title: "Delivery Note No",
     dataIndex: "delivery_note_number",
     key: "id",
@@ -193,6 +188,12 @@ const columns = [
     dataIndex: "counted_no_of_nets",
     key: "id",
   },
+  {
+    title: "Verified By",
+    dataIndex: "verified_by",
+    key: "id",
+  },
+
 ];
 
 const AddNew = defineComponent({
