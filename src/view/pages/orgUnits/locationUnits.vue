@@ -82,7 +82,7 @@
               title="Re-assign Location to Ward"
               :visible="isModalOpen"
               @cancel="handleCancel"
-              width="50%"
+              width="25%"
               footer=""
             >
               <BasicFormWrapper>
@@ -102,9 +102,6 @@
                       placeholder="Select Ward"
                       v-model:value="formState.ward_id"
                     >
-                      <a-select-option value=""
-                        >Select an option</a-select-option
-                      >
                       <a-select-option
                         v-for="ward in remap_parent"
                         :value="ward.org_id"
@@ -148,7 +145,6 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent, reactive } from "vue";
-// import axios from "axios";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
@@ -156,11 +152,6 @@ import { notification } from "ant-design-vue";
 import store from "../../../vuex/store";
 
 const columns = [
-  //   {
-  //     title: "Id",
-  //     dataIndex: "id",
-  //     key: "id",
-  //   },
   {
     title: "Location Name",
     dataIndex: "name",
@@ -344,6 +335,7 @@ const DragAndDropTable = defineComponent({
               duration: 5.5,
             });
             isModalOpen.value = false;
+            setTimeout(() => location.reload(), 3000);
           }
           // show error message from the api response
           else {
