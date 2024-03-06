@@ -71,6 +71,20 @@
                 <li>
                   <a
                     :class="
+                      activeClass === 'do_post_summary'
+                        ? 'active'
+                        : 'deactivate'
+                    "
+                    @click="handleChange('do_post_summary')"
+                    href="#"
+                    :hidden="activeTransaction !== 'receive'"
+                  >
+                    Post Summary
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
                       activeClass === 'transfer_ins' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('transfer_ins')"
@@ -280,6 +294,13 @@
                         </TableWrapper>
                         <!-- end of Net TransfersOut table -->
 
+                        <!--Distribution Post Summary-->
+                        <DistributionPostSummary
+                          :post_id="query.id"
+                          v-if="activeClass === 'do_post_summary'"
+                        />
+                        <!--End Distribution Post Summary-->
+
                         <!-- Transfer modal -->
                         <a-modal
                           title="New Transfer"
@@ -388,6 +409,40 @@
                               :model="formState"
                               @finish="receiveNets"
                             >
+                              <a-form-item name="bale_size" label="Bale Size">
+                                <a-select
+                                  v-model:value="formState.bale_size"
+                                  placeholder="Select Bale Size"
+                                >
+                                  <a-select-option value="40"
+                                    >40</a-select-option
+                                  >
+                                  <a-select-option value="50"
+                                    >50</a-select-option
+                                  >
+                                </a-select>
+                              </a-form-item>
+                              <a-form-item
+                                name="no_of_bales"
+                                label="Number of bales"
+                              >
+                                <a-input
+                                  v-model:value="formState.number_of_bales"
+                                  placeholder="Number of bales"
+                                  type="number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="no_of_pieces"
+                                label="Number of Loose Pieces"
+                              >
+                                <a-input
+                                  v-model:value="formState.no_of_pieces"
+                                  placeholder="Enter number of pieces"
+                                  type="number"
+                                  @change="validateNoOfPieces"
+                                />
+                              </a-form-item>
                               <a-form-item
                                 name="date_received"
                                 label="Date Received"
@@ -398,6 +453,14 @@
                                   :format="dateFormat"
                                 />
                               </a-form-item>
+
+                              <a-form-item name="comment" label="Comment">
+                                <a-input
+                                  v-model:value="formState.comment"
+                                  placeholder="Comment"
+                                />
+                              </a-form-item>
+
                               <div class="record-form-actions text-right">
                                 <sdButton
                                   size="default"
@@ -510,10 +573,11 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main, BasicFormWrapper } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { onMounted, ref, reactive, defineComponent } from "vue";
+import { onMounted, ref, reactive } from "vue";
+import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
 import authHeader from "../../../services/auth-header";
 // import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
@@ -628,495 +692,427 @@ const columns = [
     slots: { customRender: "action" },
   },
 ];
-export default defineComponent({
-  name: "Payroll",
-  components: {
-    Main,
-    SearchResultWrapper,
-    BasicFormWrapper,
-  },
-  setup() {
-    // const { state } = useStore();
-    // const crud = computed(() => state.crud.data);
-    // const isLoading = computed(() => state.crud.loading);
-    // const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("do_point");
-    const activeTransaction = ref("receive");
-    const transaction_type = ref("");
-    const postdata = ref([]);
-    const dropoffpoints = ref([]);
-    const fromWarehouse = ref([]);
-    const fromDropoffpoint = ref([]);
-    const transferIns = ref([]);
-    const transferOuts = ref([]);
-    const { query } = useRoute();
-    const isOpen = ref(false);
-    const post_id = query.id;
-    const isModalOpen = ref(false);
-    const returnsModalOpen = ref(false);
-    const post_name = query.name;
+// const { state } = useStore();
+// const crud = computed(() => state.crud.data);
+// const isLoading = computed(() => state.crud.loading);
+// const selectedRowKeys = ref([]);
+const activeClass = ref("do_point");
+const activeTransaction = ref("receive");
+const transaction_type = ref("");
+const postdata = ref([]);
+const dropoffpoints = ref([]);
+const fromWarehouse = ref([]);
+const fromDropoffpoint = ref([]);
+const transferIns = ref([]);
+const transferOuts = ref([]);
+const { query } = useRoute();
+const isOpen = ref(false);
+const post_id = query.id;
+const isModalOpen = ref(false);
+const returnsModalOpen = ref(false);
+const post_name = query.name;
 
-    const formState = reactive({
-      date_received: "",
-      distribution_id: "",
-    });
-
-    const trans_formState = reactive({
-      from_post_id: Number(query.id),
-      to_post_id: "",
-      number_of_nets: "",
-      comment: "",
-      date_received: "",
-      transfer_id: "",
-    });
-
-    const returns_formState = reactive({
-      from_post_id: Number(query.id),
-      to_drop_off_point_id: "",
-      number_of_nets: "",
-      date_returned: "",
-    });
-
-    const handleChange = (tab) => (activeClass.value = tab);
-    const openmodal = () => (isModalOpen.value = true);
-    const openReturnsModal = () => (returnsModalOpen.value = true);
-    const handleOk = async () => (isModalOpen.value = false);
-    const handleCancel = () => (isModalOpen.value = false);
-    const handleCancelReceive = () => (isOpen.value = false);
-    const handleReturnsCancel = () => (returnsModalOpen.value = false);
-
-    const handleTransactions = (tab) => {
-      activeTransaction.value = tab;
-      tab === "receive"
-        ? handleChange("do_point")
-        : tab === "transfer"
-          ? handleChange("transfer_ins")
-          : tab === "return"
-            ? openReturnsModal()
-            : null;
-    };
-
-    const openReceiveModal = (type, id) => {
-      type === "receive"
-        ? ((formState.distribution_id = id),
-          (transaction_type.value = "receive"))
-        : ((trans_formState.transfer_id = id),
-          (transaction_type.value = "transfers"));
-      isOpen.value = true;
-    };
-
-    const fetchPosts = async () => {
-      try {
-        await fetch(`${process.env.VUE_APP_BASE_URL}/posts_data`, {
-          method: "GET",
-          headers: authHeader(),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            postdata.value = data.data;
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const fetchDropoff = async () => {
-      try {
-        await fetch(`${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`, {
-          method: "GET",
-          headers: authHeader(),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            dropoffpoints.value = data.data;
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const handleTransfer = () => {
-      const data = {
-        from_post_id: trans_formState.from_post_id,
-        to_post_id: trans_formState.to_post_id,
-        number_of_nets: trans_formState.number_of_nets,
-        delivery_note_number: trans_formState.delivery_note_number,
-        comment: trans_formState.comment,
-      };
-      console.log(JSON.stringify(data));
-      try {
-        fetch(`${process.env.VUE_APP_BASE_URL}/transfer-nets`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success) {
-              notification.success({
-                message: "Success",
-                description: `${message}`,
-              });
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${message}`,
-              });
-            }
-            isModalOpen.value = false;
-            trans_formState.to_post_id = "";
-            trans_formState.number_of_nets = "";
-            trans_formState.comment = "";
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-            isModalOpen.value = false;
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const handleReturns = () => {
-      const data = {
-        from_post_id: returns_formState.from_post_id,
-        to_drop_off_point_id: returns_formState.to_drop_off_point_id,
-        number_of_nets: returns_formState.number_of_nets,
-        date_returned: dayjs(returns_formState.date_returned).format(
-          "YYYY-MM-DD"
-        ),
-        delivery_note_number: returns_formState.delivery_note_number,
-      };
-      try {
-        fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success) {
-              notification.success({
-                message: "Success",
-                description: `Successfully returned nets to drop off point`,
-              });
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${message}`,
-              });
-            }
-            returnsModalOpen.value = false;
-
-            returns_formState.to_drop_off_point_id = "";
-            returns_formState.number_of_nets = "";
-            returns_formState.date_returned = "";
-            window.location.reload();
-          })
-          .catch((error) => {
-            console.log(error);
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const receiveNets = async () => {
-      const data = {
-        transfer_id: trans_formState.transfer_id,
-        date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-        status: 1,
-      };
-      const rec_data = {
-        date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-      };
-      const payload =
-        transaction_type.value === "transfers"
-          ? data
-          : transaction_type.value === "receive"
-            ? rec_data
-            : null;
-      const url =
-        transaction_type.value === "transfers"
-          ? "receive_nets_from_post"
-          : transaction_type.value === "receive"
-            ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
-            : null;
-
-      try {
-        fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(payload),
-        })
-          .then((response) => response.json())
-          .then(({ success }) => {
-            if (success) {
-              notification.success({
-                message: "Success",
-                description: `Received successfully`,
-              });
-            } else {
-              notification.error({
-                message: "Error",
-                description:
-                  "Only post supervisor can receive nets, contact SCMCC.",
-              });
-            }
-            isModalOpen.value = false;
-            //  window.location.reload();
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-            isModalOpen.value = false;
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    //   const receiveFromWarehouse = async()=>{
-    //     try {
-    //       await fetch(`${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/2`,
-    //       {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       })
-    //       .then((response) => response.json())
-    //       .then(({success, data}) => {
-    //         console.log(data.length);
-    //         if(success){
-    //             data.length > 0 ? fromWarehouse.value = data: fromWarehouse.value = [];
-    //         }else{
-    //           notification.error({
-    //             message: "Error",
-    //             description: `${data.message}`
-    //           });
-    //         }
-    //       });
-    //     } catch (error) {
-    //         console.log(error)
-    //       notification.error({
-    //         message: "Error",
-    //         description: `${error}`
-    //       });
-    //     }
-    //   }
-
-    const receiveFromDropOff = async () => {
-      try {
-        await fetch(
-          `${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/1`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        )
-          .then((response) => response.json())
-          .then(({ success, data }) => {
-            if (success) {
-              data.length > 0
-                ? (fromDropoffpoint.value = data)
-                : (fromDropoffpoint.value = []);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${data.message}`,
-              });
-            }
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const fetchTransferOuts = async () => {
-      try {
-        await fetch(
-          `${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/1`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        )
-          .then((response) => response.json())
-          .then(({ success, data }) => {
-            if (success) {
-              transferOuts.value = data;
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${data.message}`,
-              });
-            }
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const fetchTransferIns = async () => {
-      try {
-        await fetch(
-          `${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/2`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        )
-          .then((response) => response.json())
-          .then(({ success, data }) => {
-            if (success) {
-              transferIns.value = data;
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${data.message}`,
-              });
-            }
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-            isModalOpen.value = false;
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    const cancelTransfer = async (id) => {
-      try {
-        await fetch(
-          `${process.env.VUE_APP_BASE_URL}/cancel_post_net_transfer/${id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: null,
-          }
-        )
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success) {
-              notification.success({
-                message: "Success",
-                description: `${message}`,
-              });
-              window.location.reload();
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${message}`,
-              });
-            }
-          });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      }
-    };
-
-    onMounted(() => {
-      fetchPosts();
-      // receiveFromWarehouse();
-      fetchDropoff();
-      receiveFromDropOff();
-      fetchTransferIns();
-      fetchTransferOuts();
-    });
-    return {
-      cancelTransfer,
-      handleReturns,
-      post_name,
-      returnsModalOpen,
-      returns_formState,
-      activeTransaction,
-      handleTransactions,
-      transferscolumns,
-      dropoffpoints,
-      do_columns,
-      receiveNets,
-      handleCancelReceive,
-      handleReturnsCancel,
-      dateFormat,
-      openReceiveModal,
-      isOpen,
-      handleTransfer,
-      fromWarehouse,
-      fromDropoffpoint,
-      transferOuts,
-      transferIns,
-      postdata,
-      dataSource,
-      columns,
-      formState,
-      trans_formState,
-      handleChange,
-      activeClass,
-      isModalOpen,
-      openmodal,
-      handleOk,
-      handleCancel,
-    };
-  },
+const formState = reactive({
+  date_received: "",
+  distribution_id: "",
 });
+
+const trans_formState = reactive({
+  from_post_id: Number(query.id),
+  to_post_id: "",
+  number_of_nets: "",
+  comment: "",
+  date_received: "",
+  transfer_id: "",
+});
+
+const returns_formState = reactive({
+  from_post_id: Number(query.id),
+  to_drop_off_point_id: "",
+  number_of_nets: "",
+  date_returned: "",
+});
+
+onMounted(() => {
+  fetchPosts();
+  // receiveFromWarehouse();
+  fetchDropoff();
+  receiveFromDropOff();
+  fetchTransferIns();
+  fetchTransferOuts();
+});
+const handleChange = (tab) => (activeClass.value = tab);
+const openmodal = () => (isModalOpen.value = true);
+const openReturnsModal = () => (returnsModalOpen.value = true);
+const handleCancel = () => (isModalOpen.value = false);
+const handleCancelReceive = () => (isOpen.value = false);
+const handleReturnsCancel = () => (returnsModalOpen.value = false);
+
+const handleTransactions = (tab) => {
+  activeTransaction.value = tab;
+  tab === "receive"
+    ? handleChange("do_point")
+    : tab === "transfer"
+      ? handleChange("transfer_ins")
+      : tab === "return"
+        ? openReturnsModal()
+        : null;
+};
+
+const openReceiveModal = (type, id) => {
+  type === "receive"
+    ? ((formState.distribution_id = id), (transaction_type.value = "receive"))
+    : ((trans_formState.transfer_id = id),
+      (transaction_type.value = "transfers"));
+  isOpen.value = true;
+};
+
+const fetchPosts = async () => {
+  try {
+    await fetch(`${process.env.VUE_APP_BASE_URL}/posts_data`, {
+      method: "GET",
+      headers: authHeader(),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data.data);
+        postdata.value = data.data;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const fetchDropoff = async () => {
+  try {
+    await fetch(`${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`, {
+      method: "GET",
+      headers: authHeader(),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        dropoffpoints.value = data.data;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const handleTransfer = () => {
+  const data = {
+    from_post_id: trans_formState.from_post_id,
+    to_post_id: trans_formState.to_post_id,
+    number_of_nets: trans_formState.number_of_nets,
+    delivery_note_number: trans_formState.delivery_note_number,
+    comment: trans_formState.comment,
+  };
+  console.log(JSON.stringify(data));
+  try {
+    fetch(`${process.env.VUE_APP_BASE_URL}/transfer-nets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `${message}`,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${message}`,
+          });
+        }
+        isModalOpen.value = false;
+        trans_formState.to_post_id = "";
+        trans_formState.number_of_nets = "";
+        trans_formState.comment = "";
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const handleReturns = () => {
+  const data = {
+    from_post_id: returns_formState.from_post_id,
+    to_drop_off_point_id: returns_formState.to_drop_off_point_id,
+    number_of_nets: returns_formState.number_of_nets,
+    date_returned: dayjs(returns_formState.date_returned).format("YYYY-MM-DD"),
+    delivery_note_number: returns_formState.delivery_note_number,
+  };
+  try {
+    fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `Successfully returned nets to drop off point`,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${message}`,
+          });
+        }
+        returnsModalOpen.value = false;
+
+        returns_formState.to_drop_off_point_id = "";
+        returns_formState.number_of_nets = "";
+        returns_formState.date_returned = "";
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.log(error);
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const receiveNets = async () => {
+  const data = {
+    transfer_id: trans_formState.transfer_id,
+    date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+    status: 1,
+  };
+  const quantity_received = (Number(formState.number_of_bales) * Number(formState.bale_size)) + Number(formState.no_of_pieces);
+
+
+  console.log(quantity_received);
+  const rec_data = {
+    date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+    bale_size: formState.bale_size,
+    no_of_bales: formState.number_of_bales,
+    loose_pieces: formState.no_of_pieces,
+    quantity_received: quantity_received,
+    receptor_comment: formState.comment,
+  };
+  const payload = transaction_type.value === "transfers" ? data : transaction_type.value === "receive" ? rec_data : null;
+  const url =
+    transaction_type.value === "transfers"
+      ? "receive_nets_from_post"
+      : transaction_type.value === "receive"
+        ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
+        : null;
+
+  console.log(JSON.stringify(payload));
+  console.log(formState.distribution_id);
+  console.log(url);
+
+  try {
+    fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => response.json())
+      .then(({ success, data, message }) => {
+        console.log({ success, data, message });
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: message,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description:
+              message,
+          });
+        }
+        isModalOpen.value = false;
+        //  window.location.reload();
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const receiveFromDropOff = async () => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post_supplies_list/${post_id}/1`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
+      .then((response) => response.json())
+      .then(({ success, data }) => {
+        if (success) {
+          data.length > 0
+            ? (fromDropoffpoint.value = data)
+            : (fromDropoffpoint.value = []);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data.message}`,
+          });
+        }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const fetchTransferOuts = async () => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/1`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
+      .then((response) => response.json())
+      .then(({ success, data }) => {
+        if (success) {
+          transferOuts.value = data;
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data.message}`,
+          });
+        }
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const fetchTransferIns = async () => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/post_nets_transfer_list/${query.id}/2`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
+      .then((response) => response.json())
+      .then(({ success, data }) => {
+        if (success) {
+          transferIns.value = data;
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data.message}`,
+          });
+        }
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const cancelTransfer = async (id) => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/cancel_post_net_transfer/${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: null,
+      }
+    )
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `${message}`,
+          });
+          window.location.reload();
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${message}`,
+          });
+        }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
 </script>
 <style scoped>
 .badge-green {

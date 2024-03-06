@@ -53,6 +53,39 @@
               :columns="transfersColumns"
               :data-source="subLocationData"
               :scroll="{ x: 'max-content' }"
+              :pagination="false"
+            >
+              <template #posts="{ record }">
+                <td>
+                  <!-- Buttons for viewing confirmed and pending participants -->
+                  <div class="table-actions">
+                    <!-- Button for viewing confirmed participants -->
+                    <sdButton size="extra-small" type="success">
+                      <router-link
+                        :to="{
+                          path: `/posts/hh/${record.id}`,
+                          query: {
+                            id: record.id,
+                          },
+                        }"
+                        class="btn-icon"
+                        type="info"
+                        shape="circle"
+                      >
+                        View Households
+                      </router-link>
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
+            <a-pagination
+              :current="currentPage"
+              :total="datatotal"
+              :pageSize="pageSize"
+              :showSizeChanger="true"
+              :pagination="true"
+              @change="onLTablePageChange($event)"
             />
           </div>
         </template>
@@ -64,7 +97,31 @@
               :columns="villagesColumns"
               :data-source="villagesData"
               :scroll="{ x: 'max-content' }"
-            />
+            >
+              <template #villages="{ record }">
+                <td>
+                  <!-- Buttons for viewing confirmed and pending participants -->
+                  <div class="table-actions">
+                    <!-- Button for viewing confirmed participants -->
+                    <sdButton size="extra-small" type="success">
+                      <router-link
+                        :to="{
+                          path: `/villages/hh/${record.id}`,
+                          query: {
+                            id: record.id,
+                          },
+                        }"
+                        class="btn-icon"
+                        type="info"
+                        shape="circle"
+                      >
+                        View Households
+                      </router-link>
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
           </div>
         </template>
       </div>
@@ -78,7 +135,12 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 //   import { fetchData } from "@/api"; // Replace with your actual API module
-import authHeader from "../../../services/auth-header";
+import axios from "@/Axiosconfig";
+// import { TableWrapper } from "../../styled";
+
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
 
 const selectedKeys = ref(["2"]);
 
@@ -108,12 +170,12 @@ const transfersColumns = ref([
     dataIndex: "distribution_end_date",
     key: "id",
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "posts",
+    slots: { customRender: "posts" },
+  },
 ]);
 
 const villagesColumns = ref([
@@ -142,13 +204,14 @@ const villagesColumns = ref([
     dataIndex: "no_of_registered_hh",
     key: "id",
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "villages",
+    slots: { customRender: "villages" },
+  },
 ]);
+
 const villagesData = ref([]);
 
 const subLocationData = ref([]);
@@ -157,17 +220,28 @@ const selectMenuItem = (key) => {
   selectedKeys.value = [key];
 };
 
+// Initial load: Fetch villages data
+onMounted(async () => {
+  await fetchVillagesData();
+});
+
+const onLTablePageChange = async (page) => {
+  currentPage.value = page;
+  try {
+    const response = await axios.get(
+      `gf_events?page=${page}&per_page=${pageSize.value}`
+    );
+    subLocationData.value = response.data.data;
+    datatotal.value = response.data.pagination.total;
+  } catch (error) {
+    console.error(error);
+  }
+};
 // Function to fetch village data
 const fetchVillagesData = async () => {
   try {
-    const response = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/villages/list`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    );
-    const data = await response.json();
+    const response = await axios.get(`villages/list`);
+    const data = await response.data;
     console.log(data);
     villagesData.value = data.data;
   } catch (error) {
@@ -178,25 +252,14 @@ const fetchVillagesData = async () => {
 // Function to fetch sub location data
 const fetchSubLocationData = async () => {
   try {
-    const response = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/sub_location_posts`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    );
-    const data = await response.json();
+    const response = await axios.get(`sub_location_posts`);
+    const data = await response.data;
     console.log(data);
     subLocationData.value = data.data;
   } catch (error) {
     console.error(error);
   }
 };
-
-// Initial load: Fetch villages data
-onMounted(async () => {
-  await fetchVillagesData();
-});
 
 // Watch for changes in selectedKeys
 watch(selectedKeys, async (newSelectedKeys) => {

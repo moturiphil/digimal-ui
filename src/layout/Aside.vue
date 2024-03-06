@@ -12,11 +12,9 @@
         <a-menu-item key="widgetDashboard">
           <router-link to="/"> Campaign Dashboard </router-link>
         </a-menu-item>
-        <!-- <a-menu-item key="widgetDashboard" v-if="true">
-            <router-link to="/MNEDashboard">
-              M & E Dashboard
-            </router-link>
-          </a-menu-item> -->
+        <a-menu-item key="widgetM&EDashboard" v-if="true">
+          <router-link to="/MNEDashboard"> M & E Dashboard </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>
@@ -33,7 +31,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="isLevelOne">
+      <a-sub-menu key="events" v-if="isLevelOne  || isAIEHolder">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -70,7 +68,7 @@
       </a-sub-menu>
       <a-sub-menu
         key="activities"
-        v-if="canCreateActivity || canViewActivities"
+        v-if="canCreateActivity || canViewActivities  || isAIEHolder"
       >
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
@@ -152,16 +150,16 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetIncompleteHouseholdReg">
-          <router-link to="/households-registrations/incomplete">
-            Incomplete HouseHolds Registration
-          </router-link>
-        </a-menu-item>
         <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
           <router-link to="/household/validation">
             HouseHolds Validation
           </router-link>
         </a-menu-item>
+        <!-- <a-menu-item key="widgetIncompleteHouseholdReg">
+          <router-link to="/households-registrations/incomplete">
+            Incomplete HouseHolds Registration
+          </router-link>
+        </a-menu-item> -->
         <!-- <a-menu-item key="widgetHouseholdNets" v-if="canViewNetsDistributed">
           <router-link to="/hh-nets-distributed">
             Nets Distributed
@@ -242,9 +240,9 @@
             Dropoff-Point Nets
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetNetsReceived">
+        <!-- <a-menu-item key="widgetNetsReceived">
           <router-link to="/nets/nets-delivered"> Post Nets </router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-menu-item key="widgetPostSummary">
           <router-link to="/nets/post-summary"> Posts Summary </router-link>
         </a-menu-item>
@@ -319,38 +317,7 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-      </a-sub-menu>
-      <!-- <a-sub-menu key="draft-payroll" v-if="canViewPayroll && isLevelOne">
-        <template v-slot:title>
-          <sdFeatherIcons type="credit-card" /><span>Draft Payroll</span>
-        </template>
-        <a-sub-menu key="gf-draft-payroll">
-          <template v-slot:title>
-            <sdFeatherIcons type="globe" /><span>Global Fund Draft</span>
-          </template>
-          <a-menu-item key="gf-draft-activity-payroll">
-            <router-link to="/gf-activity-payroll"
-              >Draft Activity Payroll
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="gf-draft-event-payroll">
-            <router-link to="/gf-event-payroll">Draft Event Payroll</router-link>
-          </a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="pmi-draft-payrolly">
-          <template v-slot:title>
-            <sdFeatherIcons type="radio" /><span>PMI Draft</span>
-          </template>
-          <a-menu-item key="pmi-draft-activity-payroll">
-            <router-link to="/pmi-draft-activity-payroll"
-              >Draft Activity Payroll
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="pmi-draft-event-payroll">
-            <router-link to="/pmi-draft-event-payroll">Draft Event Payroll </router-link>
-          </a-menu-item>
-        </a-sub-menu>
-      </a-sub-menu> -->
+      </a-sub-menu> 
       <a-sub-menu
         key="user-management"
         v-if="isAdmin || canViewUsers || canViewMasterlist"
@@ -399,7 +366,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item v-if="isAdmin" key="massnet-admin">
+      <a-menu-item v-if="isAdmin || isTechSupport" key="massnet-admin">
         <router-link to="/admin-massnet">
           <sdFeatherIcons type="alert-triangle" /><span> Administrator </span>
         </router-link>
@@ -429,6 +396,9 @@ import { useRoute, useRouter } from "vue-router";
 import { fetchUserData, hasRole } from "../services/user-role";
 
 const adminRoles = [53];
+const aieHolderRoles = [1];
+
+const techSupportRoles = [56];
 const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
   53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60, 78, 17,
@@ -443,7 +413,7 @@ const createActivityRoles = [53, 5, 3, 21, 37, 22, 36];
 
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17, 64, 65,
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
@@ -451,46 +421,49 @@ const viewOrgUnitsRoles = [
 ];
 const viewRegHHRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,
+
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,
 ];
 
 const viewHHValidationRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,
+
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,
 ];
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17, 65,
 ];
 
 const viewDropoffPointsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 55, 65, 78,
 ];
 
 const createDistributionPostRoles = [
-  53, 5, 3, 7, 8, 10, 11, 14, 15, 16, 21, 34, 36, 37, 39, 42, 44,
+  53, 5, 3, 7, 8, 10, 11, 14, 15, 16, 21, 34, 36, 37, 39, 42, 44, 78,
 ];
 
 const viewDistributionPostRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 34, 44
+
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 34, 44, 55, 65, 78,
 ];
 
 const viewInventoryRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 55, 65, 78,
 ];
 
 const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78, 17];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37, 56, 78, 17, 44, 35, 79
+  42, 60, 34, 37, 56, 78, 17, 44, 35, 79, 65, 78,
 ];
 
-const viewMasterlistsRoles = [56];
+const viewMasterlistsRoles = [56, 7, 3 ];
 
 const createDropOffPoint = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
@@ -523,8 +496,9 @@ export default defineComponent({
     const rt = useRouter();
 
     // user roles
-    const isAIEHolder = hasRole(1);
+    const isAIEHolder = hasRole(aieHolderRoles);
     const isAdmin = hasRole(adminRoles);
+    const isTechSupport = hasRole(techSupportRoles);
     const canCreateCampaign = hasRole(createCampaignRoles);
     const canViewCampaign = hasRole(viewCampaignRoles);
     const canCreateEvent = hasRole(createEventRoles);
@@ -609,6 +583,7 @@ export default defineComponent({
       role_id,
       isLevelOne,
       isAdmin,
+      isTechSupport,
       isAIEHolder,
       canViewCampaign,
       canCreateEvent,

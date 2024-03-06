@@ -1,9 +1,7 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Events">
-      <template #subTitle>
-
-      </template>
+      <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -15,12 +13,7 @@
             type="text"
             name="dataSource"
             placeholder="Search by name code, venue or location"
-            style="
-              font-size: 15px;
-              width: 100%;
-              max-width: 300px;
-              height: 2.5rem;
-            "
+            style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
           />
         </div>
       </template>
@@ -35,11 +28,56 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="false"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                >
+                <a-row class="" :gutter="3">
+                  <a-space>
+                    <a-col
+                      :xxl="28"
+                      :xl="28"
+                      :md="28"
+                      :sm="28"
+                      v-if="allowedLevels.includes('county')"
+                    >
+                      <a-select
+                        v-model:value="county"
+                        show-search
+                        placeholder="Select County"
+                        style="width: 100%"
+                        :options="counties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"
+                      ></a-select>
+                    </a-col>
+                    <a-col
+                      :xxl="24"
+                      :xl="24"
+                      :md="24"
+                      :sm="24"
+                      v-if="allowedLevels.includes('subcounty')"
+                    >
+                      <a-select
+                        v-model:value="subcounty"
+                        show-search
+                        placeholder="Select Sub County"
+                        style="width: 100%"
+                        :options="subcounties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'subcounty')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-model:value="gfevent"
+                        show-search
+                        placeholder="Select an Event"
+                        style="width: 100%"
+                        :options="events"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'event')"
+                      ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
@@ -59,14 +97,16 @@
                           <router-link
                             :to="{
                               name: `view-details`,
-                              params: {id: record.id},
+                              params: { id: record.id },
                               query: {
-                                encryptedData: encodeURIComponent(encrypt({
-                                  id: record.id,
-                                  name: record.name,
-                                  event_code: record.event_code,
-                                  event_host_id: record.event_host_id,
-                                })),
+                                encryptedData: encodeURIComponent(
+                                  encrypt({
+                                    id: record.id,
+                                    name: record.name,
+                                    event_code: record.event_code,
+                                    event_host_id: record.event_host_id,
+                                  })
+                                ),
                               },
                             }"
                           >
@@ -87,10 +127,7 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
-                          v-if="
-                            !record.status &&
-                            record.payroll_status === 'Pending'
-                          "
+                          v-if="!record.status && record.payroll_status === 'Pending'"
                         >
                           <sdFeatherIcons type="play-circle" size="small" />
                           <span>Start Event </span>
@@ -107,77 +144,6 @@
                           <span> Close Event </span>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <a-modal
-                          title="Event Confirmation"
-                          :visible="isModalOpen"
-                          @ok="handleOk(recordId, inputValue)"
-                          @cancel="handleCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <p>Registration Confirmation processing</p>
-                            <input type="number" v-model="inputValue" />
-                          </div>
-                        </a-modal>
-                        <a-modal
-                          title="Event Trainers"
-                          :visible="isTrainerModalOpen"
-                          @ok="handleOkTrainers"
-                          @cancel="handleTrainerCancel"
-                          class="title-success"
-                        >
-                          <div>
-                            <h4>
-                              <b>
-                                <u> Event Host </u>
-                              </b>
-                            </h4>
-                            <p>{{ event_host }}</p>
-                            <h4>
-                              <b>
-                                <u> Event Facilitators </u>
-                                <!-- <sdButton
-                                  size="extra-small"
-                                  type="info"
-                                  @click="manageEvent(record.event_code)"
-                                >
-                                  Add Trainer &nbsp; &nbsp;
-                                </sdButton> -->
-                              </b>
-                            </h4>
-                            <br />
-                            <ul>
-                              <li
-                                v-for="facilitator in event_facilitators"
-                                :key="facilitator"
-                              >
-                                {{ facilitator }}
-                              </li>
-                              <!-- <li>
-                                <sdButton
-                                  class="spaced-button"
-                                  size="extra-small"
-                                  type="success"
-                                  outlined
-                                  v-for="facilitator in event_facilitators"
-                                  :key="facilitator"
-                                >
-                                  {{ facilitator }}
-                                  <sdButton
-                                    class="remove-button"
-                                    size="extra-small"
-                                    type="danger"
-                                  >
-                                    <sdFeatherIcons
-                                      type="trash-2"
-                                      size="small"
-                                    />
-                                  </sdButton>
-                                </sdButton> -->
-                              <!-- </li> -->
-                            </ul>
-                          </div>
-                        </a-modal>
                       </div>
                     </td>
                   </template>
@@ -191,6 +157,77 @@
                   @change="onPageChange($event)"
                 />
               </TableWrapper>
+              <!-- view trainers modal -->
+              <a-modal
+                title="Event Trainers"
+                :visible="isTrainerModalOpen"
+                @ok="handleOkTrainers"
+                @cancel="handleTrainerCancel"
+                class="title-success"
+              >
+                <div>
+                  <h4>
+                    <b>
+                      <u> Event Host </u>
+                    </b>
+                  </h4>
+                  <p>{{ event_host }}</p>
+                  <h4>
+                    <b>
+                      <u> Event Facilitators </u>
+                      <!-- <sdButton
+                          size="extra-small"
+                          type="info"
+                          @click="manageEvent(record.event_code)"
+                        >
+                          Add Trainer &nbsp; &nbsp;
+                        </sdButton> -->
+                    </b>
+                  </h4>
+                  <br />
+                  <ul>
+                    <li v-for="facilitator in event_facilitators" :key="facilitator">
+                      {{ facilitator }}
+                    </li>
+                    <!-- <li>
+                        <sdButton
+                          class="spaced-button"
+                          size="extra-small"
+                          type="success"
+                          outlined
+                          v-for="facilitator in event_facilitators"
+                          :key="facilitator"
+                        >
+                          {{ facilitator }}
+                          <sdButton
+                            class="remove-button"
+                            size="extra-small"
+                            type="danger"
+                          >
+                            <sdFeatherIcons
+                              type="trash-2"
+                              size="small"
+                            />
+                          </sdButton>
+                        </sdButton> -->
+                    <!-- </li> -->
+                  </ul>
+                </div>
+              </a-modal>
+
+              <!-- register -->
+              <a-modal
+                title="Event Confirmation"
+                :visible="isModalOpen"
+                @ok="handleOk(recordId, inputValue)"
+                @cancel="handleCancel"
+                class="title-success"
+              >
+                <div>
+                  <p>Registration Confirmation processing</p>
+                  <input type="number" v-model="inputValue" />
+                </div>
+              </a-modal>
             </div>
           </sdCards>
         </a-col>
@@ -203,7 +240,7 @@ import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineProps,watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -248,14 +285,6 @@ const columns = [
   },
 ];
 
-
-defineProps({
-  event: {
-    type: Object,
-    required: true,
-  },
-});
-
 const {
   state,
   //dispatch
@@ -274,22 +303,130 @@ const event_facilitators = ref([]);
 //const eventEndDate = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
-var datatotal = ref(0)
-const visible=ref(false)
-//const confirmLoading=ref(false)
-//const modalType=ref("success")
-const colorVisible=ref(false)
-const isStarting=ref(false)
-//const isStarted=ref(false)
-//const events=ref([]) // an array of events fetched from the server
-const eventStatus=ref({}) // an object to keep track of the status of each event
-//enrcrypt
-import { encrypt } from '@/cryptoHelper';
-// Example usage
+var datatotal = ref(0);
+const visible = ref(false);
+const colorVisible = ref(false);
+const isStarting = ref(false);
+const eventStatus = ref({}); // an object to keep track of the status of each event
+import { encrypt } from "@/cryptoHelper";
 
+const counties = ref(null);
+const subcounties = ref(null);
+const events = ref([]);
+const allowedLevels = ref([]);
+const access_level = ref(null);
+const org_ids = ref([]);
+const store = useStore();
 
+// Fetch activity data from the API endpoint on component mount
+onMounted(async () => {
+  const user = sessionStorage.getItem("user");
+  const user_object = JSON.parse(user);
+  if (user_object != null) {
+    access_level.value = user_object.user;
+    await updateFilters();
+  }
+  getEvents();
+});
+const updateFilters = async () => {
+  // access_level.value.level.id = 3
+  // access_level.value.location.org_id = 'BzFBYZhF5fx'
+  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
+  if (access_level.value.level.id == 1) {
+    allowedLevels.value = ["county", "subcounty"];
+    await fetchCounties();
+  } else if (access_level.value.level.id == 2) {
+    allowedLevels.value = ["county", "subcounty"];
+    counties.value = [
+      {
+        value: access_level.value.location.id,
+        label: access_level.value.location.name,
+      },
+    ];
+  }
+};
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let parent_id = org[0] || 9;
+  fetchChildData(parent_id, org_id, org_level);
+};
+const fetchChildData = async (parent_id, org_id, org_level) => {
+  currentPage.value = 1;
+  let fetchUrl = `get_sub_counties_list`;
+  let masterUrl = `gf_events?per_page=${pageSize.value}&page=${currentPage.value}`;
+  var location_id = store.state.filters.location_id;
+  if (org_level == "county") {
+    store.dispatch("getCountyId", parent_id);
+    location_id = store.state.filters.location_id;
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    //get county activities
+    masterUrl += `&location_id=${location_id}`;
+  } else if (org_level == "subcounty") {
+    store.dispatch("getSubCountyId", parent_id);
+    location_id = store.state.filters.location_id;
+    //get subcounty activities
+    fetchUrl += `?parent_id=${org_id}`;
+    masterUrl += `&location_id=${location_id}`;
+  } else if (org_level == "event") {
+    //get activities
+    location_id = store.state.filters.location_id;
+    masterUrl += `&location_id=${location_id}&event_list=${org_id}`;
+  }
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
+      let data = response.data.message;
+      if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data.map((x) => ({ org_id: x.org_id, id: x.id })),
+        ];
+      }
+    })
+    .then(async () => {
+      await axios.get(`${masterUrl}`).then((response) => {
+        let data = response.data.data;
+        dataSource.value = data;
+        datatotal.value = response.data.pagination.total;
+      });
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+const fetchCounties = async () => {
+  await axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data.map((x) => ({
+        value: x.org_id,
+        label: x.name,
+      }));
+      org_ids.value = [
+        ...org_ids.value,
+        ...response.data.map((x) => ({ org_id: x.org_id, id: x.id })),
+      ];
+      // console.log(counties.value)
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
 const onPageChange = async (page) => {
-  currentPage.value = page
+  currentPage.value = page;
   try {
     const response = await axios.get(`gf_events?page=${page}&per_page=${pageSize.value}`);
     dataSource.value = response.data.data;
@@ -297,237 +434,242 @@ const onPageChange = async (page) => {
   } catch (error) {
     console.error(error);
   }
-}
+};
 // search events
-watch(() => searchItem.value, (newValue) => {
-  searchItem.value=newValue;
-  getEvents();
-});
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    searchItem.value = newValue;
+    getEvents();
+  }
+);
 // get all the events
-onMounted(() => {
-  getEvents()
-});
 
 const getEvents = () => {
-  axios.get(`gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
+  axios
+    .get(
+      `gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+    )
     .then((response) => {
       // dataSource.value = response.data.data;
-      // console.log(dataSource.value);
-      const filteredData = response.data.data.filter(
-        (item) => item.funding_source == 1
-      );
+      // console.log(dataSource.value);\
+      events.value = response.data.data.map((x) => ({
+        value: x.event_list_id,
+        label: x.name,
+      }));
+      const filteredData = response.data.data.filter((item) => item.funding_source == 1);
       datatotal.value = response.data.pagination.total;
       console.log(datatotal.value);
-      dataSource.value = filteredData
+      dataSource.value = filteredData;
     })
     .catch((error) => {
       console.error(error);
     });
-}
-    // start an event == only host can start/close
-    const startEvent=async(id)=>{
-      try {
-        isStarting.value = true;
-        const response = await axios.get(`event_start_trigger/${id}`);
-        const data = await response.data;
-        console.log(data);
-        if (data.status === true) {
-          eventStatus.value[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          notification.success({
-            message: "Event Started",
-            description: data.message,
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000);
-          });
-          location.reload();
-        } else {
-          eventStatus.value[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          notification.error({
-            message: "Event Not Started",
-            description: data.message,
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        isStarting.value = false;
-      }
+};
+// start an event == only host can start/close
+const startEvent = async (id) => {
+  try {
+    isStarting.value = true;
+    const response = await axios.get(`event_start_trigger/${id}`);
+    const data = await response.data;
+    console.log(data);
+    if (data.status === true) {
+      eventStatus.value[id] = true;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      notification.success({
+        message: "Event Started",
+        description: data.message,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else {
+      eventStatus.value[id] = false;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      notification.error({
+        message: "Event Not Started",
+        description: data.message,
+      });
     }
-    // close an event == only host can start/close
-    const closeEvent=async(id)=>{
-      try {
-        isStarting.value = true;
-        const response = await axios.get( `event_close_trigger/${id}`);
-        const data = await response.data;
-        console.log(data);
-        if (data.status === true) {
-          eventStatus.value[id] = true;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          // notify the user
-          notification.success({
-            message: "Event Closed",
-            description: "Event has been closed successfully",
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-          });
-          location.reload();
-        } else {
-          eventStatus.value[id] = false;
-          localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-          notification.error({
-            message: "Event Not Closed",
-            description: "Only event host can close event",
-          });
-        }
-        // location.reload();
-      } catch (error) {
-        console.error(error);
-      } finally {
-       isStarting.value = true;
-      }
-}
-
-    const handleCancel=()=>{
-      isModalOpen.value = false;
-      visible.value = false;
-      colorVisible.value = false;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isStarting.value = false;
+  }
+};
+// close an event == only host can start/close
+const closeEvent = async (id) => {
+  try {
+    isStarting.value = true;
+    const response = await axios.get(`event_close_trigger/${id}`);
+    const data = await response.data;
+    console.log(data);
+    if (data.status === true) {
+      eventStatus.value[id] = true;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      // notify the user
+      notification.success({
+        message: "Event Closed",
+        description: "Event has been closed successfully",
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
+      });
+      location.reload();
+    } else {
+      eventStatus.value[id] = false;
+      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
+      notification.error({
+        message: "Event Not Closed",
+        description: "Only event host can close event",
+      });
     }
-  const handleTrainerCancel=()=>{
-      isTrainerModalOpen.value = false;
-      visible.value = false;
-      colorVisible.value = false;
+    // location.reload();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isStarting.value = true;
+  }
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
+  visible.value = false;
+  colorVisible.value = false;
+};
+const handleTrainerCancel = () => {
+  isTrainerModalOpen.value = false;
+  visible.value = false;
+  colorVisible.value = false;
+};
+const handleOkTrainers = () => {
+  isTrainerModalOpen.value = false;
+  visible.value = false;
+  colorVisible.value = false;
+};
+// const changeType=(type)=>{
+//     modalType.value = type;
+//   }
+// participants registrations
+const handleRegistration = (id) => {
+  isModalOpen.value = true;
+  console.log("Event Code;", id);
+  recordId.value = id;
+  console.log("recordId", recordId.value);
+  try {
+    console.log("register");
+  } catch (error) {
+    console.log(error);
+  }
+};
+const manageEvent = async (code) => {
+  console.log(code);
+  console.log("console.log");
+  isTrainerModalOpen.value = true;
+  try {
+    const response = await axios.get(`event/${code}/facilitators`);
+    const eventDetails = response.data.data;
+    // Reset the arrays before adding new data
+
+    event_host.value = eventDetails.event_host;
+    event_facilitators.value = eventDetails.event_facilitators;
+
+    //console.log(event_host.value, event_facilitators.value);
+  } catch (error) {
+    console.error(error);
+  }
+};
+// confirm participant registration code
+const handleOk = async (id, inputValue) => {
+  console.log(recordId.value);
+  console.log(inputValue);
+  try {
+    const response = await axios.get(
+      `event/${recordId.value}/participant/${inputValue}/assign`
+    );
+    //console.log(response);
+    if (response.status == 200) {
+      inputValue = "";
+      notification.success({
+        message: "Success",
+        description: response.data.message,
+      });
+      inputValue = "";
+    } else if (response.status == 208) {
+      notification.info({
+        message: "Info",
+        description: response.data.message,
+      });
+      inputValue = "";
     }
-  const handleOkTrainers=()=>{
-      isTrainerModalOpen.value = false;
-      visible.value = false;
-      colorVisible.value = false;
+  } catch (error) {
+    console.log(error);
+    notification.error({
+      message: "Error",
+      description: "Participant Registration Failed, Registration Code does not exist",
+    });
+    inputValue = "";
+  } finally {
+    console.log(inputValue);
+    inputValue = ""; // Clear inputValue after the modal is closed
+    isModalOpen = true;
+  }
+};
+
+// Handle when event code is incorrect
+
+async () => {
+  try {
+    // Validate the event code
+    const { data } = await axios.get(`gf_events?event_code=${eventCode.value}`);
+    if (!data || data.length === 0) {
+      throw new Error("Invalid event code");
     }
-  // const changeType=(type)=>{
-  //     modalType.value = type;
-  //   }
-    // participants registrations
-    const handleRegistration = (id) => {
-      isModalOpen.value = true;
-      console.log("Event Code;", id);
-      recordId.value = id;
-      console.log("recordId", recordId.value);
-      try {
-        console.log("register");
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    const manageEvent = async (code) => {
-      console.log(code);
-      console.log("console.log");
-      isTrainerModalOpen.value = true;
-      try {
-        const response = await axios.get(`event/${code}/facilitators`);
-        const eventDetails = response.data.data;
-        // Reset the arrays before adding new data
 
-        event_host.value = eventDetails.event_host;
-        event_facilitators.value = eventDetails.event_facilitators;
+    // Navigate to the event registration page
+    const eventId = data[0].id;
+    router.push(`/event/register/${eventId}`);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-        //console.log(event_host.value, event_facilitators.value);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    // confirm participant registration code
-    const handleOk = async (id, inputValue) => {
-      console.log(recordId.value);
-      console.log(inputValue);
-      try {
-        const response = await axios.get(`event/${recordId.value}/participant/${inputValue}/assign`);
-        //console.log(response);
-        if (response.status == 200) {
-          inputValue = "";
-          notification.success({
-            message: "Success",
-            description: response.data.message,
-          });
-          inputValue = "";
-        } else if (response.status == 208) {
-          notification.info({
-            message: "Info",
-            description: response.data.message,
-          });
-          inputValue = "";
-        }
-      } catch (error) {
-        console.log(error);
-        notification.error({
-          message: "Error",
-          description:
-            "Participant Registration Failed, Registration Code does not exist",
-        });
-        inputValue = "";
-      } finally {
-        console.log(inputValue);
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen = true;
-      }
-    };
+// const handleDelete = (id) => {
+//   const confirm = window.confirm("Are you sure delete this?");
+//   if (confirm) {
+//     dispatch("axiosDataDelete", {
+//       id,
+//       getData: () => {
+//         dispatch("axiosCrudGetData");
+//       },
+//     });
+//   }
+//   return false;
+// };
 
+// const onSelectChange = (selectedRowKey) => {
+//   selectedRowKeys.value = selectedRowKey;
+// };
 
-    // Handle when event code is incorrect
-
-    async () => {
-      try {
-        // Validate the event code
-        const { data } = await axios.get(`gf_events?event_code=${eventCode.value}`);
-        if (!data || data.length === 0) {
-          throw new Error("Invalid event code");
-        }
-
-        // Navigate to the event registration page
-        const eventId = data[0].id;
-        router.push(`/event/register/${eventId}`);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    // const handleDelete = (id) => {
-    //   const confirm = window.confirm("Are you sure delete this?");
-    //   if (confirm) {
-    //     dispatch("axiosDataDelete", {
-    //       id,
-    //       getData: () => {
-    //         dispatch("axiosCrudGetData");
-    //       },
-    //     });
-    //   }
-    //   return false;
-    // };
-
-    // const onSelectChange = (selectedRowKey) => {
-    //   selectedRowKeys.value = selectedRowKey;
-    // };
-
-    // search through the events table
+// search through the events table
 //const results =
 computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return (
-            regex.test(event.event_code) ||
-            regex.test(event.name) ||
-            regex.test(event.location_id) ||
-            regex.test(event.venue)
-          );
-        });
-      }
+  const query = searchItem.value.toLowerCase();
+  const regex = new RegExp(query, "i");
+  if (!query) {
+    return dataSource.value;
+  } else {
+    return dataSource.value.filter((event) => {
+      return (
+        regex.test(event.event_code) ||
+        regex.test(event.name) ||
+        regex.test(event.location_id) ||
+        regex.test(event.venue)
+      );
     });
+  }
+});
 </script>
 
 <style lang="css">

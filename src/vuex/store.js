@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import themeLayout from "./modules/themeLayout/actionCreator";
 import crud from "./modules/crud/axios/actionCreator";
 import auth from "./modules/authentication/axios/actionCreator";
+import filters from "./modules/filters/filter_values";
 
 export default createStore({
   state: {
@@ -62,5 +63,6 @@ export default createStore({
     themeLayout,
     crud,
     auth,
+    filters,
   },
 });

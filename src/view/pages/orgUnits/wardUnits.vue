@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Wards">
+    <sdPageHeader ghost :title="`${sub_county_name} Wards`">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
       </template>
@@ -39,6 +39,7 @@
                           <router-link
                             :to="{
                               path: `/org-units/locations/${record.org_id}`,
+                              query: { name: record.name }
                             }"
                             class="btn-icon"
                             type="info"
@@ -111,8 +112,10 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
-    const { params } = useRoute();
+    const { params, query } = useRoute();
     const searchItem = ref("");
+    const sub_county_name = query.name;
+    console.log(query);
     onMounted(async () => {
       try {
         const response = await fetch(
@@ -175,6 +178,7 @@ const DragAndDropTable = defineComponent({
       results,
       searchItem,
       columns,
+      sub_county_name,
     };
   },
 });
