@@ -70,7 +70,7 @@
                         show-search
                         placeholder="Select an Event"
                         style="width: 100%"
-                        :options="uniqueEvents"
+                        :options="events"
                         :filter-option="filterOption"
                         @change="handleChange($event, 'event')"
                       ></a-select>
@@ -456,13 +456,6 @@ watch(
 );
 
 // get all the events
-const uniqueEvents = computed(() => {
-      const uniqueSet = new Set();
-      events.value.forEach(item => {
-        uniqueSet.add(item);
-      });
-      return Array.from(uniqueSet);
-    });
 const getEvents = () => {
   axios
     .get(
