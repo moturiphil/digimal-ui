@@ -70,7 +70,7 @@
                         show-search
                         placeholder="Select an Event"
                         style="width: 100%"
-                        :options="events"
+                        :options="uniqueEvents"
                         :filter-option="filterOption"
                         @change="handleChange($event, 'event')"
                       ></a-select>
@@ -323,6 +323,8 @@ import { encrypt, decrypt } from "@/cryptoHelper";
 const counties = ref(null);
 const subcounties = ref(null);
 const events = ref([]);
+const location_id=ref("")
+const event_list=ref("")
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
@@ -368,12 +370,16 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     fetchUrl += `?parent_id=${org_id}`;
     //get county activities
     masterUrl += `&location_id=${parent_id}`;
+    location_id.value=parent_id;
   } else if (org_level == "subcounty") {
     //get subcounty activities
     fetchUrl += `?parent_id=${org_id}`;
     masterUrl += `&location_id=${parent_id}`;
+    location_id.value=parent_id;
   } else if (org_level == "event") {
     //get activities
+    event_list.value=org_id;
+    location_id.value=parent_id;
     masterUrl += `&location_id=${parent_id}&event_list=${org_id}`;
   }
   await axios
@@ -431,7 +437,7 @@ const onPageChange = async (page) => {
   currentPage.value = page;
   try {
     const response = await axios.get(
-      `pmi_events?page=${page}&per_page=${pageSize.value}`
+      `pmi_events?location_id=${location_id.value}&event_list=${event_list.value}&page=${page}&per_page=${pageSize.value}`
     );
     dataSource.value = response.data.data;
     datatotal.value = response.data.pagination.total;
@@ -450,7 +456,13 @@ watch(
 );
 
 // get all the events
-
+const uniqueEvents = computed(() => {
+      const uniqueSet = new Set();
+      events.value.forEach(item => {
+        uniqueSet.add(item);
+      });
+      return Array.from(uniqueSet);
+    });
 const getEvents = () => {
   axios
     .get(
