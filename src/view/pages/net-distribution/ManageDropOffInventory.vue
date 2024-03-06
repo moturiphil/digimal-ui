@@ -235,6 +235,7 @@
                             href="#"
                             size="extra-small"
                             type="warning"
+                            :disabled="isDisabled"
                           >
                             Approve Orders
                           </sdButton>
@@ -290,7 +291,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'posts_summary'"
                         >
-                        <!--v-if="generations > 0"  -->
+                          <!--v-if="generations > 0"  -->
                           <sdButton
                             class="button-container"
                             style="float: right; margin-bottom: 10px"
@@ -515,35 +516,7 @@
                                   >For all</a-checkbox
                                 >
                               </a-form-item>
-                              <!-- <a-form-item name="post_id" label="Post">
-                                <a-select
-                                  placeholder="Select  Post "
-                                  v-model:value="newOrder.post_id"
-                                  mode="multiple"
-                                  showSearch
-                                  allowClear
-                                  option-filter-prop="label"
-                                  :disabled="checked"
-                                >
-                                  <a-select-option
-                                    v-for="post in dropoffPosts"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                    :label="`${post.name} - ${post.code}`"
-                                    :disabled="true"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
-                                </a-select>
-                              </a-form-item> -->
                               <a-form-item name="order_type" label="Order type">
-                                <!-- <a-select
-                                      v-model:value="newOrder.order_type"
-                                      placeholder="Select Bale Size"
-                                    >
-                                      <a-select-option value="40">40</a-select-option>
-                                      <a-select-option value="50">50</a-select-option>
-                                    </a-select> -->
                                 <a-input
                                   v-model:value="newOrder.order_type"
                                   placeholder="Order type"
@@ -597,6 +570,7 @@
                                   size="default"
                                   htmlType="Save"
                                   type="success"
+                                  :disabled="isDisabled"
                                 >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
@@ -678,6 +652,7 @@
 <script setup>
 import { Main, BasicFormWrapper, TableWrapper } from "../../styled";
 import { SearchResultWrapper } from "./../style";
+import store from "../../../vuex/store";
 import {
   onMounted,
   ref,
@@ -685,12 +660,11 @@ import {
   // createVNode
 } from "vue";
 import authHeader from "../../../services/auth-header";
-//import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-// import { useStore } from "vuex";
-//import { Modal } from "ant-design-vue";
+import { computed } from "vue";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
+import { useStore } from "vuex";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -871,6 +845,8 @@ const isModalOpen_confirmation = ref(false); //confirmation modal form
 // const openmodal = () => (isModalOpen_issuenets.value = true);
 const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_id}`;
 const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
+const { state } = useStore();
+const isDisabled = computed(() => state.isDisabled);
 
 const formState = reactive({
   date_received: "",
@@ -969,28 +945,6 @@ const openModal = (id) => {
 const openGO = () => (isModalOpen_GO.value = true);
 const handleCancelGO = () => (isModalOpen_GO.value = false);
 
-// const openModalAll = (type) => {
-//   switch (type) {
-//     case "assignPost":
-//       isModalOpen_assignPosts.value = true;
-//       break;
-//     case "generateOrder":
-//       isModalOpen_GO.value = true;
-//       break;
-//     case "issueNets":
-//       isModalOpen_issuenets.value = true;
-//       break;
-//     case "receiveNets":
-//       isModalOpen_receiveNets.value = true;
-//       break;
-//     case "confirmation":
-//       isModalOpen_confirmation.value = true;
-//       break;
-
-//     default:
-//       break;
-//   }
-// };
 const closeModalAll = (type) => {
   switch (type) {
     case "assignPost":
@@ -1019,17 +973,8 @@ const closeModalAll = (type) => {
   }
 };
 
-// const confirm = () => {
-//   Modal.confirm({
-//     title: "Confirm",
-//     icon: createVNode(ExclamationCircleOutlined),
-//     content: "Are you sure you want to approve all orders?",
-//     okText: "OK",
-//     cancelText: "Cancel",
-//   });
-// };
-
 const approveOrders = async () => {
+  store.commit("setIsDisabled", true);
   const data = {
     drop_off_point_id: drop_off_id,
   };
@@ -1048,11 +993,13 @@ const approveOrders = async () => {
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
+          store.commit("setIsDisabled", false);
           notification.success({
             message: "Success",
             description: `${data}`,
           });
         } else {
+          store.commit("setIsDisabled", false);
           notification.info({
             message: "Info",
             description: `${data}`,
@@ -1060,6 +1007,7 @@ const approveOrders = async () => {
         }
       });
   } catch (error) {
+    store.commit("setIsDisabled", false);
     notification.error({
       message: "Error",
       description: `${error}`,
@@ -1521,12 +1469,14 @@ const generateOrders = () => {
       .then((response) => response.json())
       .then(({ success, message }) => {
         if (success) {
+          store.commit("setIsDisabled", false);
           notification.success({
             message: "Success",
             description: `Order generated successfully`,
           });
           isModalOpen_GO.value = false;
         } else {
+          store.commit("setIsDisabled", false);
           notification.error({
             message: "Error",
             description: `${message}`,
@@ -1535,6 +1485,7 @@ const generateOrders = () => {
         isModalOpen_GO.value = false;
       })
       .catch((error) => {
+        store.commit("setIsDisabled", false);
         notification.error({
           message: "Error",
           description: `${error}`,
