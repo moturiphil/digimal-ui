@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Village Households">
+    <sdPageHeader ghost :title="`${village_name} Households`">
       <template #buttons>
         <div class="search-box">
           <a-input
@@ -136,12 +136,6 @@ const columns = [
     dataIndex: "created_at_time",
     key: "id_no",
   },
-//   {
-//     title: "",
-//     dataIndex: "",
-//     key: "households",
-//     slots: { customRender: "households" },
-//   },
 ];
 export default defineComponent({
   name: "HouseHold Validation",
@@ -194,14 +188,13 @@ export default defineComponent({
     const inputValue = ref("");
     const household_id = ref("");
     const isModalOpen = ref(false);
-
     const API_URL = `${process.env.VUE_APP_BASE_URL}/village_hh?village_id=${query.id}`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
 
-    // const tableData = ref([]);
+    const village_name = query.name;
 
     onMounted(() => {
       axios
@@ -324,6 +317,7 @@ export default defineComponent({
       handleVerify,
       handleOk,
       isModalOpen,
+      village_name,
     };
   },
   props: {
