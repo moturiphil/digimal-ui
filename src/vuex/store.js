@@ -14,6 +14,7 @@ export default createStore({
     errorDescription: null,
     isSubmitting: false,
     isGenerating: false,
+    isDisabled: false,
     isPaying: false,
   },
   mutations: {
@@ -31,6 +32,9 @@ export default createStore({
     },
     setIsGenerating(state, isGenerating) {
       state.isGenerating = isGenerating;
+    },
+    setIsDisabled(state, isDisabled) {
+      state.isDisabled = isDisabled;
     },
     setIsPaying(state, isPaying) {
       state.isPaying = isPaying;
@@ -54,6 +58,9 @@ export default createStore({
     },
     setIsGenerating({ commit }, isGenerating) {
       commit("setIsGenerating", isGenerating);
+    },
+    setIsDisabled({ commit }, isDisabled) {
+      commit("setIsDisabled", isDisabled);
     },
     setIsPaying({ commit }, isPaying) {
       commit("setIsPaying", isPaying);
