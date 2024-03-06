@@ -154,6 +154,43 @@ const columns = [
     key: "id",
   },
   {
+    title: "Order Status",
+    dataIndex: "order_status",
+    key: "id",
+    customCell: function (text, record) {
+      let badgeColor;
+
+      // Check if record is defined and has the order_status property
+      if (record && record.order_status) {
+        switch (record.order_status) {
+          case "pending":
+            badgeColor = "orange";
+            break;
+          case "processing":
+            badgeColor = "blue";
+            break;
+          case "Generated":
+            badgeColor = "green";
+            break;
+          case "Not Generated":
+            badgeColor = "red";
+            break;
+          default:
+            badgeColor = "default";
+        }
+      } else {
+        // Handle the case where record or order_status is missing
+        badgeColor = "green";
+      }
+
+      const badgeElement = document.createElement("span");
+      badgeElement.classList.add(`badge-${badgeColor}`);
+      badgeElement.textContent = text;
+
+      return badgeElement;
+    },
+  },
+  {
     title: "Action",
     dataIndex: "",
     key: "point",
@@ -325,6 +362,40 @@ const DragAndDropTable = defineComponent({
 export default DragAndDropTable;
 </script>
 <style>
+.badge-orange {
+  background-color: orange;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-blue {
+  background-color: blue;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-green {
+  background-color: green;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-red {
+  background-color: red;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-default {
+  background-color: gray;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
 .full-modal {
   .ant-modal {
     max-width: 50%;

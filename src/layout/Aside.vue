@@ -396,6 +396,7 @@ import { useRoute, useRouter } from "vue-router";
 import { fetchUserData, hasRole } from "../services/user-role";
 
 const adminRoles = [53];
+const aieHolderRoles = [1];
 
 const techSupportRoles = [56];
 const createCampaignRoles = [53, 5];
@@ -495,7 +496,7 @@ export default defineComponent({
     const rt = useRouter();
 
     // user roles
-    const isAIEHolder = hasRole(1);
+    const isAIEHolder = hasRole(aieHolderRoles);
     const isAdmin = hasRole(adminRoles);
     const isTechSupport = hasRole(techSupportRoles);
     const canCreateCampaign = hasRole(createCampaignRoles);

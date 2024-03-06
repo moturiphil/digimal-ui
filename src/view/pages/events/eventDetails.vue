@@ -21,22 +21,6 @@
           }}
         </sdButton>
         &nbsp;
-        <!-- <sdButton
-          class="btn-import"
-          type="success"
-          size="small"
-          @click="generatePayroll"
-          v-if="isApprovedGenerator"
-          :disabled="isGenerating"
-        >
-          {{
-            isLoading
-              ? "Loading..."
-              : isGenerating
-                ? "Processing ..."
-                : "Generate Draft Payroll"
-          }}
-        </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
 
         <sdButton class="btn-import" type="success" size="small">

@@ -39,6 +39,7 @@
                           <router-link
                             :to="{
                               path: `/org-units/sub-counties/${record.org_id}`,
+                              query: { name: record.name }
                             }"
                             class="btn-icon"
                             type="info"

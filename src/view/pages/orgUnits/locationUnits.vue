@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Locations">
+    <sdPageHeader   ghost :title="`${ward_name} Locations`">
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -52,6 +52,9 @@
                           <router-link
                             :to="{
                               path: `/org-units/sub-locations/${record.org_id}`,
+                              query: {
+                                name: record.name
+                              },
                             }"
                             class="btn-icon"
                             type="info"
@@ -65,7 +68,7 @@
                           class="button-container"
                           size="extra-small"
                           type="success"
-                          @click="openModal()"
+                          @click="openModal(record.org_id)"
                         >
                           Re-assing Location
                         </sdButton>
@@ -79,7 +82,7 @@
               title="Re-assign Location to Ward"
               :visible="isModalOpen"
               @cancel="handleCancel"
-              width="50%"
+              width="25%"
               footer=""
             >
               <BasicFormWrapper>
@@ -99,15 +102,13 @@
                       placeholder="Select Ward"
                       v-model:value="formState.ward_id"
                     >
-                      <a-select-option value=""
-                        >Select an option</a-select-option
-                      >
                       <a-select-option
-                        v-for="ward in wards"
+                        v-for="ward in remap_parent"
                         :value="ward.org_id"
                         :key="ward.id"
-                        >{{ ward.name }}</a-select-option
                       >
+                        {{ ward.name }}
+                      </a-select-option>
                     </a-select>
                   </a-form-item>
 
@@ -144,7 +145,6 @@ import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, defineComponent, reactive } from "vue";
-// import axios from "axios";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
@@ -152,11 +152,6 @@ import { notification } from "ant-design-vue";
 import store from "../../../vuex/store";
 
 const columns = [
-  //   {
-  //     title: "Id",
-  //     dataIndex: "id",
-  //     key: "id",
-  //   },
   {
     title: "Location Name",
     dataIndex: "name",
@@ -196,11 +191,14 @@ const DragAndDropTable = defineComponent({
     const searchItem = ref("");
     const isModalOpen = ref(false);
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+    const remap_parent = ref([]);
+    const reassig_org = ref("");
 
-    console.log({ query, params });
-    console.log(query.id);
+    const ward_name = query.name
+    console.log(params);
 
-    onMounted(async () => {
+    // Define a function to fetch data
+    async function fetchOrgChildren(params) {
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
@@ -210,18 +208,63 @@ const DragAndDropTable = defineComponent({
           }
         );
         const data = await response.json();
+        return data.message;
+      } catch (error) {
+        console.error(error);
+        // Handle errors as needed
+        throw error;
+      }
+    }
+
+    async function fetchParentChildren() {
+      console.log(params.id);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/get_orgunits_siblings/${params.id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data.data);
+        remap_parent.value = data.data;
+        return data.data;
+      } catch (error) {
+        console.error(error);
+        // Handle errors as needed
+        throw error;
+      }
+    }
+
+    fetchParentChildren();
+
+    // Use onMounted to call the fetchData function
+    onMounted(async () => {
+      try {
+        const data = await fetchOrgChildren(params);
         console.log(data);
-        dataSource.value = data.message;
+        dataSource.value = data;
         console.log(dataSource.value);
       } catch (error) {
+        // Handle errors if necessary
         console.error(error);
       }
     });
+
     const formState = reactive({
-      village: null,
+      parent_id: null,
     });
 
-    const openModal = () => {
+    const openModal = (org) => {
+      console.log(org);
+      reassig_org.value = org;
+
       isModalOpen.value = true;
     };
 
@@ -267,19 +310,13 @@ const DragAndDropTable = defineComponent({
 
     const handleSubmit = () => {
       const data = {
-        location_code: formState.village,
+        org_id: reassig_org.value,
+        parent_id: formState.ward_id,
       };
 
-      // sessionStorage.setItem("stakeholder", JSON.stringify(data));
-      // store.commit("setIsSubmitting", true);
-      // const sendotp = {
-      //   first_name: formState.first_name,
-      //   last_name: formState.last_name,
-      //   phone_no: formState.phone_no,
-      // };
-      // console.log(JSON.stringify(sendotp));
       console.log(JSON.stringify(data));
-      fetch(`${API_URL}/user/create`, {
+
+      fetch(`${API_URL}/transfer_org_unit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -288,24 +325,27 @@ const DragAndDropTable = defineComponent({
         body: JSON.stringify(data),
       })
         .then((response) => response.json())
-        .then(({ success, message }) => {
-          console.log(message);
+        .then(({ success, data }) => {
+          console.log(data);
           if (success == true) {
             store.commit("setIsSubmitting", false);
             notification["success"]({
-              message: "Record Created",
-              description: message,
+              message: "Location mapped successfully",
+              description: data,
               duration: 5.5,
             });
+            isModalOpen.value = false;
+            setTimeout(() => location.reload(), 3000);
           }
           // show error message from the api response
           else {
             store.commit("setIsSubmitting", false);
             notification["error"]({
               message: "Error!",
-              description: message,
+              description: data,
               duration: 5.5,
             });
+            isModalOpen.value = false;
           }
         })
         .catch((error) => {
@@ -335,6 +375,8 @@ const DragAndDropTable = defineComponent({
       handleCancel,
       formState,
       handleSubmit,
+      remap_parent,
+      ward_name,
     };
   },
 });

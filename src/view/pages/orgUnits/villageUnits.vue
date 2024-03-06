@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Villages">
+    <sdPageHeader ghost :title="`${village_name} Villages`">
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -48,22 +48,21 @@
                   <template #units="{ record }">
                     <td>
                       <div class="table-actions">
-                        <sdButton size="small" type="success">
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/org-units${record.id}/households`,
-                              query: { id: record.org_id },
+                              path: `/village-hh/${record.id}`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
                             }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
                           >
-                            <sdFeatherIcons type="eye" size="16" />
-                            &nbsp;&nbsp; View HouseHolds
+                            View Households
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton size="small" type="success">
+                        <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
                               path: `/org-units/chp/${record.id}`,
@@ -76,12 +75,76 @@
                             View CHP & VE
                           </router-link>
                         </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          class="button-container"
+                          size="extra-small"
+                          type="success"
+                          @click="openModal(record.org_id)"
+                        >
+                          Re-assing Village
+                        </sdButton>
                       </div>
                     </td>
                   </template>
                 </a-table>
               </TableWrapper>
             </div>
+            <!-- handle transfer of village to a location -->
+            <a-modal
+              title="Re-assign Village to Sub Location"
+              :visible="isModalOpen"
+              @cancel="handleCancel"
+              width="25%"
+              footer=""
+            >
+              <BasicFormWrapper>
+                <a-form
+                  class="add-record-form"
+                  :style="{ width: '100%' }"
+                  layout="vertical"
+                  name="addnew"
+                  :model="formState"
+                  @finish="handleSubmit"
+                >
+                  <a-form-item name="ward_id" label="Sub Location">
+                    <a-select
+                      size="large"
+                      name="basic-select"
+                      class="sDash_fullwidth-select"
+                      placeholder="Select Sub Location"
+                      v-model:value="formState.ward_id"
+                    >
+                      <a-select-option
+                        v-for="location in remap_parent"
+                        :value="location.org_id"
+                        :key="location.id"
+                      >
+                        {{ location.name }}
+                      </a-select-option>
+                    </a-select>
+                  </a-form-item>
+
+                  <div class="record-form-actions text-right">
+                    <sdButton
+                      size="default"
+                      htmlType="Save"
+                      type="success"
+                      :disabled="isSubmitting"
+                    >
+                      {{
+                        isLoading
+                          ? "Loading..."
+                          : isSubmitting
+                            ? "Processing ..."
+                            : "Assign"
+                      }}
+                    </sdButton>
+                  </div>
+                </a-form>
+              </BasicFormWrapper>
+            </a-modal>
+            <!--end of handle transfer of village to a location modal -->
           </sdCards>
         </a-col>
       </a-row>
@@ -95,12 +158,12 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent } from "vue";
-// import axios from "axios";
+import { computed, onMounted, ref, defineComponent, reactive } from "vue";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
-
+import store from "../../../vuex/store";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -128,7 +191,6 @@ const columns = [
 
 const adminRoles = [53];
 
-
 const DragAndDropTable = defineComponent({
   name: "ViewPage",
   components: { RecordViewWrapper, Main },
@@ -141,12 +203,11 @@ const DragAndDropTable = defineComponent({
     const dataSource = ref([]);
     const { params, query } = useRoute();
     const searchItem = ref("");
-
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
-    console.log({ query, params });
-    console.log(query.id);
+    const reassig_org = ref("");
+    const remap_parent = ref([]);
+    const isModalOpen = ref(false);
+    const village_name = query.name;
+    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
 
     onMounted(async () => {
       try {
@@ -166,6 +227,38 @@ const DragAndDropTable = defineComponent({
       }
     });
 
+    async function fetchParentChildren() {
+      console.log(params.id);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/get_orgunits_siblings/${params.id}`,
+          {
+            method: "GET",
+            headers: authHeader(),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data.data);
+        remap_parent.value = data.data;
+        return data.data;
+      } catch (error) {
+        console.error(error);
+        // Handle errors as needed
+        throw error;
+      }
+    }
+
+    fetchParentChildren();
+
+    const formState = reactive({
+      parent_id: null,
+    });
+
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
       if (confirm) {
@@ -177,6 +270,69 @@ const DragAndDropTable = defineComponent({
         });
       }
       return false;
+    };
+
+    // Village assignment to Location
+
+    const openModal = (org) => {
+      console.log(org);
+      reassig_org.value = org;
+
+      isModalOpen.value = true;
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
+
+    const handleSubmit = () => {
+      const data = {
+        org_id: reassig_org.value,
+        parent_id: formState.ward_id,
+      };
+
+      console.log(JSON.stringify(data));
+
+      fetch(`${API_URL}/transfer_org_unit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success, data }) => {
+          console.log(data);
+          if (success == true) {
+            store.commit("setIsSubmitting", false);
+            notification["success"]({
+              message: "Location mapped successfully",
+              description: data,
+              duration: 5.5,
+            });
+            isModalOpen.value = false;
+            setTimeout(() => location.reload(), 3000);
+          }
+          // show error message from the api response
+          else {
+            store.commit("setIsSubmitting", false);
+            notification["error"]({
+              message: "Error!",
+              description: data,
+              duration: 5.5,
+            });
+            isModalOpen.value = false;
+          }
+        })
+        .catch((error) => {
+          store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
     };
 
     const onSelectChange = (selectedRowKey) => {
@@ -202,7 +358,6 @@ const DragAndDropTable = defineComponent({
 
     const isAdmin = hasRole(adminRoles);
 
-
     return {
       crud,
       isLoading,
@@ -215,6 +370,14 @@ const DragAndDropTable = defineComponent({
       params,
       columns,
       isAdmin,
+      village_name,
+      openModal,
+      reassig_org,
+      remap_parent,
+      handleCancel,
+      handleSubmit,
+      formState,
+      isModalOpen,
     };
   },
 });
