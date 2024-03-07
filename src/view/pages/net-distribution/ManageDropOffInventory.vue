@@ -183,7 +183,6 @@
                       <div v-if="isLoading" class="spin">
                         <a-spin />
                       </div>
-
                       <div v-else>
                         <TableWrapper
                           class="table-data-view table-responsive"
@@ -191,32 +190,12 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
-                            :dataSource="returnedNets"
-                            :columns="columns"
-                          >
-                            <template v-slot:title>
-                              <h3><u>Returned Nets</u></h3>
-                            </template>
-                            <template #action="{ record }">
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions">
-                                  &nbsp;&nbsp;
-                                  <sdButton
-                                    @click="openReceiveModal(record.id)"
-                                    type="success"
-                                    :disabled="
-                                      record.status == 1 || record.status == 2
-                                    "
-                                    size="extra-small"
-                                    >Receive</sdButton
-                                  >
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
+                            :dataSource="servicedOrders"
+                            :columns="serviceOrdersColumns"
+                          ></a-table>
                         </TableWrapper>
                         &nbsp;&nbsp;
 
@@ -247,20 +226,6 @@
                             :dataSource="postOrders"
                             :columns="postOrdersColumns"
                           >
-                            <!-- <template #action="{record}">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <div v-if="record.status==3">
-                                    <sdButton type="success" size="extra-small"
-                                      >Verify</sdButton>
-                                  </div>
-                                  <div v-else-if="record.status==0">
-                                    <sdButton type="success" size="extra-small"
-                                      >Approve</sdButton>
-                                  </div>
-                                </div>
-                              </td>
-                            </template> -->
                             <template #status="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
@@ -344,10 +309,12 @@
                         <!-- end of post summary -->
 
                         <!-- serviced orders -->
+
                         <TableWrapper
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'serviced_orders'"
                         >
+                        <h2 style="text-align: center;">Nets Issue to Post</h2>
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -355,8 +322,20 @@
                             }"
                             :dataSource="servicedOrders"
                             :columns="serviceOrdersColumns"
-                          ></a-table>
+                          >
+                            <template v-slot:title>
+                              <div
+                                style="
+                                  text-align: center;
+                                  font-size: 18px;
+                                  font-weight: bold;
+                                "
+                              >
+                              </div>
+                            </template>
+                          </a-table>
                         </TableWrapper>
+
                         <!-- end serviced orders -->
 
                         <!-- Receive nets -->
@@ -653,12 +632,7 @@
 import { Main, BasicFormWrapper, TableWrapper } from "../../styled";
 import { SearchResultWrapper } from "./../style";
 import store from "../../../vuex/store";
-import {
-  onMounted,
-  ref,
-  reactive,
-  // createVNode
-} from "vue";
+import { onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import { computed } from "vue";
 import { notification } from "ant-design-vue";
@@ -667,45 +641,6 @@ import dayjs from "dayjs";
 import { useStore } from "vuex";
 
 const dateFormat = "YYYY-MM-DD";
-
-const columns = [
-  {
-    title: "From Post",
-    dataIndex: "from_post_id_name",
-    key: "id",
-  },
-  {
-    title: "To Drop Off Point",
-    dataIndex: "to_drop_off_point_name",
-    key: "id",
-  },
-  {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
-    key: "id",
-  },
-  {
-    title: "Date Returned",
-    dataIndex: "date_returned",
-    key: "id",
-  },
-  {
-    title: "Returned By",
-    dataIndex: "returned_by",
-    key: "id",
-  },
-  // {
-  //   title: "Status",
-  //   dataIndex: "status",
-  //   key: "id",
-  // },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
-  },
-];
 
 const postOrdersColumns = [
   {
@@ -743,23 +678,12 @@ const postOrdersColumns = [
     dataIndex: "date_ordered",
     key: "id",
   },
-  // {
-  //   title: "Ordered By",
-  //   dataIndex: "ordered_by",
-  //   key: "id",
-  // },
   {
     title: "Status",
     dataIndex: "status",
     key: "id",
     slots: { customRender: "status" },
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // }
 ];
 
 const postSummaryCol = [
@@ -817,7 +741,7 @@ const generations = ref(0);
 const approvals = ref(0);
 const pending_receipt_at_post = ref(0);
 const postdata = ref([]);
-const returnedNets = ref([]);
+// const returnedNets = ref([]);
 const postOrders = ref([]);
 const dropoffPosts = ref([]);
 const productList = ref([]);
@@ -830,8 +754,6 @@ const { query } = useRoute();
 const drop_off_name = query.name;
 const drop_off_id = query.id;
 const county_id = query.county;
-console.log(county_id);
-// const drop_off_campaign = query.campaign_id;
 const checked = ref(false);
 const handleCanceIssue = async () => (isModalOpen_issuenets.value = false);
 const handleCancelReceive = () => (isOpen.value = false);
@@ -842,7 +764,6 @@ const isModalOpen_GO = ref(false); //generate order modal form
 const isModalOpen_assignPosts = ref(false); //assignpost modal form
 const isModalOpen_receiveNets = ref(false); //receive nets modal form
 const isModalOpen_confirmation = ref(false); //confirmation modal form
-// const openmodal = () => (isModalOpen_issuenets.value = true);
 const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_id}`;
 const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
 const { state } = useStore();
@@ -863,7 +784,7 @@ const newOrder = reactive({
 
 onMounted(() => {
   fetchPosts();
-  fetchReturnedNets();
+  // fetchReturnedNets();
   fetchPostOrders();
   fetchServicedOrders();
   fetchdropoffPosts();
@@ -887,7 +808,7 @@ const getBannerAlerts = async () => {
       }),
     })
       .then((response) => response.json())
-      .then(({ success, data }) => {
+      .then(({ data }) => {
         drop_off_summary_data.value = data.drop_off_summary;
         console.log(drop_off_summary_data);
 
@@ -897,17 +818,6 @@ const getBannerAlerts = async () => {
           drop_off_summary_data.value.ordering_summary.pending_receipt_at_post;
         generations.value =
           drop_off_summary_data.value.ordering_summary.pending_generation;
-        if (success) {
-          notification.success({
-            message: "Success",
-            description: `${data}`,
-          });
-        } else {
-          notification.info({
-            message: "Info",
-            description: `${data}`,
-          });
-        }
       });
   } catch (error) {
     notification.error({
@@ -930,11 +840,6 @@ const handleTransactions = (tab) => {
       //   : tab === "return"
       //     ? openReturnsModal()
       null;
-};
-
-const openReceiveModal = (id) => {
-  formState.returned_id = id;
-  isOpen.value = true;
 };
 
 const openModal = (id) => {
@@ -1049,7 +954,7 @@ const fetchDropoffPosts = async () => {
         };
         assignedPosts.push(element);
       }
-      targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
+      targetKeys.value = assignedPosts.map((post) => post.key);
       console.log(targetKeys.value);
     } else {
       console.error("Data or data.name is undefined:", data);
@@ -1108,40 +1013,40 @@ const fetchPosts = async () => {
   }
 };
 
-const fetchReturnedNets = async () => {
-  try {
-    await fetch(
-      `${process.env.VUE_APP_BASE_URL}/returned_nets_list/${query.id}`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    )
-      .then((response) => response.json())
-      .then(({ success, data }) => {
-        if (success) {
-          returnedNets.value = data;
-        } else {
-          notification.warning({
-            message: "Info",
-            description: `${data}`,
-          });
-        }
-      })
-      .catch((error) => {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-        isModalOpen_issuenets.value = false;
-      });
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: `${error}`,
-    });
-  }
-};
+// const fetchReturnedNets = async () => {
+//   try {
+//     await fetch(
+//       `${process.env.VUE_APP_BASE_URL}/returned_nets_list/${query.id}`,
+//       {
+//         method: "GET",
+//         headers: authHeader(),
+//       }
+//     )
+//       .then((response) => response.json())
+//       .then(({ success, data }) => {
+//         if (success) {
+//           returnedNets.value = data;
+//         } else {
+//           notification.warning({
+//             message: "Info",
+//             description: `${data}`,
+//           });
+//         }
+//       })
+//       .catch((error) => {
+//         notification.error({
+//           message: "Error",
+//           description: `${error}`,
+//         });
+//         isModalOpen_issuenets.value = false;
+//       });
+//   } catch (error) {
+//     notification.error({
+//       message: "Error",
+//       description: `${error}`,
+//     });
+//   }
+// };
 
 const fetchPostOrders = () => {
   const dropoffid = {
@@ -1442,6 +1347,7 @@ const clearSelected = (checked) => {
 };
 
 const generateOrders = () => {
+  store.commit("setIsDisabled", true);
   const data = {
     for_all_posts: newOrder.checked,
     order_type: newOrder.order_type,

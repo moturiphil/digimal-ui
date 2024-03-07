@@ -27,35 +27,16 @@
                 :dataSource="dataSource"
                 :columns="columns"
               >
-                <template #point="{ record }">
+                <template #bale="{ record }">
                   <td>
                     <div class="table-actions">
-                      &nbsp;&nbsp;
-                      <sdButton size="extra-small" type="success">
-                        <router-link
-                          :to="{
-                            path: `/manage-dropoff-inventory`,
-                            query: {
-                              id: record.id,
-                              name: record.name,
-                              campaign_id: record.campaign_id,
-                            },
-                          }"
-                          class="btn-icon"
-                          type="info"
-                          shape="circle"
-                        >
-                          Manage Inventory
-                        </router-link>
-                      </sdButton>
-                      &nbsp;&nbsp;
                       <sdButton
                         class="button-container"
                         size="extra-small"
-                        type="success"
-                        @click="openModal(record.id)"
+                        type="danger"
+                        @click="openModal(record.verification_id)"
                       >
-                        Assign Drop-off Manager
+                        Void
                       </sdButton>
                     </div>
                   </td>
@@ -63,91 +44,24 @@
               </a-table>
             </TableWrapper>
           </div>
-          <!-- Issue modal -->
+          <!-- Void Bale Verification Modal -->
           <a-modal
-            title="Verify Bales"
+            title="Void Bale Verification"
             :visible="isModalOpen"
             @cancel="handleCancel"
-            width="50%"
-            footer=""
+            width="20%"
           >
-            <BasicFormWrapper>
-              <a-form
-                class="add-record-form"
-                :style="{ width: '100%' }"
-                layout="vertical"
-                name="addnew"
-                :model="formState"
-                @finish="handleSubmit"
-              >
-                <a-form-item name="bale_batch_no" label="Bale Batch No.">
-                  <a-input
-                    v-model:value="formState.bale_batch_no"
-                    placeholder="Enter bale batch no"
-                    type="text"
-                    @blur="validate('bale_batch_no')"
-                    @keypress="validate('bale_batch_no')"
-                  >
-                  </a-input>
-                  <p
-                    class="errors"
-                    style="color: red"
-                    v-if="!!errors.bale_batch_no"
-                  >
-                    {{ errors.bale_batch_no }}
-                  </p>
-                </a-form-item>
-                <a-form-item
-                  name="counted_no_of_nets"
-                  label="Counted Number of Nets"
-                >
-                  <a-input
-                    v-model:value="formState.counted_no_of_nets"
-                    placeholder="Counted Number of Nets"
-                    type="number"
-                    @blur="validate('counted_no_of_nets')"
-                    @keypress="validate('counted_no_of_nets')"
-                  />
-                  <p
-                    class="errors"
-                    style="color: red"
-                    v-if="!!errors.counted_no_of_nets"
-                  >
-                    {{ errors.counted_no_of_nets }}
-                  </p>
-                </a-form-item>
-
-                <a-form-item
-                  name="expected_no_of_nets"
-                  label="Expected Number of Nets"
-                >
-                  <a-select
-                    v-model:value="formState.expected_no_of_nets"
-                    placeholder="Select Expected No of Nets"
-                    @blur="validate('expected_no_of_nets')"
-                    @keypress="validate('expected_no_of_nets')"
-                  >
-                    <a-select-option value="40">40</a-select-option>
-                    <a-select-option value="50">50</a-select-option>
-                  </a-select>
-                  <p
-                    class="errors"
-                    style="color: red"
-                    v-if="!!errors.expected_no_of_nets"
-                  >
-                    {{ errors.expected_no_of_nets }}
-                  </p>
-                </a-form-item>
-
-                <div class="record-form-actions text-right">
-                  <sdButton size="default" htmlType="Save" type="success">
-                    {{ isLoading ? "Loading..." : "Submit" }}
-                  </sdButton>
-                </div>
-              </a-form>
-            </BasicFormWrapper>
+            <p>Are you sure you want to void bale verified?</p>
+            <template #footer>
+              <a-button key="cancel" type="warning" @click="handleCancel">
+                Cancel
+              </a-button>
+              <a-button key="confirm" type="danger" @click="handleVoid">
+                Confirm
+              </a-button>
+            </template>
           </a-modal>
-          <!-- End of Issue modal -->
+          <!-- End Void Bale Verification Modal -->
         </sdCards>
       </a-col>
     </a-row>
@@ -155,7 +69,7 @@
 </template>
 <script>
 // import { RecordFormWrapper } from "../style";
-import { Main, BasicFormWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 // import axios from "axios";
@@ -168,11 +82,6 @@ import { useRoute } from "vue-router";
 const dateFormat = "YYYY-MM-DD";
 
 const columns = [
-  {
-    title: "Delivery Note No",
-    dataIndex: "delivery_note_number",
-    key: "id",
-  },
   {
     title: "Batch No.",
     dataIndex: "bale_batch_no",
@@ -189,16 +98,31 @@ const columns = [
     key: "id",
   },
   {
+    title: "Variance",
+    dataIndex: "variance",
+    key: "id",
+  },
+  {
     title: "Verified By",
     dataIndex: "verified_by",
     key: "id",
   },
-
+  {
+    title: "Verification Time",
+    dataIndex: "timestamp",
+    key: "id",
+  },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "bale",
+    slots: { customRender: "bale" },
+  },
 ];
 
 const AddNew = defineComponent({
   name: "AddNew",
-  components: { Main, BasicFormWrapper },
+  components: { Main },
   data() {
     const { state } = useStore();
     const isLoading = computed(() => state.crud.loading);
@@ -207,32 +131,26 @@ const AddNew = defineComponent({
     const join = ref("");
     const dataSource = ref([]);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/bale_verification`;
-    // const router = useRouter();
-
     const { query } = useRoute();
     const post_id = Number(query.id);
     const post_name = query.name;
-    console.log(query.id);
-    // const d_no = query.delivery_no;
-
     const isModalOpen = ref(false);
     const handleOk = async () => (isModalOpen.value = false);
-    const handleCancel = () => isModalOpen.value = false;
+    const handleCancel = () => (isModalOpen.value = false);
     const openmodal = () => (isModalOpen.value = true);
+    const verification_id = ref("");
 
     const openModal = (id) => {
+      console.log(id);
+      verification_id.value = id;
       isModalOpen.value = true;
-      formState.drop_off_point_id = id;
     };
-
     const formState = reactive({
       post_id: post_id,
       bale_batch_no: "",
       counted_no_of_nets: "",
       expected_no_of_nets: "",
-      // date_received: date_received,
-      delivery_note_number: 'N/A',
-      // received_by: received_by,
+      delivery_note_number: "N/A",
     });
 
     const { loading, isFacility, delivery_notes } = reactive({
@@ -250,7 +168,9 @@ const AddNew = defineComponent({
         "Expected no of nets is required"
       ),
       // date_received: Yup.string().required("Date received is required"),
-      delivery_note_number: Yup.string().required("Delivery note no/s11 is required"),
+      delivery_note_number: Yup.string().required(
+        "Delivery note no/s11 is required"
+      ),
       // received_by: Yup.string().required("Received by is required"),
     });
 
@@ -304,10 +224,8 @@ const AddNew = defineComponent({
         bale_batch_no: formState.bale_batch_no,
         counted_no_of_nets: formState.counted_no_of_nets,
         expected_no_of_nets: formState.expected_no_of_nets,
-        delivery_note_number: 'N/A',
+        delivery_note_number: "N/A",
       };
-
-      console.log(JSON.stringify(values));
 
       try {
         // Validate the form
@@ -354,6 +272,44 @@ const AddNew = defineComponent({
       }
     };
 
+    const handleVoid = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/bale_verification_void?bale_verification_id=${verification_id.value}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+
+        if (data.success === true) {
+          notification.success({
+            message: "Bale verification voided successfully",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+          location.reload();
+        } else {
+          notification.error({
+            message: "Bale verification voiding not successful",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     return {
       isLoading,
       loading,
@@ -382,6 +338,7 @@ const AddNew = defineComponent({
       openModal,
       handleOk,
       handleCancel,
+      handleVoid,
     };
   },
 });
