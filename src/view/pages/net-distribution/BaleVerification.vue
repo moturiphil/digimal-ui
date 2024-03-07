@@ -131,32 +131,26 @@ const AddNew = defineComponent({
     const join = ref("");
     const dataSource = ref([]);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/bale_verification`;
-    // const router = useRouter();
-
     const { query } = useRoute();
     const post_id = Number(query.id);
     const post_name = query.name;
-    console.log(query.id);
-    // const d_no = query.delivery_no;
-
     const isModalOpen = ref(false);
     const handleOk = async () => (isModalOpen.value = false);
     const handleCancel = () => (isModalOpen.value = false);
     const openmodal = () => (isModalOpen.value = true);
+    const verification_id = ref("");
 
     const openModal = (id) => {
       console.log(id);
+      verification_id.value = id;
       isModalOpen.value = true;
     };
-
     const formState = reactive({
       post_id: post_id,
       bale_batch_no: "",
       counted_no_of_nets: "",
       expected_no_of_nets: "",
-      // date_received: date_received,
       delivery_note_number: "N/A",
-      // received_by: received_by,
     });
 
     const { loading, isFacility, delivery_notes } = reactive({
@@ -233,8 +227,6 @@ const AddNew = defineComponent({
         delivery_note_number: "N/A",
       };
 
-      console.log(JSON.stringify(values));
-
       try {
         // Validate the form
         await ArticleSchema.validate(formState, { abortEarly: false });
@@ -283,9 +275,9 @@ const AddNew = defineComponent({
     const handleVoid = async () => {
       try {
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/bale_verification_void?bale_verification_id=${"hehe"}`,
+          `${process.env.VUE_APP_BASE_URL}/bale_verification_void?bale_verification_id=${verification_id.value}`,
           {
-            method: "GET",
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
               ...authHeader(),
@@ -295,9 +287,9 @@ const AddNew = defineComponent({
         const data = await response.json();
         console.log(data);
 
-        if (data.status === true) {
+        if (data.success === true) {
           notification.success({
-            message: "Participant voided successfully",
+            message: "Bale verification voided successfully",
             description: data.message,
           });
           await new Promise((resolve) => {
@@ -306,8 +298,11 @@ const AddNew = defineComponent({
           location.reload();
         } else {
           notification.error({
-            message: "Participant voiding not successful",
+            message: "Bale verification voiding not successful",
             description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
           });
         }
       } catch (error) {
