@@ -345,7 +345,6 @@ const handleCancel = () => {
 const handleVoid = async () => {
   console.log(participant_id.value);
   try {
-    console.log("testing at this point");
     const response = await fetch(
       `${process.env.VUE_APP_BASE_URL}/void_event_participant/${plainquery.id}/${participant_id.value}`,
       {
