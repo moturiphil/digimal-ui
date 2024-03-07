@@ -491,8 +491,8 @@ const DragAndDropTable = defineComponent({
       }
       return false;
     };
-    
-    const regex = /^254((1|7)(?:(?:[12946][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
+
+    const regex = /^254((1|7)(?:(?:[129546][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
 
     const ArticleSchema = Yup.object().shape({
       first_name: Yup.string().required("First Name is required"),

@@ -198,23 +198,22 @@ const onPageChange = async (page) => {
   currentPage.value = page;
   getSublocationPosts();
 }
-    const postList = async () => {
-      try {
-        const response = await axios.get(`get_location_posts/${query.id}`);
-        const data = await response.data;
 
-        console.log(data);
-
-        // Modify the structure of each supervisor to include a 'label' property
-        posts.value = data.data.map((post) => ({
-          ...post,
-          label: `${post.name},`,
-          //    ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
-        }));
-      } catch (error) {
-        console.error(error);
-      }
-    };
+const postList = async () => {//posts_data
+  try {
+    const response = await axios.get(`get_location_posts/sub_location_id=${query.org_id}`);
+    const data = await response.data;
+    console.log(data);
+    // Modify the structure of each supervisor to include a 'label' property
+    posts.value = data.data.map((post) => ({
+      ...post,
+      label: `${post.name},`,
+      //    ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 onMounted(() => {
   getSublocationPosts();
