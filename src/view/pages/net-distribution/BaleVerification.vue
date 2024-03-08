@@ -7,7 +7,7 @@
           class="btn-add_new"
           size="extra-small"
           type="success"
-          @click="openModal(post_id)"
+          @click="openVerifyModal(post_id)"
         >
           Verify Bale
         </sdButton>
@@ -44,6 +44,93 @@
               </a-table>
             </TableWrapper>
           </div>
+
+          <!-- Bale verification modal -->
+          <a-modal
+            title="Verify Bales"
+            :visible="openVerifyModal"
+            @cancel="handleVerifyCancel" 
+            width="50%"
+            footer=""
+          >
+            <BasicFormWrapper>
+              <a-form
+                class="add-record-form"
+                :style="{ width: '100%' }"
+                layout="vertical"
+                name="addnew"
+                :model="formState"
+                @finish="handleSubmit"
+              >
+                <a-form-item name="bale_batch_no" label="Bale Batch No.">
+                  <a-input
+                    v-model:value="formState.bale_batch_no"
+                    placeholder="Enter bale batch no"
+                    type="text"
+                    @blur="validate('bale_batch_no')"
+                    @keypress="validate('bale_batch_no')"
+                  >
+                  </a-input>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.bale_batch_no"
+                  >
+                    {{ errors.bale_batch_no }}
+                  </p>
+                </a-form-item>
+                <a-form-item
+                  name="counted_no_of_nets"
+                  label="Counted Number of Nets"
+                >
+                  <a-input
+                    v-model:value="formState.counted_no_of_nets"
+                    placeholder="Counted Number of Nets"
+                    type="number"
+                    @blur="validate('counted_no_of_nets')"
+                    @keypress="validate('counted_no_of_nets')"
+                  />
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.counted_no_of_nets"
+                  >
+                    {{ errors.counted_no_of_nets }}
+                  </p>
+                </a-form-item>
+
+                <a-form-item
+                  name="expected_no_of_nets"
+                  label="Expected Number of Nets"
+                >
+                  <a-select
+                    v-model:value="formState.expected_no_of_nets"
+                    placeholder="Select Expected No of Nets"
+                    @blur="validate('expected_no_of_nets')"
+                    @keypress="validate('expected_no_of_nets')"
+                  >
+                    <a-select-option value="40">40</a-select-option>
+                    <a-select-option value="50">50</a-select-option>
+                  </a-select>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.expected_no_of_nets"
+                  >
+                    {{ errors.expected_no_of_nets }}
+                  </p>
+                </a-form-item>
+
+                <div class="record-form-actions text-right">
+                  <sdButton size="default" htmlType="Save" type="success">
+                    {{ isLoading ? "Loading..." : "Submit" }}
+                  </sdButton>
+                </div>
+              </a-form>
+            </BasicFormWrapper>
+          </a-modal>
+          <!-- End of Verification modal -->
+
           <!-- Void Bale Verification Modal -->
           <a-modal
             title="Void Bale Verification"
@@ -51,7 +138,7 @@
             @cancel="handleCancel"
             width="50%"
           >
-            <p>Are you sure you want to void bale verified?</p>
+            <p>Are you sure you want to void this record?</p>
             <template #footer>
               <a-button key="cancel" type="warning" @click="handleCancel">
                 Cancel
@@ -135,6 +222,9 @@ const AddNew = defineComponent({
     const post_id = Number(query.id);
     const post_name = query.name;
     const isModalOpen = ref(false);
+    const isVerifyModalOpen = ref(false);
+    const handleVerifyOk = async () => (isVerifyModalOpen.value = false);
+    const handleVerifyCancel = () => (isVerifyModalOpen.value = false);
     const handleOk = async () => (isModalOpen.value = false);
     const handleCancel = () => (isModalOpen.value = false);
     const openmodal = () => (isModalOpen.value = true);
@@ -144,6 +234,11 @@ const AddNew = defineComponent({
       console.log(id);
       verification_id.value = id;
       isModalOpen.value = true;
+    };
+    const openVerifyModal = (id) => {
+      console.log(id);
+      formState.drop_off_point_id = id;
+      isVerifyModalOpen.value = true;
     };
     const formState = reactive({
       post_id: post_id,
@@ -323,6 +418,9 @@ const AddNew = defineComponent({
       validate,
       columns,
       dataSource,
+      openVerifyModal,
+      handleVerifyOk,
+      handleVerifyCancel,
       errors: {
         bale_batch_no: "",
         counted_no_of_nets: "",
