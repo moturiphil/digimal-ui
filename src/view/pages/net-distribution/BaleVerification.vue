@@ -49,7 +49,7 @@
             title="Void Bale Verification"
             :visible="isModalOpen"
             @cancel="handleCancel"
-            width="20%"
+            width="50%"
           >
             <p>Are you sure you want to void bale verified?</p>
             <template #footer>
