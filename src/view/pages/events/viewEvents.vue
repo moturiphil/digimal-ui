@@ -250,13 +250,9 @@ var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const visible = ref(false);
-//const confirmLoading=ref(false)
-//const modalType=ref("success")
 const colorVisible = ref(false);
 const isStarting = ref(false);
-//const isStarted=ref(false)
-//const events=ref([]) // an array of events fetched from the server
-const eventStatus = ref({}); // an object to keep track of the status of each event
+const eventStatus = ref({}); 
 //enrcrypt
 import { encrypt } from "@/cryptoHelper";
 // Example usage

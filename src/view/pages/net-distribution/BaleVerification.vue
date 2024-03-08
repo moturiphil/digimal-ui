@@ -7,7 +7,7 @@
           class="btn-add_new"
           size="extra-small"
           type="success"
-          @click="openVerifyModal(post_id)"
+          @click="openVerifyModal()"
         >
           Verify Bale
         </sdButton>
@@ -48,8 +48,8 @@
           <!-- Bale verification modal -->
           <a-modal
             title="Verify Bales"
-            :visible="openVerifyModal"
-            @cancel="handleVerifyCancel" 
+            :visible="isVerifyModalOpen"
+            @cancel="handleCancelVerify"
             width="50%"
             footer=""
           >
@@ -223,11 +223,9 @@ const AddNew = defineComponent({
     const post_name = query.name;
     const isModalOpen = ref(false);
     const isVerifyModalOpen = ref(false);
-    const handleVerifyOk = async () => (isVerifyModalOpen.value = false);
-    const handleVerifyCancel = () => (isVerifyModalOpen.value = false);
     const handleOk = async () => (isModalOpen.value = false);
     const handleCancel = () => (isModalOpen.value = false);
-    const openmodal = () => (isModalOpen.value = true);
+    const handleCancelVerify = () => (isVerifyModalOpen.value = false);
     const verification_id = ref("");
 
     const openModal = (id) => {
@@ -235,9 +233,7 @@ const AddNew = defineComponent({
       verification_id.value = id;
       isModalOpen.value = true;
     };
-    const openVerifyModal = (id) => {
-      console.log(id);
-      formState.drop_off_point_id = id;
+    const openVerifyModal = () => {
       isVerifyModalOpen.value = true;
     };
     const formState = reactive({
@@ -312,7 +308,6 @@ const AddNew = defineComponent({
         console.error(error);
       }
     });
-    console.log(formState.isFacility);
     const handleSubmit = async () => {
       const values = {
         post_id: post_id,
@@ -368,6 +363,7 @@ const AddNew = defineComponent({
     };
 
     const handleVoid = async () => {
+      console.log(verification_id.value);
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/bale_verification_void?bale_verification_id=${verification_id.value}`,
@@ -418,9 +414,16 @@ const AddNew = defineComponent({
       validate,
       columns,
       dataSource,
+      delivery_notes,
+      post_name,
+      isModalOpen,
+      isVerifyModalOpen,
+      openModal,
       openVerifyModal,
-      handleVerifyOk,
-      handleVerifyCancel,
+      handleOk,
+      handleCancel,
+      handleCancelVerify,
+      handleVoid,
       errors: {
         bale_batch_no: "",
         counted_no_of_nets: "",
@@ -429,14 +432,6 @@ const AddNew = defineComponent({
         delivery_note_number: "",
         received_by: "",
       },
-      delivery_notes,
-      post_name,
-      isModalOpen,
-      openmodal,
-      openModal,
-      handleOk,
-      handleCancel,
-      handleVoid,
     };
   },
 });
