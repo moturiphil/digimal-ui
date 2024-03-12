@@ -4,11 +4,6 @@
       :title="`Assign Activity Payroll - ${activity_name}`"
     ></sdPageHeader>
     <Main>
-      <!-- <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/activity/matrix/create">
-          <span class="btn-text"> Create Payroll Matrix </span>
-        </router-link>
-      </sdButton> -->
       <br />
       <br />
       <!-- <br> -->
@@ -20,10 +15,35 @@
                 <a-row :gutter="15">
                   <a-col class="w-100" :md="24">
                     <sdCards headless>
+                      <!-- header -->
+                      <sdHeader> <b> Assigned Organizations </b></sdHeader>
+                      <br /><br />
+                      <div>
+                        <sdButton
+                          class="spaced-button"
+                          size="extra-small"
+                          type="success"
+                          outlined
+                          v-for="org in orgTypeAssigned"
+                          :key="org.id"
+                        >
+                          {{ org.org_id }}
+                          <sdButton
+                            class="remove-button"
+                            size="extra-small"
+                            type="danger"
+                            @click="removeOrgType(org.id)"
+                          >
+                            <sdFeatherIcons type="trash-2" size="small" />
+                            <!-- Replace "trash-2" with the appropriate sdfeather icon name -->
+                          </sdButton>
+                        </sdButton>
+                      </div>
+                      <br />
+                      <br />
                       <div v-if="isLoading" class="spin">
                         <a-spin />
                       </div>
-
                       <div v-else>
                         <TableWrapper
                           class="table-data-view table-responsive"
@@ -37,6 +57,27 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
+                            <template #matrix="{ record }">
+                              <td>
+                                <div class="table-actions">
+                                  <sdButton
+                                    size="extra-small"
+                                    type="danger"
+                                    :disabled="isStarting"
+                                    @click="removeMatrix(record.id)"
+                                    v-if="!record.status"
+                                  >
+                                    <span>
+                                      <sdFeatherIcons
+                                        type="trash"
+                                        size="small"
+                                      />
+                                      &nbsp;&nbsp; Remove Matrix
+                                    </span>
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -60,31 +101,22 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
+import { notification } from "ant-design-vue";
 
 // const households = ref([]);
 
 const columns = [
   {
-    title: "",
-    dataIndex: "activity_list_id",
-    key: "id",
-  },
-  {
     title: "Assigned Payroll Matrix",
     dataIndex: "pay_matrix_id",
     key: "id",
   },
-  //   {
-  //     title: "No of Officers",
-  //     dataIndex: "no_of_officers",
-  //     key: "id",
-  //   },
-  //   {
-  //     title: "",
-  //     dataIndex: "Assign Matrix",
-  //     key: "payroll",
-  //     slots: { customRender: "payroll" },
-  //   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "matrix",
+    slots: { customRender: "matrix" },
+  },
 ];
 export default defineComponent({
   name: "MatrixPerActivity",
@@ -108,6 +140,7 @@ export default defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const orgTypeAssigned = ref([]);
     const activeClass = ref("all");
 
     const { params, query } = useRoute();
@@ -117,6 +150,7 @@ export default defineComponent({
     console.log(matrix_id);
     const activity_name = query.name;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/view_activity_matrix?activity_list_id=${matrix_id}`;
+    const assignedOrgs = `${process.env.VUE_APP_BASE_URL}/view_activity_org_matrix?activity_list_id=${matrix_id}`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -134,7 +168,83 @@ export default defineComponent({
         .catch((error) => {
           console.error(error);
         });
+
+      axios
+        .get(assignedOrgs, {
+          headers: authHeader(),
+        })
+        .then((response) => {
+          console.log(response.data);
+          orgTypeAssigned.value = response.data.data;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     });
+
+    const removeMatrix = async (id) => {
+      const removeMatrixUrl = `${process.env.VUE_APP_BASE_URL}/delete_activity_matrix?matrix_id=${id}`;
+      console.log(id);
+      try {
+        const response = await axios.delete(removeMatrixUrl, {
+          headers: authHeader(),
+        });
+
+        console.log(response.data);
+
+        if (response.data.success) {
+          notification.success({
+            message: "Success",
+            description: response.data.message,
+          });
+
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1500); // Wait for 1.5 seconds (adjust the time as needed)
+          });
+
+          location.reload();
+        } else {
+          notification.error({
+            message: "Error",
+            description: response.data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const removeOrgType = async (id) => {
+      const removeOrgTypeUrl = `${process.env.VUE_APP_BASE_URL}/delete_activity_orgtype_matrix?matrix_id=${id}`;
+      console.log(id);
+      try {
+        const response = await axios.delete(removeOrgTypeUrl, {
+          headers: authHeader(),
+        });
+
+        console.log(response.data);
+
+        if (response.data.success) {
+          notification.success({
+            message: "Success",
+            description: response.data.message,
+          });
+
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1500); // Wait for 1.5 seconds (adjust the time as needed)
+          });
+
+          location.reload();
+        } else {
+          notification.error({
+            message: "Error",
+            description: response.data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const formState = reactive({
       searchItem: "",
@@ -151,6 +261,9 @@ export default defineComponent({
       handleChange,
       activeClass,
       activity_name,
+      removeMatrix,
+      orgTypeAssigned,
+      removeOrgType,
     };
   },
   // computed: {
@@ -190,5 +303,14 @@ export default defineComponent({
   width: 100%;
   height: 100%;
   cursor: pointer;
+}
+.spaced-button {
+  margin-right: 25px; /* Adjust the value as needed */
+  margin-bottom: 15px;
+}
+
+.remove-button {
+  margin-left: 15px; /* Adjust the value as needed */
+  margin-right: -25px;
 }
 </style>
