@@ -282,9 +282,7 @@ const router = useRouter();
 console.log(event_code);
 
 const { state } = useStore();
-// const crud = computed(() => state.crud.data);
 const isLoading = computed(() => state.crud.loading);
-// const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const confirmed = ref([]);
 const pending = ref([]);
@@ -301,7 +299,6 @@ console.log(plainquery.id);
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
-//void_event_participant/{event_id}/{event_user_id}
 
 const generatePayroll = async () => {
   store.commit("setIsGenerating", true);
@@ -461,15 +458,6 @@ const exportParticipants = async () => {
   }
 };
 
-// const handleOk = async (id, inputValue) => {
-//   try {
-//     console.log(inputValue);
-//   } finally {
-//     console.log(inputValue);
-//     inputValue = ""; // Clear inputValue after the modal is closed
-//     isModalOpen.value = true;
-//   }
-// };
 
 const handleChange = (tab) => {
   activeClass.value = tab;

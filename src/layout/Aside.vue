@@ -15,6 +15,11 @@
         <a-menu-item key="widgetM&EDashboard" v-if="true">
           <router-link to="/MNEDashboard"> M & E Dashboard </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetCHADash">
+          <router-link to="/sub-location/dashboard">
+            Sub-location Coordinator
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>
@@ -31,7 +36,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="isLevelOne  || isAIEHolder">
+      <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -68,7 +73,7 @@
       </a-sub-menu>
       <a-sub-menu
         key="activities"
-        v-if="canCreateActivity || canViewActivities  || isAIEHolder"
+        v-if="canCreateActivity || canViewActivities || isAIEHolder"
       >
         <template v-slot:title>
           <sdFeatherIcons type="activity" /><span>Activities</span>
@@ -126,12 +131,6 @@
           <router-link to="/org-units/view">
             <sdFeatherIcons type="map" />
             <span>Organization Units</span>
-          </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetCHADash">
-          <router-link to="/sub-location/dashboard">
-            <sdFeatherIcons type="square" />
-            <span>CHAs Dashboard</span>
           </router-link>
         </a-menu-item>
       </a-sub-menu>
@@ -317,7 +316,7 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-      </a-sub-menu> 
+      </a-sub-menu>
       <a-sub-menu
         key="user-management"
         v-if="isAdmin || canViewUsers || canViewMasterlist"
@@ -463,7 +462,7 @@ const viewUsersRoles = [
   42, 60, 34, 37, 56, 78, 17, 44, 35, 79, 65, 78,
 ];
 
-const viewMasterlistsRoles = [56, 7, 3 ];
+const viewMasterlistsRoles = [56, 7, 3];
 
 const createDropOffPoint = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
