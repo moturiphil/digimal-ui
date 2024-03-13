@@ -22,10 +22,19 @@
         class="btn-import"
         type="success"
         @click="exportPayrollList"
-        size="small"
+        size="extra-small"
       >
         Download List &nbsp; &nbsp;
         <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        class="btn-import"
+        type="warning"
+        @click="handleValidation()"
+        size="extra-small"
+      >
+        Validate Payroll &nbsp; &nbsp;
       </sdButton>
       <SearchResultWrapper>
         <a-row :gutter="25">
@@ -62,8 +71,8 @@
                                     <router-link
                                       :to="{
                                         path: `/event/breakdown/${record.id}`,
-                                        query: { 
-                                          id: record.id, 
+                                        query: {
+                                          id: record.id,
                                           jg: record.job_group,
                                           name: user_id,
                                         },
@@ -96,7 +105,14 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, reactive, defineComponent, watchEffect } from "vue";
+import {
+  computed,
+  onMounted,
+  ref,
+  reactive,
+  defineComponent,
+  watchEffect,
+} from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -194,7 +210,7 @@ export default defineComponent({
     const searchItem = ref("");
     const eventpayroll_list = ref([]);
 
-    const {  query } = useRoute();
+    const { query } = useRoute();
 
     const event_name = query.name;
     const duration = query.duration;
@@ -202,6 +218,7 @@ export default defineComponent({
     const date = query.date;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
+    const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`
 
     const exportPayrollList = async () => {
       try {
@@ -227,6 +244,41 @@ export default defineComponent({
         link.parentNode.removeChild(link);
       } catch (error) {
         console.error(error);
+      }
+    };
+
+    const handleValidation = () => {
+      try {
+        fetch(validate_payroll, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify({
+            payroll_id: Number(query.id),
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            if (data.success === true) {
+              notification.success({
+                message: "Success",
+                description: "Payroll Validated Successfully",
+              });
+              setTimeout(function () {
+                location.reload();
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: "Payroll Validation Failed",
+              });
+            }
+          });
+      } catch (error) {
+        console.log(error);
       }
     };
 
@@ -269,16 +321,15 @@ export default defineComponent({
     //     });
     //   }
     // });
-    watchEffect(async()=>{
+    watchEffect(async () => {
       const querysearch = encodeURIComponent(searchItem.value.toLowerCase());
       try {
-        if(!querysearch)
-        {
+        if (!querysearch) {
           dataSource.value = eventpayroll_list.value;
           return dataSource.value;
         }
         //  return dataSource.value;
-        if(querysearch.length > 3){
+        if (querysearch.length > 3) {
           const response = await fetch(
             `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}&query=${querysearch}`,
             {
@@ -290,15 +341,13 @@ export default defineComponent({
           console.log(data);
           dataSource.value = data.data;
         }
-
-        
       } catch (error) {
         notification.error({
           message: "Error",
           description: error.message,
         });
       }
-    })
+    });
 
     return {
       crud,
@@ -313,15 +362,10 @@ export default defineComponent({
       duration,
       venue,
       date,
-      // results,
       searchItem,
       exportPayrollList,
+      handleValidation,
     };
   },
-  // computed: {
-  //   recordCount() {
-  //     return this.results.length;
-  //   },
-  // },
 });
 </script>

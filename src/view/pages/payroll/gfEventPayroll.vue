@@ -645,9 +645,9 @@ const handleValidation = (id) => {
             message: "Success",
             description: "Payroll Validated Successfully",
           });
-          setTimeout(function () {
-            location.reload();
-          }, 3000);
+          // setTimeout(function () {
+          //   location.reload();
+          // }, 3000);
         } else {
           notification.error({
             message: "Error",
