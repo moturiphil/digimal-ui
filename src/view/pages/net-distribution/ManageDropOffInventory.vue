@@ -270,18 +270,6 @@
                           >
                             Generate New Order
                           </sdButton>
-                          <!-- <sdButton
-                            class="button-container"
-                            style="float: right; margin-bottom: 10px"
-                            @click="openGO()"
-                            href="#"
-                            size="extra-small"
-                            type="warning"
-                            :disabled="true"
-                            v-if="generations <= 0"
-                          >
-                            Generate New Order
-                          </sdButton> -->
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -290,20 +278,6 @@
                             :dataSource="postSummary"
                             :columns="postSummaryCol"
                           >
-                            <!-- <template #action="{record}">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <div v-if="record.status==3">
-                                    <sdButton type="success" size="extra-small"
-                                      >Verify</sdButton>
-                                  </div>
-                                  <div v-else-if="record.status==0">
-                                    <sdButton type="success" size="extra-small"
-                                      >Approve</sdButton>
-                                  </div>
-                                </div>
-                              </td>
-                            </template> -->
                           </a-table>
                         </TableWrapper>
                         <!-- end of post summary -->
@@ -1013,40 +987,6 @@ const fetchPosts = async () => {
   }
 };
 
-// const fetchReturnedNets = async () => {
-//   try {
-//     await fetch(
-//       `${process.env.VUE_APP_BASE_URL}/returned_nets_list/${query.id}`,
-//       {
-//         method: "GET",
-//         headers: authHeader(),
-//       }
-//     )
-//       .then((response) => response.json())
-//       .then(({ success, data }) => {
-//         if (success) {
-//           returnedNets.value = data;
-//         } else {
-//           notification.warning({
-//             message: "Info",
-//             description: `${data}`,
-//           });
-//         }
-//       })
-//       .catch((error) => {
-//         notification.error({
-//           message: "Error",
-//           description: `${error}`,
-//         });
-//         isModalOpen_issuenets.value = false;
-//       });
-//   } catch (error) {
-//     notification.error({
-//       message: "Error",
-//       description: `${error}`,
-//     });
-//   }
-// };
 
 const fetchPostOrders = () => {
   const dropoffid = {
@@ -1091,47 +1031,6 @@ const fetchPostOrders = () => {
     });
   }
 };
-
-// const fetchPostSummary = ()=>{
-//   const dropoffid ={
-//     "drop_off_point_id":drop_off_id
-//   }
-//   try {
-//     fetch(`${process.env.VUE_APP_BASE_URL}/drop_off_point_posts_summary`,
-//     {
-//       method: "POST",
-//       headers:{
-//           "Content-Type": "application/json",
-//           ...
-//          authHeader()
-//         },
-//       body: JSON.stringify(dropoffid),
-//     })
-//     .then((response) => response.json())
-//     .then(({success, data}) => {
-//       if(success){
-//         postSummary.value = data;
-//       }else{
-//         notification.info({
-//           message: "Info",
-//           description: `${data}`
-//         });
-//       }
-//     })
-//     .catch((error)=>{
-//       notification.error({
-//         message: "Error",
-//         description: `${error}`
-//       });
-//       isModalOpen_issuenets.value = false;
-//     })
-//   } catch (error) {
-//     notification.error({
-//       message: "Error",
-//       description: `${error}`
-//     });
-//   }
-// }
 
 const fetchPostSummary = () => {
   const dropoffid = {

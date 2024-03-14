@@ -384,16 +384,6 @@
                             <template>
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <!-- <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton> -->
                                 </div>
                               </td>
                             </template>
