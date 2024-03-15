@@ -33,6 +33,7 @@
         type="warning"
         @click="handleValidation()"
         size="extra-small"
+        v-if= "validate_status == 'Not Validated'"
       >
         Validate Payroll &nbsp; &nbsp;
       </sdButton>
@@ -212,6 +213,10 @@ export default defineComponent({
 
     const { query } = useRoute();
 
+    const validate_status = query.validate_status;
+
+    console.log(validate_status == 'Not Validated');
+
     const event_name = query.name;
     const duration = query.duration;
     const venue = query.venue;
@@ -365,6 +370,7 @@ export default defineComponent({
       searchItem,
       exportPayrollList,
       handleValidation,
+      validate_status,
     };
   },
 });
