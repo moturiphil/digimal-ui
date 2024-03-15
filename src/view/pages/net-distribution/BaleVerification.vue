@@ -19,7 +19,6 @@
           <div v-if="isLoading" class="spin">
             <a-spin />
           </div>
-
           <div v-else>
             <TableWrapper class="table-data-view table-responsive">
               <a-table
@@ -122,7 +121,12 @@
                 </a-form-item>
 
                 <div class="record-form-actions text-right">
-                  <sdButton size="default" htmlType="Save" type="success">
+                  <sdButton
+                    size="default"
+                    htmlType="Save"
+                    type="success"
+                    :disabled="isDisabled"
+                  >
                     {{ isLoading ? "Loading..." : "Submit" }}
                   </sdButton>
                 </div>
@@ -155,16 +159,14 @@
   </Main>
 </template>
 <script>
-// import { RecordFormWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-// import axios from "axios";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
-// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import { useRoute } from "vue-router";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -227,6 +229,7 @@ const AddNew = defineComponent({
     const handleCancel = () => (isModalOpen.value = false);
     const handleCancelVerify = () => (isVerifyModalOpen.value = false);
     const verification_id = ref("");
+    const isDisabled = computed(() => state.isDisabled);
 
     const openModal = (id) => {
       console.log(id);
@@ -309,6 +312,7 @@ const AddNew = defineComponent({
       }
     });
     const handleSubmit = async () => {
+      store.commit("setIsDisabled", true);
       const values = {
         post_id: post_id,
         bale_batch_no: formState.bale_batch_no,
@@ -337,6 +341,10 @@ const AddNew = defineComponent({
 
         if (data.success) {
           // Handle success
+          store.commit("setIsDisabled", false);
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
           notification["success"]({
             message: "Nets Verified",
             description: "Nets have been successfully verified",
@@ -345,6 +353,7 @@ const AddNew = defineComponent({
           // router.push("/nets/nets-delivered");
         } else {
           // Handle failure
+          store.commit("setIsDisabled", false);
           notification["error"]({
             message: "Error",
             description: data.message,
@@ -353,6 +362,7 @@ const AddNew = defineComponent({
         }
       } catch (error) {
         // Handle validation errors or other exceptions
+        store.commit("setIsDisabled", false);
         console.error("Error:", error);
         notification.error({
           message: "Error",
@@ -424,6 +434,7 @@ const AddNew = defineComponent({
       handleCancel,
       handleCancelVerify,
       handleVoid,
+      isDisabled,
       errors: {
         bale_batch_no: "",
         counted_no_of_nets: "",
