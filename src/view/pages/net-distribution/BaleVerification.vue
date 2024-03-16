@@ -7,7 +7,7 @@
           class="btn-add_new"
           size="extra-small"
           type="success"
-          @click="openModal(post_id)"
+          @click="openVerifyModal()"
         >
           Verify Bale
         </sdButton>
@@ -19,7 +19,6 @@
           <div v-if="isLoading" class="spin">
             <a-spin />
           </div>
-
           <div v-else>
             <TableWrapper class="table-data-view table-responsive">
               <a-table
@@ -44,14 +43,106 @@
               </a-table>
             </TableWrapper>
           </div>
+
+          <!-- Bale verification modal -->
+          <a-modal
+            title="Verify Bales"
+            :visible="isVerifyModalOpen"
+            @cancel="handleCancelVerify"
+            width="50%"
+            footer=""
+          >
+            <BasicFormWrapper>
+              <a-form
+                class="add-record-form"
+                :style="{ width: '100%' }"
+                layout="vertical"
+                name="addnew"
+                :model="formState"
+                @finish="handleSubmit"
+              >
+                <a-form-item name="bale_batch_no" label="Bale Batch No.">
+                  <a-input
+                    v-model:value="formState.bale_batch_no"
+                    placeholder="Enter bale batch no"
+                    type="text"
+                    @blur="validate('bale_batch_no')"
+                    @keypress="validate('bale_batch_no')"
+                  >
+                  </a-input>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.bale_batch_no"
+                  >
+                    {{ errors.bale_batch_no }}
+                  </p>
+                </a-form-item>
+                <a-form-item
+                  name="counted_no_of_nets"
+                  label="Counted Number of Nets"
+                >
+                  <a-input
+                    v-model:value="formState.counted_no_of_nets"
+                    placeholder="Counted Number of Nets"
+                    type="number"
+                    @blur="validate('counted_no_of_nets')"
+                    @keypress="validate('counted_no_of_nets')"
+                  />
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.counted_no_of_nets"
+                  >
+                    {{ errors.counted_no_of_nets }}
+                  </p>
+                </a-form-item>
+
+                <a-form-item
+                  name="expected_no_of_nets"
+                  label="Expected Number of Nets"
+                >
+                  <a-select
+                    v-model:value="formState.expected_no_of_nets"
+                    placeholder="Select Expected No of Nets"
+                    @blur="validate('expected_no_of_nets')"
+                    @keypress="validate('expected_no_of_nets')"
+                  >
+                    <a-select-option value="40">40</a-select-option>
+                    <a-select-option value="50">50</a-select-option>
+                  </a-select>
+                  <p
+                    class="errors"
+                    style="color: red"
+                    v-if="!!errors.expected_no_of_nets"
+                  >
+                    {{ errors.expected_no_of_nets }}
+                  </p>
+                </a-form-item>
+
+                <div class="record-form-actions text-right">
+                  <sdButton
+                    size="default"
+                    htmlType="Save"
+                    type="success"
+                    :disabled="isDisabled"
+                  >
+                    {{ isLoading ? "Loading..." : "Submit" }}
+                  </sdButton>
+                </div>
+              </a-form>
+            </BasicFormWrapper>
+          </a-modal>
+          <!-- End of Verification modal -->
+
           <!-- Void Bale Verification Modal -->
           <a-modal
             title="Void Bale Verification"
             :visible="isModalOpen"
             @cancel="handleCancel"
-            width="20%"
+            width="50%"
           >
-            <p>Are you sure you want to void bale verified?</p>
+            <p>Are you sure you want to void this record?</p>
             <template #footer>
               <a-button key="cancel" type="warning" @click="handleCancel">
                 Cancel
@@ -68,16 +159,14 @@
   </Main>
 </template>
 <script>
-// import { RecordFormWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-// import axios from "axios";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
-// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import { useRoute } from "vue-router";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -135,15 +224,20 @@ const AddNew = defineComponent({
     const post_id = Number(query.id);
     const post_name = query.name;
     const isModalOpen = ref(false);
+    const isVerifyModalOpen = ref(false);
     const handleOk = async () => (isModalOpen.value = false);
     const handleCancel = () => (isModalOpen.value = false);
-    const openmodal = () => (isModalOpen.value = true);
+    const handleCancelVerify = () => (isVerifyModalOpen.value = false);
     const verification_id = ref("");
+    const isDisabled = computed(() => state.isDisabled);
 
     const openModal = (id) => {
       console.log(id);
       verification_id.value = id;
       isModalOpen.value = true;
+    };
+    const openVerifyModal = () => {
+      isVerifyModalOpen.value = true;
     };
     const formState = reactive({
       post_id: post_id,
@@ -217,8 +311,8 @@ const AddNew = defineComponent({
         console.error(error);
       }
     });
-    console.log(formState.isFacility);
     const handleSubmit = async () => {
+      store.commit("setIsDisabled", true);
       const values = {
         post_id: post_id,
         bale_batch_no: formState.bale_batch_no,
@@ -247,6 +341,10 @@ const AddNew = defineComponent({
 
         if (data.success) {
           // Handle success
+          store.commit("setIsDisabled", false);
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
           notification["success"]({
             message: "Nets Verified",
             description: "Nets have been successfully verified",
@@ -255,6 +353,7 @@ const AddNew = defineComponent({
           // router.push("/nets/nets-delivered");
         } else {
           // Handle failure
+          store.commit("setIsDisabled", false);
           notification["error"]({
             message: "Error",
             description: data.message,
@@ -263,6 +362,7 @@ const AddNew = defineComponent({
         }
       } catch (error) {
         // Handle validation errors or other exceptions
+        store.commit("setIsDisabled", false);
         console.error("Error:", error);
         notification.error({
           message: "Error",
@@ -273,6 +373,7 @@ const AddNew = defineComponent({
     };
 
     const handleVoid = async () => {
+      console.log(verification_id.value);
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/bale_verification_void?bale_verification_id=${verification_id.value}`,
@@ -323,6 +424,17 @@ const AddNew = defineComponent({
       validate,
       columns,
       dataSource,
+      delivery_notes,
+      post_name,
+      isModalOpen,
+      isVerifyModalOpen,
+      openModal,
+      openVerifyModal,
+      handleOk,
+      handleCancel,
+      handleCancelVerify,
+      handleVoid,
+      isDisabled,
       errors: {
         bale_batch_no: "",
         counted_no_of_nets: "",
@@ -331,14 +443,6 @@ const AddNew = defineComponent({
         delivery_note_number: "",
         received_by: "",
       },
-      delivery_notes,
-      post_name,
-      isModalOpen,
-      openmodal,
-      openModal,
-      handleOk,
-      handleCancel,
-      handleVoid,
     };
   },
 });

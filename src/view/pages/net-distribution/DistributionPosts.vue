@@ -722,42 +722,6 @@ const handleCancel = () => {
   isModalOpen.value = false;
 };
 
-// const handleDelete = (id) => {
-//   const confirm = window.confirm("Are you sure delete this?");
-//   if (confirm) {
-//     dispatch("axiosDataDelete", {
-//       id,
-//       getData: () => {
-//         dispatch("axiosCrudGetData");
-//       },
-//     });
-//   }
-//   return false;
-// };
-
-// const notifyHH = async (id) => {
-//   console.log(id);
-//   try {
-//     const response = await axios.post(`notify_households?post_id=${id}`,{});
-//     const data = await response.data;
-//     console.log(data);
-//     if (data.success == true) {
-//       notification.success({
-//         message: "Success",
-//         description: data.message,
-//       });
-//       window.location.reload();
-//     } else {
-//       notification.error({
-//         message: "Error",
-//         description: data.message,
-//       });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
 const handleSubmit = async () => {
   try {
     const data = {

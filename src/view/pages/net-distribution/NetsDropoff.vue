@@ -6,6 +6,15 @@
       </template>
     </sdPageHeader>
     <Main>
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportDropoffReceipts"
+        size="extra-small"
+      >
+        Download List &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -16,7 +25,7 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
+                  :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
                 >
@@ -87,6 +96,7 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const export_dropoff_receipts_url = `${process.env.VUE_APP_BASE_URL}/dropoff_receipts_export`;
 
     console.log(authHeader());
 
@@ -110,6 +120,33 @@ const DragAndDropTable = defineComponent({
         console.error(error);
       }
     });
+
+    const exportDropoffReceipts = async () => {
+      try {
+        const response = await fetch(export_dropoff_receipts_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "Dropoff Receipts.xlsx";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     const handleDelete = (id) => {
       const confirm = window.confirm("Are you sure delete this?");
@@ -147,6 +184,7 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
+      exportDropoffReceipts,
     };
   },
 });
