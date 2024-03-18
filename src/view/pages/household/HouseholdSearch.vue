@@ -51,7 +51,7 @@
       >
         <div>
           <p>Enter the correct Household ID No</p>
-          <input type="number" v-model="inputValue" />
+          <input v-model="inputValue" />
         </div>
       </a-modal>
     </Main>
