@@ -785,9 +785,9 @@ onMounted(async () => {
   if (user_object != null) {
     access_level.value = user_object.user;
     await updateFilters();
+    await updateStats(access_level.value.location.org_id);
     chartsLoading.value = true;
     await fetchInitialChartData();
-    await updateStats(access_level.value.location.org_id);
   } else {
     router.push("/login");
   }
@@ -921,8 +921,8 @@ const fetchInitialChartData = async () => {
           selectedCounties.value.includes(e.name.toString())
         );
       }
-      await fetchNetsDistributed();
-      await fetchHouseHoldsRegTrends();
+      fetchNetsDistributed();
+      fetchHouseHoldsRegTrends();
       //nets_required,nets_issued,target_data,target_level,cats
       await netsReqvsIssuedChart(
         newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
@@ -1146,13 +1146,9 @@ const fetchChildData = async (org_id, org_level) => {
         }
         let rq = newChartData.value.map((item) => parseInt(item.nets_required)); //nets_required
         let isd = newChartData.value.map((item) => parseInt(item.nets_issued)); //nets_issued
-        let isdvsrq = newChartData.value.map(
-          (item) =>
-            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+        let isdvsrq = newChartData.value.map((item) =>(parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
         ); //(nets_issued/nets_required)*100
-        let tgt = newChartData.value.map(
-          (item) =>
-            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+        let tgt = newChartData.value.map((item) =>(parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
         ); //(nets_required/nets_required)*100
         let labels = newChartData.value.map((item) => item.name); //cats
         fileterOrgeLevel.value = org_level;
