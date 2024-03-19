@@ -62,7 +62,27 @@
                   :dataSource="dataSource"
                   :columns="columns"
                   @change="handleTableChange"
-                >                 
+                > 
+                <template #idno="{ record }">
+                    <div>
+                      {{
+                        `${record.id_no.substring(0, 1)}${"*".repeat(
+                          record.id_no.length - 2
+                        )}${record.id_no.substring(record.id_no.length - 1)}`
+                      }}
+                    </div>
+                  </template>
+                  <template #action="{ record }" v-if="allowedRole">
+                    <span>
+                      <a @click="edit(record)"
+                        ><EditOutlined style="color: rgb(14, 176, 14)" />
+                      </a>
+                      <span> | </span>
+                      <a @click="deleteUser(record)"
+                        ><PoweroffOutlined style="color: rgb(231, 99, 43)"
+                      /></a>
+                    </span>
+                  </template>                
                 </a-table>
                 <a-pagination
                   :current="currentPage"
@@ -73,6 +93,20 @@
                   @change="onPageChange($event)"
                 />
               </TableWrapper>
+              <div class="modal">
+                <a-modal
+                  :visible="userEditModalopen"
+                  title="Edit User"
+                  width="1000px"
+                  @cancel="handleEditUserCancel(false)"
+                >
+                  <template #footer></template>
+                  <UserEditForm
+                    :formFields="userEditFieds"
+                    v-on:close-editmodal="handleEditUserCancel(false)"
+                  />
+                </a-modal>
+                </div>
             </div>
           </sdCards>
         </a-col>
@@ -87,8 +121,11 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch,reactive } from "vue";
 import { notification } from "ant-design-vue";
+import { PoweroffOutlined, EditOutlined } from "@ant-design/icons-vue";
+import UserEditForm from "./EdiUsers.vue";
+
 const columns = [
   {
     title: "First Name",
@@ -136,9 +173,28 @@ const columns = [
     key: "users",
     slots: { customRender: "users" },
   },
+  {
+    title: "Action",
+    key: "action",
+    slots: { customRender: "action" },
+  },
 ];
-import axios from '@/Axiosconfig';
-const currentPage = ref(1);
+const userEditFieds = reactive({
+  id: 1,
+  first_name: "",
+  middle_name: "",
+  last_name: "",
+  location_id: "",
+  org_types_id: "HealthIT",
+  role_id: "",
+  id_no: "",
+  phone_no: "+254743793901",
+});
+import axios from "@/Axiosconfig";const currentPage = ref(1);
+const userEditModalopen = ref(false);
+const allowedRole = ref(true);
+const alloweRoleids = ref(["3", "7", "56", "53", "37"]);
+
 const pageSize = ref(100);
 const total = ref(0)
 
@@ -221,6 +277,11 @@ const org_ids = ref([])
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    allowedRole.value = alloweRoleids.value.includes(
+      access_level.value.role_id.toString()
+    )
+      ? true
+      : false;
     updateFilters()
     // console.log(JSON.stringify(access_level.value.location));
   }
@@ -231,7 +292,21 @@ const onPageChange = async (page) => {
   // console.log(newPage);
   fetchUsers()
 };
-
+//modal functions
+const handleEditUserCancel = (value) => {
+  userEditModalopen.value = value;
+};
+const edit = (record) => {
+  userEditModalopen.value = true;
+  userEditFieds.id = record.id;
+  userEditFieds.first_name = record.first_name;
+  userEditFieds.middle_name = record.middle_name;
+  userEditFieds.last_name = record.last_name;
+  userEditFieds.org_types_id = record.org_types_id;
+  userEditFieds.location_id = record.location_id;
+  userEditFieds.role_id = record.role_id;
+  (userEditFieds.id_no = record.id_no), (userEditFieds.phone_no = record.phone_no);
+};
 const updateFilters = () => {
   // access_level.value.level.id = 1
   // access_level.value.location.id = 1
