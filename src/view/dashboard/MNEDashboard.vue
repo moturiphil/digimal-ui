@@ -703,7 +703,7 @@ const updateFilters = async () => {
 };
 const fetchInitialChartData = async () => {
   await axios
-    .get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
+    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
     .then(async (response) => {
       chartsLoading.value = false;
       let data = response.data.data;
@@ -792,7 +792,7 @@ const handleChange = async (org_id, org_level) => {
 };
 const fetchChildData = async (org_id, org_level) => {
   let fetchUrl = `get_sub_counties_list`;
-  let statUrl = `subcounty/stats`;
+  let statUrl = `subcounty_stats_data`;
   if (org_level == "country") {
     //get counties
     fetchUrl += `?parent_id=${org_id}`;
