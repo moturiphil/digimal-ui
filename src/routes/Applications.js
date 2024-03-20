@@ -1,5 +1,13 @@
 export default [
   {
+    name: "user-profile",
+    path: "user/profile",
+    component: () =>
+      import(
+        /* webpackChunkName: "UserProfile" */ "../view/pages/profile/User.vue"
+      ),
+  },
+  {
     name: "net-distribution",
     path: "/nets",
     component: () =>
