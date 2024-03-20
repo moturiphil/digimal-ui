@@ -338,16 +338,14 @@
                               </a-form-item>
                               <a-form-item name="to_post" label="To Post">
                                 <a-select
-                                  placeholder="Select  Post "
                                   v-model:value="trans_formState.to_post_id"
+                                  placeholder="Select Post"
+                                  :disabled="isOfficerSelectionDisabled"
+                                  show-search
+                                  option-filter-prop="label"
+                                  :options="generatePostOptions()"
+                                  @search="handlePostSearch"
                                 >
-                                  <a-select-option
-                                    v-for="post in postdata"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
                                 </a-select>
                               </a-form-item>
                               <a-form-item
@@ -722,6 +720,7 @@ const post_id = query.id;
 const isModalOpen = ref(false);
 const returnsModalOpen = ref(false);
 const post_name = query.name;
+const searchItem = ref("");
 
 const formState = reactive({
   date_received: "",
@@ -779,12 +778,28 @@ const openReceiveModal = (type, id) => {
   isOpen.value = true;
 };
 
+const handlePostSearch = (value) => {
+  console.log(value);
+  searchItem.value = value;
+  fetchPosts();
+};
+
+const generatePostOptions = () => {
+  return postdata.value.map((post) => ({
+    label: post.name,
+    value: post.id,
+  }));
+};
+
 const fetchPosts = async () => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/posts_data`, {
-      method: "GET",
-      headers: authHeader(),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/posts_data?query=${searchItem.value}`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         console.log(data.data);
@@ -927,8 +942,9 @@ const receiveNets = async () => {
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
     status: 1,
   };
-  const quantity_received = (Number(formState.number_of_bales) * Number(formState.bale_size)) + Number(formState.no_of_pieces);
-
+  const quantity_received =
+    Number(formState.number_of_bales) * Number(formState.bale_size) +
+    Number(formState.no_of_pieces);
 
   console.log(quantity_received);
   const rec_data = {
@@ -939,7 +955,12 @@ const receiveNets = async () => {
     quantity_received: quantity_received,
     receptor_comment: formState.comment,
   };
-  const payload = transaction_type.value === "transfers" ? data : transaction_type.value === "receive" ? rec_data : null;
+  const payload =
+    transaction_type.value === "transfers"
+      ? data
+      : transaction_type.value === "receive"
+        ? rec_data
+        : null;
   const url =
     transaction_type.value === "transfers"
       ? "receive_nets_from_post"
@@ -971,8 +992,7 @@ const receiveNets = async () => {
         } else {
           notification.error({
             message: "Error",
-            description:
-              message,
+            description: message,
           });
         }
         isModalOpen.value = false;

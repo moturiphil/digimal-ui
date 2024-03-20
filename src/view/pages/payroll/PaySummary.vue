@@ -3,7 +3,6 @@
     <br />
     <div v-for="item in data" :key="item.id">
       <sdHeading class="summary-total" as="h4">
-        <!-- <span class="activity">{{ item.item }} : </span> -->
         <span class="activity">{{ item.item }} : </span>
         <span class="amount">{{ item.amount }}</span>
       </sdHeading>
@@ -15,30 +14,8 @@
       :model="formState"
       :onFinish="submitPromo"
     >
-      <div class="promo-apply-form">
-        <!-- <a-form-item name="promoCode" label="Comments">
-          <a-input v-model:value="promoCode" placeholder="Comment" />
-        </a-form-item> -->
-        <!-- <a-form-item>
-          <sdButton htmlType="submit" size="default" type="success" outlined>
-            Approve
-          </sdButton>
-          &nbsp;&nbsp;
-          <sdButton htmlType="submit" size="default" type="danger" outlined>
-            Decline
-          </sdButton>
-        </a-form-item> -->
-      </div>
+      <div class="promo-apply-form"></div>
     </a-form>
-    <!-- <sdButton
-      v-if="current === 3"
-      @click="onSubmit"
-      class="btn-proceed"
-      type="secondary"
-      size="large"
-    >
-      <a to="#">Place Order</a>
-    </sdButton> -->
   </div>
 </template>
 
@@ -63,7 +40,7 @@ export default {
     const { params, query } = useRoute();
     console.log({ params, query });
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_detail?payroll_list_id=${query.id}`;
-    const name =  query.name;
+    const name = query.name;
     console.log(name);
     axios
       .get(API_URL, {

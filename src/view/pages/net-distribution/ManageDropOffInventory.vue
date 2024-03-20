@@ -183,7 +183,6 @@
                       <div v-if="isLoading" class="spin">
                         <a-spin />
                       </div>
-
                       <div v-else>
                         <TableWrapper
                           class="table-data-view table-responsive"
@@ -191,32 +190,12 @@
                         >
                           <a-table
                             :pagination="{
-                              pageSize: 50,
+                              pageSize: 100,
                               showSizeChanger: true,
                             }"
-                            :dataSource="returnedNets"
-                            :columns="columns"
-                          >
-                            <template v-slot:title>
-                              <h3><u>Returned Nets</u></h3>
-                            </template>
-                            <template #action="{ record }">
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions">
-                                  &nbsp;&nbsp;
-                                  <sdButton
-                                    @click="openReceiveModal(record.id)"
-                                    type="success"
-                                    :disabled="
-                                      record.status == 1 || record.status == 2
-                                    "
-                                    size="extra-small"
-                                    >Receive</sdButton
-                                  >
-                                </div>
-                              </td>
-                            </template>
-                          </a-table>
+                            :dataSource="servicedOrders"
+                            :columns="serviceOrdersColumns"
+                          ></a-table>
                         </TableWrapper>
                         &nbsp;&nbsp;
 
@@ -235,6 +214,7 @@
                             href="#"
                             size="extra-small"
                             type="warning"
+                            :disabled="isDisabled"
                           >
                             Approve Orders
                           </sdButton>
@@ -246,20 +226,6 @@
                             :dataSource="postOrders"
                             :columns="postOrdersColumns"
                           >
-                            <!-- <template #action="{record}">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <div v-if="record.status==3">
-                                    <sdButton type="success" size="extra-small"
-                                      >Verify</sdButton>
-                                  </div>
-                                  <div v-else-if="record.status==0">
-                                    <sdButton type="success" size="extra-small"
-                                      >Approve</sdButton>
-                                  </div>
-                                </div>
-                              </td>
-                            </template> -->
                             <template #status="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
@@ -290,7 +256,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'posts_summary'"
                         >
-                        <!--v-if="generations > 0"  -->
+                          <!--v-if="generations > 0"  -->
                           <sdButton
                             class="button-container"
                             style="float: right; margin-bottom: 10px"
@@ -304,18 +270,6 @@
                           >
                             Generate New Order
                           </sdButton>
-                          <!-- <sdButton
-                            class="button-container"
-                            style="float: right; margin-bottom: 10px"
-                            @click="openGO()"
-                            href="#"
-                            size="extra-small"
-                            type="warning"
-                            :disabled="true"
-                            v-if="generations <= 0"
-                          >
-                            Generate New Order
-                          </sdButton> -->
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -324,29 +278,17 @@
                             :dataSource="postSummary"
                             :columns="postSummaryCol"
                           >
-                            <!-- <template #action="{record}">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <div v-if="record.status==3">
-                                    <sdButton type="success" size="extra-small"
-                                      >Verify</sdButton>
-                                  </div>
-                                  <div v-else-if="record.status==0">
-                                    <sdButton type="success" size="extra-small"
-                                      >Approve</sdButton>
-                                  </div>
-                                </div>
-                              </td>
-                            </template> -->
                           </a-table>
                         </TableWrapper>
                         <!-- end of post summary -->
 
                         <!-- serviced orders -->
+
                         <TableWrapper
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'serviced_orders'"
                         >
+                        <h2 style="text-align: center;">Nets Issue to Post</h2>
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -354,8 +296,20 @@
                             }"
                             :dataSource="servicedOrders"
                             :columns="serviceOrdersColumns"
-                          ></a-table>
+                          >
+                            <template v-slot:title>
+                              <div
+                                style="
+                                  text-align: center;
+                                  font-size: 18px;
+                                  font-weight: bold;
+                                "
+                              >
+                              </div>
+                            </template>
+                          </a-table>
                         </TableWrapper>
+
                         <!-- end serviced orders -->
 
                         <!-- Receive nets -->
@@ -515,35 +469,7 @@
                                   >For all</a-checkbox
                                 >
                               </a-form-item>
-                              <!-- <a-form-item name="post_id" label="Post">
-                                <a-select
-                                  placeholder="Select  Post "
-                                  v-model:value="newOrder.post_id"
-                                  mode="multiple"
-                                  showSearch
-                                  allowClear
-                                  option-filter-prop="label"
-                                  :disabled="checked"
-                                >
-                                  <a-select-option
-                                    v-for="post in dropoffPosts"
-                                    :key="post.id"
-                                    v-model:value="post.id"
-                                    :label="`${post.name} - ${post.code}`"
-                                    :disabled="true"
-                                  >
-                                    {{ post.name }}
-                                  </a-select-option>
-                                </a-select>
-                              </a-form-item> -->
                               <a-form-item name="order_type" label="Order type">
-                                <!-- <a-select
-                                      v-model:value="newOrder.order_type"
-                                      placeholder="Select Bale Size"
-                                    >
-                                      <a-select-option value="40">40</a-select-option>
-                                      <a-select-option value="50">50</a-select-option>
-                                    </a-select> -->
                                 <a-input
                                   v-model:value="newOrder.order_type"
                                   placeholder="Order type"
@@ -597,6 +523,7 @@
                                   size="default"
                                   htmlType="Save"
                                   type="success"
+                                  :disabled="isDisabled"
                                 >
                                   {{ isLoading ? "Loading..." : "Submit" }}
                                 </sdButton>
@@ -678,60 +605,16 @@
 <script setup>
 import { Main, BasicFormWrapper, TableWrapper } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import {
-  onMounted,
-  ref,
-  reactive,
-  // createVNode
-} from "vue";
+import store from "../../../vuex/store";
+import { onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
-//import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-// import { useStore } from "vuex";
-//import { Modal } from "ant-design-vue";
+import { computed } from "vue";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
+import { useStore } from "vuex";
 
 const dateFormat = "YYYY-MM-DD";
-
-const columns = [
-  {
-    title: "From Post",
-    dataIndex: "from_post_id_name",
-    key: "id",
-  },
-  {
-    title: "To Drop Off Point",
-    dataIndex: "to_drop_off_point_name",
-    key: "id",
-  },
-  {
-    title: "Number of Nets",
-    dataIndex: "number_of_nets",
-    key: "id",
-  },
-  {
-    title: "Date Returned",
-    dataIndex: "date_returned",
-    key: "id",
-  },
-  {
-    title: "Returned By",
-    dataIndex: "returned_by",
-    key: "id",
-  },
-  // {
-  //   title: "Status",
-  //   dataIndex: "status",
-  //   key: "id",
-  // },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "id",
-    slots: { customRender: "action" },
-  },
-];
 
 const postOrdersColumns = [
   {
@@ -769,23 +652,12 @@ const postOrdersColumns = [
     dataIndex: "date_ordered",
     key: "id",
   },
-  // {
-  //   title: "Ordered By",
-  //   dataIndex: "ordered_by",
-  //   key: "id",
-  // },
   {
     title: "Status",
     dataIndex: "status",
     key: "id",
     slots: { customRender: "status" },
   },
-  // {
-  //   title: "Action",
-  //   dataIndex: "action",
-  //   key: "id",
-  //   slots: { customRender: "action" },
-  // }
 ];
 
 const postSummaryCol = [
@@ -843,7 +715,7 @@ const generations = ref(0);
 const approvals = ref(0);
 const pending_receipt_at_post = ref(0);
 const postdata = ref([]);
-const returnedNets = ref([]);
+// const returnedNets = ref([]);
 const postOrders = ref([]);
 const dropoffPosts = ref([]);
 const productList = ref([]);
@@ -856,8 +728,6 @@ const { query } = useRoute();
 const drop_off_name = query.name;
 const drop_off_id = query.id;
 const county_id = query.county;
-console.log(county_id);
-// const drop_off_campaign = query.campaign_id;
 const checked = ref(false);
 const handleCanceIssue = async () => (isModalOpen_issuenets.value = false);
 const handleCancelReceive = () => (isOpen.value = false);
@@ -868,9 +738,10 @@ const isModalOpen_GO = ref(false); //generate order modal form
 const isModalOpen_assignPosts = ref(false); //assignpost modal form
 const isModalOpen_receiveNets = ref(false); //receive nets modal form
 const isModalOpen_confirmation = ref(false); //confirmation modal form
-// const openmodal = () => (isModalOpen_issuenets.value = true);
 const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?drop_off_point_id=${drop_off_id}`;
 const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
+const { state } = useStore();
+const isDisabled = computed(() => state.isDisabled);
 
 const formState = reactive({
   date_received: "",
@@ -887,7 +758,7 @@ const newOrder = reactive({
 
 onMounted(() => {
   fetchPosts();
-  fetchReturnedNets();
+  // fetchReturnedNets();
   fetchPostOrders();
   fetchServicedOrders();
   fetchdropoffPosts();
@@ -911,7 +782,7 @@ const getBannerAlerts = async () => {
       }),
     })
       .then((response) => response.json())
-      .then(({ success, data }) => {
+      .then(({ data }) => {
         drop_off_summary_data.value = data.drop_off_summary;
         console.log(drop_off_summary_data);
 
@@ -921,17 +792,6 @@ const getBannerAlerts = async () => {
           drop_off_summary_data.value.ordering_summary.pending_receipt_at_post;
         generations.value =
           drop_off_summary_data.value.ordering_summary.pending_generation;
-        if (success) {
-          notification.success({
-            message: "Success",
-            description: `${data}`,
-          });
-        } else {
-          notification.info({
-            message: "Info",
-            description: `${data}`,
-          });
-        }
       });
   } catch (error) {
     notification.error({
@@ -956,11 +816,6 @@ const handleTransactions = (tab) => {
       null;
 };
 
-const openReceiveModal = (id) => {
-  formState.returned_id = id;
-  isOpen.value = true;
-};
-
 const openModal = (id) => {
   isModalOpen_issuenets.value = true;
   formState.drop_off_point_id = id;
@@ -969,28 +824,6 @@ const openModal = (id) => {
 const openGO = () => (isModalOpen_GO.value = true);
 const handleCancelGO = () => (isModalOpen_GO.value = false);
 
-// const openModalAll = (type) => {
-//   switch (type) {
-//     case "assignPost":
-//       isModalOpen_assignPosts.value = true;
-//       break;
-//     case "generateOrder":
-//       isModalOpen_GO.value = true;
-//       break;
-//     case "issueNets":
-//       isModalOpen_issuenets.value = true;
-//       break;
-//     case "receiveNets":
-//       isModalOpen_receiveNets.value = true;
-//       break;
-//     case "confirmation":
-//       isModalOpen_confirmation.value = true;
-//       break;
-
-//     default:
-//       break;
-//   }
-// };
 const closeModalAll = (type) => {
   switch (type) {
     case "assignPost":
@@ -1019,17 +852,8 @@ const closeModalAll = (type) => {
   }
 };
 
-// const confirm = () => {
-//   Modal.confirm({
-//     title: "Confirm",
-//     icon: createVNode(ExclamationCircleOutlined),
-//     content: "Are you sure you want to approve all orders?",
-//     okText: "OK",
-//     cancelText: "Cancel",
-//   });
-// };
-
 const approveOrders = async () => {
+  store.commit("setIsDisabled", true);
   const data = {
     drop_off_point_id: drop_off_id,
   };
@@ -1048,11 +872,13 @@ const approveOrders = async () => {
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
+          store.commit("setIsDisabled", false);
           notification.success({
             message: "Success",
             description: `${data}`,
           });
         } else {
+          store.commit("setIsDisabled", false);
           notification.info({
             message: "Info",
             description: `${data}`,
@@ -1060,6 +886,7 @@ const approveOrders = async () => {
         }
       });
   } catch (error) {
+    store.commit("setIsDisabled", false);
     notification.error({
       message: "Error",
       description: `${error}`,
@@ -1101,7 +928,7 @@ const fetchDropoffPosts = async () => {
         };
         assignedPosts.push(element);
       }
-      targetKeys.value = assignedPosts.map((post) => post.key); // Update directly
+      targetKeys.value = assignedPosts.map((post) => post.key);
       console.log(targetKeys.value);
     } else {
       console.error("Data or data.name is undefined:", data);
@@ -1160,40 +987,6 @@ const fetchPosts = async () => {
   }
 };
 
-const fetchReturnedNets = async () => {
-  try {
-    await fetch(
-      `${process.env.VUE_APP_BASE_URL}/returned_nets_list/${query.id}`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    )
-      .then((response) => response.json())
-      .then(({ success, data }) => {
-        if (success) {
-          returnedNets.value = data;
-        } else {
-          notification.warning({
-            message: "Info",
-            description: `${data}`,
-          });
-        }
-      })
-      .catch((error) => {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-        isModalOpen_issuenets.value = false;
-      });
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: `${error}`,
-    });
-  }
-};
 
 const fetchPostOrders = () => {
   const dropoffid = {
@@ -1238,47 +1031,6 @@ const fetchPostOrders = () => {
     });
   }
 };
-
-// const fetchPostSummary = ()=>{
-//   const dropoffid ={
-//     "drop_off_point_id":drop_off_id
-//   }
-//   try {
-//     fetch(`${process.env.VUE_APP_BASE_URL}/drop_off_point_posts_summary`,
-//     {
-//       method: "POST",
-//       headers:{
-//           "Content-Type": "application/json",
-//           ...
-//          authHeader()
-//         },
-//       body: JSON.stringify(dropoffid),
-//     })
-//     .then((response) => response.json())
-//     .then(({success, data}) => {
-//       if(success){
-//         postSummary.value = data;
-//       }else{
-//         notification.info({
-//           message: "Info",
-//           description: `${data}`
-//         });
-//       }
-//     })
-//     .catch((error)=>{
-//       notification.error({
-//         message: "Error",
-//         description: `${error}`
-//       });
-//       isModalOpen_issuenets.value = false;
-//     })
-//   } catch (error) {
-//     notification.error({
-//       message: "Error",
-//       description: `${error}`
-//     });
-//   }
-// }
 
 const fetchPostSummary = () => {
   const dropoffid = {
@@ -1494,6 +1246,7 @@ const clearSelected = (checked) => {
 };
 
 const generateOrders = () => {
+  store.commit("setIsDisabled", true);
   const data = {
     for_all_posts: newOrder.checked,
     order_type: newOrder.order_type,
@@ -1521,12 +1274,14 @@ const generateOrders = () => {
       .then((response) => response.json())
       .then(({ success, message }) => {
         if (success) {
+          store.commit("setIsDisabled", false);
           notification.success({
             message: "Success",
             description: `Order generated successfully`,
           });
           isModalOpen_GO.value = false;
         } else {
+          store.commit("setIsDisabled", false);
           notification.error({
             message: "Error",
             description: `${message}`,
@@ -1535,6 +1290,7 @@ const generateOrders = () => {
         isModalOpen_GO.value = false;
       })
       .catch((error) => {
+        store.commit("setIsDisabled", false);
         notification.error({
           message: "Error",
           description: `${error}`,

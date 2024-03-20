@@ -51,14 +51,14 @@
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
-                              path: `/org-units${record.id}/households`,
-                              query: { id: record.org_id },
+                              path: `/village-hh/${record.id}`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
                             }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
                           >
-                            &nbsp;&nbsp; View HouseHolds
+                            View Households
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
@@ -107,12 +107,12 @@
                   :model="formState"
                   @finish="handleSubmit"
                 >
-                  <a-form-item name="ward_id" label="Ward">
+                  <a-form-item name="ward_id" label="Sub Location">
                     <a-select
                       size="large"
                       name="basic-select"
                       class="sDash_fullwidth-select"
-                      placeholder="Select Ward"
+                      placeholder="Select Sub Location"
                       v-model:value="formState.ward_id"
                     >
                       <a-select-option

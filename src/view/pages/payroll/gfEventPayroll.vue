@@ -240,6 +240,9 @@
                                           duration: record.duration,
                                           venue: record.venue,
                                           date: record.start_date,
+                                          validate_status: record.status,
+                                          approval_status: record.approval_status,
+                                          payment_status: record.payment_status,
                                         },
                                       }"
                                       class="btn-icon"
@@ -384,16 +387,6 @@
                             <template>
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <!-- <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton> -->
                                 </div>
                               </td>
                             </template>
@@ -544,6 +537,7 @@ watchEffect(async () => {
         }
       });
       dataSource.value = events;
+      console.log(dataSource.value);
       dataSource.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
@@ -645,9 +639,9 @@ const handleValidation = (id) => {
             message: "Success",
             description: "Payroll Validated Successfully",
           });
-          setTimeout(function () {
-            location.reload();
-          }, 3000);
+          // setTimeout(function () {
+          //   location.reload();
+          // }, 3000);
         } else {
           notification.error({
             message: "Error",

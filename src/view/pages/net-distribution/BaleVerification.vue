@@ -7,7 +7,7 @@
           class="btn-add_new"
           size="extra-small"
           type="success"
-          @click="openModal(post_id)"
+          @click="openVerifyModal()"
         >
           Verify Bale
         </sdButton>
@@ -19,7 +19,6 @@
           <div v-if="isLoading" class="spin">
             <a-spin />
           </div>
-
           <div v-else>
             <TableWrapper class="table-data-view table-responsive">
               <a-table
@@ -27,35 +26,16 @@
                 :dataSource="dataSource"
                 :columns="columns"
               >
-                <template #point="{ record }">
+                <template #bale="{ record }">
                   <td>
                     <div class="table-actions">
-                      &nbsp;&nbsp;
-                      <sdButton size="extra-small" type="success">
-                        <router-link
-                          :to="{
-                            path: `/manage-dropoff-inventory`,
-                            query: {
-                              id: record.id,
-                              name: record.name,
-                              campaign_id: record.campaign_id,
-                            },
-                          }"
-                          class="btn-icon"
-                          type="info"
-                          shape="circle"
-                        >
-                          Manage Inventory
-                        </router-link>
-                      </sdButton>
-                      &nbsp;&nbsp;
                       <sdButton
                         class="button-container"
                         size="extra-small"
-                        type="success"
-                        @click="openModal(record.id)"
+                        type="danger"
+                        @click="openModal(record.verification_id)"
                       >
-                        Assign Drop-off Manager
+                        Void
                       </sdButton>
                     </div>
                   </td>
@@ -63,11 +43,12 @@
               </a-table>
             </TableWrapper>
           </div>
-          <!-- Issue modal -->
+
+          <!-- Bale verification modal -->
           <a-modal
             title="Verify Bales"
-            :visible="isModalOpen"
-            @cancel="handleCancel"
+            :visible="isVerifyModalOpen"
+            @cancel="handleCancelVerify"
             width="50%"
             footer=""
           >
@@ -140,39 +121,56 @@
                 </a-form-item>
 
                 <div class="record-form-actions text-right">
-                  <sdButton size="default" htmlType="Save" type="success">
+                  <sdButton
+                    size="default"
+                    htmlType="Save"
+                    type="success"
+                    :disabled="isDisabled"
+                  >
                     {{ isLoading ? "Loading..." : "Submit" }}
                   </sdButton>
                 </div>
               </a-form>
             </BasicFormWrapper>
           </a-modal>
-          <!-- End of Issue modal -->
+          <!-- End of Verification modal -->
+
+          <!-- Void Bale Verification Modal -->
+          <a-modal
+            title="Void Bale Verification"
+            :visible="isModalOpen"
+            @cancel="handleCancel"
+            width="50%"
+          >
+            <p>Are you sure you want to void this record?</p>
+            <template #footer>
+              <a-button key="cancel" type="warning" @click="handleCancel">
+                Cancel
+              </a-button>
+              <a-button key="confirm" type="danger" @click="handleVoid">
+                Confirm
+              </a-button>
+            </template>
+          </a-modal>
+          <!-- End Void Bale Verification Modal -->
         </sdCards>
       </a-col>
     </a-row>
   </Main>
 </template>
 <script>
-// import { RecordFormWrapper } from "../style";
-import { Main, BasicFormWrapper } from "../../styled";
+import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
-// import axios from "axios";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
-// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import { useRoute } from "vue-router";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 
 const columns = [
-  {
-    title: "Delivery Note No",
-    dataIndex: "delivery_note_number",
-    key: "id",
-  },
   {
     title: "Batch No.",
     dataIndex: "bale_batch_no",
@@ -189,16 +187,31 @@ const columns = [
     key: "id",
   },
   {
+    title: "Variance",
+    dataIndex: "variance",
+    key: "id",
+  },
+  {
     title: "Verified By",
     dataIndex: "verified_by",
     key: "id",
   },
-
+  {
+    title: "Verification Time",
+    dataIndex: "timestamp",
+    key: "id",
+  },
+  {
+    title: "Action",
+    dataIndex: "",
+    key: "bale",
+    slots: { customRender: "bale" },
+  },
 ];
 
 const AddNew = defineComponent({
   name: "AddNew",
-  components: { Main, BasicFormWrapper },
+  components: { Main },
   data() {
     const { state } = useStore();
     const isLoading = computed(() => state.crud.loading);
@@ -207,32 +220,31 @@ const AddNew = defineComponent({
     const join = ref("");
     const dataSource = ref([]);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/bale_verification`;
-    // const router = useRouter();
-
     const { query } = useRoute();
     const post_id = Number(query.id);
     const post_name = query.name;
-    console.log(query.id);
-    // const d_no = query.delivery_no;
-
     const isModalOpen = ref(false);
+    const isVerifyModalOpen = ref(false);
     const handleOk = async () => (isModalOpen.value = false);
-    const handleCancel = () => isModalOpen.value = false;
-    const openmodal = () => (isModalOpen.value = true);
+    const handleCancel = () => (isModalOpen.value = false);
+    const handleCancelVerify = () => (isVerifyModalOpen.value = false);
+    const verification_id = ref("");
+    const isDisabled = computed(() => state.isDisabled);
 
     const openModal = (id) => {
+      console.log(id);
+      verification_id.value = id;
       isModalOpen.value = true;
-      formState.drop_off_point_id = id;
     };
-
+    const openVerifyModal = () => {
+      isVerifyModalOpen.value = true;
+    };
     const formState = reactive({
       post_id: post_id,
       bale_batch_no: "",
       counted_no_of_nets: "",
       expected_no_of_nets: "",
-      // date_received: date_received,
-      delivery_note_number: 'N/A',
-      // received_by: received_by,
+      delivery_note_number: "N/A",
     });
 
     const { loading, isFacility, delivery_notes } = reactive({
@@ -250,7 +262,9 @@ const AddNew = defineComponent({
         "Expected no of nets is required"
       ),
       // date_received: Yup.string().required("Date received is required"),
-      delivery_note_number: Yup.string().required("Delivery note no/s11 is required"),
+      delivery_note_number: Yup.string().required(
+        "Delivery note no/s11 is required"
+      ),
       // received_by: Yup.string().required("Received by is required"),
     });
 
@@ -297,17 +311,15 @@ const AddNew = defineComponent({
         console.error(error);
       }
     });
-    console.log(formState.isFacility);
     const handleSubmit = async () => {
+      store.commit("setIsDisabled", true);
       const values = {
         post_id: post_id,
         bale_batch_no: formState.bale_batch_no,
         counted_no_of_nets: formState.counted_no_of_nets,
         expected_no_of_nets: formState.expected_no_of_nets,
-        delivery_note_number: 'N/A',
+        delivery_note_number: "N/A",
       };
-
-      console.log(JSON.stringify(values));
 
       try {
         // Validate the form
@@ -329,6 +341,10 @@ const AddNew = defineComponent({
 
         if (data.success) {
           // Handle success
+          store.commit("setIsDisabled", false);
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
           notification["success"]({
             message: "Nets Verified",
             description: "Nets have been successfully verified",
@@ -337,6 +353,7 @@ const AddNew = defineComponent({
           // router.push("/nets/nets-delivered");
         } else {
           // Handle failure
+          store.commit("setIsDisabled", false);
           notification["error"]({
             message: "Error",
             description: data.message,
@@ -345,12 +362,52 @@ const AddNew = defineComponent({
         }
       } catch (error) {
         // Handle validation errors or other exceptions
+        store.commit("setIsDisabled", false);
         console.error("Error:", error);
         notification.error({
           message: "Error",
           description: error.message,
           duration: 5.5,
         });
+      }
+    };
+
+    const handleVoid = async () => {
+      console.log(verification_id.value);
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/bale_verification_void?bale_verification_id=${verification_id.value}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+
+        if (data.success === true) {
+          notification.success({
+            message: "Bale verification voided successfully",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+          location.reload();
+        } else {
+          notification.error({
+            message: "Bale verification voiding not successful",
+            description: data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+        }
+      } catch (error) {
+        console.error(error);
       }
     };
 
@@ -367,6 +424,17 @@ const AddNew = defineComponent({
       validate,
       columns,
       dataSource,
+      delivery_notes,
+      post_name,
+      isModalOpen,
+      isVerifyModalOpen,
+      openModal,
+      openVerifyModal,
+      handleOk,
+      handleCancel,
+      handleCancelVerify,
+      handleVoid,
+      isDisabled,
       errors: {
         bale_batch_no: "",
         counted_no_of_nets: "",
@@ -375,13 +443,6 @@ const AddNew = defineComponent({
         delivery_note_number: "",
         received_by: "",
       },
-      delivery_notes,
-      post_name,
-      isModalOpen,
-      openmodal,
-      openModal,
-      handleOk,
-      handleCancel,
     };
   },
 });
