@@ -912,9 +912,9 @@ const fetchInitialChartData = async () => {
   await axios
     .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
     .then(async (response) => {
-      console.log(response.data);
+      // console.log(response.data);
       chartsLoading.value = false;
-      newChartData.value = response.data;
+      newChartData.value = response.data.data;
       fileterOrgeLevel.value = access_level.value.level.level_name;
       filterOrgId.value = access_level.value.level.id;
       if (access_level.value.level.id === 1) {
@@ -1139,7 +1139,7 @@ const fetchChildData = async (org_id, org_level) => {
     })
     .then(async () => {
       await axios.get(`${statUrl}`).then(async (response) => {
-        newChartData.value = response.data.data;
+        newChartData.value = response.data;
         if (org_level === "country") {
           newChartData.value = newChartData.value.filter((e) =>
             selectedCounties.value.includes(e.name.toString())
