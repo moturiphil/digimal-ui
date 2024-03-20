@@ -1,16 +1,21 @@
 <template>
   <RecordViewWrapper>
     <sdPageHeader title="Drop Off Points">
-      <template #subTitle>
-        <!-- <sdButton size="extra-small" type="success">
-          <router-link
-            :to="{
-              path: `/import/drop-off-points`,
-            }"
-          >
-            Import dropoff
-          </router-link>
-        </sdButton> -->
+      <template #subTitle></template>
+        <template #buttons>
+          <div class="search-box">
+            <span class="search-icon">
+              <!-- Increase the size of the search icon by setting the 'font-size' property -->
+              <sdFeatherIcons type="search" size="24" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by name"
+              style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
+            />
+          </div>
       </template>
     </sdPageHeader>
     <Main>
@@ -23,10 +28,49 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
+                <a-row class="" :gutter="5">
+                  <a-space>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('country')"
+                        v-model:value="country"
+                        show-search
+                        placeholder="Select Country"
+                        style="width: 100%"
+                        :options="countries"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'country')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('county')"
+                        v-model:value="county"
+                        show-search
+                        placeholder="Select County"
+                        style="width: 100%"
+                        :options="counties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('subcounty')"
+                        v-model:value="subcounty"
+                        show-search
+                        placeholder="Select Sub County"
+                        style="width: 100%"
+                        :options="subcounties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'subcounty')"
+                      ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-divider></a-divider>
                 <a-table
-                  :pagination="{ pageSize: 100, showSizeChanger: true }"
-                  :dataSource="dataSource"
-                  :columns="columns"
+                :pagination="false" :dataSource="dataSource" :columns="columns"
                 >
                   <template #point="{ record }">
                     <td>
@@ -63,6 +107,14 @@
                     </td>
                   </template>
                 </a-table>
+                <a-pagination
+                  :current="currentPage"
+                  :total="datatotal"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  :pagination="true"
+                  @change="onPageChange($event)"
+                />
               </TableWrapper>
             </div>
             <a-modal
@@ -122,16 +174,15 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
-// import axios from "axios";  drop_off_manager
-import authHeader from "../../../services/auth-header";
+import { computed, onMounted, ref, reactive,watch } from "vue";
+import axios from "@/Axiosconfig";  
 import { notification } from "ant-design-vue";
 // import dayjs from "dayjs";
-const dateFormat = "YYYY-MM-DD";
+//const dateFormat = "YYYY-MM-DD";
 const columns = [
   {
     title: "Drop off Name",
@@ -160,169 +211,351 @@ const columns = [
     slots: { customRender: "point" },
   },
 ];
+const { state,
+    //dispatch
+    } = useStore();
+//const crud = computed(() => state.crud.data);
+const isLoading = computed(() => state.crud.loading);
+//const selectedRowKeys = ref([]);
+const dataSource = ref([]);
+const isModalOpen = ref(false);
+const users = ref("");
+const searchItem = ref("");
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+//org levels
+const access_level = ref({});
+const filterAccessList = ref([]);
+const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
+const counties = ref(null);
+const subcounties = ref(null);
+const wards = ref(null);
+const county = ref("Select County");
+const subcounty = ref("Select Subcounty");
+const org_ids = ref([]);
 
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
+const currentCounties = ref([
+  "nK0A12Q7MvS", //homa bay
+  "sPkRcDvhGWA", //kisii
+  "uepLTG8wGWJ", //nyamira
+  "tAbBVBbueqD", //kisumu
+  "u4t9H8XyU9P", //siaya
+  "fVra3Pwta0Q", //migori
+  'Tvf1zgVZ0K4',//busia
+  'NjWSbQTwys4',//lamu
+  'nrI2khZx3d0',//kilifi
+  'JsH2bnvNt2d',//tana river
+  'N7YETT3A9r1',//kwale
+  'QyGNX2DpR4h',//taita taveta
+  "wsBsC6gjHvn", // mombasa
+  'KGHhQ5GLd4k',//
+  'BjC1xL40gHo',//kakamega
+  'sANMZ3lpqGs',//vihiga
+  'XWALbfAPa6n',//west pokot
+  'kphDeKClFch',//turkana
+  'mThvosEflAU',//trans nzoia
+  'kqJ83J2D72s',//naraok
+  'Eey8fT4Im3y',//marsabit
+  'vvOK1BxTbet',//baringo
+  'Ulj33KBau7V',
+]);
 
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const isModalOpen = ref(false);
-    const users = ref("");
+const formState = reactive({
+  post_id: "",
+  drop_off_point_id: "",
+  bale_size: "",
+  number_of_bales: "",
+  no_of_pieces: "",
+  issue_date: "",
+  delivery_note_number: "",
+  drop_off_manager: "",
+});
+onMounted(async () => {
+  ///alert()
+  if (sessionStorage.getItem("user") != null) {
+    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    updateFilters();
+    // console.log(JSON.stringify(access_level.value.location));
+  }
+  
+});
+//handle pagination
+const onPageChange = async (page) => {
+  currentPage.value = page;
+  try {
+    const response = await axios.get(`get_all_drop_off_points?page=${page}&per_page=${pageSize.value}`);
+    dataSource.value = response.data.data;
+    datatotal.value = response.data.pagination.total;
+  } catch (error) {
+    console.error(error);
+  }
+};
+// search dropoff points
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    searchItem.value = newValue;
+    getallDropOffPoints();
+  }
+);
+const getallDropOffPoints = async()=>{
+  try {
+    const response = await axios.get(`get_all_drop_off_points?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`);
+    const data = await response.data;
+    dataSource.value = data.data;
+    console.log(dataSource.value);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-    const formState = reactive({
-      post_id: "",
-      drop_off_point_id: "",
-      bale_size: "",
-      number_of_bales: "",
-      no_of_pieces: "",
-      issue_date: "",
-      delivery_note_number: "",
-      drop_off_manager: "",
+const updateFilters = () => {
+  // access_level.value.level.level_name = 'national'
+  // access_level.value.location.id = 1
+  // access_level.value.location.org_id = 'HfVjCurKxh2'
+  // access_level.value.location.name = 'Kenya'
+
+  if (access_level.value.level.id == 1) {
+    filterAccessList.value = [
+      "county",
+      "subcounty"
+    ];
+    countries.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+    fetchCounties();
+  } else if (access_level.value.level.id == 2) {
+    filterAccessList.value = [
+      "county",
+      "subcounty"
+    ];
+    counties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+  } else if (access_level.value.level.id == 3) {
+    filterAccessList.value = [
+      "subcounty",
+    ];
+    subcounties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+  }
+  getallDropOffPoints();
+};
+
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  // console.log(org_id)
+  // console.log(org_ids.value)
+  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  // console.log(org)
+  let parent_id = org[0] || 9;
+  // console.log(parent_id)
+  // console.log(org_level)
+  fetchChildData(parent_id, org_id, org_level);
+};
+const fetchChildData = async (location_id, org_id, org_level) => {
+  let fetchUrl = `get_sub_counties_list`;
+  let masterListUrl = `get_all_drop_off_points?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`;
+  if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&county_id=${location_id}`;
+    //clear fields
+    subcounty.value = "Select SubCounty";
+  } else if (org_level == "subcounty") {
+    //get wards
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `&subcounty_id=${location_id}`;
+  }
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
+      let data = response.data.message;
+      if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } else if (org_level == "subcounty") {
+        //get wards
+        wards.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } 
+    })
+    .then(async () => {
+      await axios.get(`${masterListUrl}`).then((response) => {
+        // console.log(response.data.data)
+        let data = response.data.data;
+        dataSource.value = data;
+        // paginationOptions.value.total = response.data.data.length;
+      });
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     });
-
-    onMounted(async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_all_drop_off_points`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        dataSource.value = data.data;
-        console.log(dataSource.value);
-      } catch (error) {
-        console.error(error);
-      }
+};
+const fetchCounties = async () => {
+  axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data
+        .map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }))
+        .filter((e) => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = response.data.map((x) => ({
+        org_id: x.org_id,
+        id: x.id,
+      }));
+      // console.log(counties.value)
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
     });
+};
 
-    const openModal = (id) => {
-      isModalOpen.value = true;
-      formState.drop_off_point_id = id;
+const openModal = (id) => {
+  isModalOpen.value = true;
+  formState.drop_off_point_id = id;
+};
+
+//users
+const getManagers = async () => {
+  const response = await axios.get(`get_drop_off_manager`);
+  const data = await response.data;
+  users.value = data.data;
+  console.log(users.value);
+};
+
+getManagers();
+
+const handleAssign = async () => {
+  try {
+    const data = {
+      user_id: formState.drop_off_manager,
+      drop_off_point_id: formState.drop_off_point_id,
     };
 
-    //users
-    const getManagers = async () => {
-      const response = await fetch(
-        `${process.env.VUE_APP_BASE_URL}/get_drop_off_manager`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      users.value = data.data;
-      console.log(users.value);
-    };
-
-    getManagers();
-
-    const handleAssign = async () => {
-      try {
-        const data = {
-          user_id: formState.drop_off_manager,
-          drop_off_point_id: formState.drop_off_point_id,
-        };
-
-        console.log(JSON.stringify(data));
-        await fetch(`${process.env.VUE_APP_BASE_URL}/assign_dropoff_manager`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then(({ status, data }) => {
-            if (status == true) {
-              notification.success({
-                message: "Success",
-                description: data,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${status}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
+    console.log(JSON.stringify(data));
+    await axios.post(`assign_dropoff_manager`,data)
+      .then((response) => response.data)
+      .then(({ status, data }) => {
+        if (status == true) {
+          notification.success({
+            message: "Success",
+            description: data,
           });
-      } catch (error) {
+          isModalOpen.value = false;
+          setTimeout(function () {
+            window.location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${status}`,
+          });
+        }
+        isModalOpen.value = false;
+      })
+      .catch((error) => {
         notification.error({
           message: "Error",
           description: `${error}`,
         });
-      }
-    };
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+  // const handleDelete = (id) => {
+  //   const confirm = window.confirm("Are you sure delete this?");
+  //   if (confirm) {
+  //     dispatch("axiosDataDelete", {
+  //       id,
+  //       getData: () => {
+  //         dispatch("axiosCrudGetData");
+  //       },
+  //     });
+  //   }
+  //   return false;
+  // };
+  const handleCancelReceive = () => {
+    isModalOpen.value = false;
+  };
+  // const onSelectChange = (selectedRowKey) => {
+  //   selectedRowKeys.value = selectedRowKey;
+  // };
 
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
-
-    const handleCancelReceive = () => {
-      isModalOpen.value = false;
-    };
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-    console.log(users);
-
-    return {
-      handleAssign,
-      dateFormat,
-      handleCancelReceive,
-      openModal,
-      isModalOpen,
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      dataSource,
-      columns,
-      formState,
-      users,
-    };
-  },
-});
-
-export default DragAndDropTable;
+  // const rowSelection = {
+  //   selectedRowKeys,
+  //   onChange: onSelectChange,
+  // };
+  console.log(users);
 </script>
 <style>
 .full-modal {

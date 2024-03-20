@@ -547,6 +547,17 @@
                                   type="number"
                                 />
                               </a-form-item>
+                              <a-form-item
+                                name="return_reason"
+                                label="Reason For Return"
+                              >
+                                <a-textarea
+                                    :style="{ width: '100%' }"
+                                    v-model:value="returns_formState.return_reason"
+                                    placeholder="Enter return reson here..."
+                                    :auto-size="{ minRows: 2, maxRows: 5 }"
+                                  />
+                              </a-form-item>
                               <div class="record-form-actions text-right">
                                 <sdButton
                                   size="default"
@@ -731,6 +742,7 @@ const returns_formState = reactive({
   to_drop_off_point_id: "",
   number_of_nets: "",
   date_returned: "",
+  return_reason:"",
 });
 
 onMounted(() => {
@@ -862,6 +874,7 @@ const handleReturns = () => {
     number_of_nets: returns_formState.number_of_nets,
     date_returned: dayjs(returns_formState.date_returned).format("YYYY-MM-DD"),
     delivery_note_number: returns_formState.delivery_note_number,
+    return_reason:returns_formState.return_reason,
   };
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
@@ -890,6 +903,7 @@ const handleReturns = () => {
         returns_formState.to_drop_off_point_id = "";
         returns_formState.number_of_nets = "";
         returns_formState.date_returned = "";
+        returns_formState.return_reason="";
         window.location.reload();
       })
       .catch((error) => {
