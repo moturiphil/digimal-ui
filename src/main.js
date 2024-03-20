@@ -29,8 +29,8 @@ app.use(router);
 app.use(HighchartsVue);
 app.mount("#app");
 
-if (process.env.NODE_ENV === "production") {
-  console.log = () => {};
-  console.error = () => {};
-  console.debug = () => {};
-}
+// if (process.env.NODE_ENV === "production") {
+//   console.log = () => {};
+//   console.error = () => {};
+//   console.debug = () => {};
+// }
