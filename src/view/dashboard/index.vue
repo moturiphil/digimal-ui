@@ -910,7 +910,7 @@ const updateFilters = async () => {
 };
 const fetchInitialChartData = async () => {
   await axios
-    .get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
+    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
     .then(async (response) => {
       chartsLoading.value = false;
       newChartData.value = response.data.data;
