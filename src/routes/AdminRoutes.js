@@ -463,6 +463,12 @@ const routes = [
     name: "/sub-location-dashboard",
     component: () => import("../view/pages/orgUnits/CHADashboard.vue"),
   },
+  //training summary
+  {
+    path: "/training/summary",
+    name: "training-summary",
+    component: () => import("../view/pages/campaigns/trainingSummary.vue"),
+  },
   // households/summary
   {
     path: "/household/validation",

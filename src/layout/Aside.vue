@@ -20,6 +20,11 @@
             Sub-location Dashboard
           </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetCHADash">
+          <router-link to="/training/summary">
+            Training Summary
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>

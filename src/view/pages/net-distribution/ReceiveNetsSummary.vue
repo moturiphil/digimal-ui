@@ -85,6 +85,20 @@
                 <li>
                   <a
                     :class="
+                      activeClass === 'do_post_worker_summary'
+                        ? 'active'
+                        : 'deactivate'
+                    "
+                    @click="handleChange('do_post_worker_summary')"
+                    href="#"
+                    :hidden="activeTransaction !== 'receive'"
+                  >
+                    Post Worker Summary
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="
                       activeClass === 'transfer_ins' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('transfer_ins')"
@@ -293,11 +307,16 @@
                           </a-table>
                         </TableWrapper>
                         <!-- end of Net TransfersOut table -->
-
                         <!--Distribution Post Summary-->
                         <DistributionPostSummary
                           :post_id="query.id"
                           v-if="activeClass === 'do_post_summary'"
+                        />
+                        <!--End Distribution Post Summary-->
+                        <!--Distribution Post Summary-->
+                        <DistributionPostWorkerSummary
+                          :post_id="query.id"
+                          v-if="activeClass === 'do_post_worker_summary'"
                         />
                         <!--End Distribution Post Summary-->
 
@@ -587,6 +606,7 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { SearchResultWrapper } from "./../style";
 import { onMounted, ref, reactive } from "vue";
 import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
+import DistributionPostWorkerSummary from "./DistributionPostWorkerSummary.vue";
 import authHeader from "../../../services/auth-header";
 // import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
