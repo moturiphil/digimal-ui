@@ -109,6 +109,37 @@
             </div>
           </sdCards>
         </a-col>
+        <a-col class="w-100" :md="24">
+          <sdCards headless>
+            <div v-if="isLoading" class="spin">
+              <a-spin />
+            </div>
+            <div v-else>
+              <TableWrapper class="table-data-view table-responsive">
+                <h3 style="">
+                  Total Households Served <strong>{{ served_hh_count }}</strong>
+                </h3>
+                <a-table
+                  :pagination="true"
+                  :dataSource="served_hh_data"
+                  :columns="served_hh_cols"
+                >
+                  <template #phone_no="{ record }">
+                    <div>
+                      {{
+                        `${record.hh_phone_number.substring(0, 2)}${"*".repeat(
+                          record.hh_phone_number.length - 4
+                        )}${record.hh_phone_number.substring(
+                          record.hh_phone_number.length - 2
+                        )}`
+                      }}
+                    </div>
+                  </template>
+                </a-table>
+              </TableWrapper>
+            </div>
+          </sdCards>
+        </a-col>
       </a-row>
       <a-col :xs="24">
         <DragAndDropTable />
@@ -145,7 +176,24 @@ const pending_hh_cols = ref([
     key: "hh_name",
   },
 ]);
-
+const served_hh_cols = ref([
+  {
+    title: "ID",
+    dataIndex: "hh_id",
+    key: "hh_id",
+  },
+  {
+    title: "Phone Number",
+    dataIndex: "hh_phone_number",
+    key: "hh_phone_number",
+    slots: { customRender: "phone_no" },
+  },
+  {
+    title: "Name",
+    dataIndex: "hh_name",
+    key: "hh_name",
+  },
+]);
 const columns = [
   {
     title: "Nets Ordered",
@@ -196,7 +244,9 @@ const isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
 const supervisors = ref([]);
 const pending_hh_data = ref([]);
+const served_hh_data = ref([]);
 const pending_hh_count = ref(0);
+const served_hh_count=ref(0);
 const searchItem = ref("");
 const isModalOpen = ref(false);
 
@@ -207,9 +257,21 @@ onMounted(async () => {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     fetchDistributionsPostsSummary();
     fetchPendingHHData();
+    fetchServedHHData();
   }
 });
-
+const fetchServedHHData = async () => {
+  try {
+    const response = await axios.get(
+      `hh_per_post_served?post_id=${props.post_id}`
+    );
+    const data = await response.data;
+    served_hh_data.value = data.households;
+    served_hh_count.value = data.hh_served_count || 0;
+  } catch (error) {
+    console.error(error);
+  }
+};
 const fetchPendingHHData = async () => {
   try {
     const response = await axios.get(

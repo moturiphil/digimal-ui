@@ -16,6 +16,9 @@ import highcharts3d from 'highcharts/highcharts-3d'; // Import the 3D module
 import exporting from 'highcharts/modules/exporting'; // Import the exporting module
 import exportData from 'highcharts/modules/export-data'; // Import the export-data module
 import accessibility from 'highcharts/modules/accessibility'; // Import the accessibility module
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 
 // Initialize the additional modules
 highcharts3d(Highcharts);
@@ -26,6 +29,8 @@ accessibility(Highcharts);
 app.config.productionTip = false;
 app.use(store);
 app.use(router);
+//Provide SweetAlert globally
+app.provide('swal', VueSweetalert2);
 app.use(HighchartsVue);
 app.mount("#app");
 

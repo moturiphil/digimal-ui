@@ -910,7 +910,7 @@ const updateFilters = async () => {
 };
 const fetchInitialChartData = async () => {
   await axios
-    .get(`subcounty/stats?org_id=${access_level.value.location.org_id}`)
+    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
     .then(async (response) => {
       chartsLoading.value = false;
       newChartData.value = response.data.data;
@@ -1006,7 +1006,7 @@ const handleChange = async (org_id, org_level) => {
 const fetchChildData = async (org_id, org_level) => {
   await updateStats(org_id);
   let fetchUrl = `get_sub_counties_list`;
-  let statUrl = `subcounty/stats`;
+  let statUrl = `subcounty_stats_data`;
   if (org_level == "country") {
     //get counties
     fetchUrl += `?parent_id=${org_id}`;
@@ -1138,7 +1138,7 @@ const fetchChildData = async (org_id, org_level) => {
     })
     .then(async () => {
       await axios.get(`${statUrl}`).then(async (response) => {
-        newChartData.value = response.data.data;
+        newChartData.value = response.data;
         if (org_level === "country") {
           newChartData.value = newChartData.value.filter((e) =>
             selectedCounties.value.includes(e.name.toString())
@@ -1274,7 +1274,7 @@ const convertObjectVlasToInt = (obj) => {
 
 const updateStats = async (org_id) => {
   await axios
-    .get(`all_stats?org_id=${org_id}`)
+    .get(`all_stats_data?org_id=${org_id}`)
     .then(async (response) => {
       const data = await convertObjectVlasToInt(response.data);
       //console.log(data)
