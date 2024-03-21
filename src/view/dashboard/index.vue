@@ -173,6 +173,14 @@
                       </td>
                     </tr>
                     <tr>
+                      <td><span class="stat-span">Total Delivered</span></td>
+                      <td>
+                        <sdHeading class="stat-title">{{
+                          new Intl.NumberFormat().format(total_nets_delivered)
+                        }}</sdHeading>
+                      </td>
+                    </tr>
+                    <tr>
                       <td><span class="stat-span">Total Distributed</span></td>
                       <td>
                         <sdHeading class="stat-title">{{
@@ -186,7 +194,7 @@
                         <sdHeading class="stat-title">
                           {{
                             new Intl.NumberFormat().format(
-                              total_nets_required - nets_distributed
+                              total_nets_delivered - nets_distributed
                             )
                           }}</sdHeading
                         >
@@ -201,9 +209,9 @@
                       <td>
                         <sdHeading class="stat-title">
                           {{
-                            nets_distributed
+                            total_nets_delivered
                               ? Number(
-                                  (nets_distributed / total_nets_required) * 100
+                                  (nets_distributed / total_nets_delivered) * 100
                                 ).toFixed(2)
                               : 0.0
                           }}%
@@ -682,6 +690,7 @@ const registered_users = ref(0);
 const household_population = ref(0);
 const population_served = ref(0);
 const total_nets_required = ref(0);
+const total_nets_delivered = ref(0);
 const activities = ref(0);
 //chart data
 const newChartData = ref([]);
@@ -1279,8 +1288,11 @@ const updateStats = async (org_id) => {
       const data = await convertObjectVlasToInt(response.data);
       //console.log(data)
       active_events.value = data.events ? data.events : 0;
-      nets_distributed.value = data.nets_distributed
-        ? data.nets_distributed
+      nets_distributed.value = data.nets_issued
+        ? data.nets_issued
+        : 0;
+        total_nets_delivered.value = data.nets_delivered
+        ? data.nets_delivered
         : 0;
       registered_house_holds.value = data.registered_house_holds
         ? data.registered_house_holds
