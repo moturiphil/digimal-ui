@@ -28,8 +28,8 @@
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <h3 style="display: inline;margin-right: 10%;">Distribution Post Worker Summary</h3>
-                <h3 style="display: inline;"><span style="margin: 2%;">Total:<strong>{{ total_summary.total_count }}</strong></span> <span>Total Nets:<strong>{{ total_summary.total_nets }}</strong></span></h3>
-                <a-table :pagination="true" :dataSource="dataSource" :columns="columns">
+                <h3 style="display: inline;"><span style="margin: 2%;">Total Served:<strong>{{ total_summary.total_count }}</strong></span> <span>Total Nets:<strong>{{ total_summary.total_nets }}</strong></span></h3>
+                <a-table :pagination="true" :dataSource="formattedPostWorkers" :columns="columns">
                 </a-table>
               </TableWrapper>
             </div>
@@ -108,11 +108,41 @@ const fetchDistributionsPostsWorkerSummary = async () => {
     );
     const data = await response.data.data;
     dataSource.value = [];
-    dataSource.value=data.post_workers;
+    dataSource.value=data.post_workers.sort((a, b) => {
+        const nameA = a.name.toUpperCase();
+        const nameB = b.name.toUpperCase();
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
+      });
     total_summary.value=data.total_summary?data.total_summary:{total_count:0,total_nets:0,};
     console.log(dataSource.value);
   } catch (error) {
     console.error(error);
   }
 };
+// Format workers array
+const formattedPostWorkers = computed(() => {
+  const formatted = [];
+      let prevName = '';
+      let prevRole='';
+      dataSource.value.forEach(worker => {
+        if (worker.name === prevName && worker.role===prevRole) {
+          formatted.push({
+            ...worker,
+            name: '',
+            role:'',
+          });
+        } else {
+          formatted.push(worker);
+          prevName = worker.name;
+          prevRole=worker.role;
+        }
+      });
+      return formatted;
+});
 </script>
