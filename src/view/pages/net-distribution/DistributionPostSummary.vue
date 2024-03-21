@@ -121,7 +121,7 @@
                 </h3>
                 <a-table
                   :pagination="true"
-                  :dataSource="pending_hh_data"
+                  :dataSource="served_hh_data"
                   :columns="served_hh_cols"
                 >
                   <template #phone_no="{ record }">
@@ -244,6 +244,7 @@ const isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
 const supervisors = ref([]);
 const pending_hh_data = ref([]);
+const served_hh_data = ref([]);
 const pending_hh_count = ref(0);
 const served_hh_count=ref(0);
 const searchItem = ref("");
@@ -265,7 +266,7 @@ const fetchServedHHData = async () => {
       `hh_per_post_served?post_id=${props.post_id}`
     );
     const data = await response.data;
-    pending_hh_data.value = data.households;
+    served_hh_data.value = data.households;
     served_hh_count.value = data.hh_served_count || 0;
   } catch (error) {
     console.error(error);
