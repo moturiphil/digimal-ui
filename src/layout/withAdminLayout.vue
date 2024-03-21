@@ -45,60 +45,14 @@
             <TopMenu v-if="topMenu && innerWidth > 991" />
             <router-link to="/search-hh">
               <sdButton type="success" size="extra-small"><sdFeatherIcons type="search" /><span>Search Household</span></sdButton>
-              
+            </router-link>
+            &nbsp;&nbsp;
+            <router-link to="/search-hh">
+              <sdButton type="success" size="extra-small"><sdFeatherIcons type="search" /><span>My Account</span></sdButton>
             </router-link>
           </a-col>
-
           <a-col :lg="6" :md="8" :sm="0" :xs="0">
-            <TopMenuSearch v-if="topMenu && innerWidth > 991">
-              <div class="top-right-wrap d-flex">
-                <a
-                  :class="`${
-                    activeSearch ? 'search-toggle active' : 'search-toggle'
-                  }`"
-                  @click="
-                    () => {
-                      toggleSearch();
-                    }
-                  "
-                  href="#"
-                >
-                  <sdFeatherIcons type="search" />
-                  <sdFeatherIcons type="x" />
-                </a>
-                <div
-                  :class="`${
-                    activeSearch
-                      ? 'topMenu-search-form show'
-                      : 'topMenu-search-form'
-                  }`"
-                >
-                  <form action="">
-                    <span class="search-icon">
-                      <sdFeatherIcons type="search" />
-                    </span>
-                    <input type="text" name="search" />
-                  </form>
-                </div>
-                <AuthInfo />
-              </div>
-            </TopMenuSearch>
-            <AuthInfo v-else />
-          </a-col>
-          <a-col :style="{ position: 'static' }" :md="0" :sm="18" :xs="12">
-            <div class="mobile-action">
-              <a
-                class="btn-search"
-                @click="handleSearchHide(searchHide)"
-                href="#"
-              >
-                <sdFeatherIcons type="search" v-if="searchHide" />
-                <sdFeatherIcons type="x" v-else />
-              </a>
-              <a class="btn-auth" @click="onShowHide(hide)" href="#">
-                <sdFeatherIcons type="more-vertical" />
-              </a>
-            </div>
+            <AuthInfo />
           </a-col>
         </a-row>
       </Header>
