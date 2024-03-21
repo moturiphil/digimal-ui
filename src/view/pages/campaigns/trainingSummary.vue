@@ -339,9 +339,9 @@
       const response = await axios.get(`summary_trainings?org_id=${access_level.value.location.org_id}`);
       const data = await response.data;
       summary.trained_chps=data.trained_chps?data.trained_chps:0;
-      summary.trained_chv_ve=data.trained_chv_ve?data.trained_chv_ve:0;
+      summary.trained_chv_ve=data.total_chv_elder?data.total_chv_elder:0;
       summary.trained_hcw=data.trained_hcw?data.trained_hcw:0;
-      summary.trained_ves=data.trained_ves?data.trained_ves:0;
+      summary.trained_ves=data.trained_village_elders?data.trained_village_elders:0;
     } catch (error) {
       console.error(error);
     }

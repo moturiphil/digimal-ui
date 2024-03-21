@@ -266,7 +266,7 @@ const fetchServedHHData = async () => {
     );
     const data = await response.data;
     pending_hh_data.value = data.households;
-    served_hh_count.value = data.served_hh_count || 0;
+    served_hh_count.value = data.hh_served_count || 0;
   } catch (error) {
     console.error(error);
   }

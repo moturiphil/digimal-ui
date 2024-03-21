@@ -27,7 +27,7 @@
             </div>
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <h3 style="display: inline;margin-right: 30%;">Distribution Post Worker Summary</h3>
+                <h3 style="display: inline;margin-right: 10%;">Distribution Post Worker Summary</h3>
                 <h3 style="display: inline;"><span style="margin: 2%;">Total:<strong>{{ total_summary.total_count }}</strong></span> <span>Total Nets:<strong>{{ total_summary.total_nets }}</strong></span></h3>
                 <a-table :pagination="true" :dataSource="dataSource" :columns="columns">
                 </a-table>
