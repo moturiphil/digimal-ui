@@ -1138,7 +1138,7 @@ const fetchChildData = async (org_id, org_level) => {
     })
     .then(async () => {
       await axios.get(`${statUrl}`).then(async (response) => {
-        newChartData.value = response.data.data;
+        newChartData.value = response.data;
         if (org_level === "country") {
           newChartData.value = newChartData.value.filter((e) =>
             selectedCounties.value.includes(e.name.toString())

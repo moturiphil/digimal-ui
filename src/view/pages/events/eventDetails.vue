@@ -279,7 +279,6 @@ const event_name = plainquery.name;
 // const event_id = query.id;
 const event_code = plainquery.event_code;
 const router = useRouter();
-console.log(event_code);
 
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
@@ -294,7 +293,7 @@ const participant_id = ref("");
 
 //const isModalOpen = ref(false);
 
-console.log(plainquery.id);
+console.log(plainquery.funding_id);
 
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
@@ -320,6 +319,13 @@ const generatePayroll = async () => {
       });
       await new Promise((resolve) => setTimeout(resolve, 4000));
       location.reload();
+      //if (plainquery.funding_id == 1) {
+      //  console.log('checking this out...');
+        // router.push("/gf-event-payroll");
+      //}
+      //else {
+      //  router.push("pmi-event-payroll");
+     // }
     } else {
       handleErrorResponse(response);
     }

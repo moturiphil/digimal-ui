@@ -105,6 +105,7 @@
                                     name: record.name,
                                     event_code: record.event_code,
                                     event_host_id: record.event_host_id,
+                                    funding_id: record.funding_source,
                                   })
                                 ),
                               },
@@ -175,13 +176,6 @@
                   <h4>
                     <b>
                       <u> Event Facilitators </u>
-                      <!-- <sdButton
-                          size="extra-small"
-                          type="info"
-                          @click="manageEvent(record.event_code)"
-                        >
-                          Add Trainer &nbsp; &nbsp;
-                        </sdButton> -->
                     </b>
                   </h4>
                   <br />
@@ -189,28 +183,6 @@
                     <li v-for="facilitator in event_facilitators" :key="facilitator">
                       {{ facilitator }}
                     </li>
-                    <!-- <li>
-                        <sdButton
-                          class="spaced-button"
-                          size="extra-small"
-                          type="success"
-                          outlined
-                          v-for="facilitator in event_facilitators"
-                          :key="facilitator"
-                        >
-                          {{ facilitator }}
-                          <sdButton
-                            class="remove-button"
-                            size="extra-small"
-                            type="danger"
-                          >
-                            <sdFeatherIcons
-                              type="trash-2"
-                              size="small"
-                            />
-                          </sdButton>
-                        </sdButton> -->
-                    <!-- </li> -->
                   </ul>
                 </div>
               </a-modal>
@@ -461,7 +433,6 @@ const getEvents = () => {
       }));
       const filteredData = response.data.data.filter((item) => item.funding_source == 1);
       datatotal.value = response.data.pagination.total;
-      console.log(datatotal.value);
       dataSource.value = filteredData;
     })
     .catch((error) => {
