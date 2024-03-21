@@ -17,7 +17,7 @@
         </a-menu-item>
         <a-menu-item key="widgetCHADash">
           <router-link to="/sub-location/dashboard">
-            Sub-location Coordinator
+            Sub-location Dashboard
           </router-link>
         </a-menu-item>
         <a-menu-item key="widgetCHADash">
