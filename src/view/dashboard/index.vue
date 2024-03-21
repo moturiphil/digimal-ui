@@ -912,7 +912,6 @@ const fetchInitialChartData = async () => {
   await axios
     .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
     .then(async (response) => {
-      // console.log(response.data);
       chartsLoading.value = false;
       newChartData.value = response.data.data;
       fileterOrgeLevel.value = access_level.value.level.level_name;
