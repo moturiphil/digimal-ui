@@ -804,7 +804,85 @@ onMounted(async () => {
 const capitalizeFirstLetter = async (word) => {
   return (await word.charAt(0).toUpperCase()) + word.slice(1);
 };
+const fetchInitialChartData = async () => {
+  await axios
+    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
+    .then(async (response) => {
+      chartsLoading.value = false;
+      newChartData.value = response.data.data;
+      fileterOrgeLevel.value = access_level.value.level.level_name;
+      filterOrgId.value = access_level.value.level.id;
+      if (access_level.value.level.id === 1) {
+        newChartData.value = newChartData.value.filter((e) =>
+          selectedCounties.value.includes(e.name.toString())
+        );
+      }
+      fetchNetsDistributed();
+      fetchHouseHoldsRegTrends();
+      //nets_required,nets_issued,target_data,target_level,cats
+      await netsReqvsIssuedChart(
+        newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
+        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+        ), //(nets_issued/nets_required)*100
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+        ), //(nets_required/nets_required)*100
+        newChartData.value.map((item) => item.name), //cats
+        access_level.value.level.level_name //level
+      );
+      let scatterData = [];
+      newChartData.value.forEach((item, index) => {
+        let x = parseInt(item.nets_issued);
+        let y = parseInt(item.nets_delivered);
+        let ratio = parseFloat((x / y) * 100).toFixed(2);
+        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
+      });
+      console.log(scatterData);
+      await netsIssuedvsDeliveredChart(
+        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+        newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
+        scatterData, //ratio
+        newChartData.value.map((item) => item.name), //cats
+        fileterOrgeLevel.value //level
+      );
+      //registered,served,target_data,target_level,cats
+      await householdRegvsServedChart(
+        newChartData.value.map((item) => parseInt(item.households_registered)), //registered
+        newChartData.value.map((item) => parseInt(item.households_served)), //served
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_served) /
+              parseInt(item.households_registered)) *
+            100
+        ), //(registered/served)*100
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_registered) /
+              parseInt(item.households_registered)) *
+            100
+        ), //(registered/registered)*100
+        newChartData.value.map((item) => item.name), //cats
+        access_level.value.level.level_name //level
+      );
 
+      let currentDate = new Date();
+      //console.log(currentDate.getFullYear())
+      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+      dateTo.value = moment(currentDate).format(dateFormat.value);
+      NetsChartData.value = newChartData.value;
+    })
+    .catch((error) => {
+      console.log(error);
+      // notification.error({
+      //   message: `Error!`,
+      //   description: `${error}`,
+      // });
+    });
+};
 const updateFilters = async () => {
   // access_level.value.level.id = 3
   // access_level.value.location.org_id = 'BzFBYZhF5fx'
@@ -916,85 +994,6 @@ const updateFilters = async () => {
       },
     ];
   }
-};
-const fetchInitialChartData = async () => {
-  await axios
-    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
-    .then(async (response) => {
-      chartsLoading.value = false;
-      newChartData.value = response.data.data;
-      fileterOrgeLevel.value = access_level.value.level.level_name;
-      filterOrgId.value = access_level.value.level.id;
-      if (access_level.value.level.id === 1) {
-        newChartData.value = newChartData.value.filter((e) =>
-          selectedCounties.value.includes(e.name.toString())
-        );
-      }
-      fetchNetsDistributed();
-      fetchHouseHoldsRegTrends();
-      //nets_required,nets_issued,target_data,target_level,cats
-      await netsReqvsIssuedChart(
-        newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
-        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
-        ), //(nets_issued/nets_required)*100
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
-        ), //(nets_required/nets_required)*100
-        newChartData.value.map((item) => item.name), //cats
-        access_level.value.level.level_name //level
-      );
-      let scatterData = [];
-      newChartData.value.forEach((item, index) => {
-        let x = parseInt(item.nets_issued);
-        let y = parseInt(item.nets_delivered);
-        let ratio = parseFloat((x / y) * 100).toFixed(2);
-        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
-      });
-      console.log(scatterData);
-      await netsIssuedvsDeliveredChart(
-        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
-        newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
-        scatterData, //ratio
-        newChartData.value.map((item) => item.name), //cats
-        fileterOrgeLevel.value //level
-      );
-      //registered,served,target_data,target_level,cats
-      await householdRegvsServedChart(
-        newChartData.value.map((item) => parseInt(item.households_registered)), //registered
-        newChartData.value.map((item) => parseInt(item.households_served)), //served
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.households_served) /
-              parseInt(item.households_registered)) *
-            100
-        ), //(registered/served)*100
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.households_registered) /
-              parseInt(item.households_registered)) *
-            100
-        ), //(registered/registered)*100
-        newChartData.value.map((item) => item.name), //cats
-        access_level.value.level.level_name //level
-      );
-
-      let currentDate = new Date();
-      //console.log(currentDate.getFullYear())
-      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
-      dateTo.value = moment(currentDate).format(dateFormat.value);
-      NetsChartData.value = newChartData.value;
-    })
-    .catch((error) => {
-      console.log(error);
-      // notification.error({
-      //   message: `Error!`,
-      //   description: `${error}`,
-      // });
-    });
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
