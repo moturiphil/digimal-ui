@@ -15,6 +15,15 @@
       </sdPageHeader>
   
       <Main>
+        <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportPostSummary"
+        size="extra-small"
+      >
+        Download List &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
         <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
@@ -96,6 +105,7 @@
   import axios from "@/Axiosconfig";
   import { useStore } from "vuex";
   import { notification } from "ant-design-vue";
+  import authHeader from "../../../services/auth-header";
   
   
   const columns = ref([
@@ -170,6 +180,7 @@
   const ward = ref("Select Ward")
   // const village = ref("Select a Post")
   const org_ids = ref([])
+  const export_post_summary_url = `${process.env.VUE_APP_BASE_URL}/export_get_post_nets_distribution_summary`;
   
   
   const currentCounties = ref([
@@ -417,6 +428,33 @@
         console.error(error);
       });
   }
+
+  const exportPostSummary = async () => {
+      try {
+        const response = await fetch(export_post_summary_url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch export data");
+        }
+
+        const fileBlob = await response.blob();
+        const fileName = "Post Summary.xlsx";
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      } catch (error) {
+        console.error(error);
+      }
+    };
   
   
   
