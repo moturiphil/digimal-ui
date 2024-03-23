@@ -552,11 +552,11 @@
                       style="width: 200px; height: 100%"
                       :options="dateFilters"
                       :filter-option="filterOption"
-                      @change="handleFilterChange($event)"
+                      @change="handleFilterChange($event,'filter1')"
                     ></a-select>
                     <div
                       :span="12"
-                      v-if="selectedFilter === 'custom'"
+                      v-if="selectedFilter === 'custom1'"
                       style="display: flex; flex-direction: row"
                     >
                       <input
@@ -581,9 +581,7 @@
                           border: '2px solid  #CCCCFF',
                         }"
                         placeholder="Select Date To"
-                        @input="
-                          fetchNetsDistributed(), fetchHouseHoldsRegTrends()
-                        "
+                        @input="fetchHouseHoldsRegTrends()"
                         :format="dateFormat"
                       />
                     </div>
@@ -621,6 +619,54 @@
               </table>
             </figure>
             <a-divider></a-divider>
+            <div>
+              <a-row :gutter="16" v-if="!printMode">
+                <a-col :span="12" style="display: flex; flex-direction: row">
+                  <a-space direction="horizontal" :size="5">
+                    <a-select
+                      v-model:value="selectedFilter1"
+                      show-search
+                      placeholder="Select Filter"
+                      style="width: 200px; height: 100%"
+                      :options="dateFilters1"
+                      :filter-option="filterOption"
+                      @change="handleFilterChange($event,'filter2')"
+                    ></a-select>
+                    <div
+                      :span="12"
+                      v-if="selectedFilter1 === 'custom2'"
+                      style="display: flex; flex-direction: row"
+                    >
+                      <input
+                        type="date"
+                        :style="{
+                          width: '100%',
+                          padding: '6px',
+                          margin: '1px',
+                          border: '2px solid  #CCCCFF',
+                        }"
+                        v-model="dateFrom1"
+                        placeholder="Select Date From"
+                        :format="dateFormat"
+                      />
+                      <input
+                        type="date"
+                        v-model="dateTo1"
+                        :style="{
+                          width: '100%',
+                          padding: '6px',
+                          margin: '1px',
+                          border: '2px solid  #CCCCFF',
+                        }"
+                        placeholder="Select Date To"
+                        @input="fetchNetsDistributed()"
+                        :format="dateFormat"
+                      />
+                    </div>
+                  </a-space>
+                </a-col>
+              </a-row>
+            </div>
             <figure class="highcharts-figure">
               <div id="NetsDistributedwithTime"></div>
               <table class="table table-responsive" v-if="printMode">
@@ -722,11 +768,13 @@ const ward = ref("Select Ward");
 //Nets with Time
 const dateFormat = ref("YYYY-MM-DD");
 var selectedFilter = ref("month");
+var selectedFilter1=ref("month");
 var filterOrgId = ref(9);
 var fileterOrgeLevel = ref("");
 var dateFrom = ref(new Date());
 var dateTo = ref(new Date());
-
+var dateFrom1 = ref(new Date());
+var dateTo1 = ref(new Date());
 const org_ids = ref([]);
 const dateFilters = ref([
   { value: "year", label: "Past 1 Year" },
@@ -734,7 +782,15 @@ const dateFilters = ref([
   { value: "week", label: "Past 1 Week" },
   { value: "3day", label: "Past 3 Days" },
   { value: "day", label: "Past 1 Day" },
-  { value: "custom", label: "Custom" },
+  { value: "custom1", label: "Custom Filter" },
+]);
+const dateFilters1 = ref([
+  { value: "year", label: "Past 1 Year" },
+  { value: "month", label: "Past 1 Month" },
+  { value: "week", label: "Past 1 Week" },
+  { value: "3day", label: "Past 3 Days" },
+  { value: "day", label: "Past 1 Day" },
+  { value: "custom2", label: "Custom Filter" },
 ]);
 
 const selectedCounties = ref([
@@ -804,7 +860,85 @@ onMounted(async () => {
 const capitalizeFirstLetter = async (word) => {
   return (await word.charAt(0).toUpperCase()) + word.slice(1);
 };
+const fetchInitialChartData = async () => {
+  await axios
+    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
+    .then(async (response) => {
+      chartsLoading.value = false;
+      newChartData.value = response.data.data;
+      fileterOrgeLevel.value = access_level.value.level.level_name;
+      filterOrgId.value = access_level.value.level.id;
+      if (access_level.value.level.id === 1) {
+        newChartData.value = newChartData.value.filter((e) =>
+          selectedCounties.value.includes(e.name.toString())
+        );
+      }
+      fetchNetsDistributed();
+      fetchHouseHoldsRegTrends();
+      //nets_required,nets_issued,target_data,target_level,cats
+      await netsReqvsIssuedChart(
+        newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
+        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+        ), //(nets_issued/nets_required)*100
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+        ), //(nets_required/nets_required)*100
+        newChartData.value.map((item) => item.name), //cats
+        access_level.value.level.level_name //level
+      );
+      let scatterData = [];
+      newChartData.value.forEach((item, index) => {
+        let x = parseInt(item.nets_issued);
+        let y = parseInt(item.nets_delivered);
+        let ratio = parseFloat((x / y) * 100).toFixed(2);
+        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
+      });
+      console.log(scatterData);
+      await netsIssuedvsDeliveredChart(
+        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
+        newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
+        scatterData, //ratio
+        newChartData.value.map((item) => item.name), //cats
+        fileterOrgeLevel.value //level
+      );
+      //registered,served,target_data,target_level,cats
+      await householdRegvsServedChart(
+        newChartData.value.map((item) => parseInt(item.households_registered)), //registered
+        newChartData.value.map((item) => parseInt(item.households_served)), //served
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_served) /
+              parseInt(item.households_registered)) *
+            100
+        ), //(registered/served)*100
+        newChartData.value.map(
+          (item) =>
+            (parseInt(item.households_registered) /
+              parseInt(item.households_registered)) *
+            100
+        ), //(registered/registered)*100
+        newChartData.value.map((item) => item.name), //cats
+        access_level.value.level.level_name //level
+      );
 
+      let currentDate = new Date();
+      //console.log(currentDate.getFullYear())
+      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+      dateTo.value = moment(currentDate).format(dateFormat.value);
+      NetsChartData.value = newChartData.value;
+    })
+    .catch((error) => {
+      console.log(error);
+      // notification.error({
+      //   message: `Error!`,
+      //   description: `${error}`,
+      // });
+    });
+};
 const updateFilters = async () => {
   // access_level.value.level.id = 3
   // access_level.value.location.org_id = 'BzFBYZhF5fx'
@@ -916,85 +1050,6 @@ const updateFilters = async () => {
       },
     ];
   }
-};
-const fetchInitialChartData = async () => {
-  await axios
-    .get(`subcounty_stats_data?org_id=${access_level.value.location.org_id}`)
-    .then(async (response) => {
-      chartsLoading.value = false;
-      newChartData.value = response.data.data;
-      fileterOrgeLevel.value = access_level.value.level.level_name;
-      filterOrgId.value = access_level.value.level.id;
-      if (access_level.value.level.id === 1) {
-        newChartData.value = newChartData.value.filter((e) =>
-          selectedCounties.value.includes(e.name.toString())
-        );
-      }
-      fetchNetsDistributed();
-      fetchHouseHoldsRegTrends();
-      //nets_required,nets_issued,target_data,target_level,cats
-      await netsReqvsIssuedChart(
-        newChartData.value.map((item) => parseInt(item.nets_required)), //nets_required
-        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
-        ), //(nets_issued/nets_required)*100
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
-        ), //(nets_required/nets_required)*100
-        newChartData.value.map((item) => item.name), //cats
-        access_level.value.level.level_name //level
-      );
-      let scatterData = [];
-      newChartData.value.forEach((item, index) => {
-        let x = parseInt(item.nets_issued);
-        let y = parseInt(item.nets_delivered);
-        let ratio = parseFloat((x / y) * 100).toFixed(2);
-        scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
-      });
-      console.log(scatterData);
-      await netsIssuedvsDeliveredChart(
-        newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
-        newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered
-        scatterData, //ratio
-        newChartData.value.map((item) => item.name), //cats
-        fileterOrgeLevel.value //level
-      );
-      //registered,served,target_data,target_level,cats
-      await householdRegvsServedChart(
-        newChartData.value.map((item) => parseInt(item.households_registered)), //registered
-        newChartData.value.map((item) => parseInt(item.households_served)), //served
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.households_served) /
-              parseInt(item.households_registered)) *
-            100
-        ), //(registered/served)*100
-        newChartData.value.map(
-          (item) =>
-            (parseInt(item.households_registered) /
-              parseInt(item.households_registered)) *
-            100
-        ), //(registered/registered)*100
-        newChartData.value.map((item) => item.name), //cats
-        access_level.value.level.level_name //level
-      );
-
-      let currentDate = new Date();
-      //console.log(currentDate.getFullYear())
-      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
-      dateTo.value = moment(currentDate).format(dateFormat.value);
-      NetsChartData.value = newChartData.value;
-    })
-    .catch((error) => {
-      console.log(error);
-      // notification.error({
-      //   message: `Error!`,
-      //   description: `${error}`,
-      // });
-    });
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
@@ -1366,20 +1421,26 @@ const exportChartsToPDF = async () => {
   }
 };
 //chart functions
-const handleFilterChange = async () => {
+const handleFilterChange = async ($event,filter) => {
   try {
     const currentDate = new Date();
     //console.log(selectedFilter.value)
-    switch (selectedFilter.value) {
+    switch ($event) {
       case "year":
         dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
         dateTo.value = currentDate;
+        dateFrom1.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
+        dateTo1.value = currentDate;
         break;
       case "month":
         dateFrom.value = new Date(
           `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`
         );
         dateTo.value = currentDate;
+        dateFrom1.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}`
+        );
+        dateTo1.value = currentDate;
         break;
       case "week":
         dateFrom.value = new Date(
@@ -1388,6 +1449,12 @@ const handleFilterChange = async () => {
           }`
         );
         dateTo.value = currentDate;
+        dateFrom1.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+            currentDate.getDate() - 7
+          }`
+        );
+        dateTo1.value = currentDate;
         break;
       case "3day":
         dateFrom.value = new Date(
@@ -1396,6 +1463,12 @@ const handleFilterChange = async () => {
           }`
         );
         dateTo.value = currentDate;
+        dateFrom1.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+            currentDate.getDate() - 3
+          }`
+        );
+        dateTo1.value = currentDate;
         break;
       case "day":
         dateFrom.value = new Date(
@@ -1404,17 +1477,31 @@ const handleFilterChange = async () => {
           }`
         );
         dateTo.value = currentDate;
+        dateFrom1.value = new Date(
+          `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${
+            currentDate.getDate() - 1
+          }`
+        );
+        dateTo1.value = currentDate;
         break;
       default:
         dateFrom.value = moment(new Date(`2023-11-15`)).format(
           dateFormat.value
         );
-        dateTo.value = currentDate;
+        dateTo.value = dateTo.value? moment(dateTo.value).format(dateFormat.value):currentDate;
+        dateFrom1.value = moment(new Date(`2023-11-15`)).format(
+          dateFormat.value
+        );
+        dateTo1.value =  dateTo1.value? moment(dateTo1.value).format(dateFormat.value):currentDate;
         break;
     }
     //fetch data
-    await fetchNetsDistributed(dateFrom.value);
-    await fetchHouseHoldsRegTrends(dateFrom.value);
+    if(filter==='filter1'){
+       await fetchHouseHoldsRegTrends(dateFrom.value);
+    }
+    if(filter==='filter2'){
+       await fetchNetsDistributed(dateFrom1.value);
+    }
   } catch (e) {
     console.log(e);
   }
@@ -1442,11 +1529,11 @@ const fetchHouseHoldsRegTrends = async (fromDate = new Date(`2023-11-02`)) => {
 };
 const fetchNetsDistributed = async (fromDate = new Date(`2023-11-15`)) => {
   //format date
-  dateFrom.value = moment(fromDate).format(dateFormat.value);
-  dateTo.value = moment(dateTo.value).format(dateFormat.value);
+  dateFrom1.value = moment(fromDate).format(dateFormat.value);
+  dateTo1.value = moment(dateTo1.value).format(dateFormat.value);
   await axios
     .get(
-      `distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom.value}&date_to=${dateTo.value}`
+      `distribution_post_trends?location_id=${filterOrgId.value}&date_from=${dateFrom1.value}&date_to=${dateTo1.value}`
     )
     .then(async (response) => {
       let data = response.data.data.total_nets_distributed;
@@ -1464,6 +1551,8 @@ const fetchNetsDistributed = async (fromDate = new Date(`2023-11-15`)) => {
 };
 
 watch(selectedFilter, handleFilterChange);
+watch(selectedFilter1, handleFilterChange);
+
 const HouseHoldsRegistrationTrendsChart = async (data, org_level) => {
   try {
     Highcharts.chart("HouseHoldsRegistrationTrendsChart", {

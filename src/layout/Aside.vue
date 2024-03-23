@@ -20,7 +20,7 @@
             Sub-location Dashboard
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetCHADash">
+        <a-menu-item key="widgetTrainingDash">
           <router-link to="/training/summary">
             Training Summary
           </router-link>
