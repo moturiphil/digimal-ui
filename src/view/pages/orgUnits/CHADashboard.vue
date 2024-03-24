@@ -1,5 +1,85 @@
 <template>
   <a-layout class="layout">
+  <a-row>
+        <a-col v-if="filterAccessList.includes('county')">
+          <a-select
+            v-model:value="county"
+            show-search
+            placeholder="Select County"
+            style="width: 200px"
+            :options="counties"
+            :filter-option="filterOption"
+            @change="handleChange($event, 'county')"
+          ></a-select>
+        </a-col>
+        <a-col v-if="filterAccessList.includes('subcounty')">
+          <a-select
+            v-model:value="subcounty"
+            show-search
+            placeholder="Select Sub County"
+            style="width: 200px"
+            :options="subcounties"
+            :filter-option="filterOption"
+            @change="handleChange($event, 'subcounty')"
+          ></a-select>
+        </a-col>
+        <a-col v-if="filterAccessList.includes('ward')">
+          <a-select
+            v-model:value="ward"
+            show-search
+            placeholder="Select Ward"
+            style="width: 200px"
+            :options="wards"
+            :filter-option="filterOption"
+            @change="handleChange($event, 'ward')"
+          ></a-select>
+        </a-col>
+        <a-col v-if="filterAccessList.includes('location')">
+          <a-select
+            v-model:value="location"
+            show-search
+            placeholder="Select Location"
+            style="width: 200px"
+            :options="locations"
+            :filter-option="filterOption"
+            @change="handleChange($event, 'location')"
+          ></a-select>
+        </a-col>
+        <a-col v-if="filterAccessList.includes('sublocation')">
+          <a-select
+            v-model:value="sublocation"
+            show-search
+            placeholder="Select Sub Location"
+            style="width: 200px"
+            :options="sublocations"
+            :filter-option="filterOption"
+            @change="handleChange($event, 'sublocation')"
+          ></a-select>
+        </a-col>
+        <a-col
+          :style="{
+            padding: '2px',
+            marging: '1px 0px 4px 0px',
+            align: 'end',
+            justify: 'end',
+          }"
+        >
+          <a-button
+            @click="window.location.reload()"
+            :style="{
+              padding: '2px',
+              margin:'4px',
+              background: '#24daa3',
+              marging: '0px 0px 0px 4px',
+              align: 'end',
+              justify: 'end',
+            }"
+          >
+            <ReloadOutlined />
+            RESET
+          </a-button>
+        </a-col>
+    </a-row>
     <a-layout-header>
       <h3
         class="sd-page-header"
@@ -12,86 +92,6 @@
       >
         Sub-Location Supervisor Dashboard
       </h3>
-      <a-row>
-          <a-col v-if="filterAccessList.includes('county')">
-            <a-select
-              v-model:value="county"
-              show-search
-              placeholder="Select County"
-              style="width: 200px"
-              :options="counties"
-              :filter-option="filterOption"
-              @change="handleChange($event, 'county')"
-            ></a-select>
-          </a-col>
-          <a-col v-if="filterAccessList.includes('subcounty')">
-            <a-select
-              v-model:value="subcounty"
-              show-search
-              placeholder="Select Sub County"
-              style="width: 200px"
-              :options="subcounties"
-              :filter-option="filterOption"
-              @change="handleChange($event, 'subcounty')"
-            ></a-select>
-          </a-col>
-          <a-col v-if="filterAccessList.includes('ward')">
-            <a-select
-              v-model:value="ward"
-              show-search
-              placeholder="Select Ward"
-              style="width: 200px"
-              :options="wards"
-              :filter-option="filterOption"
-              @change="handleChange($event, 'ward')"
-            ></a-select>
-          </a-col>
-          <a-col v-if="filterAccessList.includes('location')">
-            <a-select
-              v-model:value="location"
-              show-search
-              placeholder="Select Location"
-              style="width: 200px"
-              :options="locations"
-              :filter-option="filterOption"
-              @change="handleChange($event, 'location')"
-            ></a-select>
-          </a-col>
-          <a-col v-if="filterAccessList.includes('sublocation')">
-            <a-select
-              v-model:value="sublocation"
-              show-search
-              placeholder="Select Sub Location"
-              style="width: 200px"
-              :options="sublocations"
-              :filter-option="filterOption"
-              @change="handleChange($event, 'sublocation')"
-            ></a-select>
-          </a-col>
-          <a-col
-            :style="{
-              padding: '2px',
-              marging: '1px 0px 4px 0px',
-              align: 'end',
-              justify: 'end',
-            }"
-          >
-            <a-button
-              @click="window.location.reload()"
-              :style="{
-                padding: '2px',
-                margin:'4px',
-                background: '#24daa3',
-                marging: '0px 0px 0px 4px',
-                align: 'end',
-                justify: 'end',
-              }"
-            >
-              <ReloadOutlined />
-              RESET
-            </a-button>
-          </a-col>
-      </a-row>
       <a-menu
         v-model:selectedKeys="selectedKeys"
         theme="light"
@@ -411,7 +411,7 @@ watch(
     if(selectedOrLevel.value=='sublocation'){
     fetchSubLocationData();
     }else{
-      fetchVillagesData();
+    fetchVillagesData();
     }
   }
 );
@@ -430,7 +430,6 @@ onMounted(async () => {
     ];
   }
     await updateFilters();
-    await fetchVillagesData();
 });
 const updateFilters = () => {
   // access_level.value.level.level_name = 'national'

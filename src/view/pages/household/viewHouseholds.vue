@@ -19,7 +19,6 @@
         </div>
       </template>
     </sdPageHeader>
-
     <Main>
       <SearchResultWrapper>
         <a-row :gutter="25">
