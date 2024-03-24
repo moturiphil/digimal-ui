@@ -9,52 +9,6 @@
           [!rtl ? 'left' : 'right']: 0,
         }"
       >
-        <!-- <a-row :class="rtl ? 'ant-row-rtl' : ''">
-          <a-col
-            :lg="!topMenu ? 4 : 3"
-            :sm="6"
-            :xs="12"
-            class="align-left-v navbar-brand"
-          >
-            <sdButton
-              v-if="!topMenu || innerWidth <= 991"
-              @click="toggleCollapsed"
-              type="white"
-            >
-              <img
-                :src="
-                  require(
-                    `../static/img/icon/${collapsed ? 'right.svg' : 'left.svg'}`
-                  )
-                "
-                alt="menu"
-              />
-            </sdButton>
-            <router-link
-              :class="
-                topMenu && innerWidth > 991
-                  ? 'striking-logo top-menu'
-                  : 'striking-logo'
-              "
-              to="/"
-            >
-              <span style="color: #22c997"><b>DigiMal-KE</b></span>
-            </router-link>
-          </a-col>
-          <a-col align-right-v :lg="6" :md="8" :sm="0" :xs="0">
-            <router-link to="/search-hh">
-              <sdButton type="success" size="extra-small"><sdFeatherIcons type="search" /><span>Search Household</span></sdButton>
-            </router-link>
-            &nbsp;&nbsp;
-            <router-link to="/user/profile">
-              <sdButton type="success" size="extra-small"><sdFeatherIcons type="user" /><span>My Account</span></sdButton>
-            </router-link>
-          </a-col>
-          <a-col align-right-v :lg="6" :md="8" :sm="0" :xs="0">
-            <AuthInfo />
-          </a-col>
-        </a-row> -->
-
         <a-row
           :class="rtl ? 'ant-row-rtl' : ''"
           style="display: flex; justify-content: space-between"
@@ -98,19 +52,27 @@
             :md="16"
             :sm="18"
             :xs="12"
-            style="display: flex; justify-content: flex-end"
+            style="
+              display: flex;
+              justify-content: flex-end;
+              align-items: center;
+            "
           >
             <router-link to="/search-hh" style="margin-right: 10px">
-              <sdButton type="success" size="extra-small"
-                ><sdFeatherIcons type="search" /><span
-                  >Search Household</span
-                ></sdButton
+              <sdButton
+                type="success"
+                size="extra-small"
+                style="margin-right: 10px"
               >
+                <sdFeatherIcons type="search" />
+                <span v-if="innerWidth > 532">Search Household</span>
+              </sdButton>
             </router-link>
             <router-link to="/user/profile" style="margin-right: 10px">
-              <sdButton type="success" size="extra-small"
-                ><sdFeatherIcons type="user" /><span>My Account</span></sdButton
-              >
+              <sdButton type="success" size="extra-small">
+                <sdFeatherIcons type="user" />
+                <span v-if="innerWidth > 532">My Account</span>
+              </sdButton>
             </router-link>
             <AuthInfo />
           </a-col>
@@ -237,21 +199,25 @@ export default defineComponent({
     AsideItems,
     PerfectScrollbar,
   },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
+  methods: {
+    handleResize() {
+      this.innerWidth = window.innerWidth;
+      console.log(window.innerWidth);
+    },
+  },
   setup() {
     const collapsed = ref(true);
     const hide = ref(true);
     const searchHide = ref(true);
     const customizerAction = ref(false);
     const activeSearch = ref(false);
-
     const { dispatch, state } = useStore();
-
     const rtl = computed(() => state.themeLayout.rtlData);
     const darkMode = computed(() => state.themeLayout.data);
     const topMenu = computed(() => state.themeLayout.topMenu);
-
-    // collapsed.value = window.innerWidth <= 1200 && false;
-
     const toggleCollapsed = (e) => {
       e.preventDefault();
       collapsed.value = !collapsed.value;
@@ -321,6 +287,8 @@ export default defineComponent({
       modeChangeSideNav,
     };
 
+    console.log(innerWidth == 768);
+
     return {
       toggleCollapsed,
       handleSearchHide,
@@ -332,7 +300,7 @@ export default defineComponent({
       toggleSearch,
       customizerAction,
       activeSearch,
-      innerWidth: window.innerWidth,
+      innerWidth,
       rtl,
       darkMode,
       topMenu,
