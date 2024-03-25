@@ -88,7 +88,7 @@
                       }"
                     >
                       <a-button
-                        @click="window.location.reload()"
+                        @click="Reset"
                         :style="{
                           padding: '2px',
                           margin:'4px',
@@ -245,6 +245,10 @@ import axios from "@/Axiosconfig";
       console.error(error);
     }
   };
+  //reset
+  const Reset=()=>{
+    window.location.reload();
+  }
   //search
   watch(() => searchItem.value,(newValue) => {
     searchItem.value = newValue;

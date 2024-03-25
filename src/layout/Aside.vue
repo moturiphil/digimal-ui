@@ -161,7 +161,7 @@
         </a-menu-item>
         <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
           <router-link to="/household/irs">
-            IRS
+            Household IRS
           </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="widgetIncompleteHouseholdReg">

@@ -422,7 +422,7 @@ watch(
 const getEvents = () => {
   axios
     .get(
-      `gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+      `gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`
     )
     .then((response) => {
       // dataSource.value = response.data.data;

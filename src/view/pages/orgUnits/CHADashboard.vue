@@ -432,10 +432,9 @@ onMounted(async () => {
     await updateFilters();
 });
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
+  // access_level.value.level.id = 3
+  // access_level.value.location.org_id = 'BzFBYZhF5fx'
+  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
 
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
@@ -537,7 +536,6 @@ const updateFilters = () => {
   }
   fetchVillagesData();
 };
-
 const handleChange = async (org_id, org_level) => {
   //fetch child data
   console.log(org_id);
