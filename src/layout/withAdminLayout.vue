@@ -9,12 +9,16 @@
           [!rtl ? 'left' : 'right']: 0,
         }"
       >
-        <a-row :class="rtl ? 'ant-row-rtl' : ''">
+        <a-row
+          :class="rtl ? 'ant-row-rtl' : ''"
+          style="display: flex; justify-content: space-between"
+        >
+          <!-- Left-aligned content -->
           <a-col
             :lg="!topMenu ? 4 : 3"
             :sm="6"
             :xs="12"
-            class="align-center-v navbar-brand"
+            class="align-left-v navbar-brand"
           >
             <sdButton
               v-if="!topMenu || innerWidth <= 991"
@@ -41,64 +45,36 @@
               <span style="color: #22c997"><b>DigiMal-KE</b></span>
             </router-link>
           </a-col>
-          <a-col :lg="!topMenu ? 14 : 15" :md="8" :sm="0" :xs="0">
-            <TopMenu v-if="topMenu && innerWidth > 991" />
-            <router-link to="/search-hh">
-              <sdButton type="success" size="extra-small"><sdFeatherIcons type="search" /><span>Search Household</span></sdButton>
-              
-            </router-link>
-          </a-col>
 
-          <a-col :lg="6" :md="8" :sm="0" :xs="0">
-            <TopMenuSearch v-if="topMenu && innerWidth > 991">
-              <div class="top-right-wrap d-flex">
-                <a
-                  :class="`${
-                    activeSearch ? 'search-toggle active' : 'search-toggle'
-                  }`"
-                  @click="
-                    () => {
-                      toggleSearch();
-                    }
-                  "
-                  href="#"
-                >
-                  <sdFeatherIcons type="search" />
-                  <sdFeatherIcons type="x" />
-                </a>
-                <div
-                  :class="`${
-                    activeSearch
-                      ? 'topMenu-search-form show'
-                      : 'topMenu-search-form'
-                  }`"
-                >
-                  <form action="">
-                    <span class="search-icon">
-                      <sdFeatherIcons type="search" />
-                    </span>
-                    <input type="text" name="search" />
-                  </form>
-                </div>
-                <AuthInfo />
-              </div>
-            </TopMenuSearch>
-            <AuthInfo v-else />
-          </a-col>
-          <a-col :style="{ position: 'static' }" :md="0" :sm="18" :xs="12">
-            <div class="mobile-action">
-              <a
-                class="btn-search"
-                @click="handleSearchHide(searchHide)"
-                href="#"
+          <!-- Right-aligned content -->
+          <a-col
+            :lg="!topMenu ? 20 : 21"
+            :md="16"
+            :sm="18"
+            :xs="12"
+            style="
+              display: flex;
+              justify-content: flex-end;
+              align-items: center;
+            "
+          >
+            <router-link to="/search-hh" style="margin-right: 10px">
+              <sdButton
+                type="success"
+                size="extra-small"
+                style="margin-right: 10px"
               >
-                <sdFeatherIcons type="search" v-if="searchHide" />
-                <sdFeatherIcons type="x" v-else />
-              </a>
-              <a class="btn-auth" @click="onShowHide(hide)" href="#">
-                <sdFeatherIcons type="more-vertical" />
-              </a>
-            </div>
+                <sdFeatherIcons type="search" />
+                <span v-if="innerWidth > 532">Search Household</span>
+              </sdButton>
+            </router-link>
+            <router-link to="/user/profile" style="margin-right: 10px">
+              <sdButton type="success" size="extra-small">
+                <sdFeatherIcons type="user" />
+                <span v-if="innerWidth > 532">My Account</span>
+              </sdButton>
+            </router-link>
+            <AuthInfo />
           </a-col>
         </a-row>
       </Header>
@@ -202,7 +178,6 @@ import {
 
 import AuthInfo from "../components/utilities/auth-info/info";
 import AsideItems from "./Aside";
-import TopMenu from "./TopMenuItems";
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 import "vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css";
 import { computed, ref, defineComponent } from "vue";
@@ -222,8 +197,16 @@ export default defineComponent({
     SmallScreenAuthInfo,
     AuthInfo,
     AsideItems,
-    TopMenu,
     PerfectScrollbar,
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
+  methods: {
+    handleResize() {
+      this.innerWidth = window.innerWidth;
+      console.log(window.innerWidth);
+    },
   },
   setup() {
     const collapsed = ref(true);
@@ -231,15 +214,10 @@ export default defineComponent({
     const searchHide = ref(true);
     const customizerAction = ref(false);
     const activeSearch = ref(false);
-
     const { dispatch, state } = useStore();
-
     const rtl = computed(() => state.themeLayout.rtlData);
     const darkMode = computed(() => state.themeLayout.data);
     const topMenu = computed(() => state.themeLayout.topMenu);
-
-    // collapsed.value = window.innerWidth <= 1200 && false;
-
     const toggleCollapsed = (e) => {
       e.preventDefault();
       collapsed.value = !collapsed.value;
@@ -309,6 +287,8 @@ export default defineComponent({
       modeChangeSideNav,
     };
 
+    console.log(innerWidth == 768);
+
     return {
       toggleCollapsed,
       handleSearchHide,
@@ -320,7 +300,7 @@ export default defineComponent({
       toggleSearch,
       customizerAction,
       activeSearch,
-      innerWidth: window.innerWidth,
+      innerWidth,
       rtl,
       darkMode,
       topMenu,

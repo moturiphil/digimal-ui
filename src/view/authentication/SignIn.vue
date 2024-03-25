@@ -6,6 +6,9 @@
         <sdHeading as="h3">
           Sign in to <span class="color-success">DigiMal KE Dashboard</span>
         </sdHeading>
+        <sdHeading as="h5">
+          <span class="color-success">{{ env }}</span>
+        </sdHeading>
         <a-form-item name="id_no" label="National ID No">
           <a-input
             type="number"
@@ -147,12 +150,13 @@
 </template>
 
 <script>
-import { computed, ref, reactive } from "vue";
+import { computed, ref, reactive, onMounted } from "vue";
 import AuthService from "../../services/auth.service";
 import { useRouter } from "vue-router";
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import { notification } from "ant-design-vue";
+import axios from 'axios';
 
 export default {
   name: "SignInPage",
@@ -163,6 +167,9 @@ export default {
     const proceed = ref(false);
     const router = useRouter();
     let visible = ref(false);
+    const env = ref("");
+
+
     const formState = reactive({
       id_no: "",
       password: "",
@@ -291,6 +298,27 @@ export default {
         });
     };
 
+    const get_env = async () => {
+      console.log('here');
+      axios.get(`${process.env.VUE_APP_BASE_URL}/app_env`)
+        .then(response => {
+          console.log(response);
+          env.value = response.data == 'training' ? 'Training Platform' : ''
+        }).catch(error => {
+          notification.error({
+            message: `Error!`,
+            description: `${error}`,
+          });
+        })
+    };
+
+    
+
+    onMounted(() => {
+      get_env();
+    });
+
+
     return {
       isLoading,
       checked,
@@ -305,6 +333,7 @@ export default {
       showModal,
       handleOk,
       handleCancel,
+      env,
     };
   },
   computed: {
