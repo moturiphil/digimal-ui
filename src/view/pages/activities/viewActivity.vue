@@ -150,6 +150,7 @@ const isLoading = ref(false);
 // const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const searchItem = ref("");
+const location_id=ref("");
 
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
@@ -176,7 +177,7 @@ watch(
 const fetchActivities = async () => {
   try {
     const response = await axios.get(
-      `activity?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`
+      `activity?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&location_id=${location_id.value}`
     );
     const data = await response.data;
     datatotal.value = response.data.pagination.total;

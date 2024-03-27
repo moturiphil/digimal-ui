@@ -203,6 +203,10 @@ const activities = ref([]);
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
+const county_id=ref("");
+const sub_county_id=ref("");
+const activity_list_id=ref("");
+
 import { useStore } from "vuex";
 const store = useStore();
 // Fetch activity data from the API endpoint on component mount
@@ -242,24 +246,25 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
   let masterUrl = `pmi_activities?per_page=${pageSize.value}&page=${currentPage.value}`;
-  var county_id = store.state.filters.county_id;
-  var sub_county_id = store.state.filters.sub_county_id;
+  county_id.value= store.state.filters.county_id;
+  sub_county_id.value = store.state.filters.sub_county_id;
   if (org_level == "county") {
     store.dispatch("getCountyId", parent_id);
-    county_id = store.state.filters.county_id;
+    county_id.value = store.state.filters.county_id;
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
     //get county activities
-    masterUrl += `&county=${county_id}`;
+    masterUrl += `&county=${county_id.value}`;
   } else if (org_level == "subcounty") {
     store.dispatch("getSubCountyId", parent_id);
-    sub_county_id = store.state.filters.sub_county_id;
+    sub_county_id.value = store.state.filters.sub_county_id;
     //get subcounty activities
     fetchUrl += `?parent_id=${org_id}`;
-    masterUrl += `&county=${county_id}&sub_county=${sub_county_id}`;
+    masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}`;
   } else if (org_level == "activity") {
     //get activities
-    masterUrl += `&county=${county_id}&sub_county=${sub_county_id}&activity_list=${org_id}`;
+    activity_list_id.value=org_id;
+    masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}&activity_list=${activity_list_id.value}`;
   }
   await axios
     .get(`${fetchUrl}`)
@@ -355,7 +360,7 @@ watch(
 const fetchPMIActivities = async () => {
   try {
     const response = await axios.get(
-      `pmi_activities?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`
+      `pmi_activities?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&county=${county_id.value}&sub_county=${sub_county_id.value}&activity_list=${activity_list_id.value}`
     );
     const data = await response.data;
     datatotal.value = response.data.pagination.total;

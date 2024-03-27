@@ -478,6 +478,15 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
   },
+  //IRS
+  {
+    path: "/household/irs",
+    name: "hh-irs",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/IRS.vue"
+      ),
+  },
   {
     path: "/villages/hh/:id",
     name: "hh-villages",

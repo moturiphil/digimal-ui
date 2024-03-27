@@ -15,15 +15,6 @@
       </sdPageHeader>
   
       <Main>
-        <sdButton
-        class="btn-import"
-        type="success"
-        @click="exportPostSummary"
-        size="extra-small"
-      >
-        Download List &nbsp; &nbsp;
-        <sdFeatherIcons type="download-cloud" size="extra-small" />
-      </sdButton>
         <SearchResultWrapper>
           <a-row :gutter="25">
             <a-col :xs="24">
@@ -105,7 +96,6 @@
   import axios from "@/Axiosconfig";
   import { useStore } from "vuex";
   import { notification } from "ant-design-vue";
-  import authHeader from "../../../services/auth-header";
   
   
   const columns = ref([
@@ -179,9 +169,8 @@
   const location = ref("Select Location")
   const ward = ref("Select Ward")
   // const village = ref("Select a Post")
-  const org_ids = ref([])
-  const export_post_summary_url = `${process.env.VUE_APP_BASE_URL}/export_get_post_nets_distribution_summary`;
-  
+  const org_ids = ref([]);
+  const location_id=ref("");
   
   const currentCounties = ref([
     'tAbBVBbueqD', // Kisumu 
@@ -283,22 +272,14 @@
     console.log(org_level)
     fetchChildData(parent_id, org_id, org_level)
   };
-  const fetchChildData = async (location_id, org_id, org_level) => {
+  const fetchChildData = async (loc_id, org_id, org_level) => {
+    location_id.value=loc_id;
     currentPage.value=1
     let fetchUrl = `get_sub_counties_list`
     let masterUrl = `get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
-    if (org_level == 'country') {//get counties
+    if (org_level == 'county') {//get subcounties
       fetchUrl += `?parent_id=${org_id}`
-      //masterListUrl += `&location=${location_id}`
-      //clear fields
-      county.value = "Select County"
-      subcounty.value = "Select SubCounty"
-      ward.value = " Select Ward"
-      location.value = "Select Location"
-      sublocation.value = "Select Sub Location"
-    } else if (org_level == 'county') {//get subcounties
-      fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&county=${location_id}`
+      masterUrl += `&county=${location_id.value}`
       //clear fields
       subcounty.value = "Select SubCounty"
       ward.value = " Select Ward"
@@ -306,25 +287,25 @@
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'subcounty') {//get wards
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&sub_county=${location_id}`
+      masterUrl += `&sub_county=${location_id.value}`
       //clear fields
       ward.value = " Select Ward"
       location.value = "Select Location"
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'ward') {//get locatios
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&ward=${location_id}`
+      masterUrl += `&ward=${location_id.value}`
       //clear fields
       location.value = "Select Location"
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'location') {//get sub locatios
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&location=${location_id}`
+      masterUrl += `&location=${location_id.value}`
       //clear fields
       sublocation.value = "Select Sub Location"
     } else if (org_level == 'sublocation') {//get sublocations stats
       fetchUrl += `?parent_id=${org_id}`
-      masterUrl += `&sub_location=${location_id}`
+      masterUrl += `&sub_location=${location_id.value}`
     }
     await axios.get(`${fetchUrl}`)
       .then(response => {
@@ -418,7 +399,7 @@
   
   const fetchHouseholds = () => {
     axios
-      .get(`get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`)
+      .get(`get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`)
       .then((response) => {
         dataSource.value = response.data.data;
         datatotal.value= response.data.pagination.total;
@@ -428,33 +409,6 @@
         console.error(error);
       });
   }
-
-  const exportPostSummary = async () => {
-      try {
-        const response = await fetch(export_post_summary_url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
-
-        const fileBlob = await response.blob();
-        const fileName = "Post Summary.xlsx";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
   
   
   
