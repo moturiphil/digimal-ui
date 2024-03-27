@@ -98,7 +98,7 @@ const columns = [
     key: "id",
   },
   {
-    title: "Payment Date",
+    title: "Amount",
     dataIndex: "amount_paid",
     key: "",
   },

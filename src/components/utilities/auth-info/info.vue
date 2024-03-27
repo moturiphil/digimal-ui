@@ -13,7 +13,7 @@
         :class="rtl ? 'ant-popover-rtl' : ''"
       >
         <a @click="SignOut" class="user-dropdwon__bottomAction" href="#">
-          <LogoutOutlined /> Log Out
+          <LogoutOutlined /> <span v-if="innerWidth > 532">Log Out</span>
         </a>
       </sdPopover>
     </div>
@@ -40,16 +40,15 @@ export default defineComponent({
       flag: "english",
     };
   },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+  },
   setup() {
     const { dispatch, state } = useStore();
     const { push } = useRouter();
     //const isAuthenticate = computed(() => state.firebase.uid);
     const isLoading = computed(() => state.firebase.loading);
 
-    // const logOutRoot = () => {
-    //   push("/auth/login");
-    //   dispatch("logOut");
-    // };
 
     const SignOut = (e) => {
       e.preventDefault();
@@ -68,6 +67,10 @@ export default defineComponent({
   methods: {
     onFlagChangeHandle: function (value) {
       this.flag = value;
+    },
+    handleResize() {
+      this.innerWidth = window.innerWidth;
+      console.log(window.innerWidth);
     },
   },
 });

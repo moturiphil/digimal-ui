@@ -19,7 +19,6 @@
         </div>
       </template>
     </sdPageHeader>
-
     <Main>
       <SearchResultWrapper>
         <a-row :gutter="25">
@@ -242,6 +241,8 @@ const location = ref("Select Location");
 const ward = ref("Select Ward");
 // const village = ref("Select a Post")
 const org_ids = ref([]);
+const location_id=ref("");
+
 
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -423,24 +424,15 @@ const handleChange = async (org_id, org_level) => {
   console.log(org_level);
   fetchChildData(parent_id, org_id, org_level);
 };
-const fetchChildData = async (location_id, org_id, org_level) => {
+const fetchChildData = async (loc_id, org_id, org_level) => {
   currentPage.value = 1;
+  location_id.value=loc_id;
   let fetchUrl = `get_sub_counties_list`;
   let masterListUrl = `households?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`;
-  if (org_level == "country") {
-    //get counties
-    fetchUrl += `?parent_id=${org_id}`;
-    //masterListUrl += `&location=${location_id}`
-    //clear fields
-    county.value = "Select County";
-    subcounty.value = "Select SubCounty";
-    ward.value = " Select Ward";
-    location.value = "Select Location";
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "county") {
+if (org_level == "county") {
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location_id=${location_id}`;
+    masterListUrl += `&location_id=${location_id.value}`;
     //clear fields
     subcounty.value = "Select SubCounty";
     ward.value = " Select Ward";
@@ -449,7 +441,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
   } else if (org_level == "subcounty") {
     //get wards
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location_id=${location_id}`;
+    masterListUrl += `&location_id=${location_id.value}`;
     //clear fields
     ward.value = " Select Ward";
     location.value = "Select Location";
@@ -457,20 +449,20 @@ const fetchChildData = async (location_id, org_id, org_level) => {
   } else if (org_level == "ward") {
     //get locatios
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location_id=${location_id}`;
+    masterListUrl += `&location_id=${location_id.value}`;
     //clear fields
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "location") {
     //get sub locatios
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location_id=${location_id}`;
+    masterListUrl += `&location_id=${location_id.value}`;
     //clear fields
     sublocation.value = "Select Sub Location";
   } else if (org_level == "sublocation") {
     //get sublocations stats
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location_id=${location_id}`;
+    masterListUrl += `&location_id=${location_id.value}`;
   }
   await axios
     .get(`${fetchUrl}`)
@@ -598,7 +590,7 @@ const fetchCounties = async () => {
 const fetchHouseholds = () => {
   axios
     .get(
-      `households?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+      `households?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`
     )
     .then((response) => {
       console.log(response.data.data);

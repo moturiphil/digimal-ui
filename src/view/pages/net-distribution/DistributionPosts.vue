@@ -316,6 +316,7 @@ const subcounty = ref("Select Subcounty");
 const location = ref("Select Location");
 const ward = ref("Select Ward");
 const org_ids = ref([]);
+const location_id=ref("");
 
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -490,24 +491,15 @@ const handleChange = async (org_id, org_level) => {
   // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level);
 };
-const fetchChildData = async (location_id, org_id, org_level) => {
+const fetchChildData = async (loctn_id, org_id, org_level) => {
   currentPage.value = 1;
+  location_id.value=loctn_id;
   let fetchUrl = `get_sub_counties_list`;
   let masterListUrl = `posts_data?per_page=${pageSize.value}&page=${currentPage.value}`;
-  if (org_level == "country") {
-    //get counties
-    fetchUrl += `?parent_id=${org_id}`;
-    //masterListUrl += `&location=${location_id}`
-    //clear fields
-    county.value = "Select County";
-    subcounty.value = "Select SubCounty";
-    ward.value = " Select Ward";
-    location.value = "Select Location";
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "county") {
+  if (org_level == "county") {
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&county=${location_id}`;
+    masterListUrl += `&county=${location_id.value}`;
     //clear fields
     subcounty.value = "Select SubCounty";
     ward.value = " Select Ward";
@@ -516,7 +508,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
   } else if (org_level == "subcounty") {
     //get wards
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&sub_county=${location_id}`;
+    masterListUrl += `&sub_county=${location_id.value}`;
     //clear fields
     ward.value = " Select Ward";
     location.value = "Select Location";
@@ -524,20 +516,20 @@ const fetchChildData = async (location_id, org_id, org_level) => {
   } else if (org_level == "ward") {
     //get locatios
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&ward=${location_id}`;
+    masterListUrl += `&ward=${location_id.value}`;
     //clear fields
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "location") {
     //get sub locatios
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
+    masterListUrl += `&location=${location_id.value}`;
     //clear fields
     sublocation.value = "Select Sub Location";
   } else if (org_level == "sublocation") {
     //get sublocations stats
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&sublocation=${location_id}`;
+    masterListUrl += `&sublocation=${location_id.value}`;
   }
   await axios
     .get(`${fetchUrl}`)
@@ -690,7 +682,7 @@ const handleSupervisorSearch = (value) => {
 const fetchDistributionsPosts = async () => {
   try {
     const response = await axios.get(
-      `posts_data?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`
+      `posts_data?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&location_id=${location_id.value}`
     );
     const data = await response.data;
     dataSource.value = data.data;

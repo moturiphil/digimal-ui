@@ -159,6 +159,11 @@
             HouseHolds Validation
           </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
+          <router-link to="/household/irs">
+            Household IRS
+          </router-link>
+        </a-menu-item>
         <!-- <a-menu-item key="widgetIncompleteHouseholdReg">
           <router-link to="/households-registrations/incomplete">
             Incomplete HouseHolds Registration
