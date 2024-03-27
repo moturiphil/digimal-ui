@@ -24,7 +24,9 @@
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
 
         <sdButton class="btn-import" type="success" size="small">
-          <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
+          <router-link to="/events/add-stakeholder">
+            Add Stakeholder</router-link
+          >
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
@@ -63,7 +65,9 @@
                 </li>
                 <li>
                   <a
-                    :class="activeClass === 'confirmed' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'confirmed' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('confirmed')"
                     href="#"
                   >
@@ -165,11 +169,35 @@
                         width="20%"
                       >
                         <p>Are you sure you want to void participant?</p>
+
+                        <a-form
+                          class="add-record-form"
+                          :style="{ width: '100%' }"
+                          layout="vertical"
+                          name="addactivity"
+                          :model="formState"
+                        >
+                          <a-form-item name="reason_for_voiding" label="Reason">
+                            <a-textarea
+                              v-model:value="formState.reason_for_voiding"
+                              placeholder="State reason for voiding..."
+                              :rows="4"
+                            />
+                          </a-form-item>
+                        </a-form>
                         <template #footer>
-                          <a-button key="cancel" type="warning" @click="handleCancel">
+                          <a-button
+                            key="cancel"
+                            type="warning"
+                            @click="handleCancel"
+                          >
                             Cancel
                           </a-button>
-                          <a-button key="confirm" type="danger" @click="handleVoid">
+                          <a-button
+                            key="confirm"
+                            type="danger"
+                            @click="handleVoid"
+                          >
                             Confirm
                           </a-button>
                         </template>
@@ -183,7 +211,12 @@
                         @cancel="handleCancelArchive"
                         width="20%"
                       >
-                        <p>Are you sure you want to archive event? <br> <br> By confirming this, the event will not be available to users.</p>
+                        <p>
+                          Are you sure you want to archive event? <br />
+                          <br />
+                          By confirming this, the event will not be available to
+                          users.
+                        </p>
                         <template #footer>
                           <a-button
                             key="cancel"
@@ -221,7 +254,7 @@ import {
   computed,
   onMounted,
   ref,
-  //reactive,
+  reactive,
   //defineComponent
 } from "vue";
 import authHeader from "../../../services/auth-header";
@@ -299,6 +332,10 @@ const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
 
+const formState = reactive({
+  reason_for_voiding: "",
+});
+
 const generatePayroll = async () => {
   store.commit("setIsGenerating", true);
 
@@ -319,13 +356,6 @@ const generatePayroll = async () => {
       });
       await new Promise((resolve) => setTimeout(resolve, 4000));
       location.reload();
-      //if (plainquery.funding_id == 1) {
-      //  console.log('checking this out...');
-        // router.push("/gf-event-payroll");
-      //}
-      //else {
-      //  router.push("pmi-event-payroll");
-     // }
     } else {
       handleErrorResponse(response);
     }
@@ -348,34 +378,47 @@ const handleCancel = () => {
 const handleVoid = async () => {
   console.log(participant_id.value);
   try {
-    const response = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/void_event_participant/${plainquery.id}/${participant_id.value}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-      }
-    );
-    const data = await response.json();
+    const data = {
+      event_id: plainquery.id,
+      user_id: participant_id.value,
+      reason_for_voiding: formState.reason_for_voiding,
+    };
     console.log(data);
-
-    if (data.status === true) {
-      notification.success({
-        message: "Participant voided successfully",
-        description: data.message,
+    fetch(`${process.env.VUE_APP_BASE_URL}/void_event_participant`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        console.log(message);
+        if (success == true) {
+          notification.success({
+            message: "Participant voided successfully",
+            description: message,
+          });
+          new Promise((resolve) => {
+            setTimeout(resolve, 3000);
+          });
+          location.reload();
+        } else {
+          notification.error({
+            message: "Participant voiding not successful",
+            description: message,
+          });
+        }
+      })
+      .catch((error) => {
+        store.commit("setIsSubmitting", false);
+        notification.error({
+          message: "Could not submit!",
+          description: "An error has occured. Please try again later.",
+        });
+        console.error("Error:", error);
       });
-      await new Promise((resolve) => {
-        setTimeout(resolve, 2000);
-      });
-      location.reload();
-    } else {
-      notification.error({
-        message: "Participant voiding not successful",
-        description: data.message,
-      });
-    }
   } catch (error) {
     console.error(error);
   }
@@ -398,7 +441,7 @@ const handleArchiveEvent = async () => {
 
     if (data.success === true) {
       notification.success({
-        message: 'Success!',
+        message: "Success!",
         description: data.data,
       });
       isArchiveModalOpen.value = true;
@@ -464,7 +507,6 @@ const exportParticipants = async () => {
   }
 };
 
-
 const handleChange = (tab) => {
   activeClass.value = tab;
 };
@@ -521,7 +563,6 @@ onMounted(async () => {
 
     const updatedData = response.data.data.map((record) => {
       let fullName = `${record.first_name} ${record.last_name}`;
-      // fullName = fullName.toUpperCase();
       return {
         ...record,
         fullName,
@@ -557,9 +598,6 @@ const rt = useRouter();
 const user = JSON.parse(sessionStorage.getItem("user"));
 console.log(user.user.id);
 
-// const formState = reactive({
-//   searchItem: "",
-// });
 onMounted(() => {
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user) {
