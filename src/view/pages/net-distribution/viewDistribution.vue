@@ -6,14 +6,14 @@
       <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
           Export HouseHolds Data
         </sdButton> -->
-      <sdButton
+      <!-- <sdButton
         class="button-container"
         size="extra-small"
         type="success"
         @click="openModal()"
       >
         Start Distribution
-      </sdButton>
+      </sdButton> -->
       <br />
       <br />
       <br />
@@ -646,9 +646,9 @@ const onPageChange = async (page) => {
 //   }
 // };
 
-const openModal = () => {
-  isModalOpen.value = true;
-};
+// const openModal = () => {
+//   isModalOpen.value = true;
+// };
 
 const handleStartDistribution = async () => {
   const data = {
