@@ -678,7 +678,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     .then(async () => {
       await axios.get(`${masterListUrl}`).then((response) => {
         console.log(response.data.data);
-        let data = response.data.data.data;
+        let data = response.data.data;
         if(org_level==='sublocation'){
           subLocationData.value=data;
         }else{
