@@ -1,84 +1,84 @@
 <template>
   <a-layout class="layout">
-  <a-row>
-        <a-col v-if="filterAccessList.includes('county')">
-          <a-select
-            v-model:value="county"
-            show-search
-            placeholder="Select County"
-            style="width: 200px"
-            :options="counties"
-            :filter-option="filterOption"
-            @change="handleChange($event, 'county')"
-          ></a-select>
-        </a-col>
-        <a-col v-if="filterAccessList.includes('subcounty')">
-          <a-select
-            v-model:value="subcounty"
-            show-search
-            placeholder="Select Sub County"
-            style="width: 200px"
-            :options="subcounties"
-            :filter-option="filterOption"
-            @change="handleChange($event, 'subcounty')"
-          ></a-select>
-        </a-col>
-        <a-col v-if="filterAccessList.includes('ward')">
-          <a-select
-            v-model:value="ward"
-            show-search
-            placeholder="Select Ward"
-            style="width: 200px"
-            :options="wards"
-            :filter-option="filterOption"
-            @change="handleChange($event, 'ward')"
-          ></a-select>
-        </a-col>
-        <a-col v-if="filterAccessList.includes('location')">
-          <a-select
-            v-model:value="location"
-            show-search
-            placeholder="Select Location"
-            style="width: 200px"
-            :options="locations"
-            :filter-option="filterOption"
-            @change="handleChange($event, 'location')"
-          ></a-select>
-        </a-col>
-        <a-col v-if="filterAccessList.includes('sublocation')">
-          <a-select
-            v-model:value="sublocation"
-            show-search
-            placeholder="Select Sub Location"
-            style="width: 200px"
-            :options="sublocations"
-            :filter-option="filterOption"
-            @change="handleChange($event, 'sublocation')"
-          ></a-select>
-        </a-col>
-        <a-col
+    <a-row>
+      <a-col v-if="filterAccessList.includes('county')">
+        <a-select
+          v-model:value="county"
+          show-search
+          placeholder="Select County"
+          style="width: 200px"
+          :options="counties"
+          :filter-option="filterOption"
+          @change="handleChange($event, 'county')"
+        ></a-select>
+      </a-col>
+      <a-col v-if="filterAccessList.includes('subcounty')">
+        <a-select
+          v-model:value="subcounty"
+          show-search
+          placeholder="Select Sub County"
+          style="width: 200px"
+          :options="subcounties"
+          :filter-option="filterOption"
+          @change="handleChange($event, 'subcounty')"
+        ></a-select>
+      </a-col>
+      <a-col v-if="filterAccessList.includes('ward')">
+        <a-select
+          v-model:value="ward"
+          show-search
+          placeholder="Select Ward"
+          style="width: 200px"
+          :options="wards"
+          :filter-option="filterOption"
+          @change="handleChange($event, 'ward')"
+        ></a-select>
+      </a-col>
+      <a-col v-if="filterAccessList.includes('location')">
+        <a-select
+          v-model:value="location"
+          show-search
+          placeholder="Select Location"
+          style="width: 200px"
+          :options="locations"
+          :filter-option="filterOption"
+          @change="handleChange($event, 'location')"
+        ></a-select>
+      </a-col>
+      <a-col v-if="filterAccessList.includes('sublocation')">
+        <a-select
+          v-model:value="sublocation"
+          show-search
+          placeholder="Select Sub Location"
+          style="width: 200px"
+          :options="sublocations"
+          :filter-option="filterOption"
+          @change="handleChange($event, 'sublocation')"
+        ></a-select>
+      </a-col>
+      <a-col
+        :style="{
+          padding: '2px',
+          marging: '1px 0px 4px 0px',
+          align: 'end',
+          justify: 'end',
+        }"
+      >
+        <a-button
+          @click="window.location.reload()"
           :style="{
             padding: '2px',
-            marging: '1px 0px 4px 0px',
+            margin: '4px',
+            background: '#24daa3',
+            marging: '0px 0px 0px 4px',
             align: 'end',
             justify: 'end',
           }"
         >
-          <a-button
-            @click="window.location.reload()"
-            :style="{
-              padding: '2px',
-              margin:'4px',
-              background: '#24daa3',
-              marging: '0px 0px 0px 4px',
-              align: 'end',
-              justify: 'end',
-            }"
-          >
-            <ReloadOutlined />
-            RESET
-          </a-button>
-        </a-col>
+          <ReloadOutlined />
+          RESET
+        </a-button>
+      </a-col>
     </a-row>
     <a-layout-header>
       <h3
@@ -131,20 +131,20 @@
           <div class="table-responsive">
             <a-row>
               <div class="search-box">
-                    <a-input
-                      style="
-                        padding: 8px;
-                        border-radius: 5px;
-                        align-items: end;
-                        justify-items: end;
-                      "
-                      v-model:value="searchItem"
-                      width="100"
-                      type="text"
-                      name="dataSource"
-                      placeholder="Search ..."
-                    />
-                  </div>
+                <a-input
+                  style="
+                    padding: 8px;
+                    border-radius: 5px;
+                    align-items: end;
+                    justify-items: end;
+                  "
+                  v-model:value="searchItem"
+                  width="100"
+                  type="text"
+                  name="dataSource"
+                  placeholder="Search ..."
+                />
+              </div>
             </a-row>
             <a-table
               :columns="transfersColumns"
@@ -188,29 +188,30 @@
         </template>
         <template v-else-if="selectedKeys[0] === '2'">
           <h2>Villages</h2>
-          <!-- <a-table :columns="villagesColumns" :data-source="villagesData" /> -->
           <div class="table-responsive">
-            <a-row  style="
-                        padding: 8px;
-                        border-radius: 5px;
-                        align-items: center;
-                        justify-items: center;
-                      ">
+            <a-row
+              style="
+                padding: 8px;
+                border-radius: 5px;
+                align-items: center;
+                justify-items: center;
+              "
+            >
               <div class="search-box">
-                    <a-input
-                      style="
-                        padding: 8px;
-                        border-radius: 5px;
-                        align-items: end;
-                        justify-items: end;
-                      "
-                      v-model:value="searchItem"
-                      width="100"
-                      type="text"
-                      name="dataSource"
-                      placeholder="Search ..."
-                    />
-                  </div>
+                <a-input
+                  style="
+                    padding: 8px;
+                    border-radius: 5px;
+                    align-items: end;
+                    justify-items: end;
+                  "
+                  v-model:value="searchItem"
+                  width="100"
+                  type="text"
+                  name="dataSource"
+                  placeholder="Search ..."
+                />
+              </div>
             </a-row>
             <a-table
               :columns="villagesColumns"
@@ -361,9 +362,9 @@ const sublocation = ref("Select Sublocation");
 const subcounty = ref("Select Subcounty");
 const location = ref("Select Location");
 const ward = ref("Select Ward");
-const selecteLocation=ref("");
-const selectedOrLevel=ref("");
-const  org_ids = ref([]);
+const selecteLocation = ref("");
+const selectedOrLevel = ref("");
+const org_ids = ref([]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
   "sPkRcDvhGWA", //kisii
@@ -395,9 +396,9 @@ const selectMenuItem = (key) => {
 const onPageChange = async (page) => {
   currentPage.value = page;
   try {
-    if(selectedOrLevel.value=='sublocation'){
-    fetchSubLocationData();
-    }else{
+    if (selectedOrLevel.value == "sublocation") {
+      fetchSubLocationData();
+    } else {
       fetchVillagesData();
     }
   } catch (error) {
@@ -408,10 +409,10 @@ watch(
   () => searchItem.value,
   (newValue) => {
     searchItem.value = newValue;
-    if(selectedOrLevel.value=='sublocation'){
-    fetchSubLocationData();
-    }else{
-    fetchVillagesData();
+    if (selectedOrLevel.value == "sublocation") {
+      fetchSubLocationData();
+    } else {
+      fetchVillagesData();
     }
   }
 );
@@ -429,7 +430,7 @@ onMounted(async () => {
       "village",
     ];
   }
-    await updateFilters();
+  await updateFilters();
 });
 const updateFilters = () => {
   // access_level.value.level.id = 3
@@ -548,12 +549,12 @@ const handleChange = async (org_id, org_level) => {
   fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
-  selectedOrLevel.value=org_level;
+  selectedOrLevel.value = org_level;
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
   let masterListUrl = `villages/list?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`;
   if (org_level == "county") {
-    selecteLocation.value=location_id||"";
+    selecteLocation.value = location_id || "";
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
     masterListUrl += `&location_id=${selecteLocation.value}`;
@@ -563,7 +564,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "subcounty") {
-    selecteLocation.value=location_id||"";
+    selecteLocation.value = location_id || "";
     //get wards
     fetchUrl += `?parent_id=${org_id}`;
     masterListUrl += `&location_id=${selecteLocation.value}`;
@@ -572,7 +573,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "ward") {
-    selecteLocation.value=location_id||"";
+    selecteLocation.value = location_id || "";
     //get locatios
     fetchUrl += `?parent_id=${org_id}`;
     masterListUrl += `&location_id=${selecteLocation.value}`;
@@ -580,16 +581,16 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "location") {
-    selecteLocation.value=location_id||"";
+    selecteLocation.value = location_id || "";
     //get sub locatios
     fetchUrl += `?parent_id=${org_id}`;
     masterListUrl += `&location_id=${selecteLocation.value}`;
     //clear fields
     sublocation.value = "Select Sub Location";
   } else if (org_level == "sublocation") {
-    selecteLocation.value=location_id||"";
+    selecteLocation.value = location_id || "";
     //get sublocations stats
-    masterListUrl=`sub_location_posts?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+    masterListUrl = `sub_location_posts?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`;
     fetchUrl += `?parent_id=${org_id}`;
     masterListUrl += `&location_id=${selecteLocation.value}`;
   }
@@ -679,10 +680,10 @@ const fetchChildData = async (location_id, org_id, org_level) => {
       await axios.get(`${masterListUrl}`).then((response) => {
         console.log(response.data.data);
         let data = response.data.data;
-        if(org_level==='sublocation'){
-          subLocationData.value=data;
-        }else{
-        villagesData.value = data;
+        if (org_level === "sublocation") {
+          subLocationData.value = data;
+        } else {
+          villagesData.value = data;
         }
         datatotal.value = response.data.data.total;
       });
@@ -732,7 +733,9 @@ const onLTablePageChange = async (page) => {
 // Function to fetch village data
 const fetchVillagesData = async () => {
   try {
-    const response = await axios.get(`villages/list?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${selecteLocation.value}`);
+    const response = await axios.get(
+      `villages/list?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${selecteLocation.value}`
+    );
     const data = await response.data;
     console.log(data);
     villagesData.value = data.data;
@@ -744,7 +747,9 @@ const fetchVillagesData = async () => {
 // Function to fetch sub location data
 const fetchSubLocationData = async () => {
   try {
-    const response = await axios.get(`sub_location_posts?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${selecteLocation.value}`);
+    const response = await axios.get(
+      `sub_location_posts?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${selecteLocation.value}`
+    );
     const data = await response.data;
     console.log(data);
     subLocationData.value = data.data;
