@@ -25,6 +25,11 @@
             Training Summary
           </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetIRSDash">
+          <router-link to="/irs-household-summary">
+            IRS Household Summary
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="campaigns" v-if="canCreateCampaign || canViewCampaign">
         <template v-slot:title>

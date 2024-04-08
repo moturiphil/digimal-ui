@@ -488,6 +488,12 @@ const routes = [
       ),
   },
   {
+    path: "/irs-household-summary",
+    name: "irs-summary",
+    component: () => import("@/view/pages/household/IRSHouseholds.vue"),
+    meta: { auth: true },
+  },
+  {
     path: "/villages/hh/:id",
     name: "hh-villages",
     component: () =>
