@@ -43,7 +43,9 @@
                 </li>
                 <li v-if="isValidator">
                   <a
-                    :class="activeClass === 'not_validated' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'not_validated' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('not_validated')"
                     href="#"
                   >
@@ -52,7 +54,11 @@
                 </li>
                 <li v-if="isApprover">
                   <a
-                    :class="activeClass === 'pending_approval' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'pending_approval'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('pending_approval')"
                     href="#"
                   >
@@ -61,7 +67,11 @@
                 </li>
                 <li v-if="isAdminAccountant">
                   <a
-                    :class="activeClass === 'pending_payment' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'pending_payment'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('pending_payment')"
                     href="#"
                   >
@@ -127,12 +137,17 @@
                                   @cancel="handleVoidCancel"
                                 >
                                   <template #footer>
-                                    <a-button key="back" @click="handleVoidCancel"
+                                    <a-button
+                                      key="back"
+                                      @click="handleVoidCancel"
                                       >No, Take me back!</a-button
                                     >
                                     <a-button
                                       key="submit"
-                                      style="background: orange; color: aliceblue"
+                                      style="
+                                        background: orange;
+                                        color: aliceblue;
+                                      "
                                       :loading="loading"
                                       @click="actionVoidPayroll"
                                       >Yes, Void it!</a-button
@@ -177,7 +192,10 @@
                                   >
                                     <div>
                                       <p>Payment transaction processing</p>
-                                      <input type="number" v-model="inputValue" />
+                                      <input
+                                        type="number"
+                                        v-model="inputValue"
+                                      />
                                     </div>
                                   </a-modal>
                                 </div>
@@ -492,13 +510,15 @@ const filter = (data) => {
 
     case "pending_approval":
       return data.filter(
-        (item) => item.approval_status === "Not Approved" && item.status === "Validated"
+        (item) =>
+          item.approval_status === "Not Approved" && item.status === "Validated"
       );
 
     case "pending_payment":
       return data.filter(
         (item) =>
-          item.approval_status === "Approved" && item.payment_status === "Not Paid"
+          item.approval_status === "Approved" &&
+          item.payment_status === "Not Paid"
       );
 
     case "paid":
@@ -545,23 +565,6 @@ const handlePay = (id) => {
             description: data.message,
           });
         }
-        axios
-          .post(`payroll_payment`, {
-            payroll_id: id,
-          })
-          .then((responsePromise) => {
-            return responsePromise.data;
-          })
-          .then((data) => {
-            console.log(data);
-            if (data.success == true) {
-              notification.success({
-                message: "Success",
-                description:
-                data.message,
-              });
-            }
-          });
       });
   } catch (error) {
     console.log(error);
@@ -639,6 +642,22 @@ const handleOk = async (id, inputValue) => {
         description: "Payment processed successful",
       });
     }
+    axios
+      .post(`payroll_payment`, {
+        payroll_id: id,
+      })
+      .then((responsePromise) => {
+        return responsePromise.data;
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.success == true) {
+          notification.success({
+            message: "Success",
+            description: data.message,
+          });
+        }
+      });
   } catch (error) {
     console.log(error);
     notification.error({
@@ -673,7 +692,8 @@ onMounted(() => {
       activitypayroll.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
       });
       dataSource.value = activitypayroll.value;
     })
@@ -690,7 +710,9 @@ watchEffect(async () => {
       return dataSource.value;
     }
     if (querysearch.length > 3) {
-      const response = await axios.get(`activity_payroll_summary?query=${querysearch}`);
+      const response = await axios.get(
+        `activity_payroll_summary?query=${querysearch}`
+      );
       const data = await response.json();
       const filteredItems = [];
       data.data.forEach((item) => {
@@ -703,7 +725,8 @@ watchEffect(async () => {
       dataSource.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
       });
     }
   } catch (error) {
