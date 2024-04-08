@@ -1,32 +1,32 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="View Post Workers">
-      <template #subTitle>
-        <sdButton type="success" size="extra-small">
-          <router-link
-            :to="{
-              path: `/assign-worker`,
-              query: { id: post_id },
-            }"
-            class="btn-icon"
-            type="success"
-            shape="circle"
-          >
-            &nbsp;&nbsp; Assign Post Workers
-          </router-link>
-        </sdButton>
-        &nbsp;&nbsp;
-        <sdButton
-          class="button-container"
-          size="extra-small"
-          type="warning"
-          @click="openModal()"
-        >
-          Add Security
-        </sdButton>
-      </template>
-    </sdPageHeader>
+    <sdPageHeader ghost :title="`${post_name} - Post Workers`" />
+
     <Main>
+      <sdButton type="success" size="extra-small">
+        <router-link
+          :to="{
+            path: `/assign-worker`,
+            query: { id: post_id },
+          }"
+          class="btn-icon"
+          type="success"
+          shape="circle"
+        >
+          &nbsp;&nbsp; Assign Post Workers
+        </router-link>
+      </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        class="button-container"
+        size="extra-small"
+        type="warning"
+        @click="openModal()"
+      >
+        Add Security
+      </sdButton>
+      <br>
+      <br>
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -40,7 +40,8 @@
                   :pagination="{ pageSize: 10, showSizeChanger: true }"
                   :dataSource="dataSource"
                   :columns="columns"
-                  :scroll="{ x: 50 }" :expand-column-width="100"
+                  :scroll="{ x: 50 }"
+                  :expand-column-width="100"
                 >
                   <template #workers="{ record }">
                     <td>
@@ -243,8 +244,8 @@
                         isLoading
                           ? "Loading..."
                           : isSubmitting
-                            ? "Processing ..."
-                            : "Verify OTP"
+                          ? "Processing ..."
+                          : "Verify OTP"
                       }}
                     </sdButton>
                     <sdButton
@@ -259,8 +260,8 @@
                         isLoading
                           ? "Loading..."
                           : isSubmitting
-                            ? "Processing ..."
-                            : "Submit"
+                          ? "Processing ..."
+                          : "Submit"
                       }}
                     </sdButton>
                   </div>
@@ -320,8 +321,8 @@
                         isLoading
                           ? "Loading..."
                           : isSubmitting
-                            ? "Processing ..."
-                            : "Update Shift"
+                          ? "Processing ..."
+                          : "Update Shift"
                       }}
                     </sdButton>
                   </div>
@@ -417,7 +418,6 @@ const DragAndDropTable = defineComponent({
     const isModalShiftOpen = ref(false);
     const post_guard = ref("");
 
-
     const { gender } = reactive({
       gender: [
         { id: "M", name: "Male" },
@@ -450,7 +450,9 @@ const DragAndDropTable = defineComponent({
 
     const post_id = query.id;
 
-    console.log(post_id);
+    const post_name = query.name;
+
+    console.log(post_name);
 
     onMounted(async () => {
       try {
@@ -492,7 +494,8 @@ const DragAndDropTable = defineComponent({
       return false;
     };
 
-    const regex = /^254((1|7)(?:(?:[129546][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
+    const regex =
+      /^254((1|7)(?:(?:[129546][0-9])|(?:0[0-8])|(9[0-2]))[0-9]{6})$/;
 
     const ArticleSchema = Yup.object().shape({
       first_name: Yup.string().required("First Name is required"),
@@ -775,6 +778,7 @@ const DragAndDropTable = defineComponent({
       security_otp,
       gender,
       shift,
+      post_name,
       errors: {
         gender: null,
         name: null,
