@@ -20,10 +20,6 @@
       </template>
     </sdPageHeader>
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="HouseHoldData">
-        Export Payroll Data
-      </sdButton>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
       <router-link v-bind:to="'activity-payroll-matrix'">
         <sdButton type="success">
           <sdFeatherIcons size="" class="icon-color-white" />
@@ -546,7 +542,7 @@ const handlePay = (id) => {
         if (data.success == true) {
           notification.success({
             message: "Success",
-            description: "OTP Sent Successfully",
+            description: data.message,
           });
         }
         axios
@@ -562,7 +558,7 @@ const handlePay = (id) => {
               notification.success({
                 message: "Success",
                 description:
-                  "Payment Approved Successfully, Enter OTP to complete payment",
+                data.message,
               });
             }
           });
@@ -582,15 +578,16 @@ const handleValidation = (id) => {
         return responsePromise.data;
       })
       .then((data) => {
+        console.log(data);
         if (data.success == true) {
           notification.success({
             message: "Success",
-            description: "Payroll Validated Successfully",
+            description: data.message,
           });
         } else {
           notification.error({
             message: "Error",
-            description: "Payroll Validation Failed",
+            description: data.message,
           });
         }
       });
@@ -613,12 +610,12 @@ const handleApproval = (id) => {
         if (data.success == true) {
           notification.success({
             message: "Success",
-            description: "Payroll Approved Successfully",
+            description: data.message,
           });
         } else {
           notification.error({
             message: "Error",
-            description: "Payroll Approval Failed",
+            description: data.message,
           });
         }
       });
