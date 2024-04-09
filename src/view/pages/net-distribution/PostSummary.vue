@@ -111,7 +111,12 @@
     },
     {
       title: "Nets Required",
-      dataIndex: "nets_required",
+      dataIndex: "nets_ordered",
+      key: "nets_required",
+    },
+    {
+      title: "Nets Ordered",
+      dataIndex: "nets_ordered",
       key: "nets_required",
     },
     {
@@ -125,13 +130,23 @@
       key: "nets_issued",
     },
     {
+      title: "Nets Transfered to other Post",
+      dataIndex: "nets_transfered_to_other_post",
+      key: "nets_transfer",
+    },
+    {
+      title: "Nets Received from other Post",
+      dataIndex: "nets_received_from_other_posts",
+      key: "nets_transfer",
+    },
+    {
       title: "Returned To Drop-off",
       dataIndex: "nets_sent_to_dropoff",
       key: "nets_sent_to_dropoff",
     },
     {
       title: "Balance",
-      dataIndex: "balance",
+      dataIndex: "expected_balance",
       key: "balance",
     },
     {
@@ -401,6 +416,7 @@
     axios
       .get(`get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`)
       .then((response) => {
+        console.log(response.data.data);
         dataSource.value = response.data.data;
         datatotal.value= response.data.pagination.total;
         total_households.value  = response.data.pagination.total
