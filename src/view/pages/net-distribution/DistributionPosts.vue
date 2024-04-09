@@ -134,7 +134,7 @@
                           <router-link
                             :to="{
                               path: `/view-worker`,
-                              query: { id: record.id },
+                              query: { id: record.id,  name: record.name },
                             }"
                             class="btn-icon"
                             type="success"
