@@ -8,7 +8,7 @@
               v-model:value="searchItem"
               type="text"
               name="dataSource"
-              placeholder="Search by ID No, Phone No, name"
+              placeholder="Search by Name, Location or Post Supervisor"
             />
           </div>
         </template>
