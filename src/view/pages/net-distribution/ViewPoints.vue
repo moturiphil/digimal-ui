@@ -2,20 +2,25 @@
   <RecordViewWrapper>
     <sdPageHeader title="Drop Off Points">
       <template #subTitle></template>
-        <template #buttons>
-          <div class="search-box">
-            <span class="search-icon">
-              <!-- Increase the size of the search icon by setting the 'font-size' property -->
-              <sdFeatherIcons type="search" size="24" />
-            </span>
-            <a-input
-              v-model:value="searchItem"
-              type="text"
-              name="dataSource"
-              placeholder="Search by name"
-              style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
-            />
-          </div>
+      <template #buttons>
+        <div class="search-box">
+          <span class="search-icon">
+            <!-- Increase the size of the search icon by setting the 'font-size' property -->
+            <sdFeatherIcons type="search" size="24" />
+          </span>
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name"
+            style="
+              font-size: 15px;
+              width: 100%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
+          />
+        </div>
       </template>
     </sdPageHeader>
     <Main>
@@ -70,7 +75,9 @@
                 </a-row>
                 <a-divider></a-divider>
                 <a-table
-                :pagination="false" :dataSource="dataSource" :columns="columns"
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
                 >
                   <template #point="{ record }">
                     <td>
@@ -178,8 +185,8 @@
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive,watch } from "vue";
-import axios from "@/Axiosconfig";  
+import { computed, onMounted, ref, reactive, watch } from "vue";
+import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 // import dayjs from "dayjs";
 //const dateFormat = "YYYY-MM-DD";
@@ -248,9 +255,10 @@ const columns = [
     slots: { customRender: "point" },
   },
 ];
-const { state,
-    //dispatch
-    } = useStore();
+const {
+  state,
+  //dispatch
+} = useStore();
 //const crud = computed(() => state.crud.data);
 const isLoading = computed(() => state.crud.loading);
 //const selectedRowKeys = ref([]);
@@ -279,23 +287,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  // 'Tvf1zgVZ0K4',//busia
-  // 'NjWSbQTwys4',//lamu
-  // 'nrI2khZx3d0',//kilifi
-  // 'JsH2bnvNt2d',//tan river
-  'N7YETT3A9r1',//kwale
-  'QyGNX2DpR4h',//taita taveta
-  'wsBsC6gjHvn',// mombasa
-  // 'KGHhQ5GLd4k',//
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tana river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
+  "wsBsC6gjHvn", // mombasa
+  // 'KGHhQ5GLd4k',//bungoma
   // 'BjC1xL40gHo',//kakamega
   // 'sANMZ3lpqGs',//vihiga
   // 'XWALbfAPa6n',//west pokot
   // 'kphDeKClFch',//turkana
-  // 'mThvosEflAU',//trans nzoia
-  // 'kqJ83J2D72s',//naraok
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',
+  // 'Ulj33KBau7V', // kirinyaga
 ]);
 const formState = reactive({
   post_id: "",
@@ -315,13 +323,14 @@ onMounted(async () => {
     updateFilters();
     // console.log(JSON.stringify(access_level.value.location));
   }
-  
 });
 //handle pagination
 const onPageChange = async (page) => {
   currentPage.value = page;
   try {
-    const response = await axios.get(`get_all_drop_off_points?page=${page}&per_page=${pageSize.value}`);
+    const response = await axios.get(
+      `get_all_drop_off_points?page=${page}&per_page=${pageSize.value}`
+    );
     dataSource.value = response.data.data;
     datatotal.value = response.data.pagination.total;
   } catch (error) {
@@ -336,9 +345,11 @@ watch(
     getallDropOffPoints();
   }
 );
-const getallDropOffPoints = async()=>{
+const getallDropOffPoints = async () => {
   try {
-    const response = await axios.get(`get_all_drop_off_points?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`);
+    const response = await axios.get(
+      `get_all_drop_off_points?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
+    );
     const data = await response.data;
     dataSource.value = data.data;
     console.log(dataSource.value);
@@ -354,10 +365,7 @@ const updateFilters = () => {
   // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
-    filterAccessList.value = [
-      "county",
-      "subcounty"
-    ];
+    filterAccessList.value = ["county", "subcounty"];
     countries.value = [
       {
         value: access_level.value.location.org_id,
@@ -372,10 +380,7 @@ const updateFilters = () => {
     ];
     fetchCounties();
   } else if (access_level.value.level.id == 2) {
-    filterAccessList.value = [
-      "county",
-      "subcounty"
-    ];
+    filterAccessList.value = ["county", "subcounty"];
     counties.value = [
       {
         value: access_level.value.location.org_id,
@@ -389,9 +394,7 @@ const updateFilters = () => {
       },
     ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = [
-      "subcounty",
-    ];
+    filterAccessList.value = ["subcounty"];
     subcounties.value = [
       {
         value: access_level.value.location.org_id,
@@ -471,7 +474,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
                 )
             ),
         ];
-      } 
+      }
     })
     .then(async () => {
       await axios.get(`${masterListUrl}`).then((response) => {
@@ -535,7 +538,8 @@ const handleAssign = async () => {
     };
 
     console.log(JSON.stringify(data));
-    await axios.post(`assign_dropoff_manager`,data)
+    await axios
+      .post(`assign_dropoff_manager`, data)
       .then((response) => response.data)
       .then(({ status, data }) => {
         if (status == true) {
@@ -568,30 +572,30 @@ const handleAssign = async () => {
     });
   }
 };
-  // const handleDelete = (id) => {
-  //   const confirm = window.confirm("Are you sure delete this?");
-  //   if (confirm) {
-  //     dispatch("axiosDataDelete", {
-  //       id,
-  //       getData: () => {
-  //         dispatch("axiosCrudGetData");
-  //       },
-  //     });
-  //   }
-  //   return false;
-  // };
-  const handleCancelReceive = () => {
-    isModalOpen.value = false;
-  };
-  // const onSelectChange = (selectedRowKey) => {
-  //   selectedRowKeys.value = selectedRowKey;
-  // };
+// const handleDelete = (id) => {
+//   const confirm = window.confirm("Are you sure delete this?");
+//   if (confirm) {
+//     dispatch("axiosDataDelete", {
+//       id,
+//       getData: () => {
+//         dispatch("axiosCrudGetData");
+//       },
+//     });
+//   }
+//   return false;
+// };
+const handleCancelReceive = () => {
+  isModalOpen.value = false;
+};
+// const onSelectChange = (selectedRowKey) => {
+//   selectedRowKeys.value = selectedRowKey;
+// };
 
-  // const rowSelection = {
-  //   selectedRowKeys,
-  //   onChange: onSelectChange,
-  // };
-  console.log(users);
+// const rowSelection = {
+//   selectedRowKeys,
+//   onChange: onSelectChange,
+// };
+console.log(users);
 </script>
 <style>
 .badge-orange {

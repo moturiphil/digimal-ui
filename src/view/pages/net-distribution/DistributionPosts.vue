@@ -134,7 +134,7 @@
                           <router-link
                             :to="{
                               path: `/view-worker`,
-                              query: { id: record.id,  name: record.name },
+                              query: { id: record.id, name: record.name },
                             }"
                             class="btn-icon"
                             type="success"
@@ -316,7 +316,7 @@ const subcounty = ref("Select Subcounty");
 const location = ref("Select Location");
 const ward = ref("Select Ward");
 const org_ids = ref([]);
-const location_id=ref("");
+const location_id = ref("");
 
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -325,23 +325,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  // 'Tvf1zgVZ0K4',//busia
-  // 'NjWSbQTwys4',//lamu
-  // 'nrI2khZx3d0',//kilifi
-  // 'JsH2bnvNt2d',//tan river
-  'N7YETT3A9r1',//kwale
-  'QyGNX2DpR4h',//taita taveta
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tana river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//
+  // 'KGHhQ5GLd4k',//bungoma
   // 'BjC1xL40gHo',//kakamega
   // 'sANMZ3lpqGs',//vihiga
   // 'XWALbfAPa6n',//west pokot
   // 'kphDeKClFch',//turkana
-  // 'mThvosEflAU',//trans nzoia
-  // 'kqJ83J2D72s',//naraok
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',
+  // 'Ulj33KBau7V', // kirinyaga
 ]);
 //   const api_url = UserService;
 //   console.log(api_url);
@@ -493,7 +493,7 @@ const handleChange = async (org_id, org_level) => {
 };
 const fetchChildData = async (loctn_id, org_id, org_level) => {
   currentPage.value = 1;
-  location_id.value=loctn_id;
+  location_id.value = loctn_id;
   let fetchUrl = `get_sub_counties_list`;
   let masterListUrl = `posts_data?per_page=${pageSize.value}&page=${currentPage.value}`;
   if (org_level == "county") {
