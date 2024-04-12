@@ -663,6 +663,14 @@ const routes = [
       ),
   },
   {
+    path: "/admin/subcounty-hh-reg",
+    name: "hh-reg-subcounty",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/admin/SubCountyHHReg.vue"
+      ),
+  },
+  {
     path: "/404", // Use an absolute path
     name: "404",
     component: () =>
