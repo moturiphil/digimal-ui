@@ -46,19 +46,7 @@
                                   <sdButton size="extra-small" type="success">
                                     <router-link
                                       :to="{
-                                        name: `view-data`,
-                                        params: { id: record.id },
-                                        query: { id: record.id },
-                                      }"
-                                    >
-                                      View Event
-                                    </router-link>
-                                  </sdButton>
-                                  <sdButton size="extra-small" type="success">
-                                    <router-link
-                                      :to="{
-                                        name: `view-data`,
-                                        params: { id: record.id },
+                                        name: `view`,
                                         query: { id: record.id },
                                       }"
                                     >
@@ -86,11 +74,11 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
+import { computed, onMounted, ref, defineComponent} from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
+// import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -151,7 +139,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
-    const logs = ref([]);
+    // const logs = ref([]);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/household_registration_starts`;
 
@@ -162,50 +150,44 @@ export default defineComponent({
     // const tableData = ref([]);
 
     onMounted(() => {
-      axios
+        axios
         .get(API_URL, {
           headers: authHeader(),
         })
         .then((response) => {
           console.log(response.data.data);
-          logs.value = response.data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-          dataSource.value = logs.value;
+          dataSource.value = response.data;
+          console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
         });
     });
 
-    watchEffect(async () => {
-      const query = searchItem.value.toLowerCase();
-      try {
-        if (!query) {
-          dataSource.value = logs.value;
-          return dataSource.value;
-        }
-        if (query.length > 3) {
-          const response = await fetch(`${API_URL}/search?query=${query}`, {
-            method: "GET",
-            headers: authHeader(),
-          });
-          const data = await response.json();
-          dataSource.value = data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-        }
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-      }
-    });
+    // watchEffect(async () => {
+    //   const query = searchItem.value.toLowerCase();
+    //   try {
+    //     if (!query) {
+    //       dataSource.value = logs.value;
+    //       return dataSource.value;
+    //     }
+    //     if (query.length > 3) {
+    //       const response = await fetch(`${API_URL}/search?query=${query}`, {
+    //         method: "GET",
+    //         headers: authHeader(),
+    //       });
+    //       const data = await response.json();
+    //       dataSource.value = data.data;
+    //     }
+    //   } catch (error) {
+    //     notification.error({
+    //       message: "Error",
+    //       description: error.message,
+    //     });
+    //   }
+    // });
+
+    console.log(dataSource.value);
 
     return {
       crud,
