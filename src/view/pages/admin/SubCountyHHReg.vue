@@ -156,7 +156,7 @@ export default defineComponent({
         })
         .then((response) => {
           console.log(response.data.data);
-          dataSource.value = response.data;
+          dataSource.value = response.data.data;
           console.log(dataSource.value);
         })
         .catch((error) => {
