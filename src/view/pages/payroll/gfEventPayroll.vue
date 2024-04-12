@@ -1,9 +1,9 @@
 <template>
   <Main>
     <SearchResultWrapper>
-      <sdPageHeader ghost title="Event Payroll">
+      <sdPageHeader ghost title="Global Fund Event Payroll">
         <template #buttons>
-          <div class="search-box">
+          <!-- <div class="search-box">
             <a-input
               style="
                 border: 1px solid #151414;
@@ -17,55 +17,70 @@
               name="dataSource"
               placeholder="Search by name"
             />
-          </div>
+          </div> -->
         </template>
       </sdPageHeader>
     </SearchResultWrapper>
     <div style="background-color: #ececec; padding: 20px">
       <a-row :gutter="16">
         <a-col :span="6">
-          <a-card title="All Payroll" style="width: 300px">
-            <template #extra><a href="#">more</a></template>
-            <p>card content</p>
-            <!-- <p>card content</p>
-            <p>card content</p> -->
-          </a-card>
+          <a href="/gf/events/all-payrolls">
+            <a-card
+              title="All Payroll"
+              style="width: 300px"
+              class="card-button"
+            >
+              <p>All Digimal payroll</p>
+            </a-card>
+          </a>
         </a-col>
         <a-col :span="6">
-          <a-card title="Payrolls pending Validation" style="width: 300px">
-            <template #extra><a href="#">more</a></template>
-            <p>card content</p>
-            <!-- <p>card content</p>
-            <p>card content</p> -->
-          </a-card>
+          <a href="/payroll-validation">
+            <a-card
+              title="Payrolls pending Validation"
+              style="width: 300px"
+              class="card-button"
+            >
+              <p>Digimal payroll pending validations</p>
+            </a-card>
+          </a>
         </a-col>
         <a-col :span="6">
-          <a-card title="Payrolls pending Approval" style="width: 300px">
-            <template #extra><a href="#">more</a></template>
-            <p>card content</p>
-            <!-- <p>card content</p>
-            <p>card content</p> -->
-          </a-card>
+          <a href="/payroll-approval">
+            <a-card
+              title="Payrolls pending Approval"
+              style="width: 300px"
+              class="card-button"
+            >
+              <p>Digimal payroll pending approval</p>
+            </a-card>
+          </a>
         </a-col>
         <a-col :span="6">
-          <a-card title="Payrolls pending Payments" style="width: 300px">
-            <template #extra><a href="#">more</a></template>
-            <p>card content</p>
-            <!-- <p>card content</p>
-            <p>card content</p> -->
-          </a-card>
+          <a href="/payroll-payments">
+            <a-card
+              title="Payrolls pending Payments"
+              style="width: 300px"
+              class="card-button"
+            >
+              <p>Digimal payroll payments validations</p>
+            </a-card>
+          </a>
         </a-col>
       </a-row>
       <br />
       <br />
       <a-row :gutter="16">
         <a-col :span="6">
-          <a-card title="Payrolls Paid" style="width: 300px">
-            <template #extra><a href="#">more</a></template>
-            <p>card content</p>
-            <!-- <p>card content</p>
-            <p>card content</p> -->
-          </a-card>
+          <a href="/payrolls-paid">
+            <a-card
+              title="Payrolls Paid"
+              style="width: 300px"
+              class="card-button"
+            >
+              <p>Digimal payroll paid</p>
+            </a-card>
+          </a>
         </a-col>
       </a-row>
     </div>
@@ -464,5 +479,18 @@ onMounted(() => {
 <style scoped>
 .icon-color-white {
   color: white;
+}
+.card-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s, background-color 0.3s; /* Added background-color transition */
+}
+
+.card-button:hover {
+  transform: scale(1.1);
+  background-color: #1EC997; /* Green background color */
 }
 </style>

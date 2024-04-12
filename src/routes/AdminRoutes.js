@@ -264,6 +264,56 @@ const routes = [
     ],
   },
   {
+    path: "/gf/events",
+    name: "global-fund",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      {
+        path: "all-payrolls",
+        name: "gf-all-payrolls",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfEventPayrolls.vue"
+          ),
+      },
+      // {
+      //   path: "unvalidated-payrolls",
+      //   name: "gf-unvalidated-payrolls",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfUnvalidatedEventsPayrolls.vue"
+      //     ),
+      // },
+      // {
+      //   path: "unapproved-payrolls",
+      //   name: "gf-unapproved-payrolls",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfUnapprovedEventsPayrolls.vue"
+      //     ),
+      // },
+      // {
+      //   path: "unpaid-payrolls",
+      //   name: "gf-unpaid-payrolls",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfUnpaidEventsPayrolls.vue"
+      //     ),
+      // },
+      // {
+      //   path: "paid-payrolls",
+      //   name: "gf-paid-payrolls",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfPaidEventsPayrolls.vue"
+      //     ),
+      // },
+    ],
+  },
+  {
     path: "/events",
     name: "events",
     component: () =>
@@ -483,9 +533,7 @@ const routes = [
     path: "/household/irs",
     name: "hh-irs",
     component: () =>
-      import(
-        /* webpackChunkName: "Search" */ "@/view/pages/household/IRS.vue"
-      ),
+      import(/* webpackChunkName: "Search" */ "@/view/pages/household/IRS.vue"),
   },
   {
     path: "/irs-household-summary",
