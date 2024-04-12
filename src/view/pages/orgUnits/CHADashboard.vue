@@ -368,29 +368,29 @@ const selecteLocation = ref("");
 const selectedOrLevel = ref("");
 const org_ids = ref([]);
 const currentCounties = ref([
-  "Homa Bay County",
-  "Kisii County",
-  "Nyamira County",
-  "Kisumu County",
-  "Siaya County",
-  "Migori County",
-  "Busia County",
-  "Lamu County",
-  "Kilifi County",
-  "Tana River County",
-  "Kwale County",
-  "Taita Taveta County",
-  "Mombasa County",
-  // "Bungoma County",
-  // "Kakamega County",
-  // "Vihiga County",
-  // "West Pokot County",
-  // "Turkana County",
-  "Trans Nzoia County",
-  "Narok County",
-  // "Marsabit County",
-  // "Baringo County",
-  // "Kirinyaga County"
+  "nK0A12Q7MvS", //homa bay
+  "sPkRcDvhGWA", //kisii
+  "uepLTG8wGWJ", //nyamira
+  "tAbBVBbueqD", //kisumu
+  "u4t9H8XyU9P", //siaya
+  "fVra3Pwta0Q", //migori
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tana river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
+  "wsBsC6gjHvn", // mombasa
+  // 'KGHhQ5GLd4k',//bungoma
+  // 'BjC1xL40gHo',//kakamega
+  // 'sANMZ3lpqGs',//vihiga
+  // 'XWALbfAPa6n',//west pokot
+  // 'kphDeKClFch',//turkana
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
+  // 'Eey8fT4Im3y',//marsabit
+  // 'vvOK1BxTbet',//baringo
+  // 'Ulj33KBau7V', // kirinyaga
 ]);
 const selectMenuItem = (key) => {
   selectedKeys.value = [key];
