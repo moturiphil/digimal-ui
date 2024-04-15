@@ -155,6 +155,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Ordering ID",
+    dataIndex: "ordering_id",
+    key: "id",
+  },
+  {
     title: "Post Supervisor",
     dataIndex: "post_supervisor_user_id",
     key: "id",
