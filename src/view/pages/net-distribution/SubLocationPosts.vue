@@ -7,7 +7,7 @@
       </sdButton>
       &nbsp;&nbsp;
       <sdButton type="warning" size="extra-small" @click="orderPosts()">
-        Order Post
+        Re-Order Post
       </sdButton>
       <br />
       <br />
@@ -250,7 +250,7 @@ const getSublocationPosts = () => {
           });
 
           await new Promise((resolve) => {
-            setTimeout(resolve, 3000); // Wait for 1.5 seconds (adjust the time as needed)
+            setTimeout(resolve, 5000); // Wait for 1.5 seconds (adjust the time as needed)
           });
           location.reload();
         } else {
