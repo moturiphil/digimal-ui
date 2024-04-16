@@ -3,13 +3,14 @@
     <sdPageHeader ghost title="Sub Counties Household Registrations">
       <template #buttons>
         <div class="search-box">
-          <a-input
+          <!-- <a-input
             v-model:value="searchItem"
             type="text"
             name="dataSource"
             placeholder="Search by user, event or ip address..."
-          /></div
-      ></template>
+          /> -->
+        </div></template
+      >
     </sdPageHeader>
     <Main>
       <SearchResultWrapper>
@@ -43,15 +44,31 @@
                             <template #records="{ record }">
                               <td>
                                 <div class="table-actions">
-                                  <sdButton size="extra-small" type="success">
-                                    <router-link
-                                      :to="{
-                                        name: `view`,
-                                        query: { id: record.id },
-                                      }"
-                                    >
-                                      Populate Event
-                                    </router-link>
+                                  <sdButton
+                                    size="extra-small"
+                                    type="success"
+                                    @click="createEvent(record)"
+                                    v-if="record.event_id == null"
+                                  >
+                                    <span>Create Event</span>
+                                  </sdButton>
+                                  <span v-if="record.event_id == null">
+                                    &nbsp;&nbsp;
+                                  </span>
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    :disabled="isDisabled"
+                                    @click="populateEvent(record)"
+                                    v-if="record.event_id !== null"
+                                  >
+                                    {{
+                                      isLoading
+                                        ? "Loading..."
+                                        : isDisabled
+                                        ? "Processing ..."
+                                        : "Populate Event"
+                                    }}
                                   </sdButton>
                                 </div>
                               </td>
@@ -74,11 +91,12 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, defineComponent} from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-// import { notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
+import store from "../../../vuex/store";
 
 const columns = [
   {
@@ -139,7 +157,7 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
-    // const logs = ref([]);
+    const isDisabled = computed(() => state.isDisabled);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/household_registration_starts`;
 
@@ -150,7 +168,7 @@ export default defineComponent({
     // const tableData = ref([]);
 
     onMounted(() => {
-        axios
+      axios
         .get(API_URL, {
           headers: authHeader(),
         })
@@ -164,28 +182,95 @@ export default defineComponent({
         });
     });
 
-    // watchEffect(async () => {
-    //   const query = searchItem.value.toLowerCase();
-    //   try {
-    //     if (!query) {
-    //       dataSource.value = logs.value;
-    //       return dataSource.value;
-    //     }
-    //     if (query.length > 3) {
-    //       const response = await fetch(`${API_URL}/search?query=${query}`, {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       });
-    //       const data = await response.json();
-    //       dataSource.value = data.data;
-    //     }
-    //   } catch (error) {
-    //     notification.error({
-    //       message: "Error",
-    //       description: error.message,
-    //     });
-    //   }
-    // });
+    const createEvent = async (data) => {
+      console.log(data.county_id);
+      const event_api_url = `${process.env.VUE_APP_BASE_URL}/create_event_over_api`;
+
+      const event_data = {
+        county_id: data.county_id,
+        subcounty_id: data.sub_county_id,
+        venue: data.sub_county_name,
+      };
+
+      fetch(event_api_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(event_data),
+      })
+        .then((response) => response.json())
+        .then(({ success, data }) => {
+          if (success) {
+            // store.commit("setIsSubmitting", false);
+            // router.push("event-create");
+            notification["success"]({
+              message: "Event Created",
+              description: `Event Created successfully. Your event code is ${data.event.event_code}`,
+              duration: 5.5,
+            });
+            new Promise((resolve) => {
+            setTimeout(resolve, 3000);
+          });
+          }
+          // show error message from the api response
+          else {
+            // store.commit("setIsSubmitting", false);
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to create event",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          //   store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
+
+    // populateEvent
+
+    const populateEvent = async (data) => {
+      console.log(data);
+      store.commit("setIsDisabled", true);
+
+      axios
+        .get(
+          `${process.env.VUE_APP_BASE_URL}/generate_hh_reg_users/${data.sub_county_id}/${data.event_id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response);
+          if (response.status == 200) {
+            store.commit("setIsDisabled", false);
+            notification["success"]({
+              message: "Success",
+              description: response.data.data,
+              duration: 5.5,
+            });
+          } else {
+            notification["error"]({
+              message: "Error!",
+              description: response.data.data,
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
 
     console.log(dataSource.value);
 
@@ -199,6 +284,9 @@ export default defineComponent({
       handleChange,
       activeClass,
       // handleVerify,
+      createEvent,
+      populateEvent,
+      isDisabled,
     };
   },
 });
