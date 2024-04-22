@@ -2,23 +2,7 @@
   <Main>
     <SearchResultWrapper>
       <sdPageHeader ghost title="Global Fund Event Payroll">
-        <template #buttons>
-          <!-- <div class="search-box">
-            <a-input
-              style="
-                border: 1px solid #151414;
-                padding: 8px;
-                border-radius: 5px;
-                align-items: center;
-                justify-items: center;
-              "
-              v-model:value="searchItem"
-              type="text"
-              name="dataSource"
-              placeholder="Search by name"
-            />
-          </div> -->
-        </template>
+        <template #buttons> </template>
       </sdPageHeader>
     </SearchResultWrapper>
     <div style="background-color: #ececec; padding: 20px">
@@ -35,7 +19,7 @@
           </a>
         </a-col>
         <a-col :span="6">
-          <a href="/payroll-validation">
+          <a href="gf/events/payroll-validation">
             <a-card
               title="Payrolls pending Validation"
               style="width: 300px"
@@ -46,7 +30,7 @@
           </a>
         </a-col>
         <a-col :span="6">
-          <a href="/payroll-approval">
+          <a href="gf/events/payroll-approval">
             <a-card
               title="Payrolls pending Approval"
               style="width: 300px"
@@ -57,13 +41,13 @@
           </a>
         </a-col>
         <a-col :span="6">
-          <a href="/payroll-payments">
+          <a href="gf/events/payroll-pending-payments">
             <a-card
               title="Payrolls pending Payments"
               style="width: 300px"
               class="card-button"
             >
-              <p>Digimal payroll payments validations</p>
+              <p>Digimal payroll pending payments</p>
             </a-card>
           </a>
         </a-col>
@@ -72,13 +56,13 @@
       <br />
       <a-row :gutter="16">
         <a-col :span="6">
-          <a href="/payrolls-paid">
+          <a href="/gf/events/payroll-payments">
             <a-card
               title="Payrolls Paid"
               style="width: 300px"
               class="card-button"
             >
-              <p>Digimal payroll paid</p>
+              <p>Digimal paid payrolls</p>
             </a-card>
           </a>
         </a-col>
@@ -486,11 +470,13 @@ onMounted(() => {
   padding: 0;
   cursor: pointer;
   text-align: center;
-  transition: transform 0.3s, background-color 0.3s; /* Added background-color transition */
+  transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+  background-color: #1ec997;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
 .card-button:hover {
   transform: scale(1.1);
-  background-color: #1EC997; /* Green background color */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 </style>

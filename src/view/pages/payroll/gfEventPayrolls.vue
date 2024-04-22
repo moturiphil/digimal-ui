@@ -7,7 +7,7 @@
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by user, event or ip address..."
+            placeholder="Search by payroll details..."
           /></div
       ></template>
     </sdPageHeader>
@@ -46,7 +46,6 @@
                                   <sdButton
                                     size="small"
                                     type="success"
-                                    @click="handleVerify(record.id)"
                                   >
                                     &nbsp;&nbsp;
                                     <router-link
@@ -138,8 +137,13 @@ const columns = [
     key: "id",
   },
   {
-    title: "Amount",
+    title: "Amount Generated",
     dataIndex: "total_amount",
+    key: "id",
+  },
+  {
+    title: "Amount Transacted",
+    dataIndex: "amount_transacted",
     key: "id",
   },
   {
@@ -192,15 +196,12 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
-    const logs = ref([]);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
-
-    // const tableData = ref([]);
 
     onMounted(() => {
       axios
@@ -209,12 +210,11 @@ export default defineComponent({
         })
         .then((response) => {
           console.log(response.data.data);
-          logs.value = response.data.data.map((item) => ({
+          dataSource.value = response.data.data.map((item) => ({
             ...item,
             old_values: item.old_values,
             new_values: item.new_values,
           }));
-          dataSource.value = logs.value;
         })
         .catch((error) => {
           console.error(error);
@@ -225,7 +225,6 @@ export default defineComponent({
       const query = searchItem.value.toLowerCase();
       try {
         if (!query) {
-          dataSource.value = logs.value;
           return dataSource.value;
         }
         if (query.length > 3) {
@@ -257,7 +256,6 @@ export default defineComponent({
       columns,
       handleChange,
       activeClass,
-      // handleVerify,
     };
   },
 });

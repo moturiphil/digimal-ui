@@ -456,33 +456,34 @@ const getTrainingSummary = async () => {
       `irs_household_summary?org_id=${access_level.value.location.org_id}`
     );
     const data = await response.data;
-    console.log(data);
+    Number(data);
+    console.log(data.data);
     summary.no_of_people_sleep_in_non_sprayable =
-      data.no_of_people_sleep_in_non_sprayable
-        ? data.no_of_people_sleep_in_non_sprayable
+      data.data.no_of_people_sleep_in_non_sprayable
+        ? data.data.no_of_people_sleep_in_non_sprayable
         : 0;
     summary.no_of_people_sleep_in_stand_alone_units =
-      data.no_of_people_sleep_in_stand_alone_units
-        ? data.no_of_people_sleep_in_stand_alone_units
+      data.data.no_of_people_sleep_in_stand_alone_units
+        ? data.data.no_of_people_sleep_in_stand_alone_units
         : 0;
     summary.no_of_stand_alone_non_sprayable_surfaces =
-      data.no_of_stand_alone_non_sprayable_surfaces
-        ? data.no_of_stand_alone_non_sprayable_surfaces
+      data.data.no_of_stand_alone_non_sprayable_surfaces
+        ? data.data.no_of_stand_alone_non_sprayable_surfaces
         : 0;
-    summary.number_of_households = data.number_of_households
-      ? data.number_of_households
+    summary.number_of_households = data.data.number_of_households
+      ? data.data.number_of_households
       : 0;
     summary.stand_alone_units_near_water_bodies =
-      data.stand_alone_units_near_water_bodies
-        ? data.stand_alone_units_near_water_bodies
+      data.data.stand_alone_units_near_water_bodies
+        ? data.data.stand_alone_units_near_water_bodies
         : 0;
     summary.stand_alone_units_sprayable_surfaces =
-      data.stand_alone_units_sprayable_surfaces
-        ? data.stand_alone_units_sprayable_surfaces
+      data.data.stand_alone_units_sprayable_surfaces
+        ? data.data.stand_alone_units_sprayable_surfaces
         : 0;
     summary.stand_alone_units_where_people_sleep =
-      data.stand_alone_units_where_people_sleep
-        ? data.stand_alone_units_where_people_sleep
+      data.data.stand_alone_units_where_people_sleep
+        ? data.data.stand_alone_units_where_people_sleep
         : 0;
   } catch (error) {
     console.error(error);
@@ -556,16 +557,35 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     })
     .then(async () => {
       await axios.get(`${masterListUrl}`).then(async (response) => {
-        // console.log(response.data.data)
+        console.log(response.data)
         const data = await response.data;
-        summary.trained_chps = data.trained_chps ? data.trained_chps : 0;
-        summary.trained_chv_ve = data.total_chv_elder
-          ? data.total_chv_elder
+        summary.no_of_people_sleep_in_non_sprayable =
+          data.no_of_people_sleep_in_non_sprayable
+            ? data.no_of_people_sleep_in_non_sprayable
+            : 0;
+        summary.no_of_people_sleep_in_stand_alone_units =
+          data.no_of_people_sleep_in_stand_alone_units
+            ? data.no_of_people_sleep_in_stand_alone_units
+            : 0;
+        summary.no_of_stand_alone_non_sprayable_surfaces =
+          data.no_of_stand_alone_non_sprayable_surfaces
+            ? data.no_of_stand_alone_non_sprayable_surfaces
+            : 0;
+        summary.number_of_households = data.number_of_households
+          ? data.number_of_households
           : 0;
-        summary.trained_hcw = data.trained_hcw ? data.trained_hcw : 0;
-        summary.trained_ves = data.trained_village_elders
-          ? data.trained_village_elders
-          : 0;
+        summary.stand_alone_units_near_water_bodies =
+          data.stand_alone_units_near_water_bodies
+            ? data.stand_alone_units_near_water_bodies
+            : 0;
+        summary.stand_alone_units_sprayable_surfaces =
+          data.stand_alone_units_sprayable_surfaces
+            ? data.stand_alone_units_sprayable_surfaces
+            : 0;
+        summary.stand_alone_units_where_people_sleep =
+          data.stand_alone_units_where_people_sleep
+            ? data.stand_alone_units_where_people_sleep
+            : 0;
       });
     })
     .catch((error) => {

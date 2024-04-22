@@ -279,38 +279,38 @@ const routes = [
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfEventPayrolls.vue"
           ),
       },
-      // {
-      //   path: "unvalidated-payrolls",
-      //   name: "gf-unvalidated-payrolls",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfUnvalidatedEventsPayrolls.vue"
-      //     ),
-      // },
-      // {
-      //   path: "unapproved-payrolls",
-      //   name: "gf-unapproved-payrolls",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfUnapprovedEventsPayrolls.vue"
-      //     ),
-      // },
-      // {
-      //   path: "unpaid-payrolls",
-      //   name: "gf-unpaid-payrolls",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfUnpaidEventsPayrolls.vue"
-      //     ),
-      // },
-      // {
-      //   path: "paid-payrolls",
-      //   name: "gf-paid-payrolls",
-      //   component: () =>
-      //     import(
-      //       /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gf/gfPaidEventsPayrolls.vue"
-      //     ),
-      // },
+      {
+        path: "payroll-validation",
+        name: "gf-payroll-validation",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnvalidatedEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-approval",
+        name: "gf-payroll-approvals",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnapprovedEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-pending-payments",
+        name: "payroll-pending-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnpaidEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-payments",
+        name: "payroll-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfPaidEventsPayrolls.vue"
+          ),
+      },
     ],
   },
   {
