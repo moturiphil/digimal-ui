@@ -25,7 +25,7 @@
             Training Summary
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetTrainingDash">
+        <a-menu-item key="widgetIRSSummary">
           <router-link to="/irs/summary">
             IRS Household Summary
           </router-link>
