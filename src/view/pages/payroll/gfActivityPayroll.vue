@@ -14,7 +14,7 @@
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by ID No, Phone No, name"
+            placeholder="Search by Activity Code..."
           />
         </div>
       </template>
@@ -22,7 +22,7 @@
     <Main>
       <router-link v-bind:to="'activity-payroll-matrix'">
         <sdButton type="success">
-          <sdFeatherIcons size="" class="icon-color-white" />
+          <sdFeatherIcons size="extra-small" class="icon-color-white" />
           Assign Payroll Matrix
         </sdButton>
       </router-link>
@@ -713,7 +713,8 @@ watchEffect(async () => {
       const response = await axios.get(
         `activity_payroll_summary?query=${querysearch}`
       );
-      const data = await response.json();
+      const data = await response.data;
+      console.log(data);
       const filteredItems = [];
       data.data.forEach((item) => {
         if (item.funding_source === 1) {
