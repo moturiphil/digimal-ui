@@ -30,6 +30,14 @@ const routes = [
           ),
       },
       {
+        path: "/irs/summary",
+        name: "IRSSummary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Home" */ "@/view/pages/household/IRSHouseholds"
+          ),
+      },
+      {
         path: "registered-users",
         name: "registered-users",
         component: () =>
