@@ -809,14 +809,14 @@ const selectedCounties = ref([
   "Mombasa County",
   // "Bungoma County",
   // "Kakamega County",
-  // "Vihiga County",
-  // "West Pokot County",
-  // "Turkana County",
+  "Vihiga County",
+  "West Pokot County",
+  "Turkana County",
   "Trans Nzoia County",
   "Narok County",
   // "Marsabit County",
-  // "Baringo County",
-  // "Kirinyaga County"
+  "Baringo County",
+  "Kirinyaga County"
 ]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -834,14 +834,14 @@ const currentCounties = ref([
   'wsBsC6gjHvn',// mombasa
   // 'KGHhQ5GLd4k',//bungoma
   // 'BjC1xL40gHo',//kakamega
-  // 'sANMZ3lpqGs',//vihiga
-  // 'XWALbfAPa6n',//west pokot
-  // 'kphDeKClFch',//turkana
+  'sANMZ3lpqGs',//vihiga
+  'XWALbfAPa6n',//west pokot
+  'kphDeKClFch',//turkana
   'mThvosEflAU',//trans nzoia
   'kqJ83J2D72s',//naraok
   // 'Eey8fT4Im3y',//marsabit
-  // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V', // kirinyaga
+  'vvOK1BxTbet',//baringo
+  'Ulj33KBau7V', // kirinyaga
 ]);
 
 onMounted(async () => {

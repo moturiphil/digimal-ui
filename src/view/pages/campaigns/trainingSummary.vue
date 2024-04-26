@@ -1,5 +1,5 @@
 <template>
-    <RecordViewWrapper>
+  <RecordViewWrapper>
     <sdPageHeader title="Training Summary">
       <template v-slot:buttons>
         <a-row>
@@ -98,411 +98,412 @@
         </a-row>
       </template>
     </sdPageHeader>
-      <Main>
-        <a-row :gutter="25">
-          <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
-            <sdCards headless class="stat-card">
-              <EChartCard>
-                <div class="card-chunk">
-                  <CardBarChart2>
-                    <table class="stat-table">
-                      <th>
-                        <sHeading class="stat-title docorate" align="center"
-                          >Health-Care Workers(CHWs)</sHeading
-                        >
-                      </th>
-                      <tbody>
-                        <tr>
-                          <td><span class="stat-span">Total Trained</span></td>
-                          <td>
-                            <sdHeading class="stat-title">{{
-                              new Intl.NumberFormat().format(summary.trained_hcw)
-                            }}</sdHeading>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </CardBarChart2>
-                </div>
-              </EChartCard>
-            </sdCards>
-          </a-col>
-          <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
-            <sdCards headless class="stat-card">
-              <EChartCard>
-                <div class="card-chunk">
-                  <CardBarChart2>
-                    <table class="stat-table">
-                      <th>
-                        <sHeading class="stat-title docorate" align="center"
-                          >Community Health-Promoters(CHPS)</sHeading
-                        >
-                      </th>
-                      <tbody>
-                        <tr>
-                          <td><span class="stat-span">Total Trained</span></td>
-                          <td>
-                            <sdHeading class="stat-title">{{
-                              new Intl.NumberFormat().format(summary.trained_chps)
-                            }}</sdHeading>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </CardBarChart2>
-                </div>
-              </EChartCard>
-            </sdCards>
-          </a-col>
-          <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
-            <sdCards headless class="stat-card">
-              <EChartCard>
-                <div class="card-chunk">
-                  <CardBarChart2>
-                    <table class="stat-table">
-                      <th>
-                        <sHeading class="stat-title docorate" align="center"
-                          >Village Elders(VEs)</sHeading
-                        >
-                      </th>
-                      <tbody>
-                        <tr>
-                          <td><span class="stat-span">Total Trained</span></td>
-                          <td>
-                            <sdHeading class="stat-title">{{
-                              new Intl.NumberFormat().format(summary.trained_ves)
-                            }}</sdHeading>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </CardBarChart2>
-                </div>
-              </EChartCard>
-            </sdCards>
-          </a-col>
-          <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
-            <sdCards headless class="stat-card">
-              <EChartCard>
-                <div class="card-chunk">
-                  <CardBarChart2>
-                    <table class="stat-table">
-                      <th>
-                        <sHeading class="stat-title docorate" align="center"
-                          >CHPs & VEs</sHeading
-                        >
-                      </th>
-                      <tbody>
-                        <tr>
-                          <td><span class="stat-span">Total Trained</span></td>
-                          <td>
-                            <sdHeading class="stat-title">{{
-                              new Intl.NumberFormat().format(summary.trained_chv_ve)
-                            }}</sdHeading>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </CardBarChart2>
-                </div>
-              </EChartCard>
-            </sdCards>
-          </a-col>
-    </a-row>
-      </Main>
-    </RecordViewWrapper>
-  </template>
-  <script setup>
-  import { RecordViewWrapper } from "../style";
-  import { Main } from "../../styled";
-  //import { useStore } from "vuex";
-  import {  onMounted, ref, reactive } from "vue";
-  import axios from "@/Axiosconfig";  
-  import { notification } from "ant-design-vue";
-  // import dayjs from "dayjs";
-  //const dateFormat = "YYYY-MM-DD";
-  //org levels
-  const access_level = ref({});
-  const filterAccessList = ref([]);
-  const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
-  const counties = ref(null);
-  const subcounties = ref(null);
-  const wards = ref(null);
-  const county = ref("Select County");
-  const subcounty = ref("Select Subcounty");
-  const org_ids = ref([]);
-  
-  const currentCounties = ref([
-    "nK0A12Q7MvS", //homa bay
-    "sPkRcDvhGWA", //kisii
-    "uepLTG8wGWJ", //nyamira
-    "tAbBVBbueqD", //kisumu
-    "u4t9H8XyU9P", //siaya
-    "fVra3Pwta0Q", //migori
-    // 'Tvf1zgVZ0K4',//busia
-    // 'NjWSbQTwys4',//lamu
-    // 'nrI2khZx3d0',//kilifi
-    // 'JsH2bnvNt2d',//tan river
-    'N7YETT3A9r1',//kwale
-    'QyGNX2DpR4h',//taita taveta
-    'wsBsC6gjHvn',// mombasa
-    // 'KGHhQ5GLd4k',//
-    // 'BjC1xL40gHo',//kakamega
-    // 'sANMZ3lpqGs',//vihiga
-    // 'XWALbfAPa6n',//west pokot
-    // 'kphDeKClFch',//turkana
-    // 'mThvosEflAU',//trans nzoia
-    // 'kqJ83J2D72s',//naraok
-    // 'Eey8fT4Im3y',//marsabit
-    // 'vvOK1BxTbet',//baringo
-    // 'Ulj33KBau7V',
-  ]);
-  const summary = reactive({
-    trained_hcw: 0,
-    trained_chps: 0,
-    trained_ves: 0,
-    trained_chv_ve: 0,
-  });
-  onMounted(async () => {
-    ///alert()
-    if (sessionStorage.getItem("user") != null) {
-      access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-      //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-      updateFilters();
-      // console.log(JSON.stringify(access_level.value.location));
-    }
-    getTrainingSummary();
-  });  
-  const updateFilters = () => {
-    // access_level.value.level.level_name = 'national'
-    // access_level.value.location.id = 1
-    // access_level.value.location.org_id = 'HfVjCurKxh2'
-    // access_level.value.location.name = 'Kenya'
-  
-    if (access_level.value.level.id == 1) {
-      filterAccessList.value = [
-        "county",
-        "subcounty"
-      ];
-      countries.value = [
-        {
-          value: access_level.value.location.org_id,
-          label: access_level.value.location.name,
-        },
-      ];
-      org_ids.value = [
-        {
-          id: access_level.value.location.id,
-          org_id: access_level.value.location.org_id,
-        },
-      ];
-      fetchCounties();
-    } else if (access_level.value.level.id == 2) {
-      filterAccessList.value = [
-        "county",
-        "subcounty"
-      ];
-      counties.value = [
-        {
-          value: access_level.value.location.org_id,
-          label: access_level.value.location.name,
-        },
-      ];
-      org_ids.value = [
-        {
-          id: access_level.value.location.id,
-          org_id: access_level.value.location.org_id,
-        },
-      ];
-    } else if (access_level.value.level.id == 3) {
-      filterAccessList.value = [
-        "subcounty",
-      ];
-      subcounties.value = [
-        {
-          value: access_level.value.location.org_id,
-          label: access_level.value.location.name,
-        },
-      ];
-      org_ids.value = [
-        {
-          id: access_level.value.location.id,
-          org_id: access_level.value.location.org_id,
-        },
-      ];
-    }
-    getTrainingSummary();
-  };
-    // get training summary
-    const getTrainingSummary= async()=>{
-    try {
-      const response = await axios.get(`summary_trainings?org_id=${access_level.value.location.org_id}`);
-      const data = await response.data;
-      summary.trained_chps=data.trained_chps?data.trained_chps:0;
-      summary.trained_chv_ve=data.total_chv_elder?data.total_chv_elder:0;
-      summary.trained_hcw=data.trained_hcw?data.trained_hcw:0;
-      summary.trained_ves=data.trained_village_elders?data.trained_village_elders:0;
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const handleChange = async (org_id, org_level) => {
-    //fetch child data
-    // console.log(org_id)
-    // console.log(org_ids.value)
-    let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
-    // console.log(org)
-    let parent_id = org[0] || 9;
-    // console.log(parent_id)
-    // console.log(org_level)
-    fetchChildData(parent_id, org_id, org_level);
-  };
-  const fetchChildData = async (location_id, org_id, org_level) => {
-    console.log(location_id)
-    let fetchUrl = `get_sub_counties_list`;
-    let masterListUrl = `summary_trainings`;
-    if (org_level == "county") {
-      //get subcounties
-      fetchUrl += `?parent_id=${org_id}`;
-      masterListUrl += `?org_id=${org_id}`;
-      //clear fields
-      subcounty.value = "Select SubCounty";
-    } else if (org_level == "subcounty") {
-      //get wards
-      fetchUrl += `?parent_id=${org_id}`;
-      masterListUrl += `?org_id=${org_id}`;
-    }
-    await axios
-      .get(`${fetchUrl}`)
-      .then((response) => {
-        let data = response.data.message;
-        if (org_level == "county") {
-          //get subcounties
-          subcounties.value = data.map((x) => ({
-            value: x.org_id,
-            label: x.name,
-          }));
-          org_ids.value = [
-            ...org_ids.value,
-            ...data
-              .map((x) => ({ org_id: x.org_id, id: x.id }))
-              .filter(
-                (newItem) =>
-                  !org_ids.value.some(
-                    (existingItem) => existingItem.id === newItem.id
-                  )
-              ),
-          ];
-        } else if (org_level == "subcounty") {
-          //get wards
-          wards.value = data.map((x) => ({
-            value: x.org_id,
-            label: x.name,
-          }));
-          org_ids.value = [
-            ...org_ids.value,
-            ...data
-              .map((x) => ({ org_id: x.org_id, id: x.id }))
-              .filter(
-                (newItem) =>
-                  !org_ids.value.some(
-                    (existingItem) => existingItem.id === newItem.id
-                  )
-              ),
-          ];
-        } 
-      })
-      .then(async () => {
-        await axios.get(`${masterListUrl}`).then(async(response) => {
-          // console.log(response.data.data)
-          const data = await response.data;
-          summary.trained_chps=data.trained_chps?data.trained_chps:0;
-          summary.trained_chv_ve=data.total_chv_elder?data.total_chv_elder:0;
-          summary.trained_hcw=data.trained_hcw?data.trained_hcw:0;
-          summary.trained_ves=data.trained_village_elders?data.trained_village_elders:0;
-        });
-      })
-      .catch((error) => {
-        notification.error({
-          message: `Error!`,
-          description: `${error}`,
-        });
-      });
-  };
-  const fetchCounties = async () => {
-    axios
-      .get("counties/")
-      .then((response) => {
-        counties.value = response.data
-          .map((x) => ({
-            value: x.org_id,
-            label: x.name,
-          }))
-          .filter((e) => currentCounties.value.includes(e.value.toString()));
-        org_ids.value = response.data.map((x) => ({
-          org_id: x.org_id,
-          id: x.id,
+    <Main>
+      <a-row :gutter="25">
+        <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
+          <sdCards headless class="stat-card">
+            <EChartCard>
+              <div class="card-chunk">
+                <CardBarChart2>
+                  <table class="stat-table">
+                    <th>
+                      <sHeading class="stat-title docorate" align="center"
+                        >Health-Care Workers(CHWs)</sHeading
+                      >
+                    </th>
+                    <tbody>
+                      <tr>
+                        <td><span class="stat-span">Total Trained</span></td>
+                        <td>
+                          <sdHeading class="stat-title">{{
+                            new Intl.NumberFormat().format(summary.trained_hcw)
+                          }}</sdHeading>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </CardBarChart2>
+              </div>
+            </EChartCard>
+          </sdCards>
+        </a-col>
+        <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
+          <sdCards headless class="stat-card">
+            <EChartCard>
+              <div class="card-chunk">
+                <CardBarChart2>
+                  <table class="stat-table">
+                    <th>
+                      <sHeading class="stat-title docorate" align="center"
+                        >Community Health-Promoters(CHPS)</sHeading
+                      >
+                    </th>
+                    <tbody>
+                      <tr>
+                        <td><span class="stat-span">Total Trained</span></td>
+                        <td>
+                          <sdHeading class="stat-title">{{
+                            new Intl.NumberFormat().format(summary.trained_chps)
+                          }}</sdHeading>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </CardBarChart2>
+              </div>
+            </EChartCard>
+          </sdCards>
+        </a-col>
+        <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
+          <sdCards headless class="stat-card">
+            <EChartCard>
+              <div class="card-chunk">
+                <CardBarChart2>
+                  <table class="stat-table">
+                    <th>
+                      <sHeading class="stat-title docorate" align="center"
+                        >Village Elders(VEs)</sHeading
+                      >
+                    </th>
+                    <tbody>
+                      <tr>
+                        <td><span class="stat-span">Total Trained</span></td>
+                        <td>
+                          <sdHeading class="stat-title">{{
+                            new Intl.NumberFormat().format(summary.trained_ves)
+                          }}</sdHeading>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </CardBarChart2>
+              </div>
+            </EChartCard>
+          </sdCards>
+        </a-col>
+        <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
+          <sdCards headless class="stat-card">
+            <EChartCard>
+              <div class="card-chunk">
+                <CardBarChart2>
+                  <table class="stat-table">
+                    <th>
+                      <sHeading class="stat-title docorate" align="center"
+                        >CHPs & VEs</sHeading
+                      >
+                    </th>
+                    <tbody>
+                      <tr>
+                        <td><span class="stat-span">Total Trained</span></td>
+                        <td>
+                          <sdHeading class="stat-title">{{
+                            new Intl.NumberFormat().format(
+                              summary.trained_chv_ve
+                            )
+                          }}</sdHeading>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </CardBarChart2>
+              </div>
+            </EChartCard>
+          </sdCards>
+        </a-col>
+      </a-row>
+    </Main>
+  </RecordViewWrapper>
+</template>
+<script setup>
+import { RecordViewWrapper } from "../style";
+import { Main } from "../../styled";
+//import { useStore } from "vuex";
+import { onMounted, ref, reactive } from "vue";
+import axios from "@/Axiosconfig";
+import { notification } from "ant-design-vue";
+// import dayjs from "dayjs";
+//const dateFormat = "YYYY-MM-DD";
+//org levels
+const access_level = ref({});
+const filterAccessList = ref([]);
+const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
+const counties = ref(null);
+const subcounties = ref(null);
+const wards = ref(null);
+const county = ref("Select County");
+const subcounty = ref("Select Subcounty");
+const org_ids = ref([]);
+
+const currentCounties = ref([
+  "nK0A12Q7MvS", //homa bay
+  "sPkRcDvhGWA", //kisii
+  "uepLTG8wGWJ", //nyamira
+  "tAbBVBbueqD", //kisumu
+  "u4t9H8XyU9P", //siaya
+  "fVra3Pwta0Q", //migori
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tana river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
+  "wsBsC6gjHvn", // mombasa
+  // 'KGHhQ5GLd4k',//bungoma
+  // 'BjC1xL40gHo',//kakamega
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
+  // 'Eey8fT4Im3y',//marsabit
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
+]);
+const summary = reactive({
+  trained_hcw: 0,
+  trained_chps: 0,
+  trained_ves: 0,
+  trained_chv_ve: 0,
+});
+onMounted(async () => {
+  ///alert()
+  if (sessionStorage.getItem("user") != null) {
+    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
+    //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
+    updateFilters();
+    // console.log(JSON.stringify(access_level.value.location));
+  }
+  getTrainingSummary();
+});
+const updateFilters = () => {
+  // access_level.value.level.level_name = 'national'
+  // access_level.value.location.id = 1
+  // access_level.value.location.org_id = 'HfVjCurKxh2'
+  // access_level.value.location.name = 'Kenya'
+
+  if (access_level.value.level.id == 1) {
+    filterAccessList.value = ["county", "subcounty"];
+    countries.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+    fetchCounties();
+  } else if (access_level.value.level.id == 2) {
+    filterAccessList.value = ["county", "subcounty"];
+    counties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+  } else if (access_level.value.level.id == 3) {
+    filterAccessList.value = ["subcounty"];
+    subcounties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+  }
+  getTrainingSummary();
+};
+// get training summary
+const getTrainingSummary = async () => {
+  try {
+    const response = await axios.get(
+      `summary_trainings?org_id=${access_level.value.location.org_id}`
+    );
+    const data = await response.data;
+    summary.trained_chps = data.trained_chps ? data.trained_chps : 0;
+    summary.trained_chv_ve = data.total_chv_elder ? data.total_chv_elder : 0;
+    summary.trained_hcw = data.trained_hcw ? data.trained_hcw : 0;
+    summary.trained_ves = data.trained_village_elders
+      ? data.trained_village_elders
+      : 0;
+  } catch (error) {
+    console.error(error);
+  }
+};
+const handleChange = async (org_id, org_level) => {
+  //fetch child data
+  // console.log(org_id)
+  // console.log(org_ids.value)
+  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  // console.log(org)
+  let parent_id = org[0] || 9;
+  // console.log(parent_id)
+  // console.log(org_level)
+  fetchChildData(parent_id, org_id, org_level);
+};
+const fetchChildData = async (location_id, org_id, org_level) => {
+  console.log(location_id);
+  let fetchUrl = `get_sub_counties_list`;
+  let masterListUrl = `summary_trainings`;
+  if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?org_id=${org_id}`;
+    //clear fields
+    subcounty.value = "Select SubCounty";
+  } else if (org_level == "subcounty") {
+    //get wards
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?org_id=${org_id}`;
+  }
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
+      let data = response.data.message;
+      if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
         }));
-        // console.log(counties.value)
-      })
-      .catch((error) => {
-        notification.error({
-          message: `Error!`,
-          description: `${error}`,
-        });
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } else if (org_level == "subcounty") {
+        //get wards
+        wards.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      }
+    })
+    .then(async () => {
+      await axios.get(`${masterListUrl}`).then(async (response) => {
+        // console.log(response.data.data)
+        const data = await response.data;
+        summary.trained_chps = data.trained_chps ? data.trained_chps : 0;
+        summary.trained_chv_ve = data.total_chv_elder
+          ? data.total_chv_elder
+          : 0;
+        summary.trained_hcw = data.trained_hcw ? data.trained_hcw : 0;
+        summary.trained_ves = data.trained_village_elders
+          ? data.trained_village_elders
+          : 0;
       });
-  };
-  </script>
-  <style>
-  .badge-orange {
-    background-color: orange;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 3px;
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+const fetchCounties = async () => {
+  axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data
+        .map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }))
+        .filter((e) => currentCounties.value.includes(e.value.toString()));
+      org_ids.value = response.data.map((x) => ({
+        org_id: x.org_id,
+        id: x.id,
+      }));
+      // console.log(counties.value)
+    })
+    .catch((error) => {
+      notification.error({
+        message: `Error!`,
+        description: `${error}`,
+      });
+    });
+};
+</script>
+<style>
+.badge-orange {
+  background-color: orange;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-blue {
+  background-color: blue;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-green {
+  background-color: green;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-red {
+  background-color: red;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.badge-default {
+  background-color: gray;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+.full-modal {
+  .ant-modal {
+    max-width: 50%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
   }
-  
-  .badge-blue {
-    background-color: blue;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 3px;
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    /* height: calc(70vh); */
   }
-  
-  .badge-green {
-    background-color: green;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 3px;
+  .ant-modal-body {
+    flex: 1;
   }
-  
-  .badge-red {
-    background-color: red;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 3px;
-  }
-  
-  .badge-default {
-    background-color: gray;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 3px;
-  }
-  .full-modal {
-    .ant-modal {
-      max-width: 50%;
-      top: 0;
-      padding-bottom: 0;
-      margin: 0;
-    }
-    .ant-modal-content {
-      display: flex;
-      flex-direction: column;
-      /* height: calc(70vh); */
-    }
-    .ant-modal-body {
-      flex: 1;
-    }
-  }
-  </style>
-  
+}
+</style>
