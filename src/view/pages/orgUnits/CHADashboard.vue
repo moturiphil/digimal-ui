@@ -589,11 +589,16 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     //clear fields
     sublocation.value = "Select Sub Location";
   } else if (org_level == "sublocation") {
-    selecteLocation.value = location_id || "";
+    //selecteLocation.value = location_id || "";
     //get sublocations stats
-    masterListUrl = `sub_location_posts?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchPostItem.value}`;
+    //masterListUrl = `sub_location_posts?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchPostItem.value}`;
+    //fetchUrl += `?parent_id=${org_id}`;
+    //masterListUrl += `&location_id=${selecteLocation.value}`;
+    //get sublocations
     fetchUrl += `?parent_id=${org_id}`;
     masterListUrl += `&location_id=${selecteLocation.value}`;
+    //clear fields
+    sublocation.value = "Select Sub Location";
   }
   await axios
     .get(`${fetchUrl}`)
