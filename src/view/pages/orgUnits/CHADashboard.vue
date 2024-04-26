@@ -229,7 +229,7 @@
                         :to="{
                           path: `/villages/hh/${record.id}`,
                           query: {
-                            id: record.id,
+                            id: record.village_id,
                           },
                         }"
                         class="btn-icon"
