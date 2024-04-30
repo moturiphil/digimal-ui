@@ -72,13 +72,13 @@
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
-                                  <sdButton
+                                  <!-- <sdButton
                                     type="success"
                                     size="small"
                                     @click="handleValidation(record.id)"
                                     >Validate</sdButton
-                                  >
-                                </div>
+                                  >-->
+                                </div> 
                               </td>
                             </template>
                           </a-table>
