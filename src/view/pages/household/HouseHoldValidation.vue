@@ -328,23 +328,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  // 'Tvf1zgVZ0K4',//busia
-  // 'NjWSbQTwys4',//lamu
-  // 'nrI2khZx3d0',//kilifi
-  // 'JsH2bnvNt2d',//tan river
-  'N7YETT3A9r1',//kwale
-  'QyGNX2DpR4h',//taita taveta
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tan river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//
+  // 'KGHhQ5GLd4k',//bungoma
   // 'BjC1xL40gHo',//kakamega
   // 'sANMZ3lpqGs',//vihiga
   // 'XWALbfAPa6n',//west pokot
   // 'kphDeKClFch',//turkana
-  // 'mThvosEflAU',//trans nzoia
-  // 'kqJ83J2D72s',//naraok
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',
+  // 'Ulj33KBau7V',// kirinyaga
 ]);
 // const notData=ref({})
 // const current=ref(0)
@@ -516,7 +516,7 @@ const handleChange = async (org_id, org_level) => {
 
 const fetchChildData = async (loctn_id, org_id, org_level) => {
   currentPage.value = 1;
-  location_id.value=loctn_id;
+  location_id.value = loctn_id;
   let fetchUrl = `get_sub_counties_list`;
   let masterListUrl = `household_outliers?location_id=${location_id.value}&page=${currentPage.value}&pageSize=${pageSize.value}`;
   if (org_level == "county") {

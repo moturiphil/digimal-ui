@@ -251,23 +251,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  // 'Tvf1zgVZ0K4',//busia
-  // 'NjWSbQTwys4',//lamu
-  // 'nrI2khZx3d0',//kilifi
-  // 'JsH2bnvNt2d',//tan river
+  'Tvf1zgVZ0K4',//busia
+  'NjWSbQTwys4',//lamu
+  'nrI2khZx3d0',//kilifi
+  'JsH2bnvNt2d',//tan river
   "N7YETT3A9r1", //kwale
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//
+  // 'KGHhQ5GLd4k',//bungoma
   // 'BjC1xL40gHo',//kakamega
   // 'sANMZ3lpqGs',//vihiga
   // 'XWALbfAPa6n',//west pokot
   // 'kphDeKClFch',//turkana
-  // 'mThvosEflAU',//trans nzoia
-  // 'kqJ83J2D72s',//naraok
+  'mThvosEflAU',//trans nzoia
+  'kqJ83J2D72s',//naraok
   // 'Eey8fT4Im3y',//marsabit
   // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',
+  // 'Ulj33KBau7V',// kirinyaga
 ]);
 
 defineProps({

@@ -320,7 +320,7 @@ const AddNewHH = defineComponent({
 
     const chp_village_id = chp.location.id;
 
-    posts.value = user.data.posts;
+    posts.value = user.user.posts;
 
     console.log(posts.value);
 

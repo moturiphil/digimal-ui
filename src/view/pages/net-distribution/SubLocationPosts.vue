@@ -2,8 +2,12 @@
   <div>
     <sdPageHeader :title="` ${sublocation_name} Posts`" />
     <Main>
-      <sdButton type="success" size="small" @click="openModal()">
+      <sdButton type="success" size="extra-small" @click="openModal()">
         Assign Post
+      </sdButton>
+      &nbsp;&nbsp;
+      <sdButton type="warning" size="extra-small" @click="orderPosts()">
+        Re-Order Post
       </sdButton>
       <br />
       <br />
@@ -35,7 +39,7 @@
                                     size="extra-small"
                                     type="danger"
                                     :disabled="isStarting"
-                                    @click="removeMatrix(record.id)"
+                                    @click="removePost(record.id)"
                                     v-if="!record.status"
                                   >
                                     <span>
@@ -51,13 +55,13 @@
                             </template>
                           </a-table>
                           <a-pagination
-                          :current="currentPage"
-                          :total="datatotal"
-                          :pageSize="pageSize"
-                          :showSizeChanger="true"
-                          :pagination="true"
-                          @change="onPageChange($event)"
-                        />
+                            :current="currentPage"
+                            :total="datatotal"
+                            :pageSize="pageSize"
+                            :showSizeChanger="true"
+                            :pagination="true"
+                            @change="onPageChange($event)"
+                          />
                         </TableWrapper>
                       </div>
                     </sdCards>
@@ -151,6 +155,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Ordering ID",
+    dataIndex: "ordering_id",
+    key: "id",
+  },
+  {
     title: "Post Supervisor",
     dataIndex: "post_supervisor_user_id",
     key: "id",
@@ -178,30 +187,33 @@ const dataSource = ref([]);
 // const orgTypeAssigned = ref([]);
 const activeClass = ref("all");
 
-    const { params, query } = useRoute();
+const { params, query } = useRoute();
 
-    console.log({ query, params });
-    const matrix_id = query.id;
-    console.log(matrix_id);
-    const sublocation_name = query.name;
-    const sublocation_id = query.id;
-    const isModalOpen = ref(false);
-    const posts = ref([]);
+console.log({ query, params });
+const matrix_id = query.id;
+console.log(matrix_id);
+const sublocation_name = query.name;
+const sublocation_id = query.id;
+const isModalOpen = ref(false);
+const posts = ref([]);
 
-    console.log(query)
+console.log(query);
 
-    // const handleChange = (tab) => {
-    //   activeClass.value = tab;
-    // };
+// const handleChange = (tab) => {
+//   activeClass.value = tab;
+// };
 
 const onPageChange = async (page) => {
   currentPage.value = page;
   getSublocationPosts();
-}
+};
 
-const postList = async () => {//posts_data
+const postList = async () => {
+  //posts_data
   try {
-    const response = await axios.get(`get_location_posts/sub_location_id=${query.org_id}`);
+    const response = await axios.get(
+      `get_location_posts?sub_location_id=${query.org_id}`
+    );
     const data = await response.data;
     console.log(data);
     // Modify the structure of each supervisor to include a 'label' property
@@ -220,131 +232,131 @@ onMounted(() => {
 });
 
 const getSublocationPosts = () => {
-      axios
+  axios
     .get(`sub_location_posts?sub_location_org_id=${query.org_id}`)
     .then((response) => {
       dataSource.value = response.data.data;
       console.log(dataSource.value);
-    }).then(() => {
+    })
+    .then(() => {
       postList();
     })
     .catch((error) => {
       console.error(error);
     });
-    }
+};
 
-    const removeMatrix = async (id) => {
-      const removeMatrixUrl = `delete_event_matrix?matrix_id=${id}`;
-      console.log(id);
-      try {
-        const response = await axios.delete(removeMatrixUrl);
-        console.log(response.data);
-        if (response.data.success) {
+const removePost = async (id) => {
+  const removePostUrl = `deassign_sub_location_post?post_id=${id}`;
+  console.log(id);
+  try {
+    const response = await axios.delete(removePostUrl);
+    console.log(response.data);
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.message,
+      });
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5000); // Wait for 1.5 seconds (adjust the time as needed)
+      });
+      location.reload();
+    } else {
+      notification.error({
+        message: "Error",
+        description: response.data.message,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const openModal = (id) => {
+  isModalOpen.value = true;
+  console.log(id);
+  console.log(isModalOpen.value);
+};
+
+const orderPosts = async () => {
+  const sub_location = query.org_id;
+
+  const order_sublocation_posts = `order_sub_location_post?sublocation_id=${sub_location}`;
+
+  console.log(order_sublocation_posts);
+
+  try {
+    const response = await axios.get(order_sublocation_posts);
+    console.log(response.data);
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.message,
+      });
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 3000); // Wait for 1.5 seconds (adjust the time as needed)
+      });
+      location.reload();
+    } else {
+      notification.error({
+        message: "Error",
+        description: response.data.message,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
+const handleSubmit = async () => {
+  try {
+    const data = {
+      post_ids: formState.post_id,
+      sublocation_ids: [sublocation_id],
+    };
+    console.log(data);
+    await axios
+      .post(`map_post_to_sublocation`, data)
+      .then((response) => response.data)
+      .then(({ success, message }) => {
+        if (success == true) {
           notification.success({
             message: "Success",
-            description: response.data.message,
+            description: message,
           });
-
-          await new Promise((resolve) => {
-            setTimeout(resolve, 1500); // Wait for 1.5 seconds (adjust the time as needed)
-          });
-
-          location.reload();
+          isModalOpen.value = false;
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
         } else {
           notification.error({
             message: "Error",
-            description: response.data.message,
+            description: `${message}`,
           });
         }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    // const removeOrgType = async (id) => {
-    //   const removeOrgTypeUrl = `delete_event_orgtype_matrix?matrix_id=${id}`;
-    //   console.log(id);
-    //   try {
-    //     const response = await axios.delete(removeOrgTypeUrl, {
-    //       headers: authHeader(),
-    //     });
-
-    //     console.log(response.data);
-
-    //     if (response.data.success) {
-    //       notification.success({
-    //         message: "Success",
-    //         description: response.data.message,
-    //       });
-
-    //       await new Promise((resolve) => {
-    //         setTimeout(resolve, 1500); // Wait for 1.5 seconds (adjust the time as needed)
-    //       });
-
-    //       location.reload();
-    //     } else {
-    //       notification.error({
-    //         message: "Error",
-    //         description: response.data.message,
-    //       });
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-
-    const openModal = (id) => {
-      isModalOpen.value = true;
-      console.log(id);
-      console.log(isModalOpen.value);
-    };
-
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    const handleSubmit = async () => {
-      try {
-        const data = {
-          post_ids: formState.post_id,
-          sublocation_ids: [sublocation_id],
-        };
-        console.log(data);
-        await axios.post(`map_post_to_sublocation`,data)
-          .then((response) => response.data)
-          .then(({ success, message }) => {
-            if (success == true) {
-              notification.success({
-                message: "Success",
-                description: message,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${message}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
-          });
-      } catch (error) {
+        isModalOpen.value = false;
+      })
+      .catch((error) => {
         notification.error({
           message: "Error",
           description: `${error}`,
         });
-      }
-    };
-
-    const formState = reactive({
-      searchItem: "",
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
     });
+  }
+};
+
+const formState = reactive({
+  searchItem: "",
+});
 </script>

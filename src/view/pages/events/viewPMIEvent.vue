@@ -13,7 +13,12 @@
             type="text"
             name="dataSource"
             placeholder="Search by name code, venue or location"
-            style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
+            style="
+              font-size: 15px;
+              width: 100%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
           />
         </div>
       </template>
@@ -77,7 +82,11 @@
                     </a-col>
                   </a-space>
                 </a-row>
-                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
+                <a-table
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                >
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
@@ -127,7 +136,10 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
-                          v-if="!record.status && record.payroll_status === 'Pending'"
+                          v-if="
+                            !record.status &&
+                            record.payroll_status === 'Pending'
+                          "
                         >
                           <sdFeatherIcons type="play-circle" size="small" />
                           <span>Start Event </span>
@@ -200,7 +212,10 @@
                   </h4>
                   <br />
                   <ul>
-                    <li v-for="facilitator in event_facilitators" :key="facilitator">
+                    <li
+                      v-for="facilitator in event_facilitators"
+                      :key="facilitator"
+                    >
                       {{ facilitator }}
                     </li>
                     <!-- <li>
@@ -323,8 +338,8 @@ import { encrypt, decrypt } from "@/cryptoHelper";
 const counties = ref(null);
 const subcounties = ref(null);
 const events = ref([]);
-const location_id=ref("")
-const event_list=ref("")
+const location_id = ref("");
+const event_list = ref("");
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
@@ -357,7 +372,9 @@ const updateFilters = async () => {
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let org = await org_ids.value
+    .filter((x) => x.org_id === org_id)
+    .map((e) => e.id);
   let parent_id = org[0] || 9;
   fetchChildData(parent_id, org_id, org_level);
 };
@@ -370,16 +387,16 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     fetchUrl += `?parent_id=${org_id}`;
     //get county activities
     masterUrl += `&location_id=${parent_id}`;
-    location_id.value=parent_id;
+    location_id.value = parent_id;
   } else if (org_level == "subcounty") {
     //get subcounty activities
     fetchUrl += `?parent_id=${org_id}`;
     masterUrl += `&location_id=${parent_id}`;
-    location_id.value=parent_id;
+    location_id.value = parent_id;
   } else if (org_level == "event") {
     //get activities
-    event_list.value=org_id;
-    location_id.value=parent_id;
+    event_list.value = org_id;
+    location_id.value = parent_id;
     masterUrl += `&location_id=${parent_id}&event_list=${org_id}`;
   }
   await axios
@@ -467,7 +484,9 @@ const getEvents = () => {
         value: x.event_list_id,
         label: x.name,
       }));
-      const filteredData = response.data.data.filter((item) => item.funding_source == 2);
+      const filteredData = response.data.data.filter(
+        (item) => item.funding_source == 2
+      );
       console.log(filteredData);
 
       datatotal.value = response.data.pagination.total;
@@ -626,18 +645,28 @@ const handleOk = async (id, inputValue) => {
         description: response.data.message,
       });
       inputValue = "";
+    } else if (response.status == 400) {
+      notification.info({
+        message: "Info",
+        description: response.data.message,
+      });
+      inputValue = "";
     }
   } catch (error) {
-    console.log(error);
-    notification.error({
-      message: "Error",
-      description: "Participant Registration Failed, Registration Code does not exist",
-    });
+    console.log(error.response);
+    if (error.response && error.response.data) {
+      notification.error({
+        message: "Error",
+        description: error.response.data.message,
+      });
+    } else {
+      // If there's no error.response or error.response.data
+      notification.error({
+        message: "Error",
+        description: "An unexpected error occurred.",
+      });
+    }
     inputValue = "";
-  } finally {
-    console.log(inputValue);
-    inputValue = ""; // Clear inputValue after the modal is closed
-    isModalOpen = true;
   }
 };
 
@@ -646,7 +675,9 @@ const handleOk = async (id, inputValue) => {
 async () => {
   try {
     // Validate the event code
-    const { data } = await axios.get(`events/all?event_code=${eventCode.value}`);
+    const { data } = await axios.get(
+      `events/all?event_code=${eventCode.value}`
+    );
     if (!data || data.length === 0) {
       throw new Error("Invalid event code");
     }
