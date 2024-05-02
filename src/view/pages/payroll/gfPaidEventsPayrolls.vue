@@ -1,6 +1,6 @@
 <template>
     <div>
-      <sdPageHeader ghost title="GF Event Paid Payroll">
+      <sdPageHeader ghost title="GF Paid Event Payroll">
         <template #buttons>
           <div class="search-box">
             <a-input
@@ -68,13 +68,6 @@
                                         <span>&nbsp;&nbsp; Payroll Details</span>
                                       </router-link>
                                     </sdButton>
-                                    &nbsp;&nbsp;
-                                    <sdButton
-                                      type="success"
-                                      size="small"
-                                      @click="handleValidation(record.id)"
-                                      >Validate</sdButton
-                                    >
                                   </div>
                                 </td>
                               </template>

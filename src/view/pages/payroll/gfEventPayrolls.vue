@@ -72,12 +72,6 @@
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
-                                  <!-- <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handleValidation(record.id)"
-                                    >Validate</sdButton
-                                  >-->
                                 </div> 
                               </td>
                             </template>
@@ -141,11 +135,11 @@ const columns = [
     dataIndex: "total_amount",
     key: "id",
   },
-  {
-    title: "Amount Transacted",
-    dataIndex: "amount_transacted",
-    key: "id",
-  },
+  // {
+  //   title: "Amount Transacted",
+  //   dataIndex: "amount_transacted",
+  //   key: "id",
+  // },
   {
     title: "",
     dataIndex: "",

@@ -458,11 +458,6 @@ const columns = [
     dataIndex: "event_id",
     key: "id",
   },
-  // {
-  //   title: "Event",
-  //   dataIndex: "event_id",
-  //   key: "id",
-  // },
   {
     title: "Validated",
     dataIndex: "status",
@@ -506,7 +501,6 @@ const columns = [
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
-// const payload = ref([]);
 const activeClass = ref("all");
 const recordId = ref(null);
 const isPaying = computed(() => state.isPaying);

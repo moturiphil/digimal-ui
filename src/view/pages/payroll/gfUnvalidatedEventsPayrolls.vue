@@ -239,6 +239,40 @@ export default defineComponent({
       }
     });
 
+    const handleValidation = (id) => {
+      try {
+        fetch(
+          `${process.env.VUE_APP_BASE_URL}/event_payroll_validation?payroll_id=${id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data); 
+            if (data.success === true) {
+              notification.success({
+                message: "Success!",
+                description: data.message,
+              });
+              setTimeout(() => {
+              }, 2000);
+            } else {
+              notification.error({
+                message: "Error!",
+                description: data.message,
+              });
+            }
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     return {
       crud,
       isLoading,
@@ -248,6 +282,7 @@ export default defineComponent({
       columns,
       handleChange,
       activeClass,
+      handleValidation,
     };
   },
 });
