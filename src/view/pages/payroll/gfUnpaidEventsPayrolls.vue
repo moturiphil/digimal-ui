@@ -342,7 +342,7 @@ export default defineComponent({
                     "Payment Approved Successfully, Enter OTP to complete payment",
                 });
               }
-            });
+            }); 
         }
       } catch (error) {
         store.commit("setIsPaying", true);
