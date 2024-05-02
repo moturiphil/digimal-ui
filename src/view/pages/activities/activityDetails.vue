@@ -15,27 +15,10 @@
             isLoading
               ? "Loading..."
               : isGenerating
-                ? "Processing ..."
-                : "Generate Payroll"
+              ? "Processing ..."
+              : "Generate Payroll"
           }}
         </sdButton>
-        <!-- &nbsp;
-        <sdButton
-          class="btn-import"
-          type="success"
-          size="small"
-          @click="generatePayroll"
-          v-if="isApprovedGenerator"
-          :disabled="isGenerating"
-        >
-          {{
-            isLoading
-              ? "Loading..."
-              : isGenerating
-                ? "Processing ..."
-                : "Generate Draft Payroll"
-          }}
-        </sdButton> -->
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
           class="btn-import"
@@ -146,7 +129,7 @@
                                     size="extra-small"
                                     type="danger"
                                     @click="removeOfficer(record.user_id)"
-                                    v-show="record.status === 'Active' "
+                                    v-show="record.status === 'Active'"
                                   >
                                     <span> Remove Officer </span>
                                   </sdButton>
@@ -154,7 +137,7 @@
                                     size="extra-small"
                                     type="warning"
                                     @click="activateOfficer(record.user_id)"
-                                    v-show="record.status === 'Inactive' "
+                                    v-show="record.status === 'Inactive'"
                                   >
                                     <span> Activate Officer </span>
                                   </sdButton>
@@ -386,7 +369,6 @@ const searchOfficerItem = ref("");
 
 const isModalOpen = ref(false);
 
-
 const activity_code = ref(query.code);
 
 console.log(activity_code.value);
@@ -459,7 +441,6 @@ const resendSMS = async (id) => {
     console.error(error);
   }
 };
-
 
 const openArchiveModal = () => {
   console.log(query.id);
@@ -546,9 +527,7 @@ const removeOfficer = (id) => {
 
 const activateOfficer = (id) => {
   axios
-    .post(
-      `/activate_officer?activity_id=${query.id}&user_id=${id}`
-    )
+    .post(`/activate_officer?activity_id=${query.id}&user_id=${id}`)
     .then((response) => {
       const { success, data } = response.data;
       if (success === true) {
@@ -588,7 +567,7 @@ onMounted(async () => {
       let fullName = `${record.first_name} ${record.last_name}`;
 
       // check if status = 0 return inactive else return active
-      let status = record.status == 0 ? 'Inactive' : 'Active';
+      let status = record.status == 0 ? "Inactive" : "Active";
 
       return {
         ...record,
@@ -751,7 +730,6 @@ const officersList = async () => {
 officersList();
 
 const handleOfficerSearch = (value) => {
-  console.log(value);
   searchOfficerItem.value = value;
   officersList();
 };

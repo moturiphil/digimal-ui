@@ -272,6 +272,56 @@ const routes = [
     ],
   },
   {
+    path: "/gf/events",
+    name: "global-fund",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      {
+        path: "all-payrolls",
+        name: "gf-all-payrolls",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfEventPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-validation",
+        name: "gf-payroll-validation",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnvalidatedEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-approval",
+        name: "gf-payroll-approvals",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnapprovedEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-pending-payments",
+        name: "payroll-pending-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnpaidEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-payments",
+        name: "payroll-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfPaidEventsPayrolls.vue"
+          ),
+      },
+    ],
+  },
+  {
     path: "/events",
     name: "events",
     component: () =>
@@ -491,9 +541,13 @@ const routes = [
     path: "/household/irs",
     name: "hh-irs",
     component: () =>
-      import(
-        /* webpackChunkName: "Search" */ "@/view/pages/household/IRS.vue"
-      ),
+      import(/* webpackChunkName: "Search" */ "@/view/pages/household/IRS.vue"),
+  },
+  {
+    path: "/irs-household-summary",
+    name: "irs-summary",
+    component: () => import("@/view/pages/household/IRSHouseholds.vue"),
+    meta: { auth: true },
   },
   {
     path: "/villages/hh/:id",

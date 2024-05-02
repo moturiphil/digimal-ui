@@ -205,7 +205,6 @@ export default defineComponent({
   methods: {
     handleResize() {
       this.innerWidth = window.innerWidth;
-      console.log(window.innerWidth);
     },
   },
   setup() {
@@ -287,7 +286,6 @@ export default defineComponent({
       modeChangeSideNav,
     };
 
-    console.log(innerWidth == 768);
 
     return {
       toggleCollapsed,

@@ -421,6 +421,8 @@ const handleOk = async (id, inputValue) => {
       `event/${recordId.value}/participant/${inputValue}/assign`
     );
     //console.log(response);
+    console.log(response);
+
     if (response.status == 200) {
       inputValue = "";
       notification.success({
@@ -440,7 +442,7 @@ const handleOk = async (id, inputValue) => {
     notification.error({
       message: "Error",
       description:
-        "Participant Registration Failed, Registration Code does not exist",
+        error,
     });
     inputValue = "";
   } finally {
