@@ -30,6 +30,14 @@ const routes = [
           ),
       },
       {
+        path: "/irs/summary",
+        name: "IRSSummary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Home" */ "@/view/pages/household/IRSHouseholds"
+          ),
+      },
+      {
         path: "registered-users",
         name: "registered-users",
         component: () =>
@@ -714,6 +722,14 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/admin/Administrator.vue"
+      ),
+  },
+  {
+    path: "/admin/subcounty-hh-reg",
+    name: "hh-reg-subcounty",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/admin/SubCountyHHReg.vue"
       ),
   },
   {

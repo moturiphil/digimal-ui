@@ -2,13 +2,6 @@
   <div>
     <sdPageHeader ghost title="Administrator">
       <template #buttons>
-        <!-- <div class="search-box">
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by user, event or ip address..."
-          /></div -->
       ></template>
     </sdPageHeader>
     <Main>
@@ -24,7 +17,21 @@
                       path: `/view/admin-events/`,
                     }"
                   >
-                    View Events
+                    View Data 
+                  </router-link>
+                </sdButton>
+              </a-card>
+            </a-col>
+            <a-col :span="8">
+              <a-card title="Sub County HH Registration" :bordered="true">
+                <!-- <p>Event Participants OTPs</p> -->
+                <sdButton size="extra-small" type="success">
+                  <router-link
+                    :to="{
+                      path: `/admin/subcounty-hh-reg`,
+                    }"
+                  >
+                    View Data
                   </router-link>
                 </sdButton>
               </a-card>

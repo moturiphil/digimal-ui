@@ -279,6 +279,16 @@ const columns = [
     key: "id",
   },
   {
+    title: "Location",
+    dataIndex: "location_id",
+    key: "id",
+  },
+  {
+    title: "Level",
+    dataIndex: "level_id",
+    key: "id",
+  },
+  {
     title: "Organization",
     dataIndex: "org_types_id",
     key: "id",

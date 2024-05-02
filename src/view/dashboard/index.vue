@@ -799,24 +799,24 @@ const selectedCounties = ref([
   "Nyamira County",
   "Kisumu County",
   "Siaya County",
-  // "Busia County",
   "Migori County",
-  // "Lamu County",
-  // "Kilifi County",
-  // "Tana River County",
+  "Busia County",
+  "Lamu County",
+  "Kilifi County",
+  "Tana River County",
   "Kwale County",
   "Taita Taveta County",
   "Mombasa County",
   // "Bungoma County",
   // "Kakamega County",
-  // "Vihiga County",
-  // "West Pokot County",
-  // "Turkana County",
-  // "Trans Nzoia County",
-  // "Narok County",
+  "Vihiga County",
+  "West Pokot County",
+  "Turkana County",
+  "Trans Nzoia County",
+  "Narok County",
   // "Marsabit County",
-  // "Baringo County",
-  // "Kirinyaga County"
+  "Baringo County",
+  "Kirinyaga County"
 ]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -825,23 +825,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  // 'Tvf1zgVZ0K4',//busia
-  // 'NjWSbQTwys4',//lamu
-  // 'nrI2khZx3d0',//kilifi
-  // 'JsH2bnvNt2d',//tan river
+  'Tvf1zgVZ0K4',//busia
+  'NjWSbQTwys4',//lamu
+  'nrI2khZx3d0',//kilifi
+  'JsH2bnvNt2d',//tana river
   'N7YETT3A9r1',//kwale
   'QyGNX2DpR4h',//taita taveta
   'wsBsC6gjHvn',// mombasa
-  // 'KGHhQ5GLd4k',//
+  // 'KGHhQ5GLd4k',//bungoma
   // 'BjC1xL40gHo',//kakamega
-  // 'sANMZ3lpqGs',//vihiga
-  // 'XWALbfAPa6n',//west pokot
-  // 'kphDeKClFch',//turkana
-  // 'mThvosEflAU',//trans nzoia
-  // 'kqJ83J2D72s',//naraok
+  'sANMZ3lpqGs',//vihiga
+  'XWALbfAPa6n',//west pokot
+  'kphDeKClFch',//turkana
+  'mThvosEflAU',//trans nzoia
+  'kqJ83J2D72s',//naraok
   // 'Eey8fT4Im3y',//marsabit
-  // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',
+  'vvOK1BxTbet',//baringo
+  'Ulj33KBau7V', // kirinyaga
 ]);
 
 onMounted(async () => {
