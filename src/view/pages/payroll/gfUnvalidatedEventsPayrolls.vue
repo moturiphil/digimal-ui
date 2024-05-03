@@ -207,6 +207,13 @@ export default defineComponent({
             old_values: item.old_values,
             new_values: item.new_values,
           }));
+          dataSource.value.forEach((item) => {
+            item.status = item.status === 1 ? "Validated" : "Not Validated";
+            item.payment_status =
+              item.payment_status === 1 ? "Paid" : "Not Paid";
+            item.approval_status =
+              item.approval_status === 1 ? "Approved" : "Not Approved";
+          });
         })
         .catch((error) => {
           console.error(error);
@@ -253,14 +260,13 @@ export default defineComponent({
         )
           .then((response) => response.json())
           .then((data) => {
-            console.log(data); 
+            console.log(data);
             if (data.success === true) {
               notification.success({
                 message: "Success!",
                 description: data.message,
               });
-              setTimeout(() => {
-              }, 2000);
+              setTimeout(() => {}, 2000);
             } else {
               notification.error({
                 message: "Error!",

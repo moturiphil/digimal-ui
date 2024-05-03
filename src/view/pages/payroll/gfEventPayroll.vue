@@ -40,7 +40,7 @@
             </a-card>
           </a>
         </a-col>
-        <a-col :span="6">
+        <a-col :span="6" v-if = "isAIEHolder">
           <a href="gf/events/payroll-pending-payments">
             <a-card
               title="Payrolls pending Payments"
@@ -51,10 +51,6 @@
             </a-card>
           </a>
         </a-col>
-      </a-row>
-      <br />
-      <br />
-      <a-row :gutter="16">
         <a-col :span="6">
           <a href="/gf/events/payroll-payments">
             <a-card
@@ -67,6 +63,11 @@
           </a>
         </a-col>
       </a-row>
+      <br />
+      <br />
+      <!-- <a-row :gutter="16">
+        
+      </a-row> -->
     </div>
   </Main>
 </template>
@@ -74,47 +75,34 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { ref, watchEffect } from "vue";
-import axios from "@/Axiosconfig";
-import { notification } from "ant-design-vue";
+import { ref, computed } from "vue";
 
-const dataSource = ref([]);
-const searchItem = ref("");
-const eventspayroll = ref([]);
+const role_id = ref("");
+const user = JSON.parse(sessionStorage.getItem("user"));
 
-watchEffect(async () => {
-  const query = searchItem.value.toLowerCase();
-  try {
-    if (!query) {
-      dataSource.value = eventspayroll.value;
-      return dataSource.value;
-    }
-    if (query.length > 3) {
-      const response = await axios.get(`event_pay_roll_summary?query=${query}`);
+role_id.value = user.user.role_id;
 
-      const data = await response.data;
-      const events = [];
-      data.data.forEach((item) => {
-        if (item.funding_source === 1) {
-          events.push(item);
-        }
-      });
-      dataSource.value = events;
-      console.log(dataSource.value);
-      dataSource.value.forEach((item) => {
-        item.status = item.status === 1 ? "Validated" : "Not Validated";
-        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status =
-          item.approval_status === 1 ? "Approved" : "Not Approved";
-      });
-    }
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: error.message,
-    });
-  }
-});
+// const isValidator = computed(() => {
+//   return role_id.value === 63 || role_id.value === 53 || role_id.value === 4;
+// });
+
+// const isApprover = computed(() => {
+//   return role_id.value === 64 || role_id.value === 53 || role_id.value === 59;
+// });
+
+// const isAdminAccountant = computed(() => {
+//   return role_id.value === 65 || role_id.value === 53 || role_id.value === 1;
+// });
+
+const isAIEHolder = computed (() => {
+  return role_id.value === 1 || role_id.value === 53
+})
+
+// const isAdmin = computed(() => {
+//   return role_id.value === 53;
+// });
+
+
 </script>
 <style scoped>
 .badge-green {
