@@ -169,8 +169,13 @@ const columns = [
     key: "id",
   },
   {
-    title: "Amount Generated",
+    title: "Payroll Amount",
     dataIndex: "total_amount",
+    key: "id",
+  },
+  {
+    title: "Total Paid",
+    dataIndex: "amount_transacted",
     key: "id",
   },
   {
@@ -349,7 +354,7 @@ export default defineComponent({
                     "Payment Approved Successfully, Enter OTP to complete payment",
                 });
               }
-            }); 
+            });
         }
       } catch (error) {
         store.commit("setIsPaying", true);
