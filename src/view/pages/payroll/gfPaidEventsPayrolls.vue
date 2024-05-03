@@ -127,15 +127,15 @@
       key: "id",
     },
     {
-      title: "Amount Generated",
+      title: "Payroll Amount",
       dataIndex: "total_amount",
       key: "id",
     },
-    // {
-    //   title: "Amount Transacted",
-    //   dataIndex: "amount_transacted",
-    //   key: "id",
-    // },
+    {
+      title: "Total Paid",
+      dataIndex: "amount_transacted",
+      key: "id",
+    },
     {
       title: "",
       dataIndex: "",
