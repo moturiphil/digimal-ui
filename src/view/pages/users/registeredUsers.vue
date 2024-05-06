@@ -193,7 +193,7 @@ const userEditFieds = reactive({
 import axios from "@/Axiosconfig";const currentPage = ref(1);
 const userEditModalopen = ref(false);
 const allowedRole = ref(true);
-const alloweRoleids = ref(["3", "7", "56", "53", "37"]);
+const alloweRoleids = ref(["3", "7", "56", "53", "37", "15", "16"]);
 
 const pageSize = ref(100);
 const total = ref(0)

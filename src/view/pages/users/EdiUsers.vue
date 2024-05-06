@@ -19,7 +19,10 @@
           :label-col="{ span: 8 }"
           :wrapper-col="{ span: 16 }"
         >
-          <a-input v-model:value="formState.last_name" placeholder="Last Name"></a-input>
+          <a-input
+            v-model:value="formState.last_name"
+            placeholder="Last Name"
+          ></a-input>
         </a-form-item>
       </a-col>
       <a-col :span="12">
@@ -35,8 +38,15 @@
         </a-form-item>
       </a-col>
       <a-col :span="12">
-        <a-form-item label="ID No" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }">
-          <a-input v-model:value="formState.id_no" placeholder="Id No"></a-input>
+        <a-form-item
+          label="ID No"
+          :label-col="{ span: 8 }"
+          :wrapper-col="{ span: 16 }"
+        >
+          <a-input
+            v-model:value="formState.id_no"
+            placeholder="Id No"
+          ></a-input>
         </a-form-item>
       </a-col>
     </a-row>
@@ -60,17 +70,39 @@
           :label-col="{ span: 8 }"
           :wrapper-col="{ span: 16 }"
         >
-          <a-input
+          <!-- <a-input
             v-model:value="formState.org_types_id"
             placeholder="Organisation"
             :disabled="true"
-          ></a-input>
+          ></a-input> -->
+          <a-select
+            v-model:value="formState.org_types_id"
+            v-if="!loading"
+            placeholder="Select Organization"
+            show-search
+            option-filter-prop="label"
+            v-on:change="getRoles($event)"
+          >
+            <a-select-option
+              v-for="organization in organizations"
+              :key="organization.id"
+              :value="organization.id"
+              :label="`${organization.name} `"
+            >
+              {{ organization.name }} -
+              {{ organization.description }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
       </a-col>
     </a-row>
     <a-row :gutter="24">
       <a-col :span="12">
-        <a-form-item label="Phone" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }">
+        <a-form-item
+          label="Phone"
+          :label-col="{ span: 8 }"
+          :wrapper-col="{ span: 16 }"
+        >
           <a-input
             v-model:value="formState.phone_no"
             placeholder="Phone"
@@ -79,12 +111,32 @@
         </a-form-item>
       </a-col>
       <a-col :span="12">
-        <a-form-item label="Role" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }">
-          <a-input
+        <a-form-item
+          label="Role"
+          :label-col="{ span: 8 }"
+          :wrapper-col="{ span: 16 }"
+        >
+          <!-- <a-input
             v-model:value="formState.role_id"
             placeholder="Role"
             :disabled="true"
-          ></a-input>
+          ></a-input> -->
+          <a-select
+            v-model:value="formState.role_id"
+            v-if="!loading"
+            placeholder="Select Role"
+            show-search
+            option-filter-prop="label"
+          >
+            <a-select-option
+              v-for="role in roles"
+              :key="role.id"
+              :value="role.id"
+              :label="`${role.name}`"
+            >
+              {{ role.name }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
       </a-col>
     </a-row>
@@ -102,23 +154,72 @@
 import { onMounted, defineProps, reactive, ref, defineEmits } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
+import authHeader from "../../../services/auth-header";
 const emit = defineEmits(["close-editmodal"]);
 const allowedRole = ref(true);
-const alloweRoleids = ref(["3", "7", "56", "53"]);
+const alloweRoleids = ref(["3", "7", "56", "53", "37", "36", "15", "16"]);
 const props = defineProps({
   formFields: Object,
 });
 const formState = reactive(props.formFields);
 
+const organizations = ref("");
+const roles = ref("");
+
 onMounted(() => {
   const user = JSON.parse(sessionStorage.getItem("user"));
   console.log(user.user.role_id);
   if (user != null) {
-    allowedRole.value = alloweRoleids.value.includes(user.user.role_id.toString())
+    allowedRole.value = alloweRoleids.value.includes(
+      user.user.role_id.toString()
+    )
       ? false
       : true;
   }
 });
+
+const getRoles = async (org_id) => {
+  console.log(org_id);
+  const response = await fetch(
+    `${process.env.VUE_APP_BASE_URL}/get_roles_given_the_org?organization_id=${org_id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    }
+  );
+  const data = await response.json();
+  console.log(data.data);
+  if (data.data == undefined) {
+    notification.info({
+      message: `Info!`,
+      description: `Not allowed to list roles with the organization`,
+    });
+  }
+  roles.value = data.data;
+};
+
+getRoles();
+
+const fetchOrganizations = async () => {
+  const response = await fetch(
+    `${process.env.VUE_APP_BASE_URL}/organizations`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    }
+  );
+  const data = await response.json();
+  organizations.value = data.data;
+  console.log(data.data);
+};
+
+fetchOrganizations();
 
 const editUser = async () => {
   const data = {
@@ -150,14 +251,36 @@ const editUser = async () => {
             message: `Success!`,
             description: `${res.data.message}`,
           });
+        })
+        .catch((error) => {
+          // Handle inner axios call error here
+          console.error("Inner Axios Error:", error);
+          notification.error({
+            message: `User Update Error!`,
+            description:
+              error.response.data.message ||
+              "An error occurred while updating user ID. Please try again later.",
+          });
         });
     })
-    .catch((e) => {
-      notification.error({
-        message: `User Update Error!`,
-        description: `${e}`,
-      });
-      console.log(e);
+    .catch((error) => {
+      // Handle outer axios call error here
+      console.error("Outer Axios Error:", error);
+      if (error.response && error.response.status === 400) {
+        notification.error({
+          message: `User Update Error!`,
+          description:
+            error.response.data.message ||
+            "Contact the administrator for national user update.",
+        });
+      } else {
+        console.log(error);
+        notification.error({
+          message: `User Update Error!`,
+          description:
+            "An error occurred while updating user details. Please try again later.",
+        });
+      }
     });
 };
 </script>
