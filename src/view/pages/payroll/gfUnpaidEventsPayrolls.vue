@@ -88,6 +88,9 @@
                                         type="number"
                                         v-model="inputValue"
                                       />
+                                      <br />
+                                      <br />
+                                      <!-- <div id="timer">00:00</div> -->
                                     </div>
                                     <template v-slot:footer>
                                       <a-button
@@ -105,7 +108,7 @@
                                       <a-button
                                         @click="handleCancel()"
                                         type="danger"
-                                        >Cancel Payment</a-button
+                                        >Close</a-button
                                       >
                                     </template>
                                   </a-modal>
@@ -132,7 +135,7 @@ import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
 import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
-import axios from "axios";
+import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import store from "../../../vuex/store";
@@ -327,7 +330,7 @@ export default defineComponent({
       store.commit("setIsPaying", true);
       try {
         const response = await axios.get(
-          `pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`
+          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`
         );
         if (response.status == 200) {
           store.commit("setIsPaying", true);
@@ -362,7 +365,14 @@ export default defineComponent({
           message: "Error",
           description: "Payment failed",
         });
+        // setTimeout(function () {
+        //   location.reload();
+        // }, 3000);
       }
+      isModalOpen.value = false;
+    };
+
+    const handleCancel = () => {
       isModalOpen.value = false;
     };
 
@@ -378,6 +388,7 @@ export default defineComponent({
       handlePay,
       handleOk,
       isModalOpen,
+      handleCancel,
     };
   },
 });
