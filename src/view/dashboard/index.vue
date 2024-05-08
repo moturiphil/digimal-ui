@@ -211,7 +211,8 @@
                           {{
                             total_nets_delivered
                               ? Number(
-                                  (nets_distributed / total_nets_delivered) * 100
+                                  (nets_distributed / total_nets_delivered) *
+                                    100
                                 ).toFixed(2)
                               : 0.0
                           }}%
@@ -552,7 +553,7 @@
                       style="width: 200px; height: 100%"
                       :options="dateFilters"
                       :filter-option="filterOption"
-                      @change="handleFilterChange($event,'filter1')"
+                      @change="handleFilterChange($event, 'filter1')"
                     ></a-select>
                     <div
                       :span="12"
@@ -630,7 +631,7 @@
                       style="width: 200px; height: 100%"
                       :options="dateFilters1"
                       :filter-option="filterOption"
-                      @change="handleFilterChange($event,'filter2')"
+                      @change="handleFilterChange($event, 'filter2')"
                     ></a-select>
                     <div
                       :span="12"
@@ -768,7 +769,7 @@ const ward = ref("Select Ward");
 //Nets with Time
 const dateFormat = ref("YYYY-MM-DD");
 var selectedFilter = ref("month");
-var selectedFilter1=ref("month");
+var selectedFilter1 = ref("month");
 var filterOrgId = ref(9);
 var fileterOrgeLevel = ref("");
 var dateFrom = ref(new Date());
@@ -807,8 +808,8 @@ const selectedCounties = ref([
   "Kwale County",
   "Taita Taveta County",
   "Mombasa County",
-  // "Bungoma County",
-  // "Kakamega County",
+  "Bungoma County",
+  "Kakamega County",
   "Vihiga County",
   "West Pokot County",
   "Turkana County",
@@ -816,7 +817,7 @@ const selectedCounties = ref([
   "Narok County",
   // "Marsabit County",
   "Baringo County",
-  "Kirinyaga County"
+  "Kirinyaga County",
 ]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -825,23 +826,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  'Tvf1zgVZ0K4',//busia
-  'NjWSbQTwys4',//lamu
-  'nrI2khZx3d0',//kilifi
-  'JsH2bnvNt2d',//tana river
-  'N7YETT3A9r1',//kwale
-  'QyGNX2DpR4h',//taita taveta
-  'wsBsC6gjHvn',// mombasa
-  // 'KGHhQ5GLd4k',//bungoma
-  // 'BjC1xL40gHo',//kakamega
-  'sANMZ3lpqGs',//vihiga
-  'XWALbfAPa6n',//west pokot
-  'kphDeKClFch',//turkana
-  'mThvosEflAU',//trans nzoia
-  'kqJ83J2D72s',//naraok
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tana river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
+  "wsBsC6gjHvn", // mombasa
+  "KGHhQ5GLd4k", //bungoma
+  'BjC1xL40gHo',//kakamega
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
-  'vvOK1BxTbet',//baringo
-  'Ulj33KBau7V', // kirinyaga
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
 ]);
 
 onMounted(async () => {
@@ -1211,9 +1212,13 @@ const fetchChildData = async (org_id, org_level) => {
         }
         let rq = newChartData.value.map((item) => parseInt(item.nets_required)); //nets_required
         let isd = newChartData.value.map((item) => parseInt(item.nets_issued)); //nets_issued
-        let isdvsrq = newChartData.value.map((item) =>(parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
+        let isdvsrq = newChartData.value.map(
+          (item) =>
+            (parseInt(item.nets_issued) / parseInt(item.nets_required)) * 100
         ); //(nets_issued/nets_required)*100
-        let tgt = newChartData.value.map((item) =>(parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
+        let tgt = newChartData.value.map(
+          (item) =>
+            (parseInt(item.nets_required) / parseInt(item.nets_required)) * 100
         ); //(nets_required/nets_required)*100
         let labels = newChartData.value.map((item) => item.name); //cats
         fileterOrgeLevel.value = org_level;
@@ -1344,10 +1349,8 @@ const updateStats = async (org_id) => {
       const data = await convertObjectVlasToInt(response.data);
       //console.log(data)
       active_events.value = data.events ? data.events : 0;
-      nets_distributed.value = data.nets_issued
-        ? data.nets_issued
-        : 0;
-        total_nets_delivered.value = data.nets_delivered
+      nets_distributed.value = data.nets_issued ? data.nets_issued : 0;
+      total_nets_delivered.value = data.nets_delivered
         ? data.nets_delivered
         : 0;
       registered_house_holds.value = data.registered_house_holds
@@ -1421,7 +1424,7 @@ const exportChartsToPDF = async () => {
   }
 };
 //chart functions
-const handleFilterChange = async ($event,filter) => {
+const handleFilterChange = async ($event, filter) => {
   try {
     const currentDate = new Date();
     //console.log(selectedFilter.value)
@@ -1488,19 +1491,23 @@ const handleFilterChange = async ($event,filter) => {
         dateFrom.value = moment(new Date(`2023-11-15`)).format(
           dateFormat.value
         );
-        dateTo.value = dateTo.value? moment(dateTo.value).format(dateFormat.value):currentDate;
+        dateTo.value = dateTo.value
+          ? moment(dateTo.value).format(dateFormat.value)
+          : currentDate;
         dateFrom1.value = moment(new Date(`2023-11-15`)).format(
           dateFormat.value
         );
-        dateTo1.value =  dateTo1.value? moment(dateTo1.value).format(dateFormat.value):currentDate;
+        dateTo1.value = dateTo1.value
+          ? moment(dateTo1.value).format(dateFormat.value)
+          : currentDate;
         break;
     }
     //fetch data
-    if(filter==='filter1'){
-       await fetchHouseHoldsRegTrends(dateFrom.value);
+    if (filter === "filter1") {
+      await fetchHouseHoldsRegTrends(dateFrom.value);
     }
-    if(filter==='filter2'){
-       await fetchNetsDistributed(dateFrom1.value);
+    if (filter === "filter2") {
+      await fetchNetsDistributed(dateFrom1.value);
     }
   } catch (e) {
     console.log(e);
