@@ -90,7 +90,19 @@
                                       />
                                       <br />
                                       <br />
-                                      <!-- <div id="timer">00:00</div> -->
+                                      <sdButton
+                                        type="success"
+                                        size="extra-small"
+                                        @click="resendOTP()"
+                                        :disabled="isDisabled"
+                                      >
+                                        Resend OTP
+                                        {{
+                                          countdown > 0
+                                            ? "(" + countdown + "s)"
+                                            : ""
+                                        }}
+                                      </sdButton>
                                     </div>
                                     <template v-slot:footer>
                                       <a-button
@@ -238,6 +250,9 @@ export default defineComponent({
       activeClass.value = tab;
     };
 
+    const isDisabled = ref(true);
+    const countdown = ref(60);
+
     onMounted(() => {
       axios
         .get(API_URL, {
@@ -292,6 +307,7 @@ export default defineComponent({
     // handle payment
     const handlePay = (id) => {
       isModalOpen.value = true;
+      countdownTimer()
       recordId.value = id;
 
       try {
@@ -308,6 +324,41 @@ export default defineComponent({
           .then((response) => response.json())
           .then((data) => {
             console.log(data);
+            if (data.success === true) {
+              notification.success({
+                message: "Success!",
+                description: data.message,
+              });
+              setTimeout(() => {}, 2000);
+            } else {
+              notification.error({
+                message: "Error!",
+                description: data.message,
+              });
+            }
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const resendOTP = () => {
+
+      try {
+        fetch(
+          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Event`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            countdownTimer()
             if (data.success === true) {
               notification.success({
                 message: "Success!",
@@ -376,6 +427,32 @@ export default defineComponent({
       isModalOpen.value = false;
     };
 
+    const startCountdown = () => {
+      console.log('starting countdown');
+      let timerId;
+      countdown.value = 60;
+      isDisabled.value = true;
+
+      const updateCountdown = () => {
+        countdown.value--;
+        console.log(countdown.value);
+        if (countdown.value <= 0) {
+          clearInterval(timerId);
+          isDisabled.value = false;
+        }
+      };
+
+      timerId = setInterval(updateCountdown, 1000);
+
+      updateCountdown();
+    };
+
+    const countdownTimer = () => {
+      isDisabled.value = true;
+      countdown.value = 60;
+      startCountdown();
+    };
+
     return {
       crud,
       isLoading,
@@ -389,6 +466,10 @@ export default defineComponent({
       handleOk,
       isModalOpen,
       handleCancel,
+      isDisabled,
+      countdown,
+      countdownTimer,
+      resendOTP,
     };
   },
 });
