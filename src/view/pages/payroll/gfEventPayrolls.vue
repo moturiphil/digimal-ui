@@ -43,10 +43,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                  >
+                                  <sdButton size="small" type="success">
                                     &nbsp;&nbsp;
                                     <router-link
                                       :to="{
@@ -72,7 +69,7 @@
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
-                                </div> 
+                                </div>
                               </td>
                             </template>
                           </a-table>
@@ -229,7 +226,7 @@ export default defineComponent({
           return dataSource.value;
         }
         if (query.length > 3) {
-          const response = await fetch(`${API_URL}/search?query=${query}`, {
+          const response = await fetch(`${API_URL}&query=${query}`, {
             method: "GET",
             headers: authHeader(),
           });

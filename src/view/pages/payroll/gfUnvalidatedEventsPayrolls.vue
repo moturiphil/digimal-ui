@@ -227,7 +227,7 @@ export default defineComponent({
           return dataSource.value;
         }
         if (query.length > 3) {
-          const response = await fetch(`${API_URL}/search?query=${query}`, {
+          const response = await fetch(`${API_URL}&query=${query}`, {
             method: "GET",
             headers: authHeader(),
           });
