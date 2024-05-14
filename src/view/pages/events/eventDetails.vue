@@ -158,6 +158,19 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
+                            <template #participants="{ record }">
+                              <td>
+                                <div class="table-actions">
+                                  <sdButton
+                                    type="warning"
+                                    size="extra-small"
+                                    @click="resendConfirmation(record.id)"
+                                  >
+                                    Resend Confirmation
+                                  </sdButton>
+                                </div>
+                              </td>
+                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -372,6 +385,49 @@ const generatePayroll = async () => {
   } catch (error) {
     console.error(error);
     handleErrorResponse();
+  }
+};
+
+// resendConfirmation
+
+const resendConfirmation = async (id) => {
+  console.log(id);
+  let user_id = id;
+
+  const url = `${process.env.VUE_APP_BASE_URL}/resend_event_registration_code/1760/${user_id}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
+
+    const { success, data } = await response.json();
+
+    console.log({ success, data });
+
+    if (success === true) {
+      notification.success({
+        message: "Success",
+        description: data,
+      });
+      isModalOpen.value = false;
+    } else {
+      notification.info({
+        message: "Info",
+        description: data,
+      });
+    }
+    isModalOpen.value = false;
+  } catch (error) {
+    console.error("Error:", error);
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
   }
 };
 

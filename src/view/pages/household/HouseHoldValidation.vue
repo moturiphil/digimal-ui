@@ -322,7 +322,7 @@ const ward = ref("Select Ward");
 const org_ids = ref([]);
 
 const currentCounties = ref([
-  "nK0A12Q7MvS", //homa bay
+"nK0A12Q7MvS", //homa bay
   "sPkRcDvhGWA", //kisii
   "uepLTG8wGWJ", //nyamira
   "tAbBVBbueqD", //kisumu
@@ -331,20 +331,20 @@ const currentCounties = ref([
   "Tvf1zgVZ0K4", //busia
   "NjWSbQTwys4", //lamu
   "nrI2khZx3d0", //kilifi
-  "JsH2bnvNt2d", //tan river
+  "JsH2bnvNt2d", //tana river
   "N7YETT3A9r1", //kwale
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//bungoma
-  // 'BjC1xL40gHo',//kakamega
-  // 'sANMZ3lpqGs',//vihiga
-  // 'XWALbfAPa6n',//west pokot
-  // 'kphDeKClFch',//turkana
+  "KGHhQ5GLd4k", //bungoma
+  'BjC1xL40gHo',//kakamega
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
   "mThvosEflAU", //trans nzoia
   "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
-  // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',// kirinyaga
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
 ]);
 // const notData=ref({})
 // const current=ref(0)
