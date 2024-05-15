@@ -265,9 +265,9 @@ export default defineComponent({
     const handleOk = async (id, inputValue) => {
       try {
         if (inputValue > 20) {
-          notification["info"]({
+          notification["error"]({
             message: "HouseHold Size exceeded",
-            description: `HouseHold has exceeded the specified amount of household members`,
+            description: `HouseHold has exceeded the specified amount of household members, Please correct to proceed`,
             duration: 5.5,
           });
         } else {
