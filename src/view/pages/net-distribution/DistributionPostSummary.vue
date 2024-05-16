@@ -93,7 +93,7 @@
                   :dataSource="pending_hh_data"
                   :columns="pending_hh_cols"
                 >
-                  <template #phone_no="{ record }">
+                  <!-- <template #phone_no="{ record }">
                     <div>
                       {{
                         `${record.hh_phone_number.substring(0, 2)}${"*".repeat(
@@ -103,7 +103,7 @@
                         )}`
                       }}
                     </div>
-                  </template>
+                  </template> -->
                 </a-table>
               </TableWrapper>
             </div>
@@ -186,7 +186,7 @@ const served_hh_cols = ref([
     title: "Phone Number",
     dataIndex: "hh_phone_number",
     key: "hh_phone_number",
-    slots: { customRender: "phone_no" },
+    // slots: { customRender: "phone_no" },
   },
   {
     title: "Name",
@@ -278,6 +278,7 @@ const fetchPendingHHData = async () => {
       `hh_per_post_pending_collection?post_id=${props.post_id}`
     );
     const data = await response.data;
+    console.log(data);
     pending_hh_data.value = data.households;
     pending_hh_count.value = data.hh_pending_count || 0;
   } catch (error) {
