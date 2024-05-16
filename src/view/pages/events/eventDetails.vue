@@ -1,6 +1,9 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="`${event_name} Event - ${event_code}`" />
+    <sdPageHeader
+      ghost
+      :title="`${event_name} Event - ${event_code} on ${formattedStartDate}`"
+    />
     <Main>
       <div class="button-container">
         <sdButton
@@ -354,6 +357,48 @@ console.log(plainquery.funding_id);
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
+// const start_date = plainquery.start_date;
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  // Function to get the ordinal suffix for a number
+  const getOrdinalSuffix = (n) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return s[(v - 20) % 10] || s[v] || s[0];
+  };
+
+  const formattedDay = `${day}${getOrdinalSuffix(day)}`;
+  const formattedMonth = monthNames[monthIndex];
+
+  return `${formattedDay} ${formattedMonth} ${year}`;
+};
+
+const start_date = plainquery.start_date;
+const formattedStartDate = formatDate(start_date);
+console.log(formattedStartDate); // Outputs: 23rd Feb 2024
+
+console.log(plainquery);
 
 const formState = reactive({
   reason_for_voiding: "",
