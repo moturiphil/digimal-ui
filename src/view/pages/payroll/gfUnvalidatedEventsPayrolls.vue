@@ -43,7 +43,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <sdButton size="small" type="success">
+                                  <sdButton size="extra-small" type="success">
                                     &nbsp;&nbsp;
                                     <router-link
                                       :to="{
@@ -64,19 +64,52 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                      Payroll Details
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
                                   <sdButton
                                     type="success"
-                                    size="small"
+                                    size="extra-small"
                                     @click="handleValidation(record.id)"
                                     >Validate</sdButton
                                   >
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    @click="showVoidModal(record)"
+                                  >
+                                    <span>Void</span>
+                                  </sdButton>
                                 </div>
                               </td>
+
+                              <!---modals-->
+                              <a-modal
+                                layout="inline"
+                                :visible="openVoidModal"
+                                title="Confirm Void Payroll"
+                                @ok="actionVoidPayroll"
+                                @cancel="handleVoidCancel"
+                              >
+                                <template #footer>
+                                  <a-button key="back" @click="handleVoidCancel"
+                                    >No, Take me back!</a-button
+                                  >
+                                  <a-button
+                                    key="submit"
+                                    style="background: orange; color: aliceblue"
+                                    :loading="loading"
+                                    @click="actionVoidPayroll"
+                                    >Yes, Void it!</a-button
+                                  >
+                                </template>
+                                <h4>
+                                  Are you sure you want to void Payroll,Amount
+                                  <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                </h4>
+                              </a-modal>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -188,11 +221,58 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
+    const openVoidModal = ref(false);
+    const voidPayroll = ref(null);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_validated=0`;
 
     const handleChange = (tab) => {
       activeClass.value = tab;
+    };
+
+    const showVoidModal = (record) => {
+      console.log(record);
+      voidPayroll.value = record;
+      openVoidModal.value = true;
+    };
+
+    const handleVoidCancel = () => {
+      openVoidModal.value = false;
+    };
+
+    const actionVoidPayroll = async () => {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_BASE_URL}/void_events_payroll_summaries/${voidPayroll.value.id}`,
+          null, // if there is no req body
+          {
+            headers: authHeader(),
+          }
+        );
+
+        openVoidModal.value = false;
+        if (response.data.success == true) {
+          notification.success({
+            message: "Success",
+            description: response.data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+          location.reload();
+        } else if (response.data.success == false) {
+          notification.warning({
+            message: "Info",
+            description: response.data.message,
+          });
+        }
+      } catch (e) {
+        notification.error({
+          message: "Error!",
+          description: e.toString(),
+        });
+        console.log(e);
+      }
     };
 
     onMounted(() => {
@@ -289,6 +369,11 @@ export default defineComponent({
       handleChange,
       activeClass,
       handleValidation,
+      showVoidModal,
+      handleVoidCancel,
+      actionVoidPayroll,
+      openVoidModal,
+      voidPayroll,
     };
   },
 });

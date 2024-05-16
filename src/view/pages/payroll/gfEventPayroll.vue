@@ -63,8 +63,6 @@
           </a>
         </a-col>
       </a-row>
-      <br />
-      <br />
     </div>
   </Main>
 </template>

@@ -267,7 +267,7 @@ export default defineComponent({
         if (inputValue > 20) {
           notification["error"]({
             message: "HouseHold Size exceeded",
-            description: `HouseHold has exceeded the specified amount of household members, Please correct to proceed`,
+            description: `HouseHold has exceeded the specified number of household members, Please correct to proceed`,
             duration: 5.5,
           });
         } else {

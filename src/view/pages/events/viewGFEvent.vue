@@ -106,6 +106,7 @@
                                     event_code: record.event_code,
                                     event_host_id: record.event_host_id,
                                     funding_id: record.funding_source,
+                                    start_date: record.start_date,
                                   })
                                 ),
                               },
