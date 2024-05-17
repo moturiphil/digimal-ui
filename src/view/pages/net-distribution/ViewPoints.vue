@@ -207,6 +207,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Dropoff Code",
+    dataIndex: "drop_off_code",
+    key: "id",
+  },
+  {
     title: "Drop off Manager",
     dataIndex: "drop_off_manager",
     key: "id",
@@ -294,16 +299,16 @@ const currentCounties = ref([
   "N7YETT3A9r1", //kwale
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//bungoma
-  // 'BjC1xL40gHo',//kakamega
-  // 'sANMZ3lpqGs',//vihiga
-  // 'XWALbfAPa6n',//west pokot
-  // 'kphDeKClFch',//turkana
+  "KGHhQ5GLd4k", //bungoma
+  "BjC1xL40gHo", //kakamega
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
   "mThvosEflAU", //trans nzoia
   "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
-  // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V', // kirinyaga
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
 ]);
 const formState = reactive({
   post_id: "",
