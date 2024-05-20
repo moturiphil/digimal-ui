@@ -12,7 +12,7 @@
             <a-card
               title="All Payroll"
               style="width: 300px"
-              class="card-button"
+              class="card-button spaced-card"
             >
               <p>All Digimal payroll</p>
             </a-card>
@@ -23,7 +23,7 @@
             <a-card
               title="Payrolls pending Validation"
               style="width: 300px"
-              class="card-button"
+              class="card-button spaced-card"
             >
               <p>Digimal payroll pending validations</p>
             </a-card>
@@ -34,18 +34,18 @@
             <a-card
               title="Payrolls pending Approval"
               style="width: 300px"
-              class="card-button"
+              class="card-button spaced-card"
             >
               <p>Digimal payroll pending approval</p>
             </a-card>
           </a>
         </a-col>
-        <a-col :span="6" v-if = "isAIEHolder">
+        <a-col :span="6" v-if="isAIEHolder">
           <a href="gf/events/payroll-pending-payments">
             <a-card
               title="Payrolls pending Payments"
               style="width: 300px"
-              class="card-button"
+              class="card-button spaced-card"
             >
               <p>Digimal payroll pending payments</p>
             </a-card>
@@ -56,18 +56,13 @@
             <a-card
               title="Payrolls Paid"
               style="width: 300px"
-              class="card-button"
+              class="card-button spaced-card"
             >
               <p>Digimal paid payrolls</p>
             </a-card>
           </a>
         </a-col>
       </a-row>
-      <br />
-      <br />
-      <!-- <a-row :gutter="16">
-        
-      </a-row> -->
     </div>
   </Main>
 </template>
@@ -94,15 +89,13 @@ role_id.value = user.user.role_id;
 //   return role_id.value === 65 || role_id.value === 53 || role_id.value === 1;
 // });
 
-const isAIEHolder = computed (() => {
-  return role_id.value === 1 || role_id.value === 53
-})
+const isAIEHolder = computed(() => {
+  return role_id.value === 1 || role_id.value === 53;
+});
 
 // const isAdmin = computed(() => {
 //   return role_id.value === 53;
 // });
-
-
 </script>
 <style scoped>
 .badge-green {
@@ -125,11 +118,15 @@ const isAIEHolder = computed (() => {
   text-align: center;
   transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
   background-color: #1ec997;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-button:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.spaced-card {
+  margin-bottom: 24px; /* Adjust as needed */
 }
 </style>

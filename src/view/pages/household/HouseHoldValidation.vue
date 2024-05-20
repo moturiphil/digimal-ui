@@ -331,20 +331,20 @@ const currentCounties = ref([
   "Tvf1zgVZ0K4", //busia
   "NjWSbQTwys4", //lamu
   "nrI2khZx3d0", //kilifi
-  "JsH2bnvNt2d", //tan river
+  "JsH2bnvNt2d", //tana river
   "N7YETT3A9r1", //kwale
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//bungoma
-  // 'BjC1xL40gHo',//kakamega
-  // 'sANMZ3lpqGs',//vihiga
-  // 'XWALbfAPa6n',//west pokot
-  // 'kphDeKClFch',//turkana
+  "KGHhQ5GLd4k", //bungoma
+  "BjC1xL40gHo", //kakamega
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
   "mThvosEflAU", //trans nzoia
   "kqJ83J2D72s", //naraok
   // 'Eey8fT4Im3y',//marsabit
-  // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',// kirinyaga
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
 ]);
 // const notData=ref({})
 // const current=ref(0)
@@ -720,50 +720,59 @@ const handleVerify = (hh_id, hh_size) => {
 };
 
 const handleOk = async (id, inputValue) => {
-  try {
-    const house_id = household_id.value;
-    // Construct the URL
-    const url = `verify_household?house_id=${house_id}&inputValue=${inputValue}`;
+  console.log(inputValue);
+  if (inputValue > 20) {
+    notification["error"]({
+      message: "HouseHold Size exceeded",
+      description: `HouseHold has exceeded the specified number of household members, Please correct to proceed`,
+      duration: 5.5,
+    });
+  } else {
+    try {
+      const house_id = household_id.value;
+      // Construct the URL
+      const url = `verify_household?house_id=${house_id}&inputValue=${inputValue}`;
 
-    // Make the fetch request
-    axios
-      .patch(url)
-      .then((response) => {
-        if (response.data.success == true) {
-          return response.data; // Parse the JSON response
-        }
-        throw new Error("Network response was not ok.");
-      })
-      .then((data) => {
-        console.log(data); // Handle the successful response data heregit pull
-        notification["success"]({
-          message: "HouseHold Verified",
-          description: `HouseHold has been verified successfully`,
-          duration: 5.5,
+      // Make the fetch request
+      axios
+        .patch(url)
+        .then((response) => {
+          if (response.data.success == true) {
+            return response.data; // Parse the JSON response
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log(data); // Handle the successful response data heregit pull
+          notification["success"]({
+            message: "HouseHold Verified",
+            description: `HouseHold has been verified successfully`,
+            duration: 5.5,
+          });
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        })
+        .catch((error) => {
+          // Handle errors here
+          console.error(
+            "There has been a problem with your fetch operation:",
+            error
+          );
+          notification["error"]({
+            message: "HouseHold Not Verified",
+            description: `HouseHold verification failed`,
+            duration: 5.5,
+          });
+        })
+        .finally(() => {
+          inputValue = ""; // Clear inputValue after the modal is closed
+          isModalOpen.value = false;
         });
-        setTimeout(() => {
-          window.location.reload();
-        }, 5000);
-      })
-      .catch((error) => {
-        // Handle errors here
-        console.error(
-          "There has been a problem with your fetch operation:",
-          error
-        );
-        notification["error"]({
-          message: "HouseHold Not Verified",
-          description: `HouseHold verification failed`,
-          duration: 5.5,
-        });
-      })
-      .finally(() => {
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen.value = false;
-      });
-  } catch (error) {
-    // Handle exceptions here
-    console.error("Error:", error);
+    } catch (error) {
+      // Handle exceptions here
+      console.error("Error:", error);
+    }
   }
 };
 </script>

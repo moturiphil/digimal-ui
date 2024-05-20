@@ -246,6 +246,7 @@ export default defineComponent({
     const recordId = ref(null);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0`;
     const isModalOpen = ref(false);
+    const isPaying = computed(() => state.isPaying);
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
@@ -285,7 +286,7 @@ export default defineComponent({
           return dataSource.value;
         }
         if (query.length > 3) {
-          const response = await fetch(`${API_URL}/search?query=${query}`, {
+          const response = await fetch(`${API_URL}&query=${query}`, {
             method: "GET",
             headers: authHeader(),
           });
@@ -470,6 +471,7 @@ export default defineComponent({
       countdown,
       countdownTimer,
       resendOTP,
+      isPaying,
     };
   },
 });
