@@ -675,7 +675,7 @@ const handleSupervisorSearch = (value) => {
   console.log(value);
   searchsupervisorItem.value = value;
   supervisorList();
-};gf
+};
 
 const fetchDistributionsPosts = async () => {
   try {
