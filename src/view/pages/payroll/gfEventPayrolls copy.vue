@@ -183,7 +183,7 @@
                                     class="title-success"
                                   >
                                     <div>
-                                      <p>Payment transaction processing</p>
+                                      <p>Enter payment OTP</p>
                                       <input type="number" v-model="inputValue" />
                                     </div>
                                     <template v-slot:footer>

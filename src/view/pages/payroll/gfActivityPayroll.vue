@@ -191,12 +191,46 @@
                                     class="title-success"
                                   >
                                     <div>
-                                      <p>Payment transaction processing</p>
+                                      <p>Enter payment OTP</p>
                                       <input
                                         type="number"
                                         v-model="inputValue"
                                       />
+                                      <br />
+                                      <br />
+                                      <sdButton
+                                        type="success"
+                                        size="extra-small"
+                                        @click="resendOTP()"
+                                        :disabled="isDisabled"
+                                      >
+                                        Resend OTP
+                                        {{
+                                          countdown > 0
+                                            ? "(" + countdown + "s)"
+                                            : ""
+                                        }}
+                                      </sdButton>
                                     </div>
+                                    <template v-slot:footer>
+                                      <a-button
+                                        @click="handleOk(recordId, inputValue)"
+                                        type="success"
+                                        :disabled="isPaying"
+                                        >{{
+                                          isLoading
+                                            ? "Loading..."
+                                            : isPaying
+                                            ? "Processing Payment..."
+                                            : "Pay"
+                                        }}</a-button
+                                      >
+                                      <a-button
+                                        @click="handleCancel()"
+                                        type="danger"
+                                        >Close</a-button
+                                      >
+                                    </template>
                                   </a-modal>
                                 </div>
                               </td>
@@ -403,6 +437,8 @@ import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import { DeleteRowOutlined } from "@ant-design/icons-vue";
+import store from "../../../vuex/store";
+import authHeader from "../../../services/auth-header";
 
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
@@ -413,6 +449,8 @@ const searchItem = ref("");
 const activitypayroll = ref([]);
 const openVoidModal = ref(false);
 const voidPayroll = ref(null);
+const isDisabled = ref(true);
+const countdown = ref(60);
 
 const showVoidModal = (record) => {
   voidPayroll.value = record;
@@ -421,6 +459,7 @@ const showVoidModal = (record) => {
 const handleVoidCancel = () => {
   openVoidModal.value = false;
 };
+const isPaying = computed(() => state.isPaying);
 const actionVoidPayroll = async () => {
   await axios
     .get(`void_activity_payroll_summaries/${voidPayroll.value.id}`)
@@ -547,6 +586,7 @@ const inputValue = ref("");
 
 const handlePay = (id) => {
   isModalOpen.value = true;
+  countdownTimer();
   recordId.value = id;
   try {
     axios
@@ -631,12 +671,14 @@ const handleApproval = (id) => {
 };
 
 const handleOk = async (id, inputValue) => {
+  store.commit("setIsPaying", true);
   try {
     const response = await axios.get(
       `pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`
     );
     console.log(response);
     if (response.status == 200) {
+      store.commit("setIsPaying", true);
       notification.success({
         message: "Success",
         description: "Payment processed successful",
@@ -666,6 +708,66 @@ const handleOk = async (id, inputValue) => {
     });
   }
   isModalOpen.value = false;
+};
+
+const countdownTimer = () => {
+  isDisabled.value = true;
+  countdown.value = 60;
+  startCountdown();
+};
+
+const startCountdown = () => {
+  console.log("starting countdown");
+  let timerId;
+  countdown.value = 60;
+  isDisabled.value = true;
+
+  const updateCountdown = () => {
+    countdown.value--;
+    console.log(countdown.value);
+    if (countdown.value <= 0) {
+      clearInterval(timerId);
+      isDisabled.value = false;
+    }
+  };
+
+  timerId = setInterval(updateCountdown, 1000);
+
+  updateCountdown();
+};
+
+const resendOTP = () => {
+  try {
+    fetch(
+      `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Activity`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        countdownTimer();
+        if (data.success === true) {
+          notification.success({
+            message: "Success!",
+            description: data.message,
+          });
+          setTimeout(() => {}, 2000);
+        } else {
+          notification.error({
+            message: "Error!",
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const handleCancel = () => {
