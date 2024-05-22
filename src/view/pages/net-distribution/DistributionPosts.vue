@@ -479,14 +479,8 @@ const updateFilters = () => {
 };
 
 const handleChange = async (org_id, org_level) => {
-  //fetch child data
-  // console.log(org_id)
-  // console.log(org_ids.value)
   let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
-  // console.log(org)
   let parent_id = org[0] || 9;
-  // console.log(parent_id)
-  // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (loctn_id, org_id, org_level) => {
