@@ -82,7 +82,7 @@
                           type="success"
                           @click="openModal(record.org_id)"
                         >
-                          Re-assing Village
+                          Re-assign Village
                         </sdButton>
                       </div>
                     </td>
