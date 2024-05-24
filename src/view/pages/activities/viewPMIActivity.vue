@@ -82,7 +82,11 @@
                   </a-space>
                 </a-row>
                 <!-- Activity data table -->
-                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
+                <a-table
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                >
                   <!-- Custom template for activity column -->
                   <template #activity="{ record }">
                     <td>
@@ -170,6 +174,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Payroll Status",
+    dataIndex: "payroll_status",
+    key: "id",
+  },
+  {
     title: "County",
     dataIndex: "county_id",
     key: "id",
@@ -177,11 +186,6 @@ const columns = [
   {
     title: "Sub County",
     dataIndex: "sub_county_id",
-    key: "id",
-  },
-  {
-    title: "Payroll Status",
-    dataIndex: "payroll_status",
     key: "id",
   },
   {
@@ -208,9 +212,9 @@ const activities = ref([]);
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
-const county_id=ref("");
-const sub_county_id=ref("");
-const activity_list_id=ref("");
+const county_id = ref("");
+const sub_county_id = ref("");
+const activity_list_id = ref("");
 
 import { useStore } from "vuex";
 const store = useStore();
@@ -243,7 +247,9 @@ const updateFilters = async () => {
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let org = await org_ids.value
+    .filter((x) => x.org_id === org_id)
+    .map((e) => e.id);
   let parent_id = org[0] || 9;
   fetchChildData(parent_id, org_id, org_level);
 };
@@ -251,7 +257,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
   currentPage.value = 1;
   let fetchUrl = `get_sub_counties_list`;
   let masterUrl = `pmi_activities?per_page=${pageSize.value}&page=${currentPage.value}`;
-  county_id.value= store.state.filters.county_id;
+  county_id.value = store.state.filters.county_id;
   sub_county_id.value = store.state.filters.sub_county_id;
   if (org_level == "county") {
     store.dispatch("getCountyId", parent_id);
@@ -268,7 +274,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}`;
   } else if (org_level == "activity") {
     //get activities
-    activity_list_id.value=org_id;
+    activity_list_id.value = org_id;
     masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}&activity_list=${activity_list_id.value}`;
   }
   await axios
