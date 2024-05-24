@@ -109,7 +109,23 @@
                         >
                           Assign Drop-off Manager
                         </sdButton>
-                        &nbsp;&nbsp;
+                        &nbsp;&nbsp;<sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/dropoff-security`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            View Drop-off Securities
+                          </router-link>
+                        </sdButton>
+                        <!-- &nbsp;&nbsp;
                         <sdButton
                           class="button-container"
                           size="extra-small"
@@ -117,7 +133,7 @@
                           @click="openSecurityModal(record.id)"
                         >
                           Assign Drop-off Security
-                        </sdButton>
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>
@@ -169,74 +185,6 @@
                         {{ worker.first_name }}
                         {{ worker.last_name }} - {{ worker.id_no }},
                         {{ worker.role_id }}, {{ worker.location_id }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-                  <div class="record-form-actions text-right">
-                    <sdButton size="default" htmlType="Save" type="success">
-                      {{ isLoading ? "Loading..." : "Submit" }}
-                    </sdButton>
-                  </div>
-                </a-form>
-              </BasicFormWrapper>
-            </a-modal>
-            <!-- End of Issue modal -->
-
-            <!-- Drop off security Modal -->
-            <a-modal
-              title="Assign Security"
-              :visible="isSecurityModalOpen"
-              @cancel="handleCancelSecurity"
-              width="50%"
-              footer=""
-            >
-              <BasicFormWrapper>
-                <a-form
-                  class="add-transfer-form"
-                  :style="{ width: '100%' }"
-                  layout="vertical"
-                  name="addnew"
-                  :model="formState"
-                  @finish="handleAssignSecurity"
-                >
-                  <a-form-item
-                    name="drop_off_manager"
-                    label="Assign Drop Off Security"
-                  >
-                    <a-select
-                      placeholder="Assign Drop Off Security"
-                      v-model:value="formState.drop_off_manager"
-                      v-if="!loading"
-                      show-search
-                      option-filter-prop="label"
-                    >
-                      <a-select-option
-                        v-for="worker in users"
-                        :key="worker.id"
-                        v-model:value="worker.id"
-                        :label="`${worker.first_name} ${worker.last_name} -${worker.role_id} `"
-                      >
-                        {{ worker.first_name }}
-                        {{ worker.last_name }} - {{ worker.id_no }},
-                        {{ worker.role_id }}, {{ worker.location_id }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-                  <a-form-item name="Shift" label="Shift">
-                    <a-select
-                      v-model:value="formState.shift"
-                      v-if="!loading"
-                      placeholder="Select Shift"
-                      show-search
-                      option-filter-prop="label"
-                    >
-                      <a-select-option
-                        v-for="s in shift"
-                        :key="s.id"
-                        :value="s.id"
-                        :label="`${s.name}`"
-                      >
-                        {{ s.name }}
                       </a-select-option>
                     </a-select>
                   </a-form-item>
@@ -360,7 +308,7 @@ const wards = ref(null);
 const county = ref("Select County");
 const subcounty = ref("Select Subcounty");
 const org_ids = ref([]);
-const isSecurityModalOpen = ref(false);
+// const isSecurityModalOpen = ref(false);
 
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -396,18 +344,18 @@ const formState = reactive({
   issue_date: "",
   delivery_note_number: "",
   drop_off_manager: "",
-  shift: [
-    { id: "D", name: "Day" },
-    { id: "N", name: "Night" },
-  ],
+  // shift: [
+  //   { id: "D", name: "Day" },
+  //   { id: "N", name: "Night" },
+  // ],
 });
 
-const { shift } = reactive({
-  shift: [
-    { id: "D", name: "Day" },
-    { id: "N", name: "Night" },
-  ],
-});
+// const { shift } = reactive({
+//   shift: [
+//     { id: "D", name: "Day" },
+//     { id: "N", name: "Night" },
+//   ],
+// });
 onMounted(async () => {
   ///alert()
   if (sessionStorage.getItem("user") != null) {
@@ -452,10 +400,6 @@ const getallDropOffPoints = async () => {
 };
 
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
     filterAccessList.value = ["county", "subcounty"];
@@ -505,14 +449,8 @@ const updateFilters = () => {
 };
 
 const handleChange = async (org_id, org_level) => {
-  //fetch child data
-  // console.log(org_id)
-  // console.log(org_ids.value)
   let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
-  // console.log(org)
   let parent_id = org[0] || 9;
-  // console.log(parent_id)
-  // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
@@ -613,11 +551,11 @@ const openModal = (id) => {
   formState.drop_off_point_id = id;
 };
 
-const openSecurityModal = (id) => {
-  console.log(id);
-  isSecurityModalOpen.value = true;
-  formState.drop_off_point_id = id;
-};
+// const openSecurityModal = (id) => {
+//   console.log(id);
+//   isSecurityModalOpen.value = true;
+//   formState.drop_off_point_id = id;
+// };
 
 //users
 const getManagers = async () => {
@@ -672,55 +610,55 @@ const handleAssign = async () => {
   }
 };
 
-const handleAssignSecurity = async () => {
-  try {
-    const data = {
-      user_id: formState.drop_off_manager,
-      drop_off_id: formState.drop_off_point_id,
-      shift: "D",
-    };
+// const handleAssignSecurity = async () => {
+//   try {
+//     const data = {
+//       user_id: formState.drop_off_manager,
+//       drop_off_id: formState.drop_off_point_id,
+//       shift: "D",
+//     };
 
-    console.log(JSON.stringify(data));
-    await axios
-      .post(`security/create_dropoff`, data)
-      .then((response) => response.data)
-      .then(({ success, message }) => {
-        if (success == true) {
-          notification.success({
-            message: "Success",
-            description: message,
-          });
-          isModalOpen.value = false;
-          setTimeout(function () {
-            window.location.reload();
-          }, 3000);
-        } else {
-          notification.error({
-            message: "Error",
-            description: `${message}`,
-          });
-        }
-        isModalOpen.value = false;
-      })
-      .catch((error) => {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-      });
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: `${error}`,
-    });
-  }
-};
+//     console.log(JSON.stringify(data));
+//     await axios
+//       .post(`security/create_dropoff`, data)
+//       .then((response) => response.data)
+//       .then(({ success, message }) => {
+//         if (success == true) {
+//           notification.success({
+//             message: "Success",
+//             description: message,
+//           });
+//           isModalOpen.value = false;
+//           setTimeout(function () {
+//             window.location.reload();
+//           }, 3000);
+//         } else {
+//           notification.error({
+//             message: "Error",
+//             description: `${message}`,
+//           });
+//         }
+//         isModalOpen.value = false;
+//       })
+//       .catch((error) => {
+//         notification.error({
+//           message: "Error",
+//           description: `${error}`,
+//         });
+//       });
+//   } catch (error) {
+//     notification.error({
+//       message: "Error",
+//       description: `${error}`,
+//     });
+//   }
+// };
 const handleCancelReceive = () => {
   isModalOpen.value = false;
 };
-const handleCancelSecurity = () => {
-  isModalOpen.value = false;
-};
+// const handleCancelSecurity = () => {
+//   isModalOpen.value = false;
+// };
 </script>
 <style>
 .badge-orange {
