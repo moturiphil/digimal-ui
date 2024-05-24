@@ -143,7 +143,15 @@ export default [
     path: "manage-dropoff-inventory",
     component: () =>
       import(
-        /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/ManageDropOffInventory.vue"
+        /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/DropOffSecurity.vue"
+      ),
+  },
+  {
+    name: "dropoff-security",
+    path: "dropoff-security",
+    component: () =>
+      import(
+        /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/DropOffSecurity.vue"
       ),
   },
   {

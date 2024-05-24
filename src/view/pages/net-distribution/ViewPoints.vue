@@ -30,7 +30,6 @@
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
-
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-row class="" :gutter="5">
@@ -110,6 +109,31 @@
                         >
                           Assign Drop-off Manager
                         </sdButton>
+                        &nbsp;&nbsp;<sdButton size="extra-small" type="success">
+                          <router-link
+                            :to="{
+                              path: `/dropoff-security`,
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                              },
+                            }"
+                            class="btn-icon"
+                            type="info"
+                            shape="circle"
+                          >
+                            View Drop-off Securities
+                          </router-link>
+                        </sdButton>
+                        <!-- &nbsp;&nbsp;
+                        <sdButton
+                          class="button-container"
+                          size="extra-small"
+                          type="success"
+                          @click="openSecurityModal(record.id)"
+                        >
+                          Assign Drop-off Security
+                        </sdButton> -->
                       </div>
                     </td>
                   </template>
@@ -124,6 +148,7 @@
                 />
               </TableWrapper>
             </div>
+            <!-- Drop off manager Modal -->
             <a-modal
               title="Issue Nets"
               :visible="isModalOpen"
@@ -274,7 +299,6 @@ const searchItem = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
-//org levels
 const access_level = ref({});
 const filterAccessList = ref([]);
 const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
@@ -284,6 +308,7 @@ const wards = ref(null);
 const county = ref("Select County");
 const subcounty = ref("Select Subcounty");
 const org_ids = ref([]);
+// const isSecurityModalOpen = ref(false);
 
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -319,7 +344,18 @@ const formState = reactive({
   issue_date: "",
   delivery_note_number: "",
   drop_off_manager: "",
+  // shift: [
+  //   { id: "D", name: "Day" },
+  //   { id: "N", name: "Night" },
+  // ],
 });
+
+// const { shift } = reactive({
+//   shift: [
+//     { id: "D", name: "Day" },
+//     { id: "N", name: "Night" },
+//   ],
+// });
 onMounted(async () => {
   ///alert()
   if (sessionStorage.getItem("user") != null) {
@@ -364,10 +400,6 @@ const getallDropOffPoints = async () => {
 };
 
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
     filterAccessList.value = ["county", "subcounty"];
@@ -417,14 +449,8 @@ const updateFilters = () => {
 };
 
 const handleChange = async (org_id, org_level) => {
-  //fetch child data
-  // console.log(org_id)
-  // console.log(org_ids.value)
   let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
-  // console.log(org)
   let parent_id = org[0] || 9;
-  // console.log(parent_id)
-  // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (location_id, org_id, org_level) => {
@@ -525,6 +551,12 @@ const openModal = (id) => {
   formState.drop_off_point_id = id;
 };
 
+// const openSecurityModal = (id) => {
+//   console.log(id);
+//   isSecurityModalOpen.value = true;
+//   formState.drop_off_point_id = id;
+// };
+
 //users
 const getManagers = async () => {
   const response = await axios.get(`get_drop_off_manager`);
@@ -577,30 +609,56 @@ const handleAssign = async () => {
     });
   }
 };
-// const handleDelete = (id) => {
-//   const confirm = window.confirm("Are you sure delete this?");
-//   if (confirm) {
-//     dispatch("axiosDataDelete", {
-//       id,
-//       getData: () => {
-//         dispatch("axiosCrudGetData");
-//       },
+
+// const handleAssignSecurity = async () => {
+//   try {
+//     const data = {
+//       user_id: formState.drop_off_manager,
+//       drop_off_id: formState.drop_off_point_id,
+//       shift: "D",
+//     };
+
+//     console.log(JSON.stringify(data));
+//     await axios
+//       .post(`security/create_dropoff`, data)
+//       .then((response) => response.data)
+//       .then(({ success, message }) => {
+//         if (success == true) {
+//           notification.success({
+//             message: "Success",
+//             description: message,
+//           });
+//           isModalOpen.value = false;
+//           setTimeout(function () {
+//             window.location.reload();
+//           }, 3000);
+//         } else {
+//           notification.error({
+//             message: "Error",
+//             description: `${message}`,
+//           });
+//         }
+//         isModalOpen.value = false;
+//       })
+//       .catch((error) => {
+//         notification.error({
+//           message: "Error",
+//           description: `${error}`,
+//         });
+//       });
+//   } catch (error) {
+//     notification.error({
+//       message: "Error",
+//       description: `${error}`,
 //     });
 //   }
-//   return false;
 // };
 const handleCancelReceive = () => {
   isModalOpen.value = false;
 };
-// const onSelectChange = (selectedRowKey) => {
-//   selectedRowKeys.value = selectedRowKey;
+// const handleCancelSecurity = () => {
+//   isModalOpen.value = false;
 // };
-
-// const rowSelection = {
-//   selectedRowKeys,
-//   onChange: onSelectChange,
-// };
-console.log(users);
 </script>
 <style>
 .badge-orange {

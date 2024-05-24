@@ -46,7 +46,9 @@
                 </li>
                 <li v-if="isValidator">
                   <a
-                    :class="activeClass === 'not_validated' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'not_validated' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('not_validated')"
                     href="#"
                   >
@@ -55,7 +57,11 @@
                 </li>
                 <li v-if="isApprover">
                   <a
-                    :class="activeClass === 'pending_approval' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'pending_approval'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('pending_approval')"
                     href="#"
                   >
@@ -64,7 +70,11 @@
                 </li>
                 <li v-if="isAdminAccountant">
                   <a
-                    :class="activeClass === 'pending_payment' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'pending_payment'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('pending_payment')"
                     href="#"
                   >
@@ -129,18 +139,24 @@
                                     width="20%"
                                   >
                                     <template #footer>
-                                      <a-button key="back" @click="handleVoidCancel"
+                                      <a-button
+                                        key="back"
+                                        @click="handleVoidCancel"
                                         >No, Take me back!</a-button
                                       >
                                       <a-button
                                         key="submit"
-                                        style="background: orange; color: aliceblue"
+                                        style="
+                                          background: orange;
+                                          color: aliceblue;
+                                        "
                                         @click="actionVoidPayroll"
                                         >Yes, Void it!</a-button
                                       >
                                     </template>
                                     <h4>
-                                      Are you sure you want to void Payroll,Amount
+                                      Are you sure you want to void
+                                      Payroll,Amount
                                       <b>KShs.{{ voidPayroll.total_amount }}</b>
                                     </h4>
                                   </a-modal>
@@ -181,8 +197,26 @@
                                     class="title-success"
                                   >
                                     <div>
-                                      <p>Payment transaction processing</p>
-                                      <input type="number" v-model="inputValue" />
+                                      <p>Enter payment OTP</p>
+                                      <input
+                                        type="number"
+                                        v-model="inputValue"
+                                      />
+                                      <br />
+                                      <br />
+                                      <sdButton
+                                        type="success"
+                                        size="extra-small"
+                                        @click="resendOTP()"
+                                        :disabled="isDisabled"
+                                      >
+                                        Resend OTP
+                                        {{
+                                          countdown > 0
+                                            ? "(" + countdown + "s)"
+                                            : ""
+                                        }}
+                                      </sdButton>
                                     </div>
                                     <template v-slot:footer>
                                       <a-button
@@ -197,7 +231,9 @@
                                             : "Pay"
                                         }}</a-button
                                       >
-                                      <a-button @click="handleCancel()" type="danger"
+                                      <a-button
+                                        @click="handleCancel()"
+                                        type="danger"
                                         >Cancel Payment</a-button
                                       >
                                     </template>
@@ -419,6 +455,8 @@ import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import store from "../../../vuex/store";
 import { DeleteRowOutlined } from "@ant-design/icons-vue";
+import authHeader from "../../../services/auth-header";
+
 
 const columns = [
   {
@@ -487,6 +525,9 @@ const user = JSON.parse(sessionStorage.getItem("user"));
 const pmiEventPayroll = ref([]);
 const openVoidModal = ref(false);
 const voidPayroll = ref(null);
+const isDisabled = ref(true);
+const countdown = ref(60);
+
 
 const showVoidModal = (record) => {
   voidPayroll.value = record;
@@ -533,11 +574,14 @@ const filteredData = computed(() => {
     );
   } else if (activeClass.value === "pending_approval") {
     return dataSource.value.filter(
-      (item) => item.approval_status === "Not Approved" && item.status === "Validated"
+      (item) =>
+        item.approval_status === "Not Approved" && item.status === "Validated"
     );
   } else if (activeClass.value === "pending_payment") {
     return dataSource.value.filter(
-      (item) => item.approval_status === "Approved" && item.payment_status === "Not Paid"
+      (item) =>
+        item.approval_status === "Approved" &&
+        item.payment_status === "Not Paid"
     );
   } else if (activeClass.value === "paid") {
     return dataSource.value.filter(
@@ -557,7 +601,7 @@ const handleChange = (tab) => {
 
 const handlePay = (id) => {
   isModalOpen.value = true;
-  console.log("handlePay", id);
+  countdownTimer();
   recordId.value = id;
   console.log("recordId", recordId.value);
   try {
@@ -684,7 +728,8 @@ const handleOk = async (id, inputValue) => {
           if (data.success == true) {
             notification.success({
               message: "Success",
-              description: "Payment Approved Successfully, Enter OTP to complete payment",
+              description:
+                "Payment Approved Successfully, Enter OTP to complete payment",
             });
           }
         });
@@ -704,8 +749,67 @@ const handleOk = async (id, inputValue) => {
   isModalOpen.value = false;
 };
 
+const resendOTP = () => {
+  try {
+    fetch(
+      `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Event`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        countdownTimer();
+        if (data.success === true) {
+          notification.success({
+            message: "Success!",
+            description: data.message,
+          });
+          setTimeout(() => {}, 2000);
+        } else {
+          notification.error({
+            message: "Error!",
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const handleCancel = () => {
   isModalOpen.value = false;
+};
+const startCountdown = () => {
+  console.log("starting countdown");
+  let timerId;
+  countdown.value = 60;
+  isDisabled.value = true;
+
+  const updateCountdown = () => {
+    countdown.value--;
+    console.log(countdown.value);
+    if (countdown.value <= 0) {
+      clearInterval(timerId);
+      isDisabled.value = false;
+    }
+  };
+
+  timerId = setInterval(updateCountdown, 1000);
+
+  updateCountdown();
+};
+
+const countdownTimer = () => {
+  isDisabled.value = true;
+  countdown.value = 60;
+  startCountdown();
 };
 
 onMounted(() => {
@@ -727,7 +831,8 @@ onMounted(() => {
       pmiEventPayroll.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
       });
       dataSource.value = pmiEventPayroll.value;
     })
@@ -758,7 +863,8 @@ watchEffect(async () => {
       dataSource.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
       });
     }
   } catch (error) {

@@ -348,9 +348,7 @@ const currentCounties = ref([
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-    //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     updateFilters();
-    // console.log(JSON.stringify(access_level.value.location));
   }
 });
 const onPageChange = async (page) => {
@@ -481,14 +479,8 @@ const updateFilters = () => {
 };
 
 const handleChange = async (org_id, org_level) => {
-  //fetch child data
-  // console.log(org_id)
-  // console.log(org_ids.value)
   let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
-  // console.log(org)
   let parent_id = org[0] || 9;
-  // console.log(parent_id)
-  // console.log(org_level)
   fetchChildData(parent_id, org_id, org_level);
 };
 const fetchChildData = async (loctn_id, org_id, org_level) => {
@@ -756,84 +748,4 @@ const handleSubmit = async () => {
   }
 };
 
-// const onSelectChange = (selectedRowKey) => {
-//   selectedRowKeys.value = selectedRowKey;
-// };
-
-// const rowSelection = {
-//   selectedRowKeys,
-//   onChange: onSelectChange,
-// };
-
-// const startDistribution = async (id) => {
-//   try {
-//     isStarting.value = true;
-//     console.log(id);
-//     const response = await axios.get(`start_distribution/${id}`);
-//     const data = await response.data;
-//     console.log(data);
-//     if (data.status === true) {
-//       // this.eventStatus[id] = true;
-//       // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-//       notification.success({
-//         message: "Distribution Started",
-//         description: data.message,
-//       });
-//       await new Promise((resolve) => {
-//         setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-//       });
-//       window.location.reload();
-//     } else {
-//       // this.eventStatus[id] = false;
-//       // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-//       notification.error({
-//         message: "Distribution Not Started",
-//         description: data.message,
-//       });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//   } finally {
-//     isStarting.value = false;
-//   }
-// }
-
-// const closeDistribution = async (id) => {
-//   try {
-//     isStarting.value = true;
-//     const response = await axios.get(`close_distribution/${id}`);
-//     const data = await response.data;
-//     console.log("******************************************");
-//     console.log("******************************************");
-//     console.log(data);
-//     if (data.status === true) {
-//       // this.eventStatus[id] = true;
-//       // localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-//       // notify the user
-//       notification.success({
-//         message: "Distribution Closed",
-//         description: "Event has been closed successfully",
-//       });
-//       await new Promise((resolve) => {
-//         setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-//       });
-//       window.location.reload();
-//     } else {
-//       this.eventStatus[id] = false;
-//       localStorage.setItem("eventStatus", JSON.stringify(this.eventStatus));
-//       notification.error({
-//         message: "Event Not Closed",
-//         description: "Only event host or facilitator can close event",
-//       });
-//       // await new Promise((resolve) => {
-//       // setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-//       // });
-//     }
-//     // location.reload();
-//   } catch (error) {
-//     console.error(error);
-//   } finally {
-//     this.isStarting = true;
-//   }
-// }
 </script>
