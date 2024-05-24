@@ -132,6 +132,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Payroll Status",
+    dataIndex: "payroll_status",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     fixed: "right",
@@ -150,7 +155,7 @@ const isLoading = ref(false);
 // const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const searchItem = ref("");
-const location_id=ref("");
+const location_id = ref("");
 
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {

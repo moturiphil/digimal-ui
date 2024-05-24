@@ -182,6 +182,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Payroll Status",
+    dataIndex: "payroll_status",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     fixed: "right",
