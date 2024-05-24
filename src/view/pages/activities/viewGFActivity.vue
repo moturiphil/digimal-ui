@@ -172,6 +172,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Payroll Status",
+    dataIndex: "payroll_status",
+    key: "id",
+  },
+  {
     title: "County",
     dataIndex: "county_id",
     key: "id",
@@ -179,11 +184,6 @@ const columns = [
   {
     title: "Sub County",
     dataIndex: "sub_county_id",
-    key: "id",
-  },
-  {
-    title: "Payroll Status",
-    dataIndex: "payroll_status",
     key: "id",
   },
   {

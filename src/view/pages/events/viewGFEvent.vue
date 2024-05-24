@@ -230,11 +230,6 @@ const columns = [
     dataIndex: "event_code",
     key: "id",
   },
-  // {
-  //   title: "Host",
-  //   dataIndex: "event_host",
-  //   key: "id",
-  // },
   {
     title: "Location",
     dataIndex: "location_id",
