@@ -134,14 +134,14 @@
                                     @click="deassignFacilitator(record)"
                                     v-else-if="record.is_facilitator == true"
                                   >
-                                    <span> Deassign Facilitator </span>
+                                    <span> De-assign Facilitator </span>
                                   </sdButton>
                                   &nbsp; &nbsp;
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
                                     @click="voidParticipant(record.id)"
-                                    v-if="host"
+                                    v-if="isApprovedGenerator"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -451,7 +451,6 @@ const formatDate = (dateString) => {
 
 const start_date = plainquery.start_date;
 const formattedStartDate = formatDate(start_date);
-const host = plainquery.event_host_id;
 
 const formState = reactive({
   reason_for_voiding: "",
@@ -787,7 +786,6 @@ const user = JSON.parse(sessionStorage.getItem("user"));
 console.log(user.user.id);
 
 const isApprovedGenerator = computed(() => {
-  // const currentTime = new Date();
   if (
     user.user.role_id === 53 ||
     user.user.role_id === 63 ||

@@ -395,27 +395,6 @@ const fetchGFActivities = async () => {
   }
 };
 
-// // Reactive form state for search input
-// const formState = reactive({
-//   searchItem: "",
-// });
-
-// // Computed property for filtered search results
-// const results = computed(() => {
-//   const query = searchItem.value.toLowerCase();
-//   const regex = new RegExp(query, "i");
-//   if (!query) {
-//     return dataSource.value;
-//   } else {
-//     return dataSource.value.filter((user) => {
-//       return (
-//         regex.test(user.first_name) ||
-//         regex.test(user.last_name) ||
-//         regex.test(user.role_id)
-//       );
-//     });
-//   }
-// });
 </script>
 <style scoped>
 .search-box {
