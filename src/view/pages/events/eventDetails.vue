@@ -116,13 +116,32 @@
                           >
                             <template #participants="{ record }">
                               <td>
-                                <!-- Buttons for viewing confirmed and pending participants -->
                                 <div class="table-actions">
-                                  <!-- Button for viewing confirmed participants -->
+                                  <sdButton
+                                    size="extra-small"
+                                    type="success"
+                                    :disabled="isStarting"
+                                    @click="assignFacilitator(record)"
+                                    v-if="record.is_facilitator == false"
+                                  >
+                                    <span>Assign Facilitator </span>
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    :disabled="isStarting"
+                                    @click="deassignFacilitator(record)"
+                                    v-else-if="record.is_facilitator == true"
+                                  >
+                                    <span> Deassign Facilitator </span>
+                                  </sdButton>
+                                  &nbsp; &nbsp;
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
                                     @click="voidParticipant(record.id)"
+                                    v-if="host"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -251,6 +270,49 @@
                         </template>
                       </a-modal>
                       <!-- End Archive Event modal -->
+
+                      <!-- Assign & Deassign Modals -->
+
+                      <a-modal
+                        title="Assign Facilitator"
+                        :visible="isAssignModal"
+                        @ok="handleAssign"
+                        @cancel="handleAssignCancel"
+                        class="title-success"
+                      >
+                        <div>
+                          <p>
+                            Please confirm that you want to assign
+                            {{ participant.first_name }}
+                            {{ participant.last_name }},
+                            {{ participant.id_no }} of
+                            {{ participant.location_id }} as facilitator to
+                            <br />
+                            Event: {{ event_name }}
+                          </p>
+                        </div>
+                      </a-modal>
+
+                      <a-modal
+                        title="De-assign Facilitator"
+                        :visible="deassignModal"
+                        @ok="handleDeassign"
+                        @cancel="handleDeassignCancel"
+                        class="title-success"
+                      >
+                        <div>
+                          <p>
+                            Please confirm that you want to de-assign
+                            {{ participant.first_name }}
+                            {{ participant.last_name }},
+                            {{ participant.id_no }} of
+                            {{ participant.location_id }} as facilitator to
+                            <br />
+                            Event: {{ event_name }}
+                          </p>
+                        </div>
+                      </a-modal>
+                      <!--  End of assign & Deassign Modals  -->
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -330,15 +392,11 @@ const columns = [
 const recordCount = computed(() => dataSource.value.length);
 const confirmedCount = computed(() => confirmed.value.length);
 const pendingCount = computed(() => pending.value.length);
-
 const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
-console.log(plainquery);
 const event_name = plainquery.name;
-// const event_id = query.id;
 const event_code = plainquery.event_code;
 const router = useRouter();
-
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
@@ -349,19 +407,16 @@ const isGenerating = computed(() => state.isGenerating);
 const isModalOpen = ref(false);
 const isArchiveModalOpen = ref(false);
 const participant_id = ref("");
-
-//const isModalOpen = ref(false);
-
-console.log(plainquery.funding_id);
-
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
-// const start_date = plainquery.start_date;
+const isAssignModal = ref(false);
+const deassignModal = ref(false);
+const participant = ref("");
+const id_user = ref("");
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-
   const day = date.getDate();
   const monthIndex = date.getMonth();
   const year = date.getFullYear();
@@ -396,9 +451,7 @@ const formatDate = (dateString) => {
 
 const start_date = plainquery.start_date;
 const formattedStartDate = formatDate(start_date);
-console.log(formattedStartDate); // Outputs: 23rd Feb 2024
-
-console.log(plainquery);
+const host = plainquery.event_host_id;
 
 const formState = reactive({
   reason_for_voiding: "",
@@ -434,7 +487,6 @@ const generatePayroll = async () => {
 };
 
 // resendConfirmation
-
 const resendConfirmation = async (id) => {
   console.log(id);
   let user_id = id;
@@ -585,7 +637,6 @@ const handleErrorResponse = (response) => {
 const openModal = () => {
   console.log("archive modal");
   isArchiveModalOpen.value = true;
-  // formState.post_id = id;
 };
 
 const handleCancelArchive = () => {
@@ -621,6 +672,142 @@ const exportParticipants = async () => {
 const handleChange = (tab) => {
   activeClass.value = tab;
 };
+
+const assignFacilitator = (user) => {
+  isAssignModal.value = true;
+  console.log(user.first_name);
+  participant.value = user;
+  id_user.value = user.id;
+};
+
+const handleAssignCancel = () => {
+  isAssignModal.value = false;
+};
+
+const deassignFacilitator = (user) => {
+  deassignModal.value = true;
+  participant.value = user;
+  id_user.value = user.id;
+};
+
+const handleDeassignCancel = () => {
+  deassignModal.value = false;
+};
+
+
+const handleAssign = async () => {
+  try {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BASE_URL}/assign_facilitator/${plainquery.id}/${id_user.value}`,
+      null,
+      {
+        headers: authHeader(),
+      }
+    );
+
+    isAssignModal.value = false;
+    console.log(response);
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.data,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else if (response.data.success == false) {
+      notification.warning({
+        message: "Info",
+        description: response.data.message,
+      });
+    }
+  } catch (e) {
+    notification.error({
+      message: "Error!",
+      description: e.toString(),
+    });
+    console.log(e);
+  }
+};
+
+const handleDeassign = async () => {
+  try {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BASE_URL}/de_assign_facilitator/${plainquery.id}/${id_user.value}`,
+      null,
+      {
+        headers: authHeader(),
+      }
+    );
+
+    isAssignModal.value = false;
+    console.log(response);
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.data,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else if (response.data.success == false) {
+      notification.warning({
+        message: "Info",
+        description: response.data.message,
+      });
+    }
+  } catch (e) {
+    notification.error({
+      message: "Error!",
+      description: e.toString(),
+    });
+    console.log(e);
+  }
+};
+
+const filteredData = computed(() => {
+  if (activeClass.value === "confirmed") {
+    console.log(confirmed.value);
+    return confirmed.value;
+  } else if (activeClass.value === "pending") {
+    console.log(dataSource.value);
+    return pending.value;
+  } else {
+    return dataSource.value;
+  }
+});
+
+const level_id = ref("");
+const role_id = ref("");
+const rt = useRouter();
+
+const user = JSON.parse(sessionStorage.getItem("user"));
+console.log(user.user.id);
+
+const isApprovedGenerator = computed(() => {
+  // const currentTime = new Date();
+  if (
+    user.user.role_id === 53 ||
+    user.user.role_id === 63 ||
+    user.user.role_id === 64 ||
+    user.user.role_id === 59 ||
+    user.user.role_id === 4
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+computed(() => {
+  if (user.user.org_types_id === 10) {
+    return true;
+  } else {
+    return false;
+  }
+});
 
 onMounted(async () => {
   try {
@@ -686,30 +873,6 @@ onMounted(async () => {
   } catch (error) {
     console.error(error);
   }
-});
-
-const filteredData = computed(() => {
-  if (activeClass.value === "confirmed") {
-    console.log(confirmed.value);
-    return confirmed.value;
-  } else if (activeClass.value === "pending") {
-    console.log(dataSource.value);
-    return pending.value;
-  } else {
-    return dataSource.value;
-  }
-});
-
-const level_id = ref("");
-const role_id = ref("");
-// const current = ref("");
-const rt = useRouter();
-
-// const event_host_id = query.event_host_id;
-const user = JSON.parse(sessionStorage.getItem("user"));
-console.log(user.user.id);
-
-onMounted(() => {
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user) {
     rt.push({ path: "/auth/login" });
@@ -718,56 +881,31 @@ onMounted(() => {
     role_id.value = user.user.role_id;
   }
 });
-const isApprovedGenerator = computed(() => {
-  // const currentTime = new Date();
-  if (
-    user.user.role_id === 53 ||
-    user.user.role_id === 63 ||
-    user.user.role_id === 64 ||
-    user.user.role_id === 59 ||
-    user.user.role_id === 4
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-});
-console.log(user.user.org_types_id === 10);
-// const isSCHMT =
-computed(() => {
-  if (user.user.org_types_id === 10) {
-    return true;
-  } else {
-    return false;
-  }
-});
 </script>
 
 <style>
-/* Default styles for buttons */
 .button-container {
-  text-align: center; /* Center align the buttons by default */
+  text-align: center;
 }
 
 .button-container sdButton {
-  margin: 5px; /* Add some margin between buttons */
+  margin: 5px;
 }
 
-/* Media query for screens larger than 768px (adjust breakpoint as needed) */
 @media (min-width: 769px) {
   .button-container {
-    text-align: left; /* Left align the buttons on larger screens */
-    display: inline-block; /* Restore default inline-block behavior */
+    text-align: left;
+    display: inline-block;
   }
 
   .button-container sdButton {
-    margin: 5px; /* Adjust margin for desktop spacing */
+    margin: 5px;
   }
 }
 @media (max-width: 768px) {
   .button-container sdButton {
-    margin: 5px 0; /* Adjust vertical margin for mobile spacing */
-    padding: 5px; /* Add padding to create separation */
+    margin: 5px 0;
+    padding: 5px;
   }
 }
 </style>
