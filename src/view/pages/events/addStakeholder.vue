@@ -257,11 +257,8 @@ import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed, onMounted } from "vue";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-// import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import store from "../../../vuex/store";
-
-// testing app
 
 const AddNew = defineComponent({
   name: "AddNew",
@@ -276,15 +273,9 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
     const stakeholder_otp = ref(false);
-
-    // const router = useRouter();
-
     const API_URL = `${process.env.VUE_APP_BASE_URL}`;
-
     const organization_url = `${process.env.VUE_APP_BASE_URL}/organizations`;
-
     const trainer_url = `${process.env.VUE_APP_BASE_URL}/users`;
-
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
     const { gender, organizations, loading, counties, roles, events_list } =
@@ -354,7 +345,6 @@ const AddNew = defineComponent({
       const data = await response.json();
       this.counties = data.map((county) => ({
         ...county,
-        // org_id: county.org_id,
       }));
       this.loading = false;
     };
@@ -365,10 +355,6 @@ const AddNew = defineComponent({
       fetchEvents();
     });
 
-    // function handleChange(request, response, value) {
-    //   console.log(value);
-    //   // getRoles(value);
-    // }
     const getRoles = async (org_id) => {
       console.log(org_id);
       const response = await fetch(

@@ -1,13 +1,9 @@
 <template>
-  <!-- Wrapper component for the record view -->
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Activities" />
-
-    <!-- Main content area -->
     <Main>
       <div class="search-box">
         <span class="search-icon">
-          <!-- Increase the size of the search icon by setting the 'font-size' property -->
           <sdFeatherIcons type="search" size="24" />
         </span>
         <a-input
@@ -18,18 +14,14 @@
           style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
         />
       </div>
-      <!-- Rows for search and table -->
       <a-row :gutter="16" class="search-row"></a-row>
       <a-row :gutter="15">
-        <!-- Table column with activity data -->
         <a-col class="w-100" :md="24">
-          <!-- Display loading spinner while data is being fetched -->
           <sdCards headless>
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
 
-            <!-- Table displaying activity data when not loading -->
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-row class="" :gutter="3">
@@ -81,14 +73,10 @@
                     </a-col>
                   </a-space>
                 </a-row>
-                <!-- Activity data table -->
                 <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
-                  <!-- Custom template for activity column -->
                   <template #activity="{ record }">
                     <td>
-                      <!-- Buttons for viewing confirmed and pending participants -->
                       <div class="table-actions">
-                        <!-- Button for viewing confirmed participants -->
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -225,9 +213,6 @@ onMounted(async () => {
   fetchGFActivities();
 });
 const updateFilters = async () => {
-  // access_level.value.level.id = 3
-  // access_level.value.location.org_id = 'BzFBYZhF5fx'
-  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
   if (access_level.value.level.id == 1) {
     allowedLevels.value = ["county", "subcounty"];
     await fetchCounties();
@@ -266,7 +251,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     sub_county_id.value = store.state.filters.sub_county_id;
     //get subcounty activities
     fetchUrl += `?parent_id=${org_id}`;
-    masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}`;
+    masterUrl += `&sub_county=${sub_county_id.value}`;
   } else if (org_level == "activity") {
     //get activities
     activity_list_id.value=org_id;
@@ -297,6 +282,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
           value: x.activity_list_id,
           label: x.name,
         }));
+        console.log(activities.value);
         // Format the data before assigning it to dataSource
         dataSource.value = data.data.map((item) => {
           const countyName =
@@ -394,7 +380,6 @@ const fetchGFActivities = async () => {
     console.error(error);
   }
 };
-
 </script>
 <style scoped>
 .search-box {

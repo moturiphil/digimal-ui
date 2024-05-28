@@ -70,7 +70,6 @@ export default defineComponent({
     },
     handleResize() {
       this.innerWidth = window.innerWidth;
-      console.log(window.innerWidth);
     },
   },
 });
