@@ -244,7 +244,7 @@ export default defineComponent({
       try {
         const response = await axios.post(
           `${process.env.VUE_APP_BASE_URL}/void_events_payroll_summaries/${voidPayroll.value.id}`,
-          null, // if there is no req body
+          null,
           {
             headers: authHeader(),
           }
