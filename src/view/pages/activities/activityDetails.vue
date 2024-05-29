@@ -774,19 +774,20 @@ const isCreator = computed(() => {
 });
 
 const generatePayroll = async () => {
+  store.commit("setIsGenerating", true);
   try {
     const response = await axios.get(
       `/generate_pay_roll?activity_code=${query.code}&confirmed=1`
     );
     console.log(response);
     if (response.status == 200) {
-      store.commit("setIsGenerating", true);
+      store.commit("setIsGenerating", false);
       Modal.success({
         title: "Success",
         content: "Payroll Generated Successfully",
       });
     } else {
-      store.commit("setIsGenerating", true);
+      store.commit("setIsGenerating", false);
       Modal.error({
         title: "Error",
         content:

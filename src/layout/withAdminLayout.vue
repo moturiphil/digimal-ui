@@ -27,9 +27,9 @@
             >
               <img
                 :src="
-                  require(
-                    `../static/img/icon/${collapsed ? 'right.svg' : 'left.svg'}`
-                  )
+                  require(`../static/img/icon/${
+                    collapsed ? 'right.svg' : 'left.svg'
+                  }`)
                 "
                 alt="menu"
               />
@@ -153,7 +153,9 @@
             >
               <a-row>
                 <a-col :md="12" :xs="24">
-                  <span class="admin-footer__copyright">2024 © DigiMal</span>
+                  <span class="admin-footer__copyright"
+                    >{{ currentYear }} © DigiMal</span
+                  >
                 </a-col>
                 <a-col :md="12" :xs="24">
                   <div class="admin-footer__links"></div>
@@ -180,7 +182,7 @@ import AuthInfo from "../components/utilities/auth-info/info";
 import AsideItems from "./Aside";
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 import "vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css";
-import { computed, ref, defineComponent } from "vue";
+import { computed, ref, defineComponent, onMounted } from "vue";
 import { useStore } from "vuex";
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -217,6 +219,7 @@ export default defineComponent({
     const rtl = computed(() => state.themeLayout.rtlData);
     const darkMode = computed(() => state.themeLayout.data);
     const topMenu = computed(() => state.themeLayout.topMenu);
+    const currentYear = ref("");
     const toggleCollapsed = (e) => {
       e.preventDefault();
       collapsed.value = !collapsed.value;
@@ -229,6 +232,10 @@ export default defineComponent({
       hide.value = !h;
       searchHide.value = true;
     };
+
+    onMounted(() => {
+      currentYear.value = new Date().getFullYear();
+    });
 
     const toggleSearch = () => {
       activeSearch.value = !activeSearch.value;
@@ -286,7 +293,6 @@ export default defineComponent({
       modeChangeSideNav,
     };
 
-
     return {
       toggleCollapsed,
       handleSearchHide,
@@ -304,6 +310,7 @@ export default defineComponent({
       topMenu,
       onEventChange,
       ...onEventChange,
+      currentYear,
     };
   },
 });

@@ -531,7 +531,7 @@ const DragAndDropTable = defineComponent({
     };
 
     const handleCancelSecurity = () => {
-      isModalOpen.value = false;
+      isSecurityModalOpen.value = false;
     };
 
     const handleAssignSecurity = async () => {

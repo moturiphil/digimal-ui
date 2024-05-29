@@ -48,9 +48,9 @@
                                     size="extra-small"
                                     type="success"
                                     @click="createEvent(record)"
-                                    v-if="record.event_id == null"
+                                    v-if="record.reg_event_gen_status == null"
                                   >
-                                    <span>Create Event</span>
+                                    <span>Create HH Event</span>
                                   </sdButton>
                                   <span v-if="record.event_id == null">
                                     &nbsp;&nbsp;
@@ -60,7 +60,7 @@
                                     type="warning"
                                     :disabled="isDisabled"
                                     @click="populateEvent(record)"
-                                    v-if="record.event_id !== null"
+                                    v-if="record.reg_event_gen_status !== null"
                                   >
                                     {{
                                       isLoading
@@ -68,6 +68,34 @@
                                         : isDisabled
                                         ? "Processing ..."
                                         : "Populate Event"
+                                    }}
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+
+                                  <sdButton
+                                    size="extra-small"
+                                    type="success"
+                                    @click="createSecurityEvent(record)"
+                                    v-if="record.security_event_id == null"
+                                  >
+                                    <span>Create Security Event</span>
+                                  </sdButton>
+                                  <span v-if="record.event_id == null">
+                                    &nbsp;&nbsp;
+                                  </span>
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    :disabled="isDisabled"
+                                    @click="populateSecurityEvent(record)"
+                                    v-if="record.security_event_id !== null"
+                                  >
+                                    {{
+                                      isLoading
+                                        ? "Loading..."
+                                        : isDisabled
+                                        ? "Processing ..."
+                                        : "Populate Security Event"
                                     }}
                                   </sdButton>
                                 </div>
@@ -182,6 +210,7 @@ export default defineComponent({
         });
     });
 
+    // create hh reg event
     const createEvent = async (data) => {
       console.log(data.county_id);
       const event_api_url = `${process.env.VUE_APP_BASE_URL}/create_event_over_api`;
@@ -211,8 +240,8 @@ export default defineComponent({
               duration: 5.5,
             });
             new Promise((resolve) => {
-            setTimeout(resolve, 3000);
-          });
+              setTimeout(resolve, 3000);
+            });
           }
           // show error message from the api response
           else {
@@ -272,7 +301,95 @@ export default defineComponent({
         });
     };
 
-    console.log(dataSource.value);
+    const createSecurityEvent = async (data) => {
+      console.log(data.county_id);
+      const security_event_api_url = `${process.env.VUE_APP_BASE_URL}/create_security_event_over_api`;
+
+      const event_data = {
+        county_id: data.county_id,
+        subcounty_id: data.sub_county_id,
+        venue: data.sub_county_name,
+      };
+
+      fetch(security_event_api_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(event_data),
+      })
+        .then((response) => response.json())
+        .then(({ success, data }) => {
+          if (success) {
+            // store.commit("setIsSubmitting", false);
+            // router.push("event-create");
+            notification["success"]({
+              message: "Event Created",
+              description: `Event Created successfully. Your event code is ${data.event.event_code}`,
+              duration: 5.5,
+            });
+            new Promise((resolve) => {
+              setTimeout(resolve, 3000);
+            });
+          }
+          // show error message from the api response
+          else {
+            // store.commit("setIsSubmitting", false);
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to create event",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          //   store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
+
+    // populate security event
+
+    const populateSecurityEvent = async (data) => {
+      console.log(data);
+      store.commit("setIsDisabled", true);
+
+      axios
+        .post(
+          `${process.env.VUE_APP_BASE_URL}/generate_security_event_officers/${data.sub_county_id}/${data.security_event_id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response);
+          if (response.success == true) {
+            store.commit("setIsDisabled", false);
+            notification["success"]({
+              message: "Success",
+              description: response.data.data,
+              duration: 5.5,
+            });
+          } else {
+            notification["error"]({
+              message: "Error!",
+              description: response.data.data,
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
 
     return {
       crud,
@@ -287,6 +404,8 @@ export default defineComponent({
       createEvent,
       populateEvent,
       isDisabled,
+      createSecurityEvent,
+      populateSecurityEvent,
     };
   },
 });

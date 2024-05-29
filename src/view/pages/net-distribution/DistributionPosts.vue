@@ -244,11 +244,6 @@ import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 
 const columns = [
-  // {
-  //   title: "Distribution Id",
-  //   dataIndex: "id",
-  //   key: "id",
-  // },
   {
     title: "Distribution Post",
     dataIndex: "name",
@@ -364,10 +359,6 @@ watch(
   }
 );
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
@@ -699,7 +690,6 @@ const formState = reactive({
 const openModal = (id) => {
   isModalOpen.value = true;
   formState.post_id = id;
-  console.log(isModalOpen.value);
 };
 
 const handleCancel = () => {

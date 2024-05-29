@@ -1,5 +1,4 @@
 <template>
-  <!-- Wrapper component for the record view -->
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Activities" />
 
@@ -7,7 +6,6 @@
     <Main>
       <div class="search-box">
         <span class="search-icon">
-          <!-- Increase the size of the search icon by setting the 'font-size' property -->
           <sdFeatherIcons type="search" size="24" />
         </span>
         <a-input
@@ -18,18 +16,15 @@
           style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
         />
       </div>
-      <!-- Rows for search and table -->
       <a-row :gutter="16" class="search-row"></a-row>
       <a-row :gutter="15">
         <!-- Table column with activity data -->
         <a-col class="w-100" :md="24">
-          <!-- Display loading spinner while data is being fetched -->
           <sdCards headless>
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
 
-            <!-- Table displaying activity data when not loading -->
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <a-row class="" :gutter="3">
@@ -81,18 +76,14 @@
                     </a-col>
                   </a-space>
                 </a-row>
-                <!-- Activity data table -->
                 <a-table
                   :pagination="false"
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <!-- Custom template for activity column -->
                   <template #activity="{ record }">
                     <td>
-                      <!-- Buttons for viewing confirmed and pending participants -->
                       <div class="table-actions">
-                        <!-- Button for viewing confirmed participants -->
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -133,16 +124,12 @@
 </template>
 
 <script setup>
-// Import necessary modules and components
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-// import { useStore } from "vuex";
 import {
-  //computed,
   onMounted,
   ref,
   watch,
-  //reactive,
 } from "vue";
 import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
@@ -218,7 +205,6 @@ const activity_list_id = ref("");
 
 import { useStore } from "vuex";
 const store = useStore();
-// Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
@@ -229,9 +215,6 @@ onMounted(async () => {
   fetchPMIActivities();
 });
 const updateFilters = async () => {
-  // access_level.value.level.id = 3
-  // access_level.value.location.org_id = 'BzFBYZhF5fx'
-  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
   if (access_level.value.level.id == 1) {
     allowedLevels.value = ["county", "subcounty"];
     await fetchCounties();
@@ -246,7 +229,6 @@ const updateFilters = async () => {
   }
 };
 const handleChange = async (org_id, org_level) => {
-  //fetch child data
   let org = await org_ids.value
     .filter((x) => x.org_id === org_id)
     .map((e) => e.id);
@@ -271,7 +253,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     sub_county_id.value = store.state.filters.sub_county_id;
     //get subcounty activities
     fetchUrl += `?parent_id=${org_id}`;
-    masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}`;
+    masterUrl += `&sub_county=${sub_county_id.value}`;
   } else if (org_level == "activity") {
     //get activities
     activity_list_id.value = org_id;

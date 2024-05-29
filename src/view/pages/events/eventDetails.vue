@@ -26,7 +26,7 @@
         &nbsp;
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
 
-        <sdButton class="btn-import" type="success" size="small">
+        <sdButton class="btn-import" type="success" size="extra-small">
           <router-link to="/events/add-stakeholder">
             Add Stakeholder</router-link
           >
@@ -49,6 +49,17 @@
           size="extra-small"
         >
           Archive Event &nbsp; &nbsp;
+          <sdFeatherIcons type="archive" size="extra-small" />
+        </sdButton>
+        &nbsp; &nbsp;
+        <sdButton
+          class="btn-import"
+          type="warning"
+          @click="openMatrixModal()"
+          size="extra-small"
+        >
+          Event Matrix &nbsp; &nbsp;
+          <sdFeatherIcons type="award" size="extra-small" />
         </sdButton>
       </div>
 
@@ -271,6 +282,62 @@
                       </a-modal>
                       <!-- End Archive Event modal -->
 
+                      <!-- Event Matrix Modal -->
+                      <a-modal
+                        title="Payroll Matrix"
+                        :visible="isMatrixModalOpen"
+                        @cancel="handleCancelMatrix"
+                        width="60%"
+                      >
+                        <sdCards headless>
+                          <div class="result-list-content">
+                            <a-row :gutter="15">
+                              <a-col class="w-100" :md="24">
+                                <sdCards headless>
+                                  <!-- header -->
+                                  <sdHeader>
+                                    <b>
+                                      <span class="ai-playback-shuffle"></span
+                                      >Payable Organizations
+                                    </b></sdHeader
+                                  >
+                                  <br /><br />
+                                  <div>
+                                    <sdButton
+                                      class="spaced-button"
+                                      size="extra-small"
+                                      type="success"
+                                      outlined
+                                      v-for="org in org_matrixes"
+                                      :key="org.id"
+                                    >
+                                      {{ org.org_id }}
+                                    </sdButton>
+                                  </div>
+                                  <br />
+                                  <br />
+                                  <div v-if="isLoading" class="spin">
+                                    <a-spin />
+                                  </div>
+                                  <div v-else>
+                                    <TableWrapper
+                                      class="table-data-view table-responsive"
+                                      v-show="activeClass === 'all'"
+                                    >
+                                      <a-table
+                                        :dataSource="event_matrixes"
+                                        :columns="matrix_column"
+                                      >
+                                      </a-table>
+                                    </TableWrapper>
+                                  </div>
+                                </sdCards>
+                              </a-col>
+                            </a-row>
+                          </div>
+                        </sdCards>
+                      </a-modal>
+                      <!-- End Event Matrox modal -->
                       <!-- Assign & Deassign Modals -->
 
                       <a-modal
@@ -313,6 +380,7 @@
                         </div>
                       </a-modal>
                       <!--  End of assign & Deassign Modals  -->
+
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -389,6 +457,19 @@ const columns = [
   },
 ];
 
+const matrix_column = [
+  {
+    title: "Matrix",
+    dataIndex: "pay_matrix_id",
+    key: "id",
+  },
+  {
+    title: "Rate",
+    dataIndex: "rate",
+    key: "id",
+  },
+];
+
 const recordCount = computed(() => dataSource.value.length);
 const confirmedCount = computed(() => confirmed.value.length);
 const pendingCount = computed(() => pending.value.length);
@@ -406,10 +487,15 @@ const activeClass = ref("all");
 const isGenerating = computed(() => state.isGenerating);
 const isModalOpen = ref(false);
 const isArchiveModalOpen = ref(false);
+const isMatrixModalOpen = ref(false);
 const participant_id = ref("");
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
+const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${plainquery.event_list_id}`;
+const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
+const event_matrixes = ref([]);
+const org_matrixes = ref([]);
 const isAssignModal = ref(false);
 const deassignModal = ref(false);
 const participant = ref("");
@@ -641,6 +727,46 @@ const openModal = () => {
 const handleCancelArchive = () => {
   isArchiveModalOpen.value = false;
 };
+
+const openMatrixModal = () => {
+  isMatrixModalOpen.value = true;
+};
+
+const handleCancelMatrix = () => {
+  isMatrixModalOpen.value = false;
+};
+
+const getEventMatrix = () => {
+  axios
+    .get(event_matrix, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      event_matrixes.value = response.data.data;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+getEventMatrix();
+
+const getOrgMatrix = () => {
+  axios
+    .get(orgs_matrix, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      org_matrixes.value = response.data.data;
+      console.log(org_matrixes.value);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+getOrgMatrix();
+
 const exportParticipants = async () => {
   try {
     const response = await fetch(export_participants_url, {

@@ -58,6 +58,7 @@
                                           approval_status:
                                             record.approval_status,
                                           payment_status: record.payment_status,
+                                          event_id: record.id_event,
                                         },
                                       }"
                                       class="btn-icon"

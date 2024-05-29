@@ -35,7 +35,6 @@
                             @click="removeOrgType(org.id)"
                           >
                             <sdFeatherIcons type="trash-2" size="small" />
-                            <!-- Replace "trash-2" with the appropriate sdfeather icon name -->
                           </sdButton>
                         </sdButton>
                       </div>

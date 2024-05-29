@@ -33,7 +33,7 @@
         type="warning"
         @click="handleValidation()"
         size="extra-small"
-        v-if= "validate_status == 'Not Validated'"
+        v-if="validate_status == 'Not Validated'"
       >
         Validate Payroll &nbsp; &nbsp;
       </sdButton>
@@ -85,12 +85,70 @@
                                       &nbsp;&nbsp; Breakdown
                                     </router-link>
                                   </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    type="warning"
+                                    size="extra-small"
+                                    @click="addAllowance(record)"
+                                  >
+                                    Add Allowance
+                                  </sdButton>
                                 </div>
                               </td>
                             </template>
                           </a-table>
                         </TableWrapper>
                       </div>
+                      <!-- Add Allowance Modal -->
+                      <a-modal
+                        title="Add Allowance"
+                        :visible="isModalOpen"
+                        @cancel="handleCancel"
+                        width="50%"
+                        footer=""
+                      >
+                        <BasicFormWrapper>
+                          <a-form
+                            class="add-record-form"
+                            :style="{ width: '100%' }"
+                            layout="vertical"
+                            name="addnew"
+                            :model="formState"
+                            @finish="handleSubmit"
+                          >
+                            <a-form-item
+                              name="allowance"
+                              label="Select Allowance"
+                            >
+                              <a-select
+                                v-model:value="formState.allowance"
+                                show-search
+                                option-filter-prop="label"
+                                placeholder="Select an additional allowance"
+                              >
+                                <a-select-option
+                                  v-for="allowance in additional_allowance"
+                                  :key="allowance.id"
+                                  :value="allowance.id"
+                                  :label="`${allowance.formula_name}`"
+                                >
+                                  {{ allowance.formula_name }}
+                                </a-select-option>
+                              </a-select>
+                            </a-form-item>
+                            <div class="record-form-actions text-right">
+                              <sdButton
+                                size="default"
+                                htmlType="Save"
+                                type="success"
+                              >
+                                {{ isLoading ? "Loading..." : "Submit" }}
+                              </sdButton>
+                            </div>
+                          </a-form>
+                        </BasicFormWrapper>
+                      </a-modal>
+                      <!-- End of Add Allowance Modal -->
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -210,20 +268,23 @@ export default defineComponent({
     const activeClass = ref("all");
     const searchItem = ref("");
     const eventpayroll_list = ref([]);
+    const additional_allowance = ref([]);
 
     const { query } = useRoute();
 
     const validate_status = query.validate_status;
 
-    console.log(validate_status == 'Not Validated');
+    console.log(validate_status == "Not Validated");
 
     const event_name = query.name;
     const duration = query.duration;
     const venue = query.venue;
     const date = query.date;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
+    const allowance_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_transport_matrix`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
-    const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`
+    const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
+    const isModalOpen = ref(false);
 
     const exportPayrollList = async () => {
       try {
@@ -306,26 +367,11 @@ export default defineComponent({
     });
 
     const formState = reactive({
-      searchItem: "",
+      allowance: "",
     });
 
-    // const results = computed(() => {
-    //   const query = searchItem.value.toLowerCase();
-    //   const regex = new RegExp(query, "i");
-    //   if (!query) {
-    //     return dataSource.value;
-    //   } else {
-    //     return dataSource.value.filter((event) => {
-    //       return (
-    //         regex.test(event.user_id) ||
-    //         regex.test(event.location_id) ||
-    //         regex.test(event.organization) ||
-    //         regex.test(event.role)
+    console.log(formState.allowance);
 
-    //       );
-    //     });
-    //   }
-    // });
     watchEffect(async () => {
       const querysearch = encodeURIComponent(searchItem.value.toLowerCase());
       try {
@@ -354,6 +400,94 @@ export default defineComponent({
       }
     });
 
+    const additionalAllowance = () => {
+      axios
+        .get(`${process.env.VUE_APP_BASE_URL}/additional_payroll_matrix`, {
+          headers: authHeader(),
+        })
+        .then((response) => {
+          additional_allowance.value = response.data.data.map((allowance) => ({
+            ...allowance,
+            label: `${allowance.formula_name} `,
+          }));
+
+          console.log(additional_allowance.value);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
+
+    additionalAllowance();
+
+    const payroll_list_id = ref();
+
+    const addAllowance = (payroll_detail) => {
+      console.log(payroll_detail);
+      payroll_list_id.value = payroll_detail.id;
+      isModalOpen.value = true;
+      console.log(payroll_list_id.value);
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
+
+    const handleSubmit = async () => {
+      const data = {
+        payroll_id: query.id,
+        formula: "",
+        rate: null,
+        payroll_list_id: payroll_list_id.value,
+        payroll_matrix_id: formState.allowance,
+      };
+
+      for (let i = 0; i < additional_allowance.value.length; i++) {
+        if (additional_allowance.value[i].id == formState.allowance) {
+          data.formula = additional_allowance.value[i].formula_name;
+          data.rate = additional_allowance.value[i].rate;
+          console.log(additional_allowance.value[i]);
+        }
+      }
+
+      console.log(data);
+
+      try {
+        const response = await fetch(allowance_api_url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success === true) {
+          notification.success({
+            message: "Success",
+            description: result.data,
+          });
+          isModalOpen.value = false;
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${result.status}`,
+          });
+          isModalOpen.value = false;
+        }
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error.message}`,
+        });
+      }
+    };
+
     return {
       crud,
       isLoading,
@@ -371,6 +505,11 @@ export default defineComponent({
       exportPayrollList,
       handleValidation,
       validate_status,
+      addAllowance,
+      isModalOpen,
+      handleCancel,
+      handleSubmit,
+      additional_allowance,
     };
   },
 });
