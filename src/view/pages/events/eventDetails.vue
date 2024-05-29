@@ -127,13 +127,32 @@
                           >
                             <template #participants="{ record }">
                               <td>
-                                <!-- Buttons for viewing confirmed and pending participants -->
                                 <div class="table-actions">
-                                  <!-- Button for viewing confirmed participants -->
+                                  <sdButton
+                                    size="extra-small"
+                                    type="success"
+                                    :disabled="isStarting"
+                                    @click="assignFacilitator(record)"
+                                    v-if="record.is_facilitator == false"
+                                  >
+                                    <span>Assign Facilitator </span>
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    :disabled="isStarting"
+                                    @click="deassignFacilitator(record)"
+                                    v-else-if="record.is_facilitator == true"
+                                  >
+                                    <span> De-assign Facilitator </span>
+                                  </sdButton>
+                                  &nbsp; &nbsp;
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
                                     @click="voidParticipant(record.id)"
+                                    v-if="isApprovedGenerator"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -319,6 +338,49 @@
                         </sdCards>
                       </a-modal>
                       <!-- End Event Matrox modal -->
+                      <!-- Assign & Deassign Modals -->
+
+                      <a-modal
+                        title="Assign Facilitator"
+                        :visible="isAssignModal"
+                        @ok="handleAssign"
+                        @cancel="handleAssignCancel"
+                        class="title-success"
+                      >
+                        <div>
+                          <p>
+                            Please confirm that you want to assign
+                            {{ participant.first_name }}
+                            {{ participant.last_name }},
+                            {{ participant.id_no }} of
+                            {{ participant.location_id }} as facilitator to
+                            <br />
+                            Event: {{ event_name }}
+                          </p>
+                        </div>
+                      </a-modal>
+
+                      <a-modal
+                        title="De-assign Facilitator"
+                        :visible="deassignModal"
+                        @ok="handleDeassign"
+                        @cancel="handleDeassignCancel"
+                        class="title-success"
+                      >
+                        <div>
+                          <p>
+                            Please confirm that you want to de-assign
+                            {{ participant.first_name }}
+                            {{ participant.last_name }},
+                            {{ participant.id_no }} of
+                            {{ participant.location_id }} as facilitator to
+                            <br />
+                            Event: {{ event_name }}
+                          </p>
+                        </div>
+                      </a-modal>
+                      <!--  End of assign & Deassign Modals  -->
+
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -434,10 +496,13 @@ const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_li
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
 const event_matrixes = ref([]);
 const org_matrixes = ref([]);
+const isAssignModal = ref(false);
+const deassignModal = ref(false);
+const participant = ref("");
+const id_user = ref("");
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-
   const day = date.getDate();
   const monthIndex = date.getMonth();
   const year = date.getFullYear();
@@ -472,9 +537,6 @@ const formatDate = (dateString) => {
 
 const start_date = plainquery.start_date;
 const formattedStartDate = formatDate(start_date);
-console.log(formattedStartDate); // Outputs: 23rd Feb 2024
-
-console.log(plainquery);
 
 const formState = reactive({
   reason_for_voiding: "",
@@ -660,7 +722,6 @@ const handleErrorResponse = (response) => {
 const openModal = () => {
   console.log("archive modal");
   isArchiveModalOpen.value = true;
-  // formState.post_id = id;
 };
 
 const handleCancelArchive = () => {
@@ -737,6 +798,141 @@ const handleChange = (tab) => {
   activeClass.value = tab;
 };
 
+const assignFacilitator = (user) => {
+  isAssignModal.value = true;
+  console.log(user.first_name);
+  participant.value = user;
+  id_user.value = user.id;
+};
+
+const handleAssignCancel = () => {
+  isAssignModal.value = false;
+};
+
+const deassignFacilitator = (user) => {
+  deassignModal.value = true;
+  participant.value = user;
+  id_user.value = user.id;
+};
+
+const handleDeassignCancel = () => {
+  deassignModal.value = false;
+};
+
+
+const handleAssign = async () => {
+  try {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BASE_URL}/assign_facilitator/${plainquery.id}/${id_user.value}`,
+      null,
+      {
+        headers: authHeader(),
+      }
+    );
+
+    isAssignModal.value = false;
+    console.log(response);
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.data,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else if (response.data.success == false) {
+      notification.warning({
+        message: "Info",
+        description: response.data.message,
+      });
+    }
+  } catch (e) {
+    notification.error({
+      message: "Error!",
+      description: e.toString(),
+    });
+    console.log(e);
+  }
+};
+
+const handleDeassign = async () => {
+  try {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BASE_URL}/de_assign_facilitator/${plainquery.id}/${id_user.value}`,
+      null,
+      {
+        headers: authHeader(),
+      }
+    );
+
+    isAssignModal.value = false;
+    console.log(response);
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.data,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else if (response.data.success == false) {
+      notification.warning({
+        message: "Info",
+        description: response.data.message,
+      });
+    }
+  } catch (e) {
+    notification.error({
+      message: "Error!",
+      description: e.toString(),
+    });
+    console.log(e);
+  }
+};
+
+const filteredData = computed(() => {
+  if (activeClass.value === "confirmed") {
+    console.log(confirmed.value);
+    return confirmed.value;
+  } else if (activeClass.value === "pending") {
+    console.log(dataSource.value);
+    return pending.value;
+  } else {
+    return dataSource.value;
+  }
+});
+
+const level_id = ref("");
+const role_id = ref("");
+const rt = useRouter();
+
+const user = JSON.parse(sessionStorage.getItem("user"));
+console.log(user.user.id);
+
+const isApprovedGenerator = computed(() => {
+  if (
+    user.user.role_id === 53 ||
+    user.user.role_id === 63 ||
+    user.user.role_id === 64 ||
+    user.user.role_id === 59 ||
+    user.user.role_id === 4
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+computed(() => {
+  if (user.user.org_types_id === 10) {
+    return true;
+  } else {
+    return false;
+  }
+});
+
 onMounted(async () => {
   try {
     const response = await axios.get(API_URL, {
@@ -801,30 +997,6 @@ onMounted(async () => {
   } catch (error) {
     console.error(error);
   }
-});
-
-const filteredData = computed(() => {
-  if (activeClass.value === "confirmed") {
-    console.log(confirmed.value);
-    return confirmed.value;
-  } else if (activeClass.value === "pending") {
-    console.log(dataSource.value);
-    return pending.value;
-  } else {
-    return dataSource.value;
-  }
-});
-
-const level_id = ref("");
-const role_id = ref("");
-// const current = ref("");
-const rt = useRouter();
-
-// const event_host_id = query.event_host_id;
-const user = JSON.parse(sessionStorage.getItem("user"));
-console.log(user.user.id);
-
-onMounted(() => {
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user) {
     rt.push({ path: "/auth/login" });
@@ -833,56 +1005,31 @@ onMounted(() => {
     role_id.value = user.user.role_id;
   }
 });
-const isApprovedGenerator = computed(() => {
-  // const currentTime = new Date();
-  if (
-    user.user.role_id === 53 ||
-    user.user.role_id === 63 ||
-    user.user.role_id === 64 ||
-    user.user.role_id === 59 ||
-    user.user.role_id === 4
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-});
-console.log(user.user.org_types_id === 10);
-// const isSCHMT =
-computed(() => {
-  if (user.user.org_types_id === 10) {
-    return true;
-  } else {
-    return false;
-  }
-});
 </script>
 
 <style>
-/* Default styles for buttons */
 .button-container {
-  text-align: center; /* Center align the buttons by default */
+  text-align: center;
 }
 
 .button-container sdButton {
-  margin: 5px; /* Add some margin between buttons */
+  margin: 5px;
 }
 
-/* Media query for screens larger than 768px (adjust breakpoint as needed) */
 @media (min-width: 769px) {
   .button-container {
-    text-align: left; /* Left align the buttons on larger screens */
-    display: inline-block; /* Restore default inline-block behavior */
+    text-align: left;
+    display: inline-block;
   }
 
   .button-container sdButton {
-    margin: 5px; /* Adjust margin for desktop spacing */
+    margin: 5px;
   }
 }
 @media (max-width: 768px) {
   .button-container sdButton {
-    margin: 5px 0; /* Adjust vertical margin for mobile spacing */
-    padding: 5px; /* Add padding to create separation */
+    margin: 5px 0;
+    padding: 5px;
   }
 }
 </style>

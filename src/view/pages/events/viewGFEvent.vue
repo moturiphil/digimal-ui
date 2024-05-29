@@ -146,7 +146,6 @@
                           <sdFeatherIcons type="x-circle" size="small" />
                           <span> Close Event </span>
                         </sdButton>
-                        &nbsp;&nbsp;
                       </div>
                     </td>
                   </template>
@@ -534,8 +533,6 @@ const handleRegistration = (id) => {
   }
 };
 const manageEvent = async (code) => {
-  console.log(code);
-  console.log("console.log");
   isTrainerModalOpen.value = true;
   try {
     const response = await axios.get(`event/${code}/facilitators`);
