@@ -439,11 +439,11 @@ export default defineComponent({
         formula: "",
         rate: null,
         payroll_list_id: payroll_list_id.value,
-        payroll_matrix_id: formState.allowance.id,
+        payroll_matrix_id: formState.allowance,
       };
 
       for (let i = 0; i < additional_allowance.value.length; i++) {
-        if (additional_allowance.value[i].id == payroll_list_id.value) {
+        if (additional_allowance.value[i].id == formState.allowance) {
           data.formula = additional_allowance.value[i].formula_name;
           data.rate = additional_allowance.value[i].rate;
           console.log(additional_allowance.value[i]);
