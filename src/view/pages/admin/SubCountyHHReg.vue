@@ -371,7 +371,7 @@ export default defineComponent({
         )
         .then((response) => {
           console.log(response);
-          if (response.status == 200) {
+          if (response.success == true) {
             store.commit("setIsDisabled", false);
             notification["success"]({
               message: "Success",

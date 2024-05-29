@@ -244,11 +244,6 @@ import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 
 const columns = [
-  // {
-  //   title: "Distribution Id",
-  //   dataIndex: "id",
-  //   key: "id",
-  // },
   {
     title: "Distribution Post",
     dataIndex: "name",
