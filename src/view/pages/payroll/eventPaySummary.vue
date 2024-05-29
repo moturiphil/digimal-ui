@@ -15,20 +15,6 @@
       :model="formState"
       :onFinish="submitPromo"
     >
-      <!-- <div class="promo-apply-form">
-        <a-form-item name="promoCode" label="Comments">
-          <a-input v-model:value="promoCode" placeholder="Comment" />
-        </a-form-item>
-        <a-form-item>
-          <sdButton htmlType="submit" size="default" type="success" outlined>
-            Approve
-          </sdButton>
-          &nbsp;&nbsp;
-          <sdButton htmlType="submit" size="default" type="danger" outlined>
-            Decline
-          </sdButton>
-        </a-form-item>
-      </div> -->
     </a-form>
     <sdButton
       v-if="current === 3"

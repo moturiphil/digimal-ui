@@ -89,7 +89,7 @@
                                   <sdButton
                                     type="warning"
                                     size="extra-small"
-                                    @click="addAllowance(record.id)"
+                                    @click="addAllowance(record)"
                                   >
                                     Add Allowance
                                   </sdButton>
@@ -125,7 +125,6 @@
                                 show-search
                                 option-filter-prop="label"
                                 placeholder="Select an additional allowance"
-                                @search="handleSupervisorSearch"
                               >
                                 <a-select-option
                                   v-for="allowance in additional_allowance"
@@ -282,6 +281,7 @@ export default defineComponent({
     const venue = query.venue;
     const date = query.date;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
+    const allowance_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_transport_matrix`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
     const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
     const isModalOpen = ref(false);
@@ -367,7 +367,6 @@ export default defineComponent({
     });
 
     const formState = reactive({
-      searchItem: "",
       allowance: "",
     });
 
@@ -407,8 +406,6 @@ export default defineComponent({
           headers: authHeader(),
         })
         .then((response) => {
-
-          // additional_allowance.value = response.data.data;
           additional_allowance.value = response.data.data.map((allowance) => ({
             ...allowance,
             label: `${allowance.formula_name} `,
@@ -423,50 +420,70 @@ export default defineComponent({
 
     additionalAllowance();
 
-    const addAllowance = (id) => {
-      console.log(id);
+    const payroll_list_id = ref();
+
+    const addAllowance = (payroll_detail) => {
+      console.log(payroll_detail);
+      payroll_list_id.value = payroll_detail.id;
       isModalOpen.value = true;
-      console.log(isModalOpen.value);
+      console.log(payroll_list_id.value);
     };
 
     const handleCancel = () => {
       isModalOpen.value = false;
     };
-    
 
     const handleSubmit = async () => {
+      const data = {
+        payroll_id: query.id,
+        formula: "",
+        rate: null,
+        payroll_list_id: payroll_list_id.value,
+        payroll_matrix_id: formState.allowance.id,
+      };
+
+      for (let i = 0; i < additional_allowance.value.length; i++) {
+        if (additional_allowance.value[i].id == payroll_list_id.value) {
+          data.formula = additional_allowance.value[i].formula_name;
+          data.rate = additional_allowance.value[i].rate;
+          console.log(additional_allowance.value[i]);
+        }
+      }
+
+      console.log(data);
+
       try {
-        await axios
-          .post(`add_additional_transport_matrix/${query.event_id}/${query}`,)
-          .then((response) => response.data)
-          .then(({ status, data }) => {
-            if (status == true) {
-              notification.success({
-                message: "Success",
-                description: data,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                window.location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${status}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
+        const response = await fetch(allowance_api_url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success === true) {
+          notification.success({
+            message: "Success",
+            description: result.data,
           });
+          isModalOpen.value = false;
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${result.status}`,
+          });
+          isModalOpen.value = false;
+        }
       } catch (error) {
         notification.error({
           message: "Error",
-          description: `${error}`,
+          description: `${error.message}`,
         });
       }
     };
