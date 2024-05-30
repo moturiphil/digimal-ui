@@ -90,6 +90,10 @@
                                     type="warning"
                                     size="extra-small"
                                     @click="addAllowance(record)"
+                                    v-if="
+                                      validate_status == 'Not Validated' ||
+                                      approved_status == 'Not Approved'
+                                    "
                                   >
                                     Add Allowance
                                   </sdButton>
@@ -274,14 +278,23 @@ export default defineComponent({
 
     const validate_status = query.validate_status;
 
-    console.log(validate_status == "Not Validated");
+    const approved_status = query.approval_status;
+
+    console.log(validate_status);
+
+    console.log(
+      validate_status == "Not Validated" || approved_status == "Not Approved"
+    );
+
+    const payroll_status = query.validated_status;
 
     const event_name = query.name;
     const duration = query.duration;
     const venue = query.venue;
     const date = query.date;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
-    const allowance_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_transport_matrix`;
+    const dsa_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_dsa_matrix`;
+    const transport_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_transport_matrix`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
     const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
     const isModalOpen = ref(false);
@@ -447,44 +460,80 @@ export default defineComponent({
           data.formula = additional_allowance.value[i].formula_name;
           data.rate = additional_allowance.value[i].rate;
           console.log(additional_allowance.value[i]);
+          console.log(data.formula == "Additional DSA");
+
+          if (data.formula == "Additional DSA") {
+            try {
+              const response = await fetch(dsa_api_url, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...authHeader(),
+                },
+                body: JSON.stringify(data),
+              });
+
+              const result = await response.json();
+
+              if (response.ok && result.success === true) {
+                notification.success({
+                  message: "Success",
+                  description: result.data,
+                });
+                isModalOpen.value = false;
+                // setTimeout(() => {
+                //   window.location.reload();
+                // }, 3000);
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${result.status}`,
+                });
+                isModalOpen.value = false;
+              }
+            } catch (error) {
+              notification.error({
+                message: "Error",
+                description: `${error.message}`,
+              });
+            }
+          } else {
+            try {
+              const response = await fetch(transport_api_url, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...authHeader(),
+                },
+                body: JSON.stringify(data),
+              });
+
+              const result = await response.json();
+
+              if (response.ok && result.success === true) {
+                notification.success({
+                  message: "Success",
+                  description: result.data,
+                });
+                isModalOpen.value = false;
+                // setTimeout(() => {
+                //   window.location.reload();
+                // }, 3000);
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${result.status}`,
+                });
+                isModalOpen.value = false;
+              }
+            } catch (error) {
+              notification.error({
+                message: "Error",
+                description: `${error.message}`,
+              });
+            }
+          }
         }
-      }
-
-      console.log(data);
-
-      try {
-        const response = await fetch(allowance_api_url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success === true) {
-          notification.success({
-            message: "Success",
-            description: result.data,
-          });
-          isModalOpen.value = false;
-          setTimeout(() => {
-            window.location.reload();
-          }, 3000);
-        } else {
-          notification.error({
-            message: "Error",
-            description: `${result.status}`,
-          });
-          isModalOpen.value = false;
-        }
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error.message}`,
-        });
       }
     };
 
@@ -510,6 +559,8 @@ export default defineComponent({
       handleCancel,
       handleSubmit,
       additional_allowance,
+      payroll_status,
+      approved_status,
     };
   },
 });
