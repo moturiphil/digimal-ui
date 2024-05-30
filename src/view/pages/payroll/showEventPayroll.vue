@@ -450,8 +450,6 @@ export default defineComponent({
         }
       }
 
-      console.log(data);
-
       try {
         const response = await fetch(allowance_api_url, {
           method: "POST",
