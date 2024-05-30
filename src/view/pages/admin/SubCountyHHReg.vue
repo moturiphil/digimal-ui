@@ -359,36 +359,38 @@ export default defineComponent({
       console.log(data);
       store.commit("setIsDisabled", true);
 
-      axios
-        .post(
+      try {
+        const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/generate_security_event_officers/${data.sub_county_id}/${data.security_event_id}`,
           {
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
               ...authHeader(),
             },
           }
-        )
-        .then((response) => {
-          console.log(response);
-          if (response.success == true) {
-            store.commit("setIsDisabled", false);
-            notification["success"]({
-              message: "Success",
-              description: response.data.data,
-              duration: 5.5,
-            });
-          } else {
-            notification["error"]({
-              message: "Error!",
-              description: response.data.data,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+        );
+
+        const result = await response.json();
+        console.log(result);
+
+        if (response.ok && result.success) {
+          store.commit("setIsDisabled", false);
+          notification["success"]({
+            message: "Success",
+            description: result.data,
+            duration: 5.5,
+          });
+        } else {
+          notification["error"]({
+            message: "Error!",
+            description: result.data,
+            duration: 5.5,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     return {
