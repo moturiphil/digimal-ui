@@ -16,7 +16,7 @@
         <b>Location:</b> {{ ` ${venue}` }} || <b>Start Date:</b>
         {{ `${date}` }} || <b>Duration:</b> {{ `${duration} days` }}
       </p>
-      <p><b>Total Records: </b> {{ recordCount }}</p>
+      <p><b>Total Records: </b> {{ records }}</p>
 
       <sdButton
         class="btn-import"
@@ -298,6 +298,7 @@ export default defineComponent({
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
     const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
     const isModalOpen = ref(false);
+    const records = ref("");
 
     const exportPayrollList = async () => {
       try {
@@ -373,6 +374,7 @@ export default defineComponent({
         .then((response) => {
           eventpayroll_list.value = response.data.data;
           dataSource.value = response.data.data;
+          records.value = response.data.total_records;
         })
         .catch((error) => {
           console.error(error);
@@ -423,8 +425,6 @@ export default defineComponent({
             ...allowance,
             label: `${allowance.formula_name} `,
           }));
-
-          console.log(additional_allowance.value);
         })
         .catch((error) => {
           console.error(error);
@@ -481,9 +481,9 @@ export default defineComponent({
                   description: result.data,
                 });
                 isModalOpen.value = false;
-                // setTimeout(() => {
-                //   window.location.reload();
-                // }, 3000);
+                setTimeout(() => {
+                  window.location.reload();
+                }, 3000);
               } else {
                 notification.error({
                   message: "Error",
@@ -516,9 +516,9 @@ export default defineComponent({
                   description: result.data,
                 });
                 isModalOpen.value = false;
-                // setTimeout(() => {
-                //   window.location.reload();
-                // }, 3000);
+                setTimeout(() => {
+                  window.location.reload();
+                }, 3000);
               } else {
                 notification.error({
                   message: "Error",
@@ -535,7 +535,7 @@ export default defineComponent({
           }
         }
       }
-    };
+    }
 
     return {
       crud,
@@ -561,6 +561,7 @@ export default defineComponent({
       additional_allowance,
       payroll_status,
       approved_status,
+      records,
     };
   },
 });
