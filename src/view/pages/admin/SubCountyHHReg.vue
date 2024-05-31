@@ -482,7 +482,7 @@ export default defineComponent({
 
       try {
         const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/generate_distribution_event_officers/${data.security_event_id}`,
+          `${process.env.VUE_APP_BASE_URL}/generate_distribution_event_officers/${data.distribution_event_id}`,
           {
             method: "POST",
             headers: {
