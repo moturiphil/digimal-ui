@@ -98,6 +98,29 @@
                                         : "Populate Security Event"
                                     }}
                                   </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="success"
+                                    @click="createDistributionEvent(record)"
+                                  >
+                                    <span>Create Distribution Event</span>
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    :disabled="isDisabled"
+                                    @click="populateDistributionEvent(record)"
+                                  >
+                                    {{
+                                      isLoading
+                                        ? "Loading..."
+                                        : isDisabled
+                                        ? "Processing ..."
+                                        : "Populate Distribution Event"
+                                    }}
+                                  </sdButton>
                                 </div>
                               </td>
                             </template>
@@ -301,6 +324,8 @@ export default defineComponent({
         });
     };
 
+    // create security event
+
     const createSecurityEvent = async (data) => {
       console.log(data.county_id);
       const security_event_api_url = `${process.env.VUE_APP_BASE_URL}/create_security_event_over_api`;
@@ -354,7 +379,6 @@ export default defineComponent({
     };
 
     // populate security event
-
     const populateSecurityEvent = async (data) => {
       console.log(data);
       store.commit("setIsDisabled", true);
@@ -393,6 +417,102 @@ export default defineComponent({
       }
     };
 
+    // create security event
+    const createDistributionEvent = async (data) => {
+      console.log(data.county_id);
+      const security_event_api_url = `${process.env.VUE_APP_BASE_URL}/create_distribution_event_over_api`;
+
+      const event_data = {
+        county_id: data.county_id,
+        subcounty_id: data.sub_county_id,
+        venue: "Distribution Event Over API",
+      };
+
+      fetch(security_event_api_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(event_data),
+      })
+        .then((response) => response.json())
+        .then(({ success, data }) => {
+          if (success == true) {
+            notification["success"]({
+              message: "Event Created",
+              description: data,
+              duration: 5.5,
+            });
+            new Promise((resolve) => {
+              setTimeout(resolve, 3000);
+            });
+            location.reload();
+          } else if (success == false) {
+            notification["error"]({
+              message: "Event Creation failed",
+              description: data,
+              duration: 5.5,
+            });
+            location.reload();
+          }
+          else {
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to create event",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          //   store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
+
+    // populate security event
+
+    const populateDistributionEvent = async (data) => {
+      console.log(data);
+      store.commit("setIsDisabled", true);
+
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/generate_distribution_event_officers/${data.distribution_event_id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
+
+        const result = await response.json();
+        console.log(result);
+
+        if (response.ok && result.success) {
+          notification["success"]({
+            message: "Success",
+            description: result.data,
+            duration: 5.5,
+          });
+        } else {
+          notification["error"]({
+            message: "Error!",
+            description: result.data,
+            duration: 5.5,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     return {
       crud,
       isLoading,
@@ -408,6 +528,8 @@ export default defineComponent({
       isDisabled,
       createSecurityEvent,
       populateSecurityEvent,
+      createDistributionEvent,
+      populateDistributionEvent,
     };
   },
 });
