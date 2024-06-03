@@ -470,8 +470,8 @@ const export_participants_url = `${process.env.VUE_APP_BASE_URL}/activity_partic
 const isMatrixModalOpen = ref(false);
 const activity_matrixes = ref([]);
 const org_matrixes = ref([]);
-const activity_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?activity_list_id=${query.activity_list_id}`;
-const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_matrix?activity_list_id=${query.activity_list_id}`;
+const activity_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_matrix?activity_list_id=${query.activity_list_id}`;
+const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_org_matrix?activity_list_id=${query.activity_list_id}`;
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
