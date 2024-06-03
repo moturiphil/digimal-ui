@@ -284,24 +284,25 @@
 
                       <!-- Event Matrix Modal -->
                       <a-modal
-                        title="Payroll Matrix"
+                        title="Payroll Event Matrix"
                         :visible="isMatrixModalOpen"
                         @cancel="handleCancelMatrix"
                         width="60%"
+                        :footer="null"
                       >
                         <sdCards headless>
                           <div class="result-list-content">
                             <a-row :gutter="15">
                               <a-col class="w-100" :md="24">
                                 <sdCards headless>
-                                  <!-- header -->
                                   <sdHeader>
                                     <b>
                                       <span class="ai-playback-shuffle"></span
                                       >Payable Organizations
-                                    </b></sdHeader
-                                  >
-                                  <br /><br />
+                                    </b>
+                                  </sdHeader>
+                                  <br />
+                                  <br />
                                   <div>
                                     <sdButton
                                       class="spaced-button"
@@ -314,7 +315,6 @@
                                       {{ org.org_id }}
                                     </sdButton>
                                   </div>
-                                  <br />
                                   <br />
                                   <div v-if="isLoading" class="spin">
                                     <a-spin />
@@ -337,9 +337,10 @@
                           </div>
                         </sdCards>
                       </a-modal>
-                      <!-- End Event Matrox modal -->
-                      <!-- Assign & Deassign Modals -->
 
+                      <!-- End Event Matrix modal -->
+
+                      <!-- Assign & Deassign Modals -->
                       <a-modal
                         title="Assign Facilitator"
                         :visible="isAssignModal"
@@ -380,7 +381,6 @@
                         </div>
                       </a-modal>
                       <!--  End of assign & Deassign Modals  -->
-
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -819,7 +819,6 @@ const handleDeassignCancel = () => {
   deassignModal.value = false;
 };
 
-
 const handleAssign = async () => {
   try {
     const response = await axios.get(
@@ -942,7 +941,6 @@ onMounted(async () => {
 
     const updatedData = response.data.data.map((record) => {
       let fullName = `${record.first_name} ${record.last_name}`;
-      // fullName = fullName.toUpperCase();
       return {
         ...record,
         fullName,
@@ -963,7 +961,6 @@ onMounted(async () => {
 
     const updatedData = response.data.data.map((record) => {
       let fullName = `${record.first_name} ${record.last_name}`;
-      // fullName = fullName.toUpperCase();
       return {
         ...record,
         fullName,

@@ -86,6 +86,8 @@
                                 name: record.name,
                                 code: record.activity_code,
                                 created_by: record.created_by,
+                                start_date: record.start_date,
+                                activity_list_id: record.activity_list_id,
                               },
                             }"
                             class="btn-icon"

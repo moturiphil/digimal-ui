@@ -1,6 +1,9 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="`${event_name} Activity - ${activity_code}`" />
+    <sdPageHeader
+      ghost
+      :title="`${event_name} Activity - ${activity_code} on ${formattedStartDate}`"
+    />
     <Main>
       <div class="button-container">
         <sdButton
@@ -47,6 +50,16 @@
           size="extra-small"
         >
           Archive Event &nbsp; &nbsp;
+        </sdButton>
+        &nbsp; &nbsp;
+        <sdButton
+          class="btn-import"
+          type="warning"
+          @click="openMatrixModal()"
+          size="extra-small"
+        >
+          Activity Matrix &nbsp; &nbsp;
+          <sdFeatherIcons type="award" size="extra-small" />
         </sdButton>
       </div>
 
@@ -288,6 +301,64 @@
                 </template>
               </a-modal>
               <!-- End Archive Event modal -->
+
+              <!-- Activity Matrix Modal -->
+              <a-modal
+                title="Payroll Activity Matrix"
+                :visible="isMatrixModalOpen"
+                @cancel="handleCancelMatrix"
+                width="60%"
+                :footer="null"
+              >
+                <sdCards headless>
+                  <div class="result-list-content">
+                    <a-row :gutter="15">
+                      <a-col class="w-100" :md="24">
+                        <sdCards headless>
+                          <sdHeader>
+                            <b>
+                              <span class="ai-playback-shuffle"></span>Payable
+                              Organizations
+                            </b>
+                          </sdHeader>
+                          <br />
+                          <br />
+                          <div>
+                            <sdButton
+                              class="spaced-button"
+                              size="extra-small"
+                              type="success"
+                              outlined
+                              v-for="org in org_matrixes"
+                              :key="org.id"
+                            >
+                              {{ org.org_id }}
+                            </sdButton>
+                          </div>
+                          <br />
+                          <div v-if="isLoading" class="spin">
+                            <a-spin />
+                          </div>
+                          <div v-else>
+                            <TableWrapper
+                              class="table-data-view table-responsive"
+                              v-show="activeClass === 'all'"
+                            >
+                              <a-table
+                                :dataSource="activity_matrixes"
+                                :columns="matrix_column"
+                              >
+                              </a-table>
+                            </TableWrapper>
+                          </div>
+                        </sdCards>
+                      </a-col>
+                    </a-row>
+                  </div>
+                </sdCards>
+              </a-modal>
+
+              <!-- End Activity Matrix modal -->
             </sdCards>
           </a-col>
         </a-row>
@@ -313,7 +384,6 @@ const columns = [
     title: "Participant Name",
     dataIndex: "fullName",
     key: "id",
-    // render: (text, record) => `${record.first_name} ${record.last_name}`,
   },
   {
     title: "Location",
@@ -354,6 +424,18 @@ const columns = [
     slots: { customRender: "activity" },
   },
 ];
+const matrix_column = [
+  {
+    title: "Matrix",
+    dataIndex: "pay_matrix_id",
+    key: "id",
+  },
+  {
+    title: "Rate",
+    dataIndex: "rate",
+    key: "id",
+  },
+];
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
 const dataSource = ref([]);
@@ -366,12 +448,8 @@ const isGenerating = computed(() => state.isGenerating);
 const isArchiveModalOpen = ref(false);
 const router = useRouter();
 const searchOfficerItem = ref("");
-
 const isModalOpen = ref(false);
-
 const activity_code = ref(query.code);
-
-console.log(activity_code.value);
 const recordCount = computed(() => {
   return dataSource.value.length;
 });
@@ -381,14 +459,50 @@ const confirmedCount = computed(() => {
 const pendingCount = computed(() => {
   return pending.value.length;
 });
-
-const created_by = query.created_by;
 const event_name = ref(query.name);
-// const event_id = query.id;
-console.log(created_by);
-
 const API_URL = `activity_invited_officers?activity_id=${query.id}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/activity_participants_export?activity_code=${query.code}`;
+const isMatrixModalOpen = ref(false);
+const activity_matrixes = ref([]);
+const org_matrixes = ref([]);
+const activity_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${query.activity_list_id}`;
+const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${query.activity_list_id}`;
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  // Function to get the ordinal suffix for a number
+  const getOrdinalSuffix = (n) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return s[(v - 20) % 10] || s[v] || s[0];
+  };
+
+  const formattedDay = `${day}${getOrdinalSuffix(day)}`;
+  const formattedMonth = monthNames[monthIndex];
+
+  return `${formattedDay} ${formattedMonth} ${year}`;
+};
+const start_date = query.start_date;
+const formattedStartDate = formatDate(start_date);
 
 const exportParticipants = async () => {
   try {
@@ -628,7 +742,6 @@ const formState = reactive({
 
 const sendInvites = async () => {
   try {
-    console.log(query.id);
     await axios
       .get(`notify_activity_participants/${query.id}`)
       .then((response) => response.data)
@@ -802,6 +915,44 @@ const generatePayroll = async () => {
 const openModal = () => {
   isModalOpen.value = true;
 };
+
+const openMatrixModal = () => {
+  isMatrixModalOpen.value = true;
+};
+
+const handleCancelMatrix = () => {
+  isMatrixModalOpen.value = false;
+};
+const getActivityMatrix = () => {
+  axios
+    .get(activity_matrix, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      console.log(response.data.data);
+      activity_matrixes.value = response.data.data;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+getActivityMatrix();
+const getOrgMatrix = () => {
+  axios
+    .get(orgs_matrix, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      org_matrixes.value = response.data.data;
+      console.log(org_matrixes.value);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+getOrgMatrix();
 </script>
 
 <style>
