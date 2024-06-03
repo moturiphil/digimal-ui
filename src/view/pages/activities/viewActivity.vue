@@ -1,12 +1,10 @@
 <template>
-  <!-- Wrapper component for the record view -->
   <RecordViewWrapper>
     <sdPageHeader title="MassNet Activities" />
     <!-- Main content area -->
     <Main>
       <div class="search-box">
         <span class="search-icon">
-          <!-- Increase the size of the search icon by setting the 'font-size' property -->
           <sdFeatherIcons type="search" size="24" />
         </span>
         <a-input
@@ -17,17 +15,13 @@
           style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
         />
       </div>
-      <!-- Rows for search and table -->
       <a-row :gutter="16" class="search-row"></a-row>
       <a-row :gutter="15">
-        <!-- Table column with activity data -->
         <a-col class="w-100" :md="24">
-          <!-- Display loading spinner while data is being fetched -->
           <sdCards headless>
             <div v-if="isLoading" class="spin">
               <a-spin />
             </div>
-            <!-- Table displaying activity data when not loading -->
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
                 <!-- Activity data table -->
@@ -36,12 +30,9 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
-                  <!-- Custom template for activity column -->
                   <template #activity="{ record }">
                     <td>
-                      <!-- Buttons for viewing confirmed and pending participants -->
                       <div class="table-actions">
-                        <!-- Button for viewing confirmed participants -->
                         <sdButton size="extra-small" type="success">
                           <router-link
                             :to="{
@@ -51,6 +42,8 @@
                                 name: record.name,
                                 code: record.activity_code,
                                 created_by: record.created_by,
+                                start_date: record.start_date,
+                                activity_list_id: record.activity_list_id,
                               },
                             }"
                             class="btn-icon"
@@ -146,18 +139,14 @@ const columns = [
   },
 ];
 
-// Component setup function
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
-//const visible = ref(false)
 const isLoading = ref(false);
-// const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const searchItem = ref("");
 const location_id = ref("");
 
-// Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
   fetchActivities();
 });
@@ -170,7 +159,6 @@ const onPageChange = async (page) => {
     console.error(error);
   }
 };
-// search events
 watch(
   () => searchItem.value,
   (newValue) => {
@@ -186,9 +174,7 @@ const fetchActivities = async () => {
     );
     const data = await response.data;
     datatotal.value = response.data.pagination.total;
-    // Format the data before assigning it to dataSource
     dataSource.value = data.data.map((item) => {
-      // const countyName = item.county_id[0].name;
       const countyName =
         item.county_id.length > 0
           ? item.county_id.map((County) => County.name).join(", ")
@@ -207,30 +193,6 @@ const fetchActivities = async () => {
     console.error(error);
   }
 };
-
-// // Reactive form state for search input
-// const formState = reactive({
-//   searchItem: "",
-// });
-
-// // Computed property for filtered search results
-// const results = computed(() => {
-//   const query = searchItem.value.toLowerCase();
-//   const regex = new RegExp(query, "i");
-//   if (!query) {
-//     return dataSource.value;
-//   } else {
-//     return dataSource.value.filter((user) => {
-//       return (
-//         regex.test(user.first_name) ||
-//         regex.test(user.last_name) ||
-//         regex.test(user.role_id)
-//       );
-//     });
-//   }
-// });
-
-// Export the component as default
 </script>
 <style scoped>
 .search-box {
