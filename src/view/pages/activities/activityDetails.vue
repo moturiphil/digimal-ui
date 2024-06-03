@@ -411,6 +411,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Unconfirmed Days",
+    dataIndex: "unconfirmed_days",
+    key: "id",
+  },
+  {
     title: "Status",
     dataIndex: "status",
     key: "id",
