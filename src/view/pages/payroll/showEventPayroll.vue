@@ -37,6 +37,28 @@
       >
         Validate Payroll &nbsp; &nbsp;
       </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        class="btn-import"
+        type="warning"
+        @click="handleApproval()"
+        size="extra-small"
+        v-if="
+          validate_status == 'Validated' && approved_status == 'Not Approved'
+        "
+      >
+        Approve Payroll &nbsp; &nbsp;
+      </sdButton>
+      <!-- &nbsp;&nbsp;
+      <sdButton
+        class="btn-import"
+        type="warning"
+        @click="handlePay()"
+        size="extra-small"
+        v-if="pay_status == 'Not Paid'"
+      >
+        Pay Event &nbsp; &nbsp;
+      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -153,6 +175,50 @@
                         </BasicFormWrapper>
                       </a-modal>
                       <!-- End of Add Allowance Modal -->
+
+                      &nbsp;&nbsp;
+
+                      <!-- Pay Modal -->
+                      <a-modal
+                        title="Payment OTP"
+                        :visible="isPayModalOpen"
+                        @cancel="handlePayCancel"
+                        class="title-success"
+                      >
+                        <div>
+                          <p>Enter payment OTP</p>
+                          <input type="number" v-model="inputValue" />
+                          <br />
+                          <br />
+                          <sdButton
+                            type="success"
+                            size="extra-small"
+                            @click="resendOTP()"
+                            :disabled="isDisabled"
+                          >
+                            Resend OTP
+                            {{ countdown > 0 ? "(" + countdown + "s)" : "" }}
+                          </sdButton>
+                        </div>
+                        <template v-slot:footer>
+                          <a-button
+                            @click="handleOk(recordId, inputValue)"
+                            type="success"
+                            :disabled="isPaying"
+                            >{{
+                              isLoading
+                                ? "Loading..."
+                                : isPaying
+                                ? "Processing Payment..."
+                                : "Pay"
+                            }}</a-button
+                          >
+                          <a-button @click="handleCancel()" type="danger"
+                            >Close</a-button
+                          >
+                        </template>
+                      </a-modal>
+                      <!-- End Pay Modal -->
                     </sdCards>
                   </a-col>
                 </a-row>
@@ -181,6 +247,8 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
+import store from "../../../vuex/store";
 
 const columns = [
   {
@@ -273,21 +341,11 @@ export default defineComponent({
     const searchItem = ref("");
     const eventpayroll_list = ref([]);
     const additional_allowance = ref([]);
-
     const { query } = useRoute();
-
     const validate_status = query.validate_status;
-
     const approved_status = query.approval_status;
-
-    console.log(validate_status);
-
-    console.log(
-      validate_status == "Not Validated" || approved_status == "Not Approved"
-    );
-
+    const pay_status = query.payment_status;
     const payroll_status = query.validated_status;
-
     const event_name = query.name;
     const duration = query.duration;
     const venue = query.venue;
@@ -297,8 +355,14 @@ export default defineComponent({
     const transport_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_transport_matrix`;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
     const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
+    const approve_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_approval`;
     const isModalOpen = ref(false);
+    const isPayModalOpen = ref(false);
     const records = ref("");
+    const router = useRouter();
+    const isDisabled = ref(true);
+    const countdown = ref(60);
+    const recordId = ref(null);
 
     const exportPayrollList = async () => {
       try {
@@ -360,6 +424,187 @@ export default defineComponent({
       } catch (error) {
         console.log(error);
       }
+    };
+
+    const handleApproval = () => {
+      try {
+        fetch(approve_payroll, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+          body: JSON.stringify({
+            payroll_id: Number(query.id),
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            if (data.success === true) {
+              notification.success({
+                message: "Success",
+                description: "Payroll Approved Successfully",
+              });
+              setTimeout(function () {
+                // location.reload();
+                router.go(-1);
+              }, 3000);
+            } else {
+              notification.error({
+                message: "Error",
+                description: "Payroll Approved Failed",
+              });
+            }
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const handlePay = () => {
+      isPayModalOpen.value = true;
+      countdownTimer();
+      recordId.value = query.id;
+
+      try {
+        fetch(
+          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${query.id}&payment_type=Event`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            if (data.success === true) {
+              notification.success({
+                message: "Success!",
+                description: data.message,
+              });
+              setTimeout(() => {}, 2000);
+            } else {
+              notification.error({
+                message: "Error!",
+                description: data.message,
+              });
+            }
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const resendOTP = () => {
+      try {
+        fetch(
+          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Event`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            countdownTimer();
+            if (data.success === true) {
+              notification.success({
+                message: "Success!",
+                description: data.message,
+              });
+              setTimeout(() => {}, 2000);
+            } else {
+              notification.error({
+                message: "Error!",
+                description: data.message,
+              });
+            }
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const countdownTimer = () => {
+      isDisabled.value = true;
+      countdown.value = 60;
+      startCountdown();
+    };
+
+    const startCountdown = () => {
+      console.log("starting countdown");
+      let timerId;
+      countdown.value = 60;
+      isDisabled.value = true;
+
+      const updateCountdown = () => {
+        countdown.value--;
+        console.log(countdown.value);
+        if (countdown.value <= 0) {
+          clearInterval(timerId);
+          isDisabled.value = false;
+        }
+      };
+
+      timerId = setInterval(updateCountdown, 1000);
+
+      updateCountdown();
+    };
+
+    const handleOk = async (id, inputValue) => {
+      store.commit("setIsPaying", true);
+      try {
+        const response = await axios.get(
+          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`, {
+            headers: authHeader(),
+          }
+        );
+        if (response.status == 200) {
+          store.commit("setIsPaying", true);
+          notification.success({
+            message: "Success",
+            description: "Payment processed successful",
+          });
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+
+          axios
+            .post(`event_payroll_payment`, {
+              payroll_id: recordId.value,
+            })
+            .then((responsePromise) => {
+              return responsePromise.data;
+            })
+            .then((data) => {
+              if (data.success == true) {
+                notification.success({
+                  message: "Success",
+                  description:
+                    "Payment Approved Successfully, Enter OTP to complete payment",
+                });
+              }
+            });
+        }
+      } catch (error) {
+        store.commit("setIsPaying", true);
+        notification.error({
+          message: "Error",
+          description: "Payment failed",
+        });
+        // setTimeout(function () {
+        //   location.reload();
+        // }, 3000);
+      }
+      isModalOpen.value = false;
     };
 
     const handleChange = (tab) => {
@@ -446,6 +691,10 @@ export default defineComponent({
       isModalOpen.value = false;
     };
 
+    const handlePayCancel = () => {
+      isPayModalOpen.value = false;
+    };
+
     const handleSubmit = async () => {
       const data = {
         payroll_id: query.id,
@@ -474,7 +723,7 @@ export default defineComponent({
               });
 
               const result = await response.json();
-              
+
               if (response.ok && result.success === true) {
                 notification.success({
                   message: "Success",
@@ -535,7 +784,7 @@ export default defineComponent({
           }
         }
       }
-    }
+    };
 
     return {
       crud,
@@ -562,6 +811,16 @@ export default defineComponent({
       payroll_status,
       approved_status,
       records,
+      handleApproval,
+      pay_status,
+      handlePay,
+      resendOTP,
+      handlePayCancel,
+      isPayModalOpen,
+      countdown,
+      countdownTimer,
+      isDisabled,
+      handleOk,
     };
   },
 });

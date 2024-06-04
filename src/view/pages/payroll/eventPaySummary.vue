@@ -1,30 +1,11 @@
 <template>
   <div class="activity-summary-inner">
-    <br />
-    <div v-for="item in data" :key="item.id">
+    <div v-for="item in data" :key="item.id" class="summary-item">
       <sdHeading class="summary-total" as="h4">
-        <!-- <span class="activity">{{ item.item }} : </span> -->
         <span class="activity">{{ item.item }} : </span>
         <span class="amount">{{ item.amount }}</span>
       </sdHeading>
-      <br />
     </div>
-    <br />
-    <a-form
-      :layout="formState.layout"
-      :model="formState"
-      :onFinish="submitPromo"
-    >
-    </a-form>
-    <sdButton
-      v-if="current === 3"
-      @click="onSubmit"
-      class="btn-proceed"
-      type="secondary"
-      size="large"
-    >
-      <a to="#">Place Order</a>
-    </sdButton>
   </div>
 </template>
 
@@ -66,3 +47,55 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.activity-summary-outer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px; /* Added padding for spacing */
+  box-sizing: border-box;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+/* .activity-summary-inner {
+  
+} */
+
+.summary-item {
+  margin-bottom: 10px; /* Added margin for spacing between items */
+}
+
+.summary-total {
+  font-size: 1.2em;
+  color: #333;
+}
+
+.activity {
+  font-weight: bold;
+}
+
+.amount {
+  color: #fa8b0b;
+}
+
+.promo-form {
+  margin-top: 20px; /* Added margin for spacing above the form */
+}
+
+.btn-proceed {
+  margin-top: 20px;
+}
+
+.btn-proceed a {
+  color: #fff;
+  text-decoration: none;
+}
+</style>

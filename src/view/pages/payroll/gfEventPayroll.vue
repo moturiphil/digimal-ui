@@ -2,6 +2,12 @@
   <Main>
     <SearchResultWrapper>
       <sdPageHeader ghost title="Global Fund Event Payroll">
+        <router-link v-bind:to="'event-payroll-matrix'">
+          <sdButton type="success" v-if="isAdmin">
+            <sdFeatherIcons size="small" class="icon-color-white" />
+            Payroll Matrix
+          </sdButton>
+        </router-link>
         <template #buttons> </template>
       </sdPageHeader>
     </SearchResultWrapper>

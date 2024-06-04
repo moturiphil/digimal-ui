@@ -43,8 +43,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <sdButton size="small" type="success">
-                                    &nbsp;&nbsp;
+                                  <sdButton size="extra-small" type="success">
                                     <router-link
                                       :to="{
                                         path: `/payroll/event-view/${record.id}`,
@@ -64,14 +63,13 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                      <span> Payroll Details</span>
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
                                   <sdButton
                                     type="success"
-                                    size="small"
+                                    size="extra-small"
                                     @click="handlePay(record.id)"
                                     >Pay Event</sdButton
                                   >
@@ -308,7 +306,7 @@ export default defineComponent({
     // handle payment
     const handlePay = (id) => {
       isModalOpen.value = true;
-      countdownTimer()
+      countdownTimer();
       recordId.value = id;
 
       try {
@@ -344,7 +342,6 @@ export default defineComponent({
     };
 
     const resendOTP = () => {
-
       try {
         fetch(
           `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Event`,
@@ -359,7 +356,7 @@ export default defineComponent({
           .then((response) => response.json())
           .then((data) => {
             console.log(data);
-            countdownTimer()
+            countdownTimer();
             if (data.success === true) {
               notification.success({
                 message: "Success!",
@@ -429,7 +426,7 @@ export default defineComponent({
     };
 
     const startCountdown = () => {
-      console.log('starting countdown');
+      console.log("starting countdown");
       let timerId;
       countdown.value = 60;
       isDisabled.value = true;

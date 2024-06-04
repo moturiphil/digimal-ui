@@ -43,8 +43,7 @@
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
-                                  <sdButton size="small" type="success">
-                                    &nbsp;&nbsp;
+                                  <sdButton size="extra-small" type="success">
                                     <router-link
                                       :to="{
                                         path: `/payroll/event-view/${record.id}`,
@@ -55,8 +54,7 @@
                                           venue: record.venue,
                                           date: record.start_date,
                                           validate_status: record.status,
-                                          approval_status:
-                                            record.approval_status,
+                                          approval_status: record.approval_status,
                                           payment_status: record.payment_status,
                                         },
                                       }"
@@ -64,14 +62,13 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
+                                      <span>Payroll Details</span>
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
                                   <sdButton
                                     type="success"
-                                    size="small"
+                                    size="extra-small"
                                     @click="handleApproval(record.id)"
                                     >Approve</sdButton
                                   >

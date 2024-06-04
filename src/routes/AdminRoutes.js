@@ -623,10 +623,10 @@ const routes = [
   },
   {
     path: "/gf-event-payroll",
-    name: "gloabal-fund-event-payroll",
+    name: "global-fund-event-payroll",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
+      /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
       ),
   },
   {
