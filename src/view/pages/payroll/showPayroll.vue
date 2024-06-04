@@ -1,6 +1,9 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Activity Payroll" />
+    <sdPageHeader
+      ghost
+      :title="`${activity_name} Payroll`"
+    />
     <Main>
       <sdButton
         class="btn-import"
@@ -258,10 +261,9 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
 
-    const { params, query } = useRoute();
-    console.log({ params, query });
-
-    console.log(query.id);
+    const { query } = useRoute();
+    console.log(query.activity);
+    const activity_name = query.activity;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
 
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
@@ -374,6 +376,7 @@ export default defineComponent({
       activeClass,
       handleVerify,
       exportPayrollList,
+      activity_name,
     };
   },
   // computed: {
