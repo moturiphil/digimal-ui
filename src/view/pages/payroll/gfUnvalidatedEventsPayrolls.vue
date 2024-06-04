@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="GF Event Unvalidated Payroll">
+    <sdPageHeader ghost title="GF Event Unvalidated Payrolls">
       <template #buttons>
         <div class="search-box">
           <a-input
