@@ -27,8 +27,8 @@
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
         <router-link v-bind:to="'event-payroll-matrix'">
           <sdButton type="success" v-if="isAdmin">
-            <sdFeatherIcons size="" class="icon-color-white" />
-            Assign Payroll Matrix
+            <sdFeatherIcons size="small" class="icon-color-white" />
+            Payroll Matrix
           </sdButton>
         </router-link>
         <a-row :gutter="25">

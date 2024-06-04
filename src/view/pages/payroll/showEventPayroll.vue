@@ -49,7 +49,7 @@
       >
         Approve Payroll &nbsp; &nbsp;
       </sdButton>
-      &nbsp;&nbsp;
+      <!-- &nbsp;&nbsp;
       <sdButton
         class="btn-import"
         type="warning"
@@ -58,7 +58,7 @@
         v-if="pay_status == 'Not Paid'"
       >
         Pay Event &nbsp; &nbsp;
-      </sdButton>
+      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -561,7 +561,6 @@ export default defineComponent({
 
     const handleOk = async (id, inputValue) => {
       store.commit("setIsPaying", true);
-      console.log(store);
       try {
         const response = await axios.get(
           `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`, {
