@@ -173,6 +173,13 @@
                                         query: {
                                           id: record.id,
                                           activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
                                         },
                                       }"
                                       class="btn-icon"
@@ -266,6 +273,13 @@
                                         query: {
                                           id: record.id,
                                           activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
                                         },
                                       }"
                                       class="btn-icon"
@@ -317,6 +331,13 @@
                                         query: {
                                           id: record.id,
                                           activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
                                         },
                                       }"
                                       class="btn-icon"
@@ -367,6 +388,13 @@
                                         query: {
                                           id: record.id,
                                           activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
                                         },
                                       }"
                                       class="btn-icon"

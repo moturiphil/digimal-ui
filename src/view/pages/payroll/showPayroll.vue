@@ -1,10 +1,12 @@
 <template>
   <div>
-    <sdPageHeader
-      ghost
-      :title="`${activity_name} Payroll`"
-    />
+    <sdPageHeader ghost :title="`${activity_name} Payroll`" />
     <Main>
+      <p class="detail-info">
+        <b>County:</b> {{ ` ${county}` }} || <b>Start Date:</b> {{ `${start_date}` }} ||
+        <b>Duration:</b> {{ `${no_of_days} days` }}
+      </p>
+      <p><b>Total Records: </b> {{ records }}</p>
       <sdButton
         class="btn-import"
         type="success"
@@ -260,12 +262,14 @@ export default defineComponent({
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("all");
-
+    const records = ref("");
     const { query } = useRoute();
-    console.log(query.activity);
     const activity_name = query.activity;
     const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
-
+    const county = query.county;
+    const sub_county = query.sub_county ? query.sub_county : "N/A";
+    const start_date = query.start_date;
+    const no_of_days = query.no_of_days;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
 
     const filteredData = computed(() => {
@@ -317,8 +321,7 @@ export default defineComponent({
         })
         .then((response) => {
           dataSource.value = response.data.data;
-          // households.value = response.data.data;
-          console.log(dataSource.value);
+          records.value = dataSource.value.length;
         })
         .catch((error) => {
           console.error(error);
@@ -349,16 +352,6 @@ export default defineComponent({
         });
     };
 
-    // handleChange(tab) {
-    //   if (tab === 'all') {
-    //     filteredData.value = dataSource.value;
-    //   } else if (tab === 'approved') {
-    //     filteredData.value = dataSource.value.filter(item => item.isVerified === 1);
-    //   } else if (tab === 'outliers') {
-    //     filteredData.value = dataSource.value.filter(item => item.hh_size > 5);
-    //   }
-    // }
-
     const formState = reactive({
       searchItem: "",
     });
@@ -370,13 +363,17 @@ export default defineComponent({
       dataSource,
       columns,
       formState,
-      // exportHouseHoldData,
       filteredData,
       handleChange,
       activeClass,
       handleVerify,
       exportPayrollList,
       activity_name,
+      county,
+      sub_county,
+      start_date,
+      no_of_days,
+      records,
     };
   },
   // computed: {
@@ -401,5 +398,22 @@ export default defineComponent({
   padding: 4px;
   margin-bottom: 18px;
   border-radius: 3px;
+}
+.detail-info {
+  font-family: Arial, sans-serif;
+  line-height: 1.5;
+}
+.detail-info .label {
+  font-weight: bold;
+}
+.detail-info .value {
+  margin-left: 5px;
+}
+.detail-info .section {
+  margin-bottom: 10px;
+}
+.sub-counties-list {
+  list-style-type: disc;
+  padding-left: 20px;
 }
 </style>

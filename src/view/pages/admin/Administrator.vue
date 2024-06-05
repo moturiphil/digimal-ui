@@ -23,7 +23,7 @@
               </a-card>
             </a-col>
             <a-col :span="8">
-              <a-card title="Sub County HH Registration" :bordered="true">
+              <a-card title="Sub County Events" :bordered="true">
                 <!-- <p>Event Participants OTPs</p> -->
                 <sdButton size="extra-small" type="success">
                   <router-link
