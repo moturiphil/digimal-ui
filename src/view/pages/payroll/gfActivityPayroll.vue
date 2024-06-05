@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Activity Payroll">
+    <sdPageHeader ghost title="Global Fund Activity Payroll">
       <template #buttons>
         <div class="search-box">
           <a-input
@@ -172,6 +172,14 @@
                                         path: `/payroll/view/${record.id}`,
                                         query: {
                                           id: record.id,
+                                          activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
                                         },
                                       }"
                                       class="btn-icon"
@@ -262,7 +270,17 @@
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
+                                        query: {
+                                          id: record.id,
+                                          activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
+                                        },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -310,7 +328,17 @@
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
+                                        query: {
+                                          id: record.id,
+                                          activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
+                                        },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -357,7 +385,17 @@
                                     <router-link
                                       :to="{
                                         path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
+                                        query: {
+                                          id: record.id,
+                                          activity: record.activity_id,
+                                          county: record.county,
+                                          sub_county: record.sub_county,
+                                          no_of_days: record.no_of_days,
+                                          start_date: record.start_date,
+                                          status : record.status,
+                                          approval_status : record.approval_status,
+                                          payment_status : record.payment_status,
+                                        },
                                       }"
                                       class="btn-icon"
                                       type="info"
@@ -394,18 +432,7 @@
                           >
                             <template>
                               <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <!-- <sdButton
-                                    type="check"
-                                    size="16"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <span class="badge badge-green"
-                                      >&nbsp;&nbsp; Verify</span
-                                    >
-                                  </sdButton> -->
-                                </div>
+                                <div class="table-actions"></div>
                               </td>
                             </template>
                           </a-table>
@@ -428,7 +455,6 @@ import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
 import {
   computed,
-  onMounted,
   ref,
   //reactive,
   watchEffect,
@@ -662,9 +688,6 @@ const handleApproval = (id) => {
           });
         }
       });
-
-    // const parser = new DOMParser();
-    // const otp = response.data.OTP;
   } catch (error) {
     console.log(error);
   }
@@ -701,7 +724,6 @@ const handleOk = async (id, inputValue) => {
         }
       });
   } catch (error) {
-    console.log(error);
     notification.error({
       message: "Error",
       description: "Payment failed",
@@ -717,14 +739,12 @@ const countdownTimer = () => {
 };
 
 const startCountdown = () => {
-  console.log("starting countdown");
   let timerId;
   countdown.value = 60;
   isDisabled.value = true;
 
   const updateCountdown = () => {
     countdown.value--;
-    console.log(countdown.value);
     if (countdown.value <= 0) {
       clearInterval(timerId);
       isDisabled.value = false;
@@ -735,6 +755,38 @@ const startCountdown = () => {
 
   updateCountdown();
 };
+
+const getActivityPayroll = () => {
+  axios
+    .get(API_URL)
+    .then((response) => {
+      let payload = response.data.data;
+      console.log(payload);
+
+      const filteredItems = [];
+      payload.forEach((item) => {
+        console.log(item.funding_source);
+        if (item.funding_source === 1) {
+          filteredItems.push(item);
+        }
+      });
+
+      activitypayroll.value = filteredItems;
+      // transform approval status to boolean
+      activitypayroll.value.forEach((item) => {
+        item.status = item.status === 1 ? "Validated" : "Not Validated";
+        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
+      });
+      dataSource.value = activitypayroll.value;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+getActivityPayroll();
 
 const resendOTP = () => {
   try {
@@ -774,35 +826,6 @@ const handleCancel = () => {
   isModalOpen.value = false;
 };
 
-onMounted(() => {
-  axios
-    .get(API_URL)
-    .then((response) => {
-      let payload = response.data.data;
-      console.log(payload);
-
-      const filteredItems = [];
-      payload.forEach((item) => {
-        console.log(item.funding_source);
-        if (item.funding_source === 1) {
-          filteredItems.push(item);
-        }
-      });
-
-      activitypayroll.value = filteredItems;
-      // transform approval status to boolean
-      activitypayroll.value.forEach((item) => {
-        item.status = item.status === 1 ? "Validated" : "Not Validated";
-        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status =
-          item.approval_status === 1 ? "Approved" : "Not Approved";
-      });
-      dataSource.value = activitypayroll.value;
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-});
 
 watchEffect(async () => {
   const querysearch = searchItem.value.toLowerCase();

@@ -1,14 +1,8 @@
 <template>
   <div>
-    <sdPageHeader ghost title="Sub Counties Household Registrations">
+    <sdPageHeader ghost title="Sub Counties Events Automation">
       <template #buttons>
         <div class="search-box">
-          <!-- <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by user, event or ip address..."
-          /> -->
         </div></template
       >
     </sdPageHeader>
@@ -48,7 +42,7 @@
                                     size="extra-small"
                                     type="success"
                                     @click="createEvent(record)"
-                                    v-if="record.reg_event_gen_status == null"
+                                    v-if="record.event_id == null"
                                   >
                                     <span>Create HH Event</span>
                                   </sdButton>
@@ -60,7 +54,7 @@
                                     type="warning"
                                     :disabled="isDisabled"
                                     @click="populateEvent(record)"
-                                    v-if="record.reg_event_gen_status !== null"
+                                    v-if="record.event_id !== null"
                                   >
                                     {{
                                       isLoading
@@ -103,15 +97,19 @@
                                     size="extra-small"
                                     type="success"
                                     @click="createDistributionEvent(record)"
+                                    v-if="record.distribution_event_id == null"
                                   >
                                     <span>Create Distribution Event</span>
                                   </sdButton>
-                                  &nbsp;&nbsp;
+                                  <span v-if="record.distribution_event_id == null">
+                                    &nbsp;&nbsp;
+                                  </span>
                                   <sdButton
                                     size="extra-small"
                                     type="warning"
                                     :disabled="isDisabled"
                                     @click="populateDistributionEvent(record)"
+                                    v-if="record.distribution_event_id !== null"
                                   >
                                     {{
                                       isLoading
