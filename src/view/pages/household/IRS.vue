@@ -213,19 +213,19 @@ import axios from "@/Axiosconfig";
   const org_ids = ref([]);
 
   const currentCounties = ref([
-    "nK0A12Q7MvS", //homa bay
-    "sPkRcDvhGWA", //kisii
-    "uepLTG8wGWJ", //nyamira
-    "tAbBVBbueqD", //kisumu
-    "u4t9H8XyU9P", //siaya
+    // "nK0A12Q7MvS", //homa bay
+    // "sPkRcDvhGWA", //kisii
+    // "uepLTG8wGWJ", //nyamira
+    // "tAbBVBbueqD", //kisumu
+    // "u4t9H8XyU9P", //siaya
     "fVra3Pwta0Q", //migori
-    // 'Tvf1zgVZ0K4',//busia
+    'Tvf1zgVZ0K4',//busia
     // 'NjWSbQTwys4',//lamu
     // 'nrI2khZx3d0',//kilifi
     // 'JsH2bnvNt2d',//tan river
-    "N7YETT3A9r1", //kwale
-    "QyGNX2DpR4h", //taita taveta
-    "wsBsC6gjHvn", // mombasa
+    // "N7YETT3A9r1", //kwale
+    // "QyGNX2DpR4h", //taita taveta
+    // "wsBsC6gjHvn", // mombasa
     // 'KGHhQ5GLd4k',//
     // 'BjC1xL40gHo',//kakamega
     // 'sANMZ3lpqGs',//vihiga

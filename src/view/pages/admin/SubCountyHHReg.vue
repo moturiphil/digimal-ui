@@ -54,7 +54,7 @@
                                     type="warning"
                                     :disabled="isDisabled"
                                     @click="populateEvent(record)"
-                                    v-if="record.event_id !== null"
+                                    v-if="record.event_id !== null && record.reg_event_gen_status==0"
                                   >
                                     {{
                                       isLoading
