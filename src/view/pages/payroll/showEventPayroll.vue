@@ -749,8 +749,6 @@ export default defineComponent({
 
               const result = await response.json();
 
-              console.log(result);
-
               if (response.ok && result.success === true) {
                 notification.success({
                   message: "Success",
