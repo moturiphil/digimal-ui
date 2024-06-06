@@ -162,6 +162,30 @@
                                 </a-select-option>
                               </a-select>
                             </a-form-item>
+
+                            <a-form-item
+                              v-if="formState.allowance === 90"
+                              name="no_of_days"
+                              label="No of Days"
+                            >
+                              <a-select
+                                v-model:value="formState.no_of_days"
+                                show-search
+                                option-filter-prop="label"
+                                placeholder="Select number of days"
+                                :maxTagCount="5"
+                                :maxTagPlaceholder="'...and more'"
+                              >
+                                <a-select-option
+                                  v-for="day in [1, 2, 3, 4, 5]"
+                                  :key="day"
+                                  :value="day"
+                                >
+                                  {{ day }} day{{ day > 1 ? "s" : "" }}
+                                </a-select-option>
+                              </a-select>
+                            </a-form-item>
+
                             <div class="record-form-actions text-right">
                               <sdButton
                                 size="default"
@@ -563,7 +587,8 @@ export default defineComponent({
       store.commit("setIsPaying", true);
       try {
         const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`, {
+          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`,
+          {
             headers: authHeader(),
           }
         );
@@ -628,9 +653,10 @@ export default defineComponent({
 
     const formState = reactive({
       allowance: "",
+      no_of_days: "",
     });
 
-    console.log(formState.allowance);
+    console.log(formState.no_of_days);
 
     watchEffect(async () => {
       const querysearch = encodeURIComponent(searchItem.value.toLowerCase());
@@ -708,10 +734,9 @@ export default defineComponent({
         if (additional_allowance.value[i].id == formState.allowance) {
           data.formula = additional_allowance.value[i].formula_name;
           data.rate = additional_allowance.value[i].rate;
-          console.log(additional_allowance.value[i]);
-          console.log(data.formula == "Additional DSA");
 
           if (data.formula == "Additional DSA") {
+            data.no_of_days = formState.no_of_days;
             try {
               const response = await fetch(dsa_api_url, {
                 method: "POST",
@@ -724,6 +749,8 @@ export default defineComponent({
 
               const result = await response.json();
 
+              console.log(result);
+
               if (response.ok && result.success === true) {
                 notification.success({
                   message: "Success",
@@ -733,6 +760,12 @@ export default defineComponent({
                 setTimeout(() => {
                   window.location.reload();
                 }, 3000);
+              } else if (result.success == false) {
+                notification.error({
+                  message: "Error",
+                  description: result.data,
+                });
+                isModalOpen.value = false;
               } else {
                 notification.error({
                   message: "Error",
