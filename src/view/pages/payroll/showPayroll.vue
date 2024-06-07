@@ -353,10 +353,11 @@ export default defineComponent({
     const start_date = query.start_date;
     const no_of_days = query.no_of_days;
     const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
+    const dsa_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_activity_dsa_matrix`;
+    const transport_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_activity_transport_matrix`;
     const additional_allowance = ref([]);
     const isModalOpen = ref(false);
     const payroll_list_id = ref();
-
     const filteredData = computed(() => {
       if (activeClass.value === "approved") {
         console.log(dataSource.value);
@@ -466,6 +467,103 @@ export default defineComponent({
       console.log(payroll_list_id.value);
     };
 
+    const handleSubmit = async () => {
+      const data = {
+        payroll_id: query.id,
+        formula: "",
+        rate: null,
+        payroll_list_id: payroll_list_id.value,
+        payroll_matrix_id: formState.allowance,
+      };
+
+      for (let i = 0; i < additional_allowance.value.length; i++) {
+        if (additional_allowance.value[i].id == formState.allowance) {
+          data.formula = additional_allowance.value[i].formula_name;
+          data.rate = additional_allowance.value[i].rate;
+
+          if (data.formula == "Additional DSA") {
+            console.log(data);
+            data.no_of_days = formState.no_of_days;
+            try {
+              const response = await fetch(dsa_api_url, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...authHeader(),
+                },
+                body: JSON.stringify(data),
+              });
+
+              const result = await response.json();
+
+              if (response.ok && result.success === true) {
+                notification.success({
+                  message: "Success",
+                  description: result.data,
+                });
+                isModalOpen.value = false;
+                setTimeout(() => {
+                  window.location.reload();
+                }, 3000);
+              } else if (result.success == false) {
+                notification.error({
+                  message: "Error",
+                  description: result.data,
+                });
+                isModalOpen.value = false;
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${result.status}`,
+                });
+                isModalOpen.value = false;
+              }
+            } catch (error) {
+              notification.error({
+                message: "Error",
+                description: `${error.message}`,
+              });
+            }
+          } else {
+            try {
+              const response = await fetch(transport_api_url, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...authHeader(),
+                },
+                body: JSON.stringify(data),
+              });
+
+              const result = await response.json();
+
+              if (response.ok && result.success === true) {
+                notification.success({
+                  message: "Success",
+                  description: result.data,
+                });
+                isModalOpen.value = false;
+                setTimeout(() => {
+                  window.location.reload();
+                }, 3000);
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${result.status}`,
+                });
+                isModalOpen.value = false;
+              }
+            } catch (error) {
+              notification.error({
+                message: "Error",
+                description: `${error.message}`,
+              });
+            }
+          }
+        }
+      }
+    };
+
     return {
       crud,
       isLoading,
@@ -486,6 +584,8 @@ export default defineComponent({
       records,
       addAllowance,
       isModalOpen,
+      additional_allowance,
+      handleSubmit,
     };
   },
   // computed: {
