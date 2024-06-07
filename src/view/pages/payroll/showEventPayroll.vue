@@ -387,6 +387,7 @@ export default defineComponent({
     const isDisabled = ref(true);
     const countdown = ref(60);
     const recordId = ref(null);
+    const payroll_list_id = ref();
 
     const exportPayrollList = async () => {
       try {
@@ -704,7 +705,6 @@ export default defineComponent({
 
     additionalAllowance();
 
-    const payroll_list_id = ref();
 
     const addAllowance = (payroll_detail) => {
       console.log(payroll_detail);

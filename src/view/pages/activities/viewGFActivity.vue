@@ -60,7 +60,13 @@
                         @change="handleChange($event, 'subcounty')"
                       ></a-select>
                     </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                    <a-col
+                      :xxl="24"
+                      :xl="24"
+                      :md="24"
+                      :sm="24"
+                      style="width: 150%"
+                    >
                       <a-select
                         v-model:value="activity"
                         show-search
@@ -73,7 +79,11 @@
                     </a-col>
                   </a-space>
                 </a-row>
-                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
+                <a-table
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                >
                   <template #activity="{ record }">
                     <td>
                       <div class="table-actions">
@@ -200,9 +210,9 @@ const activities = ref([]);
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
-const county_id=ref("");
-const sub_county_id=ref("");
-const activity_list_id=ref("");
+const county_id = ref("");
+const sub_county_id = ref("");
+const activity_list_id = ref("");
 
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
@@ -230,7 +240,9 @@ const updateFilters = async () => {
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let org = await org_ids.value
+    .filter((x) => x.org_id === org_id)
+    .map((e) => e.id);
   let parent_id = org[0] || 9;
   await fetchChildData(parent_id, org_id, org_level);
 };
@@ -240,7 +252,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
   let masterUrl = `gf_activities?per_page=${pageSize.value}&page=${currentPage.value}`;
   county_id.value = store.state.filters.county_id;
   sub_county_id.value = store.state.filters.sub_county_id;
-  activity_list_id.value
+  activity_list_id.value;
   if (org_level == "county") {
     store.dispatch("getCountyId", parent_id);
     county_id.value = store.state.filters.county_id;
@@ -256,7 +268,7 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     masterUrl += `&sub_county=${sub_county_id.value}`;
   } else if (org_level == "activity") {
     //get activities
-    activity_list_id.value=org_id;
+    activity_list_id.value = org_id;
     masterUrl += `&county=${county_id.value}&sub_county=${sub_county_id.value}&activity_list=${activity_list_id.value}`;
   }
   await axios
@@ -280,11 +292,23 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
         const response = await axios.get(masterUrl);
         const data = await response.data;
         datatotal.value = response.data.pagination.total;
-        activities.value = data.data.map((x) => ({
-          value: x.activity_list_id,
-          label: x.name,
-        }));
-        console.log(activities.value);
+
+        // Use a Set to track unique activity_list_ids
+        const uniqueActivities = new Set();
+        activities.value = data.data
+          .filter((x) => {
+            if (uniqueActivities.has(x.activity_list_id)) {
+              return false; // Skip duplicate
+            } else {
+              uniqueActivities.add(x.activity_list_id);
+              return true; // Include unique
+            }
+          })
+          .map((x) => ({
+            value: x.activity_list_id,
+            label: x.name,
+          }));
+
         // Format the data before assigning it to dataSource
         dataSource.value = data.data.map((item) => {
           const countyName =
@@ -301,6 +325,8 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
             sub_county_id: subCountyName,
           };
         });
+
+        console.log(activities.value);
         console.log(dataSource.value);
       } catch (error) {
         console.error(error);
@@ -358,10 +384,23 @@ const fetchGFActivities = async () => {
     );
     const data = await response.data;
     datatotal.value = response.data.pagination.total;
-    activities.value = data.data.map((x) => ({
-      value: x.activity_list_id,
-      label: x.name,
-    }));
+
+    // Use a Set to track unique activity_list_ids
+    const uniqueActivities = new Set();
+    activities.value = data.data
+      .filter((x) => {
+        if (uniqueActivities.has(x.activity_list_id)) {
+          return false; // Skip duplicate
+        } else {
+          uniqueActivities.add(x.activity_list_id);
+          return true; // Include unique
+        }
+      })
+      .map((x) => ({
+        value: x.activity_list_id,
+        label: x.name,
+      }));
+
     // Format the data before assigning it to dataSource
     dataSource.value = data.data.map((item) => {
       const countyName =

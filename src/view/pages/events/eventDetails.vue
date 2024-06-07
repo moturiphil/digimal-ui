@@ -97,6 +97,17 @@
                     Pending Participants
                   </a>
                 </li>
+                <li>
+                  <sdButton
+                    class="btn-import"
+                    type="warning"
+                    @click="openCadreModal()"
+                    size="extra-small"
+                  >
+                    Participation Summary &nbsp; &nbsp;
+                    <sdFeatherIcons type="users" size="extra-small" />
+                  </sdButton>
+                </li>
               </ul>
             </div>
           </a-col>
@@ -340,6 +351,40 @@
 
                       <!-- End Event Matrix modal -->
 
+                      <!-- Cadre Modal -->
+                      <a-modal
+                        title="Participation Summary"
+                        :visible="isCadreModalOpen"
+                        @cancel="handleCancelCadre"
+                        width="40%"
+                        :footer="null"
+                      >
+                        <sdCards headless>
+                          <div class="result-list-content">
+                            <a-row :gutter="15">
+                              <a-col class="w-100" :md="24">
+                                <sdCards headless>
+                                  <div>
+                                    <ul class="cadre-list">
+                                      <li
+                                        v-for="cadre in cadres"
+                                        :key="cadre.role_id"
+                                        class="cadre-list-item"
+                                      >
+                                        {{ cadre.role_id }} - {{ cadre.count }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                  <br />
+                                </sdCards>
+                              </a-col>
+                            </a-row>
+                          </div>
+                        </sdCards>
+                      </a-modal>
+
+                      <!-- End Cadre Modal -->
+
                       <!-- Assign & Deassign Modals -->
                       <a-modal
                         title="Assign Facilitator"
@@ -488,14 +533,17 @@ const isGenerating = computed(() => state.isGenerating);
 const isModalOpen = ref(false);
 const isArchiveModalOpen = ref(false);
 const isMatrixModalOpen = ref(false);
+const isCadreModalOpen = ref(false);
 const participant_id = ref("");
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
 const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${plainquery.event_list_id}`;
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
+const cadres_url = `${process.env.VUE_APP_BASE_URL}/get_event-registration_role_count/${plainquery.id}`;
 const event_matrixes = ref([]);
 const org_matrixes = ref([]);
+const cadres = ref([]);
 const isAssignModal = ref(false);
 const deassignModal = ref(false);
 const participant = ref("");
@@ -736,6 +784,14 @@ const handleCancelMatrix = () => {
   isMatrixModalOpen.value = false;
 };
 
+const openCadreModal = () => {
+  isCadreModalOpen.value = true;
+};
+
+const handleCancelCadre = () => {
+  isCadreModalOpen.value = false;
+};
+
 const getEventMatrix = () => {
   axios
     .get(event_matrix, {
@@ -766,6 +822,22 @@ const getOrgMatrix = () => {
 };
 
 getOrgMatrix();
+
+const getTraineCadres = () => {
+  axios
+    .get(cadres_url, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      cadres.value = response.data.data;
+      console.log(cadres.value);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+getTraineCadres();
 
 const exportParticipants = async () => {
   try {
@@ -1011,6 +1083,19 @@ onMounted(async () => {
 
 .button-container sdButton {
   margin: 5px;
+}
+
+.cadre-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.cadre-list-item {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 4px;
 }
 
 @media (min-width: 769px) {
