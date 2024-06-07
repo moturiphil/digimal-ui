@@ -461,10 +461,12 @@ export default defineComponent({
     additionalAllowance();
 
     const addAllowance = (payroll_detail) => {
-      console.log(payroll_detail);
       payroll_list_id.value = payroll_detail.id;
       isModalOpen.value = true;
-      console.log(payroll_list_id.value);
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
     };
 
     const handleSubmit = async () => {
@@ -586,6 +588,7 @@ export default defineComponent({
       isModalOpen,
       additional_allowance,
       handleSubmit,
+      handleCancel,
     };
   },
   // computed: {
