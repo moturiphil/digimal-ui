@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader ghost :title="`${post_name} - Securities`" />
+    <sdPageHeader ghost :title="`${dropoff_name} - Securities`" />
 
     <Main>
       &nbsp;&nbsp;
@@ -30,16 +30,16 @@
                   :scroll="{ x: 50 }"
                   :expand-column-width="100"
                 >
-                  <template #workers="{ record }">
+                  <template #actions="{ record }">
                     <td>
                       <div class="table-actions">
                         <sdButton
                           size="extra-small"
                           type="danger"
                           :disabled="isStarting"
-                          @click="removeMatrix(record.id)"
+                          @click="removeMatrix(record.user_id)"
                         >
-                          <span> De-Assign Post Worker </span>
+                          <span> De-Assign Security </span>
                         </sdButton>
                         &nbsp;&nbsp;
                         <sdButton
@@ -167,6 +167,12 @@ const columns = [
     dataIndex: "shift",
     key: "id",
   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "actions",
+    slots: { customRender: "actions" },
+  },
 ];
 
 const DragAndDropTable = defineComponent({
@@ -188,6 +194,8 @@ const DragAndDropTable = defineComponent({
     const post_guard = ref("");
     const isSecurityModalOpen = ref(false);
     const users = ref("");
+    const dropoff_id = query.id;
+    const dropoff_name = query.name;
 
     const { gender } = reactive({
       gender: [
@@ -219,11 +227,7 @@ const DragAndDropTable = defineComponent({
       otp: null,
     });
 
-    const post_id = query.id;
-
-    const post_name = query.name;
-
-    console.log(post_name);
+    console.log(dropoff_name);
 
     onMounted(async () => {
       getSecurities();
@@ -290,12 +294,13 @@ const DragAndDropTable = defineComponent({
     };
 
     const removeMatrix = async (id) => {
-      const deassignWorkerUrl = `${process.env.VUE_APP_BASE_URL}/remove_post_workers?worker_id=${id}?distribution_post_id=${post_id}`;
+      console.log(id);
+      const deassignWorkerUrl = `${process.env.VUE_APP_BASE_URL}/remove_dropoff_security`;
 
       try {
         const data = {
-          worker_id: id,
-          distribution_post_id: post_id,
+          user_id: id,
+          dropoff_id: dropoff_id,
         };
 
         console.log(JSON.stringify(data));
@@ -339,132 +344,12 @@ const DragAndDropTable = defineComponent({
       }
     };
 
-    const handleSubmit = () => {
-      const data = {
-        first_name: formState.first_name,
-        middle_name: formState.middle_name,
-        last_name: formState.last_name,
-        id_no: formState.id_no,
-        phone_no: formState.phone_no,
-        gender: formState.gender,
-        shift: formState.shift,
-        otp: formState.otp,
-        post_id: post_id,
-      };
-
-      sessionStorage.setItem("stakeholder", JSON.stringify(data));
-      store.commit("setIsSubmitting", true);
-      const sendotp = {
-        first_name: formState.first_name,
-        last_name: formState.last_name,
-        phone_no: formState.phone_no,
-      };
-      console.log(JSON.stringify(sendotp));
-
-      if (!this.security_otp) {
-        ArticleSchema.validate(this.formState, { abortEarly: false })
-          .then(() => {
-            fetch(`${API_URL}/security/get_otp`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...authHeader(),
-              },
-              body: JSON.stringify(sendotp),
-            })
-              .then((response) => response.json())
-              .then(({ success, message }) => {
-                console.log(message);
-                if (success == true) {
-                  notification["success"]({
-                    message: "Success",
-                    description: message,
-                    duration: 5.5,
-                  });
-                  this.security_otp = true;
-
-                  const stakeholder_data =
-                    sessionStorage.getItem("stakeholder");
-
-                  console.log(stakeholder_data);
-
-                  store.commit("setIsSubmitting", false);
-                }
-                // show error message from the api response
-                else {
-                  notification["error"]({
-                    message: "Error!",
-                    description: message,
-                    duration: 5.5,
-                  });
-                }
-              })
-              .catch((error) => {
-                store.commit("setIsSubmitting", false);
-                notification["error"]({
-                  message: "Error!",
-                  description: `${error}`,
-                  duration: 5.5,
-                });
-              });
-          })
-          .catch((err) => {
-            store.commit("setIsSubmitting", false);
-            notification.error({
-              message: "Could not submit!",
-              description: "An error has occured. Please try again later.",
-            });
-            err.inner.forEach((e) => {
-              this.errors[e.path] = e.message;
-            });
-          });
-      } else {
-        console.log(JSON.stringify(data));
-        fetch(`${API_URL}/security/create`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            console.log(message);
-            if (success == true) {
-              store.commit("setIsSubmitting", false);
-              notification["success"]({
-                message: "Post Security Registered Successfully",
-                description: message,
-                duration: 5.5,
-              });
-            }
-            // show error message from the api response
-            else {
-              store.commit("setIsSubmitting", false);
-              notification["error"]({
-                message: "Error!",
-                description: message,
-                duration: 5.5,
-              });
-            }
-          })
-          .catch((error) => {
-            store.commit("setIsSubmitting", false);
-            notification["error"]({
-              message: "Error!",
-              description: `${error}`,
-              duration: 5.5,
-            });
-          });
-      }
-    };
 
     const handleSubmitShift = () => {
       const data = {
         guard_id: post_guard.value,
         shift_id: formState.shift,
-        distribution_post_id: post_id,
+        distribution_post_id: dropoff_id,
       };
 
       console.log(JSON.stringify(data));
@@ -507,32 +392,6 @@ const DragAndDropTable = defineComponent({
         });
     };
 
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    const handleShiftCancel = () => {
-      isModalShiftOpen.value = false;
-    };
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    const openSecurityModal = (id) => {
-      console.log(id);
-      isSecurityModalOpen.value = true;
-      formState.drop_off_point_id = id;
-    };
-
-    const handleCancelSecurity = () => {
-      isSecurityModalOpen.value = false;
-    };
 
     const handleAssignSecurity = async () => {
       try {
@@ -586,6 +445,33 @@ const DragAndDropTable = defineComponent({
       console.log(users.value);
     };
 
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
+
+    const handleShiftCancel = () => {
+      isModalShiftOpen.value = false;
+    };
+
+    const onSelectChange = (selectedRowKey) => {
+      selectedRowKeys.value = selectedRowKey;
+    };
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: onSelectChange,
+    };
+
+    const openSecurityModal = (id) => {
+      console.log(id);
+      isSecurityModalOpen.value = true;
+      formState.drop_off_point_id = id;
+    };
+
+    const handleCancelSecurity = () => {
+      isSecurityModalOpen.value = false;
+    };
+
     return {
       dateFormat,
       postdata,
@@ -605,11 +491,9 @@ const DragAndDropTable = defineComponent({
       dataSource,
       columns,
       formState,
-      post_id,
       removeMatrix,
       handleSubmitShift,
       validate,
-      handleSubmit,
       isSecurityModalOpen,
       openSecurityModal,
       handleCancelSecurity,
@@ -617,7 +501,7 @@ const DragAndDropTable = defineComponent({
       security_otp,
       gender,
       shift,
-      post_name,
+      dropoff_name,
       errors: {
         gender: null,
         name: null,
