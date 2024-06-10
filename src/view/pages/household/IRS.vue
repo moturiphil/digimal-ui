@@ -260,7 +260,7 @@ watch(
 onMounted(async () => {
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-    selecteLocation.value = access_level.value.location.org_id;
+    selecteLocation.value = access_level.value.location.id;
     filterAccessList.value = [
       "country",
       "county",
@@ -301,7 +301,7 @@ const updateFilters = () => {
     org_ids.value = [
       {
         id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
+        org_id: access_level.value.location.id,
       },
     ];
     fetchCounties();
@@ -315,70 +315,70 @@ const updateFilters = () => {
     ];
     counties.value = [
       {
-        value: access_level.value.location.org_id,
+        value: access_level.value.location.id,
         label: access_level.value.location.name,
       },
     ];
     org_ids.value = [
       {
         id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
+        org_id: access_level.value.location.id,
       },
     ];
   } else if (access_level.value.level.id == 3) {
     filterAccessList.value = ["subcounty", "ward", "location", "sublocation"];
     subcounties.value = [
       {
-        value: access_level.value.location.org_id,
+        value: access_level.value.location.id,
         label: access_level.value.location.name,
       },
     ];
     org_ids.value = [
       {
         id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
+        org_id: access_level.value.location.id,
       },
     ];
   } else if (access_level.value.level.id == 4) {
     filterAccessList.value = ["ward", "location", "sublocation"];
     wards.value = [
       {
-        value: access_level.value.location.org_id,
+        value: access_level.value.location.id,
         label: access_level.value.location.name,
       },
     ];
     org_ids.value = [
       {
         id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
+        org_id: access_level.value.location.id,
       },
     ];
   } else if (access_level.value.level.id == 5) {
     filterAccessList.value = ["location", "sublocation"];
     locations.value = [
       {
-        value: access_level.value.location.org_id,
+        value: access_level.value.location.id,
         label: access_level.value.location.name,
       },
     ];
     org_ids.value = [
       {
         id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
+        org_id: access_level.value.location.id,
       },
     ];
   } else if (access_level.value.level.id == 6) {
     filterAccessList.value = ["sublocation"];
     sublocations.value = [
       {
-        value: access_level.value.location.org_id,
+        value: access_level.value.location.id,
         label: access_level.value.location.name,
       },
     ];
     org_ids.value = [
       {
         id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
+        org_id: access_level.value.location.id,
       },
     ];
   }
@@ -402,44 +402,44 @@ const fetchChildData = async (location_id, org_id, org_level) => {
   let fetchUrl = `get_sub_counties_list`;
   let masterListUrl = `irs_household_dashboard?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`;
   if (org_level == "county") {
-    selecteLocation.value = org_id || "";
+    selecteLocation.value = location_id || "";
     //get subcounties
     fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&org_id=${selecteLocation.value}`;
+    masterListUrl += `&location_id=${selecteLocation.value}`;
     //clear fields
     subcounty.value = "Select SubCounty";
     ward.value = " Select Ward";
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "subcounty") {
-    selecteLocation.value = org_id || "";
+    selecteLocation.value = location_id || "";
     //get wards
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&org_id=${selecteLocation.value}`;
+    fetchUrl += `?parent_id=${location_id}`;
+    masterListUrl += `&location_id=${selecteLocation.value}`;
     //clear fields
     ward.value = " Select Ward";
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "ward") {
-    selecteLocation.value = org_id || "";
+    selecteLocation.value = location_id || "";
     //get locatios
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&org_id=${selecteLocation.value}`;
+    fetchUrl += `?parent_id=${location_id}`;
+    masterListUrl += `&location_id=${selecteLocation.value}`;
     //clear fields
     location.value = "Select Location";
     sublocation.value = "Select Sub Location";
   } else if (org_level == "location") {
-    selecteLocation.value = org_id || "";
+    selecteLocation.value = location_id || "";
     //get sub locatios
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&org_id=${selecteLocation.value}`;
+    fetchUrl += `?parent_id=${location_id}`;
+    masterListUrl += `&location_id=${selecteLocation.value}`;
     //clear fields
     sublocation.value = "Select Sub Location";
   } else if (org_level == "sublocation") {
-    selecteLocation.value = org_id || "";
+    selecteLocation.value = location_id || "";
     //get sublocations stats
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&org_id=${selecteLocation.value}`;
+    fetchUrl += `?parent_id=${location_id}`;
+    masterListUrl += `&location_id=${selecteLocation.value}`;
   }
   await axios
     .get(`${fetchUrl}`)
