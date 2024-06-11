@@ -248,8 +248,8 @@ const currentCounties = ref([
   "N7YETT3A9r1", //kwale
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//bungoma
-  // 'BjC1xL40gHo',//kakamega
+  "KGHhQ5GLd4k", //bungoma
+  "BjC1xL40gHo", //kakamega
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
