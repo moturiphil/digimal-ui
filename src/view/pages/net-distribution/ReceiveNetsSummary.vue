@@ -40,6 +40,16 @@
                     Return Nets to Drop Off Point
                   </a>
                 </li>
+                <li>
+                  <sdButton
+                    class="btn-import"
+                    type="warning"
+                    @click="openTransferModal()"
+                    size="extra-small"
+                  >
+                    Transfer Households
+                  </sdButton>
+                </li>
               </ul>
             </div>
             <div class="search-filter-menu">
@@ -569,11 +579,13 @@
                                 label="Reason For Return"
                               >
                                 <a-textarea
-                                    :style="{ width: '100%' }"
-                                    v-model:value="returns_formState.return_reason"
-                                    placeholder="Enter return reson here..."
-                                    :auto-size="{ minRows: 2, maxRows: 5 }"
-                                  />
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.return_reason
+                                  "
+                                  placeholder="Enter return reson here..."
+                                  :auto-size="{ minRows: 2, maxRows: 5 }"
+                                />
                               </a-form-item>
                               <div class="record-form-actions text-right">
                                 <sdButton
@@ -588,6 +600,62 @@
                           </BasicFormWrapper>
                         </a-modal>
                         <!-- end of return nets modal -->
+
+                        <!-- Transfer HH Modal -->
+
+                        <a-modal
+                          title="Transfer Households"
+                          :visible="isTransferModalOpen"
+                          @cancel="handleCancelTransfer"
+                          width="50%"
+                          footer=""
+                        >
+                          <BasicFormWrapper>
+                            <a-form
+                              class="add-record-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="addnew"
+                              :model="formState"
+                              @finish="handleSubmit"
+                            >
+                              <a-form-item
+                                name="Post"
+                                label="Select Post of transfer"
+                              >
+                                <a-select
+                                  v-model:value="formState.post"
+                                  show-search
+                                  option-filter-prop="label"
+                                  placeholder="Select one"
+                                  @search="handleSupervisorSearch"
+                                >
+                                  <a-select-option
+                                    v-for="user in supervisors"
+                                    :key="user.id"
+                                    :value="user.id"
+                                    :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
+                                  >
+                                    {{ user.first_name }} {{ user.last_name }}
+                                    {{ user.other_name }} - {{ user.id_no }},{{
+                                      user.role_id
+                                    }}, {{ user.location_id }}
+                                  </a-select-option>
+                                </a-select>
+                              </a-form-item>
+                              <div class="record-form-actions text-right">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
+                                  {{ isLoading ? "Loading..." : "Submit" }}
+                                </sdButton>
+                              </div>
+                            </a-form>
+                          </BasicFormWrapper>
+                        </a-modal>
+                        <!-- End of Transfer hh modal -->
                       </div>
                     </sdCards>
                   </a-col>
@@ -741,6 +809,7 @@ const isModalOpen = ref(false);
 const returnsModalOpen = ref(false);
 const post_name = query.name;
 const searchItem = ref("");
+const isTransferModalOpen = ref(false);
 
 const formState = reactive({
   date_received: "",
@@ -761,7 +830,7 @@ const returns_formState = reactive({
   to_drop_off_point_id: "",
   number_of_nets: "",
   date_returned: "",
-  return_reason:"",
+  return_reason: "",
 });
 
 onMounted(() => {
@@ -784,10 +853,10 @@ const handleTransactions = (tab) => {
   tab === "receive"
     ? handleChange("do_point")
     : tab === "transfer"
-      ? handleChange("transfer_ins")
-      : tab === "return"
-        ? openReturnsModal()
-        : null;
+    ? handleChange("transfer_ins")
+    : tab === "return"
+    ? openReturnsModal()
+    : null;
 };
 
 const openReceiveModal = (type, id) => {
@@ -909,7 +978,7 @@ const handleReturns = () => {
     number_of_nets: returns_formState.number_of_nets,
     date_returned: dayjs(returns_formState.date_returned).format("YYYY-MM-DD"),
     delivery_note_number: returns_formState.delivery_note_number,
-    return_reason:returns_formState.return_reason,
+    return_reason: returns_formState.return_reason,
   };
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
@@ -938,7 +1007,7 @@ const handleReturns = () => {
         returns_formState.to_drop_off_point_id = "";
         returns_formState.number_of_nets = "";
         returns_formState.date_returned = "";
-        returns_formState.return_reason="";
+        returns_formState.return_reason = "";
         window.location.reload();
       })
       .catch((error) => {
@@ -979,14 +1048,14 @@ const receiveNets = async () => {
     transaction_type.value === "transfers"
       ? data
       : transaction_type.value === "receive"
-        ? rec_data
-        : null;
+      ? rec_data
+      : null;
   const url =
     transaction_type.value === "transfers"
       ? "receive_nets_from_post"
       : transaction_type.value === "receive"
-        ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
-        : null;
+      ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
+      : null;
 
   console.log(JSON.stringify(payload));
   console.log(formState.distribution_id);
@@ -1166,6 +1235,14 @@ const cancelTransfer = async (id) => {
       description: `${error}`,
     });
   }
+};
+
+const openTransferModal = () => {
+  isTransferModalOpen.value = true;
+};
+
+const handleCancelTransfer = () => {
+  isTransferModalOpen.value = false;
 };
 </script>
 <style scoped>
