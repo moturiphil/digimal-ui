@@ -607,7 +607,7 @@
                           title="Transfer Households"
                           :visible="isTransferModalOpen"
                           @cancel="handleCancelTransfer"
-                          width="50%"
+                          width="30%"
                           footer=""
                         >
                           <BasicFormWrapper>
@@ -619,33 +619,32 @@
                               :model="formState"
                               @finish="handleSubmit"
                             >
-                              <a-form-item
-                                name="Post"
-                                label="Select Post of transfer"
-                              >
+                              <p>
+                                Please note that all unserved households within
+                                {{ post_name }} will be moved to the selected
+                                post.
+                              </p>
+                              <a-form-item name="Post">
                                 <a-select
-                                  v-model:value="formState.post"
+                                  v-model:value="formState.transfer_post"
                                   show-search
                                   option-filter-prop="label"
                                   placeholder="Select one"
-                                  @search="handleSupervisorSearch"
+                                  @search="handlePostSearch"
                                 >
                                   <a-select-option
-                                    v-for="user in supervisors"
-                                    :key="user.id"
-                                    :value="user.id"
-                                    :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
+                                    v-for="post in posts"
+                                    :key="post.id"
+                                    :value="post.id"
+                                    :label="`${post.name} - ${post.post_code}`"
                                   >
-                                    {{ user.first_name }} {{ user.last_name }}
-                                    {{ user.other_name }} - {{ user.id_no }},{{
-                                      user.role_id
-                                    }}, {{ user.location_id }}
+                                    {{ post.name }} - {{ post.post_code }}
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
                               <div class="record-form-actions text-right">
                                 <sdButton
-                                  size="default"
+                                  size="extra-small"
                                   htmlType="Save"
                                   type="success"
                                 >
@@ -676,7 +675,7 @@ import { onMounted, ref, reactive } from "vue";
 import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
 import DistributionPostWorkerSummary from "./DistributionPostWorkerSummary.vue";
 import authHeader from "../../../services/auth-header";
-// import { useStore } from "vuex";
+import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
@@ -789,10 +788,7 @@ const columns = [
     slots: { customRender: "action" },
   },
 ];
-// const { state } = useStore();
-// const crud = computed(() => state.crud.data);
-// const isLoading = computed(() => state.crud.loading);
-// const selectedRowKeys = ref([]);
+
 const activeClass = ref("do_point");
 const activeTransaction = ref("receive");
 const transaction_type = ref("");
@@ -810,7 +806,7 @@ const returnsModalOpen = ref(false);
 const post_name = query.name;
 const searchItem = ref("");
 const isTransferModalOpen = ref(false);
-
+const posts = ref([]);
 const formState = reactive({
   date_received: "",
   distribution_id: "",
@@ -893,6 +889,103 @@ const fetchPosts = async () => {
       .then((data) => {
         console.log(data.data);
         postdata.value = data.data;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const fetchTransferPosts = async () => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/posts_data?query=${searchItem.value}`, //?
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        posts.value = data.data.map((post) => ({
+          ...post,
+          label: `${post.name} ${post.post_code}`,
+        }));
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+fetchTransferPosts();
+
+const handleSubmit = async () => {
+  // try {
+  //   const response = await fetch(
+  //     `move_households_to_post/${query.id}/${formState.transfer_post}`
+  //   );
+  //   const result = await response.json();
+
+  //   const { success, data } = result;
+
+  //   console.log({ success, data });
+
+  //   if (success === true) {
+  //     notification.success({
+  //       message: "Success",
+  //       description: data,
+  //     });
+  //     isModalOpen.value = false;
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //     }, 3000);
+  //   } else {
+  //     notification.error({
+  //       message: "Error",
+  //       description: `${data}`,
+  //     });
+  //     isModalOpen.value = false;
+  //   }
+  // } catch (error) {
+  //   notification.error({
+  //     message: "Error",
+  //     description: `${error}`,
+  //   });
+  // }
+
+  try {
+    fetch(`${process.env.VUE_APP_BASE_URL}/move_households_to_post/${query.id}/${formState.transfer_post}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    })
+      .then((response) => response.json())
+      .then(({ success, data }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `${data}`,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data}`,
+          });
+        }
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
       });
   } catch (error) {
     notification.error({
@@ -1056,10 +1149,6 @@ const receiveNets = async () => {
       : transaction_type.value === "receive"
       ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
       : null;
-
-  console.log(JSON.stringify(payload));
-  console.log(formState.distribution_id);
-  console.log(url);
 
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {

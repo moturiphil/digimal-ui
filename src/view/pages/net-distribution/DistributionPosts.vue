@@ -218,7 +218,7 @@
                     </a-select>
                   </a-form-item>
                   <div class="record-form-actions text-right">
-                    <sdButton size="default" htmlType="Save" type="success">
+                    <sdButton size="small" htmlType="Save" type="success">
                       {{ isLoading ? "Loading..." : "Submit" }}
                     </sdButton>
                   </div>
