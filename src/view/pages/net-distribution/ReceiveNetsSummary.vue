@@ -675,7 +675,7 @@ import { onMounted, ref, reactive } from "vue";
 import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
 import DistributionPostWorkerSummary from "./DistributionPostWorkerSummary.vue";
 import authHeader from "../../../services/auth-header";
-import axios from "@/Axiosconfig";
+// import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
