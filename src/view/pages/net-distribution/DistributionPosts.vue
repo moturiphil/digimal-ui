@@ -272,30 +272,22 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    // fixed: 'right',
-    // width: 20,
     key: "activities",
     slots: { customRender: "activities" },
   },
 ];
 
-// const isStarting = ref(false)
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const distributionStatus = ref({});
-// const posts = ref([])
 const { state } = useStore();
-// const crud = computed(() => state.crud.data);
 const isLoading = computed(() => state.crud.loading);
-// const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const supervisors = ref([]);
 const searchItem = ref("");
 const searchsupervisorItem = ref("");
 const isModalOpen = ref(false);
-
-//org levels
 const access_level = ref({});
 const filterAccessList = ref([]);
 const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
