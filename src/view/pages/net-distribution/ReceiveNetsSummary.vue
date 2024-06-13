@@ -40,6 +40,16 @@
                     Return Nets to Drop Off Point
                   </a>
                 </li>
+                <li>
+                  <sdButton
+                    class="btn-import"
+                    type="warning"
+                    @click="openTransferModal()"
+                    size="extra-small"
+                  >
+                    Transfer Households
+                  </sdButton>
+                </li>
               </ul>
             </div>
             <div class="search-filter-menu">
@@ -569,11 +579,13 @@
                                 label="Reason For Return"
                               >
                                 <a-textarea
-                                    :style="{ width: '100%' }"
-                                    v-model:value="returns_formState.return_reason"
-                                    placeholder="Enter return reson here..."
-                                    :auto-size="{ minRows: 2, maxRows: 5 }"
-                                  />
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.return_reason
+                                  "
+                                  placeholder="Enter return reson here..."
+                                  :auto-size="{ minRows: 2, maxRows: 5 }"
+                                />
                               </a-form-item>
                               <div class="record-form-actions text-right">
                                 <sdButton
@@ -588,6 +600,61 @@
                           </BasicFormWrapper>
                         </a-modal>
                         <!-- end of return nets modal -->
+
+                        <!-- Transfer HH Modal -->
+
+                        <a-modal
+                          title="Transfer Households"
+                          :visible="isTransferModalOpen"
+                          @cancel="handleCancelTransfer"
+                          width="30%"
+                          footer=""
+                        >
+                          <BasicFormWrapper>
+                            <a-form
+                              class="add-record-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="addnew"
+                              :model="formState"
+                              @finish="handleSubmit"
+                            >
+                              <p>
+                                Please note that all unserved households within
+                                {{ post_name }} will be moved to the selected
+                                post.
+                              </p>
+                              <a-form-item name="Post">
+                                <a-select
+                                  v-model:value="formState.transfer_post"
+                                  show-search
+                                  option-filter-prop="label"
+                                  placeholder="Select one"
+                                  @search="handlePostSearch"
+                                >
+                                  <a-select-option
+                                    v-for="post in posts"
+                                    :key="post.id"
+                                    :value="post.id"
+                                    :label="`${post.name} - ${post.post_code}`"
+                                  >
+                                    {{ post.name }} - {{ post.post_code }}
+                                  </a-select-option>
+                                </a-select>
+                              </a-form-item>
+                              <div class="record-form-actions text-right">
+                                <sdButton
+                                  size="extra-small"
+                                  htmlType="Save"
+                                  type="success"
+                                >
+                                  {{ isLoading ? "Loading..." : "Submit" }}
+                                </sdButton>
+                              </div>
+                            </a-form>
+                          </BasicFormWrapper>
+                        </a-modal>
+                        <!-- End of Transfer hh modal -->
                       </div>
                     </sdCards>
                   </a-col>
@@ -608,7 +675,7 @@ import { onMounted, ref, reactive } from "vue";
 import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
 import DistributionPostWorkerSummary from "./DistributionPostWorkerSummary.vue";
 import authHeader from "../../../services/auth-header";
-// import { useStore } from "vuex";
+import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
@@ -721,10 +788,7 @@ const columns = [
     slots: { customRender: "action" },
   },
 ];
-// const { state } = useStore();
-// const crud = computed(() => state.crud.data);
-// const isLoading = computed(() => state.crud.loading);
-// const selectedRowKeys = ref([]);
+
 const activeClass = ref("do_point");
 const activeTransaction = ref("receive");
 const transaction_type = ref("");
@@ -741,7 +805,8 @@ const isModalOpen = ref(false);
 const returnsModalOpen = ref(false);
 const post_name = query.name;
 const searchItem = ref("");
-
+const isTransferModalOpen = ref(false);
+const posts = ref([]);
 const formState = reactive({
   date_received: "",
   distribution_id: "",
@@ -761,7 +826,7 @@ const returns_formState = reactive({
   to_drop_off_point_id: "",
   number_of_nets: "",
   date_returned: "",
-  return_reason:"",
+  return_reason: "",
 });
 
 onMounted(() => {
@@ -784,10 +849,10 @@ const handleTransactions = (tab) => {
   tab === "receive"
     ? handleChange("do_point")
     : tab === "transfer"
-      ? handleChange("transfer_ins")
-      : tab === "return"
-        ? openReturnsModal()
-        : null;
+    ? handleChange("transfer_ins")
+    : tab === "return"
+    ? openReturnsModal()
+    : null;
 };
 
 const openReceiveModal = (type, id) => {
@@ -824,6 +889,103 @@ const fetchPosts = async () => {
       .then((data) => {
         console.log(data.data);
         postdata.value = data.data;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const fetchTransferPosts = async () => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/posts_data?query=${searchItem.value}`, //?
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        posts.value = data.data.map((post) => ({
+          ...post,
+          label: `${post.name} ${post.post_code}`,
+        }));
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+fetchTransferPosts();
+
+const handleSubmit = async () => {
+  // try {
+  //   const response = await fetch(
+  //     `move_households_to_post/${query.id}/${formState.transfer_post}`
+  //   );
+  //   const result = await response.json();
+
+  //   const { success, data } = result;
+
+  //   console.log({ success, data });
+
+  //   if (success === true) {
+  //     notification.success({
+  //       message: "Success",
+  //       description: data,
+  //     });
+  //     isModalOpen.value = false;
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //     }, 3000);
+  //   } else {
+  //     notification.error({
+  //       message: "Error",
+  //       description: `${data}`,
+  //     });
+  //     isModalOpen.value = false;
+  //   }
+  // } catch (error) {
+  //   notification.error({
+  //     message: "Error",
+  //     description: `${error}`,
+  //   });
+  // }
+
+  try {
+    fetch(`${process.env.VUE_APP_BASE_URL}/move_households_to_post/${query.id}/${formState.transfer_post}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    })
+      .then((response) => response.json())
+      .then(({ success, data }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `${data}`,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data}`,
+          });
+        }
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
       });
   } catch (error) {
     notification.error({
@@ -909,7 +1071,7 @@ const handleReturns = () => {
     number_of_nets: returns_formState.number_of_nets,
     date_returned: dayjs(returns_formState.date_returned).format("YYYY-MM-DD"),
     delivery_note_number: returns_formState.delivery_note_number,
-    return_reason:returns_formState.return_reason,
+    return_reason: returns_formState.return_reason,
   };
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/return_nets_to_drop_off_point`, {
@@ -938,7 +1100,7 @@ const handleReturns = () => {
         returns_formState.to_drop_off_point_id = "";
         returns_formState.number_of_nets = "";
         returns_formState.date_returned = "";
-        returns_formState.return_reason="";
+        returns_formState.return_reason = "";
         window.location.reload();
       })
       .catch((error) => {
@@ -979,18 +1141,14 @@ const receiveNets = async () => {
     transaction_type.value === "transfers"
       ? data
       : transaction_type.value === "receive"
-        ? rec_data
-        : null;
+      ? rec_data
+      : null;
   const url =
     transaction_type.value === "transfers"
       ? "receive_nets_from_post"
       : transaction_type.value === "receive"
-        ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
-        : null;
-
-  console.log(JSON.stringify(payload));
-  console.log(formState.distribution_id);
-  console.log(url);
+      ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
+      : null;
 
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
@@ -1166,6 +1324,14 @@ const cancelTransfer = async (id) => {
       description: `${error}`,
     });
   }
+};
+
+const openTransferModal = () => {
+  isTransferModalOpen.value = true;
+};
+
+const handleCancelTransfer = () => {
+  isTransferModalOpen.value = false;
 };
 </script>
 <style scoped>
