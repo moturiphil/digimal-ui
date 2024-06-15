@@ -686,7 +686,7 @@ onMounted(async () => {
       let fullName = `${record.first_name} ${record.last_name}`;
 
       // check if status = 0 return inactive else return active
-      let status = record.status == 0 ? "Inactive" : "Active";
+      let status = (record.status == 0 || record.status == null) ? "Inactive" : "Active";
 
       return {
         ...record,
