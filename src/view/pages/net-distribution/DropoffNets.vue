@@ -155,6 +155,7 @@ import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
+import store from "../../../vuex/store";
 
 const dateFormat = "YYYY-MM-DD";
 
@@ -274,7 +275,7 @@ const AddNew = defineComponent({
     });
     // console.log(drop_off_point_id)
     const handleSubmit = (values) => {
-      console.log(values);
+      store.commit("setIsSubmitting", true);
       values = {
         campaign_id: 1,
         drop_off_point_id: drop_off_point_id,
@@ -285,7 +286,6 @@ const AddNew = defineComponent({
         date_received: new Date().toISOString().substr(0, 10),
         received_from: values.received_from,
       };
-      console.log(JSON.stringify(values));
       fetch(API_URL, {
         method: "POST",
         headers: {
