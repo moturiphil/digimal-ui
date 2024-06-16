@@ -54,7 +54,8 @@
                                           venue: record.venue,
                                           date: record.start_date,
                                           validate_status: record.status,
-                                          approval_status: record.approval_status,
+                                          approval_status:
+                                            record.approval_status,
                                           payment_status: record.payment_status,
                                         },
                                       }"
@@ -72,8 +73,43 @@
                                     @click="handleApproval(record.id)"
                                     >Approve</sdButton
                                   >
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    @click="showVoidModal(record)"
+                                  >
+                                    <span>Void</span>
+                                  </sdButton>
                                 </div>
                               </td>
+
+                              <!---void payroll modals-->
+                              <a-modal
+                                layout="inline"
+                                :visible="openVoidModal"
+                                title="Confirm Void Payroll"
+                                @ok="actionVoidPayroll"
+                                @cancel="handleVoidCancel"
+                              >
+                                <template #footer>
+                                  <a-button key="back" @click="handleVoidCancel"
+                                    >No, Take me back!</a-button
+                                  >
+                                  <a-button
+                                    key="submit"
+                                    style="background: orange; color: aliceblue"
+                                    :loading="loading"
+                                    @click="actionVoidPayroll"
+                                    >Yes, Void it!</a-button
+                                  >
+                                </template>
+                                <h4>
+                                  Are you sure you want to void Payroll,Amount
+                                  <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                </h4>
+                              </a-modal>
+                              <!-- end of void payroll modal -->
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -185,8 +221,9 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
-
+    const voidPayroll = ref(null);
     const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_approved=0`;
+    const openVoidModal = ref(false);
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -276,6 +313,53 @@ export default defineComponent({
       }
     };
 
+    const showVoidModal = (record) => {
+      console.log(record);
+      voidPayroll.value = record;
+      openVoidModal.value = true;
+    };
+
+    //void payroll
+
+    const actionVoidPayroll = async () => {
+      try {
+        const response = await axios.post(
+          `${process.env.VUE_APP_BASE_URL}/void_events_payroll_summaries/${voidPayroll.value.id}`,
+          null,
+          {
+            headers: authHeader(),
+          }
+        );
+
+        openVoidModal.value = false;
+        if (response.data.success == true) {
+          notification.success({
+            message: "Success",
+            description: response.data.message,
+          });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+          location.reload();
+        } else if (response.data.success == false) {
+          notification.warning({
+            message: "Info",
+            description: response.data.message,
+          });
+        }
+      } catch (e) {
+        notification.error({
+          message: "Error!",
+          description: e.toString(),
+        });
+        console.log(e);
+      }
+    };
+
+    const handleVoidCancel = () => {
+      openVoidModal.value = false;
+    };
+
     return {
       crud,
       isLoading,
@@ -286,6 +370,11 @@ export default defineComponent({
       handleChange,
       activeClass,
       handleApproval,
+      showVoidModal,
+      voidPayroll,
+      openVoidModal,
+      actionVoidPayroll,
+      handleVoidCancel,
     };
   },
 });
