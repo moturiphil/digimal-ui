@@ -177,7 +177,7 @@
                                 :maxTagPlaceholder="'...and more'"
                               >
                                 <a-select-option
-                                  v-for="day in [1, 2, 3, 4, 5]"
+                                  v-for="day in [1, 2, 3, 4, 5, 6]"
                                   :key="day"
                                   :value="day"
                                 >
