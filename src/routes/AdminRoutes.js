@@ -738,6 +738,12 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
   },
+  {
+    path: "/maintenance", // Use an absolute path
+    name: "maintenance",
+    component: () =>
+      import(/* webpackChunkName: "404" */ "@/view/pages/403.vue"),
+  },
 
   ...Apps,
 ];
