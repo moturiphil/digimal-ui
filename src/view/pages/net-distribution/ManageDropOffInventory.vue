@@ -288,7 +288,7 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'serviced_orders'"
                         >
-                        <h2 style="text-align: center;">Nets Issue to Post</h2>
+                          <h2 style="text-align: center">Nets Issue to Post</h2>
                           <a-table
                             :pagination="{
                               pageSize: 40,
@@ -304,8 +304,7 @@
                                   font-size: 18px;
                                   font-weight: bold;
                                 "
-                              >
-                              </div>
+                              ></div>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -374,13 +373,17 @@
                                 <a-select
                                   placeholder="Select  Post "
                                   v-model:value="formState.post_id"
+                                  @search="handlePostSearch"
+                                  show-search
+                                  option-filter-prop="label"
                                 >
                                   <a-select-option
                                     v-for="post in postdata"
                                     :key="post.id"
                                     v-model:value="post.id"
+                                    :label="`${post.name} ${post.post_code} - ${post.distribution_county},${post.distribution_sub_county}`"
                                   >
-                                    {{ post.name }}
+                                    {{ post.name }} {{ post.post_code }} - {{ post.distribution_county }}, {{ post.distribution_sub_county }}
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
@@ -742,6 +745,7 @@ const distributionposts_url = `${process.env.VUE_APP_BASE_URL}/sub_county_posts?
 const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
 const { state } = useStore();
 const isDisabled = computed(() => state.isDisabled);
+const searchPostItem = ref("");
 
 const formState = reactive({
   date_received: "",
@@ -971,13 +975,22 @@ const fetchDistributionPosts = async () => {
 
 const fetchPosts = async () => {
   try {
-    await fetch(`${process.env.VUE_APP_BASE_URL}/posts_data`, {
-      method: "GET",
-      headers: authHeader(),
-    })
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/posts_data?query=${searchPostItem.value}`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
-        postdata.value = data.data;
+        // postdata.value = data.data;
+        // console.log(postdata.value);
+
+        postdata.value = data.data.map((post) => ({
+          ...post,
+          label: `${post.name} ${post.post_code} - ${post.distribution_county},${post.distribution_sub_county}`,
+        }));
       });
   } catch (error) {
     notification.error({
@@ -986,7 +999,6 @@ const fetchPosts = async () => {
     });
   }
 };
-
 
 const fetchPostOrders = () => {
   const dropoffid = {
@@ -1069,6 +1081,12 @@ const fetchPostSummary = () => {
       description: `${error}`,
     });
   }
+};
+
+const handlePostSearch = (value) => {
+  console.log(value);
+  searchPostItem.value = value;
+  fetchPosts();
 };
 
 const fetchdropoffPosts = () => {

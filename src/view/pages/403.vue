@@ -21,17 +21,10 @@
           <a-typography-title level="1">We’ll be back soon!</a-typography-title>
           <a-typography-paragraph>
             Sorry for the inconvenience. We’re performing some maintenance at
-            the moment. If you need to you can always follow us on
-            <a
-              href="http://www.twitter.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              >Twitter</a
-            >
-            for updates, otherwise we’ll be back up shortly!
+            the moment, we’ll be back up shortly!
           </a-typography-paragraph>
           <a-typography-paragraph>
-            — The [WEBSITE NAME] Team
+            — The Digimal Ke Team
           </a-typography-paragraph>
         </a-typography>
       </article>
@@ -60,8 +53,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #d6433b;
-  color: #fff;
+  background: #fff;
+  color: #760e0e;
   text-align: center;
   font-family: "Open Sans", sans-serif;
 }
