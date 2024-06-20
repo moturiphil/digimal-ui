@@ -156,7 +156,7 @@ import { useRouter } from "vue-router";
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import { notification } from "ant-design-vue";
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   name: "SignInPage",
@@ -168,7 +168,6 @@ export default {
     const router = useRouter();
     let visible = ref(false);
     const env = ref("");
-
 
     const formState = reactive({
       id_no: "",
@@ -299,25 +298,30 @@ export default {
     };
 
     const get_env = async () => {
-      console.log('here');
-      axios.get(`${process.env.VUE_APP_BASE_URL}/app_env`)
-        .then(response => {
-          console.log(response);
-          env.value = response.data == 'training' ? 'Training Platform' : ''
-        }).catch(error => {
+      console.log("here");
+      axios
+        .get(`${process.env.VUE_APP_BASE_URL}/app_env`)
+        .then((response) => {
+          console.log(response.data == "training");
+          if (response.data == "training") {
+            env.value == "Training Platform";
+          }
+          else if(response.data == "maintenance")
+          {
+            router.push("/maintenance");
+          }
+        })
+        .catch((error) => {
           notification.error({
             message: `Error!`,
             description: `${error}`,
           });
-        })
+        });
     };
-
-    
 
     onMounted(() => {
       get_env();
     });
-
 
     return {
       isLoading,
@@ -346,12 +350,11 @@ export default {
 </script>
 
 <style scoped>
-
-  /* Add styles for small screens */
-  @media (max-width: 768px) {
-    .btn-signin {
-      margin-bottom: 15px;
-      margin-left: 10px;
-    }
+/* Add styles for small screens */
+@media (max-width: 768px) {
+  .btn-signin {
+    margin-bottom: 15px;
+    margin-left: 10px;
   }
+}
 </style>
