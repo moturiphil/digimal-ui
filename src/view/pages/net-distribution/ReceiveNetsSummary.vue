@@ -635,10 +635,12 @@
                                   <a-select-option
                                     v-for="post in posts"
                                     :key="post.id"
-                                    :value="post.id"
-                                    :label="`${post.name} - ${post.post_code}`"
+                                    v-model:value="post.id"
+                                    :label="`${post.name} ${post.post_code}`"
                                   >
-                                    {{ post.name }} - {{ post.post_code }}
+                                    {{ post.name }} {{ post.post_code }} -
+                                    {{ post.distribution_county }},
+                                    {{ post.distribution_sub_county }}
                                   </a-select-option>
                                 </a-select>
                               </a-form-item>
@@ -887,8 +889,13 @@ const fetchPosts = async () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.data);
-        postdata.value = data.data;
+        // postdata.value = data.data;
+        // console.log(postdata.value);
+
+        postdata.value = data.data.map((post) => ({
+          ...post,
+          label: `${post.name} ${post.post_code} - ${post.distribution_county},${post.distribution_sub_county}`,
+        }));
       });
   } catch (error) {
     notification.error({
@@ -959,13 +966,16 @@ const handleSubmit = async () => {
   // }
 
   try {
-    fetch(`${process.env.VUE_APP_BASE_URL}/move_households_to_post/${query.id}/${formState.transfer_post}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-    })
+    fetch(
+      `${process.env.VUE_APP_BASE_URL}/move_households_to_post/${query.id}/${formState.transfer_post}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
       .then((response) => response.json())
       .then(({ success, data }) => {
         if (success) {
