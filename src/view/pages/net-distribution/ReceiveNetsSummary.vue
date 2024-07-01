@@ -868,7 +868,7 @@ const openReceiveModal = (type, id) => {
 const handlePostSearch = (value) => {
   console.log(value);
   searchItem.value = value;
-  fetchPosts();
+  fetchTransferPosts();
 };
 
 const generatePostOptions = () => {
@@ -889,9 +889,6 @@ const fetchPosts = async () => {
     )
       .then((response) => response.json())
       .then((data) => {
-        // postdata.value = data.data;
-        // console.log(postdata.value);
-
         postdata.value = data.data.map((post) => ({
           ...post,
           label: `${post.name} ${post.post_code} - ${post.distribution_county},${post.distribution_sub_county}`,
@@ -908,7 +905,7 @@ const fetchPosts = async () => {
 const fetchTransferPosts = async () => {
   try {
     await fetch(
-      `${process.env.VUE_APP_BASE_URL}/posts_data?query=${searchItem.value}`, //?
+      `${process.env.VUE_APP_BASE_URL}/posts_data?query=${searchItem.value}`,
       {
         method: "GET",
         headers: authHeader(),
@@ -916,11 +913,17 @@ const fetchTransferPosts = async () => {
     )
       .then((response) => response.json())
       .then((data) => {
+        console.log(data.data);
         posts.value = data.data.map((post) => ({
           ...post,
           label: `${post.name} ${post.post_code}`,
         }));
       });
+      console.log('****************************');
+      console.log('****************************');
+      console.log(posts.value);
+      console.log('****************************');
+      console.log('****************************');
   } catch (error) {
     notification.error({
       message: "Error",
@@ -932,39 +935,6 @@ const fetchTransferPosts = async () => {
 fetchTransferPosts();
 
 const handleSubmit = async () => {
-  // try {
-  //   const response = await fetch(
-  //     `move_households_to_post/${query.id}/${formState.transfer_post}`
-  //   );
-  //   const result = await response.json();
-
-  //   const { success, data } = result;
-
-  //   console.log({ success, data });
-
-  //   if (success === true) {
-  //     notification.success({
-  //       message: "Success",
-  //       description: data,
-  //     });
-  //     isModalOpen.value = false;
-  //     setTimeout(() => {
-  //       window.location.reload();
-  //     }, 3000);
-  //   } else {
-  //     notification.error({
-  //       message: "Error",
-  //       description: `${data}`,
-  //     });
-  //     isModalOpen.value = false;
-  //   }
-  // } catch (error) {
-  //   notification.error({
-  //     message: "Error",
-  //     description: `${error}`,
-  //   });
-  // }
-
   try {
     fetch(
       `${process.env.VUE_APP_BASE_URL}/move_households_to_post/${query.id}/${formState.transfer_post}`,
