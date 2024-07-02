@@ -493,6 +493,7 @@ export default defineComponent({
       currentPage,
       pageSize,
       datatotal,
+      onPageChange
     };
   },
 });
