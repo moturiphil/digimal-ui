@@ -33,10 +33,7 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
-                            :pagination="{
-                              pageSize: 50,
-                              showSizeChanger: true,
-                            }"
+                            :pagination="false"
                             :dataSource="dataSource"
                             :columns="columns"
                           >
@@ -126,6 +123,16 @@
                               </td>
                             </template>
                           </a-table>
+                          <br />
+                          <br />
+                          <a-pagination
+                            :current="currentPage"
+                            :total="datatotal"
+                            :pageSize="pageSize"
+                            :showSizeChanger="true"
+                            :pagination="true"
+                            @change="onPageChange($event)"
+                          />
                         </TableWrapper>
                       </div>
                     </sdCards>
@@ -209,8 +216,6 @@ export default defineComponent({
   data() {
     return {
       notData: this.searchData,
-      current: 0,
-      pageSize: 0,
       visible: false,
       confirmLoading: false,
       modalType: "primary",
@@ -225,15 +230,14 @@ export default defineComponent({
       );
       this.notData = data;
     },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
     searchData() {
       return this.$store.state.headerSearch.data;
     },
   },
   setup() {
+    var currentPage = ref(1);
+    var pageSize = ref(100);
+    var datatotal = ref(0);
     const { state } = useStore();
     const crud = computed(() => state.crud.data);
     const isLoading = computed(() => state.crud.loading);
@@ -242,7 +246,6 @@ export default defineComponent({
     const activeClass = ref("all");
     const searchItem = ref("");
     const recordId = ref(null);
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0`;
     const isModalOpen = ref(false);
     const isPaying = computed(() => state.isPaying);
     const handleChange = (tab) => {
@@ -253,12 +256,19 @@ export default defineComponent({
     const countdown = ref(60);
 
     onMounted(() => {
+      fetchPayrolls();
+    });
+
+    const fetchPayrolls = () => {
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+
       axios
         .get(API_URL, {
           headers: authHeader(),
         })
         .then((response) => {
           console.log(response.data.data);
+          datatotal.value = response.data.pagination.total;
           dataSource.value = response.data.data.map((item) => ({
             ...item,
             old_values: item.old_values,
@@ -275,9 +285,20 @@ export default defineComponent({
         .catch((error) => {
           console.error(error);
         });
-    });
+    };
+
+    const onPageChange = async (page) => {
+      console.log(page);
+      currentPage.value = page;
+      try {
+        fetchPayrolls();
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     watchEffect(async () => {
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
       const query = searchItem.value.toLowerCase();
       try {
         if (!query) {
@@ -469,6 +490,9 @@ export default defineComponent({
       countdownTimer,
       resendOTP,
       isPaying,
+      currentPage,
+      pageSize,
+      datatotal,
     };
   },
 });
