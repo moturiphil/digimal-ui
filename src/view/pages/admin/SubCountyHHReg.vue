@@ -1,10 +1,7 @@
 <template>
   <div>
     <sdPageHeader ghost title="Sub Counties Events Automation">
-      <template #buttons>
-        <div class="search-box">
-        </div></template
-      >
+      <template #buttons> <div class="search-box"></div></template>
     </sdPageHeader>
     <Main>
       <SearchResultWrapper>
@@ -54,7 +51,10 @@
                                     type="warning"
                                     :disabled="isDisabled"
                                     @click="populateEvent(record)"
-                                    v-if="record.event_id !== null && record.reg_event_gen_status==0"
+                                    v-if="
+                                      record.event_id !== null &&
+                                      record.reg_event_gen_status == 0
+                                    "
                                   >
                                     {{
                                       isLoading
@@ -101,7 +101,9 @@
                                   >
                                     <span>Create Distribution Event</span>
                                   </sdButton>
-                                  <span v-if="record.distribution_event_id == null">
+                                  <span
+                                    v-if="record.distribution_event_id == null"
+                                  >
                                     &nbsp;&nbsp;
                                   </span>
                                   <sdButton
@@ -117,6 +119,36 @@
                                         : isDisabled
                                         ? "Processing ..."
                                         : "Populate Distribution Event"
+                                    }}
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="success"
+                                    @click="createDropoffEvent(record)"
+                                  >
+                                  <!-- v-if="record.distribution_event_id == null" -->
+                                    <span>Create Drop-off Event</span>
+                                  </sdButton>
+                                  <!-- <span
+                                    v-if="record.distribution_event_id == null"
+                                  >
+                                    &nbsp;&nbsp;
+                                  </span> -->
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    :disabled="isDisabled"
+                                    @click="populateDropoffEvent(record)"
+                                  >
+                                  <!-- v-if="record.distribution_event_id !== null" -->
+                                    {{
+                                      isLoading
+                                        ? "Loading..."
+                                        : isDisabled
+                                        ? "Processing ..."
+                                        : "Populate Drop-off Event"
                                     }}
                                   </sdButton>
                                 </div>
@@ -417,13 +449,13 @@ export default defineComponent({
 
     // create security event
     const createDistributionEvent = async (data) => {
-      console.log(data.county_id);
+      console.log(data);
       const security_event_api_url = `${process.env.VUE_APP_BASE_URL}/create_distribution_event_over_api`;
 
       const event_data = {
         county_id: data.county_id,
         subcounty_id: data.sub_county_id,
-        venue: "Distribution Event Over API",
+        venue: data.sub_county_name,
       };
 
       fetch(security_event_api_url, {
@@ -453,8 +485,7 @@ export default defineComponent({
               duration: 5.5,
             });
             location.reload();
-          }
-          else {
+          } else {
             notification["error"]({
               message: "Error!",
               description: "Fail to create event",
@@ -511,6 +542,102 @@ export default defineComponent({
       }
     };
 
+
+    // create security event
+    const createDropoffEvent = async (data) => {
+      console.log(data);
+      const dropoff_event_api_url = `${process.env.VUE_APP_BASE_URL}/create_dropoff_security_event_over_api`;
+
+      const event_data = {
+        county_id: data.county_id,
+        subcounty_id: data.sub_county_id,
+        venue: data.sub_county_name,
+      };
+
+      fetch(dropoff_event_api_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(event_data),
+      })
+        .then((response) => response.json())
+        .then(({ success, data }) => {
+          if (success == true) {
+            notification["success"]({
+              message: "Event Created",
+              description: data,
+              duration: 5.5,
+            });
+            new Promise((resolve) => {
+              setTimeout(resolve, 3000);
+            });
+            location.reload();
+          } else if (success == false) {
+            notification["error"]({
+              message: "Event Creation failed",
+              description: data,
+              duration: 5.5,
+            });
+            // location.reload();
+          } else {
+            notification["error"]({
+              message: "Error!",
+              description: "Fail to create event",
+              duration: 5.5,
+            });
+          }
+        })
+        .catch((error) => {
+          //   store.commit("setIsSubmitting", false);
+          notification["error"]({
+            message: "Error!",
+            description: `${error}`,
+            duration: 5.5,
+          });
+        });
+    };
+
+    // populate security event
+
+    // const populateDropoffEvent = async (data) => {
+    //   console.log(data);
+    //   store.commit("setIsDisabled", true);
+
+    //   try {
+    //     const response = await fetch(
+    //       `${process.env.VUE_APP_BASE_URL}/generate_distribution_event_officers/${data.distribution_event_id}`,
+    //       {
+    //         method: "POST",
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           ...authHeader(),
+    //         },
+    //       }
+    //     );
+
+    //     const result = await response.json();
+    //     console.log(result);
+
+    //     if (response.ok && result.success) {
+    //       notification["success"]({
+    //         message: "Success",
+    //         description: result.data,
+    //         duration: 5.5,
+    //       });
+    //     } else {
+    //       notification["error"]({
+    //         message: "Error!",
+    //         description: result.data,
+    //         duration: 5.5,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // };
+
     return {
       crud,
       isLoading,
@@ -528,6 +655,8 @@ export default defineComponent({
       populateSecurityEvent,
       createDistributionEvent,
       populateDistributionEvent,
+      createDropoffEvent,
+      // populateDropoffEvent,
     };
   },
 });
