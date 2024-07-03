@@ -109,6 +109,17 @@
                 </li>
                 <li>
                   <a
+                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
+                    @click="openReturnsModal()"
+                    href="#"
+                    :hidden="activeTransaction !== 'return'"
+                    type="warning"
+                  >
+                    Return to Dropoff Point
+                  </a>
+                </li>
+                <li>
+                  <a
                     :class="
                       activeClass === 'transfer_ins' ? 'active' : 'deactivate'
                     "
@@ -140,18 +151,6 @@
                   >
                     <sdFeatherIcons type="plus" size="14" /> &nbsp; New Transfer
                   </sdButton>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'return' ? 'active' : 'deactivate'
-                    "
-                    @click="openReturnsModal()"
-                    href="#"
-                    :hidden="activeTransaction !== 'return'"
-                  >
-                    Return to Dropoff Point
-                  </a>
                 </li>
               </ul>
             </div>
@@ -1229,7 +1228,7 @@ const receiveNets = async () => {
 };
 
 const fetchReturnedNets = async () => {
-    try {
+  try {
     await fetch(
       `${process.env.VUE_APP_BASE_URL}/dropoff_returns_by_post/${post_id}`,
       {
