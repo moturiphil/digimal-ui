@@ -39,6 +39,7 @@
                   >
                     Return Nets to Drop Off Point
                   </a>
+                  <!-- @click="handleTransactions('return')" -->
                 </li>
                 <li>
                   <sdButton
@@ -104,6 +105,17 @@
                     :hidden="activeTransaction !== 'receive'"
                   >
                     Post Worker Summary
+                  </a>
+                </li>
+                <li>
+                  <a
+                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
+                    @click="openReturnsModal()"
+                    href="#"
+                    :hidden="activeTransaction !== 'return'"
+                    type="warning"
+                  >
+                    Return to Dropoff Point
                   </a>
                 </li>
                 <li>
@@ -317,6 +329,24 @@
                           </a-table>
                         </TableWrapper>
                         <!-- end of Net TransfersOut table -->
+
+                        <!-- returns table -->
+                        <TableWrapper
+                          class="table-data-view table-responsive"
+                          v-show="activeClass === 'return'"
+                        >
+                          <a-table
+                            :pagination="{
+                              pageSize: 50,
+                              showSizeChanger: true,
+                            }"
+                            :dataSource="returnedNets"
+                            :columns="returns_columns"
+                          >
+                          </a-table>
+                        </TableWrapper>
+                        <!-- end of returns table -->
+
                         <!--Distribution Post Summary-->
                         <DistributionPostSummary
                           :post_id="query.id"
@@ -723,6 +753,35 @@ const transferscolumns = [
   },
 ];
 
+const returns_columns = [
+  {
+    title: "Dropoff",
+    dataIndex: "dropoff_name",
+    key: "id",
+  },
+  {
+    title: "Post",
+    dataIndex: "post_name",
+    key: "id",
+  },
+  {
+    title: "Number of Nets",
+    dataIndex: "total_nets",
+    key: "id",
+  },
+  {
+    title: "Date Returned",
+    dataIndex: "date_returned",
+    key: "id",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "id",
+    slots: { customRender: "status" },
+  },
+];
+
 const do_columns = [
   {
     title: "Drop Off Point",
@@ -813,6 +872,7 @@ const formState = reactive({
   date_received: "",
   distribution_id: "",
 });
+const returnedNets = ref([]);
 
 const trans_formState = reactive({
   from_post_id: Number(query.id),
@@ -838,6 +898,7 @@ onMounted(() => {
   receiveFromDropOff();
   fetchTransferIns();
   fetchTransferOuts();
+  fetchReturnedNets();
 });
 const handleChange = (tab) => (activeClass.value = tab);
 const openmodal = () => (isModalOpen.value = true);
@@ -853,7 +914,7 @@ const handleTransactions = (tab) => {
     : tab === "transfer"
     ? handleChange("transfer_ins")
     : tab === "return"
-    ? openReturnsModal()
+    ? handleChange("return") //openReturnsModal()
     : null;
 };
 
@@ -919,11 +980,6 @@ const fetchTransferPosts = async () => {
           label: `${post.name} ${post.post_code}`,
         }));
       });
-      console.log('****************************');
-      console.log('****************************');
-      console.log(posts.value);
-      console.log('****************************');
-      console.log('****************************');
   } catch (error) {
     notification.error({
       message: "Error",
@@ -1081,7 +1137,7 @@ const handleReturns = () => {
         returns_formState.number_of_nets = "";
         returns_formState.date_returned = "";
         returns_formState.return_reason = "";
-        window.location.reload();
+        // window.location.reload();
       })
       .catch((error) => {
         console.log(error);
@@ -1170,6 +1226,37 @@ const receiveNets = async () => {
     });
   }
 };
+
+const fetchReturnedNets = async () => {
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/dropoff_returns_by_post/${post_id}`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    )
+      .then((response) => response.json())
+      .then(({ success, data }) => {
+        if (success) {
+          console.log(data);
+          returnedNets.value = data;
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data.message}`,
+          });
+        }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+console.log(returnedNets.value);
 
 const receiveFromDropOff = async () => {
   try {
