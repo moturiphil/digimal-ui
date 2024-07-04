@@ -601,42 +601,42 @@ export default defineComponent({
 
     // populate security event
 
-    // const populateDropoffEvent = async (data) => {
-    //   console.log(data);
-    //   store.commit("setIsDisabled", true);
+    const populateDropoffEvent = async (data) => {
+      console.log(data);
+      store.commit("setIsDisabled", true);
 
-    //   try {
-    //     const response = await fetch(
-    //       `${process.env.VUE_APP_BASE_URL}/generate_distribution_event_officers/${data.distribution_event_id}`,
-    //       {
-    //         method: "POST",
-    //         headers: {
-    //           "Content-Type": "application/json",
-    //           ...authHeader(),
-    //         },
-    //       }
-    //     );
+      try {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/generate_dropoff_security_event_officers/${data.sub_county_id}/${data.distribution_event_id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+          }
+        );
 
-    //     const result = await response.json();
-    //     console.log(result);
+        const result = await response.json();
+        console.log(result);
 
-    //     if (response.ok && result.success) {
-    //       notification["success"]({
-    //         message: "Success",
-    //         description: result.data,
-    //         duration: 5.5,
-    //       });
-    //     } else {
-    //       notification["error"]({
-    //         message: "Error!",
-    //         description: result.data,
-    //         duration: 5.5,
-    //       });
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
+        if (response.ok && result.success) {
+          notification["success"]({
+            message: "Success",
+            description: result.data,
+            duration: 5.5,
+          });
+        } else {
+          notification["error"]({
+            message: "Error!",
+            description: result.data,
+            duration: 5.5,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     return {
       crud,
@@ -656,7 +656,7 @@ export default defineComponent({
       createDistributionEvent,
       populateDistributionEvent,
       createDropoffEvent,
-      // populateDropoffEvent,
+      populateDropoffEvent,
     };
   },
 });
