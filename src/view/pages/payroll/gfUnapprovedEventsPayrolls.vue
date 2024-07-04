@@ -33,6 +33,8 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
+                            :dataSource="dataSource"
+                            :columns="columns"
                             :pagination="false"
                           >
                             <template #payroll="{ record }">
@@ -235,7 +237,7 @@ export default defineComponent({
     });
 
     const fetchPayrolls = () => {
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_approved=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_approved=0&page=${currentPage.value}&per_page=${pageSize.value}`;
       axios
         .get(API_URL, {
           headers: authHeader(),
@@ -255,11 +257,12 @@ export default defineComponent({
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
           });
+          console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
         });
-    }
+    };
 
     const onPageChange = async (page) => {
       console.log(page);
