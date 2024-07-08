@@ -398,13 +398,21 @@
                               <a-form-item name="to_post" label="To Post">
                                 <a-select
                                   v-model:value="trans_formState.to_post_id"
-                                  placeholder="Select Post"
-                                  :disabled="isOfficerSelectionDisabled"
                                   show-search
                                   option-filter-prop="label"
-                                  :options="generatePostOptions()"
+                                  placeholder="Select post"
                                   @search="handlePostSearch"
                                 >
+                                  <a-select-option
+                                    v-for="post in posts"
+                                    :key="post.id"
+                                    v-model:value="post.id"
+                                    :label="`${post.name} ${post.post_code}`"
+                                  >
+                                    {{ post.name }} {{ post.post_code }} -
+                                    {{ post.distribution_county }},
+                                    {{ post.distribution_sub_county }}
+                                  </a-select-option>
                                 </a-select>
                               </a-form-item>
                               <a-form-item
@@ -932,12 +940,12 @@ const handlePostSearch = (value) => {
   fetchTransferPosts();
 };
 
-const generatePostOptions = () => {
-  return postdata.value.map((post) => ({
-    label: post.name,
-    value: post.id,
-  }));
-};
+// const generatePostOptions = () => {
+//   return postdata.value.map((post) => ({
+//     label: post.name,
+//     value: post.id,
+//   }));
+// };
 
 const fetchPosts = async () => {
   try {
