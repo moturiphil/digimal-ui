@@ -108,16 +108,6 @@
       key: "id",
     },
     {
-      title: "Events",
-      dataIndex: "events",
-      key: "id",
-    },
-    {
-      title: "Activities",
-      dataIndex: "activities",
-      key: "id",
-    },
-    {
       title: "% Nets distributed",
       dataIndex: "percent_nets_distributed",
       key: "id",
