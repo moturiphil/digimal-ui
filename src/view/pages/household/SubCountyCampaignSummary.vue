@@ -1,6 +1,6 @@
 <template>
     <RecordViewWrapper>
-      <sdPageHeader ghost :title="`${sub_county_name} Sub County Campaign Summary`">
+      <sdPageHeader ghost :title="`${sub_county_name} Campaign Summary by Sub County`">
         <template #subTitle>
           <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
         </template>
@@ -75,11 +75,6 @@
     {
       title: "Sub County Name",
       dataIndex: "name",
-      key: "id",
-    },
-    {
-      title: "Registered User",
-      dataIndex: "registered_users",
       key: "id",
     },
     {

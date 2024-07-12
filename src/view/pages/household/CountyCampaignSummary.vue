@@ -1,6 +1,6 @@
 <template>
     <RecordViewWrapper>
-      <sdPageHeader title="Kenya County Campaign Summary">
+      <sdPageHeader title="Campaign Summary by County">
         <template #subTitle>
           <sdButton class="btn-add_new" size="default" type="success"> </sdButton>
         </template>
@@ -80,11 +80,6 @@
     {
       title: "County Name",
       dataIndex: "name",
-      key: "id",
-    },
-    {
-      title: "Registered User",
-      dataIndex: "registered_users",
       key: "id",
     },
     {
