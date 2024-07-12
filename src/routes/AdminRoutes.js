@@ -38,6 +38,22 @@ const routes = [
           ),
       },
       {
+        path: "/county/summary",
+        name: "CountyCampaignSummary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Home" */ "@/view/pages/household/CountyCampaignSummary"
+          ),
+      },
+      {
+        path: "/sub_county/summary/:id",
+        name: "SubCountyCampaignSummary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Home" */ "@/view/pages/household/SubCountyCampaignSummary"
+          ),
+      },
+      {
         path: "registered-users",
         name: "registered-users",
         component: () =>
@@ -503,11 +519,6 @@ const routes = [
         name: "/org-units-chp",
         component: () => import("../view/pages/users/chpVillageElders.vue"),
       },
-      // {
-      //   path: "sub-county-units/chp-ve/:id",
-      //   name: "/org-units-chp",
-      //   component: () => import("../view/pages/users/chpVillageElders.vue"),
-      // },
     ],
   },
   {
