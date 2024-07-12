@@ -129,6 +129,14 @@
                 @close="onClose"
               />
             </a-col>
+            <a-col class="alert-col">
+              <a-alert
+                :message="`You have ${dropoff_stock} nets balance`"
+                type="warning"
+                closable
+                @close="onClose"
+              />
+            </a-col>
           </a-row>
         </div>
         <div class="search-filter-menu">
@@ -746,6 +754,7 @@ const drop_off_posts_url = `${process.env.VUE_APP_BASE_URL}/posts_dropoff`;
 const { state } = useStore();
 const isDisabled = computed(() => state.isDisabled);
 const searchPostItem = ref("");
+const dropoff_stock = ref(null);
 
 const formState = reactive({
   date_received: "",
@@ -762,7 +771,6 @@ const newOrder = reactive({
 
 onMounted(() => {
   fetchPosts();
-  // fetchReturnedNets();
   fetchPostOrders();
   fetchServicedOrders();
   fetchdropoffPosts();
@@ -771,6 +779,7 @@ onMounted(() => {
   fetchPostSummary();
   fetchDropoffPosts();
   getBannerAlerts();
+  fetchDropoffStock();
 });
 
 const getBannerAlerts = async () => {
@@ -965,6 +974,28 @@ const fetchDistributionPosts = async () => {
     }
 
     distribution_posts.value = posts;
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `Error: ${error}`,
+    });
+  }
+};
+
+const fetchDropoffStock = async () => {
+  try {
+    console.log('We are here');
+    console.log(drop_off_id);
+    const response = await fetch(`${process.env.VUE_APP_BASE_URL}/drop_off/stock/${drop_off_id}`, {
+      method: "GET",
+      headers: authHeader(),
+    });
+
+    const data = await response.json();
+    console.log(data.data);
+    console.log('check here');
+
+    dropoff_stock.value = data.data;
   } catch (error) {
     notification.error({
       message: "Error",
