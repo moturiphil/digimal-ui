@@ -136,7 +136,7 @@
         onMounted(async () => {
         try {
             const response = await fetch(
-            `${process.env.VUE_APP_BASE_URL}/master_list_details/${params.id}}`,
+            `${process.env.VUE_APP_BASE_URL}/master_list_details/${params.id}`,
             {
                 method: "GET",
                 headers: authHeader(),
