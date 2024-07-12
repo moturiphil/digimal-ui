@@ -132,7 +132,7 @@
             <a-col class="alert-col">
               <a-alert
                 :message="`You have ${dropoff_stock} nets balance`"
-                type="warning"
+                type="success"
                 closable
                 @close="onClose"
               />
