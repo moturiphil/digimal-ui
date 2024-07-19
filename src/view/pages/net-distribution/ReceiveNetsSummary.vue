@@ -812,6 +812,11 @@ const do_columns = [
     key: "id",
   },
   {
+    title: "Date Received",
+    dataIndex: "date_received",
+    key: "id",
+  },
+  {
     title: "Action",
     dataIndex: "action",
     key: "id",
