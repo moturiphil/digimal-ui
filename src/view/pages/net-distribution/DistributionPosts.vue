@@ -339,6 +339,7 @@ onMounted(async () => {
   }
 });
 const onPageChange = async (page) => {
+  console.log(page);
   currentPage.value = page;
   fetchDistributionsPosts();
 };

@@ -338,6 +338,56 @@ const routes = [
     ],
   },
   {
+    path: "/pmi/events",
+    name: "pmi-event-payrolls",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      {
+        path: "all-payrolls",
+        name: "pmi-all-payrolls",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiEventPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-validation",
+        name: "pmi-payroll-validation",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiUnvalidatedEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-approval",
+        name: "pmi-payroll-approvals",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiUnapprovedEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-pending-payments",
+        name: "payroll-pending-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiUnpaidEventsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-payments",
+        name: "payroll-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiPaidEventsPayrolls.vue"
+          ),
+      },
+    ],
+  },
+  {
     path: "/events",
     name: "events",
     component: () =>
@@ -637,7 +687,7 @@ const routes = [
     name: "global-fund-event-payroll",
     component: () =>
       import(
-      /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
       ),
   },
   {
