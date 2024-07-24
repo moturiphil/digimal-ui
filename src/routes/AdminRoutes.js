@@ -321,7 +321,7 @@ const routes = [
       },
       {
         path: "payroll-pending-payments",
-        name: "payroll-pending-payments",
+        name: "gf-payroll-pending-payments",
         component: () =>
           import(
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnpaidEventsPayrolls.vue"
@@ -329,7 +329,7 @@ const routes = [
       },
       {
         path: "payroll-payments",
-        name: "payroll-payments",
+        name: "gf-payroll-payments",
         component: () =>
           import(
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfPaidEventsPayrolls.vue"
