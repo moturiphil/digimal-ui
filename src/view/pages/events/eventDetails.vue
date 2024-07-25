@@ -163,7 +163,7 @@
                                     size="extra-small"
                                     type="danger"
                                     @click="voidParticipant(record.id)"
-                                    v-if="isApprovedGenerator || isHost"
+                                    v-if="isApprovedGenerator"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -522,7 +522,6 @@ const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 const event_name = plainquery.name;
 const event_code = plainquery.event_code;
-const event_host_id = plainquery.event_host_id;
 const router = useRouter();
 const { state } = useStore();
 const isLoading = computed(() => state.crud.loading);
@@ -989,17 +988,7 @@ const isApprovedGenerator = computed(() => {
     user.user.role_id === 63 ||
     user.user.role_id === 64 ||
     user.user.role_id === 59 ||
-    user.user.role_id === 4 ||
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-});
-
-const isHost = computed(() => {
-  if (
-    user.user.id === event_host_id
+    user.user.role_id === 4
   ) {
     return true;
   } else {
