@@ -194,6 +194,18 @@
                                     size="extra-small"
                                     >Receive</sdButton
                                   >
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    @click="
+                                      openUpdateReceiveModal(
+                                        record.distribution_id
+                                      )
+                                    "
+                                    type="warning"
+                                    :disabled="record.status === 0"
+                                    size="extra-small"
+                                    >Update Receive Date</sdButton
+                                  >
                                 </div>
                               </td>
                             </template>
@@ -695,6 +707,47 @@
                           </BasicFormWrapper>
                         </a-modal>
                         <!-- End of Transfer hh modal -->
+
+                        <!-- Update Receive Date Modal -->
+                        <a-modal
+                          title="Update Receive Date"
+                          :visible="isUpdateModalOpen"
+                          @cancel="handleCancelUpdate"
+                          width="30%"
+                          footer=""
+                        >
+                          <BasicFormWrapper>
+                            <a-form
+                              class="add-transfer-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="addnew"
+                              :model="update_formState"
+                              @finish="handleUpdateReceiveDate"
+                            >
+                              <a-form-item
+                                name="date_received"
+                                label="Date Received"
+                              >
+                                <a-date-picker
+                                  :style="{ width: '100%' }"
+                                  v-model:value="update_formState.date_received"
+                                  :format="dateFormat"
+                                />
+                              </a-form-item>
+                              <div class="record-form-actions text-right">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
+                                  {{ isLoading ? "Loading..." : "Submit" }}
+                                </sdButton>
+                              </div>
+                            </a-form>
+                          </BasicFormWrapper>
+                        </a-modal>
+                        <!-- End of Transfer modal -->
                       </div>
                     </sdCards>
                   </a-col>
@@ -876,11 +929,13 @@ const { query } = useRoute();
 const isOpen = ref(false);
 const post_id = query.id;
 const isModalOpen = ref(false);
+const isUpdateModalOpen = ref(false); // trans_formState
 const returnsModalOpen = ref(false);
 const post_name = query.name;
 const searchItem = ref("");
 const isTransferModalOpen = ref(false);
 const posts = ref([]);
+const distribution_id = ref(null);
 const formState = reactive({
   date_received: "",
   distribution_id: "",
@@ -904,6 +959,10 @@ const returns_formState = reactive({
   return_reason: "",
 });
 
+const update_formState = reactive({
+  date_received: "",
+});
+
 onMounted(() => {
   fetchPosts();
   // receiveFromWarehouse();
@@ -917,6 +976,7 @@ const handleChange = (tab) => (activeClass.value = tab);
 const openmodal = () => (isModalOpen.value = true);
 const openReturnsModal = () => (returnsModalOpen.value = true);
 const handleCancel = () => (isModalOpen.value = false);
+const handleCancelUpdate = () => (isUpdateModalOpen.value = false);
 const handleCancelReceive = () => (isOpen.value = false);
 const handleReturnsCancel = () => (returnsModalOpen.value = false);
 
@@ -939,18 +999,17 @@ const openReceiveModal = (type, id) => {
   isOpen.value = true;
 };
 
+const openUpdateReceiveModal = (id) => {
+  console.log(id);
+  distribution_id.value = id;
+  isUpdateModalOpen.value = true;
+};
+
 const handlePostSearch = (value) => {
   console.log(value);
   searchItem.value = value;
   fetchTransferPosts();
 };
-
-// const generatePostOptions = () => {
-//   return postdata.value.map((post) => ({
-//     label: post.name,
-//     value: post.id,
-//   }));
-// };
 
 const fetchPosts = async () => {
   try {
@@ -1074,6 +1133,57 @@ const handleTransfer = () => {
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/transfer-nets`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success) {
+          notification.success({
+            message: "Success",
+            description: `${message}`,
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${message}`,
+          });
+        }
+        isModalOpen.value = false;
+        trans_formState.to_post_id = "";
+        trans_formState.number_of_nets = "";
+        trans_formState.comment = "";
+      })
+      .catch((error) => {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+        isModalOpen.value = false;
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
+
+const handleUpdateReceiveDate = () => {
+  const data = {
+    date_received: new Date(update_formState.date_received)
+      .toISOString()
+      .split("T")[0],
+    id: distribution_id.value,
+  };
+
+  console.log(JSON.stringify(data));
+  try {
+    fetch(`${process.env.VUE_APP_BASE_URL}/update_net_delivery`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         ...authHeader(),

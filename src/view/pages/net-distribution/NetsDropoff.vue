@@ -80,6 +80,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "Date Received",
+    dataIndex: "date_received",
+    key: "id",
+  },
+  {
     title: "Received From",
     dataIndex: "received_from",
     key: "id",
