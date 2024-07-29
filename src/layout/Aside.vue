@@ -300,7 +300,7 @@
         <template v-slot:title>
           <sdFeatherIcons type="credit-card" /><span>Payroll</span>
         </template>
-        <a-sub-menu key="gf-payroll">
+        <a-sub-menu key="gf-payroll" v-if="canViewGFPayroll">
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
@@ -318,7 +318,7 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-sub-menu key="pmi-payrolly">
+        <a-sub-menu key="pmi-payroll" v-if="canViewPMIPayroll">
           <template v-slot:title>
             <sdFeatherIcons type="radio" /><span>PMI</span>
           </template>
@@ -432,7 +432,7 @@ const createActivityRoles = [53, 5, 3, 21, 37, 22, 36];
 
 const viewActivitiesRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17, 64, 65,
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17, 64, 65, 63
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
@@ -476,6 +476,10 @@ const viewInventoryRoles = [
 ];
 
 const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 63, 64, 65, 59, 78, 17];
+
+const viewGFPayrollRoles = [53, 1, 2, 4, 8, 78];
+
+const viewPMIPayrollRoles = [53, 63, 64, 65, 78];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
@@ -534,6 +538,8 @@ export default defineComponent({
     const canViewDistributitionPostRole = hasRole(viewDistributionPostRoles);
     const canViewInventory = hasRole(viewInventoryRoles);
     const canViewPayroll = hasRole(viewPayrollRoles);
+    const canViewGFPayroll = hasRole(viewGFPayrollRoles);
+    const canViewPMIPayroll = hasRole(viewPMIPayrollRoles);
     const canViewUsers = hasRole(viewUsersRoles);
     const canViewMasterlist = hasRole(viewMasterlistsRoles);
 
@@ -621,6 +627,8 @@ export default defineComponent({
       canViewPayroll,
       canViewUsers,
       canViewMasterlist,
+      canViewGFPayroll,
+      canViewPMIPayroll
     };
   },
 });
