@@ -5,7 +5,7 @@
         <div class="auth-side-content">
           <br />
           <br />
-          <h1 class="heading">DigiMal-KE</h1>
+          <h1 class="dashboard-heading">DigiMal-KE</h1>
           <Content class="content-container">
             <img
               class="auth-content-figure"
@@ -17,9 +17,17 @@
             <br />
             <br />
             <img
-              :style="{ width: '220px' }"
+              :style="{ width: '200px' }"
               :src="require('@/static/img/PMI_logo.svg')"
               alt="PMI Logo"
+              class="logo"
+            />
+            &nbsp;
+            &nbsp;
+            <img
+              :style="{ width: '200px' }"
+              :src="require('@/static/img/auth/global-fund.png')"
+              alt="GF Logo"
               class="logo"
             />
             <br />
@@ -96,4 +104,15 @@ export default AuthLayout;
 .router-view {
   padding: 20px;
 }
+
+.dashboard-heading {
+  font-size: 36px; /* Larger font size for emphasis */
+  font-weight: 700; /* Bold font weight */
+  color: #333; /* Dark color for contrast */
+  text-align: center; /* Center-align the heading */
+  margin: 20px 0; /* Add vertical spacing */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  font-family: 'Arial', sans-serif; /* Clean and professional font */
+}
+
 </style>
