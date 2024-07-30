@@ -372,6 +372,14 @@
                                         class="cadre-list-item"
                                       >
                                         {{ cadre.role_id }} - {{ cadre.count }}
+                                        <span
+                                          v-if="
+                                            cadre.dayshift || cadre.nightshift
+                                          "
+                                        >
+                                          (Dayshift - {{ cadre.dayshift }} &
+                                          Nightshift - {{ cadre.nightshift }})
+                                        </span>
                                       </li>
                                     </ul>
                                   </div>
@@ -989,7 +997,7 @@ const isApprovedGenerator = computed(() => {
     user.user.role_id === 63 ||
     user.user.role_id === 64 ||
     user.user.role_id === 59 ||
-    user.user.role_id === 4 
+    user.user.role_id === 4
   ) {
     return true;
   } else {
@@ -999,9 +1007,7 @@ const isApprovedGenerator = computed(() => {
 console.log(event_host_id);
 
 const isHost = computed(() => {
-  if (
-    user.user.id === event_host_id
-  ) {
+  if (user.user.id === event_host_id) {
     return true;
   } else {
     return false;
