@@ -40,7 +40,7 @@
             <br>
             <img
               :style="{ width: '200px' }"
-              :src="require('@/static/img/auth/healthit.png')"
+              :src="require('@/static/img/auth/HealthIT.png')"
               alt="HealthITLogo"
               class="logo"
             />
