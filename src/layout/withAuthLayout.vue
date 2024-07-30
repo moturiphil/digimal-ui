@@ -1,9 +1,9 @@
 <template>
   <a-row class="professional-layout">
-    <a-col :xxl="8" :xl="9" :lg="12" :md="8" :xs="24">
+    <!-- Aside Section - Displayed only on larger screens -->
+    <a-col :xxl="8" :xl="9" :lg="12" :md="8" :xs="24" class="aside-col">
       <Aside class="aside-container">
         <div class="auth-side-content">
-          <br />
           <br />
           <h1 class="dashboard-heading">DigiMal-KE</h1>
           <Content class="content-container">
@@ -12,8 +12,6 @@
               :src="require('@/static/img/auth/kenya_coat_of_arms.png')"
               alt="Coat of Arms"
             />
-            <br />
-            <br />
             <br />
             <br />
             <img
@@ -32,12 +30,18 @@
             />
             <br />
             <br />
-            <br />
-            <br />
             <img
               :style="{ width: '400px' }"
               :src="require('@/static/img/auth/dnmp.png')"
               alt="DNMP Logo"
+              class="logo"
+            />
+            <br>
+            <br>
+            <img
+              :style="{ width: '200px' }"
+              :src="require('@/static/img/auth/healthit.png')"
+              alt="HealthITLogo"
               class="logo"
             />
           </Content>
@@ -45,11 +49,13 @@
       </Aside>
     </a-col>
 
+    <!-- Form Section - Always Displayed -->
     <a-col :xxl="16" :xl="15" :lg="12" :md="16" :xs="24">
       <router-view class="router-view"></router-view>
     </a-col>
   </a-row>
 </template>
+
 <script>
 import { Aside, Content } from "./style";
 
@@ -75,12 +81,6 @@ export default AuthLayout;
 .auth-side-content {
   text-align: center;
 }
-
-/* .topShape,
-.bottomShape {
-  display: block;
-  margin: 0 auto;
-} */
 
 .content-container {
   margin-top: 20px;
@@ -115,4 +115,67 @@ export default AuthLayout;
   font-family: 'Arial', sans-serif; /* Clean and professional font */
 }
 
+/* Media Queries for Responsiveness */
+@media (max-width: 1200px) {
+  .dashboard-heading {
+    font-size: 32px;
+  }
+
+  .logo {
+    width: 180px !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-heading {
+    font-size: 28px;
+  }
+
+  .logo {
+    width: 160px !important;
+  }
+
+  .aside-container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-heading {
+    font-size: 24px;
+  }
+
+  .logo {
+    width: 140px !important;
+  }
+
+  .aside-container {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-heading {
+    font-size: 20px;
+  }
+
+  .logo {
+    width: 120px !important;
+  }
+
+  .aside-container {
+    padding: 5px;
+  }
+
+  .auth-content-figure {
+    width: 100%;
+  }
+}
+
+/* Hide aside on smaller screens */
+@media (max-width: 768px) {
+  .aside-col {
+    display: none;
+  }
+}
 </style>
