@@ -377,8 +377,8 @@
                                             cadre.dayshift || cadre.nightshift
                                           "
                                         >
-                                          (Dayshift - {{ cadre.dayshift }} &
-                                          Nightshift - {{ cadre.nightshift }})
+                                          (Dayshift - <b> {{ cadre.dayshift }}</b>  &
+                                          Nightshift - <b>{{ cadre.nightshift }} </b>)
                                         </span>
                                       </li>
                                     </ul>
