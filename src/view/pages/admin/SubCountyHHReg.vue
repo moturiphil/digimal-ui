@@ -126,8 +126,8 @@
                                     size="extra-small"
                                     type="success"
                                     @click="createDropoffEvent(record)"
+                                    v-if="record.dropoff_sec_event_id == null"
                                   >
-                                  <!-- v-if="record.distribution_event_id == null" -->
                                     <span>Create Drop-off Event</span>
                                   </sdButton>
                                   <!-- <span
@@ -141,8 +141,8 @@
                                     type="warning"
                                     :disabled="isDisabled"
                                     @click="populateDropoffEvent(record)"
+                                    v-if="record.dropoff_sec_event_id !== null"
                                   >
-                                  <!-- v-if="record.distribution_event_id !== null" -->
                                     {{
                                       isLoading
                                         ? "Loading..."
@@ -435,6 +435,7 @@ export default defineComponent({
             description: result.data,
             duration: 5.5,
           });
+          location.reload();
         } else {
           notification["error"]({
             message: "Error!",
@@ -530,6 +531,7 @@ export default defineComponent({
             description: result.data,
             duration: 5.5,
           });
+          location.reload();
         } else {
           notification["error"]({
             message: "Error!",
@@ -541,7 +543,6 @@ export default defineComponent({
         console.error(error);
       }
     };
-
 
     // create security event
     const createDropoffEvent = async (data) => {
@@ -626,6 +627,7 @@ export default defineComponent({
             description: result.data,
             duration: 5.5,
           });
+          location.reload();
         } else {
           notification["error"]({
             message: "Error!",
