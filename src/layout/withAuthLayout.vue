@@ -4,7 +4,6 @@
     <a-col :xxl="8" :xl="9" :lg="12" :md="8" :xs="24" class="aside-col">
       <Aside class="aside-container">
         <div class="auth-side-content">
-          <br />
           <h1 class="dashboard-heading">DigiMal-KE</h1>
           <Content class="content-container">
             <img
@@ -15,7 +14,7 @@
             <br />
             <br />
             <img
-              :style="{ width: '200px' }"
+              :style="{ width: '150px' }"
               :src="require('@/static/img/PMI_logo.svg')"
               alt="PMI Logo"
               class="logo"
@@ -23,7 +22,7 @@
             &nbsp;
             &nbsp;
             <img
-              :style="{ width: '200px' }"
+              :style="{ width: '150px' }"
               :src="require('@/static/img/auth/global-fund.png')"
               alt="GF Logo"
               class="logo"
