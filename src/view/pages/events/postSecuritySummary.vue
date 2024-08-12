@@ -13,6 +13,16 @@
       </template>
     </sdPageHeader>
     <Main>
+      <!-- Summary Section -->
+      <div class="summary-section">
+        <div class="summary-item">
+          <strong>Total Posts:</strong> {{ totalPosts }} ||
+          <strong>Total Day Security:</strong> {{ totalDaySecurity }} ||
+          <strong>Total Night Security:</strong> {{ totalNightSecurity }}
+        </div>
+        <!-- <div class="summary-item"></div>
+        <div class="summary-item"></div> -->
+      </div>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -40,6 +50,10 @@
                             }"
                             :dataSource="dataSource"
                             :columns="tableColumns"
+                            :rowClassName="
+                              (record) =>
+                                record.hasBothShifts ? '' : 'highlight-row'
+                            "
                           >
                             <template #bodyCell="{ column, record }">
                               <td>
@@ -68,6 +82,38 @@
                                       {{ security.shift }}
                                     </li>
                                   </ul>
+                                </div>
+                                <div
+                                  v-else-if="column.key === 'day_shift_count'"
+                                >
+                                  {{ record.day_shift_count }}
+                                </div>
+                                <div
+                                  v-else-if="column.key === 'night_shift_count'"
+                                >
+                                  {{ record.night_shift_count }}
+                                </div>
+                                <div v-else-if="column.key === 'action'">
+                                  <sdButton
+                                    type="warning"
+                                    size="extra-small"
+                                    v-if="!record.hasBothShifts"
+                                  >
+                                    <router-link
+                                      :to="{
+                                        path: `/view-worker`,
+                                        query: {
+                                          id: record.post_id,
+                                          name: record.post_name,
+                                        },
+                                      }"
+                                      class="btn-icon"
+                                      type="success"
+                                      shape="circle"
+                                    >
+                                      View More
+                                    </router-link>
+                                  </sdButton>
                                 </div>
                                 <div v-else>{{ record[column.dataIndex] }}</div>
                               </td>
@@ -128,6 +174,10 @@ export default defineComponent({
     searchData() {
       return this.$store.state.headerSearch.data;
     },
+    viewMore(record) {
+      // Implement your logic for "View More" here
+      console.log("Viewing more for record:", record);
+    },
   },
   setup() {
     const { state } = useStore();
@@ -154,11 +204,27 @@ export default defineComponent({
         key: "post_name",
       },
       {
-        title: "Securities",
-        dataIndex: "securities",
-        key: "securities",
+        title: "Day Shift Count",
+        key: "day_shift_count",
+      },
+      {
+        title: "Night Shift Count",
+        key: "night_shift_count",
+      },
+      {
+        title: "Action",
+        key: "action",
       },
     ];
+
+    // Computed properties for totals
+    const totalPosts = computed(() => dataSource.value.length);
+    const totalDaySecurity = computed(() =>
+      dataSource.value.reduce((acc, post) => acc + post.day_shift_count, 0)
+    );
+    const totalNightSecurity = computed(() =>
+      dataSource.value.reduce((acc, post) => acc + post.night_shift_count, 0)
+    );
 
     onMounted(() => {
       axios
@@ -167,39 +233,25 @@ export default defineComponent({
         })
         .then((response) => {
           console.log(response.data.data);
-          dataSource.value = response.data.data;
+          dataSource.value = response.data.data.map((post) => {
+            const dayShiftCount = post.securities.filter(
+              (security) => security.shift === "Day"
+            ).length;
+            const nightShiftCount = post.securities.filter(
+              (security) => security.shift === "Night"
+            ).length;
+            return {
+              ...post,
+              day_shift_count: dayShiftCount,
+              night_shift_count: nightShiftCount,
+              hasBothShifts: dayShiftCount > 0 && nightShiftCount > 0,
+            };
+          });
         })
         .catch((error) => {
           console.error(error);
         });
     });
-
-    // watchEffect(async () => {
-    //   const query = searchItem.value.toLowerCase();
-    //   try {
-    //     if (!query) {
-    //       dataSource.value = security.value;
-    //       return dataSource.value;
-    //     }
-    //     if (query.length > 3) {
-    //       const response = await fetch(`${API_URL}/search?query=${query}`, {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       });
-    //       const data = await response.json();
-    //       dataSource.value = data.data.map((item) => ({
-    //         ...item,
-    //         old_values: item.old_values,
-    //         new_values: item.new_values,
-    //       }));
-    //     }
-    //   } catch (error) {
-    //     notification.error({
-    //       message: "Error",
-    //       description: error.message,
-    //     });
-    //   }
-    // });
 
     return {
       crud,
@@ -210,6 +262,9 @@ export default defineComponent({
       tableColumns,
       handleChange,
       activeClass,
+      totalPosts,
+      totalDaySecurity,
+      totalNightSecurity,
     };
   },
 });
@@ -236,5 +291,10 @@ export default defineComponent({
   margin-bottom: 10px;
   padding: 10px;
   border-radius: 4px;
+}
+
+.highlight-row {
+  background-color: #fa8b0b !important;
+  /* Change to your preferred highlight color */
 }
 </style>

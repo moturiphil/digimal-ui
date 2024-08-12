@@ -384,7 +384,7 @@
                                         :key="cadre.role_id"
                                         class="cadre-list-item"
                                       >
-                                        {{ cadre.role_id }} - {{ cadre.count }}
+                                        {{ cadre.role_id }} - <b>{{ cadre.count }}</b>
                                         <span
                                           v-if="
                                             cadre.dayshift || cadre.nightshift
