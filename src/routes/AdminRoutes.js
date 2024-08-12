@@ -192,6 +192,11 @@ const routes = [
         component: () => import("@/view/pages/events/addStakeholder.vue"),
       },
       {
+        path: "/event/post-security-summary",
+        name: "post-security-summary",
+        component: () => import("@/view/pages/events/postSecuritySummary.vue"),
+      },
+      {
         path: "/users/add-chp-ve",
         name: "users-chp-ve",
         component: () => import("@/view/pages/users/addCHPVE.vue"),

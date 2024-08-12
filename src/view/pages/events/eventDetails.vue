@@ -108,6 +108,19 @@
                     <sdFeatherIcons type="users" size="extra-small" />
                   </sdButton>
                 </li>
+                <sdButton class="btn-import" type="warning" size="extra-small" v-if="event_list_id==29">
+                  <router-link
+                    :to="{
+                      path: `/event/post-security-summary`,
+                      query: { event_location_id: event_location_id },
+                    }"
+                    class="btn-icon"
+                    type="success"
+                    shape="circle"
+                  >
+                    Post Security Summary
+                  </router-link>
+                </sdButton>
               </ul>
             </div>
           </a-col>
@@ -377,8 +390,10 @@
                                             cadre.dayshift || cadre.nightshift
                                           "
                                         >
-                                          (Dayshift - <b> {{ cadre.dayshift }}</b>  &
-                                          Nightshift - <b>{{ cadre.nightshift }} </b>)
+                                          (Dayshift -
+                                          <b> {{ cadre.dayshift }}</b> &
+                                          Nightshift -
+                                          <b>{{ cadre.nightshift }} </b>)
                                         </span>
                                       </li>
                                     </ul>
@@ -529,6 +544,9 @@ const pendingCount = computed(() => pending.value.length);
 const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 const event_name = plainquery.name;
+console.log(plainquery.event_list_id);
+const event_list_id = plainquery.event_list_id;
+const event_location_id = plainquery.location;
 const event_code = plainquery.event_code;
 const event_host_id = plainquery.event_host_id;
 const router = useRouter();
@@ -989,7 +1007,7 @@ const role_id = ref("");
 const rt = useRouter();
 
 const user = JSON.parse(sessionStorage.getItem("user"));
-console.log(user.user.id);
+console.log(event_list_id);
 
 const isApprovedGenerator = computed(() => {
   if (

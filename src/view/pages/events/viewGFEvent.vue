@@ -108,6 +108,7 @@
                                     funding_id: record.funding_source,
                                     start_date: record.start_date,
                                     event_list_id: record.event_list_id,
+                                    location: record.county,
                                   })
                                 ),
                               },
