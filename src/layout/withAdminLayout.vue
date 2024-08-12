@@ -153,12 +153,16 @@
             >
               <a-row>
                 <a-col :md="12" :xs="24">
-                  <span class="admin-footer__copyright"
-                    >{{ currentYear }} © DigiMal</span
+                  <strong
+                    ><span class="admin-footer__copyright"
+                      >{{ currentYear }} © DigiMal</span
+                    ></strong
                   >
                 </a-col>
                 <a-col :md="12" :xs="24">
-                  <div class="admin-footer__links"></div>
+                  <div class="admin-footer__links">
+                    <strong>V1.11</strong>
+                  </div>
                 </a-col>
               </a-row>
             </Footer>
