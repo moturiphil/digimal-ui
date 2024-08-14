@@ -12,17 +12,19 @@
         </div>
       </template>
     </sdPageHeader>
-    <Main>
-      <!-- Summary Section -->
-      <div class="summary-section">
-        <div class="summary-item">
-          <strong>Total Posts:</strong> {{ totalPosts }} ||
-          <strong>Total Day Security:</strong> {{ totalDaySecurity }} ||
-          <strong>Total Night Security:</strong> {{ totalNightSecurity }}
-        </div>
-        <!-- <div class="summary-item"></div>
-        <div class="summary-item"></div> -->
+    <!-- Summary Section -->
+    <div class="summary-section">
+      <div class="summary-item">
+        <strong>Total Posts:</strong> {{ totalPosts }}
       </div>
+      <div class="summary-item">
+        <strong>Total Day Security:</strong> {{ totalDaySecurity }}
+      </div>
+      <div class="summary-item">
+        <strong>Total Night Security:</strong> {{ totalNightSecurity }}
+      </div>
+    </div>
+    <Main>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -93,6 +95,30 @@
                                 >
                                   {{ record.night_shift_count }}
                                 </div>
+                                <div v-else-if="column.key === 'delivery_date'">
+                                  <ul>
+                                    <li
+                                      v-for="(
+                                        delivery, index
+                                      ) in record.delivery_date"
+                                      :key="index"
+                                    >
+                                      {{ formatDate(delivery.date_received) }}
+                                    </li>
+                                  </ul>
+                                </div>
+                                <div v-else-if="column.key === 'issue_date'">
+                                  <ul>
+                                    <li
+                                      v-for="(
+                                        issue, index
+                                      ) in record.issue_date"
+                                      :key="index"
+                                    >
+                                      {{ formatDate(issue.issue_date) }}
+                                    </li>
+                                  </ul>
+                                </div>
                                 <div v-else-if="column.key === 'action'">
                                   <sdButton
                                     type="warning"
@@ -141,6 +167,7 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
+import { format } from "date-fns"; // Import date-fns for formatting
 
 export default defineComponent({
   name: "HouseHold Validation",
@@ -178,6 +205,9 @@ export default defineComponent({
       // Implement your logic for "View More" here
       console.log("Viewing more for record:", record);
     },
+    formatDate(dateStr) {
+      return format(new Date(dateStr), "do MMMM yyyy");
+    },
   },
   setup() {
     const { state } = useStore();
@@ -210,6 +240,14 @@ export default defineComponent({
       {
         title: "Night Shift Count",
         key: "night_shift_count",
+      },
+      {
+        title: "Issue Date",
+        key: "issue_date",
+      },
+      {
+        title: "Date Received",
+        key: "delivery_date",
       },
       {
         title: "Action",
