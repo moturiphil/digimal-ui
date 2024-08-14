@@ -12,19 +12,18 @@
         </div>
       </template>
     </sdPageHeader>
-    <!-- Summary Section -->
-    <div class="summary-section">
-      <div class="summary-item">
-        <strong>Total Posts:</strong> {{ totalPosts }}
-      </div>
-      <div class="summary-item">
-        <strong>Total Day Security:</strong> {{ totalDaySecurity }}
-      </div>
-      <div class="summary-item">
-        <strong>Total Night Security:</strong> {{ totalNightSecurity }}
-      </div>
-    </div>
     <Main>
+      <div class="summary-section">
+        <div class="summary-item">
+          <strong>Total Posts:</strong> {{ totalPosts }}
+        </div>
+        <div class="summary-item">
+          <strong>Total Day Security:</strong> {{ totalDaySecurity }}
+        </div>
+        <div class="summary-item">
+          <strong>Total Night Security:</strong> {{ totalNightSecurity }}
+        </div>
+      </div>
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
