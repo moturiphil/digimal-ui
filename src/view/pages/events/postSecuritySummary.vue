@@ -15,12 +15,8 @@
     <Main>
       <div class="summary-section">
         <div class="summary-item">
-          <strong>Total Posts:</strong> {{ totalPosts }}
-        </div>
-        <div class="summary-item">
-          <strong>Total Day Security:</strong> {{ totalDaySecurity }}
-        </div>
-        <div class="summary-item">
+          <strong>Total Posts:</strong> {{ totalPosts }} ||
+          <strong>Total Day Security:</strong> {{ totalDaySecurity }} ||
           <strong>Total Night Security:</strong> {{ totalNightSecurity }}
         </div>
       </div>
