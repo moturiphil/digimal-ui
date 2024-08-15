@@ -40,9 +40,23 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions"></div>
+                            <template #actions="{ record }">
+                              <td>
+                                <div class="table-actions">
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    type="warning"
+                                    size="extra-small"
+                                    @click="
+                                      syncTransaction(
+                                        record.originator_conversation_id
+                                      )
+                                    "
+                                  >
+                                    Sync Transaction
+                                  </sdButton>
+                                  &nbsp;&nbsp;
+                                </div>
                               </td>
                             </template>
                           </a-table>
@@ -67,6 +81,7 @@ import { computed, onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
+import { notification } from "ant-design-vue";
 
 const columns = [
   {
@@ -104,9 +119,15 @@ const columns = [
     dataIndex: "amount",
     key: "id",
   },
+  {
+    title: "",
+    dataIndex: "",
+    key: "actions",
+    slots: { customRender: "actions" },
+  },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "TransactionReport",
   components: {
     Main,
     SearchResultWrapper,
@@ -169,6 +190,38 @@ export default defineComponent({
         });
     });
 
+    const syncTransaction = async (originator) => {
+      console.log(originator);
+      const GF = "gf";
+      axios
+        .get(
+          `${process.env.VUE_APP_BASE_URL}/payment/status/${GF}/${originator}`,
+          {
+            headers: authHeader(),
+          }
+        )
+        .then((response) => {
+          console.log(response.data.ResponseCode);
+          if (response.data.ResponseCode == "0") {
+          notification.success({
+            message: "Success",
+            description: "Transaction synched successfully",
+          });
+        } else {
+          notification.error({
+            message: "Error",
+            description: `errorMessage": "Bad Request"`,
+          });
+        }
+        })
+        .catch((error) => {
+          notification.error({
+            message: `Error!`,
+            description: `${error}`,
+          });
+        });
+    };
+
     return {
       crud,
       isLoading,
@@ -178,6 +231,7 @@ export default defineComponent({
       columns,
       handleChange,
       activeClass,
+      syncTransaction,
       // handleVerify,
     };
   },
