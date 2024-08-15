@@ -799,6 +799,14 @@ const routes = [
       ),
   },
   {
+    path: "/admin/transaction-reports",
+    name: "transactions-reports",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/admin/TransactionsReports.vue"
+      ),
+  },
+  {
     path: "/404",
     name: "404",
     component: () =>

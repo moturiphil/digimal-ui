@@ -36,6 +36,20 @@
                 </sdButton>
               </a-card>
             </a-col>
+            <a-col :span="8">
+              <a-card title="Transactions Report" :bordered="true">
+                <!-- <p>Event Participants OTPs</p> -->
+                <sdButton size="extra-small" type="success">
+                  <router-link
+                    :to="{
+                      path: `/admin/transaction-reports`,
+                    }"
+                  >
+                    View Data
+                  </router-link>
+                </sdButton>
+              </a-card>
+            </a-col>
           </a-row>
         </div>
       </SearchResultWrapper>
