@@ -102,7 +102,7 @@ const columns = [
   },
 ];
 export default defineComponent({
-  name: "HouseHold Validation",
+  name: "Audit Logs",
   components: {
     Main,
     SearchResultWrapper,
