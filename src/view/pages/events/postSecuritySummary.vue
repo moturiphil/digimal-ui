@@ -102,18 +102,12 @@
                                     </li>
                                   </ul>
                                 </div>
-                                <div v-else-if="column.key === 'issue_date'">
-                                  <ul>
-                                    <li
-                                      v-for="(
-                                        issue, index
-                                      ) in record.issue_date"
-                                      :key="index"
-                                    >
-                                      {{ formatDate(issue.issue_date) }}
-                                    </li>
-                                  </ul>
+                                <div
+                                  v-else-if="column.key === 'distribution_date'"
+                                >
+                                  {{ formatDate(record.distribution_date) }}
                                 </div>
+
                                 <div v-else-if="column.key === 'action'">
                                   <sdButton
                                     type="warning"
@@ -237,12 +231,12 @@ export default defineComponent({
         key: "night_shift_count",
       },
       {
-        title: "Issue Date",
-        key: "issue_date",
-      },
-      {
         title: "Date Received",
         key: "delivery_date",
+      },
+      {
+        title: "Distribution Start Date",
+        key: "distribution_date",
       },
       {
         title: "Action",
@@ -267,6 +261,7 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data.data);
           dataSource.value = response.data.data.map((post) => {
+            const distribution_date = post.distribution_date;
             const dayShiftCount = post.securities.filter(
               (security) => security.shift === "Day"
             ).length;
@@ -278,6 +273,7 @@ export default defineComponent({
               day_shift_count: dayShiftCount,
               night_shift_count: nightShiftCount,
               hasBothShifts: dayShiftCount > 0 && nightShiftCount > 0,
+              distribution_date: distribution_date,
             };
           });
         })
