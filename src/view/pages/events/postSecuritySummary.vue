@@ -108,6 +108,25 @@
                                   {{ formatDate(record.distribution_date) }}
                                 </div>
 
+                                <div v-else-if="column.key === 'date_diff'">
+                                  <ul>
+                                    <li
+                                      v-for="(
+                                        delivery, index
+                                      ) in record.delivery_date"
+                                      :key="index"
+                                    >
+                                      {{
+                                        calculateDateDiff(
+                                          delivery.date_received,
+                                          record.distribution_date
+                                        )
+                                      }}
+                                      days
+                                    </li>
+                                  </ul>
+                                </div>
+
                                 <div v-else-if="column.key === 'action'">
                                   <sdButton
                                     type="warning"
@@ -216,6 +235,14 @@ export default defineComponent({
       activeClass.value = tab;
     };
 
+    const calculateDateDiff = (date1, date2) => {
+      const dateReceived = new Date(date1);
+      const distributionDate = new Date(date2);
+      const diffTime = Math.abs(distributionDate - dateReceived);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    };
+
     const tableColumns = [
       {
         title: "Post Name",
@@ -237,6 +264,10 @@ export default defineComponent({
       {
         title: "Distribution Start Date",
         key: "distribution_date",
+      },
+      {
+        title: "Date Diff",
+        key: "date_diff",
       },
       {
         title: "Action",
@@ -294,6 +325,7 @@ export default defineComponent({
       totalPosts,
       totalDaySecurity,
       totalNightSecurity,
+      calculateDateDiff,
     };
   },
 });
