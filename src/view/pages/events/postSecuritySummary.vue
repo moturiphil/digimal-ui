@@ -303,7 +303,7 @@ export default defineComponent({
               ...post,
               day_shift_count: dayShiftCount,
               night_shift_count: nightShiftCount,
-              hasBothShifts: dayShiftCount > 0 && nightShiftCount > 0,
+              hasBothShifts: dayShiftCount ==1 && nightShiftCount == 1,
               distribution_date: distribution_date,
             };
           });
