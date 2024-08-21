@@ -211,10 +211,6 @@ export default {
         });
         sessionStorage.setItem("auth-user", response.data.user);
 
-        console.log(sessionStorage.getItem("auth-user"));
-
-        console.log(response);
-
         if (response.status === 200) {
           store.commit("auth/setUser", response.data.user);
           const redirectUrl = sessionStorage.getItem("redirectUrl");
