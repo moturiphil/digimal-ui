@@ -344,25 +344,13 @@ const formState = reactive({
   issue_date: "",
   delivery_note_number: "",
   drop_off_manager: "",
-  // shift: [
-  //   { id: "D", name: "Day" },
-  //   { id: "N", name: "Night" },
-  // ],
 });
 
-// const { shift } = reactive({
-//   shift: [
-//     { id: "D", name: "Day" },
-//     { id: "N", name: "Night" },
-//   ],
-// });
 onMounted(async () => {
   ///alert()
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-    //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     updateFilters();
-    // console.log(JSON.stringify(access_level.value.location));
   }
 });
 //handle pagination
@@ -551,12 +539,6 @@ const openModal = (id) => {
   formState.drop_off_point_id = id;
 };
 
-// const openSecurityModal = (id) => {
-//   console.log(id);
-//   isSecurityModalOpen.value = true;
-//   formState.drop_off_point_id = id;
-// };
-
 //users
 const getManagers = async () => {
   const response = await axios.get(`get_drop_off_manager`);
@@ -610,55 +592,10 @@ const handleAssign = async () => {
   }
 };
 
-// const handleAssignSecurity = async () => {
-//   try {
-//     const data = {
-//       user_id: formState.drop_off_manager,
-//       drop_off_id: formState.drop_off_point_id,
-//       shift: "D",
-//     };
-
-//     console.log(JSON.stringify(data));
-//     await axios
-//       .post(`security/create_dropoff`, data)
-//       .then((response) => response.data)
-//       .then(({ success, message }) => {
-//         if (success == true) {
-//           notification.success({
-//             message: "Success",
-//             description: message,
-//           });
-//           isModalOpen.value = false;
-//           setTimeout(function () {
-//             window.location.reload();
-//           }, 3000);
-//         } else {
-//           notification.error({
-//             message: "Error",
-//             description: `${message}`,
-//           });
-//         }
-//         isModalOpen.value = false;
-//       })
-//       .catch((error) => {
-//         notification.error({
-//           message: "Error",
-//           description: `${error}`,
-//         });
-//       });
-//   } catch (error) {
-//     notification.error({
-//       message: "Error",
-//       description: `${error}`,
-//     });
-//   }
-// };
 const handleCancelReceive = () => {
   isModalOpen.value = false;
 };
-// const handleCancelSecurity = () => {
-//   isModalOpen.value = false;
-// };
+
 </script>
 <style>
 .badge-orange {
