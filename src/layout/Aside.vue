@@ -248,6 +248,14 @@
             Distribution Posts
           </router-link>
         </a-menu-item>
+        <a-menu-item
+          key="widgetDistributionPostOrders"
+          v-if="canViewDistributitionPostRole"
+        >
+          <router-link to="/nets/distribution-order-summary">
+            Posts Order Summary
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
 
       <a-sub-menu key="inventory" v-if="canViewInventory">
