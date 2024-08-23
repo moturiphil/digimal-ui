@@ -528,6 +528,7 @@
                                   :style="{ width: '100%' }"
                                   v-model:value="formState.date_received"
                                   :format="dateFormat"
+                                  :disabledDate="disabledDate"
                                 />
                               </a-form-item>
 
@@ -748,6 +749,67 @@
                           </BasicFormWrapper>
                         </a-modal>
                         <!-- End of Transfer modal -->
+
+                        <!-- Discrepancy modal -->
+                        <a-modal
+                          title="Nets Quantity Discrepancy"
+                          :visible="isDiscrepancyModal"
+                          @cancel="handleCancelDiscrepancy"
+                          width="40%"
+                        >
+                          <p>
+                            Are you sure you want to receive Nets with
+                            discrepancy?
+                          </p>
+
+                          <p>
+                            You have a difference of
+                            <strong> {{ discrepancy }} </strong> nets.
+                          </p>
+
+                          <a-form
+                            class="add-record-form"
+                            :style="{ width: '100%' }"
+                            layout="vertical"
+                            name="addactivity"
+                            :model="formState"
+                          >
+                            <a-form-item
+                              name="reason_for_descrepancy"
+                              label="Reason"
+                            >
+                              <a-textarea
+                                v-model:value="formState.reason_for_discrepancy"
+                                placeholder="State reason for discrepancy..."
+                                :rows="4"
+                              />
+                            </a-form-item>
+                          </a-form>
+                          <template #footer>
+                            <a-button
+                              key="cancel"
+                              type="warning"
+                              @click="handleCancelDiscrepancy"
+                            >
+                              Cancel
+                            </a-button>
+                            <!-- <a-button
+                              key="confirm"
+                              type="danger"
+                              @click="handleConfirmDiscrepancy"
+                            >
+                              Confirm
+                            </a-button> -->
+                            <a-button
+                              key="confirm"
+                              type="danger"
+                              @click="confirmDiscrepancyCallback"
+                            >
+                              Confirm
+                            </a-button>
+                          </template>
+                        </a-modal>
+                        <!-- End of Discrepancy modal -->
                       </div>
                     </sdCards>
                   </a-col>
@@ -927,6 +989,7 @@ const transferIns = ref([]);
 const transferOuts = ref([]);
 const { query } = useRoute();
 const isOpen = ref(false);
+const isDiscrepancyModal = ref(false);
 const post_id = query.id;
 const isModalOpen = ref(false);
 const isUpdateModalOpen = ref(false); // trans_formState
@@ -935,7 +998,11 @@ const post_name = query.name;
 const searchItem = ref("");
 const isTransferModalOpen = ref(false);
 const posts = ref([]);
+const deliveries = ref(null);
+const discrepancy = ref(null);
 const distribution_id = ref(null);
+// const payload = ref(null);
+// const url = ref(null);
 const formState = reactive({
   date_received: "",
   distribution_id: "",
@@ -976,6 +1043,7 @@ const handleChange = (tab) => (activeClass.value = tab);
 const openmodal = () => (isModalOpen.value = true);
 const openReturnsModal = () => (returnsModalOpen.value = true);
 const handleCancel = () => (isModalOpen.value = false);
+const handleCancelDiscrepancy = () => (isDiscrepancyModal.value = false);
 const handleCancelUpdate = () => (isUpdateModalOpen.value = false);
 const handleCancelReceive = () => (isOpen.value = false);
 const handleReturnsCancel = () => (returnsModalOpen.value = false);
@@ -989,6 +1057,13 @@ const handleTransactions = (tab) => {
     : tab === "return"
     ? handleChange("return") //openReturnsModal()
     : null;
+};
+
+const disabledDate = (current) => {
+  // Can not select days before two weeks ago and today
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  return current && (current > new Date() || current < twoWeeksAgo);
 };
 
 const openReceiveModal = (type, id) => {
@@ -1181,6 +1256,7 @@ const handleUpdateReceiveDate = () => {
   };
 
   console.log(JSON.stringify(data));
+  console.log(data);
   try {
     fetch(`${process.env.VUE_APP_BASE_URL}/update_net_delivery`, {
       method: "PATCH",
@@ -1277,6 +1353,128 @@ const handleReturns = () => {
   }
 };
 
+// const receiveNets = async () => {
+//   const data = {
+//     transfer_id: trans_formState.transfer_id,
+//     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+//     status: 1,
+//   };
+//   const quantity_received =
+//     Number(formState.number_of_bales) * Number(formState.bale_size) +
+//     Number(formState.no_of_pieces);
+
+//   const rec_data = {
+//     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
+//     bale_size: formState.bale_size,
+//     no_of_bales: formState.number_of_bales,
+//     loose_pieces: formState.no_of_pieces,
+//     quantity_received: quantity_received,
+//     receptor_comment: formState.comment,
+//   };
+//   const payload =
+//     transaction_type.value === "transfers"
+//       ? data
+//       : transaction_type.value === "receive"
+//       ? rec_data
+//       : null;
+//   const url =
+//     transaction_type.value === "transfers"
+//       ? "receive_nets_from_post"
+//       : transaction_type.value === "receive"
+//       ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
+//       : null;
+
+//   deliveries.value.forEach((delivery) => {
+//     console.log(delivery);
+//     if (delivery.distribution_id == formState.distribution_id) {
+//       if (delivery.quantity_issued !== quantity_received) {
+//         var difference = quantity_received - delivery.quantity_issued;
+//         console.log(difference);
+//         discrepancy.value = difference;
+//         isOpen.value = false;
+//         isDiscrepancyModal.value = true;
+//       } else {
+//         try {
+//           fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
+//             method: "POST",
+//             headers: {
+//               "Content-Type": "application/json",
+//               ...authHeader(),
+//             },
+//             body: JSON.stringify(payload),
+//           })
+//             .then((response) => response.json())
+//             .then(({ success, data, message }) => {
+//               console.log({ success, data, message });
+//               if (success) {
+//                 notification.success({
+//                   message: "Success",
+//                   description: message,
+//                 });
+//               } else {
+//                 notification.error({
+//                   message: "Error",
+//                   description: message,
+//                 });
+//               }
+//               isModalOpen.value = false;
+//               //  window.location.reload();
+//             })
+//             .catch((error) => {
+//               notification.error({
+//                 message: "Error",
+//                 description: `${error}`,
+//               });
+//               isModalOpen.value = false;
+//             });
+//         } catch (error) {
+//           notification.error({
+//             message: "Error",
+//             description: `${error}`,
+//           });
+//         }
+//       }
+//     }
+//   });
+// };
+
+const submitData = async (payload, url) => {
+  try {
+    console.log(JSON.stringify(payload));
+    console.log(JSON.stringify(url));
+    const response = await fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(payload),
+    });
+    const { success, data, message } = await response.json();
+    console.log({ success, data, message });
+    if (success) {
+      notification.success({
+        message: "Success",
+        description: message,
+      });
+      window.location.reload();
+    } else {
+      notification.error({
+        message: "Error",
+        description: message,
+      });
+    }
+    isModalOpen.value = false;
+    //  window.location.reload();
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+    isModalOpen.value = false;
+  }
+};
+
 const receiveNets = async () => {
   const data = {
     transfer_id: trans_formState.transfer_id,
@@ -1287,7 +1485,6 @@ const receiveNets = async () => {
     Number(formState.number_of_bales) * Number(formState.bale_size) +
     Number(formState.no_of_pieces);
 
-  console.log(quantity_received);
   const rec_data = {
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
     bale_size: formState.bale_size,
@@ -1296,12 +1493,14 @@ const receiveNets = async () => {
     quantity_received: quantity_received,
     receptor_comment: formState.comment,
   };
+
   const payload =
     transaction_type.value === "transfers"
       ? data
       : transaction_type.value === "receive"
       ? rec_data
       : null;
+
   const url =
     transaction_type.value === "transfers"
       ? "receive_nets_from_post"
@@ -1309,45 +1508,31 @@ const receiveNets = async () => {
       ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
       : null;
 
-  try {
-    fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => response.json())
-      .then(({ success, data, message }) => {
-        console.log({ success, data, message });
-        if (success) {
-          notification.success({
-            message: "Success",
-            description: message,
-          });
-        } else {
-          notification.error({
-            message: "Error",
-            description: message,
-          });
-        }
-        isModalOpen.value = false;
-        //  window.location.reload();
-      })
-      .catch((error) => {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
-        });
-        isModalOpen.value = false;
-      });
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: `${error}`,
-    });
+  const delivery = deliveries.value.find(
+    (d) => d.distribution_id == formState.distribution_id
+  );
+
+  if (delivery) {
+    if (delivery.quantity_issued !== quantity_received) {
+      var difference = quantity_received - delivery.quantity_issued;
+      console.log(difference);
+      discrepancy.value = difference;
+      isOpen.value = false;
+      isDiscrepancyModal.value = true;
+
+      // Pass the payload and url to handleConfirmDiscrepancy
+      confirmDiscrepancyCallback = () => handleConfirmDiscrepancy(payload, url);
+    } else {
+      await submitData(payload, url);
+    }
   }
+};
+
+let confirmDiscrepancyCallback = () => {};
+
+const handleConfirmDiscrepancy = async (payload, url) => {
+  isDiscrepancyModal.value = false;
+  await submitData(payload, url);
 };
 
 const fetchReturnedNets = async () => {
@@ -1392,6 +1577,8 @@ const receiveFromDropOff = async () => {
     )
       .then((response) => response.json())
       .then(({ success, data }) => {
+        console.log(data);
+        deliveries.value = data;
         if (success) {
           data.length > 0
             ? (fromDropoffpoint.value = data)
