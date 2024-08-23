@@ -73,6 +73,14 @@ export default [
           ),
       },
       {
+        name: "distribution-order-summary",
+        path: "distribution-order-summary",
+        component: () =>
+          import(
+            /* webpackChunkName: "Orders" */ "../view/pages/net-distribution/OrderSummary.vue"
+          ),
+      },
+      {
         name: "distribution-points",
         path: "distribution-points",
         component: () =>
