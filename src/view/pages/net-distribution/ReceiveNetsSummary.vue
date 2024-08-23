@@ -1455,13 +1455,13 @@ const submitData = async (payload, url) => {
     if (success) {
       notification.success({
         message: "Success",
-        description: message,
+        description: data,
       });
       window.location.reload();
     } else {
       notification.error({
         message: "Error",
-        description: message,
+        description: data,
       });
     }
     isModalOpen.value = false;
