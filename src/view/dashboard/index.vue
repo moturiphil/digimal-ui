@@ -1553,7 +1553,7 @@ const fetchHouseHoldsRegTrends = async (fromDate = new Date(`2023-11-02`)) => {
       });
     });
 };
-const fetchNetsDistributed = async (fromDate = new Date(`2023-11-15`)) => {
+const fetchNetsDistributed = async (fromDate = new Date(`2023-11-02`)) => {
   //format date
   dateFrom1.value = moment(fromDate).format(dateFormat.value);
   dateTo1.value = moment(dateTo1.value).format(dateFormat.value);
