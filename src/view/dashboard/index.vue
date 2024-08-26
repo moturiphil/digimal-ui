@@ -868,7 +868,7 @@ const fetchInitialChartData = async () => {
       chartsLoading.value = false;
       newChartData.value = response.data.data;
       fileterOrgeLevel.value = access_level.value.level.level_name;
-      filterOrgId.value = access_level.value.level.id;
+      filterOrgId.value = access_level.value.location.id;
       if (access_level.value.level.id === 1) {
         newChartData.value = newChartData.value.filter((e) =>
           selectedCounties.value.includes(e.name.toString())
