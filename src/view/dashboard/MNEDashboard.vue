@@ -189,8 +189,12 @@
                             </td>
                           </tr>
                           <tr>
-                            <td>{{ parseInt(item.households_registered) || 0 }}</td>
-                            <td>{{ parseInt(item.house_holds_served) || 0 }}</td>
+                            <td>
+                              {{ parseInt(item.households_registered) || 0 }}
+                            </td>
+                            <td>
+                              {{ parseInt(item.house_holds_served) || 0 }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -232,8 +236,12 @@
                             </td>
                           </tr>
                           <tr>
-                            <td>{{ parseInt(item.households_registered) || 0 }}</td>
-                            <td>{{ parseInt(item.house_holds_served) || 0 }}</td>
+                            <td>
+                              {{ parseInt(item.households_registered) || 0 }}
+                            </td>
+                            <td>
+                              {{ parseInt(item.house_holds_served) || 0 }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -379,7 +387,9 @@
                 <tbody>
                   <tr>
                     <td
-                      v-for="item in HouseHoldsRegistrationTrendsData.map((item) => item)"
+                      v-for="item in HouseHoldsRegistrationTrendsData.map(
+                        (item) => item
+                      )"
                       :key="item"
                     >
                       {{ item.registrations }}/{{ item.cumulative }}
@@ -464,24 +474,24 @@ const selectedCounties = ref([
   "Nyamira County",
   "Kisumu County",
   "Siaya County",
-  // "Busia County",
+  "Busia County",
   "Migori County",
-  // "Lamu County",
-  // "Kilifi County",
-  // "Tana River County",
+  "Lamu County",
+  "Kilifi County",
+  "Tana River County",
   "Kwale County",
   "Taita Taveta County",
   "Mombasa County",
-  // "Bungoma County",
-  // "Kakamega County",
-  // "Vihiga County",
-  // "West Pokot County",
-  // "Turkana County",
-  // "Trans Nzoia County",
-  // "Narok County",
-  // "Marsabit County",
-  // "Baringo County",
-  // "Kirinyaga County"
+  "Bungoma County",
+  "Kakamega County",
+  "Vihiga County",
+  "West Pokot County",
+  "Turkana County",
+  "Trans Nzoia County",
+  "Narok County",
+  "Marsabit County",
+  "Baringo County",
+  "Kirinyaga County",
 ]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -490,23 +500,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  // 'Tvf1zgVZ0K4',//busia
-  // 'NjWSbQTwys4',//lamu
-  // 'nrI2khZx3d0',//kilifi
-  // 'JsH2bnvNt2d',//tan river
-  'N7YETT3A9r1',//kwale
-  'QyGNX2DpR4h',//taita taveta
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tan river
+  "N7YETT3A9r1", //kwale
+  "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  // 'KGHhQ5GLd4k',//
-  // 'BjC1xL40gHo',//kakamega
-  // 'sANMZ3lpqGs',//vihiga
-  // 'XWALbfAPa6n',//west pokot
-  // 'kphDeKClFch',//turkana
-  // 'mThvosEflAU',//trans nzoia
-  // 'kqJ83J2D72s',//naraok
-  // 'Eey8fT4Im3y',//marsabit
-  // 'vvOK1BxTbet',//baringo
-  // 'Ulj33KBau7V',
+  "KGHhQ5GLd4k", // bungoma
+  "BjC1xL40gHo", //kakamega
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
+  "Eey8fT4Im3y", //marsabit
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
 ]);
 var estimatedHouseholds = ref([
   {
@@ -582,7 +592,9 @@ var estimatedHouseholds = ref([
 const addEstimatedVars = async (data) => {
   try {
     estimatedHouseholds.value.forEach((county) => {
-      const matchingCounty = data.find((item) => item.name.includes(county.name));
+      const matchingCounty = data.find((item) =>
+        item.name.includes(county.name)
+      );
       if (subcounties.value) {
         county.subcounties.forEach((subCounty) => {
           const matchingSubCounty = data.find((item) =>
@@ -634,7 +646,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
     await fetchCounties();
   } else if (access_level.value.level.id == 2) {
@@ -653,10 +668,19 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = ["subcounty", "ward", "location", "sublocation", "village"];
+    filterAccessList.value = [
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
     subcounties.value = [
       {
         value: access_level.value.location.org_id,
@@ -664,7 +688,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 4) {
     filterAccessList.value = ["ward", "location", "sublocation", "village"];
@@ -675,7 +702,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 5) {
     filterAccessList.value = ["location", "sublocation", "village"];
@@ -686,7 +716,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   } else if (access_level.value.level.id == 6) {
     filterAccessList.value = ["sublocation", "village"];
@@ -697,7 +730,10 @@ const updateFilters = async () => {
       },
     ];
     org_ids.value = [
-      { id: access_level.value.location.id, org_id: access_level.value.location.org_id },
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
     ];
   }
 };
@@ -711,7 +747,7 @@ const fetchInitialChartData = async () => {
       let newdata = await addEstimatedVars(data);
       newChartData.value = newdata;
       fileterOrgeLevel.value = access_level.value.level.level_name;
-      filterOrgId.value = access_level.value.level.id;
+      filterOrgId.value = access_level.value.location.id;
       if (access_level.value.level.id === 1) {
         newChartData.value = newChartData.value.filter((e) =>
           selectedCounties.value.includes(e.name.toString())
@@ -762,7 +798,10 @@ const fetchInitialChartData = async () => {
       //     newChartData.value.map(item => item.name),//cats
       //     access_level.value.level.level_name,//level
       // )
-      await getPerCapitaData(newChartData.value, access_level.value.level.level_name);
+      await getPerCapitaData(
+        newChartData.value,
+        access_level.value.level.level_name
+      );
       let currentDate = new Date();
       //console.log(currentDate.getFullYear())
       dateFrom.value = moment(new Date(`2023-12-20`)).format(dateFormat.value);
@@ -864,7 +903,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "subcounty") {
@@ -879,7 +920,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "ward") {
@@ -894,7 +937,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       } else if (org_level == "location") {
@@ -909,7 +954,9 @@ const fetchChildData = async (org_id, org_level) => {
             .map((x) => ({ org_id: x.org_id, id: x.id }))
             .filter(
               (newItem) =>
-                !org_ids.value.some((existingItem) => existingItem.id === newItem.id)
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
             ),
         ];
       }
@@ -945,7 +992,9 @@ const fetchChildData = async (org_id, org_level) => {
         console.log(scatterData);
         await EstimatedvsRegisteredHouseholds(
           newChartData.value.map((item) => parseInt(item.estimated_households)), //estimmated
-          newChartData.value.map((item) => parseInt(item.households_registered)), //registration
+          newChartData.value.map((item) =>
+            parseInt(item.households_registered)
+          ), //registration
           scatterData,
           newChartData.value.map((item) => item.name), //cats
           org_level //level
@@ -953,7 +1002,10 @@ const fetchChildData = async (org_id, org_level) => {
         fileterOrgeLevel.value = org_level;
         await EstimatedvsRegisteredHouseholdSizeChart(
           newChartData.value.map((item) =>
-            parseInt(parseInt(item.all_hh_members) / parseInt(item.estimated_households))
+            parseInt(
+              parseInt(item.all_hh_members) /
+                parseInt(item.estimated_households)
+            )
           ), //estimmated
           newChartData.value.map((item) => parseInt(item.avg_hh_size)), //registration
           newChartData.value.map((item) => item.name), //cats
@@ -977,19 +1029,20 @@ const fetchChildData = async (org_id, org_level) => {
     });
 };
 const getPerCapitaData = async (data, org_level) => {
-  let scatterData = [];
-  data.forEach((item, x) => {
+  let scatterData = data.map((item, x) => {
     let y = parseFloat(item.nets_issued_per_capita);
-    scatterData.push([x, parseFloat(y).toFixed(2) ? y : 0]);
+    return [x, isNaN(y) ? 0 : parseFloat(y.toFixed(2))];
   });
+
   await NetsPerCapita(
-    data.map((item) => parseInt(item.all_hh_members)), //total population
-    data.map((item) => parseInt(item.nets_issued)), //nets disributed
-    scatterData, //percapita
-    data.map((item) => item.name), //cats
-    org_level //level
+    data.map((item) => parseInt(item.all_hh_members) || 0), // total population
+    data.map((item) => parseInt(item.nets_issued) || 0), // nets distributed
+    scatterData, // per capita
+    data.map((item) => item.name), // categories
+    org_level // level
   );
 };
+
 const fetchCounties = async () => {
   await axios
     .get("counties/")
@@ -1360,7 +1413,10 @@ const EstimatedvsRegisteredHouseholds = async (
         },
       },
       title: {
-        text: "Estimated Households vs Registered Hoseholds at " + orglevel + " level",
+        text:
+          "Estimated Households vs Registered Hoseholds at " +
+          orglevel +
+          " level",
         align: "left",
       },
       xAxis: [
