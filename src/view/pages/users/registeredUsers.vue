@@ -710,7 +710,7 @@ const fetchUsers = async () => {
   }
 };
 
-// search events
+// search users
 watch(
   () => searchItem.value,
   (newValue) => {
