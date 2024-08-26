@@ -219,6 +219,25 @@
                         </sdHeading>
                       </td>
                     </tr>
+                    <tr>
+                      <td>
+                        <span class="stat-span"
+                          ><strong>%</strong> of Nets Distributed</span
+                        >
+                      </td>
+                      <td>
+                        <sdHeading class="stat-title">
+                          {{
+                            total_nets_delivered
+                              ? Number(
+                                  (nets_distributed / total_nets_delivered) *
+                                    100
+                                ).toFixed(2)
+                              : 0.0
+                          }}%
+                        </sdHeading>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </CardBarChart2>

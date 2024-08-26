@@ -39,7 +39,11 @@
                           {{ campaign.name }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red" v-if="!!errors.campaign_id">
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.campaign_id"
+                      >
                         {{ errors.campaign_id }}
                       </p>
                     </a-form-item>
@@ -68,7 +72,11 @@
                         {{ errors.name }}
                       </p>
                     </a-form-item>
-                    <a-form-item name="county_id" label="County" v-if="isLevelOne">
+                    <a-form-item
+                      name="county_id"
+                      label="County"
+                      v-if="isLevelOne"
+                    >
                       <a-select
                         size="large"
                         name="basic-select"
@@ -80,7 +88,9 @@
                         option-filter-prop="label"
                         v-if="!loading"
                       >
-                        <a-select-option value="">Select an option</a-select-option>
+                        <a-select-option value=""
+                          >Select an option</a-select-option
+                        >
                         <a-select-option
                           v-for="county in counties"
                           :value="county.id"
@@ -99,6 +109,7 @@
                         {{ errors.county_id }}
                       </p> -->
                     </a-form-item>
+                    <!-- Facilitator Select -->
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
                         placeholder="Selected Host"
@@ -108,23 +119,29 @@
                         option-filter-prop="label"
                         @blur="validate('facilitator_id')"
                         @keypress="validate('facilitator_id')"
+                        @search="handleSearch"
                       >
                         <a-select-option
                           v-for="facilitator in facilitators"
                           :key="facilitator.id"
-                          v-model:value="facilitator.id"
-                          :label="`${facilitator.first_name} ${facilitator.last_name} -${facilitator.role_id} `"
+                          :value="facilitator.id"
+                          :label="facilitator.label"
                         >
                           {{ facilitator.first_name }}
                           {{ facilitator.last_name }} -
                           {{ facilitator.role_id }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red" v-if="!!errors.facilitator_id">
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.facilitator_id"
+                      >
                         {{ errors.facilitator_id }}
                       </p>
                     </a-form-item>
 
+                    <!-- Trainer Select -->
                     <a-form-item label="Facilitators">
                       <a-select
                         mode="multiple"
@@ -136,18 +153,23 @@
                         @change="handleChange"
                         @blur="validate('trainer_id')"
                         @keypress="validate('trainer_id')"
+                        @search="handleSearch"
                       >
                         <a-select-option
                           v-for="trainer in facilitators"
                           :key="trainer.id"
                           :value="trainer.id"
-                          :label="`${trainer.first_name} ${trainer.last_name} -${trainer.role_id} `"
+                          :label="trainer.label"
                         >
-                          {{ trainer.first_name }}
-                          {{ trainer.last_name }} - {{ trainer.role_id }}
+                          {{ trainer.first_name }} {{ trainer.last_name }} -
+                          {{ trainer.role_id }}
                         </a-select-option>
                       </a-select>
-                      <p class="errors" style="color: red" v-if="!!errors.trainer_id">
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.trainer_id"
+                      >
                         {{ errors.trainer_id }}
                       </p>
                     </a-form-item>
@@ -161,7 +183,11 @@
                         @blur="validate('no_of_days')"
                         @keypress="validate('no_of_days')"
                       />
-                      <p class="errors" style="color: red" v-if="!!errors.no_of_days">
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.no_of_days"
+                      >
                         {{ errors.no_of_days }}
                       </p>
                     </a-form-item>
@@ -173,7 +199,11 @@
                         @blur="validate('venue')"
                         @keypress="validate('venue')"
                       />
-                      <p class="errors" style="color: red" v-if="!!errors.venue">
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.venue"
+                      >
                         {{ errors.venue }}
                       </p>
                     </a-form-item>
@@ -208,7 +238,13 @@
 import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
-import { reactive, ref, defineComponent, computed, onMounted } from "vue";
+import {
+  reactive,
+  ref,
+  defineComponent,
+  computed,
+  onMounted,
+} from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
@@ -235,11 +271,9 @@ const AddNew = defineComponent({
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event/with_facilitator`;
 
+    const searchItem = ref("");
+
     const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
-
-    const facilitator_url = `${process.env.VUE_APP_BASE_URL}/activity_officers`;
-
-    const trainer_url = `${process.env.VUE_APP_BASE_URL}/activity_officers`;
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
@@ -296,7 +330,7 @@ const AddNew = defineComponent({
       this.loading = false;
     };
     const fetchFacilitators = async () => {
-      const response = await fetch(facilitator_url, {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users?query=${searchItem.value}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -309,11 +343,11 @@ const AddNew = defineComponent({
         label: `${fac.first_name} ${fac.last_name} - ${fac.role_id}`,
       }));
       this.facilitators = transformedData;
-      // console.log(data.data);
       this.loading = false;
     };
+
     const fetchTrainer = async () => {
-      const response = await fetch(trainer_url, {
+      const response = await fetch(`${process.env.VUE_APP_BASE_URL}/users?query=${searchItem.value}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -321,9 +355,19 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      this.facilitators = data.data;
-      // console.log(data.data);
+      const transformedData = data.data.map((trainer) => ({
+        ...trainer,
+        label: `${trainer.first_name} ${trainer.last_name} - ${trainer.role_id}`,
+      }));
+      this.trainers = transformedData;
       this.loading = false;
+    };
+
+    const handleSearch = (value) => {
+      console.log(value);
+      searchItem.value = value;
+      fetchTrainer();
+      fetchFacilitators();
     };
 
     const getCounties = async () => {
@@ -398,7 +442,9 @@ const AddNew = defineComponent({
       name: Yup.string().required("Name is required"),
       // county_id: Yup.string().required(),
       facilitator_id: Yup.string().required("Host is required"),
-      trainer_id: Yup.array().min(1, "At least 1 facilitator required").required(),
+      trainer_id: Yup.array()
+        .min(1, "At least 1 facilitator required")
+        .required(),
       no_of_days: Yup.number().required("No of days is required"),
       venue: Yup.string().required("Venue is required"),
     });
@@ -499,6 +545,7 @@ const AddNew = defineComponent({
       handleChange,
       events_list,
       validate,
+      handleSearch,
       isLevelOne,
       errors: {
         campaign_id: null,
