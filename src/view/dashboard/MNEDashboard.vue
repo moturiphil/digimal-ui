@@ -464,24 +464,24 @@ const selectedCounties = ref([
   "Nyamira County",
   "Kisumu County",
   "Siaya County",
-  "Busia County",
+  // "Busia County",
   "Migori County",
-  "Lamu County",
-  "Kilifi County",
-  "Tana River County",
+  // "Lamu County",
+  // "Kilifi County",
+  // "Tana River County",
   "Kwale County",
   "Taita Taveta County",
   "Mombasa County",
-  "Bungoma County",
-  "Kakamega County",
-  "Vihiga County",
-  "West Pokot County",
-  "Turkana County",
-  "Trans Nzoia County",
-  "Narok County",
-  "Marsabit County",
-  "Baringo County",
-  "Kirinyaga County"
+  // "Bungoma County",
+  // "Kakamega County",
+  // "Vihiga County",
+  // "West Pokot County",
+  // "Turkana County",
+  // "Trans Nzoia County",
+  // "Narok County",
+  // "Marsabit County",
+  // "Baringo County",
+  // "Kirinyaga County"
 ]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -490,23 +490,23 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  'Tvf1zgVZ0K4',//busia
-  'NjWSbQTwys4',//lamu
-  'nrI2khZx3d0',//kilifi
-  'JsH2bnvNt2d',//tan river
+  // 'Tvf1zgVZ0K4',//busia
+  // 'NjWSbQTwys4',//lamu
+  // 'nrI2khZx3d0',//kilifi
+  // 'JsH2bnvNt2d',//tan river
   'N7YETT3A9r1',//kwale
   'QyGNX2DpR4h',//taita taveta
   "wsBsC6gjHvn", // mombasa
-  'KGHhQ5GLd4k',// bungoma
-  'BjC1xL40gHo',//kakamega
-  'sANMZ3lpqGs',//vihiga
-  'XWALbfAPa6n',//west pokot
-  'kphDeKClFch',//turkana
-  'mThvosEflAU',//trans nzoia
-  'kqJ83J2D72s',//naraok
-  'Eey8fT4Im3y',//marsabit
-  'vvOK1BxTbet',//baringo
-  'Ulj33KBau7V', // kirinyaga
+  // 'KGHhQ5GLd4k',//
+  // 'BjC1xL40gHo',//kakamega
+  // 'sANMZ3lpqGs',//vihiga
+  // 'XWALbfAPa6n',//west pokot
+  // 'kphDeKClFch',//turkana
+  // 'mThvosEflAU',//trans nzoia
+  // 'kqJ83J2D72s',//naraok
+  // 'Eey8fT4Im3y',//marsabit
+  // 'vvOK1BxTbet',//baringo
+  // 'Ulj33KBau7V',
 ]);
 var estimatedHouseholds = ref([
   {
@@ -977,20 +977,19 @@ const fetchChildData = async (org_id, org_level) => {
     });
 };
 const getPerCapitaData = async (data, org_level) => {
-  let scatterData = data.map((item, x) => {
+  let scatterData = [];
+  data.forEach((item, x) => {
     let y = parseFloat(item.nets_issued_per_capita);
-    return [x, isNaN(y) ? 0 : parseFloat(y.toFixed(2))];
+    scatterData.push([x, parseFloat(y).toFixed(2) ? y : 0]);
   });
-
   await NetsPerCapita(
-    data.map((item) => parseInt(item.all_hh_members) || 0), // total population
-    data.map((item) => parseInt(item.nets_issued) || 0), // nets distributed
-    scatterData, // per capita
-    data.map((item) => item.name), // categories
-    org_level // level
+    data.map((item) => parseInt(item.all_hh_members)), //total population
+    data.map((item) => parseInt(item.nets_issued)), //nets disributed
+    scatterData, //percapita
+    data.map((item) => item.name), //cats
+    org_level //level
   );
 };
-
 const fetchCounties = async () => {
   await axios
     .get("counties/")
