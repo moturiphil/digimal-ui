@@ -947,7 +947,7 @@ const fetchInitialChartData = async () => {
 
       let currentDate = new Date();
       //console.log(currentDate.getFullYear())
-      dateFrom.value = moment(new Date(`2023-11-15`)).format(dateFormat.value);
+      dateFrom.value = moment(new Date(`2023-11-02`)).format(dateFormat.value);
       dateTo.value = moment(currentDate).format(dateFormat.value);
       NetsChartData.value = newChartData.value;
     })
@@ -1449,9 +1449,9 @@ const handleFilterChange = async ($event, filter) => {
     //console.log(selectedFilter.value)
     switch ($event) {
       case "year":
-        dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
+        dateFrom.value = new Date(`${currentDate.getFullYear() - 1}-11-02`);
         dateTo.value = currentDate;
-        dateFrom1.value = new Date(`${currentDate.getFullYear() - 1}-11-15`);
+        dateFrom1.value = new Date(`${currentDate.getFullYear() - 1}-11-02`);
         dateTo1.value = currentDate;
         break;
       case "month":
@@ -1507,13 +1507,13 @@ const handleFilterChange = async ($event, filter) => {
         dateTo1.value = currentDate;
         break;
       default:
-        dateFrom.value = moment(new Date(`2023-11-15`)).format(
+        dateFrom.value = moment(new Date(`2023-11-02`)).format(
           dateFormat.value
         );
         dateTo.value = dateTo.value
           ? moment(dateTo.value).format(dateFormat.value)
           : currentDate;
-        dateFrom1.value = moment(new Date(`2023-11-15`)).format(
+        dateFrom1.value = moment(new Date(`2023-11-02`)).format(
           dateFormat.value
         );
         dateTo1.value = dateTo1.value
