@@ -62,9 +62,26 @@
                 <a-divider></a-divider>
                 <a-table
                   :pagination="false"
-                  :dataSource="dataSource"
+                  :dataSource="dataSourceWithDiscrepancies"
                   :columns="columns"
+                  :rowClassName="
+                    (record) => (record.hasDiscrepancy ? 'discrepancy-row' : '')
+                  "
                 >
+                  <template #bodyCell="{ text, record, column }">
+                    <span
+                      :class="{
+                        discrepancy:
+                          column.dataIndex === 'ordered' &&
+                          record.hasDiscrepancy,
+                        'received-discrepancy':
+                          column.dataIndex === 'delivered' &&
+                          record.issueMismatch,
+                      }"
+                    >
+                      {{ text }}
+                    </span>
+                  </template>
                 </a-table>
                 <a-pagination
                   :current="currentPage"
@@ -181,7 +198,7 @@ const onPageChange = async (page) => {
       `post_order_summary?page=${page}&per_page=${pageSize.value}`
     );
     dataSource.value = response.data.data;
-    datatotal.value = response.data.pagination.total_pages;
+    datatotal.value = response.data.pagination.total; // Ensure this points to the correct total count property
     console.log(datatotal.value);
   } catch (error) {
     console.error(error);
@@ -196,6 +213,7 @@ watch(
     getallDropOffPoints();
   }
 );
+
 const getallDropOffPoints = async () => {
   try {
     const response = await axios.get(
@@ -203,7 +221,7 @@ const getallDropOffPoints = async () => {
     );
     const data = await response.data;
     dataSource.value = data.data;
-    datatotal.value = response.data.pagination.total_pages;
+    datatotal.value = response.data.pagination.total; // Ensure this points to the correct total count property
     console.log(datatotal.value);
   } catch (error) {
     console.error(error);
@@ -332,6 +350,15 @@ const fetchChildData = async (location_id, org_id, org_level) => {
       });
     });
 };
+
+const dataSourceWithDiscrepancies = computed(() => {
+  return dataSource.value.map((item) => ({
+    ...item,
+    hasDiscrepancy: item.ordered !== item.issued,
+    issueMismatch: item.issued !== item.delivered,
+  }));
+});
+
 const fetchCounties = async () => {
   axios
     .get("counties/")
@@ -359,6 +386,13 @@ const fetchCounties = async () => {
 console.log(datatotal.value);
 </script>
 <style>
+.discrepancy-row {
+  background-color: #ffe6e6; /* Light red background for rows with discrepancies */
+}
+
+.received-discrepancy {
+  background-color: #ffec99; /* Dark yellow background for cells with discrepancies in the Received column */
+}
 .badge-orange {
   background-color: orange;
   color: white;
