@@ -418,7 +418,7 @@ const filterOption = (input, option) => {
 const updateMasterList=async()=>{
     try {
     const response = await axios.get(`masterlist_list?query=${searchItem.value}`);
-    const data = await response.data;
+    const data = await response.data.data;
     const updatedData = data.data.map((record) => {
       let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
       let status = record.status == 1 ? "validated" : "Not Validated";

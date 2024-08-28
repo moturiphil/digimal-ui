@@ -11,6 +11,18 @@
       </template>
     </sdPageHeader>
     <Main>
+      <sdButton
+        class="btn-import"
+        type="success"
+        @click="exportParticipants"
+        size="extra-small"
+        v-if="isSubCounty"
+      >
+        Download Order Summary &nbsp; &nbsp;
+        <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
+      <br />
+      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -147,6 +159,7 @@ var pageSize = ref(100);
 var datatotal = ref(0);
 const access_level = ref({});
 const filterAccessList = ref([]);
+const isSubCounty = ref(false);
 const countries = ref([{ value: "HfVjCurKxh2", label: "Kenya" }]);
 const counties = ref(null);
 const subcounties = ref(null);
@@ -317,7 +330,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
             ),
         ];
       } else if (org_level == "subcounty") {
-        //get wards
+        isSubCounty.value = true;
         wards.value = data.map((x) => ({
           value: x.org_id,
           label: x.name,
