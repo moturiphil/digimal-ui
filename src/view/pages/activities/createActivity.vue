@@ -226,6 +226,7 @@
                           @blur="validate('activity_facilitator')"
                           @keypress="validate('activity_facilitator')"
                           show-search
+                          @search="handleSearch"
                           option-filter-prop="label"
                           :options="
                             (() => {
@@ -317,6 +318,7 @@ const AddActivity = defineComponent({
     const router = useRouter();
     const join = ref("");
     const users = ref([]);
+    const searchItem = ref("");
     const { activities, counties, campaigns, sub_counties } = reactive({
       activities: [],
       counties: [],
@@ -426,7 +428,7 @@ const AddActivity = defineComponent({
     };
     const getUsers = async () => {
       axios
-        .get(`${process.env.VUE_APP_BASE_URL}/activity_officers`, { headers: authHeader() })
+        .get(`${process.env.VUE_APP_BASE_URL}/users?query=${searchItem.value}`, { headers: authHeader() })
         .then(function ({ data }) {
           // console.log({ data: data.data });
           users.value = data.data;
@@ -434,6 +436,12 @@ const AddActivity = defineComponent({
         .catch(function (error) {
           console.log(error);
         });
+    };
+
+    const handleSearch = (value) => {
+      console.log(value);
+      searchItem.value = value;
+      getUsers();
     };
 
     //get sub_counties
@@ -679,6 +687,7 @@ const AddActivity = defineComponent({
       isNational,
       isCounty,
       isSubCounty,
+      handleSearch,
       errors: {
         activity_id: "",
         county_id: "",
