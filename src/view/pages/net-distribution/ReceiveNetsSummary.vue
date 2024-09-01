@@ -1197,6 +1197,7 @@ const fetchDropoff = async () => {
 };
 
 const handleTransfer = () => {
+  console.log("handleTransfers");
   const data = {
     from_post_id: trans_formState.from_post_id,
     to_post_id: trans_formState.to_post_id,
@@ -1353,7 +1354,7 @@ const handleReturns = () => {
   }
 };
 
-// const receiveNets = async () => {
+// const receiveTransferedNets = async () => {
 //   const data = {
 //     transfer_id: trans_formState.transfer_id,
 //     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
@@ -1481,6 +1482,7 @@ const receiveNets = async () => {
     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
     status: 1,
   };
+
   const quantity_received =
     Number(formState.number_of_bales) * Number(formState.bale_size) +
     Number(formState.no_of_pieces);
@@ -1507,6 +1509,40 @@ const receiveNets = async () => {
       : transaction_type.value === "receive"
       ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
       : null;
+  console.log(url);
+  if (url == "receive_nets_from_post") {
+    console.log(data);
+    try {
+      await fetch(`${process.env.VUE_APP_BASE_URL}/receive_nets_from_post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success, message }) => {
+          if (success) {
+            notification.success({
+              message: "Success",
+              description: `${message}`,
+            });
+            window.location.reload();
+          } else {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          }
+        });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: `${error}`,
+      });
+    }
+  }
 
   const delivery = deliveries.value.find(
     (d) => d.distribution_id == formState.distribution_id
