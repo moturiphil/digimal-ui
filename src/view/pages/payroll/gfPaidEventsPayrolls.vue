@@ -109,18 +109,13 @@ const columns = [
     key: "id",
   },
   {
-    title: "Validated",
-    dataIndex: "status",
-    key: "id",
-  },
-  {
     title: "Validator",
     dataIndex: "validated_by",
     key: "id",
   },
   {
-    title: "Approved",
-    dataIndex: "approval_status",
+    title: "Validated Time",
+    dataIndex: "validation_date",
     key: "id",
   },
   {
@@ -129,8 +124,18 @@ const columns = [
     key: "id",
   },
   {
+    title: "Approval Time",
+    dataIndex: "approval_time",
+    key: "id",
+  },
+  {
     title: "Status",
     dataIndex: "payment_status",
+    key: "id",
+  },
+  {
+    title: "Payment Time",
+    dataIndex: "payment_date",
     key: "id",
   },
   {
