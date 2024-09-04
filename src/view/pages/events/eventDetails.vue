@@ -3,7 +3,19 @@
     <sdPageHeader
       ghost
       :title="`${event_name} Event - ${event_code} on ${formattedStartDate}`"
-    />
+    >
+      <template #buttons>
+        <div class="search-box">
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search Participant"
+          />
+        </div>
+      </template>
+    </sdPageHeader>
+
     <Main>
       <div class="button-container">
         <sdButton
@@ -108,7 +120,12 @@
                     <sdFeatherIcons type="users" size="extra-small" />
                   </sdButton>
                 </li>
-                <sdButton class="btn-import" type="warning" size="extra-small" v-if="event_list_id==29">
+                <sdButton
+                  class="btn-import"
+                  type="warning"
+                  size="extra-small"
+                  v-if="event_list_id == 29"
+                >
                   <router-link
                     :to="{
                       path: `/event/post-security-summary`,
@@ -384,7 +401,8 @@
                                         :key="cadre.role_id"
                                         class="cadre-list-item"
                                       >
-                                        {{ cadre.role_id }} - <b>{{ cadre.count }}</b>
+                                        {{ cadre.role_id }} -
+                                        <b>{{ cadre.count }}</b>
                                         <span
                                           v-if="
                                             cadre.dayshift || cadre.nightshift
@@ -464,13 +482,7 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
-import {
-  computed,
-  onMounted,
-  ref,
-  reactive,
-  //defineComponent
-} from "vue";
+import { computed, onMounted, ref, reactive, watch } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
@@ -485,7 +497,6 @@ const columns = [
     title: "Participant Name",
     dataIndex: "fullName",
     key: "id",
-    // render: (text, record) => `${record.first_name} ${record.last_name}`,
   },
   {
     title: "Participant Phone",
@@ -575,6 +586,7 @@ const isAssignModal = ref(false);
 const deassignModal = ref(false);
 const participant = ref("");
 const id_user = ref("");
+const searchItem = ref("");
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -616,6 +628,112 @@ const formattedStartDate = formatDate(start_date);
 const formState = reactive({
   reason_for_voiding: "",
 });
+
+const level_id = ref("");
+const role_id = ref("");
+const rt = useRouter();
+
+onMounted(async () => {
+  getEventParticipants();
+});
+
+const getEventParticipants = async () => {
+  try {
+    const response = await axios.get(API_URL, {
+      headers: authHeader(),
+    });
+    console.log(response.data.data);
+
+    const updatedData = response.data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      return {
+        ...record,
+        fullName,
+      };
+    });
+
+    dataSource.value = updatedData;
+
+    console.log(dataSource.value);
+  } catch (error) {
+    console.error(error);
+  }
+  try {
+    const response = await axios.get(API_URL + "?status=1", {
+      headers: authHeader(),
+    });
+    console.log(API_URL + "?status=1");
+
+    const updatedData = response.data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      return {
+        ...record,
+        fullName,
+      };
+    });
+
+    confirmed.value = updatedData;
+
+    console.log(confirmed.value.toRaw());
+  } catch (error) {
+    console.error(error);
+  }
+  try {
+    const response = await axios.get(API_URL + "?status=0", {
+      headers: authHeader(),
+    });
+    console.log(API_URL + "?status=0");
+    console.log(response.data.data);
+
+    const updatedData = response.data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      return {
+        ...record,
+        fullName,
+      };
+    });
+
+    pending.value = updatedData;
+
+    console.log(pending.value);
+  } catch (error) {
+    console.error(error);
+  }
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  if (!user) {
+    rt.push({ path: "/auth/login" });
+  } else {
+    level_id.value = user.user.level_id;
+    role_id.value = user.user.role_id;
+  }
+};
+
+const filteredParticipantData = computed(() => {
+  if (!searchItem.value) {
+    return dataSource.value;
+  }
+  return dataSource.value.filter((item) => {
+    // Convert search term to lowercase for case-insensitive comparison
+    const lowerSearch = searchItem.value.toLowerCase();
+    return (
+      item.fullName.toLowerCase().includes(lowerSearch) ||
+      item.phone_no.toLowerCase().includes(lowerSearch) ||
+      item.location_id.toLowerCase().includes(lowerSearch) ||
+      item.level_id.toLowerCase().includes(lowerSearch) ||
+      item.org_types_id.toLowerCase().includes(lowerSearch) ||
+      item.role_id.toLowerCase().includes(lowerSearch)
+    );
+  });
+});
+
+// Watch for changes in the searchItem
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    console.log(newValue);
+    dataSource.value = filteredParticipantData.value;
+  }
+);
 
 const generatePayroll = async () => {
   store.commit("setIsGenerating", true);
@@ -1002,10 +1120,6 @@ const filteredData = computed(() => {
   }
 });
 
-const level_id = ref("");
-const role_id = ref("");
-const rt = useRouter();
-
 const user = JSON.parse(sessionStorage.getItem("user"));
 console.log(event_list_id);
 
@@ -1039,80 +1153,14 @@ computed(() => {
     return false;
   }
 });
-
-onMounted(async () => {
-  try {
-    const response = await axios.get(API_URL, {
-      headers: authHeader(),
-    });
-    console.log(response.data.data);
-
-    const updatedData = response.data.data.map((record) => {
-      let fullName = `${record.first_name} ${record.last_name}`;
-      return {
-        ...record,
-        fullName,
-      };
-    });
-
-    dataSource.value = updatedData;
-
-    console.log(dataSource.value);
-  } catch (error) {
-    console.error(error);
-  }
-  try {
-    const response = await axios.get(API_URL + "?status=1", {
-      headers: authHeader(),
-    });
-    console.log(API_URL + "?status=1");
-
-    const updatedData = response.data.data.map((record) => {
-      let fullName = `${record.first_name} ${record.last_name}`;
-      return {
-        ...record,
-        fullName,
-      };
-    });
-
-    confirmed.value = updatedData;
-
-    console.log(confirmed.value.toRaw());
-  } catch (error) {
-    console.error(error);
-  }
-  try {
-    const response = await axios.get(API_URL + "?status=0", {
-      headers: authHeader(),
-    });
-    console.log(API_URL + "?status=0");
-    console.log(response.data.data);
-
-    const updatedData = response.data.data.map((record) => {
-      let fullName = `${record.first_name} ${record.last_name}`;
-      return {
-        ...record,
-        fullName,
-      };
-    });
-
-    pending.value = updatedData;
-
-    console.log(pending.value);
-  } catch (error) {
-    console.error(error);
-  }
-  const user = JSON.parse(sessionStorage.getItem("user"));
-  if (!user) {
-    rt.push({ path: "/auth/login" });
-  } else {
-    level_id.value = user.user.level_id;
-    role_id.value = user.user.role_id;
-  }
-});
 </script>
 
 <style>
+.search-box {
+  width: 100%; /* Adjust the width as needed, e.g., 100%, 300px, etc. */
+  max-width: 400px; /* Optionally, set a maximum width */
+  margin: 0 auto; /* Optional: Center align the search box */
+}
 .button-container {
   text-align: center;
 }

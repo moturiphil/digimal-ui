@@ -13,7 +13,7 @@
             v-model:value="searchItem"
             type="text"
             name="dataSource"
-            placeholder="Search by name/code/supervisor"
+            placeholder="Search Distribution Post"
           />
         </div>
       </template>
