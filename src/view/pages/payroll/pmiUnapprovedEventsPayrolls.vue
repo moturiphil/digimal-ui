@@ -149,23 +149,18 @@ const columns = [
     key: "id",
   },
   {
-    title: "Validated",
-    dataIndex: "status",
-    key: "id",
-  },
-  {
     title: "Validator",
     dataIndex: "validated_by",
     key: "id",
   },
   {
-    title: "Approved",
-    dataIndex: "approval_status",
+    title: "Validation Time",
+    dataIndex: "validation_date",
     key: "id",
   },
   {
-    title: "Approver",
-    dataIndex: "approved_by",
+    title: "Approved",
+    dataIndex: "approval_status",
     key: "id",
   },
   {
@@ -197,7 +192,6 @@ const activeClass = ref("all");
 const searchItem = ref("");
 const voidPayroll = ref(null);
 const openVoidModal = ref(false);
-
 
 onMounted(() => {
   fetchPayrolls();
