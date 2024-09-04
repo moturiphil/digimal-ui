@@ -148,14 +148,19 @@ const columns = [
     dataIndex: "event_id",
     key: "id",
   },
-  {
-    title: "Validated",
-    dataIndex: "status",
-    key: "id",
-  },
+  // {
+  //   title: "Validated",
+  //   dataIndex: "status",
+  //   key: "id",
+  // },
   {
     title: "Validator",
     dataIndex: "validated_by",
+    key: "id",
+  },
+  {
+    title: "Validation Time",
+    dataIndex: "validation_date",
     key: "id",
   },
   {
@@ -163,11 +168,11 @@ const columns = [
     dataIndex: "approval_status",
     key: "id",
   },
-  {
-    title: "Approver",
-    dataIndex: "approved_by",
-    key: "id",
-  },
+  // {
+  //   title: "Approver",
+  //   dataIndex: "approved_by",
+  //   key: "id",
+  // },
   {
     title: "Status",
     dataIndex: "payment_status",
