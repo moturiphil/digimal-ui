@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="GF Activity Unpaid Payroll">
+    <sdPageHeader ghost title="GF Activities Payrolls Pending Approval ">
       <template #buttons>
         <div class="search-box">
           <a-input
@@ -33,9 +33,9 @@
                           v-show="activeClass === 'all'"
                         >
                           <a-table
-                            :pagination="false"
                             :dataSource="dataSource"
                             :columns="columns"
+                            :pagination="false"
                           >
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
@@ -61,67 +61,53 @@
                                       type="info"
                                       shape="circle"
                                     >
-                                      <span> Payroll Details</span>
+                                      <span>Payroll Details</span>
                                     </router-link>
                                   </sdButton>
                                   &nbsp;&nbsp;
                                   <sdButton
                                     type="success"
                                     size="extra-small"
-                                    @click="handlePay(record.id)"
-                                    >Pay Activity</sdButton
+                                    @click="handleApproval(record.id)"
+                                    >Approve</sdButton
                                   >
                                   &nbsp;&nbsp;
-                                  <a-modal
-                                    title="Payment OTP"
-                                    :visible="isModalOpen"
-                                    @cancel="handleCancel"
-                                    class="title-success"
+                                  <sdButton
+                                    size="extra-small"
+                                    type="warning"
+                                    @click="showVoidModal(record)"
                                   >
-                                    <div>
-                                      <p>Enter payment OTP</p>
-                                      <input
-                                        type="number"
-                                        v-model="inputValue"
-                                      />
-                                      <br />
-                                      <br />
-                                      <sdButton
-                                        type="success"
-                                        size="extra-small"
-                                        @click="resendOTP()"
-                                        :disabled="isDisabled"
-                                      >
-                                        Resend OTP
-                                        {{
-                                          countdown > 0
-                                            ? "(" + countdown + "s)"
-                                            : ""
-                                        }}
-                                      </sdButton>
-                                    </div>
-                                    <template v-slot:footer>
-                                      <a-button
-                                        @click="handleOk(recordId, inputValue)"
-                                        type="success"
-                                        :disabled="isPaying"
-                                        >{{
-                                          isLoading
-                                            ? "Loading..."
-                                            : isPaying
-                                            ? "Processing Payment..."
-                                            : "Pay"
-                                        }}</a-button
-                                      >
-                                      <a-button
-                                        @click="handleCancel()"
-                                        type="danger"
-                                        >Close</a-button
-                                      >
-                                    </template>
-                                  </a-modal>
+                                    <span>Void</span>
+                                  </sdButton>
                                 </div>
                               </td>
+
+                              <!---void payroll modals-->
+                              <a-modal
+                                layout="inline"
+                                :visible="openVoidModal"
+                                title="Confirm Void Payroll"
+                                @ok="actionVoidPayroll"
+                                @cancel="handleVoidCancel"
+                              >
+                                <template #footer>
+                                  <a-button key="back" @click="handleVoidCancel"
+                                    >No, Take me back!</a-button
+                                  >
+                                  <a-button
+                                    key="submit"
+                                    style="background: orange; color: aliceblue"
+                                    :loading="loading"
+                                    @click="actionVoidPayroll"
+                                    >Yes, Void it!</a-button
+                                  >
+                                </template>
+                                <h4>
+                                  Are you sure you want to void Payroll,Amount
+                                  <b>KShs.{{ voidPayroll.total_amount }}</b>
+                                </h4>
+                              </a-modal>
+                              <!-- end of void payroll modal -->
                             </template>
                           </a-table>
                           <br />
@@ -153,10 +139,9 @@ import { Main } from "../../../../styled";
 import { SearchResultWrapper } from "../../../style";
 import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
 import authHeader from "../../../../../services/auth-header";
-import axios from "@/Axiosconfig";
+import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
-import store from "../../../../../vuex/store";
 
 const columns = [
   {
@@ -164,39 +149,39 @@ const columns = [
     dataIndex: "activity_id",
     key: "id",
   },
+  // {
+  //   title: "Validated",
+  //   dataIndex: "status",
+  //   key: "id",
+  // },
   {
     title: "Validator",
     dataIndex: "validated_by",
     key: "id",
   },
   {
-    title: "Validated Time",
+    title: "Validation Time",
     dataIndex: "validation_date",
     key: "id",
   },
   {
-    title: "Approver",
-    dataIndex: "approved_by",
+    title: "Approved",
+    dataIndex: "approval_status",
     key: "id",
   },
-  {
-    title: "Approval Time",
-    dataIndex: "approval_time",
-    key: "id",
-  },
+  // {
+  //   title: "Approver",
+  //   dataIndex: "approved_by",
+  //   key: "id",
+  // },
   {
     title: "Status",
     dataIndex: "payment_status",
     key: "id",
   },
   {
-    title: "Payroll Amount",
+    title: "Amount Generated",
     dataIndex: "total_amount",
-    key: "id",
-  },
-  {
-    title: "Total Paid",
-    dataIndex: "amount_transacted",
     key: "id",
   },
   {
@@ -246,23 +231,19 @@ export default defineComponent({
     const dataSource = ref([]);
     const activeClass = ref("all");
     const searchItem = ref("");
-    const recordId = ref(null);
-    const isModalOpen = ref(false);
-    const isPaying = computed(() => state.isPaying);
+    const voidPayroll = ref(null);
+    const openVoidModal = ref(false);
+
     const handleChange = (tab) => {
       activeClass.value = tab;
     };
-
-    const isDisabled = ref(true);
-    const countdown = ref(60);
 
     onMounted(() => {
       fetchPayrolls();
     });
 
     const fetchPayrolls = () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
-
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_approved=0&page=${currentPage.value}&per_page=${pageSize.value}`;
       axios
         .get(API_URL, {
           headers: authHeader(),
@@ -282,6 +263,7 @@ export default defineComponent({
             item.approval_status =
               item.approval_status === 1 ? "Approved" : "Not Approved";
           });
+          console.log(dataSource.value);
         })
         .catch((error) => {
           console.error(error);
@@ -299,7 +281,7 @@ export default defineComponent({
     };
 
     watchEffect(async () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_approved=0&page=${currentPage.value}&per_page=${pageSize.value}`;
       const query = searchItem.value.toLowerCase();
       try {
         if (!query) {
@@ -325,15 +307,10 @@ export default defineComponent({
       }
     });
 
-    // handle payment
-    const handlePay = (id) => {
-      isModalOpen.value = true;
-      countdownTimer();
-      recordId.value = id;
-
+    const handleApproval = (id) => {
       try {
         fetch(
-          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${id}&payment_type=Activity`,
+          `${process.env.VUE_APP_BASE_URL}/payroll_approval?payroll_id=${id}`,
           {
             method: "POST",
             headers: {
@@ -342,9 +319,9 @@ export default defineComponent({
             },
           }
         )
-          .then((response) => response.json())
+          .then((response) => response.json()) // Parse response JSON
           .then((data) => {
-            console.log(data);
+            console.log(data); // Check what data you receive
             if (data.success === true) {
               notification.success({
                 message: "Success!",
@@ -363,114 +340,51 @@ export default defineComponent({
       }
     };
 
-    const resendOTP = () => {
-      try {
-        fetch(
-          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Activity`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data);
-            countdownTimer();
-            if (data.success === true) {
-              notification.success({
-                message: "Success!",
-                description: data.message,
-              });
-              setTimeout(() => {}, 2000);
-            } else {
-              notification.error({
-                message: "Error!",
-                description: data.message,
-              });
-            }
-          });
-      } catch (error) {
-        console.log(error);
-      }
+    const showVoidModal = (record) => {
+      console.log(record);
+      voidPayroll.value = record;
+      openVoidModal.value = true;
     };
 
-    const handleOk = async (id, inputValue) => {
-      store.commit("setIsPaying", true);
+    //void payroll
+
+    const actionVoidPayroll = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${recordId.value}&otp=${inputValue}`
+        const response = await axios.post(
+          `${process.env.VUE_APP_BASE_URL}/void_activity_payroll_summaries/${voidPayroll.value.id}`,
+          null,
+          {
+            headers: authHeader(),
+          }
         );
-        if (response.status == 200) {
-          store.commit("setIsPaying", true);
+
+        openVoidModal.value = false;
+        if (response.data.success == true) {
           notification.success({
             message: "Success",
-            description: "Payment processed successful",
+            description: response.data.message,
           });
-          setTimeout(function () {
-            location.reload();
-          }, 3000);
-
-          axios
-            .post(`payroll_payment`, {
-              payroll_id: recordId.value,
-            })
-            .then((responsePromise) => {
-              return responsePromise.data;
-            })
-            .then((data) => {
-              if (data.success == true) {
-                notification.success({
-                  message: "Success",
-                  description:
-                    "Payment Approved Successfully, Enter OTP to complete payment",
-                });
-              }
-            });
+          await new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+          });
+          location.reload();
+        } else if (response.data.success == false) {
+          notification.warning({
+            message: "Info",
+            description: response.data.message,
+          });
         }
-      } catch (error) {
-        store.commit("setIsPaying", true);
+      } catch (e) {
         notification.error({
-          message: "Error",
-          description: "Payment failed",
+          message: "Error!",
+          description: e.toString(),
         });
-        // setTimeout(function () {
-        //   location.reload();
-        // }, 3000);
+        console.log(e);
       }
-      isModalOpen.value = false;
     };
 
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    const startCountdown = () => {
-      console.log("starting countdown");
-      let timerId;
-      countdown.value = 60;
-      isDisabled.value = true;
-
-      const updateCountdown = () => {
-        countdown.value--;
-        console.log(countdown.value);
-        if (countdown.value <= 0) {
-          clearInterval(timerId);
-          isDisabled.value = false;
-        }
-      };
-
-      timerId = setInterval(updateCountdown, 1000);
-
-      updateCountdown();
-    };
-
-    const countdownTimer = () => {
-      isDisabled.value = true;
-      countdown.value = 60;
-      startCountdown();
+    const handleVoidCancel = () => {
+      openVoidModal.value = false;
     };
 
     return {
@@ -482,19 +396,16 @@ export default defineComponent({
       columns,
       handleChange,
       activeClass,
-      handlePay,
-      handleOk,
-      isModalOpen,
-      handleCancel,
-      isDisabled,
-      countdown,
-      countdownTimer,
-      resendOTP,
-      isPaying,
+      handleApproval,
+      showVoidModal,
+      voidPayroll,
+      openVoidModal,
+      actionVoidPayroll,
+      handleVoidCancel,
+      onPageChange,
       currentPage,
       pageSize,
       datatotal,
-      onPageChange,
     };
   },
 });

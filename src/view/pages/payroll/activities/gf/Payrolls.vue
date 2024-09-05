@@ -5,12 +5,9 @@
         <template #buttons> </template>
       </sdPageHeader>
     </SearchResultWrapper>
-    <br />
-    <br />
     <div>
       <router-link v-bind:to="'event-payroll-matrix'">
         <sdButton type="success" v-if="isAdmin">
-          <sdFeatherIcons size="small" class="icon-color-white" />
           Activity Payroll Matrix
         </sdButton>
       </router-link>
@@ -26,40 +23,40 @@
               style="width: 300px"
               class="card-button spaced-card"
             >
-              <p>All Digimal payroll</p>
+              <p>All Digimal Payroll</p>
             </a-card>
           </a>
         </a-col>
         <a-col :span="6">
           <a href="gf/activities/payroll-validation">
             <a-card
-              title="Payrolls pending Validation"
+              title="Payrolls Pending Validation"
               style="width: 300px"
               class="card-button spaced-card"
             >
-              <p>Digimal payroll pending validations</p>
+              <p>Digimal Payrolls Pending Validations</p>
             </a-card>
           </a>
         </a-col>
         <a-col :span="6">
           <a href="gf/activities/payroll-approval">
             <a-card
-              title="Payrolls pending Approval"
+              title="Payrolls Pending Approval"
               style="width: 300px"
               class="card-button spaced-card"
             >
-              <p>Digimal payroll pending approval</p>
+              <p>Digimal Payroll Pending Approval</p>
             </a-card>
           </a>
         </a-col>
         <a-col :span="6" v-if="isAIEHolder">
           <a href="gf/activities/payroll-pending-payments">
             <a-card
-              title="Payrolls pending Payments"
+              title="Payrolls Pending Payments"
               style="width: 300px"
               class="card-button spaced-card"
             >
-              <p>Digimal payroll pending payments</p>
+              <p>Digimal Payroll Pending Payments</p>
             </a-card>
           </a>
         </a-col>
@@ -70,7 +67,7 @@
               style="width: 300px"
               class="card-button spaced-card"
             >
-              <p>Digimal paid payrolls</p>
+              <p>Digimal Paid Payrolls</p>
             </a-card>
           </a>
         </a-col>

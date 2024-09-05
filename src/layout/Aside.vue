@@ -313,7 +313,7 @@
             <sdFeatherIcons type="globe" /><span>Global Fund</span>
           </template>
           <a-menu-item key="gf-activity-payroll">
-            <router-link to="/gf-activity-payroll"
+            <router-link to="/gf-activities-payroll"
               >Activity Payroll
             </router-link>
           </a-menu-item>

@@ -413,7 +413,7 @@ const routes = [
         name: "gf-activity-payroll-validation",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/UnvalidatedPayrolls.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingValidationPayrolls.vue"
           ),
       },
       {
@@ -421,7 +421,7 @@ const routes = [
         name: "gf-activity-payroll-approvals",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/UnapprovedPayrolls.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingApprovalPayrolls.vue"
           ),
       },
       {
@@ -429,7 +429,7 @@ const routes = [
         name: "gf-activity-payroll-pending-payments",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/UnPaidPayrolls.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingPaymentsPayrolls.vue"
           ),
       },
       {

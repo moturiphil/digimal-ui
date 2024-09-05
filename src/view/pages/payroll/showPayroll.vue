@@ -16,6 +16,17 @@
         Download List &nbsp; &nbsp;
         <sdFeatherIcons type="download-cloud" size="extra-small" />
       </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        class="btn-import"
+        type="warning"
+        @click="handleValidation()"
+        size="extra-small"
+        v-if="validate_status == 'Not Validated'"
+      >
+        Validate Payroll &nbsp; &nbsp;
+      </sdButton>
+      &nbsp;&nbsp;
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -245,10 +256,10 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -304,296 +315,263 @@ const columns = [
     slots: { customRender: "payroll" },
   },
 ];
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      payroll: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-  },
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const records = ref("");
-    const { query } = useRoute();
-    const activity_name = query.activity;
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
-    const county = query.county;
-    // const sub_county = query.sub_county ? query.sub_county : "N/A";
-    const start_date = query.start_date;
-    const no_of_days = query.no_of_days;
-    const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
-    const dsa_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_activity_dsa_matrix`;
-    const transport_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_activity_transport_matrix`;
-    const additional_allowance = ref([]);
-    const isModalOpen = ref(false);
-    const payroll_list_id = ref();
-    const filteredData = computed(() => {
-      if (activeClass.value === "approved") {
-        console.log(dataSource.value);
-        return dataSource.value.filter((item) => item.isVerified === 1);
-      } else if (activeClass.value === "outliers") {
-        return dataSource.value.filter((item) => item.isVerified === 0);
-      } else {
-        return dataSource.value;
-      }
-    });
-
-    const exportPayrollList = async () => {
-      try {
-        const response = await fetch(export_pay_list_url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch export data");
-        }
-
-        const fileBlob = await response.blob();
-        const fileName = "Payroll Participants.xlsx";
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(new Blob([fileBlob]));
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-
-    onMounted(() => {
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          dataSource.value = response.data.data;
-          records.value = dataSource.value.length;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    });
-
-    //send a request to the data to pay for activity from the pay buttons
-    const handleVerify = () => {
-      axios
-        .get(
-          `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${query.id}`,
-          {
-            headers: authHeader(),
-          }
-        )
-        .then((response) => {
-          console.log(response.data);
-          if (response.data) {
-            notification["success"]({
-              message: "Transaction Processing",
-              description: `Transaction is being processed. Please wait for completion before checking the transaction details page`,
-              duration: 11,
-            });
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
-
-    const formState = reactive({
-      searchItem: "",
-    });
-
-    const additionalAllowance = () => {
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/additional_payroll_matrix`, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          additional_allowance.value = response.data.data.map((allowance) => ({
-            ...allowance,
-            label: `${allowance.formula_name} `,
-          }));
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
-
-    additionalAllowance();
-
-    const addAllowance = (payroll_detail) => {
-      payroll_list_id.value = payroll_detail.id;
-      isModalOpen.value = true;
-    };
-
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    const handleSubmit = async () => {
-      const data = {
-        payroll_id: query.id,
-        formula: "",
-        rate: null,
-        payroll_list_id: payroll_list_id.value,
-        payroll_matrix_id: formState.allowance,
-      };
-
-      for (let i = 0; i < additional_allowance.value.length; i++) {
-        if (additional_allowance.value[i].id == formState.allowance) {
-          data.formula = additional_allowance.value[i].formula_name;
-          data.rate = additional_allowance.value[i].rate;
-
-          if (data.formula == "Additional DSA") {
-            console.log(data);
-            data.no_of_days = formState.no_of_days;
-            try {
-              const response = await fetch(dsa_api_url, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  ...authHeader(),
-                },
-                body: JSON.stringify(data),
-              });
-
-              const result = await response.json();
-
-              if (response.ok && result.success === true) {
-                notification.success({
-                  message: "Success",
-                  description: result.data,
-                });
-                isModalOpen.value = false;
-                setTimeout(() => {
-                  window.location.reload();
-                }, 3000);
-              } else if (result.success == false) {
-                notification.error({
-                  message: "Error",
-                  description: result.data,
-                });
-                isModalOpen.value = false;
-              } else {
-                notification.error({
-                  message: "Error",
-                  description: `${result.status}`,
-                });
-                isModalOpen.value = false;
-              }
-            } catch (error) {
-              notification.error({
-                message: "Error",
-                description: `${error.message}`,
-              });
-            }
-          } else {
-            try {
-              const response = await fetch(transport_api_url, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  ...authHeader(),
-                },
-                body: JSON.stringify(data),
-              });
-
-              const result = await response.json();
-
-              if (response.ok && result.success === true) {
-                notification.success({
-                  message: "Success",
-                  description: result.data,
-                });
-                isModalOpen.value = false;
-                setTimeout(() => {
-                  window.location.reload();
-                }, 3000);
-              } else {
-                notification.error({
-                  message: "Error",
-                  description: `${result.status}`,
-                });
-                isModalOpen.value = false;
-              }
-            } catch (error) {
-              notification.error({
-                message: "Error",
-                description: `${error.message}`,
-              });
-            }
-          }
-        }
-      }
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      columns,
-      formState,
-      filteredData,
-      handleChange,
-      activeClass,
-      handleVerify,
-      exportPayrollList,
-      activity_name,
-      county,
-      // sub_county,
-      start_date,
-      no_of_days,
-      records,
-      addAllowance,
-      isModalOpen,
-      additional_allowance,
-      handleSubmit,
-      handleCancel,
-    };
-  },
-  // computed: {
-  // },
+const { state } = useStore();
+const isLoading = computed(() => state.crud.loading);
+const dataSource = ref([]);
+const activeClass = ref("all");
+const records = ref("");
+const { query } = useRoute();
+const activity_name = query.activity;
+const validate_status = query.validate_status;
+const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
+const county = query.county;
+// const sub_county = query.sub_county ? query.sub_county : "N/A";
+const start_date = query.start_date;
+const no_of_days = query.no_of_days;
+const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
+const dsa_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_activity_dsa_matrix`;
+const transport_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_activity_transport_matrix`;
+const additional_allowance = ref([]);
+const isModalOpen = ref(false);
+const payroll_list_id = ref();
+const validate_payroll = `${process.env.VUE_APP_BASE_URL}/payroll_validation`;
+const filteredData = computed(() => {
+  if (activeClass.value === "approved") {
+    console.log(dataSource.value);
+    return dataSource.value.filter((item) => item.isVerified === 1);
+  } else if (activeClass.value === "outliers") {
+    return dataSource.value.filter((item) => item.isVerified === 0);
+  } else {
+    return dataSource.value;
+  }
 });
+
+const exportPayrollList = async () => {
+  try {
+    const response = await fetch(export_pay_list_url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch export data");
+    }
+
+    const fileBlob = await response.blob();
+    const fileName = "Payroll Participants.xlsx";
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(new Blob([fileBlob]));
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+onMounted(() => {
+  axios
+    .get(API_URL, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      dataSource.value = response.data.data;
+      records.value = dataSource.value.length;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+
+//send a request to the data to pay for activity from the pay buttons
+const handleVerify = () => {
+  axios
+    .get(
+      `${process.env.VUE_APP_BASE_URL}/pay_activity_clients?activity_payroll_summary_id=${query.id}`,
+      {
+        headers: authHeader(),
+      }
+    )
+    .then((response) => {
+      console.log(response.data);
+      if (response.data) {
+        notification["success"]({
+          message: "Transaction Processing",
+          description: `Transaction is being processed. Please wait for completion before checking the transaction details page`,
+          duration: 11,
+        });
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+const handleValidation = () => {
+  try {
+    fetch(validate_payroll, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify({
+        payroll_id: Number(query.id),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.success === true) {
+          notification.success({
+            message: data.success,
+            description: data.message,
+          });
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: data.success,
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const formState = reactive({
+  searchItem: "",
+});
+
+const additionalAllowance = () => {
+  axios
+    .get(`${process.env.VUE_APP_BASE_URL}/additional_payroll_matrix`, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      additional_allowance.value = response.data.data.map((allowance) => ({
+        ...allowance,
+        label: `${allowance.formula_name} `,
+      }));
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+additionalAllowance();
+
+const addAllowance = (payroll_detail) => {
+  payroll_list_id.value = payroll_detail.id;
+  isModalOpen.value = true;
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
+const handleSubmit = async () => {
+  const data = {
+    payroll_id: query.id,
+    formula: "",
+    rate: null,
+    payroll_list_id: payroll_list_id.value,
+    payroll_matrix_id: formState.allowance,
+  };
+
+  for (let i = 0; i < additional_allowance.value.length; i++) {
+    if (additional_allowance.value[i].id == formState.allowance) {
+      data.formula = additional_allowance.value[i].formula_name;
+      data.rate = additional_allowance.value[i].rate;
+
+      if (data.formula == "Additional DSA") {
+        console.log(data);
+        data.no_of_days = formState.no_of_days;
+        try {
+          const response = await fetch(dsa_api_url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success === true) {
+            notification.success({
+              message: "Success",
+              description: result.data,
+            });
+            isModalOpen.value = false;
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          } else if (result.success == false) {
+            notification.error({
+              message: "Error",
+              description: result.data,
+            });
+            isModalOpen.value = false;
+          } else {
+            notification.error({
+              message: "Error",
+              description: `${result.status}`,
+            });
+            isModalOpen.value = false;
+          }
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error.message}`,
+          });
+        }
+      } else {
+        try {
+          const response = await fetch(transport_api_url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success === true) {
+            notification.success({
+              message: "Success",
+              description: result.data,
+            });
+            isModalOpen.value = false;
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          } else {
+            notification.error({
+              message: "Error",
+              description: `${result.status}`,
+            });
+            isModalOpen.value = false;
+          }
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error.message}`,
+          });
+        }
+      }
+    }
+  }
+};
 </script>
 <style>
 .badge-green {

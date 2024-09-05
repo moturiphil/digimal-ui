@@ -2,11 +2,11 @@
   <div>
     <sdPageHeader ghost title=" Activity Payroll Matrix - Assignment" />
     <Main>
-      <sdButton class="btn-import" type="success" size="small">
+      <!-- <sdButton class="btn-import" type="success" size="small">
         <router-link to="/activity/matrix/create">
           <span class="btn-text"> Create Payroll Matrix </span>
         </router-link>
-      </sdButton>
+      </sdButton> -->
       <br />
       <br />
       <!-- <br> -->

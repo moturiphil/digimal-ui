@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost title="GF Paid Event Payroll">
+    <sdPageHeader ghost title="GF Paid Activities Payrolls">
       <template #buttons>
         <div class="search-box">
           <a-input
@@ -44,7 +44,7 @@
                                     &nbsp;&nbsp;
                                     <router-link
                                       :to="{
-                                        path: `/payroll/event-view/${record.id}`,
+                                        path: `/payroll/view/${record.id}`,
                                         query: {
                                           id: record.id,
                                           activity: record.activity_id,
@@ -78,7 +78,7 @@
                             :pageSize="pageSize"
                             :showSizeChanger="true"
                             :pagination="true"
-                            @change="onPageChange($event)"
+                            @change="onPageChange($activity)"
                           />
                         </TableWrapper>
                       </div>
@@ -106,7 +106,7 @@ import { notification } from "ant-design-vue";
 const columns = [
   {
     title: "Name",
-    dataIndex: "event_id",
+    dataIndex: "activity_id",
     key: "id",
   },
   {
@@ -205,7 +205,7 @@ export default defineComponent({
     });
 
     const fetchPayrolls = () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
       axios
         .get(API_URL, {
           headers: authHeader(),
@@ -242,7 +242,7 @@ export default defineComponent({
     };
 
     watchEffect(async () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
       const query = searchItem.value.toLowerCase();
       try {
         if (!query) {
