@@ -904,6 +904,7 @@ const generatePayroll = async () => {
         title: "Success",
         content: "Payroll Generated Successfully",
       });
+      location.reload();
     } else {
       store.commit("setIsGenerating", false);
       Modal.error({

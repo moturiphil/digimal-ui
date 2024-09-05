@@ -11,7 +11,7 @@
       <router-link v-bind:to="'event-payroll-matrix'">
         <sdButton type="success" v-if="isAdmin">
           <sdFeatherIcons size="small" class="icon-color-white" />
-          Payroll Matrix
+          Event Payroll Matrix
         </sdButton>
       </router-link>
     </div>
@@ -89,25 +89,14 @@ const user = JSON.parse(sessionStorage.getItem("user"));
 
 role_id.value = user.user.role_id;
 
-// const isValidator = computed(() => {
-//   return role_id.value === 63 || role_id.value === 53 || role_id.value === 4;
-// });
-
-// const isApprover = computed(() => {
-//   return role_id.value === 64 || role_id.value === 53 || role_id.value === 59;
-// });
-
-// const isAdminAccountant = computed(() => {
-//   return role_id.value === 65 || role_id.value === 53 || role_id.value === 1;
-// });
 
 const isAIEHolder = computed(() => {
   return role_id.value === 1 || role_id.value === 53;
 });
 
-// const isAdmin = computed(() => {
-//   return role_id.value === 53;
-// });
+const isAdmin = computed(() => {
+  return role_id.value === 53;
+});
 </script>
 <style scoped>
 .badge-green {

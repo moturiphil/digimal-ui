@@ -393,6 +393,56 @@ const routes = [
     ],
   },
   {
+    path: "/gf/activities",
+    name: "global-fund",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      {
+        path: "all-payrolls",
+        name: "gf-activity-payrolls",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/AllPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-validation",
+        name: "gf-activity-payroll-validation",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingValidationPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-approval",
+        name: "gf-activity-payroll-approvals",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingApprovalPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-pending-payments",
+        name: "gf-activity-payroll-pending-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingPaymentsPayrolls.vue"
+          ),
+      },
+      {
+        path: "payroll-payments",
+        name: "gf-activity-payroll-payments",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PaidPayrolls.vue"
+          ),
+      },
+    ],
+  },
+  {
     path: "/events",
     name: "events",
     component: () =>
@@ -693,6 +743,14 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
+      ),
+  },
+  {
+    path: "/gf-activities-payroll",
+    name: "global-fund-activity-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activities/gf/Payrolls.vue"
       ),
   },
   {
