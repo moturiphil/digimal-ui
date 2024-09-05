@@ -160,18 +160,8 @@ const columns = [
     key: "id",
   },
   {
-    title: "Validator",
-    dataIndex: "validated_by",
-    key: "id",
-  },
-  {
     title: "Approved",
     dataIndex: "approval_status",
-    key: "id",
-  },
-  {
-    title: "Approver",
-    dataIndex: "approved_by",
     key: "id",
   },
   {
