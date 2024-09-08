@@ -294,7 +294,7 @@ const routes = [
   },
   {
     path: "/gf/events",
-    name: "global-fund",
+    name: "global-fund-events",
     component: () =>
       import(
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
@@ -394,7 +394,7 @@ const routes = [
   },
   {
     path: "/gf/activities",
-    name: "global-fund",
+    name: "global-fund-activities",
     component: () =>
       import(
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
