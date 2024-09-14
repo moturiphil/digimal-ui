@@ -1,7 +1,25 @@
 <template>
   <div>
     <sdPageHeader ghost title="Sub Counties Events Automation">
-      <template #buttons> <div class="search-box"></div></template>
+      <template #buttons>
+        <div class="search-box"></div>
+        <div class="search-box">
+          <span class="search-icon">
+            <!-- Increase the size of the search icon by setting the 'font-size' property -->
+          </span>
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name"
+            style="
+              font-size: 15px;
+              width: 100%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
+          /></div
+      ></template>
     </sdPageHeader>
     <Main>
       <SearchResultWrapper>
@@ -172,7 +190,7 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, defineComponent } from "vue";
+import { computed, onMounted, ref, defineComponent, watch } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
@@ -239,8 +257,7 @@ export default defineComponent({
     const activeClass = ref("all");
     const searchItem = ref("");
     const isDisabled = computed(() => state.isDisabled);
-
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/household_registration_starts`;
+    
 
     const handleChange = (tab) => {
       activeClass.value = tab;
@@ -249,6 +266,11 @@ export default defineComponent({
     // const tableData = ref([]);
 
     onMounted(() => {
+      getSubCounties();
+    });
+
+    const getSubCounties = async () => {
+      const API_URL = `${process.env.VUE_APP_BASE_URL}/household_registration_starts?query=${searchItem.value}`;
       axios
         .get(API_URL, {
           headers: authHeader(),
@@ -261,7 +283,15 @@ export default defineComponent({
         .catch((error) => {
           console.error(error);
         });
-    });
+    };
+
+    watch(
+      () => searchItem.value,
+      (newValue) => {
+        searchItem.value = newValue;
+        getSubCounties();
+      }
+    );
 
     // create hh reg event
     const createEvent = async (data) => {
