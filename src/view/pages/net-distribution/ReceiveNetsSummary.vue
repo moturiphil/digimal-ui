@@ -681,6 +681,7 @@
                                 name="to_drop_off"
                                 label="Drop Off Point to Return"
                                 v-if="is_variance == false"
+                                :rules="[ { required: false, message: 'Please select the Drop off point to be returned to' } ]"
                               >
                                 <a-select
                                   placeholder="Select Drop Off Point to Return"
@@ -701,6 +702,7 @@
                                 name="no_of_nets"
                                 label="Total Number of nets to be Returned"
                                 v-if="is_variance == false"
+                                :rules="[ { required: false, message: 'Enter total number of nets to be returned' } ]"
                               >
                                 <a-input
                                   v-model:value="
@@ -714,6 +716,7 @@
                                 name="date_returned"
                                 label="Date Returned"
                                 v-if="is_variance == false"
+                                :rules="[ { required: false, message: 'Please select the date of returns' } ]"
                               >
                                 <a-date-picker
                                   :style="{ width: '100%' }"
@@ -729,6 +732,7 @@
                                 name="damages_check"
                                 label="Are any of the nets returned damaged?"
                                 v-if="is_variance == false"
+                                :rules="[ { required: false, message: 'Please confirm if there were any damaged nets' } ]"
                               >
                                 <!-- <a-radio-group v-model="damagesCheck"> -->
                                 <a-radio v-model:checked="checked">Yes</a-radio>
@@ -740,6 +744,7 @@
                                 v-if="checked == true && is_variance == false"
                                 name="no_of_damages"
                                 label="Number of Damaged Nets"
+                                :rules="[ { required: false, message: 'Please enter the number of damaged nets.' } ]"
                               >
                                 <a-input
                                   v-model:value="
@@ -767,6 +772,7 @@
                                 name="delivery_note_number"
                                 label="S11 No"
                                 v-if="is_variance == false"
+                                :rules="[ { required: false, message: 'Please enter the S11 Serial Number' } ]"
                               >
                                 <a-input
                                   :style="{ width: '100%' }"
@@ -780,6 +786,7 @@
                                 name="return_reason"
                                 label="Reason For Return"
                                 v-if="is_variance == false"
+                                :rules="[ { required: true, message: 'Please state reason for return' } ]"
                               >
                                 <a-textarea
                                   :style="{ width: '100%' }"
