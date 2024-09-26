@@ -119,7 +119,7 @@
                             :to="{
                               // path: `/nets/receive-post-nets`,
                               path: `/nets/receive-nets-summary`,
-                              query: { id: record.id, name: record.name },
+                              query: { id: record.id, name: record.name, funding: record.is_pmi_county },
                             }"
                             class="btn-icon"
                             type="success"
