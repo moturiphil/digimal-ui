@@ -138,7 +138,7 @@
                 </li>
               </ul>
               <ul>
-                <li>
+                <li v-if="is_pmi_county===true">
                   <a
                     :class="activeClass === 'return' ? 'active' : 'deactivate'"
                     @click="openReturnsModal()"
@@ -148,7 +148,7 @@
                     Return to Dropoff Point
                   </a>
                 </li>
-                <li>
+                <li v-if="is_pmi_county===false">
                   <a
                     :class="activeClass === 'return' ? 'active' : 'deactivate'"
                     @click="openreverseLogisticsModal()"
@@ -443,7 +443,7 @@
                               </a-form-item>
                               <a-form-item
                                 name="delivery_note_number"
-                                label="S11 No"
+                                label="S11 Serial No"
                               >
                                 <a-input
                                   v-model:value="
@@ -721,12 +721,13 @@
                                     returns_formState.date_returned
                                   "
                                   :format="dateFormat"
+                                  :disabledDate="disabledLogisticDate"
                                 />
                               </a-form-item>
                               <!-- <a-checkbox v-model:checked="checked">Are there nets that were damaged</a-checkbox> -->
                               <a-form-item
                                 name="damages_check"
-                                label="Were there nets that were damaged?"
+                                label="Are any of the nets returned damaged?"
                                 v-if="is_variance == false"
                               >
                                 <!-- <a-radio-group v-model="damagesCheck"> -->
@@ -863,13 +864,6 @@
                                   Add Another Reason
                                 </a-button>
 
-                                <!-- <a-button
-                                  type="primary"
-                                  size="small"
-                                  @click="submitReasons"
-                                >
-                                  Submit Reasons
-                                </a-button> -->
                               </a-form-item>
 
                               <div class="record-form-actions text-right">
@@ -884,7 +878,7 @@
                             </a-form>
                           </BasicFormWrapper>
                         </a-modal>
-                        <!-- end of return nets modal -->
+                        <!-- end of reverse logistics modal -->
 
                         <!-- Transfer HH Modal -->
 
@@ -1202,13 +1196,15 @@ const deliveries = ref(null);
 const discrepancy = ref(null);
 const distribution_id = ref(null);
 const post_balance = ref(null);
+const is_variance = ref(false);
+const is_pmi_county = query.funding ? false : true;
+console.log(query.funding);
+console.log(is_pmi_county);
+
 const formState = reactive({
   date_received: "",
   distribution_id: "",
 });
-const is_variance = ref(false);
-// const returnedNets = ref([]);
-
 const trans_formState = reactive({
   from_post_id: Number(query.id),
   to_post_id: "",
@@ -1598,6 +1594,11 @@ const removeReason = (index) => {
   returns_formState.value.variance_reasons.splice(index, 1);
 };
 
+const disabledLogisticDate = (current) => {
+  // Can not select days before two weeks ago and today
+  return current && current > new Date();
+};
+
 const handleReverseLogistics = () => {
   const variance_reason = Object.entries({ ...inputFields.value }).map(
     ([key, value]) => ({
@@ -1666,50 +1667,57 @@ const handleReverseLogistics = () => {
   } else {
     is_variance.value = true;
 
-    if (is_variance.value) {
-      setTimeout(() => {
-        try {
-          fetch(
-            `${process.env.VUE_APP_BASE_URL}/distribution_post_reverse_flow`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...authHeader(),
-              },
-              body: JSON.stringify(data),
-            }
-          )
-            .then((response) => response.json())
-            .then(({ success, message }) => {
-              if (success) {
-                notification.success({
-                  message: "Success",
-                  description: `Successfully returned nets to drop off point`,
-                });
-              } else {
-                notification.error({
-                  message: "Error",
-                  description: `${message}`,
-                });
-              }
-              returnsModalOpen.value = false;
-              window.location.reload();
-            })
-            .catch((error) => {
-              console.log(error);
+    if (
+      is_variance.value &&
+      data.variance_reasons[0].qty !== null &&
+      data.variance_reasons[0].reason !== null
+    ) {
+      try {
+        fetch(
+          `${process.env.VUE_APP_BASE_URL}/distribution_post_reverse_flow`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader(),
+            },
+            body: JSON.stringify(data),
+          }
+        )
+          .then((response) => response.json())
+          .then(({ success, message }) => {
+            if (success) {
+              notification.success({
+                message: "Success",
+                description: `Successfully returned nets to drop off point`,
+              });
+            } else {
               notification.error({
                 message: "Error",
-                description: `${error}`,
+                description: `${message}`,
               });
+            }
+            returnsModalOpen.value = false;
+            window.location.reload();
+          })
+          .catch((error) => {
+            console.log(error);
+            notification.error({
+              message: "Error",
+              description: `${error}`,
             });
-        } catch (error) {
-          notification.error({
-            message: "Error",
-            description: `${error}`,
           });
-        }
-      }, 100000); 
+      } catch (error) {
+        notification.error({
+          message: "Error",
+          description: `${error}`,
+        });
+      }
+    } else {
+      notification.warning({
+        message: "Warning",
+        description: `State Reason for variance to account for the discrepancies in the return to dropoff`,
+      });
     }
   }
 };
