@@ -1629,7 +1629,7 @@ const handleReverseLogistics = () => {
   console.log(JSON.stringify(data));
   console.log(post_balance.value);
 
-  variance.value = data.number_of_nets - post_balance.value;
+  variance.value = post_balance.value - data.number_of_nets;
 
   if (variance.value == 0) {
     try {
