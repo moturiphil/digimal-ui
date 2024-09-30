@@ -1,17 +1,17 @@
 <template>
   <div v-if="isLoading" class="spin">
-              <a-spin />
-            </div>
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="true"
-                  :dataSource="returnedNets"
-                  :columns="returns_columns"
-                >
-                </a-table>
-              </TableWrapper>
-            </div>
+    <a-spin />
+  </div>
+  <div v-else>
+    <TableWrapper class="table-data-view table-responsive">
+      <a-table
+        :pagination="true"
+        :dataSource="returnedNets"
+        :columns="returns_columns"
+      >
+      </a-table>
+    </TableWrapper>
+  </div>
 </template>
 <script setup>
 import { useStore } from "vuex";
@@ -25,18 +25,18 @@ const props = defineProps({
 });
 const returns_columns = [
   {
-    title: "Dropoff",
-    dataIndex: "dropoff_name",
-    key: "id",
-  },
-  {
-    title: "Post",
+    title: "From Post",
     dataIndex: "post_name",
     key: "id",
   },
   {
+    title: "To Dropoff",
+    dataIndex: "dropoff_name",
+    key: "id",
+  },
+  {
     title: "Number of Nets",
-    dataIndex: "total_nets",
+    dataIndex: "number_of_nets",
     key: "id",
   },
   {

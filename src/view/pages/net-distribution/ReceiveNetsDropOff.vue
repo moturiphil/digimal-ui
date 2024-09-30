@@ -312,7 +312,6 @@ export default defineComponent({
           }
         );
 
-        // console.log(JSON.stringify(response.data));
 
         const { success, message } = JSON.stringify(response.data);
 
