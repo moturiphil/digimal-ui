@@ -18,7 +18,6 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, defineProps } from "vue";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
-// import axios from "@/Axiosconfig";
 const returnedNets = ref([]);
 const props = defineProps({
   post_id: Number,
