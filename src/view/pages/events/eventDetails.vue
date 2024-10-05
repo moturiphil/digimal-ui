@@ -36,6 +36,24 @@
           }}
         </sdButton>
         &nbsp;
+        <sdButton
+          v-if="isApprovedGenerator"
+          class="btn-import"
+          type="warning"
+          size="extra-small"
+          @click="reGeneratePayroll"
+          :disabled="isReGenerating"
+        >
+          <!-- Generate Payroll -->
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+              ? "Processing ..."
+              : "Re-Generate Payroll"
+          }}
+        </sdButton>
+        &nbsp;
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
 
         <sdButton class="btn-import" type="success" size="extra-small">
@@ -575,6 +593,7 @@ const isCadreModalOpen = ref(false);
 const participant_id = ref("");
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
+const reGenetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/regenerate_event_payroll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
 const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${plainquery.event_list_id}`;
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
@@ -740,6 +759,35 @@ const generatePayroll = async () => {
 
   try {
     const response = await axios.get(genetatePayrollURL, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
+    console.log(response);
+
+    if (response.status === 200) {
+      store.commit("setIsGenerating", false);
+      Modal.success({
+        title: "Success",
+        content: "Payroll Generated Successfully",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      location.reload();
+    } else {
+      handleErrorResponse(response);
+    }
+  } catch (error) {
+    console.error(error);
+    handleErrorResponse();
+  }
+};
+
+const reGeneratePayroll = async () => {
+  store.commit("setIsGenerating", true);
+
+  try {
+    const response = await axios.get(reGenetatePayrollURL, {
       headers: {
         "Content-Type": "application/json",
         ...authHeader(),
