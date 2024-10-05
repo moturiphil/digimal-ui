@@ -15,6 +15,16 @@
                 Sync To KEMSA &nbsp; &nbsp;
                 <sdFeatherIcons type="refresh-cw" size="extra-small" />
               </sdButton>
+              &nbsp; &nbsp;
+              <sdButton
+                class="btn-import"
+                type="warning"
+                @click="openKEMSAQAModal()"
+                size="extra-small"
+              >
+                Vew KEMSA QA Data &nbsp; &nbsp;
+                <sdFeatherIcons type="eye" size="extra-small" />
+              </sdButton>
             </div>
           </a-col>
           <a-col :xs="24">
@@ -180,6 +190,7 @@ export default defineComponent({
     const { query } = useRoute();
     const isOpen = ref(false);
     const drop_off_name = query.name;
+    // const isKEMSAQAModalOpen = 
 
     const handleOk = async () => (isModalOpen.value = false);
     const handleCancelReceive = () => (isOpen.value = false);
@@ -312,7 +323,6 @@ export default defineComponent({
           }
         );
 
-
         const { success, message } = JSON.stringify(response.data);
 
         if (success) {
@@ -338,6 +348,11 @@ export default defineComponent({
         });
       }
     };
+
+    // const openKEMSAQAModal = (id) => {
+    //   isKEMSAQAModalOpen.value = true;
+    //   formState.drop_off_point_id = id;
+    // };
 
     onMounted(() => {
       fetchPosts();

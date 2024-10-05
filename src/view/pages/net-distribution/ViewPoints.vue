@@ -89,8 +89,8 @@
                               query: {
                                 id: record.id,
                                 name: record.name,
-                                campaign_id: record.campaign_id,
                                 county: record.county,
+                                code: record.drop_off_code,
                               },
                             }"
                             class="btn-icon"
