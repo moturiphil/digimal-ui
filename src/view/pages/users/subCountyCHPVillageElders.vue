@@ -159,7 +159,7 @@ const columns = [
   },
   {
     title: "VE(s)",
-    dataIndex: "no_of_chp_registered",
+    dataIndex: "no_of_ve_registered",
     key: "id",
   },
   // {
