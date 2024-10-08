@@ -162,16 +162,6 @@ const columns = [
     dataIndex: "no_of_ve_registered",
     key: "id",
   },
-  // {
-  //   title: "Village Post",
-  //   dataIndex: "village_post",
-  //   key: "id",
-  // },
-  // {
-  //   title: "Post Supervisor",
-  //   dataIndex: "post_supervisor",
-  //   key: "id",
-  // },
   {
     title: "",
     dataIndex: "",

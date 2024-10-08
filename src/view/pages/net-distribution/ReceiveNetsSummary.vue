@@ -138,7 +138,7 @@
                 </li>
               </ul>
               <ul>
-                <li v-if="is_pmi_county===true">
+                <li v-if="is_pmi_county === true">
                   <a
                     :class="activeClass === 'return' ? 'active' : 'deactivate'"
                     @click="openReturnsModal()"
@@ -148,7 +148,7 @@
                     Return to Dropoff Point
                   </a>
                 </li>
-                <li v-if="is_pmi_county===false">
+                <li v-if="is_pmi_county === false">
                   <a
                     :class="activeClass === 'return' ? 'active' : 'deactivate'"
                     @click="openreverseLogisticsModal()"
@@ -681,7 +681,13 @@
                                 name="to_drop_off"
                                 label="Drop Off Point to Return"
                                 v-if="is_variance == false"
-                                :rules="[ { required: false, message: 'Please select the Drop off point to be returned to' } ]"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please select the Drop off point to be returned to',
+                                  },
+                                ]"
                               >
                                 <a-select
                                   placeholder="Select Drop Off Point to Return"
@@ -702,7 +708,13 @@
                                 name="no_of_nets"
                                 label="Total Number of nets to be Returned"
                                 v-if="is_variance == false"
-                                :rules="[ { required: false, message: 'Enter total number of nets to be returned' } ]"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Enter total number of nets to be returned',
+                                  },
+                                ]"
                               >
                                 <a-input
                                   v-model:value="
@@ -716,7 +728,13 @@
                                 name="date_returned"
                                 label="Date Returned"
                                 v-if="is_variance == false"
-                                :rules="[ { required: false, message: 'Please select the date of returns' } ]"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please select the date of returns',
+                                  },
+                                ]"
                               >
                                 <a-date-picker
                                   :style="{ width: '100%' }"
@@ -732,7 +750,13 @@
                                 name="damages_check"
                                 label="Are any of the nets returned damaged?"
                                 v-if="is_variance == false"
-                                :rules="[ { required: false, message: 'Please confirm if there were any damaged nets' } ]"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please confirm if there were any damaged nets',
+                                  },
+                                ]"
                               >
                                 <!-- <a-radio-group v-model="damagesCheck"> -->
                                 <a-radio v-model:checked="checked">Yes</a-radio>
@@ -744,7 +768,13 @@
                                 v-if="checked == true && is_variance == false"
                                 name="no_of_damages"
                                 label="Number of Damaged Nets"
-                                :rules="[ { required: false, message: 'Please enter the number of damaged nets.' } ]"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please enter the number of damaged nets.',
+                                  },
+                                ]"
                               >
                                 <a-input
                                   v-model:value="
@@ -772,7 +802,13 @@
                                 name="delivery_note_number"
                                 label="S11 No"
                                 v-if="is_variance == false"
-                                :rules="[ { required: false, message: 'Please enter the S11 Serial Number' } ]"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please enter the S11 Serial Number',
+                                  },
+                                ]"
                               >
                                 <a-input
                                   :style="{ width: '100%' }"
@@ -786,7 +822,12 @@
                                 name="return_reason"
                                 label="Reason For Return"
                                 v-if="is_variance == false"
-                                :rules="[ { required: true, message: 'Please state reason for return' } ]"
+                                :rules="[
+                                  {
+                                    required: true,
+                                    message: 'Please state reason for return',
+                                  },
+                                ]"
                               >
                                 <a-textarea
                                   :style="{ width: '100%' }"
@@ -870,7 +911,6 @@
                                 >
                                   Add Another Reason
                                 </a-button>
-
                               </a-form-item>
 
                               <div class="record-form-actions text-right">
@@ -1629,7 +1669,7 @@ const handleReverseLogistics = () => {
   console.log(JSON.stringify(data));
   console.log(post_balance.value);
 
-  variance.value = data.number_of_nets - post_balance.value;
+  variance.value = post_balance.value - data.number_of_nets;
 
   if (variance.value == 0) {
     try {
@@ -1656,7 +1696,7 @@ const handleReverseLogistics = () => {
           }
           returnsModalOpen.value = false;
 
-          window.location.reload();
+          // window.location.reload();
         })
         .catch((error) => {
           console.log(error);
@@ -1679,45 +1719,70 @@ const handleReverseLogistics = () => {
       data.variance_reasons[0].qty !== null &&
       data.variance_reasons[0].reason !== null
     ) {
-      try {
-        fetch(
-          `${process.env.VUE_APP_BASE_URL}/distribution_post_reverse_flow`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-            body: JSON.stringify(data),
-          }
-        )
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success) {
-              notification.success({
-                message: "Success",
-                description: `Successfully returned nets to drop off point`,
-              });
-            } else {
+      // Assuming data.variance_reasons is the array of objects
+      let totalReasonQty = data.variance_reasons.reduce((sum, item) => {
+        return sum + item.qty;
+      }, 0);
+
+      console.log(totalReasonQty); // This will output the sum of the qty values
+      console.log(variance.value);
+
+      let remaining_nets = variance.value - totalReasonQty;
+
+      if (totalReasonQty === variance.value) {
+        try {
+          fetch(
+            `${process.env.VUE_APP_BASE_URL}/distribution_post_reverse_flow`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(data),
+            }
+          )
+            .then((response) => response.json())
+            .then(({ success, message }) => {
+              if (success) {
+                notification.success({
+                  message: "Success",
+                  description: `Successfully returned nets to drop off point`,
+                });
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${message}`,
+                });
+              }
+              returnsModalOpen.value = false;
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.log(error);
               notification.error({
                 message: "Error",
-                description: `${message}`,
+                description: `${error}`,
               });
-            }
-            returnsModalOpen.value = false;
-            window.location.reload();
-          })
-          .catch((error) => {
-            console.log(error);
-            notification.error({
-              message: "Error",
-              description: `${error}`,
             });
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`,
           });
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: `${error}`,
+        }
+      }
+      if (remaining_nets > 0) {
+        notification.warning({
+          message: "Warning",
+          description: `You need to account for ${remaining_nets} more nets`,
+        });
+      } else if (remaining_nets < 0) {
+        notification.warning({
+          message: "Warning",
+          description: `You have ${Math.abs(
+            remaining_nets
+          )} extra nets that need to be accounted for`,
         });
       }
     } else {
