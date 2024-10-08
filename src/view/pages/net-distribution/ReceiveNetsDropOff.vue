@@ -115,6 +115,48 @@
             </sdCards>
           </a-col>
         </a-row>
+        <!-- QA Data modal -->
+        <a-modal
+          :title="`${drop_off_name} QA Data`"
+          :visible="isKEMSAQAModalOpen"
+          @cancel="handleCancelKemsaModal"
+          width="40%"
+        >
+
+          <div v-if="qa_data">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Good Quantity</th>
+                  <th>Damaged Quantity</th>
+                  <th>Total Quantity</th>
+                  <th>Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in qa_data" :key="index">
+                  <td>{{ item.product }}</td>
+                  <td>{{ item.good_quantity }}</td>
+                  <td>{{ item.damaged_quantity }}</td>
+                  <td>{{ item.total_quantity }}</td>
+                  <td>{{ item.unit }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <template #footer>
+            <a-button
+              key="cancel"
+              type="warning"
+              @click="handleCancelKemsaModal"
+            >
+              Cancel
+            </a-button>
+          </template>
+        </a-modal>
+        <!-- End of QA Data modal -->
       </SearchResultWrapper>
     </Main>
   </div>
@@ -159,11 +201,6 @@ const columns = [
     dataIndex: "returned_by",
     key: "id",
   },
-  // {
-  //   title: "Status",
-  //   dataIndex: "status",
-  //   key: "id",
-  // },
   {
     title: "Action",
     dataIndex: "action",
@@ -179,10 +216,6 @@ export default defineComponent({
     BasicFormWrapper,
   },
   setup() {
-    // const { state } = useStore();
-    // const crud = computed(() => state.crud.data);
-    // const isLoading = computed(() => state.crud.loading);
-    // const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("nets_returned");
     const postdata = ref([]);
@@ -190,7 +223,8 @@ export default defineComponent({
     const { query } = useRoute();
     const isOpen = ref(false);
     const drop_off_name = query.name;
-    // const isKEMSAQAModalOpen = 
+    const isKEMSAQAModalOpen = ref(false);
+    const handleCancelKemsaModal = () => (isKEMSAQAModalOpen.value = false);
 
     const handleOk = async () => (isModalOpen.value = false);
     const handleCancelReceive = () => (isOpen.value = false);
@@ -205,6 +239,7 @@ export default defineComponent({
       formState.returned_id = id;
       isOpen.value = true;
     };
+    const qa_data = ref([]);
 
     const fetchPosts = async () => {
       try {
@@ -349,10 +384,26 @@ export default defineComponent({
       }
     };
 
-    // const openKEMSAQAModal = (id) => {
-    //   isKEMSAQAModalOpen.value = true;
-    //   formState.drop_off_point_id = id;
-    // };
+    const fetchReturnedNetsQA = async () => {
+      const response = await fetch(
+        `${process.env.VUE_APP_BASE_URL}/dropoff_qa_data?dropoff_code=${query.code}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      qa_data.value = data.data;
+    };
+
+    const openKEMSAQAModal = () => {
+      fetchReturnedNetsQA();
+      console.log("here");
+      return (isKEMSAQAModalOpen.value = true);
+    };
 
     onMounted(() => {
       fetchPosts();
@@ -376,6 +427,11 @@ export default defineComponent({
       openmodal,
       handleOk,
       syncToKemsa,
+      openKEMSAQAModal,
+      handleCancelKemsaModal,
+      isKEMSAQAModalOpen,
+      qa_data,
+      fetchReturnedNetsQA,
     };
   },
 });
