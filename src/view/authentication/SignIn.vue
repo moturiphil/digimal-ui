@@ -300,7 +300,7 @@ export default {
         .then((response) => {
           console.log(response.data == "training");
           if (response.data == "training") {
-            env.value == "Training Platform";
+            env.value = "Training Platform";
           }
           else if(response.data == "maintenance")
           {

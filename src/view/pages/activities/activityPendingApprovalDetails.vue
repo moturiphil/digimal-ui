@@ -1,6 +1,6 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="`${event_name} Activity`" />
+    <sdPageHeader ghost :title="`${activity_name} Activity`" />
     <Main>
       <div class="button-container">
         <sdButton
@@ -47,11 +47,11 @@
                 <a-row :gutter="15">
                   <a-col class="w-100" :md="24">
                     <sdCards headless>
-                      <div v-if="isLoading" class="spin">
+                      <div v-if="dataSource < 0" class="spin">
                         <a-spin />
                       </div>
 
-                      <div v-else>
+                      <div>
                         <TableWrapper
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
@@ -63,7 +63,7 @@
                               pageSize: 100,
                               showSizeChanger: true,
                             }"
-                            :dataSource="filteredData"
+                            :dataSource="dataSource"
                             :columns="columns"
                           >
                             <template #actions="{ record }">
@@ -84,38 +84,6 @@
                                 </div>
                               </td>
                             </template>
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'confirmed'"
-                        >
-                          <p><b>Total Records: </b> {{ confirmedCount }}</p>
-                          <a-table
-                            :pagination="{
-                              pageSize: 100,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
-                          </a-table>
-                        </TableWrapper>
-
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'pending'"
-                        >
-                          <p><b>Total Records: </b> {{ pendingCount }}</p>
-                          <a-table
-                            :pagination="{
-                              pageSize: 100,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="filteredData"
-                            :columns="columns"
-                          >
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -182,16 +150,14 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
-import { computed, onMounted, ref, defineComponent, reactive } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { Modal } from "ant-design-vue";
 import { useRoute } from "vue-router";
-import store from "../../../vuex/store";
 import { notification } from "ant-design-vue";
 
 const columns = [
@@ -199,7 +165,6 @@ const columns = [
     title: "Participant Name",
     dataIndex: "fullName",
     key: "id",
-    // render: (text, record) => `${record.first_name} ${record.last_name}`,
   },
   {
     title: "Location",
@@ -222,452 +187,236 @@ const columns = [
     key: "id",
   },
   {
-    title: "Confirmed Days",
-    dataIndex: "no_of_days",
-    key: "id",
-  },
-  {
     title: "",
     dataIndex: "",
     key: "actions",
     slots: { customRender: "actions" },
   },
 ];
-export default defineComponent({
-  name: "Events Participants",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  computed: {
-    recordCount() {
-      return this.dataSource.length;
-    },
-    confirmedCount() {
-      return this.confirmed.length;
-    },
-    pendingCount() {
-      return this.pending.length;
-    },
-  },
-  data() {
-    const { query } = useRoute();
 
-    const event_name = query.name;
-    // const event_id = query.id;
-    const event_code = query.event_code;
-    console.log(event_code);
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      households: [],
-      event_name,
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-  },
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const confirmed = ref({});
-    const pending = ref([]);
-    const officers = ref([]);
-    const activeClass = ref("all");
-    const { query } = useRoute();
-    const isGenerating = computed(() => state.isGenerating);
-    const searchOfficerItem = ref("");
+const { state } = useStore();
+const isLoading = computed(() => state.crud.loading);
+const dataSource = ref([]);
+const officers = ref([]);
+const activeClass = ref("all");
+const { query } = useRoute();
+const searchOfficerItem = ref("");
+const isModalOpen = ref(false);
+const activity_name = query.name;
+const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
+const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
+const approve_activity_url = `${process.env.VUE_APP_BASE_URL}/approve_activity/${query.id}`;
 
-    const isModalOpen = ref(false);
-
-    console.log(query.id);
-
-    const activity_code = query.code;
-
-    console.log(new Date());
-
-    // const API_URL = `${process.env.VUE_APP_BASE_URL}/events/${query.event_code}/participants`; // activity_invited_officers
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_invited_officers?activity_id=${query.id}`;
-    const BASE_URL = `${process.env.VUE_APP_BASE_URL}`;
-    // const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${query.event_code}`;
-    const approve_activity_url = `${process.env.VUE_APP_BASE_URL}/approve_activity/${query.id}`;
-
-    console.log(approve_activity_url);
-
-    const approveActivity = async () => {
-      try {
-        await fetch(approve_activity_url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-        })
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success == true) {
-              notification.success({
-                message: "Success",
-                description: message,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${message}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((message) => {
-            notification.error({
-              message: "Error",
-              description: `${message}`,
-            });
+const approveActivity = async () => {
+  try {
+    await fetch(approve_activity_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    })
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success == true) {
+          notification.success({
+            message: "Success",
+            description: message,
           });
-      } catch (message) {
+          isModalOpen.value = false;
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${message}`,
+          });
+        }
+        isModalOpen.value = false;
+      })
+      .catch((message) => {
         notification.error({
           message: "Error",
           description: `${message}`,
         });
-      }
-    };
+      });
+  } catch (message) {
+    notification.error({
+      message: "Error",
+      description: `${message}`,
+    });
+  }
+};
 
-    const removeOfficer = (id) => {
-      console.log(id);
-      //   console.log("recordId", recordId.value);
-      console.log(
-        `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`
-      );
-      try {
-        fetch(
-          `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        )
-          .then((response) => response.json())
-          .then(({ success, message }) => {
-            if (success == true) {
-              notification.success({
-                message: "Success",
-                description: message,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${message}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((message) => {
-            notification.error({
-              message: "Error",
-              description: `${message}`,
-            });
+const removeOfficer = (id) => {
+  console.log(id);
+  //   console.log("recordId", recordId.value);
+  console.log(
+    `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}?user_id=${id}`
+  );
+  try {
+    fetch(
+      `${BASE_URL}/deassign_activity_facilitator?activity_id=${query.id}&user_id=${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success == true) {
+          notification.success({
+            message: "Success",
+            description: message,
           });
-      } catch (message) {
+          isModalOpen.value = false;
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${message}`,
+          });
+        }
+        isModalOpen.value = false;
+      })
+      .catch((message) => {
         notification.error({
           message: "Error",
           description: `${message}`,
         });
-      }
-    };
+      });
+  } catch (message) {
+    notification.error({
+      message: "Error",
+      description: `${message}`,
+    });
+  }
+};
 
-    const handleOk = async (id, inputValue) => {
-      try {
-        console.log(inputValue);
-      } finally {
-        console.log(inputValue);
-        inputValue = ""; // Clear inputValue after the modal is closed
-        isModalOpen.value = true;
-      }
-    };
-
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-    onMounted(async () => {
-      try {
-        const response = await axios.get(API_URL, {
-          headers: authHeader(),
-        });
-        console.log(response.data.data);
-
-        const updatedData = response.data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          return {
-            ...record,
-            fullName,
-          };
-        });
-
-        console.log(updatedData);
-
-        dataSource.value = updatedData;
-      } catch (error) {
-        console.error(error);
-      }
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/activity_participants?activity_id=${activity_code}&confirmed=1`,
-          {
-            headers: authHeader(),
-          }
-        );
-        console.log(response);
-        const updatedData = response.data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          return {
-            ...record,
-            fullName,
-          };
-        });
-        console.log(response.data);
-        confirmed.value = updatedData;
-      } catch (error) {
-        console.error(error);
-      }
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/activity_participants?activity_id=${activity_code}&confirmed=0`,
-          {
-            headers: authHeader(),
-          }
-        );
-
-        const updatedData = response.data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          return {
-            ...record,
-            fullName,
-          };
-        });
-        console.log(response.data);
-
-        pending.value = updatedData;
-
-        console.log(pending.value);
-      } catch (error) {
-        console.error(error);
-      }
+const handleChange = (tab) => {
+  activeClass.value = tab;
+};
+onMounted(async () => {
+  try {
+    const response = await axios.get(API_URL, {
+      headers: authHeader(),
     });
 
-    const formState = reactive({
-      activity_id: query.id,
-      add_officer: [],
-    });
-
-    const handleAddOfficers = async () => {
-      try {
-        const data = {
-          activity_id: formState.activity_id,
-          participants: formState.add_officer,
+    const updatedData = response.data.data
+      .filter((record) => record.status !== 0)
+      .map((record) => {
+        let fullName = `${record.first_name} ${record.last_name}`;
+        return {
+          ...record,
+          fullName,
         };
+      });
 
-        console.log(data);
+    dataSource.value = updatedData;
+  } catch (error) {
+    console.error(error);
+  }
+});
 
-        console.log(JSON.stringify(data));
-        await fetch(`${process.env.VUE_APP_BASE_URL}/add_officers`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...authHeader(),
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then(({ success, data }) => {
-            if (success == true) {
-              notification.success({
-                message: "Success",
-                description: data,
-              });
-              isModalOpen.value = false;
-              setTimeout(function () {
-                location.reload();
-              }, 3000);
-            } else {
-              notification.error({
-                message: "Error",
-                description: `${data}`,
-              });
-            }
-            isModalOpen.value = false;
-          })
-          .catch((error) => {
-            notification.error({
-              message: "Error",
-              description: `${error}`,
-            });
+const formState = reactive({
+  activity_id: query.id,
+  add_officer: [],
+});
+
+const officersList = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/users?query=${searchOfficerItem.value}`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    );
+    const data = await response.json();
+
+    // Modify the structure of each supervisor to include a 'label' property
+    officers.value = data.data.map((user) => ({
+      ...user,
+      label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
+    }));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleAddOfficers = async () => {
+  try {
+    const data = {
+      activity_id: formState.activity_id,
+      participants: formState.add_officer,
+    };
+
+    console.log(data);
+
+    console.log(JSON.stringify(data));
+    await fetch(`${process.env.VUE_APP_BASE_URL}/add_officers`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then(({ success, message }) => {
+        if (success == true) {
+          console.log(data);
+          notification.success({
+            message: "Success",
+            description: message,
           });
-      } catch (error) {
+          isModalOpen.value = false;
+          setTimeout(function () {
+            location.reload();
+          }, 3000);
+        } else {
+          notification.error({
+            message: "Error",
+            description: `${data}`,
+          });
+        }
+        isModalOpen.value = false;
+      })
+      .catch((error) => {
         notification.error({
           message: "Error",
           description: `${error}`,
         });
-      }
-    };
-
-    const officersList = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/users?query=${searchOfficerItem.value}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-
-        console.log(data);
-
-        // Modify the structure of each supervisor to include a 'label' property
-        officers.value = data.data.map((user) => ({
-          ...user,
-          label: `${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`,
-        }));
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    officersList();
-
-    const handleOfficerSearch = (value) => {
-      console.log(value);
-      searchOfficerItem.value = value;
-      officersList();
-    };
-
-    const filteredData = computed(() => {
-      if (activeClass.value === "confirmed") {
-        console.log(confirmed.value);
-        return confirmed.value;
-      } else if (activeClass.value === "pending") {
-        console.log(dataSource.value);
-        return pending.value;
-      } else {
-        return dataSource.value;
-      }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `${error}`,
     });
+  }
+};
 
-    // const event_host_id = query.event_host_id;
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    console.log(user.user.id);
+const handleOfficerSearch = (value) => {
+  searchOfficerItem.value = value;
+  officersList();
+};
 
-    const isApprovedGenerator = computed(() => {
-      // const currentTime = new Date();
-      if (user.user.role_id === 53 || user.user.role_id === 63) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+console.log(dataSource.value);
 
-    const generatePayroll = async () => {
-      try {
-        const response = await fetch(
-          `${BASE_URL}/generate_pay_roll?activity_code=${query.code}&confirmed=1`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        );
-        console.log(response);
-        if (response.status == 200) {
-          store.commit("setIsGenerating", true);
-          Modal.success({
-            title: "Success",
-            content: "Payroll Generated Successfully",
-          });
-        } else {
-          store.commit("setIsGenerating", true);
-          Modal.error({
-            title: "Error",
-            content:
-              "Something went wrong, ensure you have assigned payroll matrix to the event",
-          });
-        }
-      } catch (error) {
-        store.commit("setIsGenerating", true);
-        console.error(error);
-      }
-    };
+const openModal = () => {
+  officersList();
+  isModalOpen.value = true;
+};
 
-    const openModal = () => {
-      isModalOpen.value = true;
-    };
-
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      confirmed,
-      pending,
-      columns,
-      filteredData,
-      handleChange,
-      activeClass,
-      generatePayroll,
-      approveActivity,
-      isApprovedGenerator,
-      isModalOpen,
-      handleOk,
-      isGenerating,
-      openModal,
-      handleCancel,
-      officers,
-      handleAddOfficers,
-      formState,
-      removeOfficer,
-      handleOfficerSearch,
-      searchOfficerItem
-    };
-  },
-  // computed: {
-  // },
-});
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
 </script>
 
 <style>
