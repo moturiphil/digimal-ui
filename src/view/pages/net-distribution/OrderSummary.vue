@@ -185,6 +185,8 @@ const currentCounties = ref([
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
   "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana

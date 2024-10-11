@@ -326,6 +326,8 @@ const currentCounties = ref([
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
   "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
@@ -388,7 +390,6 @@ const getallDropOffPoints = async () => {
 };
 
 const updateFilters = () => {
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = ["county", "subcounty"];
     countries.value = [
@@ -595,7 +596,6 @@ const handleAssign = async () => {
 const handleCancelReceive = () => {
   isModalOpen.value = false;
 };
-
 </script>
 <style>
 .badge-orange {
