@@ -217,6 +217,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
+import { encrypt } from "@/cryptoHelper";
 
 const router = useRouter();
 
@@ -256,11 +257,8 @@ const columns = [
 
 const {
   state,
-  //dispatch
 } = useStore();
-//const crud = computed(() => state.crud.data);
 const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
@@ -269,16 +267,13 @@ const isTrainerModalOpen = ref(false);
 const recordId = ref(null);
 const event_host = ref("");
 const event_facilitators = ref([]);
-//const eventEndDate = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const visible = ref(false);
 const colorVisible = ref(false);
 const isStarting = ref(false);
-const eventStatus = ref({}); // an object to keep track of the status of each event
-import { encrypt } from "@/cryptoHelper";
-
+const eventStatus = ref({}); // an object to keep track of the status of each even
 const counties = ref(null);
 const subcounties = ref(null);
 const events = ref([]);
@@ -300,9 +295,6 @@ onMounted(async () => {
   getEvents();
 });
 const updateFilters = async () => {
-  // access_level.value.level.id = 3
-  // access_level.value.location.org_id = 'BzFBYZhF5fx'
-  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
   if (access_level.value.level.id == 1) {
     allowedLevels.value = ["county", "subcounty"];
     await fetchCounties();
@@ -398,6 +390,7 @@ const fetchCounties = async () => {
     });
 };
 const onPageChange = async (page) => {
+  console.log(page);
   currentPage.value = page;
   try {
     const response = await axios.get(`gf_events?&location_id=${location_id.value}&event_list=${event_list.value}&page=${page}&per_page=${pageSize.value}`);
@@ -518,10 +511,6 @@ const handleOkTrainers = () => {
   visible.value = false;
   colorVisible.value = false;
 };
-// const changeType=(type)=>{
-//     modalType.value = type;
-//   }
-// participants registrations
 const handleRegistration = (id) => {
   isModalOpen.value = true;
   console.log("Event Code;", id);
@@ -603,25 +592,6 @@ async () => {
   }
 };
 
-// const handleDelete = (id) => {
-//   const confirm = window.confirm("Are you sure delete this?");
-//   if (confirm) {
-//     dispatch("axiosDataDelete", {
-//       id,
-//       getData: () => {
-//         dispatch("axiosCrudGetData");
-//       },
-//     });
-//   }
-//   return false;
-// };
-
-// const onSelectChange = (selectedRowKey) => {
-//   selectedRowKeys.value = selectedRowKey;
-// };
-
-// search through the events table
-//const results =
 computed(() => {
   const query = searchItem.value.toLowerCase();
   const regex = new RegExp(query, "i");
@@ -643,10 +613,6 @@ computed(() => {
 <style lang="css">
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-    border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 .modal {

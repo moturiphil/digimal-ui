@@ -132,7 +132,7 @@
                             :pageSize="pageSize"
                             :showSizeChanger="true"
                             :pagination="true"
-                            @change="onPageChange($activity)"
+                            @change="onPageChange($event)"
                           />
                         </TableWrapper>
                       </div>

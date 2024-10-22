@@ -119,7 +119,11 @@
                             :to="{
                               // path: `/nets/receive-post-nets`,
                               path: `/nets/receive-nets-summary`,
-                              query: { id: record.id, name: record.name, funding: record.is_pmi_county },
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                                funding: record.is_pmi_county,
+                              },
                             }"
                             class="btn-icon"
                             type="success"
@@ -320,9 +324,9 @@ const currentCounties = ref([
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
-  'BjC1xL40gHo',//kakamega
-  'ihZsJ8alvtb',// Kericho
-  't0J75eHKxz5',// Nandi 
+  "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
@@ -354,7 +358,6 @@ watch(
   }
 );
 const updateFilters = () => {
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
       "county",
@@ -732,5 +735,4 @@ const handleSubmit = async () => {
     });
   }
 };
-
 </script>
