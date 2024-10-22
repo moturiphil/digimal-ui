@@ -156,13 +156,6 @@
           <h4>
             <b>
               <u> Event Facilitators </u>
-              <!-- <sdButton
-                size="extra-small"
-                type="info"
-                @click="manageEvent(record.event_code)"
-              >
-                Add Trainer &nbsp; &nbsp;
-              </sdButton> -->
             </b>
           </h4>
           <br />
@@ -198,11 +191,6 @@ const columns = [
     dataIndex: "event_code",
     key: "id",
   },
-  // {
-  //   title: "Host",
-  //   dataIndex: "event_host",
-  //   key: "id",
-  // },
   {
     title: "Location",
     dataIndex: "location_id",
@@ -235,11 +223,8 @@ defineProps({
 
 const {
   state,
-  //dispatch
 } = useStore();
-//const crud = computed(() => state.crud.data);
 const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
@@ -248,7 +233,6 @@ const isTrainerModalOpen = ref(false);
 const recordId = ref(null);
 const event_host = ref("");
 const event_facilitators = ref([]);
-//const eventEndDate = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
@@ -256,9 +240,7 @@ const visible = ref(false);
 const colorVisible = ref(false);
 const isStarting = ref(false);
 const eventStatus = ref({}); 
-//enrcrypt
 import { encrypt } from "@/cryptoHelper";
-// Example usage
 
 const onPageChange = async (page) => {
   currentPage.value = page;
@@ -474,26 +456,6 @@ async () => {
     console.error(error);
   }
 };
-
-// const handleDelete = (id) => {
-//   const confirm = window.confirm("Are you sure delete this?");
-//   if (confirm) {
-//     dispatch("axiosDataDelete", {
-//       id,
-//       getData: () => {
-//         dispatch("axiosCrudGetData");
-//       },
-//     });
-//   }
-//   return false;
-// };
-
-// const onSelectChange = (selectedRowKey) => {
-//   selectedRowKeys.value = selectedRowKey;
-// };
-
-// search through the events table
-//const results =
 computed(() => {
   const query = searchItem.value.toLowerCase();
   const regex = new RegExp(query, "i");
@@ -510,19 +472,11 @@ computed(() => {
     });
   }
 });
-// const rowSelection = {
-//   selectedRowKeys,
-//   onChange: onSelectChange,
-// };
 </script>
 
 <style lang="css">
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 .modal {
@@ -551,12 +505,12 @@ computed(() => {
   cursor: pointer;
 }
 .spaced-button {
-  margin-right: 25px; /* Adjust the value as needed */
+  margin-right: 25px; 
   margin-bottom: 15px;
 }
 
 .remove-button {
-  margin-left: 15px; /* Adjust the value as needed */
+  margin-left: 15px;
   margin-right: -25px;
 }
 </style>
