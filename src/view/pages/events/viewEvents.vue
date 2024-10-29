@@ -173,7 +173,6 @@
 import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
 import { computed, onMounted, ref, defineProps, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
@@ -221,10 +220,8 @@ defineProps({
   },
 });
 
-const {
-  state,
-} = useStore();
-const isLoading = computed(() => state.crud.loading);
+
+const isLoading = ref(true);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
@@ -268,19 +265,21 @@ onMounted(() => {
 });
 
 const getEvents = () => {
+  isLoading.value = true;
   axios
     .get(
       `events/all?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
     )
     .then((response) => {
-      // dataSource.value = response.data.data;
-      // console.log(dataSource.value);
       datatotal.value = response.data.pagination.total;
       console.log(datatotal.value);
       dataSource.value = response.data.data;
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 // start an event == only host can start/close
@@ -365,10 +364,6 @@ const handleOkTrainers = () => {
   visible.value = false;
   colorVisible.value = false;
 };
-// const changeType=(type)=>{
-//     modalType.value = type;
-//   }
-// participants registrations
 const handleRegistration = (id) => {
   isModalOpen.value = true;
   console.log("Event Code;", id);
@@ -438,7 +433,6 @@ const handleOk = async (id, inputValue) => {
 };
 
 // Handle when event code is incorrect
-
 async () => {
   try {
     // Validate the event code
