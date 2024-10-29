@@ -15,27 +15,6 @@
       ></template>
     </sdPageHeader>
     <Main>
-      <sdButton
-        class="btn-import"
-        size="extra-small"
-        type="success"
-        v-if="isAdmin"
-      >
-        <router-link
-          :to="{
-            path: `/org-units/import-orgunit/${params.id}`,
-            query: { orgtype: 'sub-location' },
-          }"
-          class="btn-icon"
-          type="info"
-          shape="circle"
-        >
-          &nbsp;&nbsp; Import Sub locations
-        </router-link>
-      </sdButton>
-      <br />
-      <br />
-      <br />
       <a-row :gutter="15">
         <a-col class="w-100" :md="24">
           <sdCards headless>
@@ -204,8 +183,8 @@
                         isLoading
                           ? "Loading..."
                           : isSubmitting
-                            ? "Processing ..."
-                            : "Assign"
+                          ? "Processing ..."
+                          : "Assign"
                       }}
                     </sdButton>
                   </div>
@@ -225,10 +204,8 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
 import { computed, onMounted, ref, reactive } from "vue";
 import { useRoute } from "vue-router";
-import { hasRole } from "../../../services/user-role";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 import store from "../../../vuex/store";
@@ -263,11 +240,7 @@ const columns = [
   },
 ];
 
-const adminRoles = [53, 56];
-const { state } = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
-// const selectedRowKeys = ref([]);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const { params, query } = useRoute();
 const searchItem = ref("");
@@ -281,6 +254,7 @@ const remap_parent = ref([]);
 const location_name = query.name;
 
 onMounted(async () => {
+  isLoading.value = true;
   getSubcountyList();
 });
 
@@ -291,6 +265,7 @@ const handleSearch = (value) => {
 };
 
 const getSubcountyList = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `get_sub_counties_list?parent_id=${params.id}`
@@ -301,6 +276,8 @@ const getSubcountyList = async () => {
     console.log(dataSource.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -485,5 +462,4 @@ const results = computed(() => {
   }
 });
 
-const isAdmin = hasRole(adminRoles);
 </script>

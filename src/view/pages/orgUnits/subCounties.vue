@@ -167,8 +167,10 @@ const { params, query } = useRoute();
 const searchItem = ref("");
 const county_name = query.name;
 let isModalOpen = ref(false);
+const isLoading = ref(true);
 
 onMounted(async () => {
+  isLoading.value = true;
   try {
     const response = await fetch(
       `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
@@ -182,6 +184,8 @@ onMounted(async () => {
     console.log(dataSource.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 });
 

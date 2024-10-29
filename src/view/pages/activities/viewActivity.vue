@@ -75,16 +75,12 @@
 </template>
 
 <script setup>
-// Import necessary modules and components
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-// import { useStore } from "vuex";
 import {
-  //computed,
   onMounted,
   ref,
   watch,
-  //reactive
 } from "vue";
 import axios from "@/Axiosconfig";
 
@@ -142,12 +138,13 @@ const columns = [
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
-const isLoading = ref(false);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const searchItem = ref("");
 const location_id = ref("");
 
 onMounted(async () => {
+  isLoading.value = true;
   fetchActivities();
 });
 
@@ -168,6 +165,7 @@ watch(
 );
 
 const fetchActivities = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `activity?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&location_id=${location_id.value}`
@@ -191,6 +189,8 @@ const fetchActivities = async () => {
     });
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
