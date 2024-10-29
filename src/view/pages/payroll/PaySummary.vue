@@ -27,12 +27,11 @@
           :style="{ width: '100%' }"
           layout="vertical"
           name="addnew"
-          :model="formState"
-          @finish="handleSubmit"
+          @submit.prevent="handleSubmit"
         >
           <p>
-            Are you sure you want to remove this matrix from this participant's
-            payroll?
+            Are you sure you want to remove this matrix from this activity
+            participant's payroll?
           </p>
           <div class="record-form-actions text-right">
             <sdButton size="small" htmlType="submit" type="danger">
@@ -53,8 +52,7 @@ import axios from "axios";
 import { ref } from "vue";
 import { notification } from "ant-design-vue";
 
-const { params, query } = useRoute();
-console.log({ params, query });
+const { query } = useRoute();
 const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_detail?payroll_list_id=${query.id}`;
 const data = ref([]);
 const isModalOpen = ref(false);
@@ -83,12 +81,15 @@ const removeMatrix = (record) => {
   console.log(record);
   isModalOpen.value = true;
   payroll_detail_id.value = record.id;
-  payroll_list_id.value = record.event_payrollist_id;
+  payroll_list_id.value = record.activity_payrollist_id;
 };
+
 const handleSubmit = async () => {
-  console.log("Submitting");
   isLoading.value = true;
   try {
+    // Handle your async operation here, e.g., axios request
+    console.log("Submitting");
+
     const requestData = {
       payroll_detail_id: payroll_detail_id.value,
       payroll_list_id: payroll_list_id.value,
@@ -125,11 +126,61 @@ const handleSubmit = async () => {
         description: `${data}`,
       });
     }
+
+    // Close the modal if submission was successful
+    isModalOpen.value = false;
   } catch (error) {
-    notification.error({
-      message: "Error",
-      description: `${error.message}`,
-    });
+    console.error("Submission failed", error);
+  } finally {
+    isLoading.value = false;
   }
 };
+
+// const handleSubmit = async () => {
+//   isModalOpen.value = false;
+//   console.log("Submitting");
+// try {
+//   const requestData = {
+//     payroll_detail_id: payroll_detail_id.value,
+//     payroll_list_id: payroll_list_id.value,
+//   };
+//   console.log(requestData);
+
+//   const response = await fetch(
+//     `${process.env.VUE_APP_BASE_URL}/remove_activity_allowance`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         ...authHeader(),
+//       },
+//       body: JSON.stringify(requestData),
+//     }
+//   );
+
+//   const responseData = await response.json();
+//   const { status, data } = responseData;
+
+//   if (status) {
+//     notification.success({
+//       message: "Success",
+//       description: data,
+//     });
+//     isModalOpen.value = false;
+//     setTimeout(() => {
+//       window.location.reload();
+//     }, 3000);
+//   } else {
+//     notification.error({
+//       message: "Error",
+//       description: `${data}`,
+//     });
+//   }
+// } catch (error) {
+//   notification.error({
+//     message: "Error",
+//     description: `${error.message}`,
+//   });
+// }
+// };
 </script>

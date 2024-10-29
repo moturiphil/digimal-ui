@@ -573,7 +573,6 @@ const pendingCount = computed(() => pending.value.length);
 const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 const event_name = plainquery.name;
-console.log(plainquery.event_list_id);
 const event_list_id = plainquery.event_list_id;
 const event_location_id = plainquery.location;
 const event_code = plainquery.event_code;
