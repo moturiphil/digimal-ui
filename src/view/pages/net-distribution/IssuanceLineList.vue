@@ -110,8 +110,7 @@ const DragAndDropTable = defineComponent({
 
   setup() {
     const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
+    const isLoading = ref(true);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const searchItem = ref("");
@@ -119,6 +118,7 @@ const DragAndDropTable = defineComponent({
     const isDisabled = computed(() => state.isDisabled);
 
     onMounted(async () => {
+      isLoading.value = true;
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/linelist_net_issuance_to_post`,
@@ -132,6 +132,8 @@ const DragAndDropTable = defineComponent({
         dataSource.value = data.data;
       } catch (error) {
         console.error(error);
+      } finally {
+        isLoading.value = false;
       }
     });
 
@@ -177,7 +179,6 @@ const DragAndDropTable = defineComponent({
     });
 
     return {
-      crud,
       isLoading,
       selectedRowKeys,
       dataSource,

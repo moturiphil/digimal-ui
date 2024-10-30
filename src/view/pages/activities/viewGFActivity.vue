@@ -197,8 +197,7 @@ const columns = [
 ];
 
 // Component setup function
-const isLoading = ref(false);
-//const selectedRowKeys = ref([]);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const searchItem = ref("");
 var currentPage = ref(1);
@@ -378,6 +377,7 @@ watch(
 );
 
 const fetchGFActivities = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `gf_activities?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&county=${county_id.value}&sub_county=${sub_county_id.value}&activity_list=${activity_list_id.value}`
@@ -419,6 +419,8 @@ const fetchGFActivities = async () => {
     });
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>

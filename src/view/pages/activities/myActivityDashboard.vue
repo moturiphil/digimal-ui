@@ -99,7 +99,7 @@
           </a-col>
           <a-col :xs="24">
             <sdCards headless>
-                <h3> Enrolled Activities</h3>
+              <h3>Enrolled Activities</h3>
               <div class="result-list-content">
                 <a-row :gutter="15">
                   <a-col class="w-100" :md="24">
@@ -195,16 +195,16 @@ const enrolled_columns = [
     dataIndex: "activity_date",
     key: "id",
   },
-//   {
-//     title: "Number of Days",
-//     dataIndex: "number_of_days",
-//     key: "id",
-//   },
+  //   {
+  //     title: "Number of Days",
+  //     dataIndex: "number_of_days",
+  //     key: "id",
+  //   },
   {
     title: "",
     dataIndex: "",
     key: "activity",
-    fixed: 'right',
+    fixed: "right",
     width: 20,
     slots: { customRender: "activity" },
   },
@@ -245,7 +245,7 @@ export default defineComponent({
   setup() {
     const { state } = useStore();
     const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
+    const isLoading = ref(true);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]); // invitedAct
     const invitedAct = ref([]);
@@ -264,7 +264,9 @@ export default defineComponent({
 
     // const tableData = ref([]);
 
-    onMounted(() => {});
+    onMounted(() => {
+      isLoading.value = true;
+    });
 
     axios
       .get(myCreatedActivities, {
@@ -277,6 +279,7 @@ export default defineComponent({
           name: item.name,
         }));
         dataSource.value = logs.value;
+        isLoading.value = false;
       })
       .catch((error) => {
         console.error(error);
@@ -293,6 +296,7 @@ export default defineComponent({
           name: item.name,
         }));
         invitedAct.value = logs.value;
+        isLoading.value = false;
       })
       .catch((error) => {
         console.error(error);
@@ -309,33 +313,11 @@ export default defineComponent({
           name: item.name,
         }));
         enrolledAct.value = logs.value;
+        isLoading.value = false;
       })
       .catch((error) => {
         console.error(error);
       });
-
-    // watchEffect(async () => {
-    //   const query = searchItem.value.toLowerCase();
-    //   try {
-    //     if (!query) {
-    //       dataSource.value = logs.value;
-    //       return dataSource.value;
-    //     }
-    //     if (query.length > 3) {
-    //       const response = await fetch(`${API_URL}/search?query=${query}`, {
-    //         method: "GET",
-    //         headers: authHeader(),
-    //       });
-    //       const data = await response.json();
-    //       dataSource.value = data;
-    //     }
-    //   } catch (error) {
-    //     notification.error({
-    //       message: "Error",
-    //       description: error.message,
-    //     });
-    //   }
-    // });
 
     return {
       crud,
@@ -351,17 +333,6 @@ export default defineComponent({
       enrolled_columns,
     };
   },
-  //   computed: {
-  //     cardContent() {
-  //       return this.dataSource;
-  //     },
-  //     invitedActContent() {
-  //       return this.invitedAct;
-  //     },
-  //     enrolledActContent() {
-  //       return this.enrolledAct;
-  //     },
-  //   },
 });
 </script>
 <style>
@@ -380,23 +351,3 @@ export default defineComponent({
   border-radius: 3px;
 }
 </style>
-
-<!-- <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'all'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 50,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="dataSource"
-                            :columns="columns"
-                          >
-                            <template>
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions"></div>
-                              </td>
-                            </template>
-                          </a-table>
-                        </TableWrapper> -->

@@ -188,7 +188,7 @@ const columns = [
 ];
 
 // Component setup function
-const isLoading = ref(false);
+const isLoading = ref(true);
 //const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const searchItem = ref("");
@@ -208,6 +208,7 @@ const activity_list_id = ref("");
 import { useStore } from "vuex";
 const store = useStore();
 onMounted(async () => {
+  isLoading.value = true;
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
   if (user_object != null) {
@@ -353,6 +354,7 @@ watch(
 );
 
 const fetchPMIActivities = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `pmi_activities?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&county=${county_id.value}&sub_county=${sub_county_id.value}&activity_list=${activity_list_id.value}`
@@ -382,30 +384,11 @@ const fetchPMIActivities = async () => {
     console.log(dataSource.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false; 
   }
 };
 
-// // Reactive form state for search input
-// const formState = reactive({
-//   searchItem: "",
-// });
-
-// // Computed property for filtered search results
-// const results = computed(() => {
-//   const query = searchItem.value.toLowerCase();
-//   const regex = new RegExp(query, "i");
-//   if (!query) {
-//     return dataSource.value;
-//   } else {
-//     return dataSource.value.filter((user) => {
-//       return (
-//         regex.test(user.first_name) ||
-//         regex.test(user.last_name) ||
-//         regex.test(user.role_id)
-//       );
-//     });
-//   }
-// });
 </script>
 <style scoped>
 .search-box {

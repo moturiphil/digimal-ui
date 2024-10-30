@@ -5,14 +5,20 @@
         <a-row :gutter="5">
           <a-col :xxl="3" :xl="3" :md="3" :sm="3">
             <div class="search-box">
-            <a-input
-              style="border: 1px solid #151414; padding: 8px; border-radius: 5px; align-items: center; justify-items: center;"
-              v-model:value="searchItem"
-              type="text"
-              name="dataSource"
-              placeholder="Search by name, level, location or organization,..."
-            />
-          </div>
+              <a-input
+                style="
+                  border: 1px solid #151414;
+                  padding: 8px;
+                  border-radius: 5px;
+                  align-items: center;
+                  justify-items: center;
+                "
+                v-model:value="searchItem"
+                type="text"
+                name="dataSource"
+                placeholder="Search by name, level, location or organization,..."
+              />
+            </div>
           </a-col>
         </a-row>
       </template>
@@ -21,39 +27,45 @@
     <Main>
       <a-row :gutter="5" class="">
         <a-col :xxl="3" :xl="6" :md="12" :sm="24">
-        <a-upload>
-          <a-button style="background:#26D07C;color:aliceblue">
-            <UploadOutlined />
-          <router-link
-                  :to="{
-                    path: `/users/import`,
-                  }"
-                  class="btn-icon"
-                  type="secondary"
-                  shape="circle"
+          <a-upload>
+            <a-button style="background: #26d07c; color: aliceblue">
+              <UploadOutlined />
+              <router-link
+                :to="{
+                  path: `/users/import`,
+                }"
+                class="btn-icon"
+                type="secondary"
+                shape="circle"
                 >Import Master List
-                </router-link>
-          </a-button>
-        </a-upload>
+              </router-link>
+            </a-button>
+          </a-upload>
         </a-col>
         <a-space></a-space>
         <a-col :xxl="3" :xl="6" :md="12" :sm="24">
-          <a-button type="info" class="btn-icon" @click="validateMasterlist" style="background:#26D07C;color:aliceblue">Validate Masterlist</a-button>
+          <a-button
+            type="info"
+            class="btn-icon"
+            @click="validateMasterlist"
+            style="background: #26d07c; color: aliceblue"
+            >Validate Masterlist</a-button
+          >
         </a-col>
         <a-space></a-space>
         <a-col :xxl="3" :xl="6" :md="12" :sm="24">
           <a-upload>
-            <a-button style="background:#26D07C;color:aliceblue">
+            <a-button style="background: #26d07c; color: aliceblue">
               <UploadOutlined />
-            <router-link
-                    :to="{
-                      path: `/uploads`,
-                    }"
-                    class="btn-icon"
-                    type="info"
-                    shape="circle"
-                  >Uploads
-                  </router-link>
+              <router-link
+                :to="{
+                  path: `/uploads`,
+                }"
+                class="btn-icon"
+                type="info"
+                shape="circle"
+                >Uploads
+              </router-link>
             </a-button>
           </a-upload>
         </a-col>
@@ -76,29 +88,83 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                   <a-row class="" :gutter="5">
-                      <a-space>
-                      <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                        <a-select v-if="filterAccessList.includes('country')" v-model:value="country" show-search placeholder="Select Country" style="width: 100%" :options="countries" :filter-option="filterOption" @change="handleChange($event, 'country')"></a-select>
-                      </a-col>
-                      <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                        <a-select v-if="filterAccessList.includes('county')" v-model:value="county" show-search placeholder="Select County" style="width: 100%" :options="counties" :filter-option="filterOption" @change="handleChange($event, 'county')"></a-select>
-                      </a-col>
-                      <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                        <a-select v-if="filterAccessList.includes('subcounty')" v-model:value="subcounty" show-search placeholder="Select Sub County" style="width: 100%" :options="subcounties" :filter-option="filterOption" @change="handleChange($event, 'subcounty')"></a-select>
-                      </a-col>
-                      <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                        <a-select v-if="filterAccessList.includes('ward')" v-model:value="ward" show-search placeholder="Select Ward" style="width: 100%" :options="wards" :filter-option="filterOption" @change="handleChange($event, 'ward')"></a-select>
-                      </a-col>
-                      <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                        <a-select v-if="filterAccessList.includes('location')" v-model:value="location" show-search placeholder="Select Location" style="width: 100%" :options="locations" :filter-option="filterOption" @change="handleChange($event, 'location')"></a-select>
-                      </a-col>
-                      <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                        <a-select v-if="filterAccessList.includes('sublocation')" v-model:value="sublocation" show-search placeholder="Select Sub Location" style="width: 100%" :options="sublocations" :filter-option="filterOption" @change="handleChange($event, 'sublocation')"></a-select>
-                      </a-col>
-                      </a-space>
-                    </a-row>
-                  <a-divider></a-divider>
+                <a-row class="" :gutter="5">
+                  <a-space>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('country')"
+                        v-model:value="country"
+                        show-search
+                        placeholder="Select Country"
+                        style="width: 100%"
+                        :options="countries"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'country')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('county')"
+                        v-model:value="county"
+                        show-search
+                        placeholder="Select County"
+                        style="width: 100%"
+                        :options="counties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'county')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('subcounty')"
+                        v-model:value="subcounty"
+                        show-search
+                        placeholder="Select Sub County"
+                        style="width: 100%"
+                        :options="subcounties"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'subcounty')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('ward')"
+                        v-model:value="ward"
+                        show-search
+                        placeholder="Select Ward"
+                        style="width: 100%"
+                        :options="wards"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'ward')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('location')"
+                        v-model:value="location"
+                        show-search
+                        placeholder="Select Location"
+                        style="width: 100%"
+                        :options="locations"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'location')"
+                      ></a-select>
+                    </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+                      <a-select
+                        v-if="filterAccessList.includes('sublocation')"
+                        v-model:value="sublocation"
+                        show-search
+                        placeholder="Select Sub Location"
+                        style="width: 100%"
+                        :options="sublocations"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'sublocation')"
+                      ></a-select>
+                    </a-col>
+                  </a-space>
+                </a-row>
+                <a-divider></a-divider>
                 <a-table
                   :pagination="{ pageSize: 100, showSizeChanger: true }"
                   :dataSource="dataSource"
@@ -113,7 +179,7 @@
                         >
                           <sdFeatherIcons type="x-circle" />
                           &nbsp; Delete Record
-                      </a-button>
+                        </a-button>
                       </div>
                     </td>
                   </template>
@@ -132,15 +198,12 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import {computed,onMounted,ref,watch} from "vue";
+import { onMounted, ref, watch } from "vue";
 import { notification } from "ant-design-vue";
-import { UploadOutlined } from '@ant-design/icons-vue';
-import axios from '@/Axiosconfig';
+import { UploadOutlined } from "@ant-design/icons-vue";
+import axios from "@/Axiosconfig";
 
-
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const masterlist_validation_url = `mpesa-list-export`;
 const columns = [
@@ -188,236 +251,357 @@ const columns = [
 const searchItem = ref("");
 
 //Drill down filters
-const access_level = ref({})
-const filterAccessList = ref([])
+const access_level = ref({});
+const filterAccessList = ref([]);
 //org levels
-const countries = ref([{ value: {id:1,org_id:'HfVjCurKxh2'}, label: "Kenya" }])
-const counties = ref(null)
-const subcounties = ref(null)
-const wards = ref(null)
-const locations = ref(null)
-const sublocations = ref(null)
-const villages = ref(null)
-const country = ref("Select Country")
-const county = ref("Select County")
-const sublocation = ref("Select Sublocation")
-const subcounty = ref("Select Subcounty")
-const location = ref("Select Location")
-const ward = ref("Select Ward")
+const countries = ref([
+  { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
+]);
+const counties = ref(null);
+const subcounties = ref(null);
+const wards = ref(null);
+const locations = ref(null);
+const sublocations = ref(null);
+const villages = ref(null);
+const country = ref("Select Country");
+const county = ref("Select County");
+const sublocation = ref("Select Sublocation");
+const subcounty = ref("Select Subcounty");
+const location = ref("Select Location");
+const ward = ref("Select Ward");
 //const village = ref("Select a Post")
 
-
-const org_ids=ref([])
-
+const org_ids = ref([]);
 
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-    updateFilters()
+    updateFilters();
     console.log(JSON.stringify(access_level.value.location));
   }
 });
 
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id ='HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
-
   if (access_level.value.level.id == 1) {
-    filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    countries.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
-    fetchCounties()
+    filterAccessList.value = [
+      "country",
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    countries.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
+    fetchCounties();
   } else if (access_level.value.level.id == 2) {
-    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
-    counties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = [
+      "county",
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    counties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation', 'village']
-    subcounties.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = [
+      "subcounty",
+      "ward",
+      "location",
+      "sublocation",
+      "village",
+    ];
+    subcounties.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 4) {
-    filterAccessList.value = ['ward', 'location', 'sublocation', 'village']
-    wards.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["ward", "location", "sublocation", "village"];
+    wards.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 5) {
-    filterAccessList.value = ['location', 'sublocation', 'village']
-    locations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["location", "sublocation", "village"];
+    locations.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   } else if (access_level.value.level.id == 6) {
-    filterAccessList.value = ['sublocation', 'village']
-    sublocations.value = [{ value: access_level.value.location.org_id, label: access_level.value.location.name }]
-    org_ids.value = [{ id: access_level.value.location.id, org_id: access_level.value.location.org_id }]
+    filterAccessList.value = ["sublocation", "village"];
+    sublocations.value = [
+      {
+        value: access_level.value.location.org_id,
+        label: access_level.value.location.name,
+      },
+    ];
+    org_ids.value = [
+      {
+        id: access_level.value.location.id,
+        org_id: access_level.value.location.org_id,
+      },
+    ];
   }
-  updateMasterList()
-}
+  updateMasterList();
+};
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = org_ids.value.filter(x => x.org_id === org_id).map(e => e.id)
-  console.log(org)
-  let parent_id=org[0] || 1
-  console.log(parent_id)
-  console.log(org_level)
-  fetchChildData(parent_id,org_id,org_level)
+  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  console.log(org);
+  let parent_id = org[0] || 1;
+  console.log(parent_id);
+  console.log(org_level);
+  fetchChildData(parent_id, org_id, org_level);
 };
-const fetchChildData = async (location_id,org_id, org_level) => {
-  let fetchUrl = `get_sub_counties_list`
-  let masterListUrl = `masterlist_list`
-  if (org_level == 'country') {//get counties
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location=${location_id}`
+const fetchChildData = async (location_id, org_id, org_level) => {
+  let fetchUrl = `get_sub_counties_list`;
+  let masterListUrl = `masterlist_list`;
+  if (org_level == "country") {
+    //get counties
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?location=${location_id}`;
     //clear fields
-    county.value = "Select County"
-    subcounty.value = "Select SubCounty"
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'county') {//get subcounties
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location=${location_id}`
+    county.value = "Select County";
+    subcounty.value = "Select SubCounty";
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "county") {
+    //get subcounties
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?location=${location_id}`;
     //clear fields
-    subcounty.value = "Select SubCounty"
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'subcounty') {//get wards
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location=${location_id}`
+    subcounty.value = "Select SubCounty";
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "subcounty") {
+    //get wards
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?location=${location_id}`;
     //clear fields
-    ward.value = " Select Ward"
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'ward') {//get locatios
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location=${location_id}`
+    ward.value = " Select Ward";
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "ward") {
+    //get locatios
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?location=${location_id}`;
     //clear fields
-    location.value = "Select Location"
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'location') {//get sub locatios
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location=${location_id}`
+    location.value = "Select Location";
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "location") {
+    //get sub locatios
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?location=${location_id}`;
     //clear fields
-    sublocation.value = "Select Sub Location"
-  } else if (org_level == 'sublocation') {//get sublocations stats
-    fetchUrl += `?parent_id=${org_id}`
-    masterListUrl += `?location=${location_id}`
-  } else if(org_level == 'village'){
-    masterListUrl += `?location=${location_id}`
+    sublocation.value = "Select Sub Location";
+  } else if (org_level == "sublocation") {
+    //get sublocations stats
+    fetchUrl += `?parent_id=${org_id}`;
+    masterListUrl += `?location=${location_id}`;
+  } else if (org_level == "village") {
+    masterListUrl += `?location=${location_id}`;
   }
-  await axios.get(`${fetchUrl}`)
-    .then(response => {
+  await axios
+    .get(`${fetchUrl}`)
+    .then((response) => {
       let data = response.data.message;
-      if (org_level == 'country') {//get counties
-        counties.value = data.map(x => ({
+      if (org_level == "country") {
+        //get counties
+        counties.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
-        org_ids.value = data.map(x => ({
+        org_ids.value = data.map((x) => ({
           org_id: x.org_id,
-          id: x.id
+          id: x.id,
         }));
-        counties.value.splice(0, 1)
-      } else if (org_level == 'county') {//get subcounties
-        subcounties.value = data.map(x => ({
+        counties.value.splice(0, 1);
+      } else if (org_level == "county") {
+        //get subcounties
+        subcounties.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
         ];
-      } else if (org_level == 'subcounty') {//get wards
-        wards.value = data.map(x => ({
-          value:x.org_id,
-          label: x.name
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
-      } else if (org_level == 'ward') {//get locations
-        locations.value = data.map(x => ({
-          value:x.org_id,
-          label: x.name
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
-        ];
-      } else if (org_level == 'location') {//get sublocations
-        sublocations.value = data.map(x => ({
+      } else if (org_level == "subcounty") {
+        //get wards
+        wards.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
         ];
-      } else if (org_level == 'sublocation') {//get villages
-        villages.value = data.map(x => ({
+      } else if (org_level == "ward") {
+        //get locations
+        locations.value = data.map((x) => ({
           value: x.org_id,
-          label: x.name
+          label: x.name,
         }));
         org_ids.value = [
           ...org_ids.value,
           ...data
-            .map(x => ({ org_id: x.org_id, id: x.id }))
-            .filter(newItem => !org_ids.value.some(existingItem => existingItem.id === newItem.id))
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } else if (org_level == "location") {
+        //get sublocations
+        sublocations.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
+        ];
+      } else if (org_level == "sublocation") {
+        //get villages
+        villages.value = data.map((x) => ({
+          value: x.org_id,
+          label: x.name,
+        }));
+        org_ids.value = [
+          ...org_ids.value,
+          ...data
+            .map((x) => ({ org_id: x.org_id, id: x.id }))
+            .filter(
+              (newItem) =>
+                !org_ids.value.some(
+                  (existingItem) => existingItem.id === newItem.id
+                )
+            ),
         ];
       }
-    }).then(async () => {
-      await axios.get(`${masterListUrl}`)
-        .then(response => {
-          console.log(response.data)
-          let data = response.data;
-          const updatedData = data.data.map((record) => {
-              let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
-              let status = record.status == 1 ? "validated" : "Not Validated";
-              return {
-                ...record,
-                fullName,
-                status,
-              };
-            });
-            dataSource.value = updatedData;
-        })
-    }).catch(error => {
+    })
+    .then(async () => {
+      await axios.get(`${masterListUrl}`).then((response) => {
+        console.log(response.data);
+        let data = response.data;
+        const updatedData = data.data.map((record) => {
+          let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
+          let status = record.status == 1 ? "validated" : "Not Validated";
+          return {
+            ...record,
+            fullName,
+            status,
+          };
+        });
+        dataSource.value = updatedData;
+      });
+    })
+    .catch((error) => {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
     });
-}
+};
 const fetchCounties = async () => {
-  axios.get('counties/')
-    .then(response => {
-      counties.value = response.data.map(x => ({
+  axios
+    .get("counties/")
+    .then((response) => {
+      counties.value = response.data.map((x) => ({
         value: x.org_id,
-        label: x.name
-      }))
-    }).catch(error => {
+        label: x.name,
+      }));
+    })
+    .catch((error) => {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
-    })
-}
+    });
+};
 const filterOption = (input, option) => {
   return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
 };
 
-const updateMasterList=async()=>{
-    try {
-    const response = await axios.get(`masterlist_list?query=${searchItem.value}`);
+const updateMasterList = async () => {
+  isLoading.value = true;
+  try {
+    const response = await axios.get(
+      `masterlist_list?query=${searchItem.value}`
+    );
     const data = await response.data.data;
     const updatedData = data.data.map((record) => {
       let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
@@ -433,8 +617,10 @@ const updateMasterList=async()=>{
     dataSource.value = updatedData;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 const validateMasterlist = async () => {
   try {
     const response = await axios.get(masterlist_validation_url);
@@ -475,12 +661,13 @@ const handleDeletion = async (id) => {
 };
 
 // search events
-watch(() => searchItem.value, (newValue) => {
-  searchItem.value=newValue;
-  updateMasterList();
-});
-
-
+watch(
+  () => searchItem.value,
+  (newValue) => {
+    searchItem.value = newValue;
+    updateMasterList();
+  }
+);
 </script>
 
 <style>

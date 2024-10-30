@@ -9,12 +9,6 @@
             > -->
         </sdButton>
       </template>
-      <!-- <template #buttons>
-          <div class="search-box">
-            <span class="search-icon">
-              <sdFeatherIcons type="search" size="14" />
-            </span></div
-        ></template> -->
     </sdPageHeader>
     <Main>
       <a-row :gutter="15">
@@ -26,7 +20,7 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <p> <b>Total Records: </b> {{ recordCount }}</p>
+                <p><b>Total Records: </b> {{ recordCount }}</p>
                 <a-table
                   :pagination="{ pageSize: 50, showSizeChanger: true }"
                   :dataSource="dataSource"
@@ -43,14 +37,12 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main, TableWrapper } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, defineComponent } from "vue";
+import { onMounted, ref } from "vue";
 import authHeader from "../../../services/auth-header";
 import { useRoute } from "vue-router";
-
 
 const columns = [
   {
@@ -80,99 +72,44 @@ const columns = [
   },
 ];
 
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main, TableWrapper },
+const isLoading = ref(true);
+const dataSource = ref([]);
+const { query } = useRoute();
+console.log(query.name);
+const role_name = query.name;
 
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const { query } = useRoute();
-    console.log(query.name);
-    const role_name = query.name
+console.log(authHeader());
 
-    console.log(authHeader());
+//   const api_url = UserService;
+//   console.log(api_url);
 
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
-    onMounted(async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=${role_name}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        console.log(response);
-        const data = await response.json();
-        console.log(data.data);
-        const updatedData = data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.last_name}`;
-          let status = record.status == 1 ? "validated" : "Not Validated";
-          return {
-            ...record,
-            fullName,
-            status,
-          };
-        });
-        console.log(updatedData);
-
-        dataSource.value = updatedData;
-      } catch (error) {
-        console.error(error);
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/get_user_given_the_role?role=${role_name}`,
+      {
+        method: "GET",
+        headers: authHeader(),
       }
+    );
+    console.log(response);
+    const data = await response.json();
+    console.log(data.data);
+    const updatedData = data.data.map((record) => {
+      let fullName = `${record.first_name} ${record.last_name}`;
+      let status = record.status == 1 ? "validated" : "Not Validated";
+      return {
+        ...record,
+        fullName,
+        status,
+      };
     });
-
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
-
-    const formState = reactive({
-      searchItem: "",
-    });
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      dataSource,
-      columns,
-      formState,
-      role_name,
-    };
-  },
-  computed: {
-    recordCount() {
-      return this.dataSource.length;
-    },
-  },
+    dataSource.value = updatedData;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isLoading.value = false;
+  }
 });
-
-export default DragAndDropTable;
 </script>

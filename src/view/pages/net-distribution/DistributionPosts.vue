@@ -242,8 +242,7 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, watch } from "vue";
+import { onMounted, ref, reactive, watch } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 
@@ -285,8 +284,7 @@ var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const distributionStatus = ref({});
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const supervisors = ref([]);
 const searchItem = ref("");
@@ -339,6 +337,7 @@ const currentCounties = ref([
 //   const api_url = UserService;
 //   console.log(api_url);
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters();
@@ -661,6 +660,7 @@ const handleSupervisorSearch = (value) => {
 };
 
 const fetchDistributionsPosts = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `posts_data?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&location_id=${location_id.value}`
@@ -677,6 +677,8 @@ const fetchDistributionsPosts = async () => {
     }
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 

@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader   ghost :title="`${ward_name} Locations`">
+    <sdPageHeader ghost :title="`${ward_name} Locations`">
       <template #buttons>
         <div class="search-box">
           <span class="search-icon">
@@ -53,7 +53,7 @@
                             :to="{
                               path: `/org-units/sub-locations/${record.org_id}`,
                               query: {
-                                name: record.name
+                                name: record.name,
                               },
                             }"
                             class="btn-icon"
@@ -123,8 +123,8 @@
                         isLoading
                           ? "Loading..."
                           : isSubmitting
-                            ? "Processing ..."
-                            : "Assign"
+                          ? "Processing ..."
+                          : "Assign"
                       }}
                     </sdButton>
                   </div>
@@ -140,11 +140,10 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent, reactive } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 import { useRoute } from "vue-router";
 import authHeader from "../../../services/auth-header";
 import { hasRole } from "../../../services/user-role";
@@ -176,210 +175,163 @@ const columns = [
 ];
 
 const adminRoles = [53, 56];
+const isLoading = ref(true);
+const dataSource = ref([]);
+const { params, query } = useRoute();
+const searchItem = ref("");
+const isModalOpen = ref(false);
+const API_URL = `${process.env.VUE_APP_BASE_URL}`;
+const remap_parent = ref([]);
+const reassig_org = ref("");
 
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
+const ward_name = query.name;
 
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const { params, query } = useRoute();
-    const searchItem = ref("");
-    const isModalOpen = ref(false);
-    const API_URL = `${process.env.VUE_APP_BASE_URL}`;
-    const remap_parent = ref([]);
-    const reassig_org = ref("");
-
-    const ward_name = query.name
-    console.log(params);
-
-    // Define a function to fetch data
-    async function fetchOrgChildren(params) {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        return data.message;
-      } catch (error) {
-        console.error(error);
-        // Handle errors as needed
-        throw error;
+// Define a function to fetch data
+async function fetchOrgChildren(params) {
+  isLoading.value = true;
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/get_sub_counties_list?parent_id=${params.id}`,
+      {
+        method: "GET",
+        headers: authHeader(),
       }
+    );
+    const data = await response.json();
+    return data.message;
+  } catch (error) {
+    console.error(error);
+    // Handle errors as needed
+    throw error;
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function fetchParentChildren() {
+  isLoading.value = true;
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/get_orgunits_siblings/${params.id}`,
+      {
+        method: "GET",
+        headers: authHeader(),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    async function fetchParentChildren() {
-      console.log(params.id);
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/get_orgunits_siblings/${params.id}`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
+    const data = await response.json();
+    console.log(data.data);
+    remap_parent.value = data.data;
+    return data.data;
+  } catch (error) {
+    console.error(error);
+    // Handle errors as needed
+    throw error;
+  } finally {
+    isLoading.value = false;
+  }
+}
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+fetchParentChildren();
 
-        const data = await response.json();
-        console.log(data.data);
-        remap_parent.value = data.data;
-        return data.data;
-      } catch (error) {
-        console.error(error);
-        // Handle errors as needed
-        throw error;
-      }
-    }
-
-    fetchParentChildren();
-
-    // Use onMounted to call the fetchData function
-    onMounted(async () => {
-      try {
-        const data = await fetchOrgChildren(params);
-        console.log(data);
-        dataSource.value = data;
-        console.log(dataSource.value);
-      } catch (error) {
-        // Handle errors if necessary
-        console.error(error);
-      }
-    });
-
-    const formState = reactive({
-      parent_id: null,
-    });
-
-    const openModal = (org) => {
-      console.log(org);
-      reassig_org.value = org;
-
-      isModalOpen.value = true;
-    };
-
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
-
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return regex.test(event.name);
-        });
-      }
-    });
-
-    const isAdmin = hasRole(adminRoles);
-
-    const handleSubmit = () => {
-      const data = {
-        org_id: reassig_org.value,
-        parent_id: formState.ward_id,
-      };
-
-      console.log(JSON.stringify(data));
-
-      fetch(`${API_URL}/transfer_org_unit`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then(({ success, data }) => {
-          console.log(data);
-          if (success == true) {
-            store.commit("setIsSubmitting", false);
-            notification["success"]({
-              message: "Location mapped successfully",
-              description: data,
-              duration: 5.5,
-            });
-            isModalOpen.value = false;
-            setTimeout(() => location.reload(), 3000);
-          }
-          // show error message from the api response
-          else {
-            store.commit("setIsSubmitting", false);
-            notification["error"]({
-              message: "Error!",
-              description: data,
-              duration: 5.5,
-            });
-            isModalOpen.value = false;
-          }
-        })
-        .catch((error) => {
-          store.commit("setIsSubmitting", false);
-          notification["error"]({
-            message: "Error!",
-            description: `${error}`,
-            duration: 5.5,
-          });
-        });
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      results,
-      params,
-      searchItem,
-      columns,
-      isAdmin,
-      openModal,
-      isModalOpen,
-      handleCancel,
-      formState,
-      handleSubmit,
-      remap_parent,
-      ward_name,
-    };
-  },
+// Use onMounted to call the fetchData function
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    const data = await fetchOrgChildren(params);
+    console.log(data);
+    dataSource.value = data;
+    console.log(dataSource.value);
+  } catch (error) {
+    // Handle errors if necessary
+    console.error(error);
+  } finally {
+    isLoading.value = false;
+  }
 });
 
-export default DragAndDropTable;
+const formState = reactive({
+  parent_id: null,
+});
+
+const openModal = (org) => {
+  console.log(org);
+  reassig_org.value = org;
+
+  isModalOpen.value = true;
+};
+
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
+
+
+
+const results = computed(() => {
+  const query = searchItem.value.toLowerCase();
+  const regex = new RegExp(query, "i");
+  if (!query) {
+    return dataSource.value;
+  } else {
+    return dataSource.value.filter((event) => {
+      return regex.test(event.name);
+    });
+  }
+});
+
+const isAdmin = hasRole(adminRoles);
+
+const handleSubmit = () => {
+  const data = {
+    org_id: reassig_org.value,
+    parent_id: formState.ward_id,
+  };
+
+  console.log(JSON.stringify(data));
+
+  fetch(`${API_URL}/transfer_org_unit`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(),
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then(({ success, data }) => {
+      console.log(data);
+      if (success == true) {
+        store.commit("setIsSubmitting", false);
+        notification["success"]({
+          message: "Location mapped successfully",
+          description: data,
+          duration: 5.5,
+        });
+        isModalOpen.value = false;
+        setTimeout(() => location.reload(), 3000);
+      }
+      // show error message from the api response
+      else {
+        store.commit("setIsSubmitting", false);
+        notification["error"]({
+          message: "Error!",
+          description: data,
+          duration: 5.5,
+        });
+        isModalOpen.value = false;
+      }
+    })
+    .catch((error) => {
+      store.commit("setIsSubmitting", false);
+      notification["error"]({
+        message: "Error!",
+        description: `${error}`,
+        duration: 5.5,
+      });
+    });
+};
 </script>

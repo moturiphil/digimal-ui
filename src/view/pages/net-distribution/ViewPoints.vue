@@ -209,8 +209,7 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, watch } from "vue";
+import { onMounted, ref, reactive, watch } from "vue";
 import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 // import dayjs from "dayjs";
@@ -285,12 +284,7 @@ const columns = [
     slots: { customRender: "point" },
   },
 ];
-const {
-  state,
-  //dispatch
-} = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 //const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const isModalOpen = ref(false);
@@ -333,7 +327,6 @@ const currentCounties = ref([
   "kphDeKClFch", //turkana
   "mThvosEflAU", //trans nzoia
   "kqJ83J2D72s", //naraok
-  // 'Eey8fT4Im3y',//marsabit
   "vvOK1BxTbet", //baringo
   "Ulj33KBau7V", // kirinyaga
 ]);
@@ -349,7 +342,7 @@ const formState = reactive({
 });
 
 onMounted(async () => {
-  ///alert()
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters();
@@ -377,6 +370,7 @@ watch(
   }
 );
 const getallDropOffPoints = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `get_all_drop_off_points?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
@@ -386,6 +380,8 @@ const getallDropOffPoints = async () => {
     console.log(dataSource.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 

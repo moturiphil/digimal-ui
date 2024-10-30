@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="MassNet Events">
+    <sdPageHeader title="MassNet GF Events">
       <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
@@ -255,10 +255,10 @@ const columns = [
   },
 ];
 
-const {
-  state,
-} = useStore();
-const isLoading = computed(() => state.crud.loading);
+// const {
+//   state,
+// } = useStore();
+const isLoading = ref(true);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
@@ -286,6 +286,7 @@ const store = useStore();
 
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
+  isLoading.value = true;
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
   if (user_object != null) {
@@ -366,10 +367,12 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
         message: `Error!`,
         description: `${error}`,
       });
-    });
+    }
+  );
 };
 const fetchCounties = async () => {
-  await axios
+  try {
+    await axios
     .get("counties/")
     .then((response) => {
       counties.value = response.data.map((x) => ({
@@ -382,12 +385,15 @@ const fetchCounties = async () => {
       ];
       // console.log(counties.value)
     })
-    .catch((error) => {
+  } catch(error) {
       notification.error({
         message: `Error!`,
         description: `${error}`,
       });
-    });
+  }
+  finally {
+    isLoading.value = false;
+  }
 };
 const onPageChange = async (page) => {
   console.log(page);
@@ -410,6 +416,7 @@ watch(
 );
 // get all the events
 const getEvents = () => {
+  isLoading.value = true;
   axios
     .get(
       `gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`
@@ -427,6 +434,8 @@ const getEvents = () => {
     })
     .catch((error) => {
       console.error(error);
+    }).finally(() => {
+      isLoading.value = false; // Stop loading
     });
 };
 // start an event == only host can start/close

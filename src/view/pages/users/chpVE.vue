@@ -3,8 +3,12 @@
     <sdPageHeader title="Registered CHP & Village Elders">
       <template #buttons>
         <div class="search-box">
-          <a-input v-model:value="searchItem" type="text" name="dataSource"
-            placeholder="Search by name, level, location or organization" />
+          <a-input
+            v-model:value="searchItem"
+            type="text"
+            name="dataSource"
+            placeholder="Search by name, level, location or organization"
+          />
         </div>
       </template>
     </sdPageHeader>
@@ -29,28 +33,45 @@
 
             <div v-else>
               <TableWrapper class="table-data-view table-responsive">
-                <a-table :pagination="false" :dataSource="dataSource" :columns="columns" @change="handleTableChange">
+                <a-table
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                  @change="handleTableChange"
+                >
                   <template #users="{ record }">
                     <td>
                       <div class="table-actions">
                         <sdButton size="extra-small" type="success">
-                          <router-link :to="{
-                            path: `/chp-hh-registered/${record.id}`,
-                            query: {
-                              id: record.id,
-                            },
-                          }">
+                          <router-link
+                            :to="{
+                              path: `/chp-hh-registered/${record.id}`,
+                              query: {
+                                id: record.id,
+                              },
+                            }"
+                          >
                             CHP Households
                           </router-link>
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton v-if="record.role_id === 'CHV' ||
-                          record.role_id === 'Village Elder'
-                          " @click="handleAssignment(record.id)" size="extra-small" type="success">
+                        <sdButton
+                          v-if="
+                            record.role_id === 'CHV' ||
+                            record.role_id === 'Village Elder'
+                          "
+                          @click="handleAssignment(record.id)"
+                          size="extra-small"
+                          type="success"
+                        >
                           Reassign
                         </sdButton>
                         &nbsp;&nbsp;
-                        <sdButton @click="handleDeAssignment(record.id)" size="extra-small" type="success">
+                        <sdButton
+                          @click="handleDeAssignment(record.id)"
+                          size="extra-small"
+                          type="success"
+                        >
                           De-assign
                         </sdButton>
                       </div>
@@ -58,13 +79,13 @@
                   </template>
                 </a-table>
                 <a-pagination
-                        :current="currentPage"
-                        :total="datatotal"
-                        :pageSize="pageSize"
-                        :showSizeChanger="true"
-                        :pagination="true"
-                        @change="onPageChange($event)"
-                      />
+                  :current="currentPage"
+                  :total="datatotal"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  :pagination="true"
+                  @change="onPageChange($event)"
+                />
               </TableWrapper>
             </div>
           </sdCards>
@@ -73,81 +94,163 @@
       <a-col :xs="24">
         <DragAndDropTable />
       </a-col>
-      <a-modal title="Reassign CHP" :visible="isModalOpen" @ok="handleOk(recordId)" @cancel="handleCancel"
-        class="title-success">
+      <a-modal
+        title="Reassign CHP"
+        :visible="isModalOpen"
+        @ok="handleOk(recordId)"
+        @cancel="handleCancel"
+        class="title-success"
+      >
         <div>
           <BasicFormWrapper>
-            <a-form class="add-record-form" :style="{ width: '100%' }" layout="vertical" name="addnew" :model="formState"
-              @finish="handleSubmit">
+            <a-form
+              class="add-record-form"
+              :style="{ width: '100%' }"
+              layout="vertical"
+              name="addnew"
+              :model="formState"
+              @finish="handleSubmit"
+            >
               <a-form-item name="county">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select" placeholder="Select County"
-                  v-on:change="getSubCounties($event)" v-if="!loading">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select County"
+                  v-on:change="getSubCounties($event)"
+                  v-if="!loading"
+                >
                   <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option v-for="county in counties" :value="county.org_id" :key="county.id"
-                    :org_id="county.org_id">
+                  <a-select-option
+                    v-for="county in counties"
+                    :value="county.org_id"
+                    :key="county.id"
+                    :org_id="county.org_id"
+                  >
                     {{ county.name }}
                   </a-select-option>
                 </a-select>
               </a-form-item>
               <a-form-item name="sub_county">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select" placeholder="Select Sub-County"
-                  v-on:change="getWards($event)">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Sub-County"
+                  v-on:change="getWards($event)"
+                >
                   <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option v-for="scounty in sub_counties" :value="scounty.org_id"
-                    :key="scounty.id">{{ scounty.name }}</a-select-option>
+                  <a-select-option
+                    v-for="scounty in sub_counties"
+                    :value="scounty.org_id"
+                    :key="scounty.id"
+                    >{{ scounty.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
 
               <a-form-item name="ward_id">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select" placeholder="Select Ward"
-                  v-on:change="getLocations($event)">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Ward"
+                  v-on:change="getLocations($event)"
+                >
                   <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option v-for="ward in wards" :value="ward.org_id"
-                    :key="ward.id">{{ ward.name }}</a-select-option>
+                  <a-select-option
+                    v-for="ward in wards"
+                    :value="ward.org_id"
+                    :key="ward.id"
+                    >{{ ward.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
 
               <a-form-item name="location">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select" placeholder="Select Location"
-                  v-on:change="getSubLocations($event)">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Location"
+                  v-on:change="getSubLocations($event)"
+                >
                   <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option v-for="location in locations" :value="location.org_id"
-                    :key="location.id">{{ location.name }}</a-select-option>
+                  <a-select-option
+                    v-for="location in locations"
+                    :value="location.org_id"
+                    :key="location.id"
+                    >{{ location.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
 
               <a-form-item name="sub_location_id">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select"
-                  placeholder="Select Sub Location" v-on:change="getVillages($event)">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Sub Location"
+                  v-on:change="getVillages($event)"
+                >
                   <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option v-for="slocation in sub_locations" :value="slocation.org_id"
-                    :key="slocation.id">{{ slocation.name }}</a-select-option>
+                  <a-select-option
+                    v-for="slocation in sub_locations"
+                    :value="slocation.org_id"
+                    :key="slocation.id"
+                    >{{ slocation.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
 
               <a-form-item name="Location">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select"
-                  placeholder="Select Village to Reassign to" v-model:value="formState.location_id">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Village to Reassign to"
+                  v-model:value="formState.location_id"
+                >
                   <a-select-option value="">Select an option</a-select-option>
-                  <a-select-option v-for="village in villages" :value="village.id"
-                    :key="village.id">{{ village.name }}</a-select-option>
+                  <a-select-option
+                    v-for="village in villages"
+                    :value="village.id"
+                    :key="village.id"
+                    >{{ village.name }}</a-select-option
+                  >
                 </a-select>
               </a-form-item>
               <a-form-item name="Role">
-                <a-select size="large" name="basic-select" class="sDash_fullwidth-select" placeholder="Select Role"
-                  v-on:change="getSubCounties($event)" v-model:value="formState.role_id" v-if="!loading">
-                  <a-select-option v-for="role in roles" :value="role.id" :key="role.id">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Role"
+                  v-on:change="getSubCounties($event)"
+                  v-model:value="formState.role_id"
+                  v-if="!loading"
+                >
+                  <a-select-option
+                    v-for="role in roles"
+                    :value="role.id"
+                    :key="role.id"
+                  >
                     {{ role.name }}
                   </a-select-option>
                 </a-select>
               </a-form-item>
 
               <div class="record-form-actions text-right">
-                <sdButton size="default" htmlType="Save" type="success" :disabled="isSubmitting">
+                <sdButton
+                  size="default"
+                  htmlType="Save"
+                  type="success"
+                  :disabled="isSubmitting"
+                >
                   {{
                     isLoading
-                    ? "Loading..."
-                    : isSubmitting
+                      ? "Loading..."
+                      : isSubmitting
                       ? "Processing ..."
                       : "Submit"
                   }}
@@ -166,7 +269,8 @@ import { Main } from "../../styled";
 //import { useStore } from "vuex";
 import {
   //computed,
-  onMounted, ref,
+  onMounted,
+  ref,
   reactive,
   watch,
   //defineComponent
@@ -230,26 +334,18 @@ const columns = [
   {
     title: "",
     dataIndex: "",
-    fixed: 'right',
+    fixed: "right",
     width: 20,
     key: "users",
     slots: { customRender: "users" },
   },
 ];
 
-
-
-// const { state,
-//   //dispatch
-// } = useStore();
-//const crud = computed(() => state.crud.data);
-//const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
 var visible = ref(false);
 var colorVisible = ref(false);
 var currentPage = ref(1);
 var pageSize = ref(100);
-var datatotal = ref(0)
+var datatotal = ref(0);
 const dataSource = ref([]);
 const searchItem = ref("");
 let isModalOpen = ref(false);
@@ -264,18 +360,23 @@ const roles = [
   { id: 52, name: "CHP" },
   { id: 51, name: "Village Elder" },
 ];
+const isLoading = ref(true);
 
 const API_URL = `update_chp_ve`;
 const DEASSIGN_URL = `deassign_chp_ve`;
 
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
-  fetchCHVE()
+  isLoading.value = true;
+  fetchCHVE();
 });
 
 const fetchCHVE = async () => {
+  isLoading.value = true;
   try {
-    const response = await axios.get(`chp_ve?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`);
+    const response = await axios.get(
+      `chp_ve?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}`
+    );
     const data = await response.data;
     datatotal.value = response.data.pagination.total;
     const filteredUsers = data.data.filter((user) => {
@@ -286,28 +387,30 @@ const fetchCHVE = async () => {
     dataSource.value = filteredUsers;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
-}
+};
 
 const onPageChange = async (page) => {
-  currentPage.value = page
+  currentPage.value = page;
   try {
-    fetchCHVE()
+    fetchCHVE();
   } catch (error) {
     console.error(error);
   }
-}
+};
 
 watch(async () => {
   searchItem.value = searchItem.value.toLocaleLowerCase();
-  fetchCHVE()
+  fetchCHVE();
 });
 
 const handleCancel = () => {
   isModalOpen.value = false;
   visible.value = false;
   colorVisible.value = false;
-}
+};
 var user_id = "";
 
 const handleAssignment = (id) => {
@@ -318,7 +421,8 @@ const handleAssignment = (id) => {
 };
 
 const handleDeAssignment = (id) => {
-  axios.post(DEASSIGN_URL, {user_id: id})
+  axios
+    .post(DEASSIGN_URL, { user_id: id })
     .then((response) => response.data)
     .then(({ success }) => {
       if (success) {
@@ -354,7 +458,8 @@ const handleSubmit = () => {
     role_id: formState.role_id,
   };
 
-  axios.post(API_URL,data)
+  axios
+    .post(API_URL, data)
     .then((response) => response.data)
     .then(({ success }) => {
       if (success) {
@@ -568,15 +673,15 @@ const formState = reactive({
   transition: 0.4s;
 }
 
-input:checked+.slider {
+input:checked + .slider {
   background-color: #1ec997;
 }
 
-input:focus+.slider {
+input:focus + .slider {
   box-shadow: 0 0 1px #1ec997;
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
   transform: translateX(20px);
 }
 
