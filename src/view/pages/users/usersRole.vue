@@ -114,7 +114,7 @@ const DragAndDropTable = defineComponent({
   setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
+    const isLoading = ref(true);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const searchItem = ref("");
@@ -128,6 +128,7 @@ const DragAndDropTable = defineComponent({
     console.log(api_url);
 
     onMounted(async () => {
+      isLoading.value = true;
       try {
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/roles`, {
           method: "GET",
@@ -138,6 +139,8 @@ const DragAndDropTable = defineComponent({
         console.log(dataSource.value);
       } catch (error) {
         console.error(error);
+      } finally {
+        isLoading.value = false;
       }
     });
 
