@@ -133,8 +133,7 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 
@@ -186,9 +185,8 @@ const columns = [
     slots: { customRender: "action" },
   },
 ];
-const { state } = useStore();
 const dataSource = ref([]);
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const searchItem = ref("");
 const selecteLocation = ref("");
 var currentPage = ref(1);
@@ -258,6 +256,7 @@ watch(
   }
 );
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     selecteLocation.value = access_level.value.location.id;
@@ -274,6 +273,7 @@ onMounted(async () => {
   await updateFilters();
 });
 const getHouseholdIRS = async () => {
+  isLoading.value = true;
   axios
     .get(
       `irs_household_dashboard?page=${currentPage.value}&page_size=${pageSize.value}&org_id=${selecteLocation.value}&query=${searchItem.value}`
@@ -282,6 +282,9 @@ const getHouseholdIRS = async () => {
       let data = response.data.data;
       dataSource.value = data;
       datatotal.value = response.data.pagination.total;
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 const updateFilters = () => {

@@ -3,20 +3,6 @@
     <sdPageHeader ghost title="Nets Distributions" />
 
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
-          Export HouseHolds Data
-        </sdButton> -->
-      <!-- <sdButton
-        class="button-container"
-        size="extra-small"
-        type="success"
-        @click="openModal()"
-      >
-        Start Distribution
-      </sdButton> -->
-      <br />
-      <br />
-      <br />
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24"> </a-col>
@@ -192,9 +178,8 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, reactive, defineProps } from "vue";
+import { onMounted, ref, reactive, defineProps } from "vue";
 import axios from "@/Axiosconfig";
-import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
 
@@ -231,8 +216,7 @@ var pageSize = ref(50);
 var total = ref(0);
 var visible = ref(false);
 var colorVisible = ref(false);
-const { state } = useStore();
-var isLoading = computed(() => state.crud.loading);
+var isLoading = ref(true);
 const dataSource = ref([]);
 const activeClass = ref("all");
 const isModalOpen = ref(false);
@@ -310,19 +294,15 @@ const currentCounties = ref([
   "Kirinyaga County",
 ]);
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     //filterAccessList.value = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation', 'village']
     updateFilters();
-    // console.log(JSON.stringify(access_level.value.location));
   }
 });
 
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
@@ -587,6 +567,7 @@ const filterOption = (input, option) => {
 };
 
 const fetchDistributions = () => {
+  isLoading.value = true;
   axios
     .get(API_URL)
     .then((response) => {
@@ -598,6 +579,8 @@ const fetchDistributions = () => {
     })
     .catch((error) => {
       console.error(error);
+    }).finally(() => {
+      isLoading.value = false;
     });
 };
 const handleCancel = () => {

@@ -117,12 +117,9 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
 import { computed, onMounted, ref, watch } from "vue";
 import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
-// import dayjs from "dayjs";
-//const dateFormat = "YYYY-MM-DD";
 const columns = [
   {
     title: "Post Name",
@@ -145,13 +142,7 @@ const columns = [
     key: "id",
   },
 ];
-const {
-  state,
-  //dispatch
-} = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const searchItem = ref("");
 var currentPage = ref(1);
@@ -167,7 +158,6 @@ const wards = ref(null);
 const county = ref("Select County");
 const subcounty = ref("Select Subcounty");
 const org_ids = ref([]);
-// const isSecurityModalOpen = ref(false);
 
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -198,7 +188,7 @@ const currentCounties = ref([
 ]);
 
 onMounted(async () => {
-  ///alert()
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters();
@@ -230,6 +220,7 @@ watch(
 );
 
 const getallDropOffPoints = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `post_order_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
@@ -240,6 +231,8 @@ const getallDropOffPoints = async () => {
     console.log(datatotal.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -388,7 +381,6 @@ const fetchCounties = async () => {
         org_id: x.org_id,
         id: x.id,
       }));
-      // console.log(counties.value)
     })
     .catch((error) => {
       notification.error({

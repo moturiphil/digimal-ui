@@ -98,7 +98,7 @@ const DragAndDropTable = defineComponent({
   setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
+    const isLoading = ref(true);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const export_dropoff_receipts_url = `${process.env.VUE_APP_BASE_URL}/dropoff_receipts_export`;
@@ -109,6 +109,7 @@ const DragAndDropTable = defineComponent({
     //   console.log(api_url);
 
     onMounted(async () => {
+      isLoading.value = true;
       try {
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/net_deliveries_drop_of_points`,
@@ -123,6 +124,8 @@ const DragAndDropTable = defineComponent({
         console.log(data.data);
       } catch (error) {
         console.error(error);
+      } finally {
+        isLoading.value = false;
       }
     });
 
