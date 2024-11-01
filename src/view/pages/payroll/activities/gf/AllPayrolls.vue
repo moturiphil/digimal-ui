@@ -96,10 +96,9 @@
 <script setup>
 import { Main } from "../../../../styled";
 import { SearchResultWrapper } from "./../../../style";
-import { computed, onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import authHeader from "../../../../../services/auth-header";
 import axios from "axios";
-import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 
 const columns = [
@@ -151,17 +150,18 @@ const columns = [
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const activeClass = ref("all");
 const searchItem = ref("");
 
 onMounted(() => {
+  isLoading.value = true;
   fetchPayrolls();
 });
 
 const fetchPayrolls = () => {
+  isLoading.value = true;
   const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&page=${currentPage.value}&per_page=${pageSize.value}`;
   axios
     .get(API_URL, {
@@ -184,6 +184,9 @@ const fetchPayrolls = () => {
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 
@@ -223,7 +226,6 @@ watchEffect(async () => {
     });
   }
 });
-
 </script>
 <style>
 .badge-green {

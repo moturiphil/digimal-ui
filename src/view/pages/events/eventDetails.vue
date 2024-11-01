@@ -579,7 +579,7 @@ const event_code = plainquery.event_code;
 const event_host_id = plainquery.event_host_id;
 const router = useRouter();
 const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const confirmed = ref([]);
 const pending = ref([]);
@@ -652,10 +652,12 @@ const role_id = ref("");
 const rt = useRouter();
 
 onMounted(async () => {
+  isLoading.value = true;
   getEventParticipants();
 });
 
 const getEventParticipants = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(API_URL, {
       headers: authHeader(),
@@ -671,8 +673,7 @@ const getEventParticipants = async () => {
     });
 
     dataSource.value = updatedData;
-
-    console.log(dataSource.value);
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -689,10 +690,8 @@ const getEventParticipants = async () => {
         fullName,
       };
     });
-
     confirmed.value = updatedData;
-
-    console.log(confirmed.value.toRaw());
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -712,10 +711,11 @@ const getEventParticipants = async () => {
     });
 
     pending.value = updatedData;
-
-    console.log(pending.value);
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user) {

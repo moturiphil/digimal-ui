@@ -358,7 +358,7 @@ export default defineComponent({
   setup() {
     const { state } = useStore();
     const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
+    const isLoading = ref(true);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const activeClass = ref("all");
@@ -638,6 +638,7 @@ export default defineComponent({
     };
 
     onMounted(() => {
+      isLoading.value = true;
       axios
         .get(API_URL, {
           headers: authHeader(),
@@ -649,6 +650,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.error(error);
+        }).finally(() => {
+          isLoading.value = false;
         });
     });
 

@@ -147,10 +147,10 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
@@ -207,296 +207,238 @@ const columns = [
     slots: { customRender: "payroll" },
   },
 ];
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      payroll: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-  },
-  setup() {
-    var currentPage = ref(1);
-    var pageSize = ref(100);
-    var datatotal = ref(0);
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const searchItem = ref("");
-    const recordId = ref(null);
-    const isModalOpen = ref(false);
-    const isPaying = computed(() => state.isPaying);
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+const { state } = useStore();
+const isLoading = ref(true);
+const dataSource = ref([]);
+const activeClass = ref("all");
+const searchItem = ref("");
+const recordId = ref(null);
+const isModalOpen = ref(false);
+const isPaying = computed(() => state.isPaying);
 
-    const isDisabled = ref(true);
-    const countdown = ref(60);
+const isDisabled = ref(true);
+const countdown = ref(60);
 
-    onMounted(() => {
-      fetchPayrolls();
+onMounted(() => {
+  isLoading.value = true;
+  fetchPayrolls();
+});
+
+const fetchPayrolls = () => {
+  isLoading.value = true;
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+
+  axios
+    .get(API_URL, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      console.log(response.data.data);
+      datatotal.value = response.data.pagination.total;
+      dataSource.value = response.data.data.map((item) => ({
+        ...item,
+        old_values: item.old_values,
+        new_values: item.new_values,
+      }));
+      dataSource.value.forEach((item) => {
+        item.status = item.status === 1 ? "Validated" : "Not Validated";
+        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
+};
 
-    const fetchPayrolls = () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+const onPageChange = async (page) => {
+  console.log(page);
+  currentPage.value = page;
+  try {
+    fetchPayrolls();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+watchEffect(async () => {
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+  const query = searchItem.value.toLowerCase();
+  try {
+    if (!query) {
+      return dataSource.value;
+    }
+    if (query.length > 3) {
+      const response = await fetch(`${API_URL}&query=${query}`, {
+        method: "GET",
+        headers: authHeader(),
+      });
+      const data = await response.json();
+      dataSource.value = data.data.map((item) => ({
+        ...item,
+        old_values: item.old_values,
+        new_values: item.new_values,
+      }));
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: error.message,
+    });
+  }
+});
+
+// handle payment
+const handlePay = (id) => {
+  isModalOpen.value = true;
+  countdownTimer();
+  recordId.value = id;
+
+  try {
+    fetch(
+      `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${id}&payment_type=Event`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.success === true) {
+          notification.success({
+            message: "Success!",
+            description: data.message,
+          });
+          setTimeout(() => {}, 2000);
+        } else {
+          notification.error({
+            message: "Error!",
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const resendOTP = () => {
+  try {
+    fetch(
+      `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Event`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        countdownTimer();
+        if (data.success === true) {
+          notification.success({
+            message: "Success!",
+            description: data.message,
+          });
+          setTimeout(() => {}, 2000);
+        } else {
+          notification.error({
+            message: "Error!",
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleOk = async (id, inputValue) => {
+  store.commit("setIsPaying", true);
+  try {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`
+    );
+    if (response.status == 200) {
+      store.commit("setIsPaying", true);
+      notification.success({
+        message: "Success",
+        description: "Payment processed successful",
+      });
+      setTimeout(function () {
+        location.reload();
+      }, 3000);
 
       axios
-        .get(API_URL, {
-          headers: authHeader(),
+        .post(`event_payroll_payment`, {
+          payroll_id: recordId.value,
         })
-        .then((response) => {
-          console.log(response.data.data);
-          datatotal.value = response.data.pagination.total;
-          dataSource.value = response.data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-          dataSource.value.forEach((item) => {
-            item.status = item.status === 1 ? "Validated" : "Not Validated";
-            item.payment_status =
-              item.payment_status === 1 ? "Paid" : "Not Paid";
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
+        .then((responsePromise) => {
+          return responsePromise.data;
         })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
-
-    const onPageChange = async (page) => {
-      console.log(page);
-      currentPage.value = page;
-      try {
-        fetchPayrolls();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    watchEffect(async () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=0&page=${currentPage.value}&per_page=${pageSize.value}`;
-      const query = searchItem.value.toLowerCase();
-      try {
-        if (!query) {
-          return dataSource.value;
-        }
-        if (query.length > 3) {
-          const response = await fetch(`${API_URL}&query=${query}`, {
-            method: "GET",
-            headers: authHeader(),
-          });
-          const data = await response.json();
-          dataSource.value = data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-        }
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-      }
-    });
-
-    // handle payment
-    const handlePay = (id) => {
-      isModalOpen.value = true;
-      countdownTimer();
-      recordId.value = id;
-
-      try {
-        fetch(
-          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${id}&payment_type=Event`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data);
-            if (data.success === true) {
-              notification.success({
-                message: "Success!",
-                description: data.message,
-              });
-              setTimeout(() => {}, 2000);
-            } else {
-              notification.error({
-                message: "Error!",
-                description: data.message,
-              });
-            }
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const resendOTP = () => {
-      try {
-        fetch(
-          `${process.env.VUE_APP_BASE_URL}/payment_otp?payroll_summary_id=${recordId.value}&payment_type=Event`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data);
-            countdownTimer();
-            if (data.success === true) {
-              notification.success({
-                message: "Success!",
-                description: data.message,
-              });
-              setTimeout(() => {}, 2000);
-            } else {
-              notification.error({
-                message: "Error!",
-                description: data.message,
-              });
-            }
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const handleOk = async (id, inputValue) => {
-      store.commit("setIsPaying", true);
-      try {
-        const response = await axios.get(
-          `${process.env.VUE_APP_BASE_URL}/pay_event_clients?event_payroll_summary_id=${recordId.value}&otp=${inputValue}`
-        );
-        if (response.status == 200) {
-          store.commit("setIsPaying", true);
-          notification.success({
-            message: "Success",
-            description: "Payment processed successful",
-          });
-          setTimeout(function () {
-            location.reload();
-          }, 3000);
-
-          axios
-            .post(`event_payroll_payment`, {
-              payroll_id: recordId.value,
-            })
-            .then((responsePromise) => {
-              return responsePromise.data;
-            })
-            .then((data) => {
-              if (data.success == true) {
-                notification.success({
-                  message: "Success",
-                  description:
-                    "Payment Approved Successfully, Enter OTP to complete payment",
-                });
-              }
+        .then((data) => {
+          if (data.success == true) {
+            notification.success({
+              message: "Success",
+              description:
+                "Payment Approved Successfully, Enter OTP to complete payment",
             });
-        }
-      } catch (error) {
-        store.commit("setIsPaying", true);
-        notification.error({
-          message: "Error",
-          description: "Payment failed",
+          }
         });
-        // setTimeout(function () {
-        //   location.reload();
-        // }, 3000);
-      }
-      isModalOpen.value = false;
-    };
+    }
+  } catch (error) {
+    store.commit("setIsPaying", true);
+    notification.error({
+      message: "Error",
+      description: "Payment failed",
+    });
+  }
+  isModalOpen.value = false;
+};
 
-    const handleCancel = () => {
-      isModalOpen.value = false;
-    };
+const handleCancel = () => {
+  isModalOpen.value = false;
+};
 
-    const startCountdown = () => {
-      console.log("starting countdown");
-      let timerId;
-      countdown.value = 60;
-      isDisabled.value = true;
+const startCountdown = () => {
+  console.log("starting countdown");
+  let timerId;
+  countdown.value = 60;
+  isDisabled.value = true;
 
-      const updateCountdown = () => {
-        countdown.value--;
-        console.log(countdown.value);
-        if (countdown.value <= 0) {
-          clearInterval(timerId);
-          isDisabled.value = false;
-        }
-      };
+  const updateCountdown = () => {
+    countdown.value--;
+    console.log(countdown.value);
+    if (countdown.value <= 0) {
+      clearInterval(timerId);
+      isDisabled.value = false;
+    }
+  };
 
-      timerId = setInterval(updateCountdown, 1000);
+  timerId = setInterval(updateCountdown, 1000);
 
-      updateCountdown();
-    };
+  updateCountdown();
+};
 
-    const countdownTimer = () => {
-      isDisabled.value = true;
-      countdown.value = 60;
-      startCountdown();
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      searchItem,
-      columns,
-      handleChange,
-      activeClass,
-      handlePay,
-      handleOk,
-      isModalOpen,
-      handleCancel,
-      isDisabled,
-      countdown,
-      countdownTimer,
-      resendOTP,
-      isPaying,
-      currentPage,
-      pageSize,
-      datatotal,
-      onPageChange
-    };
-  },
-});
+const countdownTimer = () => {
+  isDisabled.value = true;
+  countdown.value = 60;
+  startCountdown();
+};
 </script>
 <style>
 .badge-green {

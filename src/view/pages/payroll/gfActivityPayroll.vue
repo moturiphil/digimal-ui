@@ -471,7 +471,7 @@ import store from "../../../vuex/store";
 import authHeader from "../../../services/auth-header";
 
 const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const activeClass = ref("all");
 const recordId = ref(null);
@@ -769,6 +769,7 @@ const startCountdown = () => {
 };
 
 const getActivityPayroll = () => {
+  isLoading.value = true;
   axios
     .get(API_URL)
     .then((response) => {
@@ -798,6 +799,9 @@ const getActivityPayroll = () => {
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 
