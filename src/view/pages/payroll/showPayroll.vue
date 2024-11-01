@@ -315,8 +315,7 @@ const columns = [
     slots: { customRender: "payroll" },
   },
 ];
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const activeClass = ref("all");
 const records = ref("");
@@ -325,7 +324,6 @@ const activity_name = query.activity;
 const validate_status = query.validate_status;
 const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
 const county = query.county;
-// const sub_county = query.sub_county ? query.sub_county : "N/A";
 const start_date = query.start_date;
 const no_of_days = query.no_of_days;
 const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/activity_pay_export?id=${query.id}`;
@@ -374,6 +372,7 @@ const exportPayrollList = async () => {
 };
 
 onMounted(() => {
+  isLoading.value = true;
   axios
     .get(API_URL, {
       headers: authHeader(),
@@ -384,6 +383,8 @@ onMounted(() => {
     })
     .catch((error) => {
       console.error(error);
+    }).finally (() => {
+      isLoading.value = false;
     });
 });
 
