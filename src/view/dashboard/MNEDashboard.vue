@@ -1565,7 +1565,7 @@ const NetsPerCapita = async (
           data: scatter_data,
           color: "#004225",
           tooltip: {
-            pointFormat: "{point.name} <b>{point.y:.1f}</b>",
+            pointFormat: "{point.name} <b>{point.y:.2f}</b>",
           },
           marker: {
             radius: 6, // Set the radius to adjust the size of scatter plot dots

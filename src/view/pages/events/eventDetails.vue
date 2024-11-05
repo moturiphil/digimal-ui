@@ -19,7 +19,7 @@
     <Main>
       <div class="button-container">
         <sdButton
-          v-if="isApprovedGenerator"
+          v-if="isApprovedGenerator && event_payroll_status !== 'Generated'"
           class="btn-import"
           type="success"
           size="extra-small"
@@ -35,7 +35,9 @@
               : "Generate Payroll"
           }}
         </sdButton>
-        &nbsp;
+        <span v-if="isApprovedGenerator && event_payroll_status !== 'Generated'"
+          >&nbsp;</span
+        >
         <sdButton
           v-if="isApprovedGenerator"
           class="btn-import"
@@ -68,7 +70,14 @@
           @click="exportParticipants"
           size="extra-small"
         >
-          Download List &nbsp; &nbsp;
+          {{
+            isLoading
+              ? "Downloading..."
+              : isDownloading
+              ? "Processing..."
+              : "Download List"
+          }}
+          &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
@@ -577,6 +586,7 @@ const event_list_id = plainquery.event_list_id;
 const event_location_id = plainquery.location;
 const event_code = plainquery.event_code;
 const event_host_id = plainquery.event_host_id;
+const event_payroll_status = plainquery.payroll_status;
 const router = useRouter();
 const { state } = useStore();
 const isLoading = ref(true);
@@ -605,6 +615,9 @@ const deassignModal = ref(false);
 const participant = ref("");
 const id_user = ref("");
 const searchItem = ref("");
+const isDownloading = ref(false);
+
+console.log(event_payroll_status !== "Generated");
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -662,7 +675,6 @@ const getEventParticipants = async () => {
     const response = await axios.get(API_URL, {
       headers: authHeader(),
     });
-    console.log(response.data.data);
 
     const updatedData = response.data.data.map((record) => {
       let fullName = `${record.first_name} ${record.last_name}`;
@@ -828,9 +840,6 @@ const resendConfirmation = async (id) => {
     });
 
     const { success, data } = await response.json();
-
-    console.log({ success, data });
-
     if (success === true) {
       notification.success({
         message: "Success",
@@ -1032,6 +1041,7 @@ const getTraineCadres = () => {
 getTraineCadres();
 
 const exportParticipants = async () => {
+  isDownloading.value = true;
   try {
     const response = await fetch(export_participants_url, {
       method: "GET",
@@ -1055,6 +1065,8 @@ const exportParticipants = async () => {
     link.parentNode.removeChild(link);
   } catch (error) {
     console.error(error);
+  } finally {
+    isDownloading.value = false;
   }
 };
 

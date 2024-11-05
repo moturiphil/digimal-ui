@@ -442,7 +442,7 @@ const matrix_column = [
   },
 ];
 const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const confirmed = ref({});
 const pending = ref([]);
@@ -678,6 +678,7 @@ const handleChange = (tab) => {
 };
 
 onMounted(async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(API_URL);
     console.log(response.data.data);
@@ -698,10 +699,12 @@ onMounted(async () => {
     console.log(updatedData);
 
     dataSource.value = updatedData;
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
   try {
+    isLoading.value = true;
     const response = await axios.get(
       `activity_participants?activity_id=${activity_code.value}&confirmed=1`
     );
@@ -715,10 +718,12 @@ onMounted(async () => {
     });
     console.log(response.data);
     confirmed.value = updatedData;
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
   try {
+    isLoading.value = true;
     const response = await axios.get(
       `activity_participants?activity_id=${activity_code.value}&confirmed=0`
     );
@@ -730,11 +735,9 @@ onMounted(async () => {
         fullName,
       };
     });
-    console.log(response.data);
 
     pending.value = updatedData;
-
-    console.log(pending.value);
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }

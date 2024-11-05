@@ -47,7 +47,7 @@
                 <a-row :gutter="15">
                   <a-col class="w-100" :md="24">
                     <sdCards headless>
-                      <div v-if="dataSource < 0" class="spin">
+                      <div v-if="isLoading" class="spin">
                         <a-spin />
                       </div>
 
@@ -153,10 +153,9 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
-import { computed, onMounted, ref, reactive } from "vue";
+import { onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
-import { useStore } from "vuex";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
 
@@ -194,8 +193,7 @@ const columns = [
   },
 ];
 
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const officers = ref([]);
 const activeClass = ref("all");
@@ -303,6 +301,7 @@ const handleChange = (tab) => {
   activeClass.value = tab;
 };
 onMounted(async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(API_URL, {
       headers: authHeader(),
@@ -321,6 +320,8 @@ onMounted(async () => {
     dataSource.value = updatedData;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -330,6 +331,7 @@ const formState = reactive({
 });
 
 const officersList = async () => {
+  isLoading.value = true;
   try {
     const response = await fetch(
       `${process.env.VUE_APP_BASE_URL}/users?query=${searchOfficerItem.value}`,
@@ -347,6 +349,8 @@ const officersList = async () => {
     }));
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
