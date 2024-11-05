@@ -262,7 +262,6 @@ import { SearchResultWrapper } from "./../style";
 import { computed, onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
-import { useStore } from "vuex";
 // import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import { notification } from "ant-design-vue";
