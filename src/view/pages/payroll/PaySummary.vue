@@ -97,7 +97,7 @@ const handleSubmit = async () => {
     console.log(requestData);
 
     const response = await fetch(
-      `${process.env.VUE_APP_BASE_URL}/remove_activity_allowance`,
+      `${process.env.VUE_APP_BASE_URL}/remove_activity_participant_allowance`,
       {
         method: "POST",
         headers: {
@@ -109,9 +109,9 @@ const handleSubmit = async () => {
     );
 
     const responseData = await response.json();
-    const { status, data } = responseData;
+    const { success, data } = responseData;
 
-    if (status) {
+    if (success == true) {
       notification.success({
         message: "Success",
         description: data,
