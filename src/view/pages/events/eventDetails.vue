@@ -39,7 +39,7 @@
           >&nbsp;</span
         >
         <sdButton
-          v-if="isApprovedGenerator"
+          v-if="isApprovedGenerator && event_payroll_status == 'Generated'"
           class="btn-import"
           type="warning"
           size="extra-small"
@@ -183,7 +183,16 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
-                          <p><b>Total Records: </b> {{ recordCount }}</p>
+                          <p>
+                            <b>Total Records: </b>
+                            {{ recordCount }} &nbsp;&nbsp;
+                            <span v-if = "event_list_id == 20"
+                              ><b>Total Posts: </b>
+                              {{ total_sub_county_post }}</span
+                            >
+                          </p>
+                          &nbsp; &nbsp;
+                          <p></p>
 
                           <a-table
                             :pagination="{
@@ -220,7 +229,7 @@
                                     size="extra-small"
                                     type="danger"
                                     @click="voidParticipant(record.id)"
-                                    v-if="isApprovedGenerator || isHost"
+                                    v-if="isApprovedGenerator"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -585,7 +594,6 @@ const event_name = plainquery.name;
 const event_list_id = plainquery.event_list_id;
 const event_location_id = plainquery.location;
 const event_code = plainquery.event_code;
-const event_host_id = plainquery.event_host_id;
 const event_payroll_status = plainquery.payroll_status;
 const router = useRouter();
 const { state } = useStore();
@@ -607,6 +615,8 @@ const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participa
 const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${plainquery.event_list_id}`;
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
 const cadres_url = `${process.env.VUE_APP_BASE_URL}/get_event-registration_role_counts/${plainquery.id}`;
+const sub_county_post = `${process.env.VUE_APP_BASE_URL}/get_sub_county_posts?subcounty_id=${event_location_id}`;
+const total_sub_county_post = ref(0);
 const event_matrixes = ref([]);
 const org_matrixes = ref([]);
 const cadres = ref([]);
@@ -667,6 +677,9 @@ const rt = useRouter();
 onMounted(async () => {
   isLoading.value = true;
   getEventParticipants();
+  if (event_list_id == 20) {
+    getPostCount();
+  }
 });
 
 const getEventParticipants = async () => {
@@ -1195,15 +1208,6 @@ const isApprovedGenerator = computed(() => {
     return false;
   }
 });
-console.log(event_host_id);
-
-const isHost = computed(() => {
-  if (user.user.id === event_host_id) {
-    return true;
-  } else {
-    return false;
-  }
-});
 
 computed(() => {
   if (user.user.org_types_id === 10) {
@@ -1212,6 +1216,28 @@ computed(() => {
     return false;
   }
 });
+
+const getPostCount = async () => {
+  try {
+    const response = await fetch(sub_county_post, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
+
+    const data = await response.json(); // Await here to resolve the JSON promise
+    console.log(data); // Log data after it has resolved
+    total_sub_county_post.value = data.total_posts;
+  } catch (error) {
+    console.error("Error:", error);
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
 </script>
 
 <style>
