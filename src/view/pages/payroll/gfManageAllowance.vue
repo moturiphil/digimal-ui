@@ -72,7 +72,7 @@
                             </a-form-item>
 
                             <a-form-item label="Select Participants">
-                              <a-transfer
+                              <Transfer
                                 :dataSource="participants"
                                 showSearch
                                 :targetKeys="targetKeys"
@@ -84,7 +84,7 @@
                                   height: '500px',
                                 }"
                               >
-                              </a-transfer>
+                              </Transfer>
                             </a-form-item>
 
                             <div class="record-form-actions text-right">
@@ -114,8 +114,10 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
+import { Transfer } from "ant-design-vue";
+
 import {
-  // onMounted,
+  onMounted,
   ref,
   // watchEffect,
   reactive,
@@ -125,12 +127,15 @@ import axios from "axios";
 import { notification } from "ant-design-vue";
 
 const additional_allowance = ref([]);
-const participants = ref([]);
+const participants_data = ref([]);
 const participants_url = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=702`;
+const participants = ref([]);
 const formState = reactive({
   allowance: "",
   no_of_days: "",
 });
+
+const targetKeys = ref([]);
 
 const additionalAllowance = () => {
   axios
@@ -149,25 +154,24 @@ const additionalAllowance = () => {
 };
 const fetchParticipant = async () => {
   try {
-    const posts = [];
     const response = await fetch(participants_url, {
       method: "GET",
       headers: authHeader(),
     });
 
     const data = await response.json();
-    const posts_data = data.data;
+    const person_data = data.data;
 
-    for (let i = 0; i < posts_data.length; i++) {
+    console.log(person_data);
+
+    for (let i = 0; i < person_data.length; i++) {
       const element = {
-        key: posts_data[i].id,
-        title: posts_data[i].name,
+        key: person_data[i].id,
+        title: person_data[i].user_id,
       };
-      posts.push(element);
+      participants.value.push(element);
     }
 
-    participants.value = posts;
-    console.log("distributions", participants.value);
   } catch (error) {
     notification.error({
       message: "Error",
@@ -175,8 +179,15 @@ const fetchParticipant = async () => {
     });
   }
 };
-additionalAllowance();
-fetchParticipant();
+
+console.log(participants_data.value);
+
+onMounted(async () => {
+  await additionalAllowance();
+  await fetchParticipant();
+});
+
+// fetchTargetKeys();
 </script>
 <style>
 .badge-green {
