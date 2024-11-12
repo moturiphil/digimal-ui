@@ -340,6 +340,14 @@ const routes = [
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfPaidEventsPayrolls.vue"
           ),
       },
+      {
+        path: "manage-allowance",
+        name: "gf-manage-allowance",
+        component: () =>
+          import(
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfManageAllowance.vue"
+          ),
+      },
     ],
   },
   {
