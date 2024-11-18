@@ -115,6 +115,7 @@
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
 import { Transfer } from "ant-design-vue";
+import { useRoute } from "vue-router";
 
 import {
   onMounted,
@@ -126,16 +127,22 @@ import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { notification } from "ant-design-vue";
 
+const { query } = useRoute();
 const additional_allowance = ref([]);
-const participants_data = ref([]);
-const participants_url = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=702`;
+const participants_url = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list?event_payroll_id=${query.id}`;
 const participants = ref([]);
 const formState = reactive({
   allowance: "",
   no_of_days: "",
 });
-
+const assignedParticipants = [];
 const targetKeys = ref([]);
+
+onMounted(async () => {
+  await additionalAllowance();
+  await fetchParticipant();
+  await fetchPayrollParticipants();
+});
 
 const additionalAllowance = () => {
   axios
@@ -147,6 +154,7 @@ const additionalAllowance = () => {
         ...allowance,
         label: `${allowance.formula_name} `,
       }));
+      console.log(additional_allowance.value);
     })
     .catch((error) => {
       console.error(error);
@@ -171,7 +179,6 @@ const fetchParticipant = async () => {
       };
       participants.value.push(element);
     }
-
   } catch (error) {
     notification.error({
       message: "Error",
@@ -180,14 +187,114 @@ const fetchParticipant = async () => {
   }
 };
 
-console.log(participants_data.value);
+const fetchPayrollParticipants = async () => {
+  const participants = [];
+  try {
+    const response = await fetch(participants_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
 
-onMounted(async () => {
-  await additionalAllowance();
-  await fetchParticipant();
-});
+    const data = await response.json();
+    if (data.data) {
+      for (let i = 0; i < data.data.length; i++) {
+        const element = {
+          key: data.data[i].id,
+          title: data.data[i].user_id,
+        };
+        participants.push(element);
+      }
+      data.data.forEach((participant) => {
+        assignedParticipants.push(participant.distribution_post_id);
+      });
+      targetKeys.value = assignedParticipants;
+    } else {
+      console.error("Error", data);
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `Error: ${error}`,
+    });
+  }
+};
+const handleChange = (newTargetKeys) => {
+  // Remove any undefined values from the array
+  const filteredKeys = newTargetKeys.filter((key) => key !== undefined);
 
-// fetchTargetKeys();
+  console.log(filteredKeys);
+  targetKeys.value = filteredKeys;
+  formState.user_ids = filteredKeys;
+};
+
+console.log(formState);
+
+const filterOption = (inputValue, option) => {
+  console.log(inputValue);
+  console.log(option);
+  return option.title.indexOf(inputValue) > -1;
+};
+
+const handleSubmit = async () => {
+  const data = {
+    payroll_id: Number(query.id),
+    formula: "",
+    rate: "",
+    payroll_list_ids: formState.user_ids,
+    payroll_matrix_id: "",
+    no_of_days: formState.no_of_days,
+  };
+  const matchingAllowance = additional_allowance.value.find(
+    (allowance) => allowance.id === formState.allowance
+  );
+  if (matchingAllowance) {
+    console.log("Matching Allowance:", matchingAllowance);
+    data["formula"] = matchingAllowance.formula_name;
+    data["rate"] = matchingAllowance.rate;
+    data["payroll_matrix_id"] = matchingAllowance.id;
+  } else {
+    console.log("No matching allowance found.");
+  }
+
+  console.log(data);
+  try {
+    await fetch(
+      `${process.env.VUE_APP_BASE_URL}/bulk_add_additional_dsa_matrix`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      }
+    )
+      .then((res) => res.json())
+      .then((response) => {
+        console.log(response);
+        if (response.success == true) {
+          notification["success"]({
+            message: response.message,
+            duration: 10.5,
+          });
+        } else if (response.success == false ) {
+          // console.log(response.message);
+          notification["error"]({
+            message: "Ensure that you have completed the required fields",
+            duration: 10.5,
+          });
+        }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: `Error: ${error}`,
+    });
+  }
+};
 </script>
 <style>
 .badge-green {

@@ -53,12 +53,14 @@
       <sdButton size="extra-small" type="warning">
         <router-link
           :to="{
-            path: `/gf/events/manage-allowance`,
+            path: '/gf/events/manage-allowance',
+            query: { id: payroll_id },
           }"
         >
           Manage Allowances
         </router-link>
       </sdButton>
+
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -388,6 +390,7 @@ export default defineComponent({
     const countdown = ref(60);
     const recordId = ref(null);
     const payroll_list_id = ref();
+    const payroll_id = query.id
 
     const exportPayrollList = async () => {
       try {
@@ -853,6 +856,7 @@ export default defineComponent({
       countdownTimer,
       isDisabled,
       handleOk,
+      payroll_id,
     };
   },
 });

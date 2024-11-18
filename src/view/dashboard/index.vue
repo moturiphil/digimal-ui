@@ -902,7 +902,6 @@ const fetchInitialChartData = async () => {
         let ratio = parseFloat((x / y) * 100).toFixed(2);
         scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
       });
-      console.log(scatterData);
       await netsIssuedvsDeliveredChart(
         newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
         newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered

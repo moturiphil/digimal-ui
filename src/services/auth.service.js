@@ -7,8 +7,6 @@ const API_URL = `${process.env.VUE_APP_BASE_URL}/`;
 
 class AuthService {
   login(user) {
-    // console.log(`user:`, user);
-
     return axios
       .post(API_URL + "login", {
         id_no: user.id_no,
@@ -22,8 +20,6 @@ class AuthService {
           );
           sessionStorage.setItem("user", JSON.stringify(response.data));
         }
-        const user = sessionStorage.getItem("user");
-        console.log(user);
         return response;
       });
   }
@@ -33,7 +29,6 @@ class AuthService {
   }
 
   register(user) {
-    // console.log(user);
     return axios
       .patch(API_URL + "set_users_password", {
         id_no: user.id_no,
@@ -43,7 +38,6 @@ class AuthService {
         email: user.email,
       })
       .then((response) => {
-        console.log(response);
         if (response.status === 202) {
           notification.success({
             message: "Success! ",
