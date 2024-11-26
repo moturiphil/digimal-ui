@@ -49,16 +49,18 @@
       >
         Approve Payroll &nbsp; &nbsp;
       </sdButton>
-      <!-- &nbsp;&nbsp;
-      <sdButton
-        class="btn-import"
-        type="warning"
-        @click="handlePay()"
-        size="extra-small"
-        v-if="pay_status == 'Not Paid'"
-      >
-        Pay Event &nbsp; &nbsp;
-      </sdButton> -->
+      &nbsp;&nbsp;
+      <sdButton size="extra-small" type="warning">
+        <router-link
+          :to="{
+            path: '/gf/events/manage-allowance',
+            query: { id: payroll_id },
+          }"
+        >
+          Manage Allowances
+        </router-link>
+      </sdButton>
+
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
@@ -130,7 +132,7 @@
                         title="Add Allowance"
                         :visible="isModalOpen"
                         @cancel="handleCancel"
-                        width="50%"
+                        width="35%"
                         footer=""
                       >
                         <BasicFormWrapper>
@@ -388,6 +390,7 @@ export default defineComponent({
     const countdown = ref(60);
     const recordId = ref(null);
     const payroll_list_id = ref();
+    const payroll_id = query.id
 
     const exportPayrollList = async () => {
       try {
@@ -650,7 +653,8 @@ export default defineComponent({
         })
         .catch((error) => {
           console.error(error);
-        }).finally(() => {
+        })
+        .finally(() => {
           isLoading.value = false;
         });
     });
@@ -706,11 +710,8 @@ export default defineComponent({
         });
     };
 
-    additionalAllowance();
-
-
     const addAllowance = (payroll_detail) => {
-      console.log(payroll_detail);
+      additionalAllowance();
       payroll_list_id.value = payroll_detail.id;
       isModalOpen.value = true;
       console.log(payroll_list_id.value);
@@ -855,6 +856,7 @@ export default defineComponent({
       countdownTimer,
       isDisabled,
       handleOk,
+      payroll_id,
     };
   },
 });

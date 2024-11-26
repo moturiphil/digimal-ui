@@ -235,7 +235,6 @@ export default {
           });
         }
       } catch (error) {
-        console.log(error);
         notification.error({
           message: "Login Failed!",
           description: "Wrong username or password",
@@ -272,7 +271,6 @@ export default {
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
           if (data.status == true && url.includes("pass_reset_request")) {
             data = {};
             proceed.value = true;
@@ -294,11 +292,9 @@ export default {
     };
 
     const get_env = async () => {
-      console.log("here");
       axios
         .get(`${process.env.VUE_APP_BASE_URL}/app_env`)
         .then((response) => {
-          console.log(response.data == "training");
           if (response.data == "training") {
             env.value = "Training Platform";
           }
