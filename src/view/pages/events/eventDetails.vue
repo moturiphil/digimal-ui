@@ -19,7 +19,7 @@
     <Main>
       <div class="button-container">
         <sdButton
-          v-if="isApprovedGenerator && event_payroll_status !== 'Generated'"
+          v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
           class="btn-import"
           type="success"
           size="extra-small"
@@ -35,11 +35,11 @@
               : "Generate Payroll"
           }}
         </sdButton>
-        <span v-if="isApprovedGenerator && event_payroll_status !== 'Generated'"
+        <span v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
           >&nbsp;</span
         >
         <sdButton
-          v-if="isApprovedGenerator && event_payroll_status == 'Generated'"
+          v-if="isApprovedGenerator && event_payroll_status == 'Generated' || event_payroll_status == 'Paid'"
           class="btn-import"
           type="warning"
           size="extra-small"
@@ -626,9 +626,6 @@ const participant = ref("");
 const id_user = ref("");
 const searchItem = ref("");
 const isDownloading = ref(false);
-
-console.log(event_payroll_status !== "Generated");
-
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   const day = date.getDate();
@@ -1208,6 +1205,9 @@ const isApprovedGenerator = computed(() => {
     return false;
   }
 });
+
+console.log( isApprovedGenerator.value && event_payroll_status == 'Generated' || event_payroll_status == 'Paid');
+
 
 computed(() => {
   if (user.user.org_types_id === 10) {
