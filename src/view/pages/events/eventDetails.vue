@@ -19,7 +19,7 @@
     <Main>
       <div class="button-container">
         <sdButton
-          v-if="isApprovedGenerator && event_payroll_status !== 'Generated'"
+          v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
           class="btn-import"
           type="success"
           size="extra-small"
