@@ -262,7 +262,7 @@ const handleSubmit = async () => {
   console.log(data);
   try {
     await fetch(
-      `${process.env.VUE_APP_BASE_URL}/bulk_add_additional_dsa_matrix`,
+      `${process.env.VUE_APP_BASE_URL}/bulk_add_additional_transport_dsa_matrix`,
       {
         method: "POST",
         headers: {
