@@ -101,7 +101,6 @@
               height: 40px;
             "
           >
-            <template #buttons></template>
           </sdPageHeader>
           <a-row :gutter="15">
             <a-col class="w-100" :md="24">
@@ -120,66 +119,35 @@
                       :dataSource="dataSource"
                       :columns="columns"
                     >
-                      <template #payroll="{ record }">
+                      <template #action="{ record }">
                         <td :style="{ 'margin-left': '3px' }">
                           <div class="table-actions">
-                            <sdButton size="extra-small" type="success">
-                              <router-link
-                                :to="{
-                                  path: `/payroll/view/${record.id}`,
-                                  query: {
-                                    id: record.id,
-                                    activity: record.activity_id,
-                                    county: record.county,
-                                    sub_county: record.sub_county,
-                                    no_of_days: record.no_of_days,
-                                    start_date: record.start_date,
-                                    status: record.status,
-                                    approval_status: record.approval_status,
-                                    payment_status: record.payment_status,
-                                  },
-                                }"
-                                class="btn-icon"
-                                type="info"
-                                shape="circle"
-                              >
-                                <span> Payroll Details</span>
-                              </router-link>
-                            </sdButton>
-                            &nbsp;&nbsp;
                             <sdButton
                               type="success"
                               size="extra-small"
-                              @click="handlePay(record.id)"
-                              >Pay Activity</sdButton
+                              @click="handleToggle(record)"
+                              >Toggle Provider</sdButton
                             >
                             &nbsp;&nbsp;
                             <a-modal
-                              title="Payment OTP"
+                              title="Toggle SMS Prodivider"
                               :visible="isModalOpen"
                               @cancel="handleCancel"
                               class="title-success"
                             >
                               <div>
-                                <p>Enter payment OTP</p>
-                                <input type="number" v-model="inputValue" />
-                                <br />
-                                <br />
-                                <sdButton
-                                  type="success"
-                                  size="extra-small"
-                                  @click="resendOTP()"
-                                  :disabled="isDisabled"
-                                >
-                                  Resend OTP
-                                  {{
-                                    countdown > 0 ? "(" + countdown + "s)" : ""
-                                  }}
-                                </sdButton>
+                                <p>
+                                  Are you sure you want to toggle the service
+                                  <b>{{ service.service_label }}</b> from
+                                  <b>{{ service.sms_provider }}</b>
+                                </p>
                               </div>
                               <template v-slot:footer>
+                                <a-button @click="handleCancel()" type="danger"
+                                  >Close</a-button
+                                >
                                 <a-button
-                                  @click="handleOk(recordId, inputValue)"
+                                  @click="handleOk()"
                                   type="success"
                                   :disabled="isPaying"
                                   >{{
@@ -187,11 +155,8 @@
                                       ? "Loading..."
                                       : isPaying
                                       ? "Processing Payment..."
-                                      : "Pay"
+                                      : "Confirm"
                                   }}</a-button
-                                >
-                                <a-button @click="handleCancel()" type="danger"
-                                  >Close</a-button
                                 >
                               </template>
                             </a-modal>
@@ -213,6 +178,43 @@
                 </div>
               </sdCards>
             </a-col>
+            <a-modal
+              title="Payment OTP"
+              :visible="isModalOpen"
+              @cancel="handleCancel"
+              class="title-success"
+            >
+              <div>
+                <p>Enter payment OTP</p>
+                <input type="number" v-model="inputValue" />
+                <br />
+                <br />
+                <sdButton
+                  type="success"
+                  size="extra-small"
+                  @click="resendOTP()"
+                  :disabled="isDisabled"
+                >
+                  Resend OTP
+                  {{ countdown > 0 ? "(" + countdown + "s)" : "" }}
+                </sdButton>
+              </div>
+              <template v-slot:footer>
+                <a-button
+                  @click="handleOk(recordId, inputValue)"
+                  type="success"
+                  :disabled="isPaying"
+                  >{{
+                    isLoading
+                      ? "Loading..."
+                      : isPaying
+                      ? "Processing Payment..."
+                      : "Pay"
+                  }}</a-button
+                >
+                <a-button @click="handleCancel()" type="danger">Close</a-button>
+              </template>
+            </a-modal>
           </a-row>
         </div>
       </SearchResultWrapper>
@@ -223,13 +225,18 @@
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
+import { computed, onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 
 const columns = [
+  {
+    title: "id",
+    dataIndex: "id",
+    key: "id",
+  },
   {
     title: "Service",
     dataIndex: "service_label",
@@ -246,9 +253,10 @@ const columns = [
     key: "id",
   },
   {
-    title: "Toggle Provider",
+    title: "",
     dataIndex: "",
-    key: "id",
+    key: "action",
+    slots: { customRender: "action" },
   },
 ];
 export default defineComponent({
@@ -293,6 +301,9 @@ export default defineComponent({
     const activeClass = ref("all");
     const searchItem = ref("");
     const logs = ref([]);
+    const isModalOpen = ref(false);
+    const service = ref("");
+    const service_id = ref(0);
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/get_sms_settings`;
 
@@ -310,6 +321,7 @@ export default defineComponent({
         .then((response) => {
           console.log(response.data.data);
           logs.value = response.data.data.map((item) => ({
+            id: item.id,
             service_label: item.service_label,
             description: item.description,
             sms_provider:
@@ -323,32 +335,70 @@ export default defineComponent({
         });
     });
 
-    watchEffect(async () => {
-      const query = searchItem.value.toLowerCase();
+    const handleToggle = (record) => {
+      console.log(record);
+      isModalOpen.value = true;
+      service.value = record;
+      service_id.value = record.id;
+    };
+
+    const handleOk = async () => {
+      console.log("Toggling service init...");
+      console.log(
+        `${process.env.VUE_APP_BASE_URL}/toggle_sms_provider/${service_id.value}`
+      );
+
       try {
-        if (!query) {
-          dataSource.value = logs.value;
-          return dataSource.value;
-        }
-        if (query.length > 3) {
-          const response = await fetch(`${API_URL}/search?query=${query}`, {
+        const response = await fetch(
+          `${process.env.VUE_APP_BASE_URL}/toggle_sms_provider/${service_id.value}`,
+          {
             method: "GET",
-            headers: authHeader(),
-          });
+            headers: {
+              ...authHeader(), // Include authHeader
+              "Content-Type": "application/json", // If required for your API
+            },
+          }
+        );
+
+        if (response.ok) {
           const data = await response.json();
-          dataSource.value = data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
+          console.log(data);
+
+          if (data.success == true) {
+            notification.success({
+              message: "Success",
+              description: data.message,
+            });
+            setTimeout(() => {
+              location.reload();
+            }, 3000);
+          } else {
+            notification.error({
+              message: "Error",
+              description: data.message,
+            });
+            setTimeout(() => {
+              location.reload();
+            }, 3000);
+          }
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
       } catch (error) {
+        console.error(error);
+
         notification.error({
           message: "Error",
-          description: error.message,
+          description: "Payment failed",
         });
+      } finally {
+        isModalOpen.value = false;
       }
-    });
+    };
+
+    const handleCancel = () => {
+      isModalOpen.value = false;
+    };
 
     return {
       crud,
@@ -358,7 +408,12 @@ export default defineComponent({
       searchItem,
       columns,
       handleChange,
+      isModalOpen,
       activeClass,
+      handleToggle,
+      handleCancel,
+      service,
+      handleOk,
     };
   },
 });
