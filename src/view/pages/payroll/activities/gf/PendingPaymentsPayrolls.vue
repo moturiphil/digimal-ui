@@ -444,9 +444,7 @@ const countdownTimer = () => {
 };
 
 // fetch MPESA balance
-
 const fetchBalance = () => {
-  console.log("fetching mpesa balance");
   const API_URL = `${process.env.VUE_APP_BASE_URL}/float/mpesa/balance`;
 
   axios

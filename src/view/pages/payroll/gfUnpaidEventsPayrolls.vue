@@ -19,6 +19,7 @@
           </a-col>
           <a-col :xs="24">
             <sdCards headless>
+              <b>Utility Balance: {{ balance }}</b>
               <div class="result-list-content">
                 <a-row :gutter="15">
                   <a-col class="w-100" :md="24">
@@ -218,13 +219,14 @@ const searchItem = ref("");
 const recordId = ref(null);
 const isModalOpen = ref(false);
 const isPaying = computed(() => state.isPaying);
-
+const balance = ref(0);
 const isDisabled = ref(true);
 const countdown = ref(60);
 
 onMounted(() => {
   isLoading.value = true;
   fetchPayrolls();
+  fetchBalance();
 });
 
 const fetchPayrolls = () => {
@@ -438,6 +440,30 @@ const countdownTimer = () => {
   isDisabled.value = true;
   countdown.value = 60;
   startCountdown();
+};
+// fetch MPESA balance
+
+const fetchBalance = () => {
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/float/mpesa/balance`;
+
+  axios
+    .get(API_URL, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      console.log(response);
+      const formattedBalance = new Intl.NumberFormat().format(
+        response.data.data.utility_balance
+      );
+      console.log(formattedBalance); // Outputs: 528,020.51
+      balance.value = formattedBalance;
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
 };
 </script>
 <style>
