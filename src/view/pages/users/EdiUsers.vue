@@ -116,11 +116,6 @@
           :label-col="{ span: 8 }"
           :wrapper-col="{ span: 16 }"
         >
-          <!-- <a-input
-            v-model:value="formState.role_id"
-            placeholder="Role"
-            :disabled="true"
-          ></a-input> -->
           <a-select
             v-model:value="formState.role_id"
             v-if="!loading"
@@ -205,7 +200,7 @@ getRoles();
 
 const fetchOrganizations = async () => {
   const response = await fetch(
-    `${process.env.VUE_APP_BASE_URL}/organizations`,
+    `${process.env.VUE_APP_BASE_URL}/update_user_organizations`,
     {
       method: "GET",
       headers: {
