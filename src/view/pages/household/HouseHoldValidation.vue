@@ -14,46 +14,8 @@
     </sdPageHeader>
 
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
-        Export HouseHolds Data
-      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
-          <a-col :xs="24">
-            <div class="search-filter-menu">
-              <ul>
-                <!-- <li>
-                  <a
-                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                    @click="handleChange('all')"
-                    href="#"
-                  >
-                    All HouseHolds
-                  </a>
-                </li> -->
-                <!-- <li>
-                  <a
-                    :class="
-                      activeClass === 'approved' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('approved')"
-                    href="#"
-                  >
-                    Approved HouseHolds
-                  </a>
-                </li> -->
-                <li>
-                  <a
-                    :class="activeClass === 'outliers' ? 'active' : 'active'"
-                    @click="handleChange('outliers')"
-                    href="#"
-                  >
-                    Outliers
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </a-col>
           <a-col :xs="24">
             <sdCards headless>
               <div class="result-list-content">
@@ -185,12 +147,6 @@
                   </a-col>
                 </a-row>
               </div>
-              <!-- <a-pagination
-                show-size-changer
-                :default-current="3"
-                :total="40"
-                @showSizeChange="onShowSizeChange"
-              /> -->
             </sdCards>
             <a-modal
               title="HouseHold Size Validation"
@@ -651,6 +607,8 @@ const fetchOutliers = async () => {
     dataSource.value = response.data.data.data;
   } catch (error) {
     console.error("Error fetching data:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -727,10 +685,6 @@ const handleOk = async (id, inputValue) => {
 <style>
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-  border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 </style>
