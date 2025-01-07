@@ -4,7 +4,7 @@
     <div class="auth-contents">
       <a-form @finish="handleSubmit" :model="formState" layout="vertical">
         <sdHeading as="h3">
-          Sign in to <span class="color-success">DigiMal KE Dashboard</span>
+          Sign in to <span class="color-success">DigiMal-KE Dashboard</span>
         </sdHeading>
         <sdHeading as="h5">
           <span class="color-success">{{ env }}</span>

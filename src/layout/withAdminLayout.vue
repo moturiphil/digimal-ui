@@ -155,7 +155,7 @@
                 <a-col :md="12" :xs="24">
                   <strong
                     ><span class="admin-footer__copyright"
-                      >{{ currentYear }} © DigiMal</span
+                      >{{ currentYear }} © DigiMal-KE</span
                     ></strong
                   >
                 </a-col>

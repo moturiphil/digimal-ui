@@ -106,18 +106,22 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Health-Care Workers(CHWs)</sHeading
-                      >
-                    </th>
+                    <thead>
+                      <sHeading class="stat-title docorate" align="center">
+                        <b> Health-Care Workers (CHWs) </b>
+                      </sHeading>
+                    </thead>
                     <tbody>
                       <tr>
                         <td><span class="stat-span">Total Trained</span></td>
                         <td>
-                          <sdHeading class="stat-title">{{
-                            new Intl.NumberFormat().format(summary.trained_hcw)
-                          }}</sdHeading>
+                          <sdHeading class="stat-title">
+                            {{
+                              new Intl.NumberFormat().format(
+                                summary.trained_hcw
+                              )
+                            }}
+                          </sdHeading>
                         </td>
                       </tr>
                     </tbody>
@@ -133,11 +137,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Community Health-Promoters(CHPS)</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b> Community Health-Promoters(CHPS) </b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td><span class="stat-span">Total Trained</span></td>
@@ -160,11 +162,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Village Elders(VEs)</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b> Village Elders(VEs) </b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td><span class="stat-span">Total Trained</span></td>
@@ -187,11 +187,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >CHPs & VEs</sHeading
-                      >
-                    </th>
+                      <sHeading class="stat-title docorate" align="center">
+                        <b> CHPs & VEs </b>
+                      </sHeading>
                     <tbody>
                       <tr>
                         <td><span class="stat-span">Total Trained</span></td>
@@ -249,9 +247,9 @@ const currentCounties = ref([
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
-  'BjC1xL40gHo',//kakamega
-  'ihZsJ8alvtb',// Kericho
-  't0J75eHKxz5',// Nandi 
+  "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
