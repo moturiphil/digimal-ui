@@ -175,167 +175,100 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import { computed, onMounted, ref, defineComponent } from "vue";
+import { computed, onMounted, ref } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
-import { useStore } from "vuex";
 import { useRoute } from "vue-router";
-import { format } from "date-fns"; // Import date-fns for formatting
+const isLoading = ref(true);
+const dataSource = ref([]);
+const activeClass = ref("all");
+const searchItem = ref("");
+const { query } = useRoute();
+const location = query.event_location_id;
+const API_URL = `${process.env.VUE_APP_BASE_URL}/get_post_security?subcounty_id=${location}`;
+const calculateDateDiff = (date1, date2) => {
+  const dateReceived = new Date(date1);
+  const distributionDate = new Date(date2);
+  const diffTime = Math.abs(distributionDate - dateReceived);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
 
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
+const tableColumns = [
+  {
+    title: "Post Name",
+    dataIndex: "post_name",
+    key: "post_name",
   },
-  data() {
-    return {
-      notData: this.searchData,
-      current: 0,
-      pageSize: 0,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      payroll: [],
-    };
+  {
+    title: "Day Shift Count",
+    key: "day_shift_count",
   },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    onShowSizeChange(current, pageSize) {
-      this.current = current;
-      this.pageSize = pageSize;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-    viewMore(record) {
-      // Implement your logic for "View More" here
-      console.log("Viewing more for record:", record);
-    },
-    formatDate(dateStr) {
-      return format(new Date(dateStr), "do MMMM yyyy");
-    },
+  {
+    title: "Night Shift Count",
+    key: "night_shift_count",
   },
-  setup() {
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const searchItem = ref("");
-    const { query } = useRoute();
+  {
+    title: "Date Received",
+    key: "delivery_date",
+  },
+  {
+    title: "Distribution Start Date",
+    key: "distribution_date",
+  },
+  {
+    title: "Date Diff",
+    key: "date_diff",
+  },
+  {
+    title: "Action",
+    key: "action",
+  },
+];
 
-    const location = query.event_location_id;
+// Computed properties for totals
+const totalPosts = computed(() => dataSource.value.length);
+const totalDaySecurity = computed(() =>
+  dataSource.value.reduce((acc, post) => acc + post.day_shift_count, 0)
+);
+const totalNightSecurity = computed(() =>
+  dataSource.value.reduce((acc, post) => acc + post.night_shift_count, 0)
+);
 
-    const API_URL = `${process.env.VUE_APP_BASE_URL}/get_post_security?subcounty_id=${location}`;
-
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
-
-    const calculateDateDiff = (date1, date2) => {
-      const dateReceived = new Date(date1);
-      const distributionDate = new Date(date2);
-      const diffTime = Math.abs(distributionDate - dateReceived);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
-    };
-
-    const tableColumns = [
-      {
-        title: "Post Name",
-        dataIndex: "post_name",
-        key: "post_name",
-      },
-      {
-        title: "Day Shift Count",
-        key: "day_shift_count",
-      },
-      {
-        title: "Night Shift Count",
-        key: "night_shift_count",
-      },
-      {
-        title: "Date Received",
-        key: "delivery_date",
-      },
-      {
-        title: "Distribution Start Date",
-        key: "distribution_date",
-      },
-      {
-        title: "Date Diff",
-        key: "date_diff",
-      },
-      {
-        title: "Action",
-        key: "action",
-      },
-    ];
-
-    // Computed properties for totals
-    const totalPosts = computed(() => dataSource.value.length);
-    const totalDaySecurity = computed(() =>
-      dataSource.value.reduce((acc, post) => acc + post.day_shift_count, 0)
-    );
-    const totalNightSecurity = computed(() =>
-      dataSource.value.reduce((acc, post) => acc + post.night_shift_count, 0)
-    );
-
-    onMounted(() => {
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          console.log(response.data.data);
-          dataSource.value = response.data.data.map((post) => {
-            const distribution_date = post.distribution_date;
-            const dayShiftCount = post.securities.filter(
-              (security) => security.shift === "Day"
-            ).length;
-            const nightShiftCount = post.securities.filter(
-              (security) => security.shift === "Night"
-            ).length;
-            return {
-              ...post,
-              day_shift_count: dayShiftCount,
-              night_shift_count: nightShiftCount,
-              hasBothShifts: dayShiftCount == 1 && nightShiftCount == 1,
-              distribution_date: distribution_date,
-            };
-          });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+onMounted(() => {
+  isLoading.value = true;
+  axios
+    .get(API_URL, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      console.log(response.data.data);
+      dataSource.value = response.data.data.map((post) => {
+        const distribution_date = post.distribution_date;
+        const dayShiftCount = post.securities.filter(
+          (security) => security.shift === "Day"
+        ).length;
+        const nightShiftCount = post.securities.filter(
+          (security) => security.shift === "Night"
+        ).length;
+        return {
+          ...post,
+          day_shift_count: dayShiftCount,
+          night_shift_count: nightShiftCount,
+          hasBothShifts: dayShiftCount == 1 && nightShiftCount == 1,
+          distribution_date: distribution_date,
+        };
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      searchItem,
-      tableColumns,
-      handleChange,
-      activeClass,
-      totalPosts,
-      totalDaySecurity,
-      totalNightSecurity,
-      calculateDateDiff,
-    };
-  },
 });
 </script>
 

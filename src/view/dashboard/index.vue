@@ -113,11 +113,9 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th>
-                    <sHeading class="stat-title docorate" align="center"
-                      >Digimal Stats</sHeading
-                    >
-                  </th>
+                  <sHeading class="stat-title docorate" align="center"
+                    >Digimal Stats</sHeading
+                  >
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Registered Users</span></td>
@@ -156,11 +154,9 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th>
-                    <sHeading class="stat-title docorate" align="center"
-                      >Nets</sHeading
-                    >
-                  </th>
+                  <sHeading class="stat-title docorate" align="center"
+                    >Nets</sHeading
+                  >
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Required</span></td>
@@ -232,11 +228,9 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th>
-                    <sHeading class="stat-title docorate" align="center"
-                      >Households</sHeading
-                    >
-                  </th>
+                  <sHeading class="stat-title docorate" align="center"
+                    >Households</sHeading
+                  >
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Registered</span></td>
@@ -308,11 +302,9 @@
               <CardBarChart2>
                 <table class="stat-table">
                   <thead>
-                    <th rowspan="">
-                      <sHeading class="stat-title docorate" align="center"
-                        >Household Population</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center"
+                      >Household Population</sHeading
+                    >
                   </thead>
                   <tbody>
                     <tr>
@@ -836,9 +828,9 @@ const currentCounties = ref([
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
-  'BjC1xL40gHo',//kakamega
-  'ihZsJ8alvtb',// Kericho
-  't0J75eHKxz5',// Nandi 
+  "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana

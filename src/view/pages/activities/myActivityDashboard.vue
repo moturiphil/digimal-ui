@@ -29,11 +29,6 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions"></div>
-                              </td>
-                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -75,11 +70,6 @@
                             :dataSource="invitedAct"
                             :columns="columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions"></div>
-                              </td>
-                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -121,11 +111,6 @@
                             :dataSource="enrolledAct"
                             :columns="enrolled_columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '4px' }">
-                                <div class="table-actions"></div>
-                              </td>
-                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>

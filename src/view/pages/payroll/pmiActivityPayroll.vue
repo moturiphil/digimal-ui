@@ -47,7 +47,9 @@
                 </li>
                 <li v-if="isValidator">
                   <a
-                    :class="activeClass === 'not_validated' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'not_validated' ? 'active' : 'deactivate'
+                    "
                     @click="handleChange('not_validated')"
                     href="#"
                   >
@@ -56,7 +58,11 @@
                 </li>
                 <li v-if="isApprover">
                   <a
-                    :class="activeClass === 'pending_approval' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'pending_approval'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('pending_approval')"
                     href="#"
                   >
@@ -65,7 +71,11 @@
                 </li>
                 <li v-if="isAdminAccountant">
                   <a
-                    :class="activeClass === 'pending_payment' ? 'active' : 'deactivate'"
+                    :class="
+                      activeClass === 'pending_payment'
+                        ? 'active'
+                        : 'deactivate'
+                    "
                     @click="handleChange('pending_payment')"
                     href="#"
                   >
@@ -131,12 +141,17 @@
                                   @cancel="handleVoidCancel"
                                 >
                                   <template #footer>
-                                    <a-button key="back" @click="handleVoidCancel"
+                                    <a-button
+                                      key="back"
+                                      @click="handleVoidCancel"
                                       >No, Take me back!</a-button
                                     >
                                     <a-button
                                       key="submit"
-                                      style="background: orange; color: aliceblue"
+                                      style="
+                                        background: orange;
+                                        color: aliceblue;
+                                      "
                                       :loading="loading"
                                       @click="actionVoidPayroll"
                                       >Yes, Void it!</a-button
@@ -197,7 +212,10 @@
                                   >
                                     <div>
                                       <p>Enter payment OTP</p>
-                                      <input type="number" v-model="inputValue" />
+                                      <input
+                                        type="number"
+                                        v-model="inputValue"
+                                      />
                                     </div>
                                   </a-modal>
                                 </div>
@@ -219,37 +237,41 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
+                              <tr>
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton
+                                      size="small"
+                                      type="success"
+                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
-                                  &nbsp;&nbsp;
+                                      <router-link
+                                        :to="{
+                                          path: `/payroll/view/${record.id}`,
+                                          query: { id: record.id },
+                                        }"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                      >
+                                        &nbsp;&nbsp;
+                                        <span
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                      </router-link>
+                                    </sdButton>
+                                    &nbsp;&nbsp;
 
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handleValidation(record.id)"
-                                    >Validate</sdButton
-                                  >
-                                </div>
-                              </td>
+                                    <sdButton
+                                      type="success"
+                                      size="small"
+                                      @click="handleValidation(record.id)"
+                                      >Validate</sdButton
+                                    >
+                                  </div>
+                                </td>
+                              </tr>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -267,36 +289,40 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
+                              <tr>
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton
+                                      size="small"
+                                      type="success"
+                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
-                                  &nbsp;&nbsp;
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handleApproval(record.id)"
-                                    >Approve</sdButton
-                                  >
-                                </div>
-                              </td>
+                                      <router-link
+                                        :to="{
+                                          path: `/payroll/view/${record.id}`,
+                                          query: { id: record.id },
+                                        }"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                      >
+                                        &nbsp;&nbsp;
+                                        <span
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                      </router-link>
+                                    </sdButton>
+                                    &nbsp;&nbsp;
+                                    <sdButton
+                                      type="success"
+                                      size="small"
+                                      @click="handleApproval(record.id)"
+                                      >Approve</sdButton
+                                    >
+                                  </div>
+                                </td>
+                              </tr>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -314,36 +340,40 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: { id: record.id },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
+                              <tr>
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton
+                                      size="small"
+                                      type="success"
+                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
-                                  &nbsp;&nbsp;
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handlePay(record.id)"
-                                    >Pay Activity</sdButton
-                                  >
-                                </div>
-                              </td>
+                                      <router-link
+                                        :to="{
+                                          path: `/payroll/view/${record.id}`,
+                                          query: { id: record.id },
+                                        }"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                      >
+                                        &nbsp;&nbsp;
+                                        <span
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                      </router-link>
+                                    </sdButton>
+                                    &nbsp;&nbsp;
+                                    <sdButton
+                                      type="success"
+                                      size="small"
+                                      @click="handlePay(record.id)"
+                                      >Pay Activity</sdButton
+                                    >
+                                  </div>
+                                </td>
+                              </tr>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -360,22 +390,6 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <!-- <sdButton
-                                      type="check"
-                                      size="16"
-                                      @click="handleVerify(record.id)"
-                                    >
-                                      &nbsp;&nbsp;
-                                      <span class="badge badge-green"
-                                        >&nbsp;&nbsp; Verify</span
-                                      >
-                                    </sdButton> -->
-                                </div>
-                              </td>
-                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -505,13 +519,15 @@ const filter = (data) => {
 
     case "pending_approval":
       return data.filter(
-        (item) => item.approval_status === "Not Approved" && item.status === "Validated"
+        (item) =>
+          item.approval_status === "Not Approved" && item.status === "Validated"
       );
 
     case "pending_payment":
       return data.filter(
         (item) =>
-          item.approval_status === "Approved" && item.payment_status === "Not Paid"
+          item.approval_status === "Approved" &&
+          item.payment_status === "Not Paid"
       );
 
     case "paid":
@@ -661,7 +677,8 @@ const handleOk = async (id, inputValue) => {
           if (data.success == true) {
             notification.success({
               message: "Success",
-              description: "Payment Approved Successfully, Enter OTP to complete payment",
+              description:
+                "Payment Approved Successfully, Enter OTP to complete payment",
             });
           }
         });
@@ -704,7 +721,8 @@ onMounted(() => {
       pmiActivityPayroll.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
       });
       dataSource.value = pmiActivityPayroll.value;
     })
@@ -721,7 +739,9 @@ watchEffect(async () => {
       return dataSource.value;
     }
     if (querysearch.length > 3) {
-      const response = await axios.get(`activity_payroll_summary?query=${querysearch}`);
+      const response = await axios.get(
+        `activity_payroll_summary?query=${querysearch}`
+      );
       const data = await response.data;
       const filteredItems = [];
       data.data.forEach((item) => {
@@ -734,7 +754,8 @@ watchEffect(async () => {
       dataSource.value.forEach((item) => {
         item.status = item.status === 1 ? "Validated" : "Not Validated";
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
-        item.approval_status = item.approval_status === 1 ? "Approved" : "Not Approved";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
       });
     }
   } catch (error) {
