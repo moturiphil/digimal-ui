@@ -98,14 +98,14 @@
                                       ) in record.delivery_date"
                                       :key="index"
                                     >
-                                      {{ formatDate(delivery.date_received) }}
+                                      {{ delivery.date_received }}
                                     </li>
                                   </ul>
                                 </div>
                                 <div
                                   v-else-if="column.key === 'distribution_date'"
                                 >
-                                  {{ formatDate(record.distribution_date) }}
+                                  {{ record.distribution_date }}
                                 </div>
 
                                 <div v-else-if="column.key === 'date_diff'">
