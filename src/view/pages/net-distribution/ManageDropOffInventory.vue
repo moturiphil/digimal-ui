@@ -73,6 +73,7 @@
                 query: {
                   id: drop_off_id,
                   name: drop_off_name,
+                  code : drop_off_code,
                 },
               }"
               class="btn-icon"
@@ -737,6 +738,7 @@ const drop_off_summary_data = ref(null);
 const targetKeys = ref([]);
 const { query } = useRoute();
 const drop_off_name = query.name;
+const drop_off_code = query.code;
 const drop_off_id = query.id;
 const county_id = query.county;
 const checked = ref(false);
@@ -755,6 +757,7 @@ const { state } = useStore();
 const isDisabled = computed(() => state.isDisabled);
 const searchPostItem = ref("");
 const dropoff_stock = ref(null);
+
 
 const formState = reactive({
   date_received: "",

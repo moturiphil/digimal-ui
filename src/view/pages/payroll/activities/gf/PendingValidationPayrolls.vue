@@ -53,7 +53,7 @@
                                           no_of_days: record.no_of_days,
                                           start_date: record.start_date,
                                           validate_status: record.status,
-                                          
+
                                           approval_status:
                                             record.approval_status,
                                           payment_status: record.payment_status,
@@ -119,7 +119,7 @@
                             :pageSize="pageSize"
                             :showSizeChanger="true"
                             :pagination="true"
-                            @change="onPageChange($activity)"
+                            @change="onPageChange($event)"
                           />
                         </TableWrapper>
                       </div>
@@ -135,13 +135,12 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../../../styled";
 import { SearchResultWrapper } from "../../../style";
-import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import authHeader from "../../../../../services/auth-header";
 import axios from "axios";
-import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 
 const columns = [
@@ -184,215 +183,166 @@ const columns = [
     slots: { customRender: "payroll" },
   },
 ];
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      payroll: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-  },
-  setup() {
-    var currentPage = ref(1);
-    var pageSize = ref(100);
-    var datatotal = ref(0);
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const searchItem = ref("");
-    const openVoidModal = ref(false);
-    const voidPayroll = ref(null);
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
 
-    const showVoidModal = (record) => {
-      console.log(record);
-      voidPayroll.value = record;
-      openVoidModal.value = true;
-    };
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+const isLoading = ref(true);
+const dataSource = ref([]);
+const activeClass = ref("all");
+const searchItem = ref("");
+const openVoidModal = ref(false);
+const voidPayroll = ref(null);
 
-    const handleVoidCancel = () => {
-      openVoidModal.value = false;
-    };
+const showVoidModal = (record) => {
+  console.log(record);
+  voidPayroll.value = record;
+  openVoidModal.value = true;
+};
 
-    const actionVoidPayroll = async () => {
-      try {
-        const response = await axios.post(
-          `${process.env.VUE_APP_BASE_URL}/void_activity_payroll_summaries/${voidPayroll.value.id}`,
-          null,
-          {
-            headers: authHeader(),
-          }
-        );
+const handleVoidCancel = () => {
+  openVoidModal.value = false;
+};
 
-        openVoidModal.value = false;
-        if (response.data.success == true) {
-          notification.success({
-            message: "Success",
-            description: response.data.message,
-          });
-          await new Promise((resolve) => {
-            setTimeout(resolve, 2000);
-          });
-          location.reload();
-        } else if (response.data.success == false) {
-          notification.warning({
-            message: "Info",
-            description: response.data.message,
-          });
-        }
-      } catch (e) {
-        notification.error({
-          message: "Error!",
-          description: e.toString(),
-        });
-        console.log(e);
+const actionVoidPayroll = async () => {
+  try {
+    const response = await axios.post(
+      `${process.env.VUE_APP_BASE_URL}/void_activity_payroll_summaries/${voidPayroll.value.id}`,
+      null,
+      {
+        headers: authHeader(),
       }
-    };
+    );
 
-    onMounted(() => {
-      fetchPayrolls();
+    openVoidModal.value = false;
+    if (response.data.success == true) {
+      notification.success({
+        message: "Success",
+        description: response.data.message,
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 2000);
+      });
+      location.reload();
+    } else if (response.data.success == false) {
+      notification.warning({
+        message: "Info",
+        description: response.data.message,
+      });
+    }
+  } catch (e) {
+    notification.error({
+      message: "Error!",
+      description: e.toString(),
     });
+    console.log(e);
+  }
+};
 
-    const fetchPayrolls = () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_validated=0&page=${currentPage.value}&per_page=${pageSize.value}`;
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          console.log(response.data.data);
-          datatotal.value = response.data.pagination.total;
-          dataSource.value = response.data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-          dataSource.value.forEach((item) => {
-            item.status = item.status === 1 ? "Validated" : "Not Validated";
-            item.payment_status =
-              item.payment_status === 1 ? "Paid" : "Not Paid";
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
-
-    const onPageChange = async (page) => {
-      console.log(page);
-      currentPage.value = page;
-      try {
-        fetchPayrolls();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    watchEffect(async () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_validated=0&page=${currentPage.value}&per_page=${pageSize.value}`;
-      const query = searchItem.value.toLowerCase();
-      try {
-        if (!query) {
-          return dataSource.value;
-        }
-        if (query.length > 3) {
-          const response = await fetch(`${API_URL}&query=${query}`, {
-            method: "GET",
-            headers: authHeader(),
-          });
-          const data = await response.json();
-          dataSource.value = data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-        }
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-      }
-    });
-
-    const handleValidation = (id) => {
-      try {
-        fetch(
-          `${process.env.VUE_APP_BASE_URL}/payroll_validation?payroll_id=${id}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...authHeader(),
-            },
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            console.log(data);
-            if (data.success === true) {
-              notification.success({
-                message: "Success!",
-                description: data.message,
-              });
-              setTimeout(() => {}, 2000);
-            } else {
-              notification.error({
-                message: "Error!",
-                description: data.message,
-              });
-            }
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      searchItem,
-      columns,
-      handleChange,
-      activeClass,
-      handleValidation,
-      showVoidModal,
-      handleVoidCancel,
-      actionVoidPayroll,
-      openVoidModal,
-      voidPayroll,
-      onPageChange,
-    };
-  },
+onMounted(() => {
+  isLoading.value = true;
+  fetchPayrolls();
 });
+
+const fetchPayrolls = () => {
+  isLoading.value = true;
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_validated=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+  axios
+    .get(API_URL, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      console.log(response.data.data);
+      datatotal.value = response.data.pagination.total;
+      dataSource.value = response.data.data.map((item) => ({
+        ...item,
+        old_values: item.old_values,
+        new_values: item.new_values,
+      }));
+      dataSource.value.forEach((item) => {
+        item.status = item.status === 1 ? "Validated" : "Not Validated";
+        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+};
+
+const onPageChange = async (page) => {
+  console.log(page);
+  currentPage.value = page;
+  try {
+    fetchPayrolls();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+watchEffect(async () => {
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/all_activity_payrolls?funding_id=1&is_validated=0&page=${currentPage.value}&per_page=${pageSize.value}`;
+  const query = searchItem.value.toLowerCase();
+  try {
+    if (!query) {
+      return dataSource.value;
+    }
+    if (query.length > 3) {
+      const response = await fetch(`${API_URL}&query=${query}`, {
+        method: "GET",
+        headers: authHeader(),
+      });
+      const data = await response.json();
+      dataSource.value = data.data.map((item) => ({
+        ...item,
+        old_values: item.old_values,
+        new_values: item.new_values,
+      }));
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: error.message,
+    });
+  }
+});
+
+const handleValidation = (id) => {
+  try {
+    fetch(
+      `${process.env.VUE_APP_BASE_URL}/payroll_validation?payroll_id=${id}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.success === true) {
+          notification.success({
+            message: "Success!",
+            description: data.message,
+          });
+          setTimeout(() => {}, 2000);
+        } else {
+          notification.error({
+            message: "Error!",
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
 </script>
 <style>
 .badge-green {

@@ -39,7 +39,6 @@
                   >
                     Return Nets to Drop Off Point
                   </a>
-                  <!-- @click="handleTransactions('return')" -->
                 </li>
                 <li>
                   <sdButton
@@ -61,7 +60,6 @@
                       activeClass === 'do_point' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('do_point')"
-                    href="#"
                     :hidden="activeTransaction !== 'receive'"
                   >
                     Received from DropOff Point
@@ -73,7 +71,6 @@
                       activeClass === 'warehouse' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('warehouse')"
-                    href="#"
                     :hidden="activeTransaction !== 'receive'"
                   >
                     Received from Warehouse
@@ -87,7 +84,6 @@
                         : 'deactivate'
                     "
                     @click="handleChange('do_post_summary')"
-                    href="#"
                     :hidden="activeTransaction !== 'receive'"
                   >
                     Post Summary
@@ -101,30 +97,19 @@
                         : 'deactivate'
                     "
                     @click="handleChange('do_post_worker_summary')"
-                    href="#"
                     :hidden="activeTransaction !== 'receive'"
                   >
                     Post Worker Summary
                   </a>
                 </li>
-                <li>
-                  <a
-                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
-                    @click="openReturnsModal()"
-                    href="#"
-                    :hidden="activeTransaction !== 'return'"
-                    type="warning"
-                  >
-                    Return to Dropoff Point
-                  </a>
-                </li>
+              </ul>
+              <ul>
                 <li>
                   <a
                     :class="
                       activeClass === 'transfer_ins' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('transfer_ins')"
-                    href="#"
                     :hidden="activeTransaction !== 'transfer'"
                   >
                     Transfer In's
@@ -136,7 +121,6 @@
                       activeClass === 'transfer_outs' ? 'active' : 'deactivate'
                     "
                     @click="handleChange('transfer_outs')"
-                    href="#"
                     :hidden="activeTransaction !== 'transfer'"
                   >
                     Transfer Out's
@@ -151,6 +135,28 @@
                   >
                     <sdFeatherIcons type="plus" size="14" /> &nbsp; New Transfer
                   </sdButton>
+                </li>
+              </ul>
+              <ul>
+                <li v-if="is_pmi_county === true">
+                  <a
+                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
+                    @click="openReturnsModal()"
+                    :hidden="activeTransaction !== 'return'"
+                    type="warning"
+                  >
+                    Return to Dropoff Point
+                  </a>
+                </li>
+                <li v-if="is_pmi_county === false">
+                  <a
+                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
+                    @click="openreverseLogisticsModal()"
+                    :hidden="activeTransaction !== 'return'"
+                    type="warning"
+                  >
+                    Return to Dropoff Point
+                  </a>
                 </li>
               </ul>
             </div>
@@ -342,21 +348,19 @@
                         </TableWrapper>
                         <!-- end of Net TransfersOut table -->
 
-                        <!-- returns table -->
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'return'"
-                        >
-                          <a-table
-                            :pagination="{
-                              pageSize: 50,
-                              showSizeChanger: true,
-                            }"
-                            :dataSource="returnedNets"
-                            :columns="returns_columns"
-                          >
-                          </a-table>
-                        </TableWrapper>
+                        <!-- Dropoff Returns -->
+                        <DropOffReturns
+                          :post_id="query.id"
+                          v-if="activeClass === 'return'"
+                        />
+
+                        <!-- End of Dropoff Returns -->
+
+                        <!--Distribution Post Summary-->
+                        <DistributionPostWorkerSummary
+                          :post_id="query.id"
+                          v-if="activeClass === 'do_post_worker_summary'"
+                        />
                         <!-- end of returns table -->
 
                         <!--Distribution Post Summary-->
@@ -439,7 +443,7 @@
                               </a-form-item>
                               <a-form-item
                                 name="delivery_note_number"
-                                label="S11 No"
+                                label="S11 Serial No"
                               >
                                 <a-input
                                   v-model:value="
@@ -553,6 +557,10 @@
                         </a-modal>
                         <!-- end of receive modal -->
 
+                        <!-- reverse logistics modal -->
+                        <PostReturnsToDropoffVue />
+                        <!-- end of return logistics modal -->
+
                         <!-- Return nets modal -->
                         <a-modal
                           title="Return Nets"
@@ -651,6 +659,273 @@
                           </BasicFormWrapper>
                         </a-modal>
                         <!-- end of return nets modal -->
+
+                        <!-- Reverse logistic modal -->
+                        <a-modal
+                          title="Return Nets - Reverse Logistics"
+                          :visible="reverseLogisticsModalOpen"
+                          @cancel="handleCancelReverseLogistic"
+                          width="50%"
+                          footer=""
+                        >
+                          <BasicFormWrapper>
+                            <a-form
+                              class="add-transfer-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="addnew"
+                              :model="returns_formState"
+                              @finish="handleReverseLogistics"
+                            >
+                              <a-form-item
+                                name="to_drop_off"
+                                label="Drop Off Point to Return"
+                                v-if="is_variance == false"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please select the Drop off point to be returned to',
+                                  },
+                                ]"
+                              >
+                                <a-select
+                                  placeholder="Select Drop Off Point to Return"
+                                  v-model:value="
+                                    returns_formState.to_drop_off_point_id
+                                  "
+                                >
+                                  <a-select-option
+                                    v-for="dp in dropoffpoints"
+                                    :key="dp.id"
+                                    v-model:value="dp.id"
+                                  >
+                                    {{ dp.name }}
+                                  </a-select-option>
+                                </a-select>
+                              </a-form-item>
+                              <a-form-item
+                                name="no_of_nets"
+                                label="Total Number of nets to be Returned"
+                                v-if="is_variance == false"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Enter total number of nets to be returned',
+                                  },
+                                ]"
+                              >
+                                <a-input
+                                  v-model:value="
+                                    returns_formState.number_of_nets
+                                  "
+                                  placeholder="Total No of Nets to be Returned"
+                                  type="number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="date_returned"
+                                label="Date Returned"
+                                v-if="is_variance == false"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please select the date of returns',
+                                  },
+                                ]"
+                              >
+                                <a-date-picker
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.date_returned
+                                  "
+                                  :format="dateFormat"
+                                  :disabledDate="disabledLogisticDate"
+                                />
+                              </a-form-item>
+                              <!-- <a-checkbox v-model:checked="checked">Are there nets that were damaged</a-checkbox> -->
+                              <a-form-item
+                                name="damages_check"
+                                label="Are any of the nets returned damaged?"
+                                v-if="is_variance == false"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please confirm if there were any damaged nets',
+                                  },
+                                ]"
+                              >
+                                <!-- <a-radio-group v-model="damagesCheck"> -->
+                                <a-radio v-model:checked="checked">Yes</a-radio>
+                                <a-radio v-if="checked != true">No</a-radio>
+                                <!-- </a-radio-group> -->
+                              </a-form-item>
+
+                              <a-form-item
+                                v-if="checked == true && is_variance == false"
+                                name="no_of_damages"
+                                label="Number of Damaged Nets"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please enter the number of damaged nets.',
+                                  },
+                                ]"
+                              >
+                                <a-input
+                                  v-model:value="
+                                    returns_formState.number_of_damages
+                                  "
+                                  placeholder="Number of Damaged Nets"
+                                  type="number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="damage_details"
+                                label="Reason For Damage"
+                                v-if="checked == true && is_variance == false"
+                              >
+                                <a-textarea
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.damage_details
+                                  "
+                                  placeholder="Enter return reson here..."
+                                  :auto-size="{ minRows: 2, maxRows: 5 }"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="delivery_note_number"
+                                label="S11 No"
+                                v-if="is_variance == false"
+                                :rules="[
+                                  {
+                                    required: false,
+                                    message:
+                                      'Please enter the S11 Serial Number',
+                                  },
+                                ]"
+                              >
+                                <a-input
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.delivery_note_number
+                                  "
+                                  type="number"
+                                />
+                              </a-form-item>
+                              <a-form-item
+                                name="return_reason"
+                                label="Reason For Return"
+                                v-if="is_variance == false"
+                                :rules="[
+                                  {
+                                    required: true,
+                                    message: 'Please state reason for return',
+                                  },
+                                ]"
+                              >
+                                <a-textarea
+                                  :style="{ width: '100%' }"
+                                  v-model:value="
+                                    returns_formState.return_reason
+                                  "
+                                  placeholder="Enter return reson here..."
+                                  :auto-size="{ minRows: 2, maxRows: 5 }"
+                                />
+                              </a-form-item>
+
+                              <!-- <a-typography-title v-if="is_variance"></a-typography-title> -->
+                              <h2
+                                style="
+                                  color: red;
+                                  font-family: Gowun Batang, serif;
+                                  font-weight: 400;
+                                  font-style: normal;
+                                "
+                                v-if="is_variance"
+                              >
+                                <u>{{ variance }}</u> Nets are not Accounted
+                                for, please give reasons
+                              </h2>
+
+                              <br />
+                              <br />
+                              <a-form-item
+                                name="variance_reasons"
+                                label="State quantity & reasons below"
+                                v-if="is_variance"
+                              >
+                                <div
+                                  v-for="(
+                                    item, index
+                                  ) in returns_formState.variance_reasons"
+                                  :key="index"
+                                  style="margin-bottom: 8px"
+                                >
+                                  <a-tag closable @close="removeReason(index)">
+                                    {{ item.qty }} - {{ item.reason }}
+                                  </a-tag>
+                                </div>
+
+                                <div
+                                  v-for="(input, index) in inputFields"
+                                  :key="index"
+                                  style="
+                                    display: flex;
+                                    align-items: center;
+                                    margin-bottom: 8px;
+                                  "
+                                >
+                                  <!-- Input for Quantity -->
+                                  <a-input-number
+                                    v-model:value="input.qty"
+                                    placeholder="Enter quantity"
+                                    style="width: 20%; margin-right: 8px"
+                                  />
+
+                                  <!-- Input for Reason -->
+                                  <a-input
+                                    v-model:value="input.reason"
+                                    placeholder="Enter a reason"
+                                    style="width: 80%; margin-right: 8px"
+                                  />
+
+                                  <a-button
+                                    type="warning"
+                                    size="extra-small"
+                                    @click="removeInput(index)"
+                                  >
+                                    Remove
+                                  </a-button>
+                                </div>
+
+                                <a-button
+                                  type="success"
+                                  size="small"
+                                  @click="addInput"
+                                >
+                                  Add Another Reason
+                                </a-button>
+                              </a-form-item>
+
+                              <div class="record-form-actions text-right">
+                                <sdButton
+                                  size="default"
+                                  htmlType="Save"
+                                  type="success"
+                                >
+                                  {{ isLoading ? "Loading..." : "Submit" }}
+                                </sdButton>
+                              </div>
+                            </a-form>
+                          </BasicFormWrapper>
+                        </a-modal>
+                        <!-- end of reverse logistics modal -->
 
                         <!-- Transfer HH Modal -->
 
@@ -793,13 +1068,6 @@
                             >
                               Cancel
                             </a-button>
-                            <!-- <a-button
-                              key="confirm"
-                              type="danger"
-                              @click="handleConfirmDiscrepancy"
-                            >
-                              Confirm
-                            </a-button> -->
                             <a-button
                               key="confirm"
                               type="danger"
@@ -829,11 +1097,12 @@ import { SearchResultWrapper } from "./../style";
 import { onMounted, ref, reactive } from "vue";
 import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
 import DistributionPostWorkerSummary from "./DistributionPostWorkerSummary.vue";
+import DropOffReturns from "./DropOffReturns.vue";
 import authHeader from "../../../services/auth-header";
-// import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
+import axios from "@/Axiosconfig";
 
 const dateFormat = "YYYY-MM-DD";
 const transferscolumns = [
@@ -873,35 +1142,6 @@ const transferscolumns = [
     dataIndex: "action",
     key: "id",
     slots: { customRender: "action" },
-  },
-];
-
-const returns_columns = [
-  {
-    title: "Dropoff",
-    dataIndex: "dropoff_name",
-    key: "id",
-  },
-  {
-    title: "Post",
-    dataIndex: "post_name",
-    key: "id",
-  },
-  {
-    title: "Number of Nets",
-    dataIndex: "total_nets",
-    key: "id",
-  },
-  {
-    title: "Date Returned",
-    dataIndex: "date_returned",
-    key: "id",
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "id",
-    slots: { customRender: "status" },
   },
 ];
 
@@ -994,6 +1234,7 @@ const post_id = query.id;
 const isModalOpen = ref(false);
 const isUpdateModalOpen = ref(false); // trans_formState
 const returnsModalOpen = ref(false);
+const reverseLogisticsModalOpen = ref(false);
 const post_name = query.name;
 const searchItem = ref("");
 const isTransferModalOpen = ref(false);
@@ -1001,14 +1242,16 @@ const posts = ref([]);
 const deliveries = ref(null);
 const discrepancy = ref(null);
 const distribution_id = ref(null);
-// const payload = ref(null);
-// const url = ref(null);
+const post_balance = ref(null);
+const is_variance = ref(false);
+const is_pmi_county = query.funding ? false : true;
+console.log(query.funding);
+console.log(is_pmi_county);
+
 const formState = reactive({
   date_received: "",
   distribution_id: "",
 });
-const returnedNets = ref([]);
-
 const trans_formState = reactive({
   from_post_id: Number(query.id),
   to_post_id: "",
@@ -1024,11 +1267,18 @@ const returns_formState = reactive({
   number_of_nets: "",
   date_returned: "",
   return_reason: "",
+  variance_reasons: [],
+  additional_notes: "",
+  damage_details: "",
 });
 
 const update_formState = reactive({
   date_received: "",
 });
+
+const checked = ref(false);
+// const damagesCheck = ref(null);
+const variance = ref(null);
 
 onMounted(() => {
   fetchPosts();
@@ -1037,11 +1287,16 @@ onMounted(() => {
   receiveFromDropOff();
   fetchTransferIns();
   fetchTransferOuts();
-  fetchReturnedNets();
+  // fetchReturnedNets();
 });
 const handleChange = (tab) => (activeClass.value = tab);
 const openmodal = () => (isModalOpen.value = true);
 const openReturnsModal = () => (returnsModalOpen.value = true);
+const openreverseLogisticsModal = () => (
+  (reverseLogisticsModalOpen.value = true), fetchDistributionsPostsSummary()
+);
+const handleCancelReverseLogistic = () =>
+  (reverseLogisticsModalOpen.value = false);
 const handleCancel = () => (isModalOpen.value = false);
 const handleCancelDiscrepancy = () => (isDiscrepancyModal.value = false);
 const handleCancelUpdate = () => (isUpdateModalOpen.value = false);
@@ -1354,90 +1609,190 @@ const handleReturns = () => {
   }
 };
 
-// const receiveTransferedNets = async () => {
-//   const data = {
-//     transfer_id: trans_formState.transfer_id,
-//     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-//     status: 1,
-//   };
-//   const quantity_received =
-//     Number(formState.number_of_bales) * Number(formState.bale_size) +
-//     Number(formState.no_of_pieces);
+const fetchDistributionsPostsSummary = async () => {
+  try {
+    const response = await axios.get(
+      `nets_received_distributed_hh_post?post_id=${post_id}`
+    );
+    const data = await response.data;
+    console.log(data);
+    post_balance.value = data.undistributed_nets_balance;
+    console.log(post_balance);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-//   const rec_data = {
-//     date_received: dayjs(formState.date_received).format("YYYY-MM-DD"),
-//     bale_size: formState.bale_size,
-//     no_of_bales: formState.number_of_bales,
-//     loose_pieces: formState.no_of_pieces,
-//     quantity_received: quantity_received,
-//     receptor_comment: formState.comment,
-//   };
-//   const payload =
-//     transaction_type.value === "transfers"
-//       ? data
-//       : transaction_type.value === "receive"
-//       ? rec_data
-//       : null;
-//   const url =
-//     transaction_type.value === "transfers"
-//       ? "receive_nets_from_post"
-//       : transaction_type.value === "receive"
-//       ? `receive_nets_from_dropoff_point/${formState.distribution_id}/${post_id}`
-//       : null;
+const inputFields = ref([{ qty: null, reason: "" }]);
 
-//   deliveries.value.forEach((delivery) => {
-//     console.log(delivery);
-//     if (delivery.distribution_id == formState.distribution_id) {
-//       if (delivery.quantity_issued !== quantity_received) {
-//         var difference = quantity_received - delivery.quantity_issued;
-//         console.log(difference);
-//         discrepancy.value = difference;
-//         isOpen.value = false;
-//         isDiscrepancyModal.value = true;
-//       } else {
-//         try {
-//           fetch(`${process.env.VUE_APP_BASE_URL}/${url}`, {
-//             method: "POST",
-//             headers: {
-//               "Content-Type": "application/json",
-//               ...authHeader(),
-//             },
-//             body: JSON.stringify(payload),
-//           })
-//             .then((response) => response.json())
-//             .then(({ success, data, message }) => {
-//               console.log({ success, data, message });
-//               if (success) {
-//                 notification.success({
-//                   message: "Success",
-//                   description: message,
-//                 });
-//               } else {
-//                 notification.error({
-//                   message: "Error",
-//                   description: message,
-//                 });
-//               }
-//               isModalOpen.value = false;
-//               //  window.location.reload();
-//             })
-//             .catch((error) => {
-//               notification.error({
-//                 message: "Error",
-//                 description: `${error}`,
-//               });
-//               isModalOpen.value = false;
-//             });
-//         } catch (error) {
-//           notification.error({
-//             message: "Error",
-//             description: `${error}`,
-//           });
-//         }
-//       }
-//     }
-//   });
-// };
+const addInput = () => {
+  // Add a new input field
+  inputFields.value.push({ qty: null, reason: "" });
+  console.log(inputFields.value);
+};
+
+const removeInput = (index) => {
+  // Remove the input field at the specified index
+  inputFields.value.splice(index, 1);
+};
+
+const removeReason = (index) => {
+  // Remove the reason tag at the specified index
+  returns_formState.value.variance_reasons.splice(index, 1);
+};
+
+const disabledLogisticDate = (current) => {
+  // Can not select days before two weeks ago and today
+  return current && current > new Date();
+};
+
+const handleReverseLogistics = () => {
+  const variance_reason = Object.entries({ ...inputFields.value }).map(
+    ([key, value]) => ({
+      id: key,
+      ...value,
+    })
+  );
+  const data = {
+    from_post_id: returns_formState.from_post_id,
+    to_drop_off_point_id: returns_formState.to_drop_off_point_id,
+    number_of_nets: returns_formState.number_of_nets,
+    date_returned: dayjs(returns_formState.date_returned).format("YYYY-MM-DD"),
+    total_nets_damaged: returns_formState.number_of_damages,
+    has_damaged: returns_formState.number_of_damages ? true : false,
+    damage_details: returns_formState.damage_details,
+    return_reason: returns_formState.return_reason,
+    delivery_note_number: returns_formState.delivery_note_number,
+    variance_reasons: variance_reason,
+  };
+
+  console.log(JSON.stringify(data));
+  console.log(post_balance.value);
+
+  variance.value = post_balance.value - data.number_of_nets;
+
+  if (variance.value == 0) {
+    try {
+      fetch(`${process.env.VUE_APP_BASE_URL}/distribution_post_reverse_flow`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then(({ success, message }) => {
+          if (success) {
+            notification.success({
+              message: "Success",
+              description: `Successfully returned nets to drop off point`,
+            });
+          } else {
+            notification.error({
+              message: "Error",
+              description: `${message}`,
+            });
+          }
+          returnsModalOpen.value = false;
+
+          // window.location.reload();
+        })
+        .catch((error) => {
+          console.log(error);
+          notification.error({
+            message: "Error",
+            description: `${error}`,
+          });
+        });
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: `${error}`,
+      });
+    }
+  } else {
+    is_variance.value = true;
+
+    if (
+      is_variance.value &&
+      data.variance_reasons[0].qty !== null &&
+      data.variance_reasons[0].reason !== null
+    ) {
+      // Assuming data.variance_reasons is the array of objects
+      let totalReasonQty = data.variance_reasons.reduce((sum, item) => {
+        return sum + item.qty;
+      }, 0);
+
+      console.log(totalReasonQty); // This will output the sum of the qty values
+      console.log(variance.value);
+
+      let remaining_nets = variance.value - totalReasonQty;
+
+      if (totalReasonQty === variance.value) {
+        try {
+          fetch(
+            `${process.env.VUE_APP_BASE_URL}/distribution_post_reverse_flow`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...authHeader(),
+              },
+              body: JSON.stringify(data),
+            }
+          )
+            .then((response) => response.json())
+            .then(({ success, message }) => {
+              if (success) {
+                notification.success({
+                  message: "Success",
+                  description: `Successfully returned nets to drop off point`,
+                });
+              } else {
+                notification.error({
+                  message: "Error",
+                  description: `${message}`,
+                });
+              }
+              returnsModalOpen.value = false;
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.log(error);
+              notification.error({
+                message: "Error",
+                description: `${error}`,
+              });
+            });
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: `${error}`,
+          });
+        }
+      }
+      if (remaining_nets > 0) {
+        notification.warning({
+          message: "Warning",
+          description: `You need to account for ${remaining_nets} more nets`,
+        });
+      } else if (remaining_nets < 0) {
+        notification.warning({
+          message: "Warning",
+          description: `You have ${Math.abs(
+            remaining_nets
+          )} extra nets that need to be accounted for`,
+        });
+      }
+    } else {
+      notification.warning({
+        message: "Warning",
+        description: `State Reason for variance to account for the discrepancies in the return to dropoff`,
+      });
+    }
+  }
+};
 
 const submitData = async (payload, url) => {
   try {
@@ -1570,37 +1925,6 @@ const handleConfirmDiscrepancy = async (payload, url) => {
   isDiscrepancyModal.value = false;
   await submitData(payload, url);
 };
-
-const fetchReturnedNets = async () => {
-  try {
-    await fetch(
-      `${process.env.VUE_APP_BASE_URL}/dropoff_returns_by_post/${post_id}`,
-      {
-        method: "GET",
-        headers: authHeader(),
-      }
-    )
-      .then((response) => response.json())
-      .then(({ success, data }) => {
-        if (success) {
-          console.log(data);
-          returnedNets.value = data;
-        } else {
-          notification.error({
-            message: "Error",
-            description: `${data.message}`,
-          });
-        }
-      });
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: `${error}`,
-    });
-  }
-};
-
-console.log(returnedNets.value);
 
 const receiveFromDropOff = async () => {
   try {

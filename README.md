@@ -1,7 +1,7 @@
-# MassNetCampaignFrontend
+# DigimalFrontend
 
 
-# Recommended configuration for the frontend application setup
+## Recommended configuration for the frontend application setup
 
 
 ## Requirements

@@ -1,6 +1,6 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="MassNet Events">
+    <sdPageHeader title="MassNet GF Events">
       <template #subTitle> </template>
       <template #buttons>
         <div class="search-box">
@@ -13,7 +13,12 @@
             type="text"
             name="dataSource"
             placeholder="Search by name code, venue or location"
-            style="font-size: 15px; width: 100%; max-width: 300px; height: 2.5rem"
+            style="
+              font-size: 15px;
+              width: 100%;
+              max-width: 300px;
+              height: 2.5rem;
+            "
           />
         </div>
       </template>
@@ -75,9 +80,25 @@
                         @change="handleChange($event, 'event')"
                       ></a-select>
                     </a-col>
+                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+
+                      <a-select
+                        v-model:value="payroll_status"
+                        show-search
+                        placeholder="Event Payroll Status"
+                        style="width: 100%"
+                        :options="payroll_status"
+                        :filter-option="filterOption"
+                        @change="handleChange($event, 'payroll_status')"
+                      ></a-select>
+                    </a-col>
                   </a-space>
                 </a-row>
-                <a-table :pagination="false" :dataSource="dataSource" :columns="columns">
+                <a-table
+                  :pagination="false"
+                  :dataSource="dataSource"
+                  :columns="columns"
+                >
                   <template #events="{ record }">
                     <td>
                       <div class="table-actions">
@@ -109,6 +130,7 @@
                                     start_date: record.start_date,
                                     event_list_id: record.event_list_id,
                                     location: record.county,
+                                    payroll_status: record.payroll_status,
                                   })
                                 ),
                               },
@@ -131,7 +153,10 @@
                           type="success"
                           :disabled="isStarting"
                           @click="startEvent(record.id)"
-                          v-if="!record.status && record.payroll_status === 'Pending'"
+                          v-if="
+                            !record.status &&
+                            record.payroll_status === 'Pending'
+                          "
                         >
                           <sdFeatherIcons type="play-circle" size="small" />
                           <span>Start Event </span>
@@ -182,7 +207,10 @@
                   </h4>
                   <br />
                   <ul>
-                    <li v-for="facilitator in event_facilitators" :key="facilitator">
+                    <li
+                      v-for="facilitator in event_facilitators"
+                      :key="facilitator"
+                    >
                       {{ facilitator }}
                     </li>
                   </ul>
@@ -217,6 +245,7 @@ import { useStore } from "vuex";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
+import { encrypt } from "@/cryptoHelper";
 
 const router = useRouter();
 
@@ -254,13 +283,10 @@ const columns = [
   },
 ];
 
-const {
-  state,
-  //dispatch
-} = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
+// const {
+//   state,
+// } = useStore();
+const isLoading = ref(true);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
@@ -269,28 +295,38 @@ const isTrainerModalOpen = ref(false);
 const recordId = ref(null);
 const event_host = ref("");
 const event_facilitators = ref([]);
-//const eventEndDate = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const visible = ref(false);
 const colorVisible = ref(false);
 const isStarting = ref(false);
-const eventStatus = ref({}); // an object to keep track of the status of each event
-import { encrypt } from "@/cryptoHelper";
-
+const eventStatus = ref({}); // an object to keep track of the status of each even
 const counties = ref(null);
 const subcounties = ref(null);
 const events = ref([]);
 const allowedLevels = ref([]);
 const access_level = ref(null);
 const org_ids = ref([]);
-const location_id=ref("")
-const event_list=ref("")
+const location_id = ref("");
+const event_list = ref("");
 const store = useStore();
+
+const payroll_status = [
+  {
+    value: 2,
+    label: "Pending Generation",
+  },
+  {
+    value: 0,
+    label: "Generated",
+  },
+  { value: 1, label: "Paid" },
+];
 
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
+  isLoading.value = true;
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
   if (user_object != null) {
@@ -300,9 +336,6 @@ onMounted(async () => {
   getEvents();
 });
 const updateFilters = async () => {
-  // access_level.value.level.id = 3
-  // access_level.value.location.org_id = 'BzFBYZhF5fx'
-  // access_level.value.location.name = 'Kabondo Kasipul Sub County'
   if (access_level.value.level.id == 1) {
     allowedLevels.value = ["county", "subcounty"];
     await fetchCounties();
@@ -318,7 +351,9 @@ const updateFilters = async () => {
 };
 const handleChange = async (org_id, org_level) => {
   //fetch child data
-  let org = await org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
+  let org = await org_ids.value
+    .filter((x) => x.org_id === org_id)
+    .map((e) => e.id);
   let parent_id = org[0] || 9;
   fetchChildData(parent_id, org_id, org_level);
 };
@@ -342,9 +377,16 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     masterUrl += `&location_id=${location_id.value}`;
   } else if (org_level == "event") {
     //get activities
-    location_id.value= store.state.filters.location_id;
-    event_list.value=org_id;
+    location_id.value = store.state.filters.location_id;
+    event_list.value = org_id;
     masterUrl += `&location_id=${location_id.value}&event_list=${org_id}`;
+  } else if (org_level == "payroll_status") {
+    console.log(org_id);
+    console.log(org_id);
+    //get activities
+    // location_id.value = store.state.filters.location_id;
+    payroll_status.value = org_id;
+    masterUrl += `&payroll_status=${org_id}`;
   }
   await axios
     .get(`${fetchUrl}`)
@@ -377,9 +419,8 @@ const fetchChildData = async (parent_id, org_id, org_level) => {
     });
 };
 const fetchCounties = async () => {
-  await axios
-    .get("counties/")
-    .then((response) => {
+  try {
+    await axios.get("counties/").then((response) => {
       counties.value = response.data.map((x) => ({
         value: x.org_id,
         label: x.name,
@@ -389,18 +430,23 @@ const fetchCounties = async () => {
         ...response.data.map((x) => ({ org_id: x.org_id, id: x.id })),
       ];
       // console.log(counties.value)
-    })
-    .catch((error) => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
     });
+  } catch (error) {
+    notification.error({
+      message: `Error!`,
+      description: `${error}`,
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 const onPageChange = async (page) => {
+  console.log(page);
   currentPage.value = page;
   try {
-    const response = await axios.get(`gf_events?&location_id=${location_id.value}&event_list=${event_list.value}&page=${page}&per_page=${pageSize.value}`);
+    const response = await axios.get(
+      `gf_events?&location_id=${location_id.value}&event_list=${event_list.value}&payroll_status=${payroll_status.value}&page=${page}&per_page=${pageSize.value}`
+    );
     dataSource.value = response.data.data;
     datatotal.value = response.data.pagination.total;
   } catch (error) {
@@ -417,6 +463,7 @@ watch(
 );
 // get all the events
 const getEvents = () => {
+  isLoading.value = true;
   axios
     .get(
       `gf_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`
@@ -428,12 +475,18 @@ const getEvents = () => {
         value: x.event_list_id,
         label: x.name,
       }));
-      const filteredData = response.data.data.filter((item) => item.funding_source == 1);
+      console.log(events.value);
+      const filteredData = response.data.data.filter(
+        (item) => item.funding_source == 1
+      );
       datatotal.value = response.data.pagination.total;
       dataSource.value = filteredData;
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false; // Stop loading
     });
 };
 // start an event == only host can start/close
@@ -518,10 +571,6 @@ const handleOkTrainers = () => {
   visible.value = false;
   colorVisible.value = false;
 };
-// const changeType=(type)=>{
-//     modalType.value = type;
-//   }
-// participants registrations
 const handleRegistration = (id) => {
   isModalOpen.value = true;
   console.log("Event Code;", id);
@@ -575,7 +624,8 @@ const handleOk = async (id, inputValue) => {
     console.log(error);
     notification.error({
       message: "Error",
-      description: "Participant Registration Failed, Registration Code does not exist",
+      description:
+        "Participant Registration Failed, Registration Code does not exist",
     });
     inputValue = "";
   } finally {
@@ -603,25 +653,6 @@ async () => {
   }
 };
 
-// const handleDelete = (id) => {
-//   const confirm = window.confirm("Are you sure delete this?");
-//   if (confirm) {
-//     dispatch("axiosDataDelete", {
-//       id,
-//       getData: () => {
-//         dispatch("axiosCrudGetData");
-//       },
-//     });
-//   }
-//   return false;
-// };
-
-// const onSelectChange = (selectedRowKey) => {
-//   selectedRowKeys.value = selectedRowKey;
-// };
-
-// search through the events table
-//const results =
 computed(() => {
   const query = searchItem.value.toLowerCase();
   const regex = new RegExp(query, "i");
@@ -643,10 +674,6 @@ computed(() => {
 <style lang="css">
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-    border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 .modal {

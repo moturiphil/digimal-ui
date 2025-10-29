@@ -156,13 +156,6 @@
           <h4>
             <b>
               <u> Event Facilitators </u>
-              <!-- <sdButton
-                size="extra-small"
-                type="info"
-                @click="manageEvent(record.event_code)"
-              >
-                Add Trainer &nbsp; &nbsp;
-              </sdButton> -->
             </b>
           </h4>
           <br />
@@ -180,7 +173,6 @@
 import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
 import { computed, onMounted, ref, defineProps, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
@@ -198,11 +190,6 @@ const columns = [
     dataIndex: "event_code",
     key: "id",
   },
-  // {
-  //   title: "Host",
-  //   dataIndex: "event_host",
-  //   key: "id",
-  // },
   {
     title: "Location",
     dataIndex: "location_id",
@@ -233,13 +220,8 @@ defineProps({
   },
 });
 
-const {
-  state,
-  //dispatch
-} = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
+
+const isLoading = ref(true);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
@@ -248,7 +230,6 @@ const isTrainerModalOpen = ref(false);
 const recordId = ref(null);
 const event_host = ref("");
 const event_facilitators = ref([]);
-//const eventEndDate = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
@@ -256,9 +237,7 @@ const visible = ref(false);
 const colorVisible = ref(false);
 const isStarting = ref(false);
 const eventStatus = ref({}); 
-//enrcrypt
 import { encrypt } from "@/cryptoHelper";
-// Example usage
 
 const onPageChange = async (page) => {
   currentPage.value = page;
@@ -286,19 +265,21 @@ onMounted(() => {
 });
 
 const getEvents = () => {
+  isLoading.value = true;
   axios
     .get(
       `events/all?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
     )
     .then((response) => {
-      // dataSource.value = response.data.data;
-      // console.log(dataSource.value);
       datatotal.value = response.data.pagination.total;
       console.log(datatotal.value);
       dataSource.value = response.data.data;
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 // start an event == only host can start/close
@@ -383,10 +364,6 @@ const handleOkTrainers = () => {
   visible.value = false;
   colorVisible.value = false;
 };
-// const changeType=(type)=>{
-//     modalType.value = type;
-//   }
-// participants registrations
 const handleRegistration = (id) => {
   isModalOpen.value = true;
   console.log("Event Code;", id);
@@ -456,7 +433,6 @@ const handleOk = async (id, inputValue) => {
 };
 
 // Handle when event code is incorrect
-
 async () => {
   try {
     // Validate the event code
@@ -474,26 +450,6 @@ async () => {
     console.error(error);
   }
 };
-
-// const handleDelete = (id) => {
-//   const confirm = window.confirm("Are you sure delete this?");
-//   if (confirm) {
-//     dispatch("axiosDataDelete", {
-//       id,
-//       getData: () => {
-//         dispatch("axiosCrudGetData");
-//       },
-//     });
-//   }
-//   return false;
-// };
-
-// const onSelectChange = (selectedRowKey) => {
-//   selectedRowKeys.value = selectedRowKey;
-// };
-
-// search through the events table
-//const results =
 computed(() => {
   const query = searchItem.value.toLowerCase();
   const regex = new RegExp(query, "i");
@@ -510,19 +466,11 @@ computed(() => {
     });
   }
 });
-// const rowSelection = {
-//   selectedRowKeys,
-//   onChange: onSelectChange,
-// };
 </script>
 
 <style lang="css">
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 .modal {
@@ -551,12 +499,12 @@ computed(() => {
   cursor: pointer;
 }
 .spaced-button {
-  margin-right: 25px; /* Adjust the value as needed */
+  margin-right: 25px; 
   margin-bottom: 15px;
 }
 
 .remove-button {
-  margin-left: 15px; /* Adjust the value as needed */
+  margin-left: 15px;
   margin-right: -25px;
 }
 </style>

@@ -22,6 +22,24 @@
               : "Generate Payroll"
           }}
         </sdButton>
+        &nbsp;&nbsp;
+        <sdButton
+          v-if="isApprovedGenerator"
+          class="btn-import"
+          type="warning"
+          size="extra-small"
+          @click="reGeneratePayroll"
+          :disabled="isReGenerating"
+        >
+          <!-- Generate Payroll -->
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+              ? "Processing ..."
+              : "Re-Generate Payroll"
+          }}
+        </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
         <sdButton
           class="btn-import"
@@ -442,7 +460,7 @@ const matrix_column = [
   },
 ];
 const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const confirmed = ref({});
 const pending = ref([]);
@@ -678,6 +696,7 @@ const handleChange = (tab) => {
 };
 
 onMounted(async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(API_URL);
     console.log(response.data.data);
@@ -686,7 +705,8 @@ onMounted(async () => {
       let fullName = `${record.first_name} ${record.last_name}`;
 
       // check if status = 0 return inactive else return active
-      let status = (record.status == 0 || record.status == null) ? "Inactive" : "Active";
+      let status =
+        record.status == 0 || record.status == null ? "Inactive" : "Active";
 
       return {
         ...record,
@@ -698,10 +718,12 @@ onMounted(async () => {
     console.log(updatedData);
 
     dataSource.value = updatedData;
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
   try {
+    isLoading.value = true;
     const response = await axios.get(
       `activity_participants?activity_id=${activity_code.value}&confirmed=1`
     );
@@ -715,10 +737,12 @@ onMounted(async () => {
     });
     console.log(response.data);
     confirmed.value = updatedData;
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
   try {
+    isLoading.value = true;
     const response = await axios.get(
       `activity_participants?activity_id=${activity_code.value}&confirmed=0`
     );
@@ -730,11 +754,9 @@ onMounted(async () => {
         fullName,
       };
     });
-    console.log(response.data);
 
     pending.value = updatedData;
-
-    console.log(pending.value);
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -959,6 +981,34 @@ const getOrgMatrix = () => {
 };
 
 getOrgMatrix();
+
+const reGeneratePayroll = async () => {
+  store.commit("setIsGenerating", true);
+  try {
+    const response = await axios.get(
+      `/regenerate_activity_payroll?activity_code=${query.code}&confirmed=1`
+    );
+    console.log(response);
+    if (response.status == 200) {
+      store.commit("setIsGenerating", false);
+      Modal.success({
+        title: "Success",
+        content: "Payroll Generated Successfully",
+      });
+      location.reload();
+    } else {
+      store.commit("setIsGenerating", false);
+      Modal.error({
+        title: "Error",
+        content:
+          "Something went wrong, ensure you have assigned payroll matrix to the event",
+      });
+    }
+  } catch (error) {
+    store.commit("setIsGenerating", true);
+    console.error(error);
+  }
+};
 </script>
 
 <style>

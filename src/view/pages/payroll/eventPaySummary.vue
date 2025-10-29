@@ -50,8 +50,7 @@ import axios from "axios";
 import { ref } from "vue";
 import { notification } from "ant-design-vue";
 
-const { params, query } = useRoute();
-console.log({ params, query });
+const { query } = useRoute();
 const API_URL = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_details?event_payrollist_id=${query.id}`;
 const data = ref([]);
 const isModalOpen = ref(false);
@@ -83,7 +82,7 @@ const handleCancel = () => {
 };
 
 const handleSubmit = async () => {
-  console.log("Submitting");
+  console.log('submitting');
   isLoading.value = true;
   try {
     const requestData = {

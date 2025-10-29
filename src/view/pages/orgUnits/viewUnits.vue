@@ -39,7 +39,7 @@
                           <router-link
                             :to="{
                               path: `/org-units/sub-counties/${record.org_id}`,
-                              query: { name: record.name }
+                              query: { name: record.name },
                             }"
                             class="btn-icon"
                             type="info"
@@ -64,20 +64,13 @@
     </Main>
   </RecordViewWrapper>
 </template>
-<script>
+<script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, defineComponent } from "vue";
-// import axios from "axios";
+import { computed, onMounted, ref } from "vue";
 import authHeader from "../../../services/auth-header";
 
 const columns = [
-  //   {
-  //     title: "Id",
-  //     dataIndex: "id",
-  //     key: "id",
-  //   },
   {
     title: "County Name",
     dataIndex: "name",
@@ -100,86 +93,38 @@ const columns = [
     slots: { customRender: "units" },
   },
 ];
+const isLoading = ref(true);
+const dataSource = ref([]);
+const searchItem = ref("");
 
-const DragAndDropTable = defineComponent({
-  name: "ViewPage",
-  components: { RecordViewWrapper, Main },
-
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const searchItem = ref("");
-
-    //   const api_url = UserService;
-    //   console.log(api_url);
-
-    onMounted(async () => {
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/counties`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        dataSource.value = data;
-        console.log(dataSource.value);
-      } catch (error) {
-        console.error(error);
-      }
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    const response = await fetch(`${process.env.VUE_APP_BASE_URL}/counties`, {
+      method: "GET",
+      headers: authHeader(),
     });
-
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
-      return false;
-    };
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-    const results = computed(() => {
-      const query = searchItem.value.toLowerCase();
-      const regex = new RegExp(query, "i");
-      if (!query) {
-        return dataSource.value;
-      } else {
-        return dataSource.value.filter((event) => {
-          return regex.test(event.name);
-        });
-      }
-    });
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      results,
-      searchItem,
-      columns,
-    };
-  },
+    const data = await response.json();
+    console.log(data);
+    dataSource.value = data;
+    console.log(dataSource.value);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isLoading.value = false;
+  }
 });
 
-export default DragAndDropTable;
+const results = computed(() => {
+  const query = searchItem.value.toLowerCase();
+  const regex = new RegExp(query, "i");
+  if (!query) {
+    return dataSource.value;
+  } else {
+    return dataSource.value.filter((event) => {
+      return regex.test(event.name);
+    });
+  }
+});
+
 </script>

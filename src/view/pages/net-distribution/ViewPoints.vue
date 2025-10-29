@@ -89,8 +89,8 @@
                               query: {
                                 id: record.id,
                                 name: record.name,
-                                campaign_id: record.campaign_id,
                                 county: record.county,
+                                code: record.drop_off_code,
                               },
                             }"
                             class="btn-icon"
@@ -209,8 +209,7 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, watch } from "vue";
+import { onMounted, ref, reactive, watch } from "vue";
 import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 // import dayjs from "dayjs";
@@ -285,12 +284,7 @@ const columns = [
     slots: { customRender: "point" },
   },
 ];
-const {
-  state,
-  //dispatch
-} = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 //const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const isModalOpen = ref(false);
@@ -326,12 +320,13 @@ const currentCounties = ref([
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
   "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
   "mThvosEflAU", //trans nzoia
   "kqJ83J2D72s", //naraok
-  // 'Eey8fT4Im3y',//marsabit
   "vvOK1BxTbet", //baringo
   "Ulj33KBau7V", // kirinyaga
 ]);
@@ -347,7 +342,7 @@ const formState = reactive({
 });
 
 onMounted(async () => {
-  ///alert()
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters();
@@ -375,6 +370,7 @@ watch(
   }
 );
 const getallDropOffPoints = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `get_all_drop_off_points?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
@@ -384,11 +380,12 @@ const getallDropOffPoints = async () => {
     console.log(dataSource.value);
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const updateFilters = () => {
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = ["county", "subcounty"];
     countries.value = [
@@ -595,7 +592,6 @@ const handleAssign = async () => {
 const handleCancelReceive = () => {
   isModalOpen.value = false;
 };
-
 </script>
 <style>
 .badge-orange {

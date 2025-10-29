@@ -113,15 +113,9 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <thead>
-                    <tr>
-                      <th>
-                        <sHeading class="stat-title docorate" align="center"
-                          >Digimal Stats</sHeading
-                        >
-                      </th>
-                    </tr>
-                  </thead>
+                  <sHeading class="stat-title docorate" align="center"
+                    >Digimal Stats</sHeading
+                  >
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Registered Users</span></td>
@@ -160,13 +154,9 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <thead>
-                    <tr>
-                      <th>
-                        <sHeading class="stat-title docorate" align="center">Nets</sHeading>
-                      </th>
-                    </tr>
-                  </thead>
+                  <sHeading class="stat-title docorate" align="center"
+                    >Nets</sHeading
+                  >
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Required</span></td>
@@ -225,25 +215,6 @@
                         </sdHeading>
                       </td>
                     </tr>
-                    <tr>
-                      <td>
-                        <span class="stat-span"
-                          ><strong>%</strong> of Nets Distributed</span
-                        >
-                      </td>
-                      <td>
-                        <sdHeading class="stat-title">
-                          {{
-                            total_nets_delivered
-                              ? Number(
-                                  (nets_distributed / total_nets_delivered) *
-                                    100
-                                ).toFixed(2)
-                              : 0.0
-                          }}%
-                        </sdHeading>
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
               </CardBarChart2>
@@ -257,11 +228,9 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th>
-                    <sHeading class="stat-title docorate" align="center"
-                      >Households</sHeading
-                    >
-                  </th>
+                  <sHeading class="stat-title docorate" align="center"
+                    >Households</sHeading
+                  >
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Registered</span></td>
@@ -333,11 +302,9 @@
               <CardBarChart2>
                 <table class="stat-table">
                   <thead>
-                    <th rowspan="">
-                      <sHeading class="stat-title docorate" align="center"
-                        >Household Population</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center"
+                      >Household Population</sHeading
+                    >
                   </thead>
                   <tbody>
                     <tr>
@@ -828,6 +795,7 @@ const selectedCounties = ref([
   "Migori County",
   "Busia County",
   "Lamu County",
+  "Kericho County",
   "Kilifi County",
   "Tana River County",
   "Kwale County",
@@ -839,6 +807,7 @@ const selectedCounties = ref([
   "West Pokot County",
   "Turkana County",
   "Trans Nzoia County",
+  "Nandi County",
   "Narok County",
   // "Marsabit County",
   "Baringo County",
@@ -859,7 +828,9 @@ const currentCounties = ref([
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
-  'BjC1xL40gHo',//kakamega
+  "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
@@ -923,7 +894,6 @@ const fetchInitialChartData = async () => {
         let ratio = parseFloat((x / y) * 100).toFixed(2);
         scatterData.push([index, ratio > 0 ? parseFloat(ratio) : 0]);
       });
-      console.log(scatterData);
       await netsIssuedvsDeliveredChart(
         newChartData.value.map((item) => parseInt(item.nets_issued)), //nets_issued
         newChartData.value.map((item) => parseInt(item.nets_delivered)), //nets_delivered

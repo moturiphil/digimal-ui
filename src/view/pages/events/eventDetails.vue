@@ -19,7 +19,7 @@
     <Main>
       <div class="button-container">
         <sdButton
-          v-if="isApprovedGenerator"
+          v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
           class="btn-import"
           type="success"
           size="extra-small"
@@ -33,6 +33,26 @@
               : isGenerating
               ? "Processing ..."
               : "Generate Payroll"
+          }}
+        </sdButton>
+        <span v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
+          >&nbsp;</span
+        >
+        <sdButton
+          v-if="isApprovedGenerator && event_payroll_status == 'Generated' || event_payroll_status == 'Paid'"
+          class="btn-import"
+          type="warning"
+          size="extra-small"
+          @click="reGeneratePayroll"
+          :disabled="isReGenerating"
+        >
+          <!-- Generate Payroll -->
+          {{
+            isLoading
+              ? "Loading..."
+              : isGenerating
+              ? "Processing ..."
+              : "Re-Generate Payroll"
           }}
         </sdButton>
         &nbsp;
@@ -50,7 +70,14 @@
           @click="exportParticipants"
           size="extra-small"
         >
-          Download List &nbsp; &nbsp;
+          {{
+            isLoading
+              ? "Downloading..."
+              : isDownloading
+              ? "Processing..."
+              : "Download List"
+          }}
+          &nbsp; &nbsp;
           <sdFeatherIcons type="download-cloud" size="extra-small" />
         </sdButton>
         <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
@@ -156,7 +183,16 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
-                          <p><b>Total Records: </b> {{ recordCount }}</p>
+                          <p>
+                            <b>Total Records: </b>
+                            {{ recordCount }} &nbsp;&nbsp;
+                            <span v-if = "event_list_id == 20"
+                              ><b>Total Posts: </b>
+                              {{ total_sub_county_post }}</span
+                            >
+                          </p>
+                          &nbsp; &nbsp;
+                          <p></p>
 
                           <a-table
                             :pagination="{
@@ -193,7 +229,7 @@
                                     size="extra-small"
                                     type="danger"
                                     @click="voidParticipant(record.id)"
-                                    v-if="isApprovedGenerator || isHost"
+                                    v-if="isApprovedGenerator"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -555,14 +591,13 @@ const pendingCount = computed(() => pending.value.length);
 const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 const event_name = plainquery.name;
-console.log(plainquery.event_list_id);
 const event_list_id = plainquery.event_list_id;
 const event_location_id = plainquery.location;
 const event_code = plainquery.event_code;
-const event_host_id = plainquery.event_host_id;
+const event_payroll_status = plainquery.payroll_status;
 const router = useRouter();
 const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const confirmed = ref([]);
 const pending = ref([]);
@@ -575,10 +610,13 @@ const isCadreModalOpen = ref(false);
 const participant_id = ref("");
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
+const reGenetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/regenerate_event_payroll?status=1&event_code=${event_code}`;
 const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participants_export?event_code=${plainquery.event_code}`;
 const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${plainquery.event_list_id}`;
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
 const cadres_url = `${process.env.VUE_APP_BASE_URL}/get_event-registration_role_counts/${plainquery.id}`;
+const sub_county_post = `${process.env.VUE_APP_BASE_URL}/get_sub_county_posts?subcounty_id=${event_location_id}`;
+const total_sub_county_post = ref(0);
 const event_matrixes = ref([]);
 const org_matrixes = ref([]);
 const cadres = ref([]);
@@ -587,7 +625,7 @@ const deassignModal = ref(false);
 const participant = ref("");
 const id_user = ref("");
 const searchItem = ref("");
-
+const isDownloading = ref(false);
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   const day = date.getDate();
@@ -634,15 +672,19 @@ const role_id = ref("");
 const rt = useRouter();
 
 onMounted(async () => {
+  isLoading.value = true;
   getEventParticipants();
+  if (event_list_id == 20) {
+    getPostCount();
+  }
 });
 
 const getEventParticipants = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(API_URL, {
       headers: authHeader(),
     });
-    console.log(response.data.data);
 
     const updatedData = response.data.data.map((record) => {
       let fullName = `${record.first_name} ${record.last_name}`;
@@ -653,8 +695,7 @@ const getEventParticipants = async () => {
     });
 
     dataSource.value = updatedData;
-
-    console.log(dataSource.value);
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -671,10 +712,8 @@ const getEventParticipants = async () => {
         fullName,
       };
     });
-
     confirmed.value = updatedData;
-
-    console.log(confirmed.value.toRaw());
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
   }
@@ -694,10 +733,11 @@ const getEventParticipants = async () => {
     });
 
     pending.value = updatedData;
-
-    console.log(pending.value);
+    isLoading.value = false;
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user) {
@@ -764,6 +804,35 @@ const generatePayroll = async () => {
   }
 };
 
+const reGeneratePayroll = async () => {
+  store.commit("setIsGenerating", true);
+
+  try {
+    const response = await axios.get(reGenetatePayrollURL, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
+    console.log(response);
+
+    if (response.status === 200) {
+      store.commit("setIsGenerating", false);
+      Modal.success({
+        title: "Success",
+        content: "Payroll Generated Successfully",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      location.reload();
+    } else {
+      handleErrorResponse(response);
+    }
+  } catch (error) {
+    console.error(error);
+    handleErrorResponse();
+  }
+};
+
 // resendConfirmation
 const resendConfirmation = async (id) => {
   console.log(id);
@@ -781,9 +850,6 @@ const resendConfirmation = async (id) => {
     });
 
     const { success, data } = await response.json();
-
-    console.log({ success, data });
-
     if (success === true) {
       notification.success({
         message: "Success",
@@ -985,6 +1051,7 @@ const getTraineCadres = () => {
 getTraineCadres();
 
 const exportParticipants = async () => {
+  isDownloading.value = true;
   try {
     const response = await fetch(export_participants_url, {
       method: "GET",
@@ -1008,6 +1075,8 @@ const exportParticipants = async () => {
     link.parentNode.removeChild(link);
   } catch (error) {
     console.error(error);
+  } finally {
+    isDownloading.value = false;
   }
 };
 
@@ -1136,15 +1205,9 @@ const isApprovedGenerator = computed(() => {
     return false;
   }
 });
-console.log(event_host_id);
 
-const isHost = computed(() => {
-  if (user.user.id === event_host_id) {
-    return true;
-  } else {
-    return false;
-  }
-});
+console.log( isApprovedGenerator.value && event_payroll_status == 'Generated' || event_payroll_status == 'Paid');
+
 
 computed(() => {
   if (user.user.org_types_id === 10) {
@@ -1153,6 +1216,28 @@ computed(() => {
     return false;
   }
 });
+
+const getPostCount = async () => {
+  try {
+    const response = await fetch(sub_county_post, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    });
+
+    const data = await response.json(); // Await here to resolve the JSON promise
+    console.log(data); // Log data after it has resolved
+    total_sub_county_post.value = data.total_posts;
+  } catch (error) {
+    console.error("Error:", error);
+    notification.error({
+      message: "Error",
+      description: `${error}`,
+    });
+  }
+};
 </script>
 
 <style>

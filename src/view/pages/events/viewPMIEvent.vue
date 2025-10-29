@@ -257,7 +257,6 @@
 import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
 import { computed, onMounted, ref, defineProps, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
@@ -310,12 +309,12 @@ defineProps({
   },
 });
 
-const {
-  state,
-  //dispatch
-} = useStore();
+// const {
+//   state,
+//   //dispatch
+// } = useStore();
 //const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 //const selectedRowKeys = ref([]);
 const dataSource = ref([]);
 const eventCode = ref("");
@@ -348,6 +347,7 @@ const access_level = ref(null);
 const org_ids = ref([]);
 // Fetch activity data from the API endpoint on component mount
 onMounted(async () => {
+  isLoading.value = true;
   const user = sessionStorage.getItem("user");
   const user_object = JSON.parse(user);
   if (user_object != null) {
@@ -477,6 +477,7 @@ watch(
 
 // get all the events
 const getEvents = () => {
+  isLoading.value = true;
   axios
     .get(
       `pmi_events?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
@@ -510,6 +511,9 @@ const getEvents = () => {
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 // start an event == only host can start/close
@@ -610,8 +614,6 @@ const handleRegistration = (id) => {
   }
 };
 const manageEvent = async (code) => {
-  console.log(code);
-  console.log("console.log");
   isTrainerModalOpen.value = true;
   try {
     const response = await axios.get(`event/${code}/facilitators`);

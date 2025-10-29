@@ -119,7 +119,11 @@
                             :to="{
                               // path: `/nets/receive-post-nets`,
                               path: `/nets/receive-nets-summary`,
-                              query: { id: record.id, name: record.name },
+                              query: {
+                                id: record.id,
+                                name: record.name,
+                                funding: record.is_pmi_county,
+                              },
                             }"
                             class="btn-icon"
                             type="success"
@@ -238,8 +242,7 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, reactive, watch } from "vue";
+import { onMounted, ref, reactive, watch } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 
@@ -281,8 +284,7 @@ var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const distributionStatus = ref({});
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const supervisors = ref([]);
 const searchItem = ref("");
@@ -320,7 +322,9 @@ const currentCounties = ref([
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
-  'BjC1xL40gHo',//kakamega
+  "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
@@ -333,6 +337,7 @@ const currentCounties = ref([
 //   const api_url = UserService;
 //   console.log(api_url);
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     updateFilters();
@@ -352,7 +357,6 @@ watch(
   }
 );
 const updateFilters = () => {
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
       "county",
@@ -656,6 +660,7 @@ const handleSupervisorSearch = (value) => {
 };
 
 const fetchDistributionsPosts = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get(
       `posts_data?per_page=${pageSize.value}&page=${currentPage.value}&query=${searchItem.value}&location_id=${location_id.value}`
@@ -672,6 +677,8 @@ const fetchDistributionsPosts = async () => {
     }
   } catch (error) {
     console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -730,5 +737,4 @@ const handleSubmit = async () => {
     });
   }
 };
-
 </script>

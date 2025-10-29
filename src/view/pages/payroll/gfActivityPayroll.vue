@@ -260,48 +260,53 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: {
-                                          id: record.id,
-                                          activity: record.activity_id,
-                                          county: record.county,
-                                          sub_county: record.sub_county,
-                                          no_of_days: record.no_of_days,
-                                          start_date: record.start_date,
-                                          status: record.status,
-                                          approval_status:
-                                            record.approval_status,
-                                          payment_status: record.payment_status,
-                                        },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
+                              <tr>
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton
+                                      size="small"
+                                      type="success"
+                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
-                                  &nbsp;&nbsp;
+                                      <router-link
+                                        :to="{
+                                          path: `/payroll/view/${record.id}`,
+                                          query: {
+                                            id: record.id,
+                                            activity: record.activity_id,
+                                            county: record.county,
+                                            sub_county: record.sub_county,
+                                            no_of_days: record.no_of_days,
+                                            start_date: record.start_date,
+                                            status: record.status,
+                                            approval_status:
+                                              record.approval_status,
+                                            payment_status:
+                                              record.payment_status,
+                                          },
+                                        }"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                      >
+                                        &nbsp;&nbsp;
+                                        <span
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                      </router-link>
+                                    </sdButton>
+                                    &nbsp;&nbsp;
 
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handleValidation(record.id)"
-                                    >Validate</sdButton
-                                  >
-                                </div>
-                              </td>
+                                    <sdButton
+                                      type="success"
+                                      size="small"
+                                      @click="handleValidation(record.id)"
+                                      >Validate</sdButton
+                                    >
+                                  </div>
+                                </td>
+                              </tr>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -319,47 +324,52 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: {
-                                          id: record.id,
-                                          activity: record.activity_id,
-                                          county: record.county,
-                                          sub_county: record.sub_county,
-                                          no_of_days: record.no_of_days,
-                                          start_date: record.start_date,
-                                          status: record.status,
-                                          approval_status:
-                                            record.approval_status,
-                                          payment_status: record.payment_status,
-                                        },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
+                              <tr>
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton
+                                      size="small"
+                                      type="success"
+                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
-                                  &nbsp;&nbsp;
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handleApproval(record.id)"
-                                    >Approve</sdButton
-                                  >
-                                </div>
-                              </td>
+                                      <router-link
+                                        :to="{
+                                          path: `/payroll/view/${record.id}`,
+                                          query: {
+                                            id: record.id,
+                                            activity: record.activity_id,
+                                            county: record.county,
+                                            sub_county: record.sub_county,
+                                            no_of_days: record.no_of_days,
+                                            start_date: record.start_date,
+                                            status: record.status,
+                                            approval_status:
+                                              record.approval_status,
+                                            payment_status:
+                                              record.payment_status,
+                                          },
+                                        }"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                      >
+                                        &nbsp;&nbsp;
+                                        <span
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                      </router-link>
+                                    </sdButton>
+                                    &nbsp;&nbsp;
+                                    <sdButton
+                                      type="success"
+                                      size="small"
+                                      @click="handleApproval(record.id)"
+                                      >Approve</sdButton
+                                    >
+                                  </div>
+                                </td>
+                              </tr>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -377,47 +387,52 @@
                             :columns="columns"
                           >
                             <template #payroll="{ record }">
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions">
-                                  <sdButton
-                                    size="small"
-                                    type="success"
-                                    @click="handleVerify(record.id)"
-                                  >
-                                    &nbsp;&nbsp;
-                                    <router-link
-                                      :to="{
-                                        path: `/payroll/view/${record.id}`,
-                                        query: {
-                                          id: record.id,
-                                          activity: record.activity_id,
-                                          county: record.county,
-                                          sub_county: record.sub_county,
-                                          no_of_days: record.no_of_days,
-                                          start_date: record.start_date,
-                                          status: record.status,
-                                          approval_status:
-                                            record.approval_status,
-                                          payment_status: record.payment_status,
-                                        },
-                                      }"
-                                      class="btn-icon"
-                                      type="info"
-                                      shape="circle"
+                              <tr>
+                                <td :style="{ 'margin-left': '3px' }">
+                                  <div class="table-actions">
+                                    <sdButton
+                                      size="small"
+                                      type="success"
+                                      @click="handleVerify(record.id)"
                                     >
                                       &nbsp;&nbsp;
-                                      <span>&nbsp;&nbsp; Payroll Details</span>
-                                    </router-link>
-                                  </sdButton>
-                                  &nbsp;&nbsp;
-                                  <sdButton
-                                    type="success"
-                                    size="small"
-                                    @click="handlePay(record.id)"
-                                    >Pay Activity</sdButton
-                                  >
-                                </div>
-                              </td>
+                                      <router-link
+                                        :to="{
+                                          path: `/payroll/view/${record.id}`,
+                                          query: {
+                                            id: record.id,
+                                            activity: record.activity_id,
+                                            county: record.county,
+                                            sub_county: record.sub_county,
+                                            no_of_days: record.no_of_days,
+                                            start_date: record.start_date,
+                                            status: record.status,
+                                            approval_status:
+                                              record.approval_status,
+                                            payment_status:
+                                              record.payment_status,
+                                          },
+                                        }"
+                                        class="btn-icon"
+                                        type="info"
+                                        shape="circle"
+                                      >
+                                        &nbsp;&nbsp;
+                                        <span
+                                          >&nbsp;&nbsp; Payroll Details</span
+                                        >
+                                      </router-link>
+                                    </sdButton>
+                                    &nbsp;&nbsp;
+                                    <sdButton
+                                      type="success"
+                                      size="small"
+                                      @click="handlePay(record.id)"
+                                      >Pay Activity</sdButton
+                                    >
+                                  </div>
+                                </td>
+                              </tr>
                             </template>
                           </a-table>
                         </TableWrapper>
@@ -434,11 +449,6 @@
                             :dataSource="filteredData"
                             :columns="columns"
                           >
-                            <template>
-                              <td :style="{ 'margin-left': '3px' }">
-                                <div class="table-actions"></div>
-                              </td>
-                            </template>
                           </a-table>
                         </TableWrapper>
                       </div>
@@ -471,7 +481,7 @@ import store from "../../../vuex/store";
 import authHeader from "../../../services/auth-header";
 
 const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const activeClass = ref("all");
 const recordId = ref(null);
@@ -769,6 +779,7 @@ const startCountdown = () => {
 };
 
 const getActivityPayroll = () => {
+  isLoading.value = true;
   axios
     .get(API_URL)
     .then((response) => {
@@ -798,6 +809,9 @@ const getActivityPayroll = () => {
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 

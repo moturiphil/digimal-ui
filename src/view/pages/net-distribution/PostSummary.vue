@@ -153,9 +153,8 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, defineProps, watch } from "vue";
+import { onMounted, ref, defineProps, watch } from "vue";
 import axios from "@/Axiosconfig";
-import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 
 const columns = ref([
@@ -220,8 +219,7 @@ var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
 const searchItem = ref("");
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const activeClass = ref("all");
 const total_households = ref(0);
@@ -265,6 +263,8 @@ const currentCounties = ref([
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
   "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
@@ -281,6 +281,7 @@ defineProps({
 });
 
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     filterAccessList.value = [
@@ -305,18 +306,8 @@ const onPageChange = async (page) => {
     console.error(error);
   }
 };
-// const handlePaginationChange = (newPage) => {
-//   current.value = newPage;
-//   console.log(newPage);
-//   fetchHouseHolds()
-// };
 
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
       "county",
@@ -591,6 +582,7 @@ const fetchCounties = async () => {
 };
 
 const fetchHouseholds = () => {
+  isLoading.value = true;
   axios
     .get(
       `get_post_nets_distribution_summary?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}&location_id=${location_id.value}`
@@ -603,6 +595,9 @@ const fetchHouseholds = () => {
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
 };
 

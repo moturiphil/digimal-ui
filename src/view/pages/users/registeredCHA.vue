@@ -320,7 +320,7 @@ const DragAndDropTable = defineComponent({
   setup() {
     const { state, dispatch } = useStore();
     const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
+    const isLoading = ref(true);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
     const searchItem = ref("");
@@ -341,6 +341,7 @@ const DragAndDropTable = defineComponent({
     const DEASSIGN_URL = `${process.env.VUE_APP_BASE_URL}/deassign_chp_ve`;
 
     onMounted(async () => {
+      isLoading.value  = true;
       try {
         const response = await fetch(`${process.env.VUE_APP_BASE_URL}/chp_ve`, {
           method: "GET",
@@ -355,6 +356,8 @@ const DragAndDropTable = defineComponent({
         dataSource.value = filteredUsers;
       } catch (error) {
         console.error(error);
+      } finally {
+        isLoading.value = false;
       }
     });
 

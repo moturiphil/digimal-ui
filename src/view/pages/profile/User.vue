@@ -37,11 +37,6 @@
               :dataSource="activity_dataSource"
               :columns="activity_columns"
             >
-              <template>
-                <td :style="{ 'margin-left': '4px' }">
-                  <div class="table-actions"></div>
-                </td>
-              </template>
             </a-table>
           </TableWrapper>
         </div>
@@ -57,11 +52,6 @@
               :dataSource="dataSource"
               :columns="columns"
             >
-              <template>
-                <td :style="{ 'margin-left': '4px' }">
-                  <div class="table-actions"></div>
-                </td>
-              </template>
             </a-table>
           </TableWrapper>
         </div>

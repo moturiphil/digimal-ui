@@ -183,8 +183,7 @@
 <script setup>
 import { RecordViewWrapper } from "../style";
 import { Main } from "../../styled";
-import { useStore } from "vuex";
-import { computed, onMounted, ref, watch, reactive } from "vue";
+import { onMounted, ref, watch, reactive } from "vue";
 import { notification } from "ant-design-vue";
 import { PoweroffOutlined, EditOutlined } from "@ant-design/icons-vue";
 import UserEditForm from "./EdiUsers.vue";
@@ -263,16 +262,11 @@ const alloweRoleids = ref(["3", "7", "56", "53", "37", "15", "16"]);
 const pageSize = ref(100);
 const total = ref(0);
 
-const { state } = useStore();
-//const crud = computed(() => state.crud.data);
-const isLoading = computed(() => state.crud.loading);
-//const selectedRowKeys = ref([]);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const searchItem = ref("");
-//Drill down filters
 const access_level = ref({});
 const filterAccessList = ref([]);
-//org levels
 const countries = ref([
   { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
 ]);
@@ -287,61 +281,11 @@ const sublocation = ref("Select Sublocation");
 const subcounty = ref("Select Subcounty");
 const location = ref("Select Location");
 const ward = ref("Select Ward");
-//const villages = ref(null)
-//const village=ref("Select a Post")
 const org_ids = ref([]);
 
-// const selectedCounties = ref([
-//   "Homa Bay County",
-//   "Kisii County",
-//   "Nyamira County",
-// "Kisumu County",
-// "Siaya County",
-// "Busia County",
-// "Migori County",
-// "Lamu County",
-// "Kilifi County",
-// "Tana River County",
-// "Kwale County",
-// "Taita Taveta County",
-// "Mombasa County",
-// "Bungoma County",
-// "Kakamega County",
-// "Vihiga County",
-// "West Pokot County",
-// "Turkana County",
-// "Trans Nzoia County",
-// "Narok County",
-// "Marsabit County",
-// "Baringo County",
-// "Kirinyaga County"
-//])
-//const currentCounties = ref([
-// 'nK0A12Q7MvS',//homa bay
-// 'sPkRcDvhGWA',//kisii
-// 'uepLTG8wGWJ',//nyamira
-// 'u4t9H8XyU9P',//siaya
-// 'fVra3Pwta0Q',//migori
-// 'Tvf1zgVZ0K4',//busia
-// 'NjWSbQTwys4',//lamu
-// 'nrI2khZx3d0',//kilifi
-// 'JsH2bnvNt2d',//tan river
-// 'N7YETT3A9r1',//kwale
-// 'QyGNX2DpR4h',//taita taveta
-// 'wsBsC6gjHvn',// mombasa
-// 'KGHhQ5GLd4k',//
-// 'BjC1xL40gHo',//kakamega
-// 'sANMZ3lpqGs',//vihiga
-// 'XWALbfAPa6n',//west pokot
-// 'kphDeKClFch',//turkana
-// 'mThvosEflAU',//trans nzoia
-// 'kqJ83J2D72s',//naraok
-// 'Eey8fT4Im3y',//marsabit
-// 'vvOK1BxTbet',//baringo
-// 'Ulj33KBau7V',
-//])
 
 onMounted(async () => {
+  isLoading.value = true;
   if (sessionStorage.getItem("user") != null) {
     access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
     allowedRole.value = alloweRoleids.value.includes(
@@ -401,10 +345,6 @@ const toggleUser = (record) => {
     });
 };
 const updateFilters = () => {
-  // access_level.value.level.id = 1
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
 
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
@@ -697,6 +637,7 @@ const filterOption = (input, option) => {
 };
 
 const fetchUsers = async () => {
+  isLoading.value = true
   try {
     // Assuming you have an initial page number
     const response = await axios.get(
@@ -707,6 +648,8 @@ const fetchUsers = async () => {
     dataSource.value = data.data;
   } catch (error) {
     console.error(error);
+  } finally{ 
+    isLoading.value = false
   }
 };
 
@@ -719,10 +662,6 @@ watch(
   }
 );
 
-// const rowSelection = {
-//   selectedRowKeys,
-//   onChange: onSelectChange,
-// };
 </script>
 
 <style>

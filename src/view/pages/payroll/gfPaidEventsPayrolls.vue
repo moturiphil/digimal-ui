@@ -93,13 +93,12 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { computed, onMounted, ref, defineComponent, watchEffect } from "vue";
+import { onMounted, ref, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
-import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 
 const columns = [
@@ -157,131 +156,85 @@ const columns = [
     slots: { customRender: "payroll" },
   },
 ];
-export default defineComponent({
-  name: "HouseHold Validation",
-  components: {
-    Main,
-    SearchResultWrapper,
-  },
-  data() {
-    return {
-      notData: this.searchData,
-      visible: false,
-      confirmLoading: false,
-      modalType: "primary",
-      colorVisible: false,
-      payroll: [],
-    };
-  },
-  methods: {
-    handleSearch(searchText) {
-      const data = this.searchData.filter((item) =>
-        item.title.toUpperCase().startsWith(searchText.toUpperCase())
-      );
-      this.notData = data;
-    },
-    searchData() {
-      return this.$store.state.headerSearch.data;
-    },
-  },
-  setup() {
-    var currentPage = ref(1);
-    var pageSize = ref(100);
-    var datatotal = ref(0);
-    const { state } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = computed(() => state.crud.loading);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
-    const activeClass = ref("all");
-    const searchItem = ref("");
-    const handleChange = (tab) => {
-      activeClass.value = tab;
-    };
 
-    onMounted(() => {
-      fetchPayrolls();
+var currentPage = ref(1);
+var pageSize = ref(100);
+var datatotal = ref(0);
+const isLoading = ref(true);
+const dataSource = ref([]);
+const activeClass = ref("all");
+const searchItem = ref("");
+
+onMounted(() => {
+  isLoading.value = true;
+  fetchPayrolls();
+});
+
+const fetchPayrolls = () => {
+  isLoading.value = true;
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
+  axios
+    .get(API_URL, {
+      headers: authHeader(),
+    })
+    .then((response) => {
+      console.log(response.data.data);
+      datatotal.value = response.data.pagination.total;
+      dataSource.value = response.data.data.map((item) => ({
+        ...item,
+        old_values: item.old_values,
+        new_values: item.new_values,
+      }));
+      dataSource.value.forEach((item) => {
+        item.status = item.status === 1 ? "Validated" : "Not Validated";
+        item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
+        item.approval_status =
+          item.approval_status === 1 ? "Approved" : "Not Approved";
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    })
+    .finally(() => {
+      isLoading.value = false;
     });
+};
 
-    const fetchPayrolls = () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
-      axios
-        .get(API_URL, {
-          headers: authHeader(),
-        })
-        .then((response) => {
-          console.log(response.data.data);
-          datatotal.value = response.data.pagination.total;
-          dataSource.value = response.data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-          dataSource.value.forEach((item) => {
-            item.status = item.status === 1 ? "Validated" : "Not Validated";
-            item.payment_status =
-              item.payment_status === 1 ? "Paid" : "Not Paid";
-            item.approval_status =
-              item.approval_status === 1 ? "Approved" : "Not Approved";
-          });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    };
+const onPageChange = async (page) => {
+  console.log(page);
+  currentPage.value = page;
+  try {
+    fetchPayrolls();
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-    const onPageChange = async (page) => {
-      console.log(page);
-      currentPage.value = page;
-      try {
-        fetchPayrolls();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    watchEffect(async () => {
-      const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
-      const query = searchItem.value.toLowerCase();
-      try {
-        if (!query) {
-          return dataSource.value;
-        }
-        if (query.length > 3) {
-          const response = await fetch(`${API_URL}&query=${query}`, {
-            method: "GET",
-            headers: authHeader(),
-          });
-          const data = await response.json();
-          dataSource.value = data.data.map((item) => ({
-            ...item,
-            old_values: item.old_values,
-            new_values: item.new_values,
-          }));
-        }
-      } catch (error) {
-        notification.error({
-          message: "Error",
-          description: error.message,
-        });
-      }
+watchEffect(async () => {
+  const API_URL = `${process.env.VUE_APP_BASE_URL}/all_event_payrolls?funding_id=1&is_paid=1&page=${currentPage.value}&per_page=${pageSize.value}`;
+  const query = searchItem.value.toLowerCase();
+  try {
+    if (!query) {
+      return dataSource.value;
+    }
+    if (query.length > 3) {
+      const response = await fetch(`${API_URL}&query=${query}`, {
+        method: "GET",
+        headers: authHeader(),
+      });
+      const data = await response.json();
+      dataSource.value = data.data.map((item) => ({
+        ...item,
+        old_values: item.old_values,
+        new_values: item.new_values,
+      }));
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: error.message,
     });
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      dataSource,
-      searchItem,
-      columns,
-      handleChange,
-      activeClass,
-      onPageChange,
-      currentPage,
-      pageSize,
-      datatotal,
-    };
-  },
+  }
 });
 </script>
 <style>

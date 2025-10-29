@@ -14,46 +14,8 @@
     </sdPageHeader>
 
     <Main>
-      <!-- <sdButton class="btn-import" type="success" @click="exportHouseHoldData">
-        Export HouseHolds Data
-      </sdButton> -->
       <SearchResultWrapper>
         <a-row :gutter="25">
-          <a-col :xs="24">
-            <div class="search-filter-menu">
-              <ul>
-                <!-- <li>
-                  <a
-                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                    @click="handleChange('all')"
-                    href="#"
-                  >
-                    All HouseHolds
-                  </a>
-                </li> -->
-                <!-- <li>
-                  <a
-                    :class="
-                      activeClass === 'approved' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('approved')"
-                    href="#"
-                  >
-                    Approved HouseHolds
-                  </a>
-                </li> -->
-                <li>
-                  <a
-                    :class="activeClass === 'outliers' ? 'active' : 'active'"
-                    @click="handleChange('outliers')"
-                    href="#"
-                  >
-                    Outliers
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </a-col>
           <a-col :xs="24">
             <sdCards headless>
               <div class="result-list-content">
@@ -185,12 +147,6 @@
                   </a-col>
                 </a-row>
               </div>
-              <!-- <a-pagination
-                show-size-changer
-                :default-current="3"
-                :total="40"
-                @showSizeChange="onShowSizeChange"
-              /> -->
             </sdCards>
             <a-modal
               title="HouseHold Size Validation"
@@ -215,20 +171,11 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import {
-  computed,
-  onMounted,
-  ref,
-  // reactive,
-  watch,
-} from "vue";
+import { onMounted, ref, watch } from "vue";
 import axios from "@/Axiosconfig";
-import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
 import { notification } from "ant-design-vue";
-
-// const households = ref([]);
 
 const columns = [
   {
@@ -288,8 +235,7 @@ var pageSize = ref(100);
 var datatotal = ref(0);
 const visible = ref(false);
 const colorVisible = ref(false);
-const { state } = useStore();
-const isLoading = computed(() => state.crud.loading);
+const isLoading = ref(true);
 const dataSource = ref([]);
 const isModalOpen = ref(false);
 const inputValue = ref("");
@@ -298,12 +244,10 @@ const searchItem = ref("");
 const level_id = ref("");
 const role_id = ref("");
 const rt = useRouter();
-const household_validations = ref([]);
 const location_id = ref("");
 const access_level = ref({});
 
 const filterAccessList = ref([]);
-//org levels
 const countries = ref([
   { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
 ]);
@@ -312,13 +256,11 @@ const subcounties = ref(null);
 const wards = ref(null);
 const locations = ref(null);
 const sublocations = ref(null);
-// const villages = ref(null)
 const county = ref("Select County");
 const sublocation = ref("Select Sublocation");
 const subcounty = ref("Select Subcounty");
 const location = ref("Select Location");
 const ward = ref("Select Ward");
-// const village = ref("Select a Post")
 const org_ids = ref([]);
 
 const currentCounties = ref([
@@ -337,6 +279,8 @@ const currentCounties = ref([
   "wsBsC6gjHvn", // mombasa
   "KGHhQ5GLd4k", //bungoma
   "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
   "sANMZ3lpqGs", //vihiga
   "XWALbfAPa6n", //west pokot
   "kphDeKClFch", //turkana
@@ -346,31 +290,7 @@ const currentCounties = ref([
   "vvOK1BxTbet", //baringo
   "Ulj33KBau7V", // kirinyaga
 ]);
-// const notData=ref({})
-// const current=ref(0)
-// const pageSize=ref(0)
-// const visible=ref(false)
-// const confirmLoading=ref(false)
-// const modalType=ref("primary")
-// const colorVisible=ref(false)
-// const households=ref([])
-// const { state } = useStore();
-// const isLoading = computed(() => state.crud.loading);
 const user = JSON.parse(sessionStorage.getItem("user"));
-
-//  const handleSearch=(searchText)=> {
-//     const data = searchData.value.filter((item) =>
-//       item.title.toUpperCase().startsWith(searchText.toUpperCase())
-//     );
-//     notData.value = data;
-//   }
-// const onShowSizeChange=(current, pageSize)=>{
-//   current.value = current;
-//   pageSize.value = pageSize;
-// }
-// const searchData=()=> {
-//   return store.state.headerSearch.data;
-// }
 const handleCancel = () => {
   isModalOpen.value = false;
   visible.value = false;
@@ -387,6 +307,7 @@ if (!user) {
 }
 
 onMounted(() => {
+  isLoading.value = true;
   access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
   location_id.value = access_level.value.location.id;
   filterAccessList.value = [
@@ -397,16 +318,10 @@ onMounted(() => {
     "sublocation",
     "village",
   ];
-  fetchData(); // Initial data fetch
   updateFilters();
 });
 
 const updateFilters = () => {
-  // access_level.value.level.level_name = 'national'
-  // access_level.value.location.id = 1
-  // access_level.value.location.org_id = 'HfVjCurKxh2'
-  // access_level.value.location.name = 'Kenya'
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
       "county",
@@ -682,7 +597,7 @@ const onPageChange = async (page) => {
     console.error(error);
   }
 };
-const API_URL = `household_validation?sub_county_id=${location_id.value}`;
+// const API_URL = `household_validation?sub_county_id=${location_id.value}`;
 
 const fetchOutliers = async () => {
   try {
@@ -692,17 +607,8 @@ const fetchOutliers = async () => {
     dataSource.value = response.data.data.data;
   } catch (error) {
     console.error("Error fetching data:", error);
-  }
-};
-
-const fetchData = async () => {
-  try {
-    const response = await axios.get(API_URL);
-    household_validations.value = response.data.data.data;
-    dataSource.value = response.data.data.data;
-    datatotal.value = response.data.data.total;
-  } catch (error) {
-    console.error(error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -779,10 +685,6 @@ const handleOk = async (id, inputValue) => {
 <style>
 .badge-green {
   background-color: #1ec997;
-  /* color: white; */
-  /* padding: 2px;
-  border-radius: 3px; */
-  /* size */
   font-size: 12px;
 }
 </style>

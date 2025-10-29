@@ -106,19 +106,22 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-  <thead>
-    <tr>
-      <th>
-        <sHeading class="stat-title docorate" align="center">
-          <!-- Your heading text here, e.g. "Total Households" -->
-        </sHeading>
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- Your table rows here -->
-  </tbody>
-</table>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b> Total Households </b>
+                    </sHeading>
+                    <tbody>
+                      <tr>
+                        <td><span class="stat-span">Total Households</span></td>
+                        <td>
+                          <sdHeading class="stat-title">{{
+                            new Intl.NumberFormat().format(
+                              summary.number_of_households
+                            )
+                          }}</sdHeading>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </CardBarChart2>
               </div>
             </EChartCard>
@@ -130,11 +133,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >No of people in non sprayable</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center"
+                      ><b> No of people in non sprayable </b></sHeading
+                    >
                     <tbody>
                       <tr>
                         <td>
@@ -163,12 +164,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >No of people in stand alone non-sprayable
-                        surface</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b> No of people in stand alone non-sprayable surface </b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td>
@@ -198,11 +196,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Stand alone units near water body</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b> Stand alone units near water body </b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td>
@@ -231,11 +227,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >No of people in stand alone units</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b> No of people in stand alone units </b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td>
@@ -264,11 +258,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Stand alone units sprayable surface</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b>Stand alone units sprayable surface </b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td>
@@ -297,11 +289,9 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Stand alone units where people sleep</sHeading
-                      >
-                    </th>
+                    <sHeading class="stat-title docorate" align="center">
+                      <b>Stand alone units where people sleep</b>
+                    </sHeading>
                     <tbody>
                       <tr>
                         <td>
@@ -355,7 +345,7 @@ const currentCounties = ref([
   // "tAbBVBbueqD", //kisumu
   // "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  'Tvf1zgVZ0K4',//busia
+  "Tvf1zgVZ0K4", //busia
   // 'NjWSbQTwys4',//lamu
   // 'nrI2khZx3d0',//kilifi
   // 'JsH2bnvNt2d',//tan river
@@ -453,33 +443,33 @@ const getTrainingSummary = async () => {
     const data = await response.data;
     Number(data);
     console.log(data.data);
-    summary.no_of_people_sleep_in_non_sprayable =
-      data.data.no_of_people_sleep_in_non_sprayable
-        ? data.data.no_of_people_sleep_in_non_sprayable
-        : 0;
-    summary.no_of_people_sleep_in_stand_alone_units =
-      data.data.no_of_people_sleep_in_stand_alone_units
-        ? data.data.no_of_people_sleep_in_stand_alone_units
-        : 0;
-    summary.no_of_stand_alone_non_sprayable_surfaces =
-      data.data.no_of_stand_alone_non_sprayable_surfaces
-        ? data.data.no_of_stand_alone_non_sprayable_surfaces
-        : 0;
+    summary.no_of_people_sleep_in_non_sprayable = data.data
+      .no_of_people_sleep_in_non_sprayable
+      ? data.data.no_of_people_sleep_in_non_sprayable
+      : 0;
+    summary.no_of_people_sleep_in_stand_alone_units = data.data
+      .no_of_people_sleep_in_stand_alone_units
+      ? data.data.no_of_people_sleep_in_stand_alone_units
+      : 0;
+    summary.no_of_stand_alone_non_sprayable_surfaces = data.data
+      .no_of_stand_alone_non_sprayable_surfaces
+      ? data.data.no_of_stand_alone_non_sprayable_surfaces
+      : 0;
     summary.number_of_households = data.data.number_of_households
       ? data.data.number_of_households
       : 0;
-    summary.stand_alone_units_near_water_bodies =
-      data.data.stand_alone_units_near_water_bodies
-        ? data.data.stand_alone_units_near_water_bodies
-        : 0;
-    summary.stand_alone_units_sprayable_surfaces =
-      data.data.stand_alone_units_sprayable_surfaces
-        ? data.data.stand_alone_units_sprayable_surfaces
-        : 0;
-    summary.stand_alone_units_where_people_sleep =
-      data.data.stand_alone_units_where_people_sleep
-        ? data.data.stand_alone_units_where_people_sleep
-        : 0;
+    summary.stand_alone_units_near_water_bodies = data.data
+      .stand_alone_units_near_water_bodies
+      ? data.data.stand_alone_units_near_water_bodies
+      : 0;
+    summary.stand_alone_units_sprayable_surfaces = data.data
+      .stand_alone_units_sprayable_surfaces
+      ? data.data.stand_alone_units_sprayable_surfaces
+      : 0;
+    summary.stand_alone_units_where_people_sleep = data.data
+      .stand_alone_units_where_people_sleep
+      ? data.data.stand_alone_units_where_people_sleep
+      : 0;
   } catch (error) {
     console.error(error);
   }
@@ -552,7 +542,7 @@ const fetchChildData = async (location_id, org_id, org_level) => {
     })
     .then(async () => {
       await axios.get(`${masterListUrl}`).then(async (response) => {
-        console.log(response.data)
+        console.log(response.data);
         const data = await response.data;
         summary.no_of_people_sleep_in_non_sprayable =
           data.no_of_people_sleep_in_non_sprayable

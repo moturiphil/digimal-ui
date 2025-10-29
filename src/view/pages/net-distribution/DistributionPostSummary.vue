@@ -159,11 +159,11 @@ const props = defineProps({
   post_id: Number,
 });
 const pending_hh_cols = ref([
-  {
-    title: "ID",
-    dataIndex: "hh_id",
-    key: "hh_id",
-  },
+  // {
+  //   title: "ID",
+  //   dataIndex: "hh_id",
+  //   key: "hh_id",
+  // },
   {
     title: "Phone Number",
     dataIndex: "hh_phone_number",
@@ -177,11 +177,11 @@ const pending_hh_cols = ref([
   },
 ]);
 const served_hh_cols = ref([
-  {
-    title: "ID",
-    dataIndex: "hh_id",
-    key: "hh_id",
-  },
+  // {
+  //   title: "ID",
+  //   dataIndex: "hh_id",
+  //   key: "hh_id",
+  // },
   {
     title: "Phone Number",
     dataIndex: "hh_phone_number",

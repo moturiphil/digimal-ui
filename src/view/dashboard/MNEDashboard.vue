@@ -3,8 +3,7 @@
     <sdPageHeader title="M & E Dashboard">
       <template v-slot:buttons>
         <div class="page-header-actions">
-          <router-link v-bind:to="'campaigns/create-campaign'">
-          </router-link>
+          <router-link v-bind:to="'campaigns/create-campaign'"> </router-link>
         </div>
         <a-row>
           <a-col v-if="filterAccessList.includes('country')">
@@ -402,9 +401,10 @@ const selectedCounties = ref([
   "Nyamira County",
   "Kisumu County",
   "Siaya County",
-  "Busia County",
   "Migori County",
+  "Busia County",
   "Lamu County",
+  "Kericho County",
   "Kilifi County",
   "Tana River County",
   "Kwale County",
@@ -416,10 +416,11 @@ const selectedCounties = ref([
   "West Pokot County",
   "Turkana County",
   "Trans Nzoia County",
+  "Nandi County",
   "Narok County",
-  "Marsabit County",
+  // "Marsabit County",
   "Baringo County",
-  "Kirinyaga County"
+  "Kirinyaga County",
 ]);
 const currentCounties = ref([
   "nK0A12Q7MvS", //homa bay
@@ -428,23 +429,25 @@ const currentCounties = ref([
   "tAbBVBbueqD", //kisumu
   "u4t9H8XyU9P", //siaya
   "fVra3Pwta0Q", //migori
-  'Tvf1zgVZ0K4',//busia
-  'NjWSbQTwys4',//lamu
-  'nrI2khZx3d0',//kilifi
-  'JsH2bnvNt2d',//tan river
+  "Tvf1zgVZ0K4", //busia
+  "NjWSbQTwys4", //lamu
+  "nrI2khZx3d0", //kilifi
+  "JsH2bnvNt2d", //tana river
   "N7YETT3A9r1", //kwale
   "QyGNX2DpR4h", //taita taveta
   "wsBsC6gjHvn", // mombasa
-  'KGHhQ5GLd4k',//
-  'BjC1xL40gHo',//kakamega
-  'sANMZ3lpqGs',//vihiga
-  'XWALbfAPa6n',//west pokot
-  'kphDeKClFch',//turkana
-  'mThvosEflAU',//trans nzoia
-  'kqJ83J2D72s',//naraok
-  'Eey8fT4Im3y',//marsabit
-  'vvOK1BxTbet',//baringo
-  'Ulj33KBau7V',
+  "KGHhQ5GLd4k", //bungoma
+  "BjC1xL40gHo", //kakamega
+  "ihZsJ8alvtb", // Kericho
+  "t0J75eHKxz5", // Nandi
+  "sANMZ3lpqGs", //vihiga
+  "XWALbfAPa6n", //west pokot
+  "kphDeKClFch", //turkana
+  "mThvosEflAU", //trans nzoia
+  "kqJ83J2D72s", //naraok
+  // 'Eey8fT4Im3y',//marsabit
+  "vvOK1BxTbet", //baringo
+  "Ulj33KBau7V", // kirinyaga
 ]);
 var estimatedHouseholds = ref([
   {
@@ -554,7 +557,6 @@ const capitalizeFirstLetter = async (word) => {
   return (await word.charAt(0).toUpperCase()) + word.slice(1);
 };
 const updateFilters = async () => {
-
   if (access_level.value.level.id == 1) {
     filterAccessList.value = [
       "county",
@@ -1141,7 +1143,7 @@ const HouseHoldsRegistrationTrendsChart = async (data, org_level) => {
   } catch (e) {
     console.log(e);
   }
-}
+};
 const EstimatedvsRegisteredHouseholds = async (
   estimated,
   registered,
@@ -1565,7 +1567,7 @@ const NetsPerCapita = async (
           data: scatter_data,
           color: "#004225",
           tooltip: {
-            pointFormat: "{point.name} <b>{point.y:.1f}</b>",
+            pointFormat: "{point.name} <b>{point.y:.2f}</b>",
           },
           marker: {
             radius: 6, // Set the radius to adjust the size of scatter plot dots
