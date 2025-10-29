@@ -369,7 +369,7 @@
         <a-row
           style="
             margin-top: 10px;
-            panding: 1px;
+            padding: 1px;
             border: solid 1px 1px #6b055700;
           "
         >

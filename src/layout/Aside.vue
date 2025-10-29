@@ -5,7 +5,7 @@
     :theme="darkMode ? 'dark' : 'light'"
   >
     <a-menu-item-group key="pages">
-      <a-sub-menu key="widgetDashboard">
+      <a-sub-menu key="widgetDashboard" v-if="!isCommunityHealthWorker">
         <template v-slot:title>
           <sdFeatherIcons type="home" /> <span>Dashboards</span>
         </template>
@@ -75,7 +75,7 @@
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="!isLevelOne">
+      <a-sub-menu key="events" v-if="!isLevelOne && !isCommunityHealthWorker">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -137,7 +137,7 @@
         </a-menu-item>
       </a-sub-menu>
 
-      <a-sub-menu key="admin-units">
+      <a-sub-menu key="admin-units" v-if="!isCommunityHealthWorker">
         <template v-slot:title>
           <sdFeatherIcons type="cpu" />
           <span>Administrative Units</span></template
@@ -393,6 +393,16 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="hh-registration">
+        <router-link to="/add-household">
+          <sdFeatherIcons type="home" /><span> Register HouseHold </span>
+        </router-link>
+      </a-menu-item>
+      <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="nets-issuance">
+        <router-link to="/issue-nets">
+          <sdFeatherIcons type="share-2" /><span> Issue Nets </span>
+        </router-link>
+      </a-menu-item>
       <a-menu-item v-if="isAdmin || isTechSupport" key="massnet-admin">
         <router-link to="/admin-massnet">
           <sdFeatherIcons type="alert-triangle" /><span> Administrator </span>
@@ -550,6 +560,7 @@ export default defineComponent({
     const canViewPMIPayroll = hasRole(viewPMIPayrollRoles);
     const canViewUsers = hasRole(viewUsersRoles);
     const canViewMasterlist = hasRole(viewMasterlistsRoles);
+    const isCommunityHealthWorker = hasRole([52, 77]);
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -618,6 +629,7 @@ export default defineComponent({
       isAdmin,
       isTechSupport,
       isAIEHolder,
+      isCommunityHealthWorker,
       canViewCampaign,
       canCreateEvent,
       canViewEvent,
