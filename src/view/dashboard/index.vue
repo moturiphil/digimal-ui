@@ -113,11 +113,15 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th>
-                    <sHeading class="stat-title docorate" align="center"
-                      >Digimal Stats</sHeading
-                    >
-                  </th>
+                  <thead>
+                    <tr>
+                      <th>
+                        <sHeading class="stat-title docorate" align="center"
+                          >Digimal Stats</sHeading
+                        >
+                      </th>
+                    </tr>
+                  </thead>
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Registered Users</span></td>
@@ -156,11 +160,13 @@
             <div class="card-chunk">
               <CardBarChart2>
                 <table class="stat-table">
-                  <th>
-                    <sHeading class="stat-title docorate" align="center"
-                      >Nets</sHeading
-                    >
-                  </th>
+                  <thead>
+                    <tr>
+                      <th>
+                        <sHeading class="stat-title docorate" align="center">Nets</sHeading>
+                      </th>
+                    </tr>
+                  </thead>
                   <tbody>
                     <tr>
                       <td><span class="stat-span">Total Required</span></td>
@@ -396,7 +402,7 @@
         <a-row
           style="
             margin-top: 10px;
-            panding: 1px;
+            padding: 1px;
             border: solid 1px 1px #6b055700;
           "
         >

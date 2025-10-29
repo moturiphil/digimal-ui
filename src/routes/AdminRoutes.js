@@ -722,6 +722,14 @@ const routes = [
       ),
   },
   {
+    path: "/issue-nets",
+    name: "issue-nets",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/IssueNets.vue"
+      ),
+  },
+  {
     path: "/gf-activity-payroll",
     name: "activity-payroll",
     component: () =>

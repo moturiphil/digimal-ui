@@ -106,24 +106,19 @@
               <div class="card-chunk">
                 <CardBarChart2>
                   <table class="stat-table">
-                    <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Total Households</sHeading
-                      >
-                    </th>
-                    <tbody>
-                      <tr>
-                        <td><span class="stat-span">Total Households</span></td>
-                        <td>
-                          <sdHeading class="stat-title">{{
-                            new Intl.NumberFormat().format(
-                              summary.number_of_households
-                            )
-                          }}</sdHeading>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+  <thead>
+    <tr>
+      <th>
+        <sHeading class="stat-title docorate" align="center">
+          <!-- Your heading text here, e.g. "Total Households" -->
+        </sHeading>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Your table rows here -->
+  </tbody>
+</table>
                 </CardBarChart2>
               </div>
             </EChartCard>

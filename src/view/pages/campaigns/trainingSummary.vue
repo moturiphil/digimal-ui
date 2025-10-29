@@ -107,9 +107,7 @@
                 <CardBarChart2>
                   <table class="stat-table">
                     <th>
-                      <sHeading class="stat-title docorate" align="center"
-                        >Health-Care Workers(CHWs)</sHeading
-                      >
+                      <sHeading>Health-Care Workers(CHWs)</sHeading>
                     </th>
                     <tbody>
                       <tr>
