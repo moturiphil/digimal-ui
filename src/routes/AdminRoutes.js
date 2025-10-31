@@ -881,6 +881,11 @@ const routes = [
       ),
   },
   {
+        path: "/chp/:id/hh-served",
+        name: "chp-hh-served",
+        component: () => import("@/view/pages/household/CHPHHServed.vue"),
+      },
+  {
     path: "/404",
     name: "404",
     component: () =>

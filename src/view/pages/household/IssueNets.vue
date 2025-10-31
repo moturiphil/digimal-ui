@@ -1,11 +1,22 @@
 <template>
   <Main>
-    <sdPageHeader ghost :title="`Issue Nets in ${chp_village}`" />
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <sdPageHeader ghost :title="`Issue Nets in ${chp_village}`" />
+      <sdButton
+        type="warning"
+        size="large"
+        @click="navigateToServedHouseholds"
+        style="border-radius: 6px; height: 40px; padding: 0 20px; font-weight: 500;"
+      >
+        <a-icon type="list" style="margin-right: 8px;" />
+        View Served Households
+      </sdButton>
+    </div>
 
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
-          <sdCards headless>
+          <!-- <sdCards headless> -->
             <a-row justify="center">
               <a-col :xl="10" :md="16" :xs="24">
                 <BasicFormWrapper>
@@ -18,10 +29,10 @@
                     name="searchHousehold"
                     @finish="searchHousehold"
                   >
-                    <a-card 
+                    <!-- <a-card 
                       style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;"
                       :headStyle="{ border: 'none', backgroundColor: 'transparent' }"
-                    >
+                    > -->
                       <div style="padding: 20px 0;">
                         <a-icon type="home" style="font-size: 48px; color: #1890ff; margin-bottom: 16px;" />
                         <h2 style="margin: 0 0 8px 0; color: #262626;">Find Household</h2>
@@ -50,7 +61,7 @@
 
                         <sdButton
                           size="large"
-                          type="primary"
+                          type="success"
                           :disabled="isLoading || !searchForm.id_number"
                           @click="searchHousehold"
                           style="border-radius: 6px; height: 48px; padding: 0 32px; font-weight: 500; box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);"
@@ -60,7 +71,7 @@
                           {{ isLoading ? "Searching..." : "Search Household" }}
                         </sdButton>
                       </div>
-                    </a-card>
+                    <!-- </a-card> -->
                   </a-form>
 
                   <!-- Step 2: Display Household Details and Issue Nets -->
@@ -154,7 +165,7 @@
                 </BasicFormWrapper>
               </a-col>
             </a-row>
-          </sdCards>
+          <!-- </sdCards> -->
         </RecordFormWrapper>
       </a-col>
     </a-row>
@@ -166,6 +177,7 @@ import { RecordFormWrapper } from "./style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { reactive, ref, defineComponent } from "vue";
 import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
 import axios from "@/Axiosconfig";
 import authHeader from "../../../services/auth-header";
 import * as Yup from "yup";
@@ -175,6 +187,8 @@ const IssueNets = defineComponent({
   components: { RecordFormWrapper, Main, BasicFormWrapper },
 
   data() {
+    const router = useRouter();
+    
     const isLoading = ref(false);
     const isSubmitting = ref(false);
     const householdFound = ref(false);
@@ -186,7 +200,9 @@ const IssueNets = defineComponent({
     const user = JSON.parse(sessionStorage.getItem("user"));
     const chp = user.user;
     const chp_village = chp.location.name;
+    const chp_id = chp.id;
 
+    console.log(chp);
     const searchForm = reactive({
       id_number: "",
     });
@@ -323,7 +339,7 @@ const IssueNets = defineComponent({
         console.error('Issue nets error:', error);
         notification.error({
           message: "Error",
-          description: "An error occurred while issuing nets",
+          description: "Household already issued nets",
           duration: 5,
         });
       } finally {
@@ -340,6 +356,10 @@ const IssueNets = defineComponent({
       };
     };
 
+    const navigateToServedHouseholds = () => {
+      router.push(`/chp/${chp_id}/hh-served`);
+    };
+
     return {
       isLoading,
       isSubmitting,
@@ -353,6 +373,7 @@ const IssueNets = defineComponent({
       searchHousehold,
       issueNets,
       resetForm,
+      navigateToServedHouseholds,
       errors,
     };
   },
