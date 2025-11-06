@@ -39,11 +39,14 @@
               <a-col :xs="24" :sm="8">
                 <a-card style="border-radius: 8px; text-align: center; border-left: 4px solid #722ed1;">
                   <a-statistic
-                    title="Average Household Size"
+                    title="Avg. Estimated Household Size"
                     :value="averageHouseholdSize"
                     :precision="1"
                     :value-style="{ color: '#722ed1', fontSize: '24px', fontWeight: 'bold' }"
                   />
+                  <div style="font-size: 12px; color: #8c8c8c; margin-top: 4px;">
+                    Based on 1 net per 2 people
+                  </div>
                 </a-card>
               </a-col>
             </a-row>
@@ -51,10 +54,10 @@
             <!-- Search and Filter -->
             <a-card style="margin-bottom: 20px; border-radius: 8px;">
               <a-row :gutter="[16, 16]">
-                <a-col :xs="24" :sm="12" :md="8">
+                <a-col :xs="24" :sm="12" :md="6">
                   <a-input
                     v-model:value="searchQuery"
-                    placeholder="Search by name or ID number"
+                    placeholder="Search by household name"
                     size="large"
                     style="border-radius: 6px;"
                     @input="handleSearch"
@@ -64,7 +67,7 @@
                     </template>
                   </a-input>
                 </a-col>
-                <a-col :xs="24" :sm="12" :md="8">
+                <a-col :xs="24" :sm="12" :md="5">
                   <a-date-picker
                     v-model:value="dateFilter"
                     placeholder="Filter by date"
@@ -73,7 +76,35 @@
                     @change="handleDateFilter"
                   />
                 </a-col>
+                <a-col :xs="24" :sm="12" :md="5">
+                  <a-select
+                    v-model:value="subcountyFilter"
+                    placeholder="Filter by Subcounty"
+                    size="large"
+                    style="width: 100%; border-radius: 6px;"
+                    allow-clear
+                    @change="handleSubcountyFilter"
+                  >
+                    <a-select-option v-for="subcounty in uniqueSubcounties" :key="subcounty" :value="subcounty">
+                      {{ subcounty }}
+                    </a-select-option>
+                  </a-select>
+                </a-col>
                 <a-col :xs="24" :sm="12" :md="4">
+                  <a-select
+                    v-model:value="wardFilter"
+                    placeholder="Filter by Ward"
+                    size="large"
+                    style="width: 100%; border-radius: 6px;"
+                    allow-clear
+                    @change="handleWardFilter"
+                  >
+                    <a-select-option v-for="ward in uniqueWards" :key="ward" :value="ward">
+                      {{ ward }}
+                    </a-select-option>
+                  </a-select>
+                </a-col>
+                <a-col :xs="24" :sm="12" :md="2">
                   <sdButton
                     type="default"
                     size="large"
@@ -84,7 +115,7 @@
                     Reset
                   </sdButton>
                 </a-col>
-                <a-col :xs="24" :sm="12" :md="4">
+                <a-col :xs="24" :sm="12" :md="2">
                   <sdButton
                     type="success"
                     size="large"
@@ -123,61 +154,52 @@
                 @change="handleTableChange"
               >
                 <template #bodyCell="{ column, record }">
-                  <template v-if="column.key === 'name'">
+                  <template v-if="column.key === 'household_name'">
                     <div style="display: flex; align-items: center;">
                       <a-avatar 
                         :size="32" 
                         style="background-color: #1890ff; margin-right: 12px; flex-shrink: 0;"
                       >
-                        {{ record.first_name?.charAt(0) }}{{ record.last_name?.charAt(0) }}
+                        {{ record.household_name?.charAt(0) }}
                       </a-avatar>
                       <div>
                         <div style="font-weight: 500; color: #262626;">
-                          {{ record.first_name }} {{ record.middle_name }} {{ record.last_name }}
-                        </div>
-                        <div style="font-size: 12px; color: #8c8c8c;">
-                          ID: {{ record.id_no }}
+                          {{ record.household_name }}
                         </div>
                       </div>
                     </div>
                   </template>
 
-                  <template v-if="column.key === 'contact'">
+                  <template v-if="column.key === 'location'">
                     <div>
-                      <div style="font-weight: 500;">{{ record.phone_no }}</div>
-                    </div>
-                  </template>
-
-                  <template v-if="column.key === 'household_info'">
-                    <div>
-                      <div style="font-weight: 500;">{{ record.hh_size }} members</div>
+                      <div style="font-weight: 500;">{{ record.subcounty_name !== 'N/A' ? record.subcounty_name : 'Not Specified' }}</div>
                       <div style="font-size: 12px; color: #8c8c8c;">
-                        Allocated: {{ record.actual_allocation }} nets
+                        Ward: {{ record.ward_name !== 'N/A' ? record.ward_name : 'Not Specified' }}
+                      </div>
+                      <div style="font-size: 12px; color: #8c8c8c;">
+                        CHU: {{ record.chu_area_name !== 'N/A' ? record.chu_area_name : 'Not Specified' }}
                       </div>
                     </div>
                   </template>
 
                   <template v-if="column.key === 'nets_issued'">
                     <a-tag color="green" style="border-radius: 12px; font-weight: 500;">
-                      {{ record.nets_issued || record.actual_allocation }} nets
+                      {{ record.no_of_nets }} nets
                     </a-tag>
                   </template>
 
-                  <template v-if="column.key === 'date_served'">
+                  <template v-if="column.key === 'issue_date'">
                     <div>
-                      <div style="font-weight: 500;">{{ formatDate(record.date_served) }}</div>
-                      <div style="font-size: 12px; color: #8c8c8c;">
-                        {{ formatTime(record.date_served) }}
-                      </div>
+                      <div style="font-weight: 500;">{{ formatDate(record.issue_date) }}</div>
                     </div>
                   </template>
 
                   <template v-if="column.key === 'status'">
                     <a-tag 
-                      :color="record.status === 'Completed' ? 'green' : 'blue'"
+                      color="green"
                       style="border-radius: 12px; font-weight: 500;"
                     >
-                      {{ record.status || 'Completed' }}
+                      Completed
                     </a-tag>
                   </template>
 
@@ -229,27 +251,27 @@
     >
       <div v-if="selectedHousehold">
         <a-descriptions bordered :column="1">
-          <a-descriptions-item label="Name">
-            {{ selectedHousehold.first_name }} {{ selectedHousehold.middle_name }} {{ selectedHousehold.last_name }}
-          </a-descriptions-item>
-          <a-descriptions-item label="ID Number">
-            {{ selectedHousehold.id_no }}
-          </a-descriptions-item>
-          <a-descriptions-item label="Phone Number">
-            {{ selectedHousehold.phone_no }}
-          </a-descriptions-item>
-          <a-descriptions-item label="Household Size">
-            {{ selectedHousehold.hh_size }} members
+          <a-descriptions-item label="Household Name">
+            {{ selectedHousehold.household_name }}
           </a-descriptions-item>
           <a-descriptions-item label="Nets Issued">
-            {{ selectedHousehold.nets_issued || selectedHousehold.actual_allocation }} nets
+            {{ selectedHousehold.no_of_nets }} nets
           </a-descriptions-item>
-          <a-descriptions-item label="Date Served">
-            {{ formatDate(selectedHousehold.date_served) }} at {{ formatTime(selectedHousehold.date_served) }}
+          <a-descriptions-item label="Issue Date">
+            {{ formatDate(selectedHousehold.issue_date) }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Subcounty">
+            {{ selectedHousehold.subcounty_name !== 'N/A' ? selectedHousehold.subcounty_name : 'Not Specified' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="Ward">
+            {{ selectedHousehold.ward_name !== 'N/A' ? selectedHousehold.ward_name : 'Not Specified' }}
+          </a-descriptions-item>
+          <a-descriptions-item label="CHU Area">
+            {{ selectedHousehold.chu_area_name !== 'N/A' ? selectedHousehold.chu_area_name : 'Not Specified' }}
           </a-descriptions-item>
           <a-descriptions-item label="Status">
-            <a-tag :color="selectedHousehold.status === 'Completed' ? 'green' : 'blue'">
-              {{ selectedHousehold.status || 'Completed' }}
+            <a-tag color="green">
+              Completed
             </a-tag>
           </a-descriptions-item>
         </a-descriptions>
@@ -280,6 +302,8 @@ const CHPHHServed = defineComponent({
     const households = ref([]);
     const searchQuery = ref("");
     const dateFilter = ref(null);
+    const subcountyFilter = ref(null);
+    const wardFilter = ref(null);
     const showDetailsModal = ref(false);
     const selectedHousehold = ref(null);
     
@@ -297,41 +321,36 @@ const CHPHHServed = defineComponent({
     // Table columns
     const columns = [
       {
-        title: 'Household Head',
-        key: 'name',
-        dataIndex: 'name',
+        title: 'Household Name',
+        key: 'household_name',
+        dataIndex: 'household_name',
         width: 250,
         fixed: 'left',
+        sorter: (a, b) => a.household_name.localeCompare(b.household_name),
       },
       {
-        title: 'Contact',
-        key: 'contact',
-        dataIndex: 'phone_no',
-        width: 150,
-      },
-      {
-        title: 'Household Info',
-        key: 'household_info',
-        width: 150,
+        title: 'Location',
+        key: 'location',
+        width: 200,
       },
       {
         title: 'Nets Issued',
         key: 'nets_issued',
-        dataIndex: 'nets_issued',
+        dataIndex: 'no_of_nets',
         width: 120,
         align: 'center',
+        sorter: (a, b) => a.no_of_nets - b.no_of_nets,
       },
       {
-        title: 'Date Served',
-        key: 'date_served',
-        dataIndex: 'date_served',
+        title: 'Issue Date',
+        key: 'issue_date',
+        dataIndex: 'issue_date',
         width: 150,
-        sorter: (a, b) => moment(a.date_served).unix() - moment(b.date_served).unix(),
+        sorter: (a, b) => moment(a.issue_date).unix() - moment(b.issue_date).unix(),
       },
       {
         title: 'Status',
         key: 'status',
-        dataIndex: 'status',
         width: 100,
         align: 'center',
       },
@@ -344,6 +363,21 @@ const CHPHHServed = defineComponent({
       },
     ];
 
+    // Computed properties for filters
+    const uniqueSubcounties = computed(() => {
+      const subcounties = households.value
+        .map(h => h.subcounty_name)
+        .filter(s => s && s !== 'N/A');
+      return [...new Set(subcounties)];
+    });
+
+    const uniqueWards = computed(() => {
+      const wards = households.value
+        .map(h => h.ward_name)
+        .filter(w => w && w !== 'N/A');
+      return [...new Set(wards)];
+    });
+
     // Computed properties
     const filteredHouseholds = computed(() => {
       let filtered = households.value;
@@ -352,11 +386,7 @@ const CHPHHServed = defineComponent({
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(household => 
-          household.first_name?.toLowerCase().includes(query) ||
-          household.middle_name?.toLowerCase().includes(query) ||
-          household.last_name?.toLowerCase().includes(query) ||
-          household.id_no?.toLowerCase().includes(query) ||
-          household.phone_no?.includes(query)
+          household.household_name?.toLowerCase().includes(query)
         );
       }
 
@@ -364,7 +394,21 @@ const CHPHHServed = defineComponent({
       if (dateFilter.value) {
         const selectedDate = moment(dateFilter.value).format('YYYY-MM-DD');
         filtered = filtered.filter(household => 
-          moment(household.date_served).format('YYYY-MM-DD') === selectedDate
+          moment(household.issue_date).format('YYYY-MM-DD') === selectedDate
+        );
+      }
+
+      // Subcounty filter
+      if (subcountyFilter.value) {
+        filtered = filtered.filter(household => 
+          household.subcounty_name === subcountyFilter.value
+        );
+      }
+
+      // Ward filter
+      if (wardFilter.value) {
+        filtered = filtered.filter(household => 
+          household.ward_name === wardFilter.value
         );
       }
 
@@ -381,16 +425,18 @@ const CHPHHServed = defineComponent({
     
     const totalNetsIssued = computed(() => 
       households.value.reduce((total, household) => 
-        total + (household.nets_issued || household.actual_allocation || 0), 0
+        total + (household.no_of_nets || 0), 0
       )
     );
 
     const averageHouseholdSize = computed(() => {
       if (households.value.length === 0) return 0;
-      const totalSize = households.value.reduce((total, household) => 
-        total + (household.hh_size || 0), 0
+      // Since we don't have household size in the data, we'll estimate based on nets issued
+      // Assuming 1 net per 2 people (standard recommendation)
+      const totalEstimatedSize = households.value.reduce((total, household) => 
+        total + ((household.no_of_nets || 0) * 2), 0
       );
-      return totalSize / households.value.length;
+      return totalEstimatedSize / households.value.length;
     });
 
     const paginationConfig = computed(() => ({
@@ -408,7 +454,7 @@ const CHPHHServed = defineComponent({
       try {
         isLoading.value = true;
         
-        const response = await axios.get(`/chp/${chp_id}/hh_served`, {
+        const response = await axios.get(`/chp/${chp_id}/served_households`, {
           headers: {
             ...authHeader(),
             'Content-Type': 'application/json'
@@ -416,7 +462,11 @@ const CHPHHServed = defineComponent({
         });
 
         if (response.data.success) {
-          households.value = response.data.data || [];
+          // Add index to each household for unique key
+          households.value = (response.data.data || []).map((household, index) => ({
+            ...household,
+            id: index + 1
+          }));
           
           if (households.value.length === 0) {
             notification.info({
@@ -452,9 +502,19 @@ const CHPHHServed = defineComponent({
       currentPage.value = 1; // Reset to first page when filtering
     };
 
+    const handleSubcountyFilter = () => {
+      currentPage.value = 1; // Reset to first page when filtering
+    };
+
+    const handleWardFilter = () => {
+      currentPage.value = 1; // Reset to first page when filtering
+    };
+
     const resetFilters = () => {
       searchQuery.value = "";
       dateFilter.value = null;
+      subcountyFilter.value = null;
+      wardFilter.value = null;
       currentPage.value = 1;
     };
 
@@ -472,18 +532,50 @@ const CHPHHServed = defineComponent({
       // Implement print functionality
       notification.info({
         message: "Print Receipt",
-        description: `Receipt for ${household.first_name} ${household.last_name} will be generated.`,
+        description: `Receipt for ${household.household_name} will be generated.`,
         duration: 3,
       });
     };
 
     const exportData = () => {
-      // Implement export functionality
-      notification.info({
-        message: "Export Data",
-        description: "Data export functionality will be implemented.",
-        duration: 3,
-      });
+      try {
+        // Create CSV content
+        const headers = ['Household Name', 'Nets Issued', 'Issue Date', 'Subcounty', 'Ward', 'CHU Area'];
+        const csvContent = [
+          headers.join(','),
+          ...filteredHouseholds.value.map(household => [
+            `"${household.household_name}"`,
+            household.no_of_nets,
+            household.issue_date,
+            `"${household.subcounty_name !== 'N/A' ? household.subcounty_name : 'Not Specified'}"`,
+            `"${household.ward_name !== 'N/A' ? household.ward_name : 'Not Specified'}"`,
+            `"${household.chu_area_name !== 'N/A' ? household.chu_area_name : 'Not Specified'}"`
+          ].join(','))
+        ].join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `households_served_${moment().format('YYYY-MM-DD')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        notification.success({
+          message: "Export Successful",
+          description: "Households data has been exported successfully.",
+          duration: 3,
+        });
+      } catch (error) {
+        notification.error({
+          message: "Export Failed",
+          description: "An error occurred while exporting the data.",
+          duration: 5,
+        });
+      }
     };
 
     const navigateToIssueNets = () => {
@@ -508,6 +600,8 @@ const CHPHHServed = defineComponent({
       households,
       searchQuery,
       dateFilter,
+      subcountyFilter,
+      wardFilter,
       showDetailsModal,
       selectedHousehold,
       currentPage,
@@ -515,6 +609,8 @@ const CHPHHServed = defineComponent({
       chp_village,
       emptyImage,
       columns,
+      uniqueSubcounties,
+      uniqueWards,
       filteredHouseholds,
       paginatedHouseholds,
       totalHouseholds,
@@ -524,6 +620,8 @@ const CHPHHServed = defineComponent({
       fetchServedHouseholds,
       handleSearch,
       handleDateFilter,
+      handleSubcountyFilter,
+      handleWardFilter,
       resetFilters,
       handleTableChange,
       viewDetails,

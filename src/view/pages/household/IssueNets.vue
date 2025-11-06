@@ -3,7 +3,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <sdPageHeader ghost :title="`Issue Nets in ${chp_village}`" />
       <sdButton
-        type="warning"
+        type="success"
         size="large"
         @click="navigateToServedHouseholds"
         style="border-radius: 6px; height: 40px; padding: 0 20px; font-weight: 500;"
@@ -61,7 +61,7 @@
 
                         <sdButton
                           size="large"
-                          type="success"
+                          type="warning"
                           :disabled="isLoading || !searchForm.id_number"
                           @click="searchHousehold"
                           style="border-radius: 6px; height: 48px; padding: 0 32px; font-weight: 500; box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);"
