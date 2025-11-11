@@ -133,7 +133,8 @@ export default {
           console.log(response);
           if (response.status === 200) {
             sessionStorage.setItem("user", JSON.stringify(response.data));
-            router.push("/add-household");
+            console.log(response.data.user.id);
+            router.push(`/chp/${response.data.user.id}/hh-served`);
             notification.success({
               message: "Confirmation",
               description: response.data.message,
