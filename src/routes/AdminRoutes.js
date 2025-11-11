@@ -726,7 +726,7 @@ const routes = [
     name: "add-hh",
     component: () =>
       import(
-        /* webpackChunkName: "Search" */ "@/view/pages/household/AddHouseHold.vue"
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseholdRegistrationWrapper.vue"
       ),
   },
   {

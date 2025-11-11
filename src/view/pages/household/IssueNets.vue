@@ -1,7 +1,7 @@
 <template>
   <Main>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <sdPageHeader ghost :title="`Issue Nets in ${chp_village}`" />
+      <sdPageHeader ghost :title="`Issue Nets at ${chp_post}`" />
       <sdButton
         type="success"
         size="large"
@@ -178,7 +178,6 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { reactive, ref, defineComponent } from "vue";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
-import axios from "@/Axiosconfig";
 import authHeader from "../../../services/auth-header";
 import * as Yup from "yup";
 
@@ -199,8 +198,11 @@ const IssueNets = defineComponent({
 
     const user = JSON.parse(sessionStorage.getItem("user"));
     const chp = user.user;
-    const chp_village = chp.location.name;
     const chp_id = chp.id;
+
+
+    // hit get_my_post endpoint to get post_name
+    const chp_post = ref("");
 
     console.log(chp);
     const searchForm = reactive({
@@ -248,30 +250,48 @@ const IssueNets = defineComponent({
           id_number: null,
         };
 
-        const response = await axios.post(`/web/get_hh_by_id_number`, {
-          id_number: searchForm.id_number
-        }, {
+        // Use Fetch API instead of axios
+        const apiUrl = `${process.env.VUE_APP_BASE_URL || ''}/web/get_hh_by_id_number`;
+
+        const fetchResponse = await fetch(apiUrl, {
+          method: 'POST',
           headers: {
-            ...authHeader(),
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${user.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id_number: searchForm.id_number }),
         });
 
-        console.log('API response:', response.data);
+        // Parse JSON response (server expected to return JSON)
+        let data = null;
+        try {
+          data = await fetchResponse.json();
+        } catch (err) {
+          console.error('Failed to parse JSON response from get_hh_by_id_number:', err);
+          throw new Error('Invalid JSON response from server');
+        }
 
-        if (response.data.success) {
-          householdData.value = response.data.data;
+        console.log('get_hh_by_id_number response:', fetchResponse.status, data);
+
+        if (fetchResponse.ok && data && data.success) {
+          householdData.value = data.data;
           householdFound.value = true;
-          
+
           notification.success({
-            message: "Household Found",
-            description: "Household details retrieved successfully",
+            message: 'Household Found',
+            description: data.message,
             duration: 3,
           });
-        } else if (response.data.not_found) {
+        } else if (data && data.not_found) {
           notification.error({
-            message: "Household Not Found",
-            description: response.data.message || "Household not found.",
+            message: 'Household Not Found',
+            description: data.message || 'Household not found.',
+            duration: 5,
+          });
+        } else {
+          notification.error({
+            message: 'Error',
+            description: (data && data.message) || 'An error occurred while searching for the household',
             duration: 5,
           });
         }
@@ -284,6 +304,7 @@ const IssueNets = defineComponent({
             errors.value[e.path] = e.message;
           });
         } else {
+          console.log(error);
           notification.error({
             message: "Error",
             description: "An error occurred while searching for the household",
@@ -312,26 +333,43 @@ const IssueNets = defineComponent({
           post_id: householdData.value.post_id,
         };
 
-        const response = await axios.post('/web/issue_nets', requestData, {
+        // Use Fetch API instead of axios
+        const apiUrl = `${process.env.VUE_APP_BASE_URL || ''}/web/issue_nets`;
+
+        const fetchResponse = await fetch(apiUrl, {
+          method: 'POST',
           headers: {
+            'Content-Type': 'application/json',
             ...authHeader(),
-            'Content-Type': 'application/json'
-          }
+          },
+          body: JSON.stringify(requestData),
         });
 
-        if (response.data.success) {
+        // Try to parse JSON body (server is expected to return JSON)
+        let data = null;
+        try {
+          data = await fetchResponse.json();
+        } catch (err) {
+          console.error('Failed to parse JSON response from issue_nets:', err);
+          throw new Error('Invalid JSON response from server');
+        }
+
+        console.log('issue_nets response:', data);
+
+        // Treat non-2xx as error (but still use returned JSON message if present)
+        if (fetchResponse.ok && data && data.success) {
           notification.success({
-            message: "Nets Issued Successfully",
-            description: response.data.message || "Nets have been issued to the household",
+            message: 'Nets Issued Successfully',
+            description: data.message || 'Nets have been issued to the household',
             duration: 5,
           });
-          
+
           // Reset form after successful submission
           resetForm();
         } else {
           notification.error({
-            message: "Error Issuing Nets",
-            description: response.data.message || "Failed to issue nets",
+            message: 'Error Issuing Nets',
+            description: (data && data.message) || 'Failed to issue nets',
             duration: 5,
           });
         }
@@ -356,6 +394,32 @@ const IssueNets = defineComponent({
       };
     };
 
+    const getPost = () => {
+      const apiUrl = `${process.env.VUE_APP_BASE_URL || ''}/get_my_post`;
+
+      fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('get_my_post response:', data);
+        if (data && data.success) {
+          chp_post.value = data.data.name;
+        } else {
+          console.error('Failed to get post name:', data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching post name:', error);
+      });
+    };
+
+    getPost();
+
     const navigateToServedHouseholds = () => {
       router.push(`/chp/${chp_id}/hh-served`);
     };
@@ -366,7 +430,7 @@ const IssueNets = defineComponent({
       householdFound,
       householdData,
       searchForm,
-      chp_village,
+      chp_post,
       validate,
       clearError,
       onlyNumbers,

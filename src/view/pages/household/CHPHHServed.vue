@@ -3,13 +3,13 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <sdPageHeader ghost :title="`Households Served in ${chp_village}`" />
       <sdButton
-        type="primary"
+        type="warning"
         size="large"
         @click="navigateToIssueNets"
         style="border-radius: 6px; height: 40px; padding: 0 20px; font-weight: 500;"
       >
         <a-icon type="plus" style="margin-right: 8px;" />
-        Issue New Nets
+        Issue Nets
       </sdButton>
     </div>
 
@@ -287,7 +287,6 @@ import { ref, defineComponent, computed, onMounted } from "vue";
 import { notification, Empty } from "ant-design-vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "@/Axiosconfig";
-import authHeader from "../../../services/auth-header";
 import moment from "moment";
 
 const CHPHHServed = defineComponent({
@@ -317,6 +316,8 @@ const CHPHHServed = defineComponent({
     const chp_id = route.params.chp_id || chp.id;
 
     const emptyImage = Empty.PRESENTED_IMAGE_SIMPLE;
+
+    console.log(user.token);
 
     // Table columns
     const columns = [
@@ -362,6 +363,7 @@ const CHPHHServed = defineComponent({
         fixed: 'right',
       },
     ];
+
 
     // Computed properties for filters
     const uniqueSubcounties = computed(() => {
@@ -456,7 +458,7 @@ const CHPHHServed = defineComponent({
         
         const response = await axios.get(`/chp/${chp_id}/served_households`, {
           headers: {
-            ...authHeader(),
+            Authorization: `Bearer ${user.token}`,
             'Content-Type': 'application/json'
           }
         });
