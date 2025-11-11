@@ -1,7 +1,7 @@
 <template>
   <Main>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <sdPageHeader ghost :title="`Households Served in ${chp_village}`" />
+      <sdPageHeader ghost :title="`Households you have served`" />
       <sdButton
         type="warning"
         size="large"
@@ -354,13 +354,6 @@ const CHPHHServed = defineComponent({
         key: 'status',
         width: 100,
         align: 'center',
-      },
-      {
-        title: 'Actions',
-        key: 'actions',
-        width: 80,
-        align: 'center',
-        fixed: 'right',
       },
     ];
 

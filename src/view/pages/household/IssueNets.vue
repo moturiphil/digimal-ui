@@ -410,7 +410,7 @@ const IssueNets = defineComponent({
         if (data && data.success) {
           chp_post.value = data.data.name;
         } else {
-          console.error('Failed to get post name:', data.message);
+          chp_post.value = chp.level.level_name;
         }
       })
       .catch(error => {
