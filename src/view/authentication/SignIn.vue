@@ -7,7 +7,7 @@
           Sign in to <span class="color-success">DigiMal-KE Dashboard</span>
         </sdHeading>
         <sdHeading as="h5">
-          <span class="color-success">{{ env }}</span>
+          <span :class="envClass">{{ env }}</span>
         </sdHeading>
         <a-form-item name="id_no" label="National ID No">
           <a-input
@@ -168,6 +168,12 @@ export default {
     const router = useRouter();
     let visible = ref(false);
     const env = ref("");
+    const envClass = computed(() => {
+      if (!env.value) return '';
+      if (env.value.toLowerCase().includes('pilot')) return 'pilot-badge';
+      if (env.value.toLowerCase().includes('training')) return 'training-badge';
+      return 'color-success';
+    });
 
     const formState = reactive({
       id_no: "",
@@ -297,10 +303,10 @@ export default {
         .then((response) => {
           if (response.data == "training") {
             env.value = "Training Platform";
-          }
-          else if(response.data == "maintenance")
-          {
+          } else if (response.data == "maintenance") {
             router.push("/maintenance");
+          } else if (response.data == "pilot") {
+            env.value = "Pilot Environment";
           }
         })
         .catch((error) => {
@@ -330,6 +336,7 @@ export default {
       handleOk,
       handleCancel,
       env,
+      envClass,
     };
   },
   computed: {
@@ -348,5 +355,27 @@ export default {
     margin-bottom: 15px;
     margin-left: 10px;
   }
+}
+
+/* Environment badges */
+.pilot-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #fff7e6 0%, #fff1cc 100%);
+  color: #ad4e00;
+  border: 1px solid #ffd591;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(250, 173, 20, 0.12);
+}
+
+.training-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #f6ffed 0%, #eafff0 100%);
+  color: #237804;
+  border: 1px solid #b7eb8f;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 600;
 }
 </style>
