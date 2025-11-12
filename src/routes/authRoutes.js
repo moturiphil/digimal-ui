@@ -4,7 +4,15 @@ const routes = [
     name: "login",
     component: () =>
       import(
-        /* webpackChunkName: "login" */ "@/view/authentication/SignIn.vue"
+        /* webpackChunkName: "login" */ "@/view/authentication/UserTypeSelection.vue"
+      ),
+  },
+  {
+    path: "campaign-login",
+    name: "campaign-login",
+    component: () =>
+      import(
+        /* webpackChunkName: "campaign-login" */ "@/view/authentication/SignIn.vue"
       ),
   },
   {

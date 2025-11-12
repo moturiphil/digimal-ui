@@ -1,171 +1,202 @@
 <template>
   <Main>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <sdPageHeader ghost :title="`Issue Nets at ${chp_post}`" />
-      <sdButton
-        type="success"
-        size="large"
-        @click="navigateToServedHouseholds"
-        style="border-radius: 6px; height: 40px; padding: 0 20px; font-weight: 500;"
-      >
-        <a-icon type="list" style="margin-right: 8px;" />
-        View Served Households
-      </sdButton>
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-title">
+          <a-icon type="home" class="header-icon" />
+          <div>
+            <h2 class="page-title">Issue Nets</h2>
+            <p class="page-subtitle">{{ chp_post }}</p>
+          </div>
+        </div>
+        <sdButton
+          type="success"
+          size="large"
+          @click="navigateToServedHouseholds"
+          class="view-households-btn"
+        >
+          <a-icon type="list" />
+          View Served Households
+        </sdButton>
+      </div>
     </div>
 
-    <a-row :gutter="15">
+    <a-row :gutter="[24, 24]">
       <a-col :xs="24">
         <RecordFormWrapper>
-          <!-- <sdCards headless> -->
-            <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24">
-                <BasicFormWrapper>
-                  <!-- Step 1: Enter ID Number -->
-                  <a-form
-                    v-if="!householdFound"
-                    class="add-record-form"
-                    :style="{ width: '100%' }"
-                    layout="vertical"
-                    name="searchHousehold"
-                    @finish="searchHousehold"
-                  >
-                    <!-- <a-card 
-                      style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;"
-                      :headStyle="{ border: 'none', backgroundColor: 'transparent' }"
-                    > -->
-                      <div style="padding: 20px 0;">
-                        <a-icon type="home" style="font-size: 48px; color: #1890ff; margin-bottom: 16px;" />
-                        <h2 style="margin: 0 0 8px 0; color: #262626;">Find Household</h2>
-                        <p style="margin: 0 0 24px 0; color: #8c8c8c;">
-                          Enter the household head's ID number to search for the household
-                        </p>
-                        
-                        <a-form-item
-                          name="id_number"
-                          :validate-status="errors.id_number ? 'error' : ''"
-                          :help="errors.id_number"
-                          style="margin-bottom: 24px;"
-                        >
-                          <a-input
-                            v-model:value="searchForm.id_number"
-                            placeholder="Enter 6-8 digit ID number"
-                            type="text"
-                            maxlength="8"
-                            size="large"
-                            style="border-radius: 6px; height: 48px; font-size: 16px; text-align: center;"
-                            @blur="validate('id_number')"
-                            @input="clearError('id_number')"
-                            @keypress="onlyNumbers"
-                          />
-                        </a-form-item>
-
-                        <sdButton
+          <a-row justify="center">
+            <a-col :xl="12" :lg="14" :md="18" :sm="22" :xs="24">
+              <BasicFormWrapper>
+                <!-- Step 1: Search Household Form -->
+                <a-card 
+                  v-if="!householdFound"
+                  class="search-card"
+                  :bordered="false"
+                >
+                  <div class="search-container">
+                    <div class="search-icon-wrapper">
+                      <a-icon type="search" class="search-icon" />
+                    </div>
+                    <h2 class="card-title">Find Household</h2>
+                    <p class="card-description">
+                      Enter the household head's ID number to begin
+                    </p>
+                    
+                    <a-form
+                      class="search-form"
+                      layout="vertical"
+                      name="searchHousehold"
+                      @finish="searchHousehold"
+                    >
+                      <a-form-item
+                        name="id_number"
+                        :validate-status="errors.id_number ? 'error' : ''"
+                        :help="errors.id_number"
+                      >
+                        <a-input
+                          v-model:value="searchForm.id_number"
+                          placeholder="Enter 6-8 digit ID number"
+                          type="text"
+                          maxlength="8"
                           size="large"
-                          type="warning"
-                          :disabled="isLoading || !searchForm.id_number"
-                          @click="searchHousehold"
-                          style="border-radius: 6px; height: 48px; padding: 0 32px; font-weight: 500; box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);"
+                          class="search-input"
+                          @blur="validate('id_number')"
+                          @input="clearError('id_number')"
+                          @keypress="onlyNumbers"
                         >
-                          <a-icon v-if="!isLoading" type="search" style="margin-right: 8px;" />
-                          <a-icon v-if="isLoading" type="loading" style="margin-right: 8px;" />
-                          {{ isLoading ? "Searching..." : "Search Household" }}
-                        </sdButton>
-                      </div>
-                    <!-- </a-card> -->
-                  </a-form>
+                          <template #prefix>
+                            <a-icon type="idcard" style="color: #8c8c8c;" />
+                          </template>
+                        </a-input>
+                      </a-form-item>
 
-                  <!-- Step 2: Display Household Details and Issue Nets -->
-                  <div v-if="householdFound && householdData">
-                    <a-card 
-                      title="Household Details" 
-                      style="margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-                      :headStyle="{ backgroundColor: '#f8f9fa', fontWeight: 'bold', fontSize: '16px' }"
-                    >
-                      <a-row :gutter="[16, 16]">
-                        <a-col :span="24">
-                          <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                            <a-avatar 
-                              :size="40" 
-                              style="background-color: #1890ff; margin-right: 12px;"
-                            >
-                              {{ householdData.first_name?.charAt(0) }}{{ householdData.last_name?.charAt(0) }}
-                            </a-avatar>
-                            <div>
-                              <h3 style="margin: 0; color: #262626;">
-                                {{ householdData.first_name }} {{ householdData.middle_name }} {{ householdData.last_name }}
-                              </h3>
-                              <p style="margin: 0; color: #8c8c8c; font-size: 14px;">Household Head</p>
-                            </div>
-                          </div>
-                        </a-col>
-                        <a-col :xs="24" :sm="12">
-                          <div style="padding: 12px; background: #fafafa; border-radius: 6px;">
-                            <p style="margin: 0; color: #8c8c8c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">ID Number</p>
-                            <p style="margin: 4px 0 0 0; font-weight: 500; font-size: 16px;">{{ householdData.id_no }}</p>
-                          </div>
-                        </a-col>
-                        <a-col :xs="24" :sm="12">
-                          <div style="padding: 12px; background: #fafafa; border-radius: 6px;">
-                            <p style="margin: 0; color: #8c8c8c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Phone Number</p>
-                            <p style="margin: 4px 0 0 0; font-weight: 500; font-size: 16px;">{{ householdData.phone_no }}</p>
-                          </div>
-                        </a-col>
-                        <a-col :xs="24" :sm="12">
-                          <div style="padding: 12px; background: #fafafa; border-radius: 6px;">
-                            <p style="margin: 0; color: #8c8c8c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Household Size</p>
-                            <p style="margin: 4px 0 0 0; font-weight: 500; font-size: 16px;">{{ householdData.hh_size }} members</p>
-                          </div>
-                        </a-col>
-                        <a-col :xs="24" :sm="12">
-                          <div style="padding: 12px; background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%); border-radius: 6px; color: white;">
-                            <p style="margin: 0; color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Nets to Issue</p>
-                            <p style="margin: 4px 0 0 0; font-weight: bold; font-size: 18px;">{{ householdData.actual_allocation }} nets</p>
-                          </div>
-                        </a-col>
-                      </a-row>
-                    </a-card>
-
-                    <a-card 
-                      title="Confirm Net Issuance" 
-                      style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-                      :headStyle="{ backgroundColor: '#f8f9fa', fontWeight: 'bold', fontSize: '16px' }"
-                    >
-                      <div style="text-align: center; padding: 20px 0;">
-                        <a-icon type="check-circle" style="font-size: 48px; color: #52c41a; margin-bottom: 16px;" />
-                        <h3 style="margin: 0 0 8px 0; color: #262626;">Ready to Issue Nets</h3>
-                        <p style="margin: 0 0 24px 0; color: #8c8c8c;">
-                          You are about to issue <strong>{{ householdData.actual_allocation }} nets</strong> to this household
-                        </p>
-                        
-                        <div class="record-form-actions" style="display: flex; justify-content: center; gap: 12px;">
-                          <sdButton
-                            size="large"
-                            type="default"
-                            @click="resetForm"
-                            style="border-radius: 6px; height: 48px; padding: 0 24px; font-weight: 500;"
-                          >
-                            <a-icon type="search" style="margin-right: 8px;" />
-                            Search Another
-                          </sdButton>
-                          <sdButton
-                            size="large"
-                            type="success"
-                            :disabled="isSubmitting"
-                            @click="issueNets"
-                            style="border-radius: 6px; height: 48px; padding: 0 32px; font-weight: 500; box-shadow: 0 2px 4px rgba(82, 196, 26, 0.3);"
-                          >
-                            <a-icon v-if="!isSubmitting" type="gift" style="margin-right: 8px;" />
-                            <a-icon v-if="isSubmitting" type="loading" style="margin-right: 8px;" />
-                            {{ isSubmitting ? "Processing..." : "Issue Nets" }}
-                          </sdButton>
-                        </div>
-                      </div>
-                    </a-card>
+                      <sdButton
+                        size="large"
+                        type="warning"
+                        :disabled="isLoading || !searchForm.id_number"
+                        @click="searchHousehold"
+                        class="search-btn"
+                        block
+                      >
+                        <a-icon v-if="!isLoading" type="search" />
+                        <a-icon v-if="isLoading" type="loading" />
+                        {{ isLoading ? "Searching..." : "Search Household" }}
+                      </sdButton>
+                    </a-form>
                   </div>
-                </BasicFormWrapper>
-              </a-col>
-            </a-row>
-          <!-- </sdCards> -->
+                </a-card>
+
+                <!-- Step 2: Household Details with Issue Nets -->
+                <div v-if="householdFound && householdData" class="household-section">
+                  <a-card 
+                    class="household-card"
+                    :bordered="false"
+                  >
+                    <div class="household-header">
+                      <a-icon type="check-circle" class="success-icon" />
+                      <h3 class="household-title">Household Found</h3>
+                    </div>
+
+                    <!-- Household Head Info -->
+                    <div class="household-head">
+                      <a-avatar 
+                        :size="64" 
+                        class="head-avatar"
+                      >
+                        {{ householdData.first_name?.charAt(0) }}{{ householdData.last_name?.charAt(0) }}
+                      </a-avatar>
+                      <div class="head-info">
+                        <h3 class="head-name">
+                          {{ householdData.first_name }} {{ householdData.middle_name }} {{ householdData.last_name }}
+                        </h3>
+                        <p class="head-role">Household Head</p>
+                      </div>
+                    </div>
+
+                    <!-- Household Details Grid -->
+                    <a-row :gutter="[12, 12]" class="details-grid">
+                      <a-col :xs="24" :sm="12">
+                        <div class="detail-item">
+                          <a-icon type="idcard" class="detail-icon" />
+                          <div>
+                            <p class="detail-label">ID Number</p>
+                            <p class="detail-value">{{ householdData.id_no }}</p>
+                          </div>
+                        </div>
+                      </a-col>
+                      <a-col :xs="24" :sm="12">
+                        <div class="detail-item">
+                          <a-icon type="phone" class="detail-icon" />
+                          <div>
+                            <p class="detail-label">Phone Number</p>
+                            <p class="detail-value">{{ householdData.phone_no }}</p>
+                          </div>
+                        </div>
+                      </a-col>
+                      <a-col :xs="24" :sm="12">
+                        <div class="detail-item">
+                          <a-icon type="team" class="detail-icon" />
+                          <div>
+                            <p class="detail-label">Household Size</p>
+                            <p class="detail-value">{{ householdData.hh_size }} members</p>
+                          </div>
+                        </div>
+                      </a-col>
+                      <a-col :xs="24" :sm="12">
+                        <div class="detail-item nets-allocation">
+                          <a-icon type="gift" class="detail-icon" />
+                          <div>
+                            <p class="detail-label">Nets Allocated</p>
+                            <p class="detail-value nets-count">{{ householdData.actual_allocation }}</p>
+                          </div>
+                        </div>
+                      </a-col>
+                    </a-row>
+
+                    <!-- Issue Nets Button -->
+                    <div class="action-section">
+                      <sdButton
+                        size="large"
+                        type="warning"
+                        :disabled="isSubmitting"
+                        @click="issueNets"
+                        class="issue-btn"
+                        block
+                      >
+                        <a-icon v-if="!isSubmitting" type="gift" />
+                        <a-icon v-if="isSubmitting" type="loading" />
+                        {{ isSubmitting ? "Processing..." : `Issue ${householdData.actual_allocation} Nets` }}
+                      </sdButton>
+                    </div>
+                  </a-card>
+
+                  <!-- Search Another Household Card -->
+                  <a-card 
+                    class="search-another-card"
+                    :bordered="false"
+                  >
+                    <div class="search-another-content">
+                      <a-icon type="reload" class="reload-icon" />
+                      <h3 class="search-another-title">Need to serve another household?</h3>
+                      <p class="search-another-description">
+                        Click below to search for a different household
+                      </p>
+                      <sdButton
+                        size="large"
+                        type="success"
+                        @click="resetForm"
+                        class="search-another-btn"
+                      >
+                        <a-icon type="search" />
+                        Search Another Household
+                      </sdButton>
+                    </div>
+                  </a-card>
+                </div>
+              </BasicFormWrapper>
+            </a-col>
+          </a-row>
         </RecordFormWrapper>
       </a-col>
     </a-row>
@@ -447,8 +478,366 @@ export default IssueNets;
 </script>
 
 <style scoped>
-/* Custom animations */
-@keyframes fadeIn {
+/* Page Header */
+.page-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  font-size: 32px;
+  color: #20c997;
+  padding: 12px;
+  background: linear-gradient(135deg, #e6f9f4 0%, #d1f4ea 100%);
+  border-radius: 12px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.page-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.view-households-btn {
+  border-radius: 10px;
+  height: 44px;
+  padding: 0 24px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(32, 201, 151, 0.2);
+}
+
+.view-households-btn .anticon {
+  margin-right: 8px;
+}
+
+/* Search Card */
+.search-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.search-container {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.search-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #faad14 0%, #fa8c16 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.search-icon {
+  font-size: 36px;
+  color: #fff;
+}
+
+.card-title {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.card-description {
+  margin: 0 0 32px 0;
+  font-size: 16px;
+  color: #8c8c8c;
+  line-height: 1.6;
+}
+
+.search-form {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.search-input {
+  height: 52px;
+  border-radius: 10px;
+  font-size: 16px;
+  border: 2px solid #e8e8e8;
+  transition: all 0.3s ease;
+}
+
+.search-input:hover {
+  border-color: #faad14;
+}
+
+.search-input:focus {
+  border-color: #faad14;
+  box-shadow: 0 0 0 3px rgba(250, 173, 20, 0.1);
+  transform: scale(1.01);
+}
+
+.search-btn {
+  height: 52px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.3);
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(250, 173, 20, 0.4);
+}
+
+.search-btn .anticon {
+  margin-right: 8px;
+}
+
+/* Household Section */
+.household-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Household Card */
+.household-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+  border: 2px solid #e8f9f4;
+}
+
+.household-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px dashed #e8e8e8;
+}
+
+.success-icon {
+  font-size: 48px;
+  color: #52c41a;
+  margin-bottom: 12px;
+  display: block;
+  animation: scaleIn 0.5s ease-out;
+}
+
+.household-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.household-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.head-avatar {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  font-size: 24px;
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+.head-info {
+  flex: 1;
+}
+
+.head-name {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.head-role {
+  margin: 0;
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+/* Details Grid */
+.details-grid {
+  margin-bottom: 24px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.detail-item:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.detail-icon {
+  font-size: 24px;
+  color: #1890ff;
+}
+
+.detail-label {
+  margin: 0 0 4px 0;
+  font-size: 12px;
+  color: #8c8c8c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.detail-value {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.nets-allocation {
+  background: linear-gradient(135deg, #e6f9f4 0%, #d1f4ea 100%);
+  border: 2px solid #20c997;
+}
+
+.nets-allocation .detail-icon {
+  color: #20c997;
+}
+
+.nets-count {
+  font-size: 20px;
+  color: #20c997;
+  font-weight: bold;
+}
+
+/* Action Section */
+.action-section {
+  padding-top: 20px;
+  border-top: 2px dashed #e8e8e8;
+}
+
+.issue-btn {
+  height: 56px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+  transition: all 0.3s ease;
+}
+
+.issue-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(32, 201, 151, 0.4);
+}
+
+.issue-btn .anticon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+/* Search Another Card */
+.search-another-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 2px dashed #d9d9d9;
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.search-another-content {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.reload-icon {
+  font-size: 40px;
+  color: #8c8c8c;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.search-another-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.search-another-description {
+  margin: 0 0 24px 0;
+  font-size: 15px;
+  color: #8c8c8c;
+}
+
+.search-another-btn {
+  height: 48px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.search-another-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.search-another-btn .anticon {
+  margin-right: 8px;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -460,86 +849,158 @@ export default IssueNets;
 }
 
 @keyframes pulse {
-  0% {
+  0%, 100% {
     transform: scale(1);
   }
   50% {
     transform: scale(1.05);
   }
-  100% {
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
     transform: scale(1);
   }
 }
 
-/* Apply animations */
-.ant-card {
-  animation: fadeIn 0.6s ease-out;
-}
-
-/* Hover effects */
-.ant-btn:hover {
-  transform: translateY(-2px);
-  transition: all 0.3s ease;
-}
-
-/* Success button glow effect */
-.ant-btn-success {
-  position: relative;
-  overflow: hidden;
-}
-
-.ant-btn-success::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.6s;
-}
-
-.ant-btn-success:hover::before {
-  left: 100%;
-}
-
-/* Input focus effects */
-.ant-input:focus {
-  border-color: #40a9ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-  transform: scale(1.02);
-  transition: all 0.3s ease;
-}
-
-/* Card hover effects */
-.ant-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-  transition: box-shadow 0.3s ease;
-}
-
-/* Gradient text for numbers */
-.gradient-text {
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Custom spacing */
-.record-form-actions .ant-btn {
-  margin: 0 6px;
-}
-
-/* Responsive improvements */
+/* Responsive Design */
 @media (max-width: 768px) {
-  .record-form-actions {
-    flex-direction: column;
-    gap: 12px;
+  .page-header {
+    padding: 16px;
   }
-  
-  .record-form-actions .ant-btn {
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-title {
+    justify-content: center;
+  }
+
+  .header-icon {
+    font-size: 28px;
+    padding: 10px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .view-households-btn {
     width: 100%;
-    margin: 0;
+    justify-content: center;
+  }
+
+  .search-container {
+    padding: 24px 16px;
+  }
+
+  .search-icon-wrapper {
+    width: 64px;
+    height: 64px;
+  }
+
+  .search-icon {
+    font-size: 28px;
+  }
+
+  .card-title {
+    font-size: 20px;
+  }
+
+  .card-description {
+    font-size: 15px;
+  }
+
+  .search-input,
+  .search-btn {
+    height: 48px;
+    font-size: 15px;
+  }
+
+  .household-head {
+    padding: 16px;
+  }
+
+  .head-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .head-name {
+    font-size: 16px;
+  }
+
+  .detail-item {
+    padding: 12px;
+  }
+
+  .detail-icon {
+    font-size: 20px;
+  }
+
+  .detail-value {
+    font-size: 15px;
+  }
+
+  .nets-count {
+    font-size: 18px;
+  }
+
+  .issue-btn {
+    height: 52px;
+    font-size: 16px;
+  }
+
+  .search-another-content {
+    padding: 24px 16px;
+  }
+
+  .reload-icon {
+    font-size: 32px;
+  }
+
+  .search-another-title {
+    font-size: 16px;
+  }
+
+  .search-another-description {
+    font-size: 14px;
+  }
+
+  .search-another-btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-title {
+    font-size: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .card-title {
+    font-size: 18px;
+  }
+
+  .household-head {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .head-info {
+    text-align: center;
   }
 }
 </style>
