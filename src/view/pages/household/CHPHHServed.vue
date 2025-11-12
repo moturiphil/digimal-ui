@@ -293,7 +293,7 @@
 
 <script>
 import { Main } from "../../styled";
-import { ref, defineComponent, computed, onMounted, nextTick } from "vue";
+import { ref, defineComponent, computed, onMounted } from "vue";
 import { notification, Empty } from "ant-design-vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "@/Axiosconfig";
@@ -613,64 +613,64 @@ const CHPHHServed = defineComponent({
       }
     };
 
-    const fetchUnservedHouseholds = async () => {
-      try {
-        isUnservedLoading.value = true;
+    // const fetchUnservedHouseholds = async () => {
+    //   try {
+    //     isUnservedLoading.value = true;
         
-        // Get the post_id from the CHP's location
-        const post_id = chp.location?.id || chp.post_id;
+    //     // Get the post_id from the CHP's location
+    //     const post_id = chp.location?.id || chp.post_id;
         
-        if (!post_id) {
-          notification.error({
-            message: "Error",
-            description: "Unable to determine post location.",
-            duration: 5,
-          });
-          isUnservedLoading.value = false;
-          return;
-        }
+    //     if (!post_id) {
+    //       notification.error({
+    //         message: "Error",
+    //         description: "Unable to determine post location.",
+    //         duration: 5,
+    //       });
+    //       isUnservedLoading.value = false;
+    //       return;
+    //     }
         
-        const response = await axios.get(`/hh_per_post_pending_collection`, {
-          params: {
-            post_id: post_id
-          },
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+    //     const response = await axios.get(`/hh_per_post_pending_collection`, {
+    //       params: {
+    //         post_id: post_id
+    //       },
+    //       headers: {
+    //         Authorization: `Bearer ${user.token}`,
+    //         'Content-Type': 'application/json'
+    //       }
+    //     });
 
-        if (response.data.success) {
-          // Use requestAnimationFrame to defer update and prevent ResizeObserver errors
-          requestAnimationFrame(() => {
-            nextTick(() => {
-              unservedHouseholds.value = (response.data.data || []).map((household, index) => ({
-                ...household,
-                id: index + 1
-              }));
-            });
-          });
-        } else {
-          notification.error({
-            message: "Error Loading Data",
-            description: response.data.message || "Failed to load pending households.",
-            duration: 5,
-          });
-        }
-      } catch (error) {
-        console.error('Fetch pending households error:', error);
-        notification.error({
-          message: "Error",
-          description: "An error occurred while loading pending households.",
-          duration: 5,
-        });
-      } finally {
-        // Defer loading state update
-        setTimeout(() => {
-          isUnservedLoading.value = false;
-        }, 100);
-      }
-    };
+    //     if (response.data.success) {
+    //       // Use requestAnimationFrame to defer update and prevent ResizeObserver errors
+    //       requestAnimationFrame(() => {
+    //         nextTick(() => {
+    //           unservedHouseholds.value = (response.data.data || []).map((household, index) => ({
+    //             ...household,
+    //             id: index + 1
+    //           }));
+    //         });
+    //       });
+    //     } else {
+    //       notification.error({
+    //         message: "Error Loading Data",
+    //         description: response.data.message || "Failed to load pending households.",
+    //         duration: 5,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error('Fetch pending households error:', error);
+    //     notification.error({
+    //       message: "Error",
+    //       description: "An error occurred while loading pending households.",
+    //       duration: 5,
+    //     });
+    //   } finally {
+    //     // Defer loading state update
+    //     setTimeout(() => {
+    //       isUnservedLoading.value = false;
+    //     }, 100);
+    //   }
+    // };
 
     const handleSearch = () => {
       currentPage.value = 1;
@@ -841,7 +841,7 @@ const CHPHHServed = defineComponent({
     // Lifecycle
     onMounted(() => {
       fetchServedHouseholds();
-      fetchUnservedHouseholds();
+      // fetchUnservedHouseholds();
     });
 
     return {
@@ -882,7 +882,7 @@ const CHPHHServed = defineComponent({
       paginationConfig,
       unservedPaginationConfig,
       fetchServedHouseholds,
-      fetchUnservedHouseholds,
+      // fetchUnservedHouseholds,
       handleSearch,
       handleDateFilter,
       handleSubcountyFilter,
