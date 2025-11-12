@@ -209,6 +209,7 @@ import { Main, BasicFormWrapper } from "../../styled";
 import { reactive, ref, defineComponent } from "vue";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
+// import authHeader from "../../../services/auth-header";
 import * as Yup from "yup";
 
 const IssueNets = defineComponent({
@@ -369,8 +370,8 @@ const IssueNets = defineComponent({
         const fetchResponse = await fetch(apiUrl, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${user.token}`,
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${user.token}`
           },
           body: JSON.stringify(requestData),
         });
