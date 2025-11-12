@@ -1,14 +1,18 @@
 <template>
   <AuthWrapper>
-    <p class="auth-notice">Don&rsquo;t have an account? Contact Admin</p>
     <div class="auth-contents">
-      <a-form @finish="handleSubmit" :model="formState" layout="vertical">
-        <sdHeading as="h3">
-          Sign in to <span class="color-success">DigiMal-KE Dashboard</span>
+      <div class="header-section">
+        <sdHeading as="h1">
+          Welcome to <span class="color-success">DigiMal-KE</span>
         </sdHeading>
-        <sdHeading as="h5">
+        <sdHeading as="h1">
           <span :class="envClass">{{ env }}</span>
         </sdHeading>
+      </div>
+
+      <p class="subtitle">Campaign User Sign In</p>
+
+      <a-form @finish="handleSubmit" :model="formState" layout="vertical" class="signin-form">
         <a-form-item name="id_no" label="National ID No">
           <a-input
             type="number"
@@ -41,25 +45,22 @@
             htmlType="submit"
             :loading="isLoading"
             type="success"
-            size="small"
+            size="large"
           >
             Sign In
           </sdButton>
-          &nbsp;&nbsp;
-          <router-link to="/auth/chp-login">
-            <sdButton
-              class="btn-signin"
-              htmlType="submit"
-              :loading="isLoading"
-              type="success"
-              size="small"
-            >
-              CHP Login
-            </sdButton>
-          </router-link>
         </a-form-item>
-        <p class="form-divider"></p>
       </a-form>
+
+      <div class="divider">
+        <span>or</span>
+      </div>
+
+      <div class="footer-section">
+        <p class="return-text">
+          <router-link to="/auth/login">← Back to User Selection</router-link>
+        </p>
+      </div>
       <div>
         <a-modal
           v-model="visible"
@@ -349,12 +350,139 @@ export default {
 </script>
 
 <style scoped>
-/* Add styles for small screens */
-@media (max-width: 768px) {
-  .btn-signin {
-    margin-bottom: 15px;
-    margin-left: 10px;
-  }
+/* Auth Contents Layout */
+.auth-contents {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Header Section */
+.header-section {
+  text-align: center;
+  margin-bottom: 20px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.subtitle {
+  color: #868eae;
+  font-size: 18px;
+  margin: 0 0 30px 0;
+  text-align: center;
+  font-weight: 500;
+  animation: fadeIn 0.6s ease-out 0.3s both;
+}
+
+/* Form Styling */
+.signin-form {
+  width: 100%;
+  max-width: 450px;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.signin-form .ant-form-item-label > label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #272b41;
+}
+
+.signin-form .ant-input,
+.signin-form .ant-input-password {
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.auth-form-action {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.auth-form-action .ant-checkbox-wrapper {
+  font-size: 15px;
+}
+
+.forgot-pass-link {
+  color: #20c997;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.forgot-pass-link:hover {
+  color: #17a589;
+  text-decoration: underline;
+}
+
+.btn-signin {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* Divider */
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 30px 0 25px 0;
+  width: 100%;
+  max-width: 450px;
+  animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #e8e8e8 20%, #e8e8e8 80%, transparent 100%);
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 15px;
+  color: #868eae;
+  font-size: 16px;
+  position: relative;
+  font-weight: 500;
+}
+
+/* Footer Section */
+.footer-section {
+  text-align: center;
+  animation: fadeIn 0.6s ease-out 0.5s both;
+}
+
+.return-text {
+  margin: 0;
+  font-size: 15px;
+}
+
+.return-text a {
+  color: #20c997;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.return-text a:hover {
+  color: #17a589;
+  text-decoration: underline;
 }
 
 /* Environment badges */
@@ -363,10 +491,11 @@ export default {
   background: linear-gradient(90deg, #fff7e6 0%, #fff1cc 100%);
   color: #ad4e00;
   border: 1px solid #ffd591;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(250, 173, 20, 0.12);
+  font-size: 15px;
 }
 
 .training-badge {
@@ -374,8 +503,62 @@ export default {
   background: linear-gradient(90deg, #f6ffed 0%, #eafff0 100%);
   color: #237804;
   border: 1px solid #b7eb8f;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
   font-weight: 600;
+  font-size: 15px;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .signin-form .ant-form-item-label > label {
+    font-size: 14px;
+  }
+
+  .signin-form .ant-input,
+  .signin-form .ant-input-password {
+    font-size: 14px;
+  }
+
+  .btn-signin {
+    height: 44px;
+    font-size: 15px;
+  }
 }
 </style>

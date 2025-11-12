@@ -24,6 +24,50 @@ exporting(Highcharts);
 exportData(Highcharts);
 accessibility(Highcharts);
 
+// Suppress ResizeObserver errors globally (benign warnings from UI libraries)
+// This must be done before mounting the app
+const resizeObserverErrorHandler = (event) => {
+  if (
+    event.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+    event.message === 'ResizeObserver loop limit exceeded' ||
+    event.reason?.message === 'ResizeObserver loop completed with undelivered notifications.'
+  ) {
+    event.stopImmediatePropagation();
+    event.stopPropagation();
+    event.preventDefault();
+    return false;
+  }
+};
+
+// Capture in both error and unhandledrejection
+window.addEventListener('error', resizeObserverErrorHandler, true);
+window.addEventListener('unhandledrejection', resizeObserverErrorHandler, true);
+
+// Override ResizeObserver to catch errors at the source
+const OriginalResizeObserver = window.ResizeObserver;
+window.ResizeObserver = class ResizeObserver extends OriginalResizeObserver {
+  constructor(callback) {
+    super((entries, observer) => {
+      requestAnimationFrame(() => {
+        callback(entries, observer);
+      });
+    });
+  }
+};
+
+// Also suppress unhandled errors of the same type
+const originalConsoleError = console.error;
+console.error = function(...args) {
+  if (
+    args[0] && 
+    typeof args[0] === 'string' && 
+    (args[0].includes('ResizeObserver') || args[0].includes('ResizeObserver loop'))
+  ) {
+    return;
+  }
+  originalConsoleError.apply(console, args);
+};
+
 app.config.productionTip = false;
 app.use(store);
 app.use(router);
