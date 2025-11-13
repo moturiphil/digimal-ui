@@ -1,4 +1,5 @@
 <template>
+  <GeekAdminWrapper title="Transaction Details Reports">
   <div>
     <sdPageHeader ghost title="Transaction Details Reports">
       <template #buttons>
@@ -72,11 +73,13 @@
       </SearchResultWrapper>
     </Main>
   </div>
+  </GeekAdminWrapper>
 </template>
 
 <script>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
+import GeekAdminWrapper from "../../../components/layout/GeekAdminWrapper.vue";
 import { computed, onMounted, ref, defineComponent } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
@@ -127,10 +130,11 @@ const columns = [
   },
 ];
 export default defineComponent({
-  name: "TransactionReport",
+  name: "HouseHold Validation",
   components: {
     Main,
     SearchResultWrapper,
+    GeekAdminWrapper,
   },
   data() {
     return {
