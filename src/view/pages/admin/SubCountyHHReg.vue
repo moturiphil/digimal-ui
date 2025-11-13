@@ -1,4 +1,5 @@
 <template>
+  <GeekAdminWrapper title="Sub Counties Events Automation">
   <div>
     <sdPageHeader ghost title="Sub Counties Events Automation">
       <template #buttons>
@@ -185,6 +186,7 @@
       </SearchResultWrapper>
     </Main>
   </div>
+  </GeekAdminWrapper>
 </template>
 
 <script>
@@ -196,6 +198,7 @@ import axios from "axios";
 import { useStore } from "vuex";
 import { notification } from "ant-design-vue";
 import store from "../../../vuex/store";
+import GeekAdminWrapper from "../../../components/layout/GeekAdminWrapper.vue";
 
 const columns = [
   {
@@ -220,6 +223,7 @@ export default defineComponent({
   components: {
     Main,
     SearchResultWrapper,
+    GeekAdminWrapper,
   },
   data() {
     return {

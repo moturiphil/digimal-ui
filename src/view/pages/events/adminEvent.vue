@@ -1,4 +1,5 @@
 <template>
+  <GeekAdminWrapper title="MassNet Events">
     <RecordViewWrapper>
       <sdPageHeader title="MassNet Events">
         <template #subTitle>
@@ -141,16 +142,18 @@
         </a-row>
       </Main>
     </RecordViewWrapper>
-  </template>
-  <script>
-  import axios from "axios";
-  import authHeader from "../../../services/auth-header";
-  import { RecordViewWrapper } from "./style";
-  import { Main } from "../../styled";
-  import { useStore } from "vuex";
-  import { computed, onMounted, ref, defineComponent } from "vue";
-  import { useRouter } from "vue-router";
-  import { notification } from "ant-design-vue";
+  </GeekAdminWrapper>
+</template>
+<script>
+import axios from "axios";
+import authHeader from "../../../services/auth-header";
+import { RecordViewWrapper } from "./style";
+import { Main } from "../../styled";
+import { useStore } from "vuex";
+import { computed, onMounted, ref, defineComponent } from "vue";
+import { useRouter } from "vue-router";
+import { notification } from "ant-design-vue";
+import GeekAdminWrapper from "../../../components/layout/GeekAdminWrapper.vue";
   
   const router = useRouter();
   
@@ -196,7 +199,11 @@
   
   const ViewPage = defineComponent({
     name: "ViewPage",
-    components: { RecordViewWrapper, Main },
+    components: { 
+      RecordViewWrapper, 
+      Main,
+      GeekAdminWrapper,
+    },
     props: {
       event: {
         type: Object,
