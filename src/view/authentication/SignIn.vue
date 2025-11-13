@@ -360,6 +360,7 @@ export default {
   padding: 20px;
   box-sizing: border-box;
   text-align: center;
+  width: 100%;
 }
 
 /* Header Section */
@@ -367,11 +368,18 @@ export default {
   text-align: center;
   margin-bottom: 20px;
   animation: fadeInDown 0.6s ease-out;
+  width: 100%;
+}
+
+.header-section h1 {
+  font-size: clamp(20px, 5vw, 28px);
+  margin-bottom: 8px;
+  word-wrap: break-word;
 }
 
 .subtitle {
   color: #868eae;
-  font-size: 18px;
+  font-size: clamp(14px, 3.5vw, 18px);
   margin: 0 0 30px 0;
   text-align: center;
   font-weight: 500;
@@ -396,6 +404,7 @@ export default {
   font-size: 15px;
   padding: 10px 12px;
   border-radius: 8px;
+  width: 100%;
 }
 
 .auth-form-action {
@@ -404,6 +413,7 @@ export default {
   gap: 10px;
   margin-bottom: 20px;
   align-items: flex-start;
+  width: 100%;
 }
 
 .auth-form-action .ant-checkbox-wrapper {
@@ -417,6 +427,7 @@ export default {
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: inline-block;
 }
 
 .forgot-pass-link:hover {
@@ -466,6 +477,7 @@ export default {
 .footer-section {
   text-align: center;
   animation: fadeIn 0.6s ease-out 0.5s both;
+  width: 100%;
 }
 
 .return-text {
@@ -478,6 +490,7 @@ export default {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
+  word-wrap: break-word;
 }
 
 .return-text a:hover {
@@ -495,7 +508,9 @@ export default {
   border-radius: 12px;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(250, 173, 20, 0.12);
-  font-size: 15px;
+  font-size: clamp(13px, 3vw, 15px);
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .training-badge {
@@ -506,7 +521,18 @@ export default {
   padding: 10px 20px;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: clamp(13px, 3vw, 15px);
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* Modal responsive styling */
+.ant-modal {
+  max-width: 95vw;
+}
+
+.ant-modal-body {
+  padding: 16px;
 }
 
 /* Animations */
@@ -538,13 +564,51 @@ export default {
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
+/* Tablet screens (768px - 1024px) */
+@media (max-width: 1024px) {
+  .auth-contents {
+    padding: 16px;
+  }
+
+  .header-section {
+    margin-bottom: 16px;
+  }
+
   .subtitle {
-    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .signin-form {
+    max-width: 400px;
+  }
+}
+
+/* Mobile landscape and small tablets (481px - 768px) */
+@media (max-width: 768px) {
+  .auth-contents {
+    padding: 16px 12px;
+    min-height: 100dvh; /* Use dynamic viewport height */
+  }
+
+  .header-section {
+    margin-bottom: 12px;
+  }
+
+  .header-section h1 {
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  .signin-form {
+    max-width: 100%;
   }
 
   .signin-form .ant-form-item-label > label {
@@ -554,11 +618,223 @@ export default {
   .signin-form .ant-input,
   .signin-form .ant-input-password {
     font-size: 14px;
+    padding: 9px 11px;
+  }
+
+  .auth-form-action {
+    gap: 8px;
+  }
+
+  .auth-form-action .ant-checkbox-wrapper {
+    font-size: 14px;
+  }
+
+  .forgot-pass-link {
+    font-size: 14px;
   }
 
   .btn-signin {
     height: 44px;
     font-size: 15px;
+  }
+
+  .divider {
+    margin: 20px 0 18px 0;
+  }
+
+  .divider span {
+    font-size: 14px;
+  }
+
+  .return-text {
+    font-size: 14px;
+  }
+
+  .pilot-badge,
+  .training-badge {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile portrait (320px - 480px) */
+@media (max-width: 480px) {
+  .auth-contents {
+    padding: 12px 10px;
+    justify-content: flex-start;
+    padding-top: 20px;
+  }
+
+  .header-section {
+    margin-bottom: 10px;
+  }
+
+  .header-section h1 {
+    font-size: 20px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .signin-form .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  .signin-form .ant-form-item-label > label {
+    font-size: 13px;
+  }
+
+  .signin-form .ant-input,
+  .signin-form .ant-input-password {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .auth-form-action {
+    gap: 6px;
+  }
+
+  .auth-form-action .ant-checkbox-wrapper {
+    font-size: 13px;
+  }
+
+  .forgot-pass-link {
+    font-size: 13px;
+  }
+
+  .btn-signin {
+    height: 42px;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  .divider {
+    margin: 16px 0 14px 0;
+  }
+
+  .divider span {
+    font-size: 13px;
+    padding: 0 10px;
+  }
+
+  .return-text {
+    font-size: 13px;
+  }
+
+  .pilot-badge,
+  .training-badge {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  /* Modal adjustments */
+  .ant-modal {
+    margin: 0;
+    max-width: 100vw;
+    padding-bottom: 0;
+  }
+
+  .ant-modal-body {
+    padding: 12px;
+  }
+
+  .ant-modal .ant-form-item {
+    margin-bottom: 10px;
+  }
+
+  .ant-modal .btn-signin {
+    height: 40px;
+    font-size: 14px;
+  }
+}
+
+/* Extra small devices (max-width: 360px) */
+@media (max-width: 360px) {
+  .auth-contents {
+    padding: 10px 8px;
+    padding-top: 16px;
+  }
+
+  .header-section h1 {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .signin-form .ant-input,
+  .signin-form .ant-input-password {
+    font-size: 13px;
+    padding: 7px 9px;
+  }
+
+  .btn-signin {
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .pilot-badge,
+  .training-badge {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Landscape orientation for mobile devices */
+@media (max-height: 600px) and (orientation: landscape) {
+  .auth-contents {
+    padding: 10px;
+    justify-content: flex-start;
+  }
+
+  .header-section {
+    margin-bottom: 8px;
+  }
+
+  .header-section h1 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .signin-form .ant-form-item {
+    margin-bottom: 8px;
+  }
+
+  .btn-signin {
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .divider {
+    margin: 12px 0 10px 0;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .forgot-pass-link,
+  .return-text a {
+    padding: 4px;
+    margin: -4px;
+  }
+
+  .btn-signin {
+    min-height: 44px; /* Ensure touch-friendly height */
+  }
+
+  .auth-form-action .ant-checkbox-wrapper {
+    padding: 4px 0;
   }
 }
 </style>
