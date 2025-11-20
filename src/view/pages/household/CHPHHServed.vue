@@ -87,47 +87,7 @@
                   </template>
                 </a-input>
               </a-col>
-              <a-col :xs="24" :sm="12" :md="8" :lg="5">
-                <a-date-picker
-                  v-model:value="dateFilter"
-                  placeholder="Filter by date"
-                  size="large"
-                  class="filter-input"
-                  style="width: 100%;"
-                  @change="handleDateFilter"
-                />
-              </a-col>
-              <a-col :xs="24" :sm="12" :md="8" :lg="5">
-                <a-select
-                  v-model:value="subcountyFilter"
-                  placeholder="Subcounty"
-                  size="large"
-                  class="filter-input"
-                  style="width: 100%;"
-                  allow-clear
-                  @change="handleSubcountyFilter"
-                >
-                  <a-select-option v-for="subcounty in uniqueSubcounties" :key="subcounty" :value="subcounty">
-                    {{ subcounty }}
-                  </a-select-option>
-                </a-select>
-              </a-col>
-              <a-col :xs="24" :sm="12" :md="8" :lg="4">
-                <a-select
-                  v-model:value="wardFilter"
-                  placeholder="Ward"
-                  size="large"
-                  class="filter-input"
-                  style="width: 100%;"
-                  allow-clear
-                  @change="handleWardFilter"
-                >
-                  <a-select-option v-for="ward in uniqueWards" :key="ward" :value="ward">
-                    {{ ward }}
-                  </a-select-option>
-                </a-select>
-              </a-col>
-              <a-col :xs="12" :sm="6" :md="4" :lg="2">
+              <!-- <a-col :xs="12" :sm="6" :md="4" :lg="2">
                 <sdButton
                   type="default"
                   size="large"
@@ -138,8 +98,8 @@
                   <a-icon type="reload" />
                   <span class="btn-text-desktop">Reset</span>
                 </sdButton>
-              </a-col>
-              <a-col :xs="12" :sm="6" :md="4" :lg="2">
+              </a-col> -->
+              <!-- <a-col :xs="12" :sm="6" :md="4" :lg="2">
                 <sdButton
                   type="success"
                   size="large"
@@ -150,7 +110,7 @@
                   <a-icon type="download" />
                   <span class="btn-text-desktop">Export</span>
                 </sdButton>
-              </a-col>
+              </a-col> -->
             </a-row>
           </div>
 
