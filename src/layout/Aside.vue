@@ -12,20 +12,20 @@
         <a-menu-item key="widgetDashboard">
           <router-link to="/"> Campaign Dashboard </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetM&EDashboard" v-if="true">
+        <a-menu-item key="widgetM&EDashboard" v-if="true && canCreateCampaign" >
           <router-link to="/MNEDashboard"> M & E Dashboard </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetCHADash">
+        <a-menu-item key="widgetCHADash" v-if="canCreateCampaign">
           <router-link to="/sub-location/dashboard">
             Sub-location Dashboard
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetTrainingDash">
+        <a-menu-item key="widgetTrainingDash" v-if="canCreateCampaign">
           <router-link to="/training/summary">
             Training Summary
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetIRSSummary">
+        <a-menu-item key="widgetIRSSummary" v-if="canCreateCampaign">
           <router-link to="/irs/summary">
             IRS Household Summary
           </router-link>
@@ -51,7 +51,7 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder">
+      <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder && canCreateCampaign">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
@@ -438,19 +438,25 @@ const aieHolderRoles = [1];
 const techSupportRoles = [56];
 const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
-  53, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16, 56, 60, 78, 17,
+  53
 ];
-const createEventRoles = [53, 5, 3, 21, 37, 39, 22, 36];
+const createEventRoles = [53, 
+// 5, 3, 21, 37, 39, 22, 36
+];
 
 const viewEventRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
+  53
+  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
 ];
-const createActivityRoles = [53, 5, 3, 21, 37, 22, 36];
+const createActivityRoles = [53,
+//  5, 3, 21, 37, 22, 36
+];
 
 const viewActivitiesRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17, 64, 65, 63,84
+  53
+  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17, 64, 65, 63,84
 ];
 const viewOrgUnitsRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
@@ -463,14 +469,15 @@ const viewRegHHRoles = [
 ];
 
 const viewHHValidationRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+  53
+  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
 
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,84
+  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,84
 ];
 
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17, 65,84
+  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17, 65,84,6
 ];
 
 const viewDropoffPointsRoles = [
@@ -489,15 +496,22 @@ const viewDistributionPostRoles = [
 ];
 
 const viewInventoryRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 55, 65, 78, 17, 84
+  53
+  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
+  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 55, 65, 78, 17, 84
 ];
 
-const viewPayrollRoles = [53, 1, 2, 3, 4, 8, 11, 16, 17, 63, 64, 65, 59, 78, 17];
+const viewPayrollRoles = [53
+// , 1, 2, 3, 4, 8, 11, 16, 17, 63, 64, 65, 59, 78, 17
+];
 
-const viewGFPayrollRoles = [53, 1, 2, 4, 8, 78, 59, 17, 11];
+const viewGFPayrollRoles = [53
+// , 1, 2, 4, 8, 78, 59, 17, 11
+];
 
-const viewPMIPayrollRoles = [53, 63, 64, 65, 78];
+const viewPMIPayrollRoles = [53
+// , 63, 64, 65, 78
+];
 
 const viewUsersRoles = [
   53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
