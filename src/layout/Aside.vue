@@ -574,7 +574,7 @@ export default defineComponent({
     const canViewPMIPayroll = hasRole(viewPMIPayrollRoles);
     const canViewUsers = hasRole(viewUsersRoles);
     const canViewMasterlist = hasRole(viewMasterlistsRoles);
-    const isCommunityHealthWorker = hasRole([52, 77]);
+    const isCommunityHealthWorker = hasRole([52, 77, 39, 34]);
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
