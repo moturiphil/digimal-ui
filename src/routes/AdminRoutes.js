@@ -22,6 +22,12 @@ const routes = [
         meta: { auth: true },
       },
       {
+        path: "/search-echis-hh",
+        name: "search-echis-hh",
+        component: () => import("@/view/pages/household/SearchECHISHousehold.vue"),
+        meta: { auth: true },
+      },
+      {
         path: "/MNEDashboard",
         name: "MNEDashboard",
         component: () =>
