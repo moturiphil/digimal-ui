@@ -47,6 +47,7 @@
           </a-col>
 
           <!-- Right-aligned content -->
+           
           <a-col
             :lg="!topMenu ? 20 : 21"
             :md="16"
@@ -58,6 +59,16 @@
               align-items: center;
             "
           >
+            <!-- <router-link to="/search-echis-hh" style="margin-right: 10px">
+              <sdButton
+                type="warning"
+                size="extra-small"
+                style="margin-right: 10px"
+              >
+                <sdFeatherIcons type="search" />
+                <span v-if="innerWidth > 532">Search eCHIS</span>
+              </sdButton>
+            </router-link> -->
             <router-link to="/search-hh" style="margin-right: 10px">
               <sdButton
                 type="success"
