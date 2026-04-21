@@ -220,7 +220,7 @@
                                     type="warning"
                                     :disabled="isStarting"
                                     @click="deassignFacilitator(record)"
-                                    v-else-if="record.is_facilitator == true"
+                                    v-if="record.is_facilitator == true"
                                   >
                                     <span> De-assign Facilitator </span>
                                   </sdButton>

@@ -103,7 +103,7 @@
                           size="extra-small"
                           type="danger"
                           :disabled="isStarting"
-                          v-else-if="record.payroll_status === 'Pending'"
+                          v-if="record.status && record.payroll_status === 'Pending'"
                           @click="closeEvent(record.id)"
                         >
                           <sdFeatherIcons type="x-circle" size="small" />

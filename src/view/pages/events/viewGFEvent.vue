@@ -87,7 +87,7 @@
                         show-search
                         placeholder="Event Payroll Status"
                         style="width: 100%"
-                        :options="payroll_status"
+                        :options="payroll_status_options"
                         :filter-option="filterOption"
                         @change="handleChange($event, 'payroll_status')"
                       ></a-select>
@@ -166,7 +166,7 @@
                           size="extra-small"
                           type="danger"
                           :disabled="isStarting"
-                          v-else-if="record.payroll_status === 'Pending'"
+                          v-if="record.status && record.payroll_status === 'Pending'"
                           @click="closeEvent(record.id)"
                         >
                           <sdFeatherIcons type="x-circle" size="small" />
@@ -310,9 +310,10 @@ const access_level = ref(null);
 const org_ids = ref([]);
 const location_id = ref("");
 const event_list = ref("");
+const payroll_status = ref("");
 const store = useStore();
 
-const payroll_status = [
+const payroll_status_options = [
   {
     value: 2,
     label: "Pending Generation",
