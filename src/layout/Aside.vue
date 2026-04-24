@@ -51,6 +51,62 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-sub-menu key="budgeting" v-if="canAccessBudgeting">
+        <template v-slot:title>
+          <sdFeatherIcons type="bar-chart-2" /><span>Budgeting</span>
+        </template>
+        <a-menu-item key="budgetNationalDashboard" v-if="isLevelOne">
+          <router-link to="/budget/national-dashboard">
+            National Dashboard
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="budgetNationalReview" v-if="isLevelOne">
+          <router-link to="/budget/national-review">
+            National Budget Review
+          </router-link>
+        </a-menu-item>
+        <a-menu-item
+          key="budgetCountyDashboard"
+          v-if="isCountyLevel || isLevelOne"
+        >
+          <router-link to="/budget/county-dashboard">
+            County Dashboard
+          </router-link>
+        </a-menu-item>
+        <a-menu-item
+          key="budgetCountyBudgeting"
+          v-if="isCountyLevel || isLevelOne"
+        >
+          <router-link to="/budget/county-budgeting">
+            County Budgeting
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="budgetCountyBudgets" v-if="isCountyLevel || isLevelOne">
+          <router-link to="/budget/county-budgets">
+            County Budgets Review
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="budgetSubCountyProfile" v-if="isSubCountyLevel || isLevelOne">
+          <router-link to="/budget/subcounty-profile">
+            Sub-County Profile
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="budgetBudgeting" v-if="isSubCountyLevel || isLevelOne">
+          <router-link to="/budget/budgeting"> SubCounty Budgeting </router-link>
+        </a-menu-item>
+        <!-- <a-menu-item key="budgetSummary" v-if="isSubCountyLevel || isLevelOne">
+          <router-link to="/budget/summary"> Budget Summary </router-link>
+        </a-menu-item> -->
+        <a-menu-item key="budgetCategories" v-if="isLevelOne || isCountyLevel">
+          <router-link to="/budget/categories"> Budget Categories </router-link>
+        </a-menu-item>
+        <a-menu-item key="budgetParameters" v-if="isLevelOne">
+          <router-link to="/budget/parameters"> Budget Parameters </router-link>
+        </a-menu-item>
+        <!-- <a-menu-item key="budgetLocations" v-if="isLevelOne || isCountyLevel">
+          <router-link to="/budget/locations"> Locations </router-link>
+        </a-menu-item> -->
+      </a-sub-menu>
       <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder && canCreateCampaign">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
@@ -578,6 +634,9 @@ export default defineComponent({
     const canViewUsers = hasRole(viewUsersRoles);
     const canViewMasterlist = hasRole(viewMasterlistsRoles);
     const isCommunityHealthWorker = hasRole([52, 77, 39, 34]);
+    const canAccessBudgeting = computed(
+      () => !isCommunityHealthWorker.value && !!role_id.value
+    );
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -592,6 +651,14 @@ export default defineComponent({
 
     const isLevelOne = computed(() => {
       return level_id.value === 1;
+    });
+
+    const isCountyLevel = computed(() => {
+      return level_id.value === 2;
+    });
+
+    const isSubCountyLevel = computed(() => {
+      return level_id.value === 3;
     });
 
     const router = computed(() => useRoute());
@@ -643,10 +710,13 @@ export default defineComponent({
       current,
       role_id,
       isLevelOne,
+      isCountyLevel,
+      isSubCountyLevel,
       isAdmin,
       isTechSupport,
       isAIEHolder,
       isCommunityHealthWorker,
+      canAccessBudgeting,
       canViewCampaign,
       canCreateEvent,
       canViewEvent,

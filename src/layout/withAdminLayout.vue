@@ -172,7 +172,7 @@
                 </a-col>
                 <a-col :md="12" :xs="24">
                   <div class="admin-footer__links">
-                    <strong>V1.11</strong>
+                    <strong>V2.0</strong>
                   </div>
                 </a-col>
               </a-row>
