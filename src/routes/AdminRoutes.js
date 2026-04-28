@@ -188,6 +188,66 @@ const routes = [
         component: () => import("@/view/pages/campaigns/viewCampaigns.vue"),
       },
       {
+        path: "/budget/national-dashboard",
+        name: "budget-national-dashboard",
+        component: () => import("@/view/pages/budget/NationalDashboard.vue"),
+      },
+      {
+        path: "/budget/national-review",
+        name: "budget-national-review",
+        component: () => import("@/view/pages/budget/NationalBudgetReview.vue"),
+      },
+      {
+        path: "/budget/county-dashboard",
+        name: "budget-county-dashboard",
+        component: () => import("@/view/pages/budget/CountyDashboard.vue"),
+      },
+      {
+        path: "/budget/county-budgeting",
+        name: "budget-county-budgeting",
+        component: () => import("@/view/pages/budget/CountyBudgeting.vue"),
+      },
+      {
+        path: "/budget/county-budgets",
+        name: "budget-county-budgets",
+        component: () => import("@/view/pages/budget/CountyBudgets.vue"),
+      },
+      {
+        path: "/budget/subcounty-profile",
+        name: "budget-subcounty-profile",
+        component: () => import("@/view/pages/budget/SubCountyProfile.vue"),
+      },
+      {
+        path: "/budget/budgeting",
+        name: "budget-budgeting",
+        component: () => import("@/view/pages/budget/Budgeting.vue"),
+      },
+      {
+        path: "/budget/summary",
+        name: "budget-summary",
+        component: () => import("@/view/pages/budget/BudgetSummary.vue"),
+      },
+      {
+        path: "/budget/parameters",
+        name: "budget-parameters",
+        component: () => import("@/view/pages/budget/BudgetParameters.vue"),
+      },
+      {
+        path: "/budget/categories",
+        name: "budget-categories",
+        component: () => import("@/view/pages/budget/BudgetCategories.vue"),
+      },
+      {
+        path: "/budget/special-area-costs",
+        name: "budget-special-area-costs",
+        component: () => import("@/view/pages/budget/SpecialAreaCosts.vue"),
+      },
+      {
+        path: "/budget/locations",
+        name: "budget-locations",
+        component: () => import("@/view/pages/budget/BudgetLocations.vue"),
+      },
+      {
         path: "/events/register/:id",
         name: "events-register",
         // component: () => import("@/view/pages/events/eventRegister.vue"),
