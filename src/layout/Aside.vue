@@ -103,6 +103,9 @@
         <a-menu-item key="budgetParameters" v-if="isLevelOne">
           <router-link to="/budget/parameters"> Budget Parameters </router-link>
         </a-menu-item>
+        <a-menu-item key="budgetSpecialAreaCost" v-if="isLevelOne">
+          <router-link to="/budget/special-area-costs"> Special Area Cost </router-link>
+        </a-menu-item>
         <!-- <a-menu-item key="budgetLocations" v-if="isLevelOne || isCountyLevel">
           <router-link to="/budget/locations"> Locations </router-link>
         </a-menu-item> -->

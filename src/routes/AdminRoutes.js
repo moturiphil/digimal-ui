@@ -238,6 +238,11 @@ const routes = [
         component: () => import("@/view/pages/budget/BudgetCategories.vue"),
       },
       {
+        path: "/budget/special-area-costs",
+        name: "budget-special-area-costs",
+        component: () => import("@/view/pages/budget/SpecialAreaCosts.vue"),
+      },
+      {
         path: "/budget/locations",
         name: "budget-locations",
         component: () => import("@/view/pages/budget/BudgetLocations.vue"),
