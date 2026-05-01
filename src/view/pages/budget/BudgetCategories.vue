@@ -87,6 +87,29 @@
                       <strong v-else-if="column.key === 'unit_cost'" class="bp-money">
                         KES {{ Number(p.unit_cost || 0).toLocaleString() }}
                       </strong>
+                      <span v-else-if="column.key === 'actions'">
+                        <a-popconfirm
+                          title="Remove this parameter from the category?"
+                          ok-text="Delete"
+                          cancel-text="Cancel"
+                          ok-type="danger"
+                          :ok-button-props="{ loading: deletingId === p.id }"
+                          @confirm="deleteCategoryParameter(record, p)"
+                        >
+                          <a-button
+                            type="text"
+                            size="small"
+                            danger
+                            :loading="deletingId === p.id"
+                            class="bp-delete-btn"
+                            title="Delete parameter"
+                          >
+                            <template #icon>
+                              <DeleteOutlined />
+                            </template>
+                          </a-button>
+                        </a-popconfirm>
+                      </span>
                       <span v-else>{{ p[column.dataIndex] }}</span>
                     </template>
                   </a-table>
@@ -179,13 +202,14 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { notification } from 'ant-design-vue';
+import { DeleteOutlined } from '@ant-design/icons-vue';
 import axios from '@/Axiosconfig';
 import { Main, TableWrapper } from '../../styled';
 import { RecordViewWrapper, ActionBar, BudgetPageWrapper } from './style';
 
 export default {
   name: 'BudgetCategories',
-  components: { Main, TableWrapper, RecordViewWrapper, ActionBar, BudgetPageWrapper },
+  components: { Main, TableWrapper, RecordViewWrapper, ActionBar, BudgetPageWrapper, DeleteOutlined },
   setup() {
     const searchText = ref('');
     const typeFilter = ref(null);
@@ -217,7 +241,36 @@ export default {
       { title: 'Key', dataIndex: 'parameter_key', key: 'parameter_key', width: 240 },
       { title: 'Unit Definition', dataIndex: 'unit_definition', key: 'unit_definition' },
       { title: 'Unit Cost', dataIndex: 'unit_cost', key: 'unit_cost', width: 160 },
+      { title: '', key: 'actions', width: 60, align: 'center' },
     ];
+
+    const deletingId = ref(null);
+
+    const deleteCategoryParameter = async (categoryRecord, parameter) => {
+      if (!parameter || !parameter.id) return;
+      deletingId.value = parameter.id;
+      try {
+        await axios.delete(`delete_category_parameter/${parameter.id}`);
+        // remove locally and update total
+        const idx = categoryRecord.parameters.findIndex(p => p.id === parameter.id);
+        if (idx !== -1) {
+          categoryRecord.parameters.splice(idx, 1);
+          categoryRecord.total_cost = categoryRecord.parameters
+            .reduce((sum, p) => sum + Number(p.unit_cost || 0), 0);
+        }
+        notification.success({
+          message: 'Parameter removed',
+          description: `"${parameter.parameter_label || parameter.parameter_key}" was removed from the category.`,
+        });
+      } catch (error) {
+        notification.error({
+          message: 'Unable to delete parameter',
+          description: error?.response?.data?.message || 'Please try again.',
+        });
+      } finally {
+        deletingId.value = null;
+      }
+    };
 
     const formatLabel = (value) => {
       if (!value) return '—';
@@ -445,6 +498,8 @@ export default {
       openLinkModal,
       closeLinkModal,
       submitLinkParameters,
+      deletingId,
+      deleteCategoryParameter,
     };
   },
 };

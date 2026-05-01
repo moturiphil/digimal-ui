@@ -203,6 +203,11 @@ const routes = [
         component: () => import("@/view/pages/budget/CountyDashboard.vue"),
       },
       {
+        path: "/budget/county-profile",
+        name: "budget-county-profile",
+        component: () => import("@/view/pages/budget/CountyProfile.vue"),
+      },
+      {
         path: "/budget/county-budgeting",
         name: "budget-county-budgeting",
         component: () => import("@/view/pages/budget/CountyBudgeting.vue"),

@@ -959,7 +959,7 @@ export default {
       const q = (subCountyFilters.search || '').trim().toLowerCase();
       const cid = subCountyFilters.county_id;
       let rows = subCountyRows.value;
-      if (cid) rows = rows.filter(s => s.county_id === cid);
+      if (cid) rows = rows.filter(s => s.county_id === cid);2
       if (q) rows = rows.filter(s =>
         s.name.toLowerCase().includes(q) ||
         (s.county_name || '').toLowerCase().includes(q)
