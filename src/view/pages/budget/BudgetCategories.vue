@@ -88,27 +88,19 @@
                         KES {{ Number(p.unit_cost || 0).toLocaleString() }}
                       </strong>
                       <span v-else-if="column.key === 'actions'">
-                        <a-popconfirm
-                          title="Remove this parameter from the category?"
-                          ok-text="Delete"
-                          cancel-text="Cancel"
-                          ok-type="danger"
-                          :ok-button-props="{ loading: deletingId === p.id }"
-                          @confirm="deleteCategoryParameter(record, p)"
+                        <a-button
+                          type="text"
+                          size="small"
+                          danger
+                          :loading="deletingId === p.id"
+                          class="bp-delete-btn"
+                          title="Delete parameter"
+                          @click="openDeleteModal(record, p)"
                         >
-                          <a-button
-                            type="text"
-                            size="small"
-                            danger
-                            :loading="deletingId === p.id"
-                            class="bp-delete-btn"
-                            title="Delete parameter"
-                          >
-                            <template #icon>
-                              <DeleteOutlined />
-                            </template>
-                          </a-button>
-                        </a-popconfirm>
+                          <template #icon>
+                            <DeleteOutlined />
+                          </template>
+                        </a-button>
                       </span>
                       <span v-else>{{ p[column.dataIndex] }}</span>
                     </template>
@@ -196,6 +188,38 @@
         </div>
       </div>
     </a-modal>
+
+    <!-- Delete Parameter Confirmation Modal -->
+    <a-modal
+      v-model:visible="deleteModalVisible"
+      title="Remove Parameter"
+      ok-text="Delete"
+      cancel-text="Cancel"
+      :ok-button-props="{ danger: true }"
+      :confirm-loading="!!deletingId"
+      :closable="!deletingId"
+      :mask-closable="!deletingId"
+      @ok="confirmDeleteCategoryParameter"
+      @cancel="closeDeleteModal"
+    >
+      <p style="margin-bottom: 8px;">
+        Are you sure you want to remove this parameter from the category?
+      </p>
+      <div
+        v-if="deleteTarget.parameter"
+        style="background:#f7f9fa;border:1px solid #eef0f2;border-radius:6px;padding:10px 12px;"
+      >
+        <div style="font-weight:600;color:#1f2437;">
+          {{ deleteTarget.parameter.parameter_label || deleteTarget.parameter.parameter_key }}
+        </div>
+        <div v-if="deleteTarget.category" style="font-size:12px;color:#7a8a82;margin-top:2px;">
+          From category: <strong>{{ deleteTarget.category.category_name }}</strong>
+        </div>
+      </div>
+      <p style="margin-top:12px;color:#c0392b;font-size:12px;">
+        This action cannot be undone.
+      </p>
+    </a-modal>
   </RecordViewWrapper>
 </template>
 
@@ -245,6 +269,27 @@ export default {
     ];
 
     const deletingId = ref(null);
+    const deleteModalVisible = ref(false);
+    const deleteTarget = ref({ category: null, parameter: null });
+
+    const openDeleteModal = (categoryRecord, parameter) => {
+      deleteTarget.value = { category: categoryRecord, parameter };
+      deleteModalVisible.value = true;
+    };
+
+    const closeDeleteModal = () => {
+      if (deletingId.value) return;
+      deleteModalVisible.value = false;
+      deleteTarget.value = { category: null, parameter: null };
+    };
+
+    const confirmDeleteCategoryParameter = async () => {
+      const { category, parameter } = deleteTarget.value;
+      if (!parameter || !parameter.id) return;
+      await deleteCategoryParameter(category, parameter);
+      deleteModalVisible.value = false;
+      deleteTarget.value = { category: null, parameter: null };
+    };
 
     const deleteCategoryParameter = async (categoryRecord, parameter) => {
       if (!parameter || !parameter.id) return;
@@ -500,6 +545,11 @@ export default {
       submitLinkParameters,
       deletingId,
       deleteCategoryParameter,
+      deleteModalVisible,
+      deleteTarget,
+      openDeleteModal,
+      closeDeleteModal,
+      confirmDeleteCategoryParameter,
     };
   },
 };

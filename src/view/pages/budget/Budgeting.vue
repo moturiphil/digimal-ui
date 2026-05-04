@@ -243,6 +243,49 @@ const groupIntoActivities = (rows) => {
   return Array.from(map.values());
 };
 
+/* Group generated budget line_items into activity panels. Uses the actual
+ * computed values returned by the API (days, units, totals, special costs). */
+const groupBudgetLineItems = (lineItems) => {
+  const map = new Map();
+  let order = 0;
+  (lineItems || []).forEach((li) => {
+    const cat = li.budget_category || {};
+    const cid = li.budget_category_id || cat.id;
+    if (!map.has(cid)) {
+      order += 1;
+      map.set(cid, {
+        id: cid,
+        order,
+        name: cat.name || `Category ${cid}`,
+        stage: cat.stage,
+        type: cat.type,
+        items: [],
+      });
+    }
+    const param = li.budget_parameter || {};
+    map.get(cid).items.push({
+      id: li.id,
+      parameter_id: li.budget_parameter_id || param.id,
+      description: li.label || param.label,
+      item: li.label || param.label,
+      tag: li.unit_definition || param.unit_definition,
+      unit_cost: parseFloat(li.unit_cost) || 0,
+      days: Number(li.number_of_days) || 0,
+      units: Number(li.unit_count) || 0,
+      total_cost: parseFloat(li.total_cost) || 0,
+      is_special_cost: !!li.is_special_cost,
+      special_type: li.special_type,
+      sort_order: Number(li.sort_order) || 0,
+      highlight: /fuel/i.test(param.key || ''),
+    });
+  });
+  // Sort items inside each activity by sort_order to match API ordering
+  Array.from(map.values()).forEach((a) => {
+    a.items.sort((x, y) => (x.sort_order || 0) - (y.sort_order || 0));
+  });
+  return Array.from(map.values());
+};
+
 /* Resolve the active sub-county from session or route. */
 const resolveSubCounty = () => {
   try {
@@ -286,6 +329,7 @@ export default {
     const regenerating = ref(false);
     const submitting = ref(false);
     const generated = ref(null);
+    const countyProfileId = ref(null);
 
     const loadCategoryParameters = async () => {
       loading.value = true;
@@ -313,8 +357,10 @@ export default {
         .filter(Boolean),
     );
 
-    const rowTotal = (r) =>
-      (r.unit_cost || 0) * (r.days || 0) * (r.units || 0);
+    const rowTotal = (r) => {
+      if (r && r.total_cost != null && r.total_cost !== 0) return r.total_cost;
+      return (r.unit_cost || 0) * (r.days || 0) * (r.units || 0);
+    };
     const activityTotal = (a) =>
       a.items.reduce((s, i) => s + rowTotal(i), 0);
 
@@ -331,24 +377,109 @@ export default {
       { title: 'Total (KES)', key: 'total', align: 'right', width: 140 },
     ];
 
-    const regenerateBudget = () => {
+    const regenerateBudget = async () => {
       regenerating.value = true;
-      setTimeout(() => {
-        regenerating.value = false;
+      try {
+        // 1) Fetch the user's profile (county or sub-county scope)
+        const { data: profileResp } = await axios.get('get_my_county_profile');
+
+        // 2) Reject users without a sub-county profile
+        if (!profileResp || profileResp.level !== 'sub_county') {
+          notification.error({
+            message: 'Access denied',
+            description:
+              'Only sub-county users can generate a sub-county budget. Your profile is not a sub-county profile.',
+          });
+          return;
+        }
+
+        const profileId =
+          profileResp.county_profile_id || profileResp.profile?.id;
+        if (!profileId) {
+          notification.error({
+            message: 'Missing sub-county profile',
+            description: 'Unable to determine your county profile id.',
+          });
+          return;
+        }
+        countyProfileId.value = profileId;
+
+        const financialYear = String(new Date().getFullYear());
+
+        // 3) Create the campaign budget
+        await axios.post('create_campaign_budget', {
+          county_profile_id: profileId,
+          financial_year: financialYear,
+        });
+
+        // 4) Generate the campaign budget
+        const { data: genResp } = await axios.post(
+          `generate_campaign_budget/${profileId}`,
+        );
+
+        // Normalise wrapper shapes
+        const budget =
+          genResp?.grand_total != null
+            ? genResp
+            : genResp?.data?.grand_total != null
+              ? genResp.data
+              : genResp?.budget?.grand_total != null
+                ? genResp.budget
+                : genResp?.data ?? genResp ?? {};
+
+        // Replace activity tables with API-computed line items
+        if (Array.isArray(budget?.line_items) && budget.line_items.length) {
+          activityCatalog.value = groupBudgetLineItems(budget.line_items);
+          selectedIds.value = activityCatalog.value.map((a) => a.id);
+        }
+
+        const rawTotal = budget?.grand_total ?? budget?.total;
+        let apiTotal = rawTotal != null ? parseFloat(rawTotal) : NaN;
+        if (!Number.isFinite(apiTotal) && Array.isArray(budget?.line_items)) {
+          apiTotal = budget.line_items.reduce(
+            (s, li) => s + (parseFloat(li.total_cost) || 0),
+            0,
+          );
+        }
+
         generated.value = {
-          total: grandTotal.value,
+          total: Number.isFinite(apiTotal) ? apiTotal : grandTotal.value,
           date: new Date().toLocaleDateString(),
         };
-        notification.success({ message: 'Sub-County budget regenerated.' });
-      }, 500);
+
+        notification.success({ message: 'Sub-County budget generated.' });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to generate sub-county budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        regenerating.value = false;
+      }
     };
 
-    const submitToCounty = () => {
+    const submitToCounty = async () => {
+      if (!countyProfileId.value) {
+        notification.error({
+          message: 'Cannot submit',
+          description: 'Please generate the sub-county budget first.',
+        });
+        return;
+      }
       submitting.value = true;
-      setTimeout(() => {
+      try {
+        await axios.post(`submit_campaign_budget/${countyProfileId.value}`);
+        notification.success({
+          message: 'Sub-County budget submitted to County.',
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to submit sub-county budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
         submitting.value = false;
-        notification.success({ message: 'Sub-County budget submitted to County (demo).' });
-      }, 500);
+      }
     };
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());

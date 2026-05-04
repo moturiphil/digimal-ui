@@ -229,21 +229,22 @@
 
           <!-- actions -->
           <div class="detail-actions">
+            <sdButton @click="downloadBudgetPDF">Download PDF</sdButton>
             <sdButton
-              v-if="selectedBudget.can_approve"
+              v-if="selectedBudget.status !== 'approved'"
               type="success"
+              :loading="approving"
               @click="approveBudget(selectedBudget)"
             >
               Approve
             </sdButton>
             <sdButton
-              v-if="selectedBudget.can_refer_back"
+              v-if="selectedBudget.status !== 'approved' && selectedBudget.status !== 'referred'"
               type="warning"
               @click="openReferModal(selectedBudget)"
             >
               Refer Back
             </sdButton>
-            <sdButton @click="downloadBudgetPDF">Download PDF</sdButton>
             <sdButton @click="goCountyBudgets">Back to {{ selectedCounty.name }}</sdButton>
           </div>
         </template>
@@ -412,9 +413,29 @@ export default {
     ];
 
     /* actions -------------------------------------------- */
-    const approveBudget = (record) => {
-      record.status = 'approved';
-      notification.success({ message: `Budget for ${record.label} approved.` });
+    const approving = ref(false);
+    const approveBudget = async (record) => {
+      if (!record || !record.id) {
+        notification.error({ message: 'Cannot approve: missing budget id.' });
+        return;
+      }
+      approving.value = true;
+      try {
+        await axios.post(`approve_campaign_budget/${record.id}`);
+        record.status = 'approved';
+        record.can_approve = false;
+        record.can_refer_back = false;
+        notification.success({
+          message: `Budget for ${record.label} approved.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to approve budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        approving.value = false;
+      }
     };
     const openReferModal = () => {
       referNote.value = '';
@@ -462,6 +483,7 @@ export default {
       openSubCountyBudget,
       goCounties,
       goCountyBudgets,
+      approving,
       approveBudget,
       openReferModal,
       handleRefer,

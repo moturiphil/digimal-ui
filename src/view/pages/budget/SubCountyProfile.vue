@@ -1,180 +1,295 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Sub-County Profile" />
     <Main>
-      <BudgetPageWrapper>
-        <a-row :gutter="16">
-          <!-- Profile Form -->
-          <a-col :xl="14" :lg="14" :xs="24">
-            <sdCards title="Demographic Details">
-              <template #button>
-                <sdButton v-if="!editing" type="primary" size="small" @click="editing = true">
-                  <edit-outlined /> Edit
+      <BudgetPageWrapper class="minimal-dashboard">
+        <!-- Page heading -->
+        <div class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">Sub-County Profile</h3>
+            <p class="ph-subtitle">
+              {{ scopeLabel }} — Demographic and computed campaign parameters
+            </p>
+          </div>
+          <div class="ph-actions">
+            <a-tag :color="profileSaved ? 'green' : 'orange'">
+              {{ profileSaved ? 'Profile Saved' : 'Unsaved Changes' }}
+            </a-tag>
+          </div>
+        </div>
+
+        <a-spin :spinning="loading">
+
+        <!-- ───────── Demographic Details ───────── -->
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Demographic Details</div>
+              <p class="panel-subtitle">
+                Capture sub-county demographics used to drive campaign computations.
+              </p>
+            </div>
+            <div>
+              <sdButton v-if="!editing" type="dark" size="small" @click="editing = true">
+                ✎ Edit
+              </sdButton>
+              <span v-else style="display:inline-flex; gap:8px;">
+                <sdButton type="success" size="small" :loading="saving" @click="handleSave">
+                  Save
                 </sdButton>
-                <div v-else style="display:flex; gap:8px;">
-                  <sdButton type="success" size="small" :loading="saving" @click="handleSave">Save</sdButton>
-                  <sdButton size="small" @click="editing = false">Cancel</sdButton>
-                </div>
-              </template>
+                <sdButton size="small" @click="editing = false">Cancel</sdButton>
+              </span>
+            </div>
+          </div>
 
-              <a-form layout="vertical" :model="form">
-                <a-row :gutter="16">
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="Sub-County">
-                      <a-select v-model:value="form.sub_county_id" :disabled="!editing" placeholder="Select sub-county" show-search style="width:100%;">
-                        <a-select-option v-for="sc in subCounties" :key="sc.id" :value="sc.id">{{ sc.name }}</a-select-option>
-                      </a-select>
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="Total Population">
-                      <a-input-number v-model:value="form.total_population" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="Total Households">
-                      <a-input-number v-model:value="form.total_households" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="Households with Children &lt;5">
-                      <a-input-number v-model:value="form.hh_children_under5" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="Pregnant Women">
-                      <a-input-number v-model:value="form.pregnant_women" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="Estimated LLIN Needs">
-                      <a-input-number v-model:value="form.llin_needs" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="No. of Health Workers">
-                      <a-input-number v-model:value="form.health_workers" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                  <a-col :sm="12" :xs="24">
-                    <a-form-item label="No. of CHPs">
-                      <a-input-number v-model:value="form.chps" :disabled="!editing" :min="0" style="width:100%;" />
-                    </a-form-item>
-                  </a-col>
-                </a-row>
-              </a-form>
-            </sdCards>
-          </a-col>
+          <a-form layout="vertical" :model="form">
+            <a-row :gutter="16">
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="Population">
+                  <a-input-number v-model:value="form.population" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="Estimated Households">
+                  <a-input-number v-model:value="form.estimated_households" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="Estimated LLINs">
+                  <a-input-number v-model:value="form.estimated_llins" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Bales">
+                  <a-input-number v-model:value="form.number_of_bales" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Wards">
+                  <a-input-number v-model:value="form.number_of_wards" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Locations">
+                  <a-input-number v-model:value="form.number_of_locations" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Sub-Locations">
+                  <a-input-number v-model:value="form.number_of_sub_locations" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Villages">
+                  <a-input-number v-model:value="form.number_of_villages" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Distribution Posts">
+                  <a-input-number v-model:value="form.number_of_posts" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="No. of Drop-off Points">
+                  <a-input-number v-model:value="form.number_of_drop_off_points" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="Households Registered per Day">
+                  <a-input-number v-model:value="form.households_registered_per_day" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="Admin Structures">
+                  <a-input-number v-model:value="form.number_of_administrative_structures" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="Health Workers to Train">
+                  <a-input-number v-model:value="form.hworkers_to_train" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+              <a-col :sm="12" :xs="24">
+                <a-form-item label="CHVs &amp; Elders to Train">
+                  <a-input-number v-model:value="form.chvs_and_elders_to_train" :disabled="!editing" :min="0" style="width:100%;" />
+                </a-form-item>
+              </a-col>
+            </a-row>
+          </a-form>
 
-          <!-- Computed Parameters -->
-          <a-col :xl="10" :lg="10" :xs="24">
-            <sdCards title="Computed Parameters">
-              <template #button>
-                <a-tooltip title="Auto-calculated from demographic data"><a-tag color="blue">Auto</a-tag></a-tooltip>
-              </template>
-              <div class="computed-grid">
-                <div class="computed-row">
-                  <span class="label">🦟 LLINs Required</span>
-                  <span class="value" style="color:#5F63F2;">{{ computed_params.llins_required.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">📦 Bales (×50)</span>
-                  <span class="value">{{ computed_params.bales.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">🏫 HW Sessions</span>
-                  <span class="value">{{ computed_params.hw_sessions.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">👨‍⚕️ CHP Sessions</span>
-                  <span class="value">{{ computed_params.chp_sessions.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">🗣️ Community Sessions</span>
-                  <span class="value">{{ computed_params.community_sessions.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">📅 Distribution Days</span>
-                  <span class="value">{{ computed_params.distribution_days.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">👤 Supervisors</span>
-                  <span class="value">{{ computed_params.supervisors.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">🚗 Vehicles</span>
-                  <span class="value">{{ computed_params.vehicles.toLocaleString() }}</span>
-                </div>
-                <div class="computed-row">
-                  <span class="label">📝 Verification Teams</span>
-                  <span class="value">{{ computed_params.verification_teams.toLocaleString() }}</span>
-                </div>
+          <div class="profile-tiles top">
+            <div class="profile-tile highlight">
+              <div class="pt-label">Population</div>
+              <div class="pt-value">{{ fmt(form.population) }}</div>
+            </div>
+            <div class="profile-tile">
+              <div class="pt-label">Households</div>
+              <div class="pt-value">{{ fmt(form.estimated_households) }}</div>
+            </div>
+            <div class="profile-tile">
+              <div class="pt-label">LLINs</div>
+              <div class="pt-value">{{ fmt(form.estimated_llins) }}</div>
+            </div>
+            <div class="profile-tile">
+              <div class="pt-label">Wards</div>
+              <div class="pt-value">{{ fmt(form.number_of_wards) }}</div>
+            </div>
+            <div class="profile-tile">
+              <div class="pt-label">Posts</div>
+              <div class="pt-value">{{ fmt(form.number_of_posts) }}</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ───────── Computed Parameters ───────── -->
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Computed Parameters</div>
+              <p class="panel-subtitle">
+                Auto-calculated from the demographic data captured above.
+              </p>
+            </div>
+            <a-tag color="blue">Auto</a-tag>
+          </div>
+
+          <div class="param-grid">
+            <div class="param-row" v-for="p in computedParams" :key="p.label">
+              <span class="param-label">{{ p.label }}</span>
+              <span class="param-value">{{ fmt(p.value) }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ───────── Status ───────── -->
+        <section class="panel status-panel">
+          <div class="status-row">
+            <div class="status-icon">{{ profileSaved ? '✓' : '!' }}</div>
+            <div class="status-body">
+              <div class="status-title">
+                {{ profileSaved ? 'Profile Saved' : 'Unsaved Changes' }}
               </div>
-            </sdCards>
-
-            <!-- Status Card -->
-            <sdCards headless>
-              <div style="display:flex; align-items:center; gap:16px; padding:4px 0;">
-                <div style="font-size:36px;">{{ profileSaved ? '✅' : '🟡' }}</div>
-                <div>
-                  <div style="font-size:15px; font-weight:700; color:#272B41;">{{ profileSaved ? 'Profile Saved' : 'Unsaved Changes' }}</div>
-                  <div style="font-size:12px; color:#9299b8; margin-top:2px;" v-if="profileSaved">Last updated: {{ lastUpdated }}</div>
-                  <div style="font-size:12px; color:#FA8B0C; margin-top:2px;" v-else>Click Save to persist your data</div>
-                </div>
+              <div v-if="profileSaved" class="status-meta">
+                Last updated: {{ lastUpdated }}
               </div>
-            </sdCards>
-          </a-col>
-        </a-row>
+              <div v-else class="status-meta warn">
+                Click Save to persist your data
+              </div>
+            </div>
+          </div>
+        </section>
+        </a-spin>
       </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 
 <script>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { notification } from 'ant-design-vue';
-import { EditOutlined } from '@ant-design/icons-vue';
+import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 
+const emptyForm = () => ({
+  population: 0,
+  estimated_households: 0,
+  estimated_llins: 0,
+  number_of_bales: 0,
+  number_of_wards: 0,
+  number_of_locations: 0,
+  number_of_sub_locations: 0,
+  number_of_villages: 0,
+  number_of_posts: 0,
+  number_of_drop_off_points: 0,
+  households_registered_per_day: 0,
+  number_of_administrative_structures: 0,
+  hworkers_to_train: 0,
+  training_sessions_hw: 0,
+  class_size_hw: 0,
+  chvs_and_elders_to_train: 0,
+  training_sessions_chv: 0,
+  class_size_chv: 0,
+});
+
 export default {
   name: 'SubCountyProfile',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper, EditOutlined },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper },
   setup() {
     const editing = ref(false);
     const saving = ref(false);
+    const loading = ref(false);
     const profileSaved = ref(true);
-    const lastUpdated = ref('20 Apr 2026, 10:45 AM');
+    const lastUpdated = ref('—');
 
-    const subCounties = ref([
-      { id: 1, name: 'Kilifi North' }, { id: 2, name: 'Kilifi South' },
-      { id: 3, name: 'Kwale' }, { id: 4, name: 'Kinango' },
-      { id: 5, name: 'Mvita' }, { id: 6, name: 'Likoni' },
+    const profileMeta = ref({
+      level: null,
+      county_profile_id: null,
+      county_id: null,
+      sub_county_id: null,
+      profile_id: null,
+    });
+
+    const form = reactive(emptyForm());
+
+    const scopeLabel = computed(() => {
+      if (!profileMeta.value.level) return 'Profile';
+      if (profileMeta.value.level === 'county') return 'County-level Profile';
+      if (profileMeta.value.level === 'sub_county') return 'Sub-County Profile';
+      return profileMeta.value.level;
+    });
+
+    const formatDate = (s) => {
+      if (!s) return '—';
+      const d = new Date(s.replace(' ', 'T'));
+      if (Number.isNaN(d.getTime())) return s;
+      return d.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+    };
+
+    const applyProfile = (resp) => {
+      if (!resp) return;
+      profileMeta.value = {
+        level: resp.level || null,
+        county_profile_id: resp.county_profile_id || null,
+        county_id: resp.county_id || null,
+        sub_county_id: resp.sub_county_id || null,
+        profile_id: resp.profile?.id || null,
+      };
+      const p = resp.profile || {};
+      const blank = emptyForm();
+      Object.keys(blank).forEach((k) => {
+        form[k] = p[k] != null ? Number(p[k]) || 0 : blank[k];
+      });
+      lastUpdated.value = formatDate(p.updated_at);
+      profileSaved.value = true;
+    };
+
+    const loadProfile = async () => {
+      loading.value = true;
+      try {
+        const { data } = await axios.get('get_my_county_profile');
+        applyProfile(data);
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load profile',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    onMounted(loadProfile);
+
+    const computedParams = computed(() => [
+      { label: 'Estimated LLINs', value: form.estimated_llins },
+      { label: 'No. of Bales', value: form.number_of_bales },
+      { label: 'Households Registered / Day', value: form.households_registered_per_day },
+      { label: 'Admin Structures', value: form.number_of_administrative_structures },
+      { label: 'H/W Training Sessions', value: form.training_sessions_hw },
+      { label: 'H/W Class Size', value: form.class_size_hw },
+      { label: 'CHV & Elders Training Sessions', value: form.training_sessions_chv },
+      { label: 'CHV & Elders Class Size', value: form.class_size_chv },
     ]);
-
-    const form = reactive({
-      sub_county_id: 1,
-      total_population: 87500,
-      total_households: 18200,
-      hh_children_under5: 4300,
-      pregnant_women: 1850,
-      llin_needs: 22500,
-      health_workers: 48,
-      chps: 240,
-    });
-
-    const computed_params = computed(() => {
-      const llins_required = Math.ceil(form.total_households * 1.8);
-      const bales = Math.ceil(llins_required / 50);
-      const hw_sessions = Math.ceil(form.health_workers / 25);
-      const chp_sessions = Math.ceil(form.chps / 30);
-      const community_sessions = Math.ceil(form.total_households / 500);
-      const distribution_days = Math.ceil(form.total_households / 1200);
-      const supervisors = Math.ceil(form.health_workers / 8);
-      const vehicles = Math.ceil(supervisors / 4);
-      const verification_teams = Math.ceil(form.total_households / 2000);
-      return { llins_required, bales, hw_sessions, chp_sessions, community_sessions, distribution_days, supervisors, vehicles, verification_teams };
-    });
 
     const handleSave = () => {
       saving.value = true;
@@ -183,11 +298,142 @@ export default {
         editing.value = false;
         profileSaved.value = true;
         lastUpdated.value = new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-        notification.success({ message: 'Sub-county profile saved.' });
-      }, 700);
+        notification.success({ message: 'Profile saved.' });
+      }, 500);
     };
 
-    return { editing, saving, profileSaved, lastUpdated, subCounties, form, computed_params, handleSave };
+    const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
+
+    return {
+      editing,
+      saving,
+      loading,
+      profileSaved,
+      lastUpdated,
+      scopeLabel,
+      profileMeta,
+      form,
+      computedParams,
+      handleSave,
+      fmt,
+    };
   },
 };
 </script>
+
+<style lang="less" scoped>
+.minimal-dashboard {
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+    .panel-title { margin-bottom: 4px; }
+    .panel-subtitle {
+      margin: 0;
+      font-size: 12px;
+      color: #7a8a82;
+      max-width: 640px;
+    }
+  }
+
+  /* Profile tiles */
+  .profile-tiles {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+    &.top { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    @media (max-width: 1100px) {
+      &.top { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    }
+  }
+  .profile-tile {
+    background: #fff;
+    border: 1px solid #e6ecef;
+    border-radius: 6px;
+    padding: 10px 12px;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    &:hover {
+      border-color: #c9e6d3;
+      box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+    }
+    &.highlight {
+      background: #f4fbf6;
+      border-color: #c9e6d3;
+    }
+    .pt-label {
+      font-size: 11px;
+      color: #8a9399;
+      margin-bottom: 2px;
+      font-weight: 500;
+    }
+    .pt-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2437;
+      line-height: 1.2;
+    }
+  }
+
+  /* Computed parameters – two-column grid */
+  .param-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    @media (max-width: 900px) { grid-template-columns: 1fr; }
+  }
+  .param-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    .param-label { color: #4d8a63; }
+    .param-value {
+      font-weight: 800;
+      color: #15693c;
+      font-size: 14px;
+    }
+  }
+
+  /* Status panel */
+  .status-panel {
+    background: #fafcfb !important;
+    border-color: #e6ecef !important;
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .status-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #eaf7ef;
+    color: #15693c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .status-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2437;
+  }
+  .status-meta {
+    margin-top: 2px;
+    font-size: 11px;
+    color: #7a8a82;
+    &.warn { color: #c98a16; }
+  }
+}
+</style>

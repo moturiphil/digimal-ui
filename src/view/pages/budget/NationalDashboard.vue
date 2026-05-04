@@ -277,7 +277,7 @@ export default {
   components: { Main, RecordViewWrapper, BudgetPageWrapper },
   setup() {
     const loading = ref(false);
-    const fiscalYear = ref('All years');
+    const fiscalYear = ref('2026/2027');
     const countyList = ref([]);
     const dashboard = ref(null);
 
