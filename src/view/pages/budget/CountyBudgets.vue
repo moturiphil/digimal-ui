@@ -405,9 +405,7 @@ export default {
       if (!record || !record.id) return;
       approving.value = true;
       try {
-        await axios.post('approve_county_budget_review', {
-          budget_id: record.id,
-        });
+        await axios.post(`county_approve_campaign_budget/${record.id}`);
         notification.success({
           message: `Budget for ${record.label} approved.`,
         });
