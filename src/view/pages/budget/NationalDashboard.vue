@@ -266,110 +266,111 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { message } from 'ant-design-vue';
+import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
-
-/* ───────── Mock data (replace with API wiring) ───────── */
-const countiesData = [
-  { id: 1, name: 'Kilifi',       total_budget: 0, total_nets: 0, cost_per_net: 0 },
-  { id: 2, name: 'Kwale',        total_budget: 0, total_nets: 0, cost_per_net: 0 },
-  { id: 3, name: 'Mombasa',      total_budget: 0, total_nets: 0, cost_per_net: 0 },
-  { id: 4, name: 'Taita Taveta', total_budget: 0, total_nets: 0, cost_per_net: 0 },
-  { id: 5, name: 'Lamu',         total_budget: 0, total_nets: 0, cost_per_net: 0 },
-];
 
 export default {
   name: 'NationalDashboard',
   components: { Main, RecordViewWrapper, BudgetPageWrapper },
   setup() {
     const loading = ref(false);
-    const fiscalYear = ref('2025/26');
-    const countyList = ref(countiesData);
+    const fiscalYear = ref('2026/2027');
+    const countyList = ref([]);
+    const dashboard = ref(null);
+
+    const fetchDashboard = async () => {
+      loading.value = true;
+      try {
+        const { data } = await axios.get('get_national_budget_dashboard');
+        dashboard.value = data || null;
+        if (data && data.financial_year) {
+          fiscalYear.value = data.financial_year;
+        }
+      } catch (err) {
+        message.error('Failed to load national budget dashboard');
+        // eslint-disable-next-line no-console
+        console.error('get_national_budget_dashboard error:', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    onMounted(fetchDashboard);
 
     const submission = computed(() => {
-      const counties = 17;
-      const subCounties = 83;
-      const expected = counties + subCounties;
-      const submittedCounties = 0;
-      const submittedSubCounties = 0;
-      const approvedCounties = 0;
-      const approvedSubCounties = 0;
+      const s = (dashboard.value && dashboard.value.submission_status) || {};
+      const expected = s.expected_budgets || {};
+      const submitted = s.submitted || {};
+      const approved = s.nationally_approved || {};
+      const pending = s.pending || {};
       return {
-        counties,
-        subCounties,
-        expected,
-        submitted: submittedCounties + submittedSubCounties,
-        submittedCounties,
-        submittedSubCounties,
-        approved: approvedCounties + approvedSubCounties,
-        approvedCounties,
-        approvedSubCounties,
-        pending:
-          expected -
-          (submittedCounties + submittedSubCounties) -
-          (approvedCounties + approvedSubCounties),
-        pendingCounties: counties - submittedCounties - approvedCounties,
-        pendingSubCounties: subCounties - submittedSubCounties - approvedSubCounties,
+        counties: s.counties || 0,
+        subCounties: s.sub_counties || 0,
+        expected: expected.total || 0,
+        expectedCounties: expected.counties || 0,
+        expectedSubCounties: expected.sub_counties || 0,
+        submitted: submitted.total || 0,
+        submittedCounties: submitted.counties || 0,
+        submittedSubCounties: submitted.sub_counties || 0,
+        approved: approved.total || 0,
+        approvedCounties: approved.counties || 0,
+        approvedSubCounties: approved.sub_counties || 0,
+        pending: pending.total || 0,
+        pendingCounties: pending.counties || 0,
+        pendingSubCounties: pending.sub_counties || 0,
       };
     });
 
     const program = computed(() => {
-      const targetPopulation = 3574128;
-      const totalNets = 1985627;
-      const households = 786888;
-      const distributionPosts = 1435;
+      const p = (dashboard.value && dashboard.value.programmatic_analysis) || {};
+      const h = (dashboard.value && dashboard.value.household_coverage) || {};
       return {
-        targetPopulation,
-        totalNets,
-        households,
-        netsPerHousehold: totalNets / households,
-        costPerNet: 0,
-        distributionPosts,
+        targetPopulation: p.target_population || 0,
+        totalNets: p.total_nets_to_distribute || 0,
+        households: h.total_households || 0,
+        netsPerHousehold: p.nets_per_household || 0,
+        costPerNet: p.cost_per_net_kes || 0,
+        distributionPosts: p.total_distribution_posts || 0,
       };
     });
 
     const ratios = computed(() => {
-      const coverageTotal = submission.value.expected;
-      const coverageApproved = submission.value.approved;
-      const totalBudget = countyList.value.reduce((s, c) => s + c.total_budget, 0);
+      const r = (dashboard.value && dashboard.value.coverage_ratios) || {};
       return {
-        coverageRate: coverageTotal ? (coverageApproved / coverageTotal) * 100 : 0,
-        coverageApproved,
-        coverageTotal,
-        avgCostPerCapita: program.value.targetPopulation
-          ? totalBudget / program.value.targetPopulation
-          : 0,
-        totalBudget,
-        netsPerPost: program.value.distributionPosts
-          ? Math.round(program.value.totalNets / program.value.distributionPosts)
-          : 0,
-        populationPerPost: program.value.distributionPosts
-          ? Math.round(program.value.targetPopulation / program.value.distributionPosts)
-          : 0,
+        coverageRate: r.budget_coverage_rate || 0,
+        coverageApproved: submission.value.approved,
+        coverageTotal: submission.value.expected,
+        avgCostPerCapita: r.avg_cost_per_capita_kes || 0,
+        totalBudget: r.avg_cost_total_kes || 0,
+        netsPerPost: r.nets_per_distribution_post || 0,
+        populationPerPost: r.population_per_post || 0,
       };
     });
 
     const split = computed(() => {
-      const subCounty = 0;
-      const county = 0;
-      const total = subCounty + county;
+      const b = (dashboard.value && dashboard.value.budget_split) || {};
+      const sub = b.sub_county || {};
+      const co = b.county || {};
       return {
-        subCounty,
-        county,
-        total,
-        subCountyPct: total ? (subCounty / total) * 100 : 0,
-        countyPct: total ? (county / total) * 100 : 0,
+        subCounty: sub.total_kes || 0,
+        county: co.total_kes || 0,
+        total: b.grand_total_kes || 0,
+        subCountyPct: sub.percentage || 0,
+        countyPct: co.percentage || 0,
       };
     });
 
     const coverage = computed(() => {
-      const households = program.value.households;
-      const nets = program.value.totalNets;
-      const netsPerHousehold = households ? nets / households : 0;
-      // Baseline of 3 nets/household used as full-coverage reference
-      const coveragePct = Math.min(100, (netsPerHousehold / 3) * 100);
-      return { households, nets, netsPerHousehold, coveragePct };
+      const c = (dashboard.value && dashboard.value.household_coverage) || {};
+      return {
+        households: c.total_households || 0,
+        nets: c.nets_to_distribute || 0,
+        netsPerHousehold: c.avg_nets_per_household || 0,
+        coveragePct: c.coverage_percentage || 0,
+      };
     });
 
     const topColumns = [

@@ -74,6 +74,14 @@
           </router-link>
         </a-menu-item>
         <a-menu-item
+          key="budgetCountyProfile"
+          v-if="isCountyLevel || isLevelOne"
+        >
+          <router-link to="/budget/county-profile">
+            County Profile
+          </router-link>
+        </a-menu-item>
+        <a-menu-item
           key="budgetCountyBudgeting"
           v-if="isCountyLevel || isLevelOne"
         >
@@ -97,7 +105,7 @@
         <!-- <a-menu-item key="budgetSummary" v-if="isSubCountyLevel || isLevelOne">
           <router-link to="/budget/summary"> Budget Summary </router-link>
         </a-menu-item> -->
-        <a-menu-item key="budgetCategories" v-if="isLevelOne || isCountyLevel">
+        <a-menu-item key="budgetCategories" v-if="isLevelOne">
           <router-link to="/budget/categories"> Budget Categories </router-link>
         </a-menu-item>
         <a-menu-item key="budgetParameters" v-if="isLevelOne">

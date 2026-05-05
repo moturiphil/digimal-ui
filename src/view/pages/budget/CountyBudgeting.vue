@@ -122,7 +122,16 @@
               </span>
               <span v-else-if="column.key === 'unit_cost'">{{ fmt(record.unit_cost) }}</span>
               <span v-else-if="column.key === 'days'">{{ record.days }}</span>
-              <span v-else-if="column.key === 'units'">{{ record.units }}</span>
+              <span v-else-if="column.key === 'units'">
+                <a-input-number
+                  :min="0"
+                  :step="1"
+                  size="small"
+                  class="units-input"
+                  :value="record.units"
+                  @change="(val) => onUnitsChange(a, record, val)"
+                />
+              </span>
               <span v-else-if="column.key === 'per_sc'">
                 {{ fmt(record.unit_cost * record.days * record.units) }}
               </span>
@@ -150,7 +159,15 @@
           </a-table>
 
           <div class="activity-foot" v-show="isExpanded(a.id)">
-            <sdButton size="small" class="pill-btn">✓ Update Activity</sdButton>
+            <sdButton
+              size="small"
+              :class="['pill-btn', 'update-cat-param-btn', { 'is-dirty': isActivityDirty(a.id) }]"
+              :disabled="!isActivityDirty(a.id)"
+              :loading="updatingActivityId === a.id"
+              @click="updateCategoryParameter(a)"
+            >
+              ✓ Update Category Parameter
+            </sdButton>
           </div>
         </section>
 
@@ -169,10 +186,7 @@
             <div class="submit-card">
               <div class="sc-icon regen">↻</div>
               <div class="sc-body">
-                <div class="sc-title">Regenerate Budget</div>
-                <div class="sc-desc">
-                  Recalculate totals after updating activities or unit costs.
-                </div>
+                <div class="sc-title">Generate Budget</div>
               </div>
               <sdButton
                 class="pill-btn"
@@ -180,7 +194,7 @@
                 @click="regenerateBudget"
                 :loading="regenerating"
               >
-                Regenerate
+                Generate
               </sdButton>
             </div>
 
@@ -234,12 +248,7 @@
                 <div class="gps-label">Standard Subtotal</div>
                 <div class="gps-value">KES {{ fmt(generated.total) }}</div>
               </div>
-              <div class="gp-stat">
-                <div class="gps-label">Per Sub-County (avg)</div>
-                <div class="gps-value">
-                  KES {{ fmt(Math.round(generated.total / county.subCounties)) }}
-                </div>
-              </div>
+              
               <div class="gp-stat">
                 <div class="gps-label">Sub-Counties</div>
                 <div class="gps-value">{{ county.subCounties }}</div>
@@ -323,6 +332,7 @@ export default {
     const regenerating = ref(false);
     const submitting = ref(false);
     const generated = ref(null);
+    const countyProfileId = ref(null);
 
     const loadCategoryParameters = async () => {
       loading.value = true;
@@ -398,27 +408,140 @@ export default {
       selectedIds.value = selectedIds.value.filter((x) => x !== id);
     };
 
-    const regenerateBudget = () => {
+    const regenerateBudget = async () => {
       regenerating.value = true;
-      setTimeout(() => {
-        regenerating.value = false;
+      try {
+        // 1) Fetch the user's county profile
+        const { data: profileResp } = await axios.get('get_my_county_profile');
+
+        // 2) Reject non-county users
+        if (!profileResp || profileResp.level !== 'county') {
+          notification.error({
+            message: 'Access denied',
+            description:
+              'Only county users can generate a county budget. Your profile is not a county profile.',
+          });
+          return;
+        }
+
+        const profileId =
+          profileResp.county_profile_id || profileResp.profile?.id;
+        if (!profileId) {
+          notification.error({
+            message: 'Missing county profile',
+            description: 'Unable to determine your county profile id.',
+          });
+          return;
+        }
+        countyProfileId.value = profileId;
+
+        const financialYear = String(new Date().getFullYear());
+
+        // 3) Create the campaign budget
+        await axios.post('create_campaign_budget', {
+          county_profile_id: profileId,
+          financial_year: financialYear,
+        });
+
+        // 4) Generate the campaign budget for this county profile
+        const { data: genResp } = await axios.post(
+          `generate_campaign_budget/${profileId}`,
+        );
+
+        // The API response may be the budget object directly, or wrapped
+        // under `data` / `budget`. Normalise it before reading values.
+        const budget =
+          genResp?.grand_total != null
+            ? genResp
+            : genResp?.data?.grand_total != null
+              ? genResp.data
+              : genResp?.budget?.grand_total != null
+                ? genResp.budget
+                : genResp?.data ?? genResp ?? {};
+
+        const rawTotal = budget?.grand_total ?? budget?.total;
+        let apiTotal = rawTotal != null ? parseFloat(rawTotal) : NaN;
+
+        // Fallback: sum line_items.total_cost if grand_total is missing.
+        if (!Number.isFinite(apiTotal) && Array.isArray(budget?.line_items)) {
+          apiTotal = budget.line_items.reduce(
+            (s, li) => s + (parseFloat(li.total_cost) || 0),
+            0,
+          );
+        }
+
         generated.value = {
-          total: grandTotal.value,
+          total: Number.isFinite(apiTotal) ? apiTotal : grandTotal.value,
           date: new Date().toLocaleDateString(),
         };
-        notification.success({ message: 'County budget regenerated.' });
-      }, 500);
+
+        notification.success({ message: 'County budget generated.' });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to generate county budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        regenerating.value = false;
+      }
     };
 
-    const submitToNational = () => {
+    const submitToNational = async () => {
+      if (!countyProfileId.value) {
+        notification.error({
+          message: 'Cannot submit',
+          description: 'Please generate the county budget first.',
+        });
+        return;
+      }
       submitting.value = true;
-      setTimeout(() => {
+      try {
+        await axios.post(`submit_campaign_budget/${countyProfileId.value}`);
+        notification.success({ message: 'County budget submitted to National.' });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to submit county budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
         submitting.value = false;
-        notification.success({ message: 'County budget submitted to National (demo).' });
-      }, 500);
+      }
     };
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
+
+    // Track which activities have unsaved unit edits
+    const dirtyActivities = ref({});
+    const updatingActivityId = ref(null);
+    const isActivityDirty = (id) => !!dirtyActivities.value[id];
+
+    const onUnitsChange = (activity, record, val) => {
+      const next = Number.isFinite(Number(val)) ? Number(val) : 0;
+      record.units = next < 0 ? 0 : next;
+      dirtyActivities.value = { ...dirtyActivities.value, [activity.id]: true };
+    };
+
+    const updateCategoryParameter = async (activity) => {
+      updatingActivityId.value = activity.id;
+      try {
+        // No backend update endpoint is wired yet; persist locally and notify.
+        // When the API becomes available, send activity.items here.
+        const next = { ...dirtyActivities.value };
+        delete next[activity.id];
+        dirtyActivities.value = next;
+        notification.success({
+          message: 'Category parameter updated',
+          description: `${activity.name} totals recalculated.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to update category parameter',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        updatingActivityId.value = null;
+      }
+    };
 
     return {
       county,
@@ -442,6 +565,10 @@ export default {
       submitToNational,
       generated,
       fmt,
+      isActivityDirty,
+      onUnitsChange,
+      updateCategoryParameter,
+      updatingActivityId,
     };
   },
 };
@@ -567,6 +694,32 @@ export default {
     display: flex;
     justify-content: flex-end;
     margin-top: 10px;
+  }
+
+  .units-input {
+    width: 80px;
+  }
+
+  /* Update Category Parameter button: muted by default, green when dirty */
+  .update-cat-param-btn {
+    transition: all 0.15s ease-in-out;
+    &[disabled],
+    &.is-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    &.is-dirty {
+      background: #1f9254 !important;
+      border-color: #1f9254 !important;
+      color: #ffffff !important;
+      box-shadow: 0 1px 2px rgba(31, 146, 84, 0.25);
+      &:hover,
+      &:focus {
+        background: #167a45 !important;
+        border-color: #167a45 !important;
+        color: #ffffff !important;
+      }
+    }
   }
 
   /* Grand total panel */

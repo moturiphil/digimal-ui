@@ -32,23 +32,28 @@
 
         <!-- ════════ LEVEL 1 · County grid ════════ -->
         <template v-if="!selectedCounty">
-          <div class="card-grid four-col">
-            <div
-              v-for="c in counties"
-              :key="c.id"
-              class="drill-card"
-              @click="openCounty(c)"
-            >
-              <div class="dc-head">
-                <span class="dc-title">
-                  <span class="dc-icon">◎</span> {{ c.name }}
-                </span>
-                <span class="dc-chevron">›</span>
+          <a-spin :spinning="loadingCounties">
+            <div class="card-grid four-col">
+              <div
+                v-for="c in counties"
+                :key="c.id"
+                class="drill-card"
+                @click="openCounty(c)"
+              >
+                <div class="dc-head">
+                  <span class="dc-title">
+                    <span class="dc-icon">◎</span> {{ c.name }}
+                  </span>
+                  <span class="dc-chevron">›</span>
+                </div>
+                <div class="dc-meta">{{ (c.sub_counties || []).length }} sub-counties</div>
+                <a-tag v-if="c.stage" class="dc-stage">{{ c.stage }}</a-tag>
               </div>
-              <div class="dc-meta">{{ c.sub_counties.length }} sub-counties</div>
-              <a-tag v-if="c.stage" class="dc-stage">{{ c.stage }}</a-tag>
+              <div v-if="!loadingCounties && counties.length === 0" class="empty-hint">
+                No counties available.
+              </div>
             </div>
-          </div>
+          </a-spin>
         </template>
 
         <!-- ════════ LEVEL 2 · Budgets for the selected county ════════ -->
@@ -60,47 +65,49 @@
             <span class="lt-icon">◉</span>
             {{ selectedCounty.name }} — Budgets for Review
           </div>
-          <div class="card-grid four-col">
-            <div
-              class="drill-card"
-              :class="{ 'is-active': false, 'is-empty': !selectedCounty.county_budget }"
-              @click="openBudget(countyBudgetRecord)"
-            >
-              <div class="dc-head">
-                <span class="dc-title">
-                  <span class="dc-icon">▤</span> County Budget
-                </span>
-                <span class="dc-chevron">›</span>
-              </div>
-              <div class="dc-meta">
-                {{ selectedCounty.county_budget ? selectedCounty.county_budget.stage : 'No budget' }}
-              </div>
-              <span
-                v-if="selectedCounty.county_budget && selectedCounty.county_budget.flags"
-                class="dc-flag"
+          <a-spin :spinning="loadingDetail">
+            <div class="card-grid four-col">
+              <div
+                class="drill-card"
+                :class="{ 'is-empty': !selectedCounty.county_budget }"
+                @click="openCountyBudget()"
               >
-                {{ selectedCounty.county_budget.flags }}
-              </span>
-            </div>
-            <div
-              v-for="sc in selectedCounty.sub_counties"
-              :key="sc.id"
-              class="drill-card"
-              :class="{ 'is-empty': !sc.budget }"
-              @click="openBudget(subCountyRecord(sc))"
-            >
-              <div class="dc-head">
-                <span class="dc-title">{{ sc.name }}</span>
-                <span class="dc-chevron">›</span>
+                <div class="dc-head">
+                  <span class="dc-title">
+                    <span class="dc-icon">▤</span> County Budget
+                  </span>
+                  <span class="dc-chevron">›</span>
+                </div>
+                <div class="dc-meta">
+                  {{ selectedCounty.county_budget ? selectedCounty.county_budget.stage : 'No budget' }}
+                </div>
+                <span
+                  v-if="selectedCounty.county_budget && selectedCounty.county_budget.flags"
+                  class="dc-flag"
+                >
+                  {{ selectedCounty.county_budget.flags }}
+                </span>
               </div>
-              <div class="dc-meta">
-                {{ sc.budget ? sc.budget.stage : 'No budget' }}
+              <div
+                v-for="sc in (selectedCounty.sub_counties || [])"
+                :key="sc.id"
+                class="drill-card"
+                :class="{ 'is-empty': !sc.budget }"
+                @click="openSubCountyBudget(sc)"
+              >
+                <div class="dc-head">
+                  <span class="dc-title">{{ sc.name }}</span>
+                  <span class="dc-chevron">›</span>
+                </div>
+                <div class="dc-meta">
+                  {{ sc.budget ? sc.budget.stage : 'No budget' }}
+                </div>
+                <span v-if="sc.budget && sc.budget.flags" class="dc-flag">
+                  {{ sc.budget.flags }}
+                </span>
               </div>
-              <span v-if="sc.budget && sc.budget.flags" class="dc-flag">
-                {{ sc.budget.flags }}
-              </span>
             </div>
-          </div>
+          </a-spin>
         </template>
 
         <!-- ════════ LEVEL 3 · Single budget detail ════════ -->
@@ -171,7 +178,6 @@
             <a-collapse-panel
               v-for="cat in selectedBudget.categories"
               :key="cat.id"
-              :header="null"
             >
               <template #header>
                 <div class="cat-header">
@@ -223,21 +229,22 @@
 
           <!-- actions -->
           <div class="detail-actions">
+            <sdButton @click="downloadBudgetPDF">Download PDF</sdButton>
             <sdButton
-              v-if="selectedBudget.status === 'submitted'"
+              v-if="selectedBudget.status !== 'approved'"
               type="success"
+              :loading="approving"
               @click="approveBudget(selectedBudget)"
             >
               Approve
             </sdButton>
             <sdButton
-              v-if="selectedBudget.status === 'submitted'"
+              v-if="selectedBudget.status !== 'approved' && selectedBudget.status !== 'referred'"
               type="warning"
               @click="openReferModal(selectedBudget)"
             >
               Refer Back
             </sdButton>
-            <sdButton @click="downloadBudgetPDF">Download PDF</sdButton>
             <sdButton @click="goCountyBudgets">Back to {{ selectedCounty.name }}</sdButton>
           </div>
         </template>
@@ -265,188 +272,113 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
-import { notification } from 'ant-design-vue';
+import { computed, onMounted, ref } from 'vue';
+import { notification, message } from 'ant-design-vue';
+import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 
-/* ───────── Mock data (replace with API wiring) ───────── */
-const sampleCategories = () => [
-  {
-    id: 'stakeholder',
-    name: 'Stakeholders meeting for Sensitization',
-    total: 97200,
-    items: [
-      { id: 1, item: 'Hall Hire stakeholders and health worker training', unit_cost: 12500, days: 1, units: 1, total: 12500 },
-      { id: 2, item: 'Communication - Officers', unit_cost: 250, days: 1, units: 5, total: 1250 },
-      { id: 3, item: 'Driver lunch Allowance', unit_cost: 750, days: 1, units: 1, total: 750 },
-      { id: 4, item: 'Fuel - Vehicle', unit_cost: 30, days: 1, units: 100, total: 3000 },
-      { id: 5, item: 'Transport reimbursements - General', unit_cost: 500, days: 1, units: 50, total: 25000 },
-      { id: 6, item: 'Lunch allowance - Officers', unit_cost: 1000, days: 1, units: 55, total: 55000 },
-    ],
-  },
-  {
-    id: 'data-bundles',
-    name: 'Data Bundles for Officers Stage 1',
-    total: 5000,
-    items: [
-      { id: 1, item: 'Data Bundles', unit_cost: 500, days: 1, units: 10, total: 5000 },
-    ],
-  },
-  {
-    id: 'trainings',
-    name: 'County participation in Sub-County Stakeholder sensitization Meeting',
-    badge: '8 Sub-Counties',
-    total: 72000,
-    items: [
-      { id: 1, item: 'Participation allowance', unit_cost: 9000, days: 1, units: 8, total: 72000 },
-    ],
-  },
-];
-
-const makeBudget = (overrides = {}) => ({
-  status: 'submitted',
-  stage: 'Preparatory Stage',
-  population: 223717,
-  households: 38904,
-  wards: 5,
-  locations: 12,
-  villages: 439,
-  posts: 68,
-  nets_required: 124287,
-  nets_per_hh: 3.19,
-  cost_per_net: 2.78,
-  total_budget: 174200,
-  categories: sampleCategories(),
-  ...overrides,
-});
-
-const countiesData = [
-  {
-    id: 1, name: 'Baringo', stage: null,
-    county_budget: null,
-    sub_counties: [
-      { id: 11, name: 'Baringo Central', budget: null },
-      { id: 12, name: 'Mogotio', budget: null },
-    ],
-  },
-  {
-    id: 2, name: 'Bungoma', stage: 'County Budget: Preparatory Stage',
-    county_budget: { stage: 'Preparatory Stage', flags: null },
-    sub_counties: [
-      { id: 21, name: 'Bumula', budget: { stage: 'Preparatory Stage', flags: null } },
-      { id: 22, name: 'Cheptais', budget: null },
-      { id: 23, name: 'Kabuchai', budget: null },
-      { id: 24, name: 'Kanduyi', budget: { stage: 'Preparatory Stage', flags: 'Post Additions / Special Cases' } },
-      { id: 25, name: 'Kimilili', budget: null },
-      { id: 26, name: 'Sirisia', budget: null },
-      { id: 27, name: 'Webuye East', budget: null },
-      { id: 28, name: 'Webuye West', budget: null },
-    ],
-  },
-  {
-    id: 3, name: 'Busia', stage: null, county_budget: null,
-    sub_counties: [{ id: 31, name: 'Budalang\'i', budget: null }],
-  },
-  {
-    id: 4, name: 'Homa Bay', stage: 'County Budget: Preparatory Stage',
-    county_budget: { stage: 'Preparatory Stage' },
-    sub_counties: [{ id: 41, name: 'Homa Bay Town', budget: null }],
-  },
-  {
-    id: 5, name: 'Kakamega', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 10 }, (_, i) => ({ id: 50 + i, name: `Sub-County ${i + 1}`, budget: null })),
-  },
-  {
-    id: 6, name: 'Kericho', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 5 }, (_, i) => ({ id: 60 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 7, name: 'Kisii', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 7 }, (_, i) => ({ id: 70 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 8, name: 'Kisumu', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 3 }, (_, i) => ({ id: 80 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 9, name: 'Kwale', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 4 }, (_, i) => ({ id: 90 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 10, name: 'Migori', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 4 }, (_, i) => ({ id: 100 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 11, name: 'Nandi', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 6 }, (_, i) => ({ id: 110 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 12, name: 'Siaya', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 6 }, (_, i) => ({ id: 120 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 13, name: 'Trans Nzoia', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 5 }, (_, i) => ({ id: 130 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 14, name: 'Turkana', stage: 'County Budget: Preparatory Stage',
-    county_budget: { stage: 'Preparatory Stage' },
-    sub_counties: Array.from({ length: 7 }, (_, i) => ({ id: 140 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 15, name: 'Vihiga', stage: 'County Budget: Preparatory Stage',
-    county_budget: { stage: 'Preparatory Stage' },
-    sub_counties: Array.from({ length: 5 }, (_, i) => ({ id: 150 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-  {
-    id: 16, name: 'West Pokot', stage: null, county_budget: null,
-    sub_counties: Array.from({ length: 4 }, (_, i) => ({ id: 160 + i, name: `SC ${i + 1}`, budget: null })),
-  },
-];
+/* Map detail API response -> shape consumed by the template */
+const mapDetail = (d) => {
+  if (!d) return null;
+  const demo = d.demographics || {};
+  const sum = d.summary || {};
+  const review = d.review || {};
+  return {
+    id: d.id,
+    label: d.label || (d.admin_unit && d.admin_unit.name) || '',
+    admin_unit: d.admin_unit || null,
+    financial_year: d.financial_year,
+    status: d.status,
+    stage: d.stage,
+    flags: d.flags,
+    submitted_at: d.submitted_at,
+    submitted_by: d.submitted_by,
+    population: demo.population || 0,
+    households: demo.households || 0,
+    wards: demo.wards || 0,
+    locations: demo.locations || 0,
+    villages: demo.villages || 0,
+    posts: demo.posts || 0,
+    nets_required: sum.nets_required || 0,
+    nets_per_hh: sum.nets_per_household || 0,
+    cost_per_net: sum.cost_per_net_kes || 0,
+    total_budget: sum.total_budget_kes || 0,
+    categories: (d.categories || []).map((cat) => ({
+      id: cat.id,
+      code: cat.code,
+      name: cat.name,
+      badge: cat.badge,
+      total: cat.total_kes || 0,
+      items: (cat.parameters || []).map((p) => ({
+        id: p.id,
+        item: p.item,
+        unit_cost: p.unit_cost_kes || 0,
+        days: p.days || 0,
+        units: p.units || 0,
+        total: p.total_kes || 0,
+        source: p.source,
+        parameter_id: p.parameter_id,
+      })),
+    })),
+    can_approve: !!review.can_approve,
+    can_refer_back: !!review.can_refer_back,
+    history: review.history || [],
+  };
+};
 
 export default {
   name: 'NationalBudgetReview',
   components: { Main, RecordViewWrapper, BudgetPageWrapper },
   setup() {
-    const counties = ref(countiesData);
+    const counties = ref([]);
     const selectedCounty = ref(null);
     const selectedBudget = ref(null);
 
-    const openCategoryKeys = ref(['stakeholder']);
+    const loadingCounties = ref(false);
+    const loadingDetail = ref(false);
+
+    const openCategoryKeys = ref([]);
 
     const referModal = ref(false);
     const referring = ref(false);
     const referNote = ref('');
 
-    /* derived records for level-2 cards ------------------ */
-    const countyBudgetRecord = computed(() => {
-      if (!selectedCounty.value) return null;
-      const cb = selectedCounty.value.county_budget;
-      return cb
-        ? makeBudget({
-            id: `county-${selectedCounty.value.id}`,
-            label: 'County Budget',
-            stage: cb.stage,
-            wards: 15,
-            locations: 25,
-            villages: 1165,
-            posts: 289,
-            population: 1670570,
-            households: 342301,
-            nets_required: 927000,
-            total_budget: 174200,
-          })
-        : null;
-    });
+    /* fetch counties list -------------------------------- */
+    const fetchCounties = async () => {
+      loadingCounties.value = true;
+      try {
+        const { data } = await axios.get('get_national_budget_review_counties');
+        counties.value = (data && data.counties) || [];
+      } catch (err) {
+        message.error('Failed to load counties');
+        // eslint-disable-next-line no-console
+        console.error('get_national_budget_review_counties error:', err);
+      } finally {
+        loadingCounties.value = false;
+      }
+    };
 
-    const subCountyRecord = (sc) => {
-      if (!sc.budget) return null;
-      return makeBudget({
-        id: `sc-${sc.id}`,
-        label: sc.name,
-        stage: sc.budget.stage,
-      });
+    /* fetch one budget detail ---------------------------- */
+    const fetchBudgetDetail = async (budgetId) => {
+      if (!budgetId) return;
+      loadingDetail.value = true;
+      try {
+        const { data } = await axios.get('get_national_budget_review_detail', {
+          params: { budget_id: budgetId },
+        });
+        const mapped = mapDetail(data);
+        selectedBudget.value = mapped;
+        openCategoryKeys.value = mapped && mapped.categories.length
+          ? [mapped.categories[0].id]
+          : [];
+      } catch (err) {
+        message.error('Failed to load budget detail');
+        // eslint-disable-next-line no-console
+        console.error('get_national_budget_review_detail error:', err);
+      } finally {
+        loadingDetail.value = false;
+      }
     };
 
     /* navigation ----------------------------------------- */
@@ -454,9 +386,14 @@ export default {
       selectedCounty.value = c;
       selectedBudget.value = null;
     };
-    const openBudget = (record) => {
-      if (!record) return;
-      selectedBudget.value = record;
+    const openCountyBudget = () => {
+      const cb = selectedCounty.value && selectedCounty.value.county_budget;
+      if (!cb || !cb.id) return;
+      fetchBudgetDetail(cb.id);
+    };
+    const openSubCountyBudget = (sc) => {
+      if (!sc || !sc.budget || !sc.budget.id) return;
+      fetchBudgetDetail(sc.budget.id);
     };
     const goCounties = () => {
       selectedCounty.value = null;
@@ -476,9 +413,29 @@ export default {
     ];
 
     /* actions -------------------------------------------- */
-    const approveBudget = (record) => {
-      record.status = 'approved';
-      notification.success({ message: `Budget for ${record.label} approved.` });
+    const approving = ref(false);
+    const approveBudget = async (record) => {
+      if (!record || !record.id) {
+        notification.error({ message: 'Cannot approve: missing budget id.' });
+        return;
+      }
+      approving.value = true;
+      try {
+        await axios.post(`approve_campaign_budget/${record.id}`);
+        record.status = 'approved';
+        record.can_approve = false;
+        record.can_refer_back = false;
+        notification.success({
+          message: `Budget for ${record.label} approved.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to approve budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        approving.value = false;
+      }
     };
     const openReferModal = () => {
       referNote.value = '';
@@ -502,10 +459,18 @@ export default {
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
+    onMounted(fetchCounties);
+
+    /* kept for backward compat with template refs --------- */
+    const countyBudgetRecord = computed(() => null);
+    const subCountyRecord = () => null;
+
     return {
       counties,
       selectedCounty,
       selectedBudget,
+      loadingCounties,
+      loadingDetail,
       countyBudgetRecord,
       subCountyRecord,
       openCategoryKeys,
@@ -514,9 +479,11 @@ export default {
       referNote,
       itemColumns,
       openCounty,
-      openBudget,
+      openCountyBudget,
+      openSubCountyBudget,
       goCounties,
       goCountyBudgets,
+      approving,
       approveBudget,
       openReferModal,
       handleRefer,

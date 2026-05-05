@@ -87,6 +87,21 @@
                       <strong v-else-if="column.key === 'unit_cost'" class="bp-money">
                         KES {{ Number(p.unit_cost || 0).toLocaleString() }}
                       </strong>
+                      <span v-else-if="column.key === 'actions'">
+                        <a-button
+                          type="text"
+                          size="small"
+                          danger
+                          :loading="deletingId === p.id"
+                          class="bp-delete-btn"
+                          title="Delete parameter"
+                          @click="openDeleteModal(record, p)"
+                        >
+                          <template #icon>
+                            <DeleteOutlined />
+                          </template>
+                        </a-button>
+                      </span>
                       <span v-else>{{ p[column.dataIndex] }}</span>
                     </template>
                   </a-table>
@@ -173,19 +188,52 @@
         </div>
       </div>
     </a-modal>
+
+    <!-- Delete Parameter Confirmation Modal -->
+    <a-modal
+      v-model:visible="deleteModalVisible"
+      title="Remove Parameter"
+      ok-text="Delete"
+      cancel-text="Cancel"
+      :ok-button-props="{ danger: true }"
+      :confirm-loading="!!deletingId"
+      :closable="!deletingId"
+      :mask-closable="!deletingId"
+      @ok="confirmDeleteCategoryParameter"
+      @cancel="closeDeleteModal"
+    >
+      <p style="margin-bottom: 8px;">
+        Are you sure you want to remove this parameter from the category?
+      </p>
+      <div
+        v-if="deleteTarget.parameter"
+        style="background:#f7f9fa;border:1px solid #eef0f2;border-radius:6px;padding:10px 12px;"
+      >
+        <div style="font-weight:600;color:#1f2437;">
+          {{ deleteTarget.parameter.parameter_label || deleteTarget.parameter.parameter_key }}
+        </div>
+        <div v-if="deleteTarget.category" style="font-size:12px;color:#7a8a82;margin-top:2px;">
+          From category: <strong>{{ deleteTarget.category.category_name }}</strong>
+        </div>
+      </div>
+      <p style="margin-top:12px;color:#c0392b;font-size:12px;">
+        This action cannot be undone.
+      </p>
+    </a-modal>
   </RecordViewWrapper>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { notification } from 'ant-design-vue';
+import { DeleteOutlined } from '@ant-design/icons-vue';
 import axios from '@/Axiosconfig';
 import { Main, TableWrapper } from '../../styled';
 import { RecordViewWrapper, ActionBar, BudgetPageWrapper } from './style';
 
 export default {
   name: 'BudgetCategories',
-  components: { Main, TableWrapper, RecordViewWrapper, ActionBar, BudgetPageWrapper },
+  components: { Main, TableWrapper, RecordViewWrapper, ActionBar, BudgetPageWrapper, DeleteOutlined },
   setup() {
     const searchText = ref('');
     const typeFilter = ref(null);
@@ -217,7 +265,57 @@ export default {
       { title: 'Key', dataIndex: 'parameter_key', key: 'parameter_key', width: 240 },
       { title: 'Unit Definition', dataIndex: 'unit_definition', key: 'unit_definition' },
       { title: 'Unit Cost', dataIndex: 'unit_cost', key: 'unit_cost', width: 160 },
+      { title: '', key: 'actions', width: 60, align: 'center' },
     ];
+
+    const deletingId = ref(null);
+    const deleteModalVisible = ref(false);
+    const deleteTarget = ref({ category: null, parameter: null });
+
+    const openDeleteModal = (categoryRecord, parameter) => {
+      deleteTarget.value = { category: categoryRecord, parameter };
+      deleteModalVisible.value = true;
+    };
+
+    const closeDeleteModal = () => {
+      if (deletingId.value) return;
+      deleteModalVisible.value = false;
+      deleteTarget.value = { category: null, parameter: null };
+    };
+
+    const confirmDeleteCategoryParameter = async () => {
+      const { category, parameter } = deleteTarget.value;
+      if (!parameter || !parameter.id) return;
+      await deleteCategoryParameter(category, parameter);
+      deleteModalVisible.value = false;
+      deleteTarget.value = { category: null, parameter: null };
+    };
+
+    const deleteCategoryParameter = async (categoryRecord, parameter) => {
+      if (!parameter || !parameter.id) return;
+      deletingId.value = parameter.id;
+      try {
+        await axios.delete(`delete_category_parameter/${parameter.id}`);
+        // remove locally and update total
+        const idx = categoryRecord.parameters.findIndex(p => p.id === parameter.id);
+        if (idx !== -1) {
+          categoryRecord.parameters.splice(idx, 1);
+          categoryRecord.total_cost = categoryRecord.parameters
+            .reduce((sum, p) => sum + Number(p.unit_cost || 0), 0);
+        }
+        notification.success({
+          message: 'Parameter removed',
+          description: `"${parameter.parameter_label || parameter.parameter_key}" was removed from the category.`,
+        });
+      } catch (error) {
+        notification.error({
+          message: 'Unable to delete parameter',
+          description: error?.response?.data?.message || 'Please try again.',
+        });
+      } finally {
+        deletingId.value = null;
+      }
+    };
 
     const formatLabel = (value) => {
       if (!value) return '—';
@@ -445,6 +543,13 @@ export default {
       openLinkModal,
       closeLinkModal,
       submitLinkParameters,
+      deletingId,
+      deleteCategoryParameter,
+      deleteModalVisible,
+      deleteTarget,
+      openDeleteModal,
+      closeDeleteModal,
+      confirmDeleteCategoryParameter,
     };
   },
 };
