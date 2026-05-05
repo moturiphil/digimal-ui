@@ -6,10 +6,10 @@
         <div class="page-heading">
           <div class="ph-left">
             <h3 class="ph-title">
-              County Profile
+              {{ county.name }} County Profile
             </h3>
             <p class="ph-subtitle">
-              {{ county.name }} County — {{ county.sub_counties.length }} sub-counties
+              {{ county.sub_counties.length }} sub-counties
             </p>
           </div>
           <div class="ph-actions">
@@ -26,10 +26,6 @@
           <div class="panel-head">
             <div>
               <div class="panel-title">County Budgeting Profile</div>
-              <p class="panel-subtitle">
-                County budgeting is based on the number of sub-counties. Demographics
-                below are auto-filled from sub-county profiles.
-              </p>
             </div>
             <sdButton type="dark" @click="refreshProfile" :loading="refreshing">
               ↻ Refresh Profile

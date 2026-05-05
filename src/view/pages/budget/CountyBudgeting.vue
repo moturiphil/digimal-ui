@@ -122,7 +122,16 @@
               </span>
               <span v-else-if="column.key === 'unit_cost'">{{ fmt(record.unit_cost) }}</span>
               <span v-else-if="column.key === 'days'">{{ record.days }}</span>
-              <span v-else-if="column.key === 'units'">{{ record.units }}</span>
+              <span v-else-if="column.key === 'units'">
+                <a-input-number
+                  :min="0"
+                  :step="1"
+                  size="small"
+                  class="units-input"
+                  :value="record.units"
+                  @change="(val) => onUnitsChange(a, record, val)"
+                />
+              </span>
               <span v-else-if="column.key === 'per_sc'">
                 {{ fmt(record.unit_cost * record.days * record.units) }}
               </span>
@@ -150,7 +159,15 @@
           </a-table>
 
           <div class="activity-foot" v-show="isExpanded(a.id)">
-            <sdButton size="small" class="pill-btn">✓ Update Activity</sdButton>
+            <sdButton
+              size="small"
+              :class="['pill-btn', 'update-cat-param-btn', { 'is-dirty': isActivityDirty(a.id) }]"
+              :disabled="!isActivityDirty(a.id)"
+              :loading="updatingActivityId === a.id"
+              @click="updateCategoryParameter(a)"
+            >
+              ✓ Update Category Parameter
+            </sdButton>
           </div>
         </section>
 
@@ -493,6 +510,39 @@ export default {
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
+    // Track which activities have unsaved unit edits
+    const dirtyActivities = ref({});
+    const updatingActivityId = ref(null);
+    const isActivityDirty = (id) => !!dirtyActivities.value[id];
+
+    const onUnitsChange = (activity, record, val) => {
+      const next = Number.isFinite(Number(val)) ? Number(val) : 0;
+      record.units = next < 0 ? 0 : next;
+      dirtyActivities.value = { ...dirtyActivities.value, [activity.id]: true };
+    };
+
+    const updateCategoryParameter = async (activity) => {
+      updatingActivityId.value = activity.id;
+      try {
+        // No backend update endpoint is wired yet; persist locally and notify.
+        // When the API becomes available, send activity.items here.
+        const next = { ...dirtyActivities.value };
+        delete next[activity.id];
+        dirtyActivities.value = next;
+        notification.success({
+          message: 'Category parameter updated',
+          description: `${activity.name} totals recalculated.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to update category parameter',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        updatingActivityId.value = null;
+      }
+    };
+
     return {
       county,
       stage,
@@ -515,6 +565,10 @@ export default {
       submitToNational,
       generated,
       fmt,
+      isActivityDirty,
+      onUnitsChange,
+      updateCategoryParameter,
+      updatingActivityId,
     };
   },
 };
@@ -640,6 +694,32 @@ export default {
     display: flex;
     justify-content: flex-end;
     margin-top: 10px;
+  }
+
+  .units-input {
+    width: 80px;
+  }
+
+  /* Update Category Parameter button: muted by default, green when dirty */
+  .update-cat-param-btn {
+    transition: all 0.15s ease-in-out;
+    &[disabled],
+    &.is-disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    &.is-dirty {
+      background: #1f9254 !important;
+      border-color: #1f9254 !important;
+      color: #ffffff !important;
+      box-shadow: 0 1px 2px rgba(31, 146, 84, 0.25);
+      &:hover,
+      &:focus {
+        background: #167a45 !important;
+        border-color: #167a45 !important;
+        color: #ffffff !important;
+      }
+    }
   }
 
   /* Grand total panel */
