@@ -475,6 +475,7 @@ export default {
     const submitting = ref(false);
     const generated = ref(null);
     const countyProfileId = ref(null);
+    const campaignBudgetId = ref(null);
 
     const loadCategoryParameters = async () => {
       loading.value = true;
@@ -564,15 +565,33 @@ export default {
 
         const financialYear = String(new Date().getFullYear());
 
-        // 3) Create the campaign budget
-        await axios.post('create_campaign_budget', {
+        // 3) Create the campaign budget and capture the returned budget id
+        const { data: createResp } = await axios.post('create_campaign_budget', {
           county_profile_id: profileId,
           financial_year: financialYear,
         });
 
-        // 4) Generate the campaign budget
+        // Normalise wrapper shapes to find the new budget id.
+        const budgetId =
+          createResp?.id
+          ?? createResp?.data?.id
+          ?? createResp?.budget?.id
+          ?? createResp?.campaign_budget?.id
+          ?? createResp?.data?.budget?.id
+          ?? null;
+
+        if (!budgetId) {
+          notification.error({
+            message: 'Failed to generate sub-county budget',
+            description: 'Could not determine the campaign budget id from the server response.',
+          });
+          return;
+        }
+        campaignBudgetId.value = budgetId;
+
+        // 4) Generate the campaign budget using the budget id
         const { data: genResp } = await axios.post(
-          `generate_campaign_budget/${profileId}`,
+          `generate_campaign_budget/${budgetId}`,
         );
 
         // Normalise wrapper shapes
@@ -617,7 +636,7 @@ export default {
     };
 
     const submitToCounty = async () => {
-      if (!countyProfileId.value) {
+      if (!campaignBudgetId.value) {
         notification.error({
           message: 'Cannot submit',
           description: 'Please generate the sub-county budget first.',
@@ -626,7 +645,7 @@ export default {
       }
       submitting.value = true;
       try {
-        await axios.post(`submit_campaign_budget/${countyProfileId.value}`);
+        await axios.post(`submit_campaign_budget/${campaignBudgetId.value}`);
         notification.success({
           message: 'Sub-County budget submitted to County.',
         });
