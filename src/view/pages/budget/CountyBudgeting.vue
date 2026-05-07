@@ -10,6 +10,10 @@
           <a-tag class="stage-tag">{{ stage }}</a-tag>
         </header>
 
+        <CountyAccessGate @scope-change="onScopeChange">
+          <template #default="{ countyId: gatedId }">
+            <span v-if="gatedId" style="display:none;">{{ gatedId }}</span>
+
         <!-- Summary bar -->
         <div class="bp-summary" v-if="!loading && selectedActivities.length">
           <div class="bp-totals">
@@ -82,7 +86,7 @@
               <span v-else-if="column.key === 'days'">{{ record.days }}</span>
               <span v-else-if="column.key === 'units'">
                 <a-input-number
-                  v-if="viewMode === 'profile'"
+                  v-if="viewMode === 'profile' && !readOnly"
                   :min="0"
                   :step="1"
                   size="small"
@@ -96,7 +100,7 @@
             </template>
           </a-table>
 
-          <div class="act-foot" v-show="isExpanded(a.id) && viewMode === 'profile'">
+          <div class="act-foot" v-show="isExpanded(a.id) && viewMode === 'profile' && !readOnly">
             <sdButton
               size="small"
               :class="['pill-btn', 'save-btn', { 'is-dirty': isActivityDirty(a.id) }]"
@@ -128,6 +132,13 @@
         <!-- Action row -->
         <section v-if="!loading && selectedActivities.length" class="panel action-row">
           <a-tag
+            v-if="readOnly"
+            color="purple"
+            style="margin-right: auto; align-self: center"
+          >
+            National view — read only
+          </a-tag>
+          <a-tag
             v-if="budgetStatus === 'submitted'"
             color="blue"
             style="margin-right: auto; align-self: center"
@@ -135,7 +146,7 @@
             Submitted to National — view only
           </a-tag>
           <sdButton
-            v-if="budgetStatus !== 'submitted'"
+            v-if="!readOnly && budgetStatus !== 'submitted'"
             class="pill-btn"
             size="small"
             :loading="regenerating"
@@ -145,7 +156,7 @@
             {{ generated ? 'Generated (void to edit)' : 'Generate' }}
           </sdButton>
           <sdButton
-            v-if="budgetStatus !== 'submitted'"
+            v-if="!readOnly && budgetStatus !== 'submitted'"
             type="dark"
             size="small"
             :loading="submitting"
@@ -155,7 +166,7 @@
             Submit to National
           </sdButton>
           <a-button
-            v-if="campaignBudgetId && budgetStatus === 'draft'"
+            v-if="!readOnly && campaignBudgetId && budgetStatus === 'draft'"
             danger
             size="small"
             :loading="voiding"
@@ -196,17 +207,20 @@
           <span class="gen-val">KES {{ fmt(generated.total) }}</span>
           <span class="gen-date">{{ generated.date }}</span>
         </section>
+          </template>
+        </CountyAccessGate>
       </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 
 <script>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { notification } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
+import CountyAccessGate from './CountyAccessGate.vue';
 
 /* Sort and normalise budget categories returned by `get_budget_categories`
  * into the activity shape used by this page. Items are loaded lazily, on
@@ -303,10 +317,29 @@ const lineItemsToItems = (items) =>
 
 export default {
   name: 'CountyBudgeting',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper, CountyAccessGate },
   setup() {
+    // Level 1 (National / Super Admin) users get a read-only view across
+    // all budget pages — they can browse county / sub-county data but
+    // cannot edit, save, regenerate, submit or void.
+    const currentUser = (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem('user') || '{}');
+      } catch (e) {
+        return {};
+      }
+    })();
+    const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
+
     const county = ref({ name: 'Homa Bay', subCounties: 9 });
     const stage = ref('Preparatory Stage');
+
+    // Set by CountyAccessGate. For County officers (level 2) this is
+    // their own county; for Super Admins (level 1) it is the county the
+    // user picked from the gate's selector. The page does not load any
+    // data until this is resolved.
+    const scopedCountyId = ref(null);
+    const scopedCountyName = ref('');
 
     const loading = ref(false);
     const activityCatalog = ref([]);
@@ -351,10 +384,39 @@ export default {
     // 'generated' = read-only rows from get_budget_line_items/{id}
     const viewMode = ref('profile');
 
-    /* Resolve the user's county profile id once. Required for the new
-     * `get_category_parameters_for_profile` and update endpoints. */
+    /* Resolve the active county profile id. When the user is a County
+     * officer (level 2) we trust `get_my_county_profile`. When the user
+     * is a Super Admin (level 1), the gate provides the chosen
+     * `scopedCountyId`, and we look up the county-level profile for
+     * that county directly. */
     const resolveCountyProfile = async () => {
       try {
+        if (scopedCountyId.value) {
+          const { data } = await axios.get('get_county_profiles', {
+            params: { county_id: scopedCountyId.value, level: 'county' },
+          });
+          const rows = Array.isArray(data) ? data : data?.data || [];
+          const profile = rows[0] || null;
+          if (!profile) {
+            notification.error({
+              message: 'No county-level profile',
+              description:
+                'No county-level profile exists for the selected county. Create one in County Profile first.',
+            });
+            return null;
+          }
+          countyProfileId.value = profile.id;
+          county.value.name =
+            profile.county?.name || scopedCountyName.value || county.value.name;
+          return {
+            level: 'county',
+            county_profile_id: profile.id,
+            county_id: profile.county_id,
+            sub_county_id: null,
+            profile,
+          };
+        }
+
         const { data } = await axios.get('get_my_county_profile');
         const id = data?.county_profile_id || data?.profile?.id || null;
         if (id) countyProfileId.value = id;
@@ -375,12 +437,17 @@ export default {
       }
     };
 
-    /* Fetch the list of active budget categories. Parameters are loaded
-     * lazily via `get_category_parameters_for_profile` on expand. */
+    /* Fetch the list of active budget categories scoped to county. The
+     * BE returns categories whose scope is `county` or `both`, so a
+     * county user never sees sub-county-level categories. Parameters
+     * are loaded lazily via `get_category_parameters_for_profile` on
+     * expand. */
     const loadActivities = async () => {
       loading.value = true;
       try {
-        const { data } = await axios.get('get_budget_categories');
+        const { data } = await axios.get('get_budget_categories', {
+          params: { scope: 'county' },
+        });
         const cats = normalizePayload(data).filter(
           (c) => c.is_active === undefined || !!c.is_active,
         );
@@ -438,15 +505,65 @@ export default {
       }
     };
 
-    onMounted(async () => {
-      await resolveCountyProfile();
+    /* Bootstrap data once the gate has resolved a county. Re-runs
+     * whenever the user picks a different county. */
+    const bootstrap = async () => {
+      // Reset any prior state to avoid carrying data from another county.
+      countyProfileId.value = null;
+      campaignBudgetId.value = null;
+      budgetStatus.value = null;
+      generated.value = null;
+      viewMode.value = 'profile';
+      activityCatalog.value = [];
+      selectedIds.value = [];
+      expandedIds.value = [];
+
+      const profile = await resolveCountyProfile();
+      if (!profile) return;
       await loadActivities();
       // Prefetch parameters for every activity so totals display in the
       // collapsed headers without requiring the user to expand each one.
       await Promise.all(
         activityCatalog.value.map((a) => loadActivityParameters(a)),
       );
-    });
+
+      // Hydrate the latest non-voided budget for this profile. Without
+      // this the user starts in a "Generate" state even if a budget
+      // already exists, and re-clicking Generate inserts duplicate
+      // budgets that desync from what the National reviewer sees.
+      try {
+        const { data } = await axios.get('get_campaign_budgets', {
+          params: { county_profile_id: countyProfileId.value },
+        });
+        const rows = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+            ? data
+            : [];
+        const active = rows.find((b) => b.status !== 'voided');
+        if (active) {
+          campaignBudgetId.value = active.id;
+          budgetStatus.value = active.status;
+          if (active.status !== 'draft' || active.grand_total) {
+            generated.value = {
+              total: Number(active.grand_total) || 0,
+              date: active.submitted_at
+                ? new Date(active.submitted_at).toLocaleDateString()
+                : new Date(active.updated_at || active.created_at).toLocaleDateString(),
+            };
+            await loadBudgetLineItems(active.id);
+          }
+        }
+      } catch (e) {
+        // Non-fatal — user can still generate a fresh budget.
+      }
+    };
+
+    const onScopeChange = ({ countyId, countyName }) => {
+      scopedCountyId.value = countyId || null;
+      scopedCountyName.value = countyName || '';
+      bootstrap();
+    };
 
     const selectedActivities = computed(() =>
       selectedIds.value
@@ -548,69 +665,18 @@ export default {
       }
       regenerating.value = true;
       try {
-        // 1) Fetch the user's profile (county or sub-county scope)
-        const { data: profileResp } = await axios.get('get_my_county_profile');
-
-        // 2) Reject users without a county-scoped profile. The endpoint
-        //    may return a flat or wrapped payload. `level` may be a
-        //    string ('county') or an object ({ id, level_name }), and
-        //    sometimes only `level_id` is present.
-        const rawLevel =
-          profileResp?.level
-          ?? profileResp?.data?.level
-          ?? profileResp?.profile?.level
-          ?? profileResp?.user?.level
-          ?? null;
-        const levelId =
-          profileResp?.level_id
-          ?? profileResp?.data?.level_id
-          ?? profileResp?.profile?.level_id
-          ?? profileResp?.user?.level_id
-          ?? rawLevel?.id
-          ?? null;
-        const levelName = (
-          (typeof rawLevel === 'string' ? rawLevel : rawLevel?.level_name || rawLevel?.name)
-          || ''
-        )
-          .toString()
-          .trim()
-          .toLowerCase();
-        const hasSubCountyScope =
-          !!(profileResp?.sub_county_id
-            || profileResp?.sub_county?.id
-            || profileResp?.profile?.sub_county_id
-            || profileResp?.data?.sub_county_id
-            || profileResp?.user?.sub_county_id);
-        const isCounty = levelName
-          ? levelName === 'county'
-          : levelId != null
-            ? Number(levelId) === 2
-            : !hasSubCountyScope;
-
-        if (!profileResp || !isCounty) {
-          notification.error({
-            message: 'Access denied',
-            description:
-              'Only county users can generate a county budget. Your profile is not a county profile.',
-          });
-          return;
-        }
-
-        const profileId =
-          profileResp.county_profile_id
-          || profileResp.profile?.id
-          || profileResp?.data?.county_profile_id
-          || profileResp?.data?.id
-          || profileResp?.user?.id
-          || profileResp?.id;
-        if (!profileId) {
+        // 1) Re-resolve the active county profile (honours the gate-set
+        //    scope so a National user generating for a chosen county
+        //    targets the right profile, not their default one).
+        const profileResp = await resolveCountyProfile();
+        const profileId = countyProfileId.value;
+        if (!profileResp || !profileId) {
           notification.error({
             message: 'Missing county profile',
-            description: 'Unable to determine your county profile id.',
+            description: 'Unable to determine the county profile to generate for.',
           });
           return;
         }
-        countyProfileId.value = profileId;
 
         const financialYear = String(new Date().getFullYear());
 
@@ -842,6 +908,8 @@ export default {
       county,
       stage,
       loading,
+      readOnly,
+      onScopeChange,
       isExpanded,
       toggleExpanded,
       expandAll,

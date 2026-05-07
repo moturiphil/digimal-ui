@@ -18,6 +18,9 @@
             </p>
           </div>
           <div class="ph-actions">
+            <a-tag v-if="readOnly" color="purple" style="margin-right: 8px">
+              National view — read only
+            </a-tag>
             <a-breadcrumb separator=">" class="review-crumbs">
               <a-breadcrumb-item>
                 <a href="javascript:;" @click="goSubCounties">{{ scopedCountyName || 'County' }}</a>
@@ -206,7 +209,7 @@
                 <!-- actions -->
                 <div class="detail-actions">
                   <sdButton
-                    v-if="selectedBudget.can_approve"
+                    v-if="!readOnly && selectedBudget.can_approve"
                     type="success"
                     @click="approveBudget(selectedBudget)"
                     :loading="approving"
@@ -214,7 +217,7 @@
                     Approve
                   </sdButton>
                   <sdButton
-                    v-if="selectedBudget.can_refer_back"
+                    v-if="!readOnly && selectedBudget.can_refer_back"
                     type="warning"
                     @click="openReferModal(selectedBudget)"
                   >
@@ -233,7 +236,7 @@
 
         <!-- Refer Back Modal -->
         <a-modal
-          v-model:open="referModal"
+          v-model:visible="referModal"
           title="Refer Budget Back"
           @ok="handleRefer"
           ok-text="Send Referral"
@@ -314,6 +317,17 @@ export default {
   name: 'CountyBudgets',
   components: { Main, RecordViewWrapper, BudgetPageWrapper, CountyAccessGate },
   setup() {
+    // Level 1 (National / Super Admin) users can review but not approve
+    // or refer back — those actions are county-officer only.
+    const currentUser = (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem('user') || '{}');
+      } catch (e) {
+        return {};
+      }
+    })();
+    const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
+
     const scopedCountyId = ref(null);
     const scopedCountyName = ref('');
 
@@ -469,6 +483,7 @@ export default {
     return {
       scopedCountyId,
       scopedCountyName,
+      readOnly,
       subCounties,
       countyBudget,
       selectedBudget,
