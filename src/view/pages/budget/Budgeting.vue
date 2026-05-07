@@ -80,8 +80,10 @@
                 </a-tag>
               </span>
               <span v-else-if="column.key === 'unit_cost'">{{ fmt(record.unit_cost) }}</span>
+              <span v-else-if="column.key === 'days'">{{ record.days }}</span>
               <span v-else-if="column.key === 'units'">
                 <a-input-number
+                  v-if="viewMode === 'profile'"
                   :min="0"
                   :step="1"
                   size="small"
@@ -89,12 +91,13 @@
                   :value="record.units"
                   @change="(val) => onUnitsChange(a, record, val)"
                 />
+                <span v-else>{{ fmt(record.units) }}</span>
               </span>
               <span v-else-if="column.key === 'total'">{{ fmt(rowTotal(record)) }}</span>
             </template>
           </a-table>
 
-          <div class="act-foot" v-show="isExpanded(a.id)">
+          <div class="act-foot" v-show="isExpanded(a.id) && viewMode === 'profile'">
             <sdButton
               size="small"
               :class="['pill-btn', 'save-btn', { 'is-dirty': isActivityDirty(a.id) }]"
@@ -125,16 +128,25 @@
 
         <!-- Action row -->
         <section v-if="!loading && selectedActivities.length" class="panel action-row">
+          <a-tag
+            v-if="budgetStatus === 'submitted'"
+            color="blue"
+            style="margin-right: auto; align-self: center"
+          >
+            Submitted to County — view only
+          </a-tag>
           <sdButton
+            v-if="budgetStatus !== 'submitted'"
             class="pill-btn"
             size="small"
             :loading="regenerating"
-            :disabled="zeroUnitCount > 0 && !zeroConfirmed"
+            :disabled="(zeroUnitCount > 0 && !zeroConfirmed) || generated"
             @click="regenerateBudget"
           >
-            {{ generated ? 'Regenerate' : 'Generate' }}
+            {{ generated ? 'Generated (void to edit)' : 'Generate' }}
           </sdButton>
           <sdButton
+            v-if="budgetStatus !== 'submitted'"
             type="dark"
             size="small"
             :loading="submitting"
@@ -143,7 +155,41 @@
           >
             Submit to County
           </sdButton>
+          <a-button
+            v-if="campaignBudgetId && budgetStatus === 'draft'"
+            danger
+            size="small"
+            :loading="voiding"
+            @click="openVoidModal"
+          >
+            Void
+          </a-button>
         </section>
+
+        <!-- Void modal -->
+        <a-modal
+          v-model:visible="voidModalOpen"
+          title="Void this budget"
+          :ok-text="voiding ? 'Voiding…' : 'Void budget'"
+          ok-type="danger"
+          :ok-button-props="{ loading: voiding, disabled: voidReason.trim().length < 10 }"
+          :confirm-loading="voiding"
+          cancel-text="Cancel"
+          @ok="confirmVoid"
+        >
+          <p style="margin-bottom: 8px">
+            Voiding is permanent. The budget will be discarded so a new draft
+            can be created for this sub-county. Provide a reason (minimum 10
+            characters) for the audit trail.
+          </p>
+          <a-textarea
+            v-model:value="voidReason"
+            :rows="4"
+            :maxlength="500"
+            placeholder="e.g. Unit costs were misconfigured; restarting with corrected rates."
+            show-count
+          />
+        </a-modal>
 
         <!-- Generated banner -->
         <section v-if="generated" class="panel gen-banner">
@@ -197,23 +243,65 @@ const categoriesToActivities = (cats) =>
     }));
 
 /* Convert the parameters array returned by `get_category_parameters_for_profile`
- * into row items consumed by the activity table. */
-const paramsToItems = (params) =>
-  (params || []).map((p) => ({
-    category_parameter_profile_id: p.category_parameter_profile_id || null,
-    category_parameter_id: p.category_parameter_id,
-    parameter_id: p.parameter_id,
-    parameter_key: p.parameter_key,
-    description: p.parameter_label,
-    item: p.parameter_label,
-    tag: p.unit_definition,
-    unit_cost: Number(p.unit_cost) || 0,
-    units: p.total_units == null ? 0 : Number(p.total_units),
-    total_cost: Number(p.total_cost) || 0,
-    unit_source: p.unit_source || 'not_set',
-    resolved_from: p.resolved_from || null,
-    highlight: /fuel/i.test(p.parameter_key || ''),
-  }));
+ * into row items consumed by the activity table.
+ *
+ * Initial state: every row starts at 0 units and KES 0 total. The user enters
+ * units in the grid, the row total auto-calculates as
+ *   total_cost = unit_cost × number_of_days × units
+ * which is the exact same formula `BudgetCalculationService` uses at
+ * generation time, so the pre-generation subtotal always equals the
+ * Generated Total. */
+const paramsToItems = (params, activity) => {
+  const daysOf = (p) =>
+    Number(p.number_of_days) || Number(activity?.default_days) || 1;
+  return (params || []).map((p) => {
+    const u = Number(p.total_units) || 0;
+    const d = daysOf(p);
+    const cost = Number(p.unit_cost) || 0;
+    return {
+      category_parameter_profile_id: p.category_parameter_profile_id || null,
+      category_parameter_id: p.category_parameter_id,
+      parameter_id: p.parameter_id,
+      parameter_key: p.parameter_key,
+      description: p.parameter_label,
+      item: p.parameter_label,
+      tag: p.unit_definition,
+      unit_cost: cost,
+      days: d,
+      units: u,
+      total_cost: cost * d * u,
+      unit_source: p.unit_source || 'not_set',
+      highlight: /fuel/i.test(p.parameter_key || ''),
+    };
+  });
+};
+
+/* Convert generated `line_items` (from `get_budget_line_items/{id}`) into
+ * row items consumed by the activity table. These rows are read-only
+ * and reflect the canonical, server-generated breakdown. */
+const lineItemsToItems = (items) =>
+  (items || [])
+    .slice()
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+    .map((li) => ({
+      category_parameter_profile_id: null,
+      category_parameter_id: li.id,
+      parameter_id: li.budget_parameter_id,
+      parameter_key: li?.budget_parameter?.key || null,
+      description: li.label,
+      item: li.label,
+      tag: li.unit_definition,
+      unit_cost: Number(li.unit_cost) || 0,
+      days: Number(li.number_of_days) || 1,
+      units: Number(li.unit_count) || 0,
+      total_cost: Number(li.total_cost) || 0,
+      unit_source: 'override',
+      resolved_from: null,
+      sort_order: li.sort_order,
+      is_special_cost: !!li.is_special_cost,
+      special_type: li.special_type || null,
+      highlight: false,
+    }));
 
 /* Resolve the active sub-county from session or route. */
 const resolveSubCounty = () => {
@@ -276,6 +364,15 @@ export default {
     const generated = ref(null);
     const countyProfileId = ref(null);
     const campaignBudgetId = ref(null);
+    // Tracks lifecycle state of the active campaign budget so the action row
+    // can lock the appropriate buttons:
+    //   null       — no budget yet, user is editing units
+    //   'draft'    — created/generated, can void and submit
+    //   'submitted'— sent upstream, view-only (no void, no regenerate)
+    const budgetStatus = ref(null);
+    // 'profile' = editable rows from get_category_parameters_for_profile
+    // 'generated' = read-only rows from get_budget_line_items/{id}
+    const viewMode = ref('profile');
 
     /* Resolve the user's profile id (sub-county scope). Required for the
      * new `get_category_parameters_for_profile` and update endpoints. */
@@ -342,7 +439,11 @@ export default {
           },
         );
         const payload = data?.data || data || {};
-        activity.items = paramsToItems(payload.parameters);
+        if (payload.category) {
+          activity.default_days =
+            Number(payload.category.default_days || activity.default_days);
+        }
+        activity.items = paramsToItems(payload.parameters, activity);
         activity.total_parameters = Number(payload.total_parameters || 0);
         activity.set_count = Number(payload.set_count || 0);
         activity.fallback_count = Number(payload.fallback_count || 0);
@@ -381,8 +482,12 @@ export default {
     );
 
     const rowTotal = (r) => {
-      if (r && r.total_cost != null && r.total_cost !== 0) return r.total_cost;
-      return (Number(r.unit_cost) || 0) * (Number(r.units) || 0);
+      if (r && Number(r.total_cost) > 0) return Number(r.total_cost);
+      return (
+        (Number(r.unit_cost) || 0)
+        * (Number(r.days) || 1)
+        * (Number(r.units) || 0)
+      );
     };
     const activityTotal = (a) =>
       (a.items || []).reduce((s, i) => s + rowTotal(i), 0);
@@ -427,11 +532,45 @@ export default {
       { title: 'Description', key: 'description', dataIndex: 'description' },
       { title: 'Budget Item', key: 'item', dataIndex: 'item' },
       { title: 'Unit Cost', key: 'unit_cost', align: 'right', width: 120 },
+      { title: 'Days', key: 'days', align: 'right', width: 70 },
       { title: 'Units', key: 'units', align: 'right', width: 110 },
       { title: 'Total (KES)', key: 'total', align: 'right', width: 140 },
     ];
 
+    /* Refresh activity tables from the canonical generated breakdown. */
+    const loadBudgetLineItems = async (budgetId) => {
+      if (!budgetId) return null;
+      try {
+        const { data } = await axios.get(`get_budget_line_items/${budgetId}`);
+        const payload = data?.data || data || {};
+        const map = payload.line_items || {};
+        activityCatalog.value.forEach((a) => {
+          const items = map[String(a.id)];
+          if (Array.isArray(items)) {
+            a.items = lineItemsToItems(items);
+            a.itemsLoaded = true;
+          }
+        });
+        viewMode.value = 'generated';
+        return payload;
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load generated line items',
+          description: err?.response?.data?.message || err.message,
+        });
+        return null;
+      }
+    };
+
     const regenerateBudget = async () => {
+      if (generated.value) {
+        notification.warning({
+          message: 'Budget already generated',
+          description:
+            'Void the current budget first if you need to make changes and regenerate.',
+        });
+        return;
+      }
       regenerating.value = true;
       try {
         // 1) Fetch the user's profile (county or sub-county scope)
@@ -483,6 +622,11 @@ export default {
           return;
         }
         campaignBudgetId.value = budgetId;
+        budgetStatus.value =
+          createResp?.status
+          ?? createResp?.data?.status
+          ?? createResp?.budget?.status
+          ?? 'draft';
 
         // 4) Generate the campaign budget using the budget id
         const { data: genResp } = await axios.post(
@@ -520,6 +664,9 @@ export default {
           date: new Date().toLocaleDateString(),
         };
 
+        // Refresh tables with the canonical generated breakdown.
+        await loadBudgetLineItems(budgetId);
+
         notification.success({ message: 'Sub-County budget generated.' });
       } catch (err) {
         notification.error({
@@ -542,6 +689,7 @@ export default {
       submitting.value = true;
       try {
         await axios.post(`submit_campaign_budget/${campaignBudgetId.value}`);
+        budgetStatus.value = 'submitted';
         notification.success({
           message: 'Sub-County budget submitted to County.',
         });
@@ -552,6 +700,64 @@ export default {
         });
       } finally {
         submitting.value = false;
+      }
+    };
+
+    /* Void the active campaign budget so a new draft can be created.
+     * Backend allows voiding from `draft` or `submitted` state only and
+     * requires a reason of at least 10 characters. */
+    const voidModalOpen = ref(false);
+    const voidReason = ref('');
+    const voiding = ref(false);
+
+    const openVoidModal = () => {
+      voidReason.value = '';
+      voidModalOpen.value = true;
+    };
+
+    const confirmVoid = async () => {
+      if (!campaignBudgetId.value) {
+        notification.error({
+          message: 'Cannot void',
+          description: 'No active sub-county budget to void.',
+        });
+        return;
+      }
+      const reason = voidReason.value.trim();
+      if (reason.length < 10) {
+        notification.error({
+          message: 'Reason too short',
+          description: 'Please provide at least 10 characters explaining why this budget is being voided.',
+        });
+        return;
+      }
+      voiding.value = true;
+      try {
+        await axios.post(`void_campaign_budget/${campaignBudgetId.value}`, {
+          voided_reason: reason,
+        });
+        notification.success({
+          message: 'Sub-County budget voided',
+          description: 'You can now generate a new draft for this sub-county.',
+        });
+        // Reset local state so the page returns to the editable view and a
+        // fresh budget can be generated.
+        campaignBudgetId.value = null;
+        budgetStatus.value = null;
+        generated.value = null;
+        viewMode.value = 'profile';
+        voidModalOpen.value = false;
+        voidReason.value = '';
+        await Promise.all(
+          activityCatalog.value.map((a) => loadActivityParameters(a)),
+        );
+      } catch (err) {
+        notification.error({
+          message: 'Failed to void sub-county budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        voiding.value = false;
       }
     };
 
@@ -577,20 +783,21 @@ export default {
       const next = Number.isFinite(Number(val)) ? Number(val) : 0;
       record.units = next < 0 ? 0 : next;
       // Recompute total_cost so the table totals reflect the edit immediately
-      record.total_cost = (Number(record.unit_cost) || 0) * (Number(record.units) || 0);
+      record.total_cost =
+        (Number(record.unit_cost) || 0)
+        * (Number(record.days) || 1)
+        * (Number(record.units) || 0);
       record._dirty = true;
       dirtyActivities.value = { ...dirtyActivities.value, [activity.id]: true };
     };
 
-    /* Persist edited unit values for one activity. The backend exposes
-     * `update_category_parameter_profile/{id}` with a body of
-     * `{ total_units }` for both updates and (auto-)creates. */
-    const saveRowProfile = (row) =>
-      axios.put(
-        `update_category_parameter_profile/${row.category_parameter_profile_id}`,
-        { total_units: Number(row.units) || 0 },
-      );
-
+    /* Persist edited unit values for one activity in a single batch call.
+     * `save_category_parameter_profiles` upserts by composite
+     * (category_parameter_id, county_profile_id) so it works for rows that
+     * have never been materialised — which is the common case for
+     * `unit_source: 'not_set'` parameters. The endpoint returns the refreshed
+     * list with newly-assigned `category_parameter_profile_id`s so subsequent
+     * edits resolve correctly. */
     const updateCategoryParameter = async (activity) => {
       if (!countyProfileId.value) {
         notification.error({
@@ -602,23 +809,21 @@ export default {
       const dirtyRows = (activity.items || []).filter((r) => r._dirty);
       if (!dirtyRows.length) return;
 
-      // Quietly skip rows that genuinely have no profile id; they'll be
-      // picked up after a refetch if the backend auto-creates them.
-      const saveable = dirtyRows.filter((r) => r.category_parameter_profile_id);
-      if (saveable.length < dirtyRows.length) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[updateCategoryParameter] skipping rows without profile id',
-          dirtyRows.filter((r) => !r.category_parameter_profile_id),
-        );
-      }
-
       updatingActivityId.value = activity.id;
       try {
-        await Promise.all(saveable.map(saveRowProfile));
+        await axios.post('save_category_parameter_profiles', {
+          county_profile_id: countyProfileId.value,
+          category_id: activity.id,
+          parameters: dirtyRows.map((r) => ({
+            category_parameter_id: r.category_parameter_id,
+            total_units: Number(r.units) || 0,
+          })),
+        });
         const next = { ...dirtyActivities.value };
         delete next[activity.id];
         dirtyActivities.value = next;
+        // Refresh from the server so each row gets its newly-assigned
+        // category_parameter_profile_id and unit_source flags.
         await loadActivityParameters(activity);
         notification.success({
           message: 'Category parameter updated',
@@ -664,6 +869,14 @@ export default {
       zeroUnitCount,
       zeroConfirmed,
       rowClass,
+      viewMode,
+      campaignBudgetId,
+      budgetStatus,
+      voidModalOpen,
+      voidReason,
+      voiding,
+      openVoidModal,
+      confirmVoid,
     };
   },
 };
