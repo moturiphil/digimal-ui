@@ -519,8 +519,8 @@ const createCampaignRoles = [53, 5];
 const viewCampaignRoles = [
   53
 ];
-const createEventRoles = [53, 
-// 5, 3, 21, 37, 39, 22, 36
+const createEventRoles = [53, 37,
+// 5, 3, 21, 39, 22, 36
 ];
 
 const viewEventRoles = [

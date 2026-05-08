@@ -26,6 +26,7 @@ export const PROCUREMENT_VIEW_ROLES = compact([
 export const PROCUREMENT_MANAGE_ROLES = compact([
   PROCUREMENT_ROLES.SUPER_ADMIN,
   PROCUREMENT_ROLES.PROCUREMENT_OFFICER,
+  PROCUREMENT_ROLES.SCMCC,
 ]);
 
 // Roles that can toggle (activate / deactivate) a vendor.
@@ -34,7 +35,8 @@ export const PROCUREMENT_APPROVE_ROLES = compact([
   PROCUREMENT_ROLES.SCMCC,
 ]);
 
-// Only super admin can hard-delete a vendor.
+// Roles that can hard-delete a vendor.
 export const PROCUREMENT_DELETE_ROLES = compact([
   PROCUREMENT_ROLES.SUPER_ADMIN,
+  PROCUREMENT_ROLES.SCMCC,
 ]);
