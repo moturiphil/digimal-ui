@@ -8,17 +8,19 @@
 export const PROCUREMENT_ROLES = Object.freeze({
   SUPER_ADMIN: 53,
   SCMCC: 37,
+  CMCC: 21,
   ACCOUNTANT: 4,
   PROCUREMENT_OFFICER: 86,
 });
 
 const compact = (ids) => ids.filter((id) => id !== null && id !== undefined);
 
-// All four procurement-aware roles can view the module.
+// All five procurement-aware roles can view the module.
 export const PROCUREMENT_VIEW_ROLES = compact([
   PROCUREMENT_ROLES.SUPER_ADMIN,
   PROCUREMENT_ROLES.PROCUREMENT_OFFICER,
   PROCUREMENT_ROLES.SCMCC,
+  PROCUREMENT_ROLES.CMCC,
   PROCUREMENT_ROLES.ACCOUNTANT,
 ]);
 
@@ -27,16 +29,19 @@ export const PROCUREMENT_MANAGE_ROLES = compact([
   PROCUREMENT_ROLES.SUPER_ADMIN,
   PROCUREMENT_ROLES.PROCUREMENT_OFFICER,
   PROCUREMENT_ROLES.SCMCC,
+  PROCUREMENT_ROLES.CMCC,
 ]);
 
 // Roles that can toggle (activate / deactivate) a vendor.
 export const PROCUREMENT_APPROVE_ROLES = compact([
   PROCUREMENT_ROLES.SUPER_ADMIN,
   PROCUREMENT_ROLES.SCMCC,
+  PROCUREMENT_ROLES.CMCC,
 ]);
 
 // Roles that can hard-delete a vendor.
 export const PROCUREMENT_DELETE_ROLES = compact([
   PROCUREMENT_ROLES.SUPER_ADMIN,
   PROCUREMENT_ROLES.SCMCC,
+  PROCUREMENT_ROLES.CMCC,
 ]);

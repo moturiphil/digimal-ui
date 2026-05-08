@@ -588,7 +588,7 @@ const AddNew = defineComponent({
     // Procurement: LSO/LPO picker visible to SCMCC + Super Admin
     const userRoleId = user?.user?.role_id ?? user?.user?.role ?? null;
     const showProcurementSection = computed(() =>
-      [PROCUREMENT_ROLES.SCMCC, PROCUREMENT_ROLES.SUPER_ADMIN].includes(Number(userRoleId))
+      [PROCUREMENT_ROLES.SCMCC, PROCUREMENT_ROLES.CMCC, PROCUREMENT_ROLES.SUPER_ADMIN].includes(Number(userRoleId))
     );
 
     const openLsos = ref([]);
