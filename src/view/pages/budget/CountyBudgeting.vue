@@ -331,7 +331,7 @@ export default {
     })();
     const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
 
-    const county = ref({ name: 'Homa Bay', subCounties: 9 });
+    const county = ref({ name: '', subCounties: 9 });
     const stage = ref('Preparatory Stage');
 
     // Set by CountyAccessGate. For County officers (level 2) this is

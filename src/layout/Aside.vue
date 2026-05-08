@@ -118,6 +118,14 @@
           <router-link to="/budget/locations"> Locations </router-link>
         </a-menu-item> -->
       </a-sub-menu>
+      <a-sub-menu key="procurement" v-if="canViewVendors">
+        <template v-slot:title>
+          <sdFeatherIcons type="briefcase" /><span>Procurement</span>
+        </template>
+        <a-menu-item key="procurementVendors">
+          <router-link to="/procurement/vendors">Vendors</router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder && canCreateCampaign">
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
@@ -501,6 +509,7 @@ import VueTypes from "vue-types";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import { fetchUserData, hasRole } from "../services/user-role";
+import { useProcurementPermissions } from "@/services/procurement/usePermissions";
 
 const adminRoles = [53];
 const aieHolderRoles = [1];
@@ -648,6 +657,7 @@ export default defineComponent({
     const canAccessBudgeting = computed(
       () => !isCommunityHealthWorker.value && !!role_id.value
     );
+    const { canViewVendors } = useProcurementPermissions();
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -728,6 +738,7 @@ export default defineComponent({
       isAIEHolder,
       isCommunityHealthWorker,
       canAccessBudgeting,
+      canViewVendors,
       canViewCampaign,
       canCreateEvent,
       canViewEvent,
