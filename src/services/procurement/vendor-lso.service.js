@@ -26,9 +26,8 @@ class VendorLsoService {
 
   create(vendorId, payload) {
     const fd = payload instanceof FormData ? payload : buildFormData(payload);
-    return axios.post(`create_vendor_lso/${vendorId}`, fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    // Let axios attach `multipart/form-data; boundary=…` automatically.
+    return axios.post(`create_vendor_lso/${vendorId}`, fd);
   }
 
   /**
@@ -37,9 +36,7 @@ class VendorLsoService {
    */
   update(vendorId, lsoId, payload) {
     const fd = payload instanceof FormData ? payload : buildFormData(payload);
-    return axios.post(`update_vendor_lso/${vendorId}/${lsoId}`, fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return axios.post(`update_vendor_lso/${vendorId}/${lsoId}`, fd);
   }
 
   destroy(vendorId, lsoId) {

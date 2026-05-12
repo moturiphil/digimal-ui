@@ -26,9 +26,10 @@ class VendorService {
    */
   create(payload) {
     const fd = payload instanceof FormData ? payload : VendorService.toFormData(payload);
-    return axios.post('create_vendor', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    // NOTE: do NOT set Content-Type manually — axios needs to generate the
+    // `multipart/form-data; boundary=…` header itself, otherwise Laravel
+    // cannot parse the body and file uploads (PDFs etc.) are dropped.
+    return axios.post('create_vendor', fd);
   }
 
   /**
@@ -47,9 +48,8 @@ class VendorService {
   updateWithFile(id, payload) {
     const fd = payload instanceof FormData ? payload : VendorService.toFormData(payload);
     fd.append('_method', 'PUT');
-    return axios.post(`update_vendor/${id}`, fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    // See note in create() — let axios set the multipart boundary header.
+    return axios.post(`update_vendor/${id}`, fd);
   }
 
   destroy(id) {
