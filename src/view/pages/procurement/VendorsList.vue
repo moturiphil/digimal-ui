@@ -246,14 +246,13 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useStore } from 'vuex';
 import { Main } from '../../styled';
 import VendorFormModal from './VendorFormModal.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { ProcurementPageWrapper } from './style';
 
-let searchTimer = null;
 const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
 export default {
@@ -262,6 +261,10 @@ export default {
   setup() {
     const store = useStore();
     const permissions = useProcurementPermissions();
+
+    // Scoped per-instance so debounce timers don't leak across components
+    // or fire after unmount.
+    let searchTimer = null;
 
     const filters = reactive({
       search: '',
@@ -388,6 +391,13 @@ export default {
     onMounted(() => {
       store.dispatch('procurement/fetchCounties');
       dispatchFetch({ page: 1 });
+    });
+
+    onBeforeUnmount(() => {
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+        searchTimer = null;
+      }
     });
 
     return {

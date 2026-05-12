@@ -133,11 +133,14 @@ const actions = {
     commit('setLoading', true);
     commit('setError', null);
     try {
+      // Strip UI-only keys (camelCase `perPage`/`page`) before merging so they
+      // are not forwarded as query params alongside the snake_case versions.
+      const { perPage: _perPage, page: _page, ...restOverrides } = overrides;
       const params = {
         page: overrides.page || state.pagination.page,
         per_page: overrides.perPage || state.pagination.perPage,
         ...state.filters,
-        ...overrides,
+        ...restOverrides,
       };
       // strip null/empty
       Object.keys(params).forEach((k) => {

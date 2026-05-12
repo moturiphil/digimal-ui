@@ -285,7 +285,7 @@
                         <p class="pb-hint">
                           <span v-if="lsoLoading">Loading open LSO/LPOs…</span>
                           <span v-else-if="openLsosTotal > 0">
-                            Showing {{ openLsos.length }} of {{ openLsosTotal }} open LSO/LPOs — filtered by the selected event type and date.
+                            Showing {{ openLsos.length }} of {{ openLsosTotal }} open LSO/LPOs available for linking.
                           </span>
                           <span v-else>No open LSO/LPOs found. Procurement must register one before linking it here.</span>
                         </p>
@@ -347,7 +347,7 @@
                     <!-- /Schedule & Venue -->
 
                     <div class="event-actions">
-                      <router-link to="/crud/axios-view" class="btn-cancel">Cancel</router-link>
+                      <router-link to="/events/gf" class="btn-cancel">Cancel</router-link>
                       <sdButton
                         size="default"
                         htmlType="Save"
