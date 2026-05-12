@@ -188,7 +188,7 @@
                     <a-input-number v-model:value="form.estimated_households" :disabled="!editing" :min="0" style="width:100%;" />
                   </a-form-item>
                 </a-col>
-                <a-col :sm="12" :xs="24">
+                <!-- <a-col :sm="12" :xs="24">
                   <a-form-item>
                     <template #label>
                       Estimated LLINs
@@ -209,7 +209,7 @@
                     </template>
                     <a-input-number v-model:value="form.number_of_bales" :disabled="!editing" :min="0" style="width:100%;" />
                   </a-form-item>
-                </a-col>
+                </a-col> -->
               </a-row>
             </div>
 
