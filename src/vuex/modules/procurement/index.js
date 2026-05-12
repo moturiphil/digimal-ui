@@ -181,7 +181,8 @@ const actions = {
       notification.success({ message: 'Vendor created' });
       return vendor;
     } catch (err) {
-      notification.error({ message: 'Unable to create vendor', description: errMessage(err) });
+      // Re-throw so the caller (form modal) can surface the exact API error
+      // alongside per-field validation messages.
       throw err;
     } finally {
       commit('setSaving', false);
@@ -200,7 +201,6 @@ const actions = {
       notification.success({ message: 'Vendor updated' });
       return vendor;
     } catch (err) {
-      notification.error({ message: 'Unable to update vendor', description: errMessage(err) });
       throw err;
     } finally {
       commit('setSaving', false);

@@ -50,13 +50,34 @@
               </a-col>
               <a-col :span="12">
                 <a-form-item
+                  label="Method of Procurement"
+                  :validate-status="errors.method_of_procurement ? 'error' : ''"
+                  :help="errors.method_of_procurement"
+                >
+                  <a-select
+                    v-model:value="form.method_of_procurement"
+                    placeholder="Select method of procurement"
+                    @change="onMethodChange"
+                  >
+                    <a-select-option value="rfq">Request for Quotation (RFQ)</a-select-option>
+                    <a-select-option value="direct">Direct</a-select-option>
+                  </a-select>
+                </a-form-item>
+              </a-col>
+            </a-row>
+
+            <a-row v-if="form.method_of_procurement === 'direct'" :gutter="16">
+              <a-col :span="12">
+                <a-form-item
                   label="Category"
                   :validate-status="errors.category ? 'error' : ''"
                   :help="errors.category"
                 >
                   <a-select v-model:value="form.category" placeholder="Select category">
-                    <a-select-option value="private">Private</a-select-option>
                     <a-select-option value="public">Public</a-select-option>
+                    <a-select-option value="fbo">Faith-Based Organization (FBO)</a-select-option>
+                    <a-select-option value="cbo">Community-Based Organization (CBO)</a-select-option>
+                    <a-select-option value="ngo">Non-Governmental Organization (NGO)</a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -272,18 +293,17 @@
             </button>
           </div>
 
-          <!-- Section: LSO / LPO (create-mode only) -->
+          <!-- Section: LSO / LPO (create-mode only, always required) -->
           <div v-if="!isEdit" class="vm-section">
-            <label class="lso-toggle" :class="{ 'is-on': form.attach_lso }">
-              <a-checkbox v-model:checked="form.attach_lso">
-                <span class="lso-toggle-label">Attach LSO/LPO details for this vendor</span>
-              </a-checkbox>
-              <span class="lso-toggle-hint">
-                Captures the order issued to this vendor, used downstream for payment processing.
-              </span>
-            </label>
+            <h4 class="vm-section-title">
+              <span class="vm-dot"></span> LSO/LPO details
+              <span class="vm-section-tag">Required</span>
+            </h4>
+            <p class="vm-section-hint">
+              Captures the order issued to this vendor, used downstream for payment processing.
+            </p>
 
-            <div v-if="form.attach_lso" class="lso-fields">
+            <div class="lso-fields">
               <a-row :gutter="16">
                 <a-col :span="12">
                   <a-form-item
@@ -330,7 +350,7 @@
                 />
               </a-form-item>
               <a-form-item
-                label="Scanned LSO/LPO document (PDF/JPG/PNG, optional)"
+                label="Scanned LSO/LPO document (PDF/JPG/PNG)"
                 :validate-status="errors['lsos.0.file'] ? 'error' : ''"
                 :help="errors['lsos.0.file']"
               >
@@ -340,6 +360,7 @@
                   :max-count="1"
                   accept=".pdf,.jpg,.jpeg,.png"
                   @remove="clearLsoFile"
+                  :class="{ 'has-error': errors['lsos.0.file'] }"
                 >
                   <sdButton class="upload-btn">
                     <sdFeatherIcons type="upload" size="13" /> Choose File
@@ -391,6 +412,7 @@ const blankBankAccount = (isPrimary = false) => ({
 
 const blankForm = () => ({
   name: '',
+  method_of_procurement: null,
   category: null,
   physical_address: '',
   county_id: null,
@@ -399,7 +421,6 @@ const blankForm = () => ({
   tax_certificate_expiry: null,
   tax_compliance_certificate: null, // File
   bank_accounts: [blankBankAccount(true)],
-  attach_lso: false,
   lso: {
     lso_number: '',
     issue_date: null,
@@ -450,6 +471,7 @@ export default {
       resetForm();
       if (!v) return;
       form.name = v.name || '';
+      form.method_of_procurement = v.method_of_procurement || null;
       form.category = v.category || null;
       form.physical_address = v.physical_address || '';
       form.county_id = v.county_id || v.county?.id || null;
@@ -490,6 +512,18 @@ export default {
     const onCountyChange = (id) => {
       form.subcounty_id = null;
       if (id) store.dispatch('procurement/fetchSubcounties', { countyId: id });
+    };
+
+    const onMethodChange = (val) => {
+      // RFQ vendors are all treated as 'private' on the backend
+      // (KRA/tax compliance branch). Direct vendors must explicitly pick a category.
+      if (val === 'rfq') {
+        form.category = 'private';
+      } else {
+        form.category = null;
+      }
+      delete errors.category;
+      delete errors.method_of_procurement;
     };
 
     const optionFilter = (input, option) =>
@@ -567,7 +601,18 @@ export default {
       if (!form.name?.trim()) errors.name = 'Name is required';
       else if (form.name.length > 255) errors.name = 'Max 255 characters';
 
-      if (!form.category) errors.category = 'Category is required';
+      if (!form.method_of_procurement) {
+        errors.method_of_procurement = 'Method of procurement is required';
+      }
+
+      if (form.method_of_procurement === 'direct' && !form.category) {
+        errors.category = 'Category is required';
+      }
+      if (form.method_of_procurement && !form.category) {
+        // safety net (RFQ should auto-set to private via watcher)
+        if (form.method_of_procurement === 'rfq') form.category = 'private';
+      }
+
       if (!form.physical_address?.trim()) errors.physical_address = 'Address is required';
       if (!form.county_id) errors.county_id = 'County is required';
       if (!form.subcounty_id) errors.subcounty_id = 'Sub-County is required';
@@ -602,12 +647,21 @@ export default {
         bankErrors.value[i] = e;
       });
 
-      if (!isEdit.value && form.attach_lso) {
+      if (!isEdit.value) {
         if (!form.lso.lso_number?.trim()) {
           errors['lsos.0.lso_number'] = 'Reference number is required';
         }
         if (!form.lso.issue_date) {
           errors['lsos.0.issue_date'] = 'Date of LSO/LPO is required';
+        }
+        if (!form.lso.event_description?.trim()) {
+          errors['lsos.0.event_description'] = 'Event description is required';
+        }
+        if (!form.lso.notes?.trim()) {
+          errors['lsos.0.notes'] = 'Payment notes / additional details are required';
+        }
+        if (!form.lso.file) {
+          errors['lsos.0.file'] = 'LSO/LPO document is required';
         }
       }
 
@@ -619,6 +673,7 @@ export default {
     const buildPayload = () => {
       const payload = {
         name: form.name.trim(),
+        method_of_procurement: form.method_of_procurement,
         category: form.category,
         physical_address: form.physical_address.trim(),
         county_id: form.county_id,
@@ -638,12 +693,12 @@ export default {
           payload.tax_compliance_certificate = form.tax_compliance_certificate;
         }
       }
-      if (!isEdit.value && form.attach_lso) {
+      if (!isEdit.value) {
         const lsoEntry = {
           lso_number: form.lso.lso_number.trim(),
           issue_date: form.lso.issue_date,
-          event_description: (form.lso.event_description || '').trim() || null,
-          notes: (form.lso.notes || '').trim() || null,
+          event_description: form.lso.event_description.trim(),
+          notes: form.lso.notes.trim(),
         };
         if (form.lso.file) lsoEntry.file = form.lso.file;
         payload.lsos = [lsoEntry];
@@ -669,13 +724,22 @@ export default {
         }
         emit('saved');
       } catch (e) {
-        // server-side validation errors
-        const fieldErrors = e?.response?.data?.errors;
+        const data = e?.response?.data || {};
+        const topMessage = data.message || e?.message || 'Unable to save vendor';
+        const fieldErrors = data.errors;
+        const descriptionLines = [];
         if (fieldErrors && typeof fieldErrors === 'object') {
           Object.entries(fieldErrors).forEach(([key, msgs]) => {
-            errors[key] = Array.isArray(msgs) ? msgs[0] : String(msgs);
+            const msg = Array.isArray(msgs) ? msgs[0] : String(msgs);
+            errors[key] = msg;
+            descriptionLines.push(msg);
           });
         }
+        notification.error({
+          message: topMessage,
+          description: descriptionLines.length ? descriptionLines.join('\n') : undefined,
+          duration: 8,
+        });
       }
     };
 
@@ -694,6 +758,7 @@ export default {
       isEdit,
       existingTaxCertUrl,
       onCountyChange,
+      onMethodChange,
       optionFilter,
       disablePastDates,
       onPickTaxCert,
@@ -862,6 +927,27 @@ export default {
   border: 1px solid #c9e6d3;
   padding: 1px 8px;
   border-radius: 10px;
+}
+.vm-section-hint {
+  font-size: 12px;
+  color: #6b7682;
+  margin: -4px 0 12px;
+}
+
+/* Reinforce error state — Ant defaults are subtle on some fields */
+.vm-form :deep(.ant-form-item-has-error) {
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-select-selector,
+  .ant-picker,
+  textarea.ant-input {
+    border-color: #ff4d4f !important;
+    box-shadow: 0 0 0 1px rgba(255, 77, 79, 0.12);
+  }
+}
+.vm-form :deep(.ant-upload.has-error .upload-btn),
+.vm-form :deep(.ant-upload-list-picture .ant-upload-list-item-error) {
+  border-color: #ff4d4f !important;
 }
 
 /* Bank rows */
