@@ -153,16 +153,18 @@
 
               <a-tab-pane key="bank">
                 <template #tab>
-                  Bank Accounts
-                  <a-tag v-if="bankAccountsCount">{{ bankAccountsCount }}</a-tag>
+                  <span class="vendor-tab-label">
+                    Bank Accounts<span v-if="bankAccountsCount" class="vendor-tab-count">({{ bankAccountsCount }})</span>
+                  </span>
                 </template>
                 <BankAccountsTab :vendor-id="vendorId" />
               </a-tab-pane>
 
               <a-tab-pane key="lso">
                 <template #tab>
-                  Local Service Orders
-                  <a-tag v-if="totalLsosCount">{{ totalLsosCount }}</a-tag>
+                  <span class="vendor-tab-label">
+                    Local Service Orders<span v-if="totalLsosCount" class="vendor-tab-count">({{ totalLsosCount }})</span>
+                  </span>
                 </template>
                 <LsosTab :vendor-id="vendorId" />
               </a-tab-pane>
@@ -308,5 +310,20 @@ export default {
 }
 @media (max-width: 768px) {
   .info-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+.vendor-tabs {
+  :deep(.ant-tabs-tab) {
+    white-space: nowrap;
+  }
+}
+.vendor-tab-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.vendor-tab-count {
+  color: #7a8a82;
+  font-weight: 500;
 }
 </style>
