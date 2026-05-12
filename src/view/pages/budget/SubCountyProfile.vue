@@ -49,6 +49,9 @@
         </ol>
 
         <a-spin :spinning="loading">
+        <SubCountyAccessGate @scope-change="onScopeChange">
+          <template #default="{ countyProfileId: gatedProfileId }">
+            <span v-if="gatedProfileId" style="display:none;">{{ gatedProfileId }}</span>
 
         <!-- ───────── Sticky summary / save bar ───────── -->
         <div class="summary-bar" v-if="!loading">
@@ -72,7 +75,10 @@
             </div>
           </div>
           <div class="sb-right">
-            <template v-if="!editing">
+            <a-tag v-if="readOnly" color="purple" class="stage-tag">
+              National view — read only
+            </a-tag>
+            <template v-else-if="!editing">
               <sdButton type="dark" size="small" class="pill-btn" @click="startEdit">
                 ✎ Edit profile
               </sdButton>
@@ -182,7 +188,7 @@
                     <a-input-number v-model:value="form.estimated_households" :disabled="!editing" :min="0" style="width:100%;" />
                   </a-form-item>
                 </a-col>
-                <a-col :sm="12" :xs="24">
+                <!-- <a-col :sm="12" :xs="24">
                   <a-form-item>
                     <template #label>
                       Estimated LLINs
@@ -203,7 +209,7 @@
                     </template>
                     <a-input-number v-model:value="form.number_of_bales" :disabled="!editing" :min="0" style="width:100%;" />
                   </a-form-item>
-                </a-col>
+                </a-col> -->
               </a-row>
             </div>
 
@@ -362,7 +368,7 @@
         </section>
 
         <!-- ───────── Step 3: Save & continue ───────── -->
-        <section class="panel submit-panel">
+        <section v-if="!readOnly" class="panel submit-panel">
           <div class="panel-head">
             <div>
               <div class="panel-title strong">
@@ -435,6 +441,8 @@
             </div>
           </div>
         </section>
+          </template>
+        </SubCountyAccessGate>
         </a-spin>
       </BudgetPageWrapper>
     </Main>
@@ -442,12 +450,13 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { notification } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
+import SubCountyAccessGate from './SubCountyAccessGate.vue';
 
 const emptyForm = () => ({
   population: 0,
@@ -490,8 +499,19 @@ const USER_INPUT_FIELDS = [
 
 export default {
   name: 'SubCountyProfile',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper, SubCountyAccessGate },
   setup() {
+    // Level 1 (National / Super Admin) users get a strict view-only mode
+    // — no Edit, no Save, no Continue.
+    const currentUser = (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem('user') || '{}');
+      } catch (e) {
+        return {};
+      }
+    })();
+    const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
+
     const router = useRouter();
     const editing = ref(false);
     const saving = ref(false);
@@ -569,11 +589,25 @@ export default {
       setTimeout(() => { suppressDirty = false; }, 0);
     };
 
-    const loadProfile = async () => {
+    /* Load the sub-county profile by id. The id comes from
+     * SubCountyAccessGate — either the user's own profile (level-3) or
+     * one chosen by a level-1/2 user from the gate's selectors. */
+    const loadProfileById = async (profileId) => {
+      if (!profileId) return;
       loading.value = true;
       try {
-        const { data } = await axios.get('get_my_county_profile');
-        applyProfile(data);
+        const { data } = await axios.get(`get_county_profile/${profileId}`);
+        // The single-profile endpoint returns a flat profile row — wrap
+        // it so applyProfile() can read both shapes consistently.
+        applyProfile({
+          level: data?.sub_county_id ? 'sub_county' : 'county',
+          county_profile_id: data?.id,
+          county_id: data?.county_id,
+          sub_county_id: data?.sub_county_id,
+          sub_county: data?.sub_county || data?.subCounty,
+          county: data?.county,
+          profile: data,
+        });
       } catch (err) {
         notification.error({
           message: 'Failed to load profile',
@@ -584,7 +618,10 @@ export default {
       }
     };
 
-    onMounted(loadProfile);
+    const onScopeChange = ({ countyProfileId, subCountyName: scName }) => {
+      if (scName) subCountyName.value = scName;
+      loadProfileById(countyProfileId);
+    };
 
     // Mark profile dirty whenever any tracked field changes.
     watch(
@@ -714,6 +751,8 @@ export default {
       editing,
       saving,
       loading,
+      readOnly,
+      onScopeChange,
       profileSaved,
       lastUpdated,
       scopeLabel,

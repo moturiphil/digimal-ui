@@ -3,6 +3,7 @@ import themeLayout from "./modules/themeLayout/actionCreator";
 import crud from "./modules/crud/axios/actionCreator";
 import auth from "./modules/authentication/axios/actionCreator";
 import filters from "./modules/filters/filter_values";
+import procurement from "./modules/procurement";
 
 export default createStore({
   state: {
@@ -71,5 +72,6 @@ export default createStore({
     crud,
     auth,
     filters,
+    procurement,
   },
 });

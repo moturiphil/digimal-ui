@@ -239,7 +239,7 @@
               Approve
             </sdButton>
             <sdButton
-              v-if="selectedBudget.status !== 'approved' && selectedBudget.status !== 'referred'"
+              v-if="selectedBudget.can_refer_back"
               type="warning"
               @click="openReferModal(selectedBudget)"
             >
@@ -441,18 +441,40 @@ export default {
       referNote.value = '';
       referModal.value = true;
     };
-    const handleRefer = () => {
-      if (!referNote.value.trim()) {
-        notification.warning({ message: 'Please provide feedback.' });
+    const handleRefer = async () => {
+      const note = referNote.value.trim();
+      if (note.length < 10) {
+        notification.warning({
+          message: 'Please provide feedback (minimum 10 characters).',
+        });
+        return;
+      }
+      if (!selectedBudget.value || !selectedBudget.value.id) {
+        referModal.value = false;
         return;
       }
       referring.value = true;
-      setTimeout(() => {
-        if (selectedBudget.value) selectedBudget.value.status = 'referred';
-        referring.value = false;
+      try {
+        await axios.post(`reject_campaign_budget/${selectedBudget.value.id}`, {
+          rejection_note: note,
+        });
+        // submitted → draft, county_approved → submitted (handled by BE).
+        const previousStatus = selectedBudget.value.status;
+        selectedBudget.value.status =
+          previousStatus === 'county_approved' ? 'submitted' : 'draft';
+        selectedBudget.value.can_approve = false;
+        selectedBudget.value.can_refer_back = false;
+        notification.success({ message: 'Budget referred back to the previous stage.' });
         referModal.value = false;
-        notification.success({ message: 'Budget referred back.' });
-      }, 500);
+        await fetchCounties();
+      } catch (err) {
+        notification.error({
+          message: 'Failed to refer budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        referring.value = false;
+      }
     };
     const downloadBudgetPDF = () =>
       notification.info({ message: 'PDF download started (demo).' });

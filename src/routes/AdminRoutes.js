@@ -963,6 +963,25 @@ const routes = [
       import(/* webpackChunkName: "404" */ "@/view/pages/404.vue"),
   },
 
+  {
+    path: "/procurement/vendors",
+    name: "procurement-vendors",
+    component: () =>
+      import(
+        /* webpackChunkName: "Procurement" */ "@/view/pages/procurement/VendorsList.vue"
+      ),
+    meta: { auth: true },
+  },
+  {
+    path: "/procurement/vendors/:id",
+    name: "procurement-vendor-detail",
+    component: () =>
+      import(
+        /* webpackChunkName: "Procurement" */ "@/view/pages/procurement/VendorDetail.vue"
+      ),
+    meta: { auth: true },
+  },
+
   ...Apps,
 ];
 

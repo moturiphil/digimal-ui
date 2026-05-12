@@ -1,25 +1,51 @@
 <template>
   <Main>
-    <sdPageHeader title="Create Event">
-      <sdButton class="btn-add_new" size="default" key="1" type="success">
-        <router-link to="/crud/axios-view">View All</router-link>
-      </sdButton>
-    </sdPageHeader>
+    <div class="event-hero">
+      <div class="event-hero-inner">
+        <div class="event-hero-text">
+          <span class="event-hero-icon">
+            <sdFeatherIcons type="calendar" size="20" />
+          </span>
+          <div>
+            <h2 class="event-hero-title">Create Event</h2>
+            <p class="event-hero-sub">
+              Capture campaign details, assign facilitators, schedule the activity and link any procurement that funds it.
+            </p>
+          </div>
+        </div>
+        <router-link to="/events/gf" class="event-hero-link">
+          <sdFeatherIcons type="list" size="14" />
+          <span>View all events</span>
+        </router-link>
+      </div>
+    </div>
+
     <a-row :gutter="15">
       <a-col :xs="24">
         <RecordFormWrapper>
           <sdCards headless>
             <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24">
+              <a-col :xl="14" :md="20" :xs="24">
                 <BasicFormWrapper>
                   <a-form
-                    class="add-record-form"
+                    class="add-record-form event-form-shell"
                     :style="{ width: '100%' }"
                     layout="vertical"
                     name="addnew"
                     :model="formState"
                     @finish="handleSubmit"
                   >
+                    <!-- Section: Campaign & Event -->
+                    <div class="section-card">
+                      <div class="section-head">
+                        <span class="section-icon">
+                          <sdFeatherIcons type="flag" size="14" />
+                        </span>
+                        <div>
+                          <h4 class="section-title">Campaign &amp; Event</h4>
+                          <p class="section-sub">What campaign is this event under and what type of activity is it?</p>
+                        </div>
+                      </div>
                     <a-form-item name="campaign_id" label="Campaign Name">
                       <a-select
                         v-model:value="formState.campaign_id"
@@ -109,6 +135,20 @@
                         {{ errors.county_id }}
                       </p> -->
                     </a-form-item>
+                    </div>
+                    <!-- /Campaign & Event -->
+
+                    <!-- Section: Host & Facilitators -->
+                    <div class="section-card">
+                      <div class="section-head">
+                        <span class="section-icon">
+                          <sdFeatherIcons type="users" size="14" />
+                        </span>
+                        <div>
+                          <h4 class="section-title">Host &amp; Facilitators</h4>
+                          <p class="section-sub">Pick the host and the team that will run the event.</p>
+                        </div>
+                      </div>
                     <!-- Facilitator Select -->
                     <a-form-item name="facilitator_id" label="Host">
                       <a-select
@@ -173,6 +213,20 @@
                         {{ errors.trainer_id }}
                       </p>
                     </a-form-item>
+                    </div>
+                    <!-- /Host & Facilitators -->
+
+                    <!-- Section: Schedule & Venue -->
+                    <div class="section-card">
+                      <div class="section-head">
+                        <span class="section-icon">
+                          <sdFeatherIcons type="map-pin" size="14" />
+                        </span>
+                        <div>
+                          <h4 class="section-title">Schedule &amp; Venue</h4>
+                          <p class="section-sub">How long will the event run and where will it be held?</p>
+                        </div>
+                      </div>
 
                     <a-form-item name="no-of-days" label="No of Days">
                       <a-input-number
@@ -192,13 +246,95 @@
                       </p>
                     </a-form-item>
 
-                    <a-form-item name="venue" label="Venue">
-                      <a-input
+                    <!-- Procurement section (SCMCC + Super Admin) -->
+                    <div v-if="showProcurementSection" class="procurement-block">
+                      <div class="pb-head">
+                        <span class="pb-icon">
+                          <sdFeatherIcons type="shopping-bag" size="14" />
+                        </span>
+                        <div>
+                          <h4 class="pb-title">Procurement</h4>
+                          <p class="pb-sub">Link the order this event runs against and flag the resources being procured.</p>
+                        </div>
+                      </div>
+
+                      <a-form-item label="LSO / LPO">
+                        <a-select
+                          v-model:value="formState.vendor_lso_id"
+                          placeholder="Pick an open LSO/LPO"
+                          allow-clear
+                          show-search
+                          option-filter-prop="label"
+                          :loading="lsoLoading"
+                          @change="onLsoChange"
+                        >
+                          <a-select-option
+                            v-for="lso in openLsos"
+                            :key="lso.id"
+                            :value="lso.id"
+                            :label="`${lso.lso_number || 'LSO'} — ${lso.vendor?.name || 'Unknown vendor'}${lso.event_description ? ' — ' + lso.event_description : ''}`"
+                          >
+                            <strong>{{ lso.lso_number || 'LSO' }}</strong>
+                            <span> — {{ lso.vendor?.name || 'Unknown vendor' }}</span>
+                            <span v-if="lso.event_description" class="lso-opt-venue">
+                              <sdFeatherIcons type="map-pin" size="11" />
+                              {{ lso.event_description }}
+                            </span>
+                          </a-select-option>
+                        </a-select>
+                        <p class="pb-hint">
+                          <span v-if="lsoLoading">Loading open LSO/LPOs…</span>
+                          <span v-else-if="openLsosTotal > 0">
+                            Showing {{ openLsos.length }} of {{ openLsosTotal }} open LSO/LPOs available for linking.
+                          </span>
+                          <span v-else>No open LSO/LPOs found. Procurement must register one before linking it here.</span>
+                        </p>
+                      </a-form-item>
+
+                      <div class="pb-checkboxes">
+                        <label class="pb-check" :class="{ 'is-on': formState.requires_paid_venue }">
+                          <a-checkbox v-model:checked="formState.requires_paid_venue">
+                            <span class="pb-check-label">Venue</span>
+                          </a-checkbox>
+                          <span class="pb-check-hint">Tick if a paid venue is used (a venue invoice will be required at closure).</span>
+                        </label>
+                        <label class="pb-check" :class="{ 'is-on': formState.requires_fuel }">
+                          <a-checkbox v-model:checked="formState.requires_fuel">
+                            <span class="pb-check-label">Fuel</span>
+                          </a-checkbox>
+                          <span class="pb-check-hint">Tick if vehicle fuel is used (work ticket and ETR receipts will be required).</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <a-form-item
+                      name="venue"
+                      :label="showProcurementSection && formState.requires_paid_venue ? 'Venue name' : 'Venue'"
+                      v-if="!showProcurementSection || formState.requires_paid_venue"
+                    >
+                      <a-auto-complete
                         v-model:value="formState.venue"
-                        placeholder="Input Venue"
+                        :options="venueAutoCompleteOptions"
+                        placeholder="Select an existing venue or type a new one"
+                        :filter-option="filterVenueOption"
+                        allow-clear
+                        :disabled="!!formState.vendor_lso_id"
+                        @search="handleVenueSearch"
                         @blur="validate('venue')"
-                        @keypress="validate('venue')"
-                      />
+                      >
+                        <template #notFoundContent>
+                          <span v-if="venuesLoading">Loading…</span>
+                          <span v-else>No saved venues yet — type to add a new one.</span>
+                        </template>
+                      </a-auto-complete>
+                      <p class="venue-hint" v-if="formState.vendor_lso_id">
+                        <sdFeatherIcons type="lock" size="11" />
+                        <span>Venue auto-filled from the selected LSO/LPO. Clear the LSO/LPO to edit.</span>
+                      </p>
+                      <p class="venue-hint" v-else-if="!venuesLoading && venueOptions.length">
+                        <sdFeatherIcons type="map-pin" size="11" />
+                        <span>{{ venueOptions.length }} saved venue{{ venueOptions.length === 1 ? '' : 's' }} available — start typing to filter or add a new one.</span>
+                      </p>
                       <p
                         class="errors"
                         style="color: red"
@@ -207,20 +343,26 @@
                         {{ errors.venue }}
                       </p>
                     </a-form-item>
-                    <div class="record-form-actions text-right">
+                    </div>
+                    <!-- /Schedule & Venue -->
+
+                    <div class="event-actions">
+                      <router-link to="/events/gf" class="btn-cancel">Cancel</router-link>
                       <sdButton
                         size="default"
                         htmlType="Save"
                         type="success"
+                        class="btn-save"
                         :disabled="isSubmitting"
                       >
-                        {{
+                        <sdFeatherIcons type="check" size="14" />
+                        <span>{{
                           isLoading
                             ? "Loading..."
                             : isSubmitting
                             ? "Processing ..."
                             : "Submit"
-                        }}
+                        }}</span>
                       </sdButton>
                     </div>
                   </a-form>
@@ -251,6 +393,7 @@ import { notification } from "ant-design-vue";
 // import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import store from "../../../vuex/store";
+import { PROCUREMENT_ROLES } from "@/config/procurement-roles";
 
 // testing app
 
@@ -417,6 +560,8 @@ const AddNew = defineComponent({
       fetchFacilitators();
       fetchCampaigns();
       fetchEvents();
+      fetchOpenLsos();
+      fetchVenues();
     });
 
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -435,7 +580,80 @@ const AddNew = defineComponent({
       trainer_id: [],
       no_of_days: null,
       venue: "",
+      vendor_lso_id: null,
+      requires_paid_venue: false,
+      requires_fuel: false,
     });
+
+    // Procurement: LSO/LPO picker visible to SCMCC + Super Admin
+    const userRoleId = user?.user?.role_id ?? user?.user?.role ?? null;
+    const showProcurementSection = computed(() =>
+      [PROCUREMENT_ROLES.SCMCC, PROCUREMENT_ROLES.CMCC, PROCUREMENT_ROLES.SUPER_ADMIN].includes(Number(userRoleId))
+    );
+
+    const openLsos = ref([]);
+    const openLsosTotal = ref(0);
+    const lsoLoading = ref(false);
+    const fetchOpenLsos = async () => {
+      if (!showProcurementSection.value) return;
+      lsoLoading.value = true;
+      try {
+        const res = await fetch(`${process.env.VUE_APP_BASE_URL}/open_vendor_lsos`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json", ...authHeader() },
+        });
+        const json = await res.json();
+        openLsos.value = json?.data || [];
+        openLsosTotal.value = json?.meta?.total_count ?? openLsos.value.length;
+      } catch (e) {
+        openLsos.value = [];
+        openLsosTotal.value = 0;
+      } finally {
+        lsoLoading.value = false;
+      }
+    };
+
+    // Existing venues (autocomplete)
+    const venueOptions = ref([]);
+    const venuesLoading = ref(false);
+    const venueAutoCompleteOptions = computed(() =>
+      venueOptions.value.map((v) => ({ value: v, label: v }))
+    );
+    const fetchVenues = async () => {
+      venuesLoading.value = true;
+      try {
+        const res = await fetch(`${process.env.VUE_APP_BASE_URL}/event_venues`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json", ...authHeader() },
+        });
+        const json = await res.json();
+        venueOptions.value = Array.isArray(json?.data) ? json.data : [];
+      } catch (e) {
+        venueOptions.value = [];
+      } finally {
+        venuesLoading.value = false;
+      }
+    };
+    const filterVenueOption = (input, option) => {
+      const haystack = String(option?.value ?? option?.label ?? "").toLowerCase();
+      return haystack.indexOf(String(input).toLowerCase()) >= 0;
+    };
+    const handleVenueSearch = (val) => {
+      formState.venue = val;
+    };
+
+    const onLsoChange = (lsoId) => {
+      if (!lsoId) {
+        // Clearing the LSO releases the venue field for manual edits.
+        return;
+      }
+      const lso = openLsos.value.find((l) => l.id === lsoId);
+      if (lso && lso.event_description) {
+        formState.venue = lso.event_description;
+        // Auto-tick paid venue so the venue field is shown when SCMCC.
+        formState.requires_paid_venue = true;
+      }
+    };
 
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign is required"),
@@ -446,7 +664,11 @@ const AddNew = defineComponent({
         .min(1, "At least 1 facilitator required")
         .required(),
       no_of_days: Yup.number().required("No of days is required"),
-      venue: Yup.string().required("Venue is required"),
+      venue: Yup.string().when([], {
+        is: () => showProcurementSection.value && !formState.requires_paid_venue,
+        then: (schema) => schema.notRequired().nullable(),
+        otherwise: (schema) => schema.required("Venue is required"),
+      }),
     });
 
     const validate = (field) => {
@@ -474,6 +696,11 @@ const AddNew = defineComponent({
         number_of_days: formState.no_of_days,
         event_list_id: formState.name,
       };
+      if (showProcurementSection.value) {
+        data.vendor_lso_id = formState.vendor_lso_id || null;
+        data.requires_paid_venue = !!formState.requires_paid_venue;
+        data.requires_fuel = !!formState.requires_fuel;
+      }
       console.log(data);
       ArticleSchema.validate(this.formState, { abortEarly: false })
         .then(() => {
@@ -547,6 +774,16 @@ const AddNew = defineComponent({
       validate,
       handleSearch,
       isLevelOne,
+      showProcurementSection,
+      openLsos,
+      openLsosTotal,
+      lsoLoading,
+      venueOptions,
+      venuesLoading,
+      venueAutoCompleteOptions,
+      filterVenueOption,
+      handleVenueSearch,
+      onLsoChange,
       errors: {
         campaign_id: null,
         name: null,
@@ -563,3 +800,252 @@ const AddNew = defineComponent({
 
 export default AddNew;
 </script>
+
+<style lang="less" scoped>
+.event-hero {
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 60%, #36b16f 100%);
+  border-radius: 14px;
+  padding: 22px 28px;
+  margin-bottom: 22px;
+  box-shadow: 0 12px 28px rgba(20, 60, 38, 0.18);
+  color: #fff;
+}
+.event-hero-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.event-hero-text {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.event-hero-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.event-hero-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+.event-hero-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 640px;
+  line-height: 1.5;
+}
+.event-hero-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s, transform 0.15s;
+  &:hover {
+    background: rgba(255, 255, 255, 0.26);
+    transform: translateY(-1px);
+  }
+}
+
+.event-form-shell {
+  padding: 4px 2px 0;
+}
+.section-card {
+  background: #fff;
+  border: 1px solid #e6ecef;
+  border-radius: 12px;
+  padding: 18px 20px 6px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 6px rgba(28, 122, 72, 0.04);
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #eef2f5;
+}
+.section-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #eafff5;
+  border: 1px solid #c9e6d3;
+  color: #15693c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #15693c;
+  letter-spacing: 0.3px;
+}
+.section-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.5;
+}
+
+.event-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 4px 6px;
+  margin-top: 4px;
+  border-top: 1px solid #eef2f5;
+}
+.btn-cancel {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid #e6ecef;
+  background: #fff;
+  color: #5a6470 !important;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+  &:hover {
+    background: #f4f7fa;
+    border-color: #d8dee3;
+  }
+}
+.btn-save {
+  border-radius: 999px !important;
+  padding: 0 22px !important;
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(31, 146, 84, 0.25);
+}
+
+.procurement-block {
+  background: #fafcfb;
+  border: 1px solid #e6ecef;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 4px 0 18px;
+  box-shadow: 0 2px 6px rgba(28, 122, 72, 0.04);
+}
+.venue-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+}
+.lso-opt-venue {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eafff5;
+  color: #15693c;
+  font-size: 11px;
+  font-weight: 500;
+}
+.pb-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.pb-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #eafff5;
+  border: 1px solid #c9e6d3;
+  color: #15693c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pb-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #15693c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+.pb-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.4;
+}
+.pb-hint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+}
+.pb-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.pb-check {
+  display: block;
+  background: #fff;
+  border: 1px solid #e6ecef;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  &.is-on {
+    background: #f4fcf6;
+    border-color: #c9e6d3;
+  }
+}
+.pb-check-label {
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2437;
+}
+.pb-check-hint {
+  display: block;
+  margin-left: 24px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.4;
+}
+@media (max-width: 600px) {
+  .pb-checkboxes { grid-template-columns: 1fr; }
+}
+</style>

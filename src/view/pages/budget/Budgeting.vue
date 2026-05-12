@@ -1,171 +1,93 @@
 <template>
   <RecordViewWrapper>
     <Main>
-      <BudgetPageWrapper class="minimal-dashboard">
-        <!-- Slim top bar -->
-        <div class="tool-bar"></div>
-
-        <!-- Page heading -->
-        <div class="page-heading">
-          <div class="ph-left">
-            <h3 class="ph-title">
-              <span class="ph-icon">▤</span> Sub-County Budgeting
-            </h3>
-            <p class="ph-subtitle">
-              {{ subCounty.name }} Sub-County — {{ subCounty.countyName }} County
-            </p>
+      <BudgetPageWrapper class="bp-min">
+        <!-- Header -->
+        <header class="bp-head">
+          <div>
+            <h3 class="bp-title">Sub-County Budgeting</h3>
+            <p class="bp-sub">{{ subCounty.name }} · {{ subCounty.countyName }} County</p>
           </div>
-          <div class="ph-actions">
-            <a-tag class="stage-tag">{{ stage }}</a-tag>
-          </div>
-        </div>
+          <a-tag class="stage-tag">{{ stage }}</a-tag>
+        </header>
 
-        <!-- ───────── Workflow stepper ───────── -->
-        <ol class="workflow-stepper" aria-label="Budgeting workflow">
-          <li :class="['ws-step', { active: currentStep === 1, done: currentStep > 1 }]">
-            <span class="ws-num">1</span>
-            <div class="ws-text">
-              <div class="ws-title">Review activities</div>
-              <div class="ws-sub">Open each activity to inspect its parameters.</div>
-            </div>
-          </li>
-          <li class="ws-sep" aria-hidden="true"></li>
-          <li :class="['ws-step', { active: currentStep === 2, done: currentStep > 2 }]">
-            <span class="ws-num">2</span>
-            <div class="ws-text">
-              <div class="ws-title">Adjust units</div>
-              <div class="ws-sub">Edit unit counts and save category parameters.</div>
-            </div>
-          </li>
-          <li class="ws-sep" aria-hidden="true"></li>
-          <li :class="['ws-step', { active: currentStep === 3 }]">
-            <span class="ws-num">3</span>
-            <div class="ws-text">
-              <div class="ws-title">Generate &amp; submit</div>
-              <div class="ws-sub">Recalculate totals and forward to the County.</div>
-            </div>
-          </li>
-        </ol>
+        <SubCountyAccessGate @scope-change="onScopeChange">
+          <template #default="{ countyProfileId: gatedProfileId }">
+            <span v-if="gatedProfileId" style="display:none;">{{ gatedProfileId }}</span>
 
-        <!-- ───────── Sticky summary bar ───────── -->
-        <div class="summary-bar" v-if="!loading && selectedActivities.length">
-          <div class="sb-left">
-            <div class="sb-stat">
-              <div class="sb-label">Running total</div>
-              <div class="sb-value">KES {{ fmt(grandTotal) }}</div>
-            </div>
-            <div class="sb-stat">
-              <div class="sb-label">Activities</div>
-              <div class="sb-value">{{ selectedActivities.length }}</div>
-            </div>
-            <div class="sb-stat" v-if="dirtyCount">
-              <div class="sb-label">Unsaved edits</div>
-              <div class="sb-value warn">{{ dirtyCount }}</div>
-            </div>
+        <!-- Summary bar -->
+        <div class="bp-summary" v-if="!loading && selectedActivities.length">
+          <div class="bp-totals">
+            <div><span class="lbl">Total</span><strong>KES {{ fmt(grandTotal) }}</strong></div>
+            <div><span class="lbl">Activities</span><strong>{{ selectedActivities.length }}</strong></div>
+            <div v-if="dirtyCount"><span class="lbl">Unsaved</span><strong class="warn">{{ dirtyCount }}</strong></div>
           </div>
-          <div class="sb-right">
-            <a-input
-              v-model:value="searchTerm"
-              size="small"
-              class="sb-search"
-              placeholder="Filter activities…"
-              allow-clear
-            />
-            <sdButton size="small" class="pill-btn" @click="expandAll">Expand all</sdButton>
-            <sdButton size="small" class="pill-btn" @click="collapseAll">Collapse all</sdButton>
+          <div class="bp-tools">
+            <a-input v-model:value="searchTerm" size="small" placeholder="Search…" allow-clear class="bp-search" />
+            <sdButton size="small" class="pill-btn" @click="expandAll">Expand</sdButton>
+            <sdButton size="small" class="pill-btn" @click="collapseAll">Collapse</sdButton>
           </div>
         </div>
 
-        <!-- ───────── Loading ───────── -->
-        <section v-if="loading" class="panel">
-          <div style="text-align:center; padding:32px 0;">
-            <a-spin />
-            <div style="margin-top:10px; color:#7a8a82; font-size:12px;">
-              Loading category parameters…
-            </div>
-          </div>
+        <!-- Loading / empty -->
+        <section v-if="loading" class="panel center"><a-spin /></section>
+        <section v-else-if="!selectedActivities.length" class="panel center muted">No activities available.</section>
+        <section v-else-if="!filteredActivities.length" class="panel center muted">
+          No matches for “{{ searchTerm }}”.
+          <a href="#" @click.prevent="searchTerm = ''">Clear</a>
         </section>
 
-        <!-- ───────── Empty state ───────── -->
-        <section
-          v-else-if="!selectedActivities.length"
-          class="panel empty-panel"
-        >
-          <div class="empty-icon">▤</div>
-          <div class="empty-title">No activities available</div>
-          <div class="empty-desc">
-            We couldn't find any category parameters for your sub-county.
-            Please contact your administrator if you believe this is an error.
-          </div>
-        </section>
-
-        <!-- ───────── No filter matches ───────── -->
-        <section
-          v-else-if="!filteredActivities.length"
-          class="panel empty-panel"
-        >
-          <div class="empty-icon">⌕</div>
-          <div class="empty-title">No activities match “{{ searchTerm }}”</div>
-          <div class="empty-desc">
-            Try a different search term or
-            <a href="#" @click.prevent="searchTerm = ''">clear the filter</a>.
-          </div>
-        </section>
-
-        <!-- ───────── Per-activity tables ───────── -->
+        <!-- Activity panels -->
         <section
           v-for="a in filteredActivities"
           :key="a.id"
-          :class="['panel', 'activity-panel', { 'is-dirty-panel': isActivityDirty(a.id) }]"
+          :class="['panel', 'act', { dirty: isActivityDirty(a.id) }]"
         >
           <div
-            class="panel-head activity-head"
+            class="act-head"
             role="button"
             tabindex="0"
             @click="toggleExpanded(a.id)"
             @keydown.enter.prevent="toggleExpanded(a.id)"
             @keydown.space.prevent="toggleExpanded(a.id)"
           >
-            <div class="activity-title">
+            <div class="act-name">
               <span :class="['caret', { open: isExpanded(a.id) }]" aria-hidden="true">▸</span>
               <span class="at-name">{{ a.order }}. {{ a.name }}</span>
-              <a-tag class="item-count-tag">{{ a.items.length }} items</a-tag>
               <a-tag v-if="isActivityDirty(a.id)" class="dirty-tag">Unsaved</a-tag>
             </div>
-            <div class="activity-total">
-              <span class="at-label">Activity total</span>
-              <strong>KES {{ fmt(activityTotal(a)) }}</strong>
-              <span class="at-hint">{{ isExpanded(a.id) ? 'Click to hide' : 'Click to expand' }}</span>
-            </div>
+            <div class="act-total">KES {{ fmt(activityTotal(a)) }}</div>
           </div>
 
-          <div v-show="isExpanded(a.id)" class="activity-hint">
-            <span class="hint-icon">ℹ</span>
-            Edit the <strong>Units</strong> column to adjust quantities. Totals update live.
-          </div>
+          <div v-show="isExpanded(a.id) && a.loading" class="center small"><a-spin /></div>
 
           <a-table
-            v-show="isExpanded(a.id)"
+            v-show="isExpanded(a.id) && !a.loading"
             :dataSource="a.items"
             :columns="itemColumns"
             :pagination="false"
-            row-key="id"
+            row-key="category_parameter_id"
             size="small"
             class="minimal-table activity-table"
-            :row-class-name="(r) => (r.highlight ? 'row-highlight' : '')"
+            :row-class-name="rowClass"
           >
             <template #bodyCell="{ column, record }">
-              <span v-if="column.key === 'description'" class="desc-cell">
-                {{ record.description }}
-              </span>
+              <span v-if="column.key === 'description'" class="desc-cell">{{ record.description }}</span>
               <span v-else-if="column.key === 'item'">
                 {{ record.item }}
                 <a-tag v-if="record.tag" class="row-tag">{{ record.tag }}</a-tag>
+                <a-tag
+                  v-if="record.unit_source && record.unit_source !== 'override'"
+                  :class="['source-tag', record.unit_source]"
+                >
+                  {{ record.unit_source === 'fallback' ? 'Inherited' : 'Not set' }}
+                </a-tag>
               </span>
               <span v-else-if="column.key === 'unit_cost'">{{ fmt(record.unit_cost) }}</span>
               <span v-else-if="column.key === 'days'">{{ record.days }}</span>
               <span v-else-if="column.key === 'units'">
                 <a-input-number
+                  v-if="viewMode === 'profile' && !readOnly"
                   :min="0"
                   :step="1"
                   size="small"
@@ -173,256 +95,227 @@
                   :value="record.units"
                   @change="(val) => onUnitsChange(a, record, val)"
                 />
+                <span v-else>{{ fmt(record.units) }}</span>
               </span>
-              <span v-else-if="column.key === 'total'">
-                {{ fmt(rowTotal(record)) }}
-                <span class="row-edit" v-if="record.highlight">✎</span>
-              </span>
-            </template>
-
-            <template #summary>
-              <a-table-summary fixed>
-                <a-table-summary-row class="subtotal-row">
-                  <a-table-summary-cell :index="0" :col-span="4" align="right">
-                    <strong>Activity Subtotal</strong>
-                  </a-table-summary-cell>
-                  <a-table-summary-cell :index="4" align="right">
-                    <strong>KES {{ fmt(activityTotal(a)) }}</strong>
-                  </a-table-summary-cell>
-                </a-table-summary-row>
-              </a-table-summary>
+              <span v-else-if="column.key === 'total'">{{ fmt(rowTotal(record)) }}</span>
             </template>
           </a-table>
 
-          <div class="activity-foot" v-show="isExpanded(a.id)">
-            <span v-if="isActivityDirty(a.id)" class="dirty-note">
-              You have unsaved edits in this activity.
-            </span>
-            <a-tooltip
-              :title="isActivityDirty(a.id) ? '' : 'Edit a unit value to enable saving.'"
+          <div class="act-foot" v-show="isExpanded(a.id) && viewMode === 'profile' && !readOnly">
+            <sdButton
+              size="small"
+              :class="['pill-btn', 'save-btn', { 'is-dirty': isActivityDirty(a.id) }]"
+              :disabled="!isActivityDirty(a.id)"
+              :loading="updatingActivityId === a.id"
+              @click="updateCategoryParameter(a)"
             >
-              <sdButton
-                size="small"
-                :class="['pill-btn', 'update-cat-param-btn', { 'is-dirty': isActivityDirty(a.id) }]"
-                :disabled="!isActivityDirty(a.id)"
-                :loading="updatingActivityId === a.id"
-                @click="updateCategoryParameter(a)"
-              >
-                ✓ Save changes
-              </sdButton>
-            </a-tooltip>
+              Save
+            </sdButton>
           </div>
         </section>
 
-        <!-- ───────── Step 3: Generate & Submit ───────── -->
+        <!-- Zero-unit warning -->
         <section
-          v-if="!loading && selectedActivities.length"
-          class="panel submit-panel"
+          v-if="!loading && selectedActivities.length && zeroUnitCount"
+          class="panel zero-warning"
         >
-          <div class="panel-head">
-            <div>
-              <div class="panel-title strong">
-                <span class="step-pill">Step 3</span> Generate &amp; Submit
-              </div>
-              <p class="panel-subtitle">
-                Regenerate the sub-county budget after changes, then submit it to the County for review.
-              </p>
-            </div>
+          <div class="zw-text">
+            <strong>{{ zeroUnitCount }}</strong> parameter{{ zeroUnitCount === 1 ? '' : 's' }} still
+            ha{{ zeroUnitCount === 1 ? 's' : 've' }} <strong>0 units</strong>.
+            Highlighted rows are missing a value. Set a value, or confirm the
+            zeros are intentional.
           </div>
-
-          <div v-if="dirtyCount" class="submit-warning">
-            <span class="sw-icon">!</span>
-            You have <strong>{{ dirtyCount }}</strong> unsaved
-            {{ dirtyCount === 1 ? 'edit' : 'edits' }}. Save them before regenerating
-            so they're included in the budget.
-          </div>
-
-          <div class="submit-grid">
-            <div class="submit-card">
-              <div class="sc-icon regen">↻</div>
-              <div class="sc-body">
-                <div class="sc-title">
-                  1. Regenerate Budget
-                  <a-tag v-if="generated" class="status-tag ok">Generated</a-tag>
-                </div>
-                <div class="sc-desc">
-                  Recalculate totals after updating activities or unit costs.
-                </div>
-              </div>
-              <sdButton
-                class="pill-btn"
-                size="small"
-                @click="regenerateBudget"
-                :loading="regenerating"
-              >
-                {{ generated ? 'Regenerate' : 'Generate' }}
-              </sdButton>
-            </div>
-
-            <div :class="['submit-card', { primary: generated, locked: !generated }]">
-              <div class="sc-icon send">✈</div>
-              <div class="sc-body">
-                <div class="sc-title">
-                  2. Submit to County
-                  <a-tag v-if="!generated" class="status-tag muted">Locked</a-tag>
-                </div>
-                <div class="sc-desc">
-                  {{ generated
-                    ? 'Lock the budget and forward it to the county team for approval.'
-                    : 'Generate the budget first to enable submission.' }}
-                </div>
-              </div>
-              <a-tooltip :title="!generated ? 'Generate the budget first.' : ''">
-                <sdButton
-                  type="dark"
-                  size="small"
-                  @click="submitToCounty"
-                  :loading="submitting"
-                  :disabled="!generated"
-                >
-                  Submit
-                </sdButton>
-              </a-tooltip>
-            </div>
-          </div>
+          <a-checkbox v-model:checked="zeroConfirmed" class="zw-confirm">
+            I confirm the zero-unit parameters are intentional
+          </a-checkbox>
         </section>
 
-        <!-- ───────── Generated Sub-County Budget ───────── -->
-        <section class="panel generated-panel" v-if="generated">
-          <div class="gp-head">
-            <div class="gp-left">
-              <div class="gp-title">
-                <span class="gp-icon">✓</span>
-                Generated Sub-County Budget
-              </div>
-              <div class="gp-meta">
-                <span>Generated on <strong>{{ generated.date }}</strong></span>
-                <span class="sep">·</span>
-                <span>{{ selectedActivities.length }} activities included</span>
-                <span class="sep">·</span>
-                <span>Ready to submit</span>
-              </div>
-            </div>
-            <a-tag class="stage-tag">{{ stage }}</a-tag>
-          </div>
-
-          <div class="gp-body">
-            <div class="gp-amount">
-              <div class="gp-amount-label">Total Budget</div>
-              <div class="gp-amount-value">
-                <span class="currency">KES</span> {{ fmt(generated.total) }}
-              </div>
-            </div>
-            <div class="gp-stats">
-              <div class="gp-stat">
-                <div class="gps-label">Standard Subtotal</div>
-                <div class="gps-value">KES {{ fmt(generated.total) }}</div>
-              </div>
-              <div class="gp-stat">
-                <div class="gps-label">Activities</div>
-                <div class="gps-value">{{ selectedActivities.length }}</div>
-              </div>
-              <div class="gp-stat">
-                <div class="gps-label">Sub-County</div>
-                <div class="gps-value">{{ subCounty.name }}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="gp-actions">
-            <sdButton size="small" class="pill-btn">⇩ Download PDF</sdButton>
-            <sdButton size="small" class="pill-btn">⎘ View Breakdown</sdButton>
-          </div>
+        <!-- Action row -->
+        <section v-if="!loading && selectedActivities.length" class="panel action-row">
+          <a-tag
+            v-if="readOnly"
+            color="purple"
+            style="margin-right: auto; align-self: center"
+          >
+            National view — read only
+          </a-tag>
+          <a-tag
+            v-if="budgetStatus === 'submitted'"
+            color="blue"
+            style="margin-right: auto; align-self: center"
+          >
+            Submitted to County — view only
+          </a-tag>
+          <sdButton
+            v-if="!readOnly && budgetStatus !== 'submitted'"
+            class="pill-btn"
+            size="small"
+            :loading="regenerating"
+            :disabled="(zeroUnitCount > 0 && !zeroConfirmed) || generated"
+            @click="regenerateBudget"
+          >
+            {{ generated ? 'Generated (void to edit)' : 'Generate' }}
+          </sdButton>
+          <sdButton
+            v-if="!readOnly && budgetStatus !== 'submitted'"
+            type="dark"
+            size="small"
+            :loading="submitting"
+            :disabled="!generated"
+            @click="submitToCounty"
+          >
+            Submit to County
+          </sdButton>
+          <a-button
+            v-if="!readOnly && campaignBudgetId && budgetStatus === 'draft'"
+            danger
+            size="small"
+            :loading="voiding"
+            @click="openVoidModal"
+          >
+            Void
+          </a-button>
         </section>
+
+        <!-- Void modal -->
+        <a-modal
+          v-model:visible="voidModalOpen"
+          title="Void this budget"
+          :ok-text="voiding ? 'Voiding…' : 'Void budget'"
+          ok-type="danger"
+          :ok-button-props="{ loading: voiding, disabled: voidReason.trim().length < 10 }"
+          :confirm-loading="voiding"
+          cancel-text="Cancel"
+          @ok="confirmVoid"
+        >
+          <p style="margin-bottom: 8px">
+            Voiding is permanent. The budget will be discarded so a new draft
+            can be created for this sub-county. Provide a reason (minimum 10
+            characters) for the audit trail.
+          </p>
+          <a-textarea
+            v-model:value="voidReason"
+            :rows="4"
+            :maxlength="500"
+            placeholder="e.g. Unit costs were misconfigured; restarting with corrected rates."
+            show-count
+          />
+        </a-modal>
+
+        <!-- Generated banner -->
+        <section v-if="generated" class="panel gen-banner">
+          <span class="gen-lbl">Generated total</span>
+          <span class="gen-val">KES {{ fmt(generated.total) }}</span>
+          <span class="gen-date">{{ generated.date }}</span>
+        </section>
+          </template>
+        </SubCountyAccessGate>
       </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 
 <script>
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { notification } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
+import SubCountyAccessGate from './SubCountyAccessGate.vue';
 
-/* Group category_parameters rows into activities.
- * Each unique category_id becomes one activity; rows under it become items.
- * Ordering follows first appearance in the payload. */
-const groupIntoActivities = (rows) => {
-  const map = new Map();
-  let order = 0;
-  rows.forEach((r) => {
-    const cid = r.category_id;
-    if (!map.has(cid)) {
-      order += 1;
-      map.set(cid, {
-        id: cid,
-        order,
-        name: r.category_name,
-        stage: r.category_stage,
-        type: r.category_type,
-        items: [],
-      });
-    }
-    const cat = map.get(cid);
-    cat.items.push({
-      id: r.id,
-      parameter_id: r.parameter_id,
-      description: r.parameter_label,
-      item: r.parameter_label,
-      tag: r.unit_definition,
-      unit_cost: Number(r.unit_cost) || 0,
-      days: 1,
-      units: 1,
-      highlight: /fuel/i.test(r.parameter_key || ''),
-    });
-  });
-  return Array.from(map.values());
+/* Normalise paginated/wrapped API payloads. */
+const normalizePayload = (raw) => {
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.data)) return raw.data;
+  if (Array.isArray(raw?.categories)) return raw.categories;
+  return [];
 };
 
-/* Group generated budget line_items into activity panels. Uses the actual
- * computed values returned by the API (days, units, totals, special costs). */
-const groupBudgetLineItems = (lineItems) => {
-  const map = new Map();
-  let order = 0;
-  (lineItems || []).forEach((li) => {
-    const cat = li.budget_category || {};
-    const cid = li.budget_category_id || cat.id;
-    if (!map.has(cid)) {
-      order += 1;
-      map.set(cid, {
-        id: cid,
-        order,
-        name: cat.name || `Category ${cid}`,
-        stage: cat.stage,
-        type: cat.type,
-        items: [],
-      });
-    }
-    const param = li.budget_parameter || {};
-    map.get(cid).items.push({
-      id: li.id,
-      parameter_id: li.budget_parameter_id || param.id,
-      description: li.label || param.label,
-      item: li.label || param.label,
-      tag: li.unit_definition || param.unit_definition,
-      unit_cost: parseFloat(li.unit_cost) || 0,
-      days: Number(li.number_of_days) || 0,
+/* Convert the categories list returned by `get_budget_categories` into the
+ * activity shape used by this page. Items are loaded lazily, on demand,
+ * via `get_category_parameters_for_profile`. */
+const categoriesToActivities = (cats) =>
+  cats
+    .slice()
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+    .map((c, i) => ({
+      id: c.id,
+      order: i + 1,
+      name: c.name || `Category ${c.id}`,
+      description: c.description || '',
+      stage: c.stage,
+      type: c.type,
+      scope: c.scope,
+      default_days: Number(c.default_days || 0),
+      itemsLoaded: false,
+      loading: false,
+      items: [],
+      total_parameters: 0,
+      set_count: 0,
+      fallback_count: 0,
+      not_set_count: 0,
+    }));
+
+/* Convert the parameters array returned by `get_category_parameters_for_profile`
+ * into row items consumed by the activity table.
+ *
+ * Initial state: every row starts at 0 units and KES 0 total. The user enters
+ * units in the grid, the row total auto-calculates as
+ *   total_cost = unit_cost × number_of_days × units
+ * which is the exact same formula `BudgetCalculationService` uses at
+ * generation time, so the pre-generation subtotal always equals the
+ * Generated Total. */
+const paramsToItems = (params, activity) => {
+  const daysOf = (p) =>
+    Number(p.number_of_days) || Number(activity?.default_days) || 1;
+  return (params || []).map((p) => {
+    const u = Number(p.total_units) || 0;
+    const d = daysOf(p);
+    const cost = Number(p.unit_cost) || 0;
+    return {
+      category_parameter_profile_id: p.category_parameter_profile_id || null,
+      category_parameter_id: p.category_parameter_id,
+      parameter_id: p.parameter_id,
+      parameter_key: p.parameter_key,
+      description: p.parameter_label,
+      item: p.parameter_label,
+      tag: p.unit_definition,
+      unit_cost: cost,
+      days: d,
+      units: u,
+      total_cost: cost * d * u,
+      unit_source: p.unit_source || 'not_set',
+      highlight: /fuel/i.test(p.parameter_key || ''),
+    };
+  });
+};
+
+/* Convert generated `line_items` (from `get_budget_line_items/{id}`) into
+ * row items consumed by the activity table. These rows are read-only
+ * and reflect the canonical, server-generated breakdown. */
+const lineItemsToItems = (items) =>
+  (items || [])
+    .slice()
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+    .map((li) => ({
+      category_parameter_profile_id: null,
+      category_parameter_id: li.id,
+      parameter_id: li.budget_parameter_id,
+      parameter_key: li?.budget_parameter?.key || null,
+      description: li.label,
+      item: li.label,
+      tag: li.unit_definition,
+      unit_cost: Number(li.unit_cost) || 0,
+      days: Number(li.number_of_days) || 1,
       units: Number(li.unit_count) || 0,
-      total_cost: parseFloat(li.total_cost) || 0,
+      total_cost: Number(li.total_cost) || 0,
+      unit_source: 'override',
+      resolved_from: null,
+      sort_order: li.sort_order,
       is_special_cost: !!li.is_special_cost,
-      special_type: li.special_type,
-      sort_order: Number(li.sort_order) || 0,
-      highlight: /fuel/i.test(param.key || ''),
-    });
-  });
-  // Sort items inside each activity by sort_order to match API ordering
-  Array.from(map.values()).forEach((a) => {
-    a.items.sort((x, y) => (x.sort_order || 0) - (y.sort_order || 0));
-  });
-  return Array.from(map.values());
-};
+      special_type: li.special_type || null,
+      highlight: false,
+    }));
 
 /* Resolve the active sub-county from session or route. */
 const resolveSubCounty = () => {
@@ -447,8 +340,18 @@ const resolveSubCounty = () => {
 
 export default {
   name: 'SubCountyBudgeting',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper, SubCountyAccessGate },
   setup() {
+    // Level 1 (National / Super Admin) users can browse but never edit.
+    const currentUser = (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem('user') || '{}');
+      } catch (e) {
+        return {};
+      }
+    })();
+    const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
+
     const subCounty = ref(resolveSubCounty());
     const stage = ref('Preparatory Stage');
 
@@ -459,13 +362,22 @@ export default {
     const searchTerm = ref('');
 
     const isExpanded = (id) => expandedIds.value.includes(id);
+    const ensureLoaded = (id) => {
+      const activity = activityCatalog.value.find((a) => a.id === id);
+      if (activity && !activity.itemsLoaded && !activity.loading) {
+        loadActivityParameters(activity);
+      }
+    };
     const toggleExpanded = (id) => {
+      const willExpand = !isExpanded(id);
       expandedIds.value = isExpanded(id)
         ? expandedIds.value.filter((x) => x !== id)
         : [...expandedIds.value, id];
+      if (willExpand) ensureLoaded(id);
     };
     const expandAll = () => {
       expandedIds.value = activityCatalog.value.map((a) => a.id);
+      activityCatalog.value.forEach((a) => ensureLoaded(a.id));
     };
     const collapseAll = () => {
       expandedIds.value = [];
@@ -476,18 +388,47 @@ export default {
     const generated = ref(null);
     const countyProfileId = ref(null);
     const campaignBudgetId = ref(null);
+    // Tracks lifecycle state of the active campaign budget so the action row
+    // can lock the appropriate buttons:
+    //   null       — no budget yet, user is editing units
+    //   'draft'    — created/generated, can void and submit
+    //   'submitted'— sent upstream, view-only (no void, no regenerate)
+    const budgetStatus = ref(null);
+    // 'profile' = editable rows from get_category_parameters_for_profile
+    // 'generated' = read-only rows from get_budget_line_items/{id}
+    const viewMode = ref('profile');
 
-    const loadCategoryParameters = async () => {
+    /* Sub-county scope is supplied by SubCountyAccessGate. The page
+     * does not load any data until the gate has resolved a sub-county
+     * profile id (either the user's own — for level-3 officers — or
+     * one chosen by a level-1/2 user from the gate's selectors). */
+    const resolveProfile = ({ countyProfileId: profileId, countyName, subCountyName } = {}) => {
+      if (!profileId) return null;
+      countyProfileId.value = profileId;
+      if (subCountyName) subCounty.value.name = subCountyName;
+      if (countyName) subCounty.value.countyName = countyName;
+      return profileId;
+    };
+
+    /* Fetch active budget categories scoped to sub-county. The BE
+     * returns categories whose scope is `sub_county` or `both`, so a
+     * sub-county user never sees county-level categories. Parameters
+     * are still fetched lazily on expand. */
+    const loadActivities = async () => {
       loading.value = true;
       try {
-        const { data } = await axios.get('get_category_parameters');
-        const rows = Array.isArray(data) ? data : data?.data || [];
-        activityCatalog.value = groupIntoActivities(rows);
+        const { data } = await axios.get('get_budget_categories', {
+          params: { scope: 'sub_county' },
+        });
+        const cats = normalizePayload(data).filter(
+          (c) => c.is_active === undefined || !!c.is_active,
+        );
+        activityCatalog.value = categoriesToActivities(cats);
         selectedIds.value = activityCatalog.value.map((a) => a.id);
         expandedIds.value = [];
       } catch (err) {
         notification.error({
-          message: 'Failed to load category parameters',
+          message: 'Failed to load budget categories',
           description: err?.response?.data?.message || err.message,
         });
       } finally {
@@ -495,7 +436,104 @@ export default {
       }
     };
 
-    onMounted(loadCategoryParameters);
+    /* Load (or reload) the parameters for a single activity from the new
+     * per-profile endpoint. */
+    const loadActivityParameters = async (activity) => {
+      if (!countyProfileId.value) return;
+      activity.loading = true;
+      try {
+        const { data } = await axios.get(
+          'get_category_parameters_for_profile',
+          {
+            params: {
+              category_id: activity.id,
+              county_profile_id: countyProfileId.value,
+            },
+          },
+        );
+        const payload = data?.data || data || {};
+        if (payload.category) {
+          activity.default_days =
+            Number(payload.category.default_days || activity.default_days);
+        }
+        activity.items = paramsToItems(payload.parameters, activity);
+        activity.total_parameters = Number(payload.total_parameters || 0);
+        activity.set_count = Number(payload.set_count || 0);
+        activity.fallback_count = Number(payload.fallback_count || 0);
+        activity.not_set_count = Number(payload.not_set_count || 0);
+        if (payload.category) {
+          activity.description =
+            payload.category.description || activity.description;
+          activity.default_days =
+            Number(payload.category.default_days || activity.default_days);
+        }
+        activity.itemsLoaded = true;
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load category parameters',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        activity.loading = false;
+      }
+    };
+
+    /* Bootstrap data once the gate has resolved a sub-county profile.
+     * Re-runs whenever the user picks a different sub-county. */
+    const bootstrap = async () => {
+      // Reset prior state so we don't carry data across sub-counties.
+      campaignBudgetId.value = null;
+      budgetStatus.value = null;
+      generated.value = null;
+      viewMode.value = 'profile';
+      activityCatalog.value = [];
+      selectedIds.value = [];
+      expandedIds.value = [];
+
+      if (!countyProfileId.value) return;
+      await loadActivities();
+      await Promise.all(
+        activityCatalog.value.map((a) => loadActivityParameters(a)),
+      );
+
+      // Look up the latest non-voided budget for this profile so the
+      // user sees the existing draft / submitted state instead of an
+      // empty "Generate" screen. Without this the user assumes nothing
+      // is generated and clicks Generate again, creating duplicate
+      // budget rows that desync with what the County reviewer sees.
+      try {
+        const { data } = await axios.get('get_campaign_budgets', {
+          params: { county_profile_id: countyProfileId.value },
+        });
+        const rows = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+            ? data
+            : [];
+        const active = rows.find((b) => b.status !== 'voided');
+        if (active) {
+          campaignBudgetId.value = active.id;
+          budgetStatus.value = active.status;
+          if (active.status !== 'draft' || active.grand_total) {
+            generated.value = {
+              total: Number(active.grand_total) || 0,
+              date: active.submitted_at
+                ? new Date(active.submitted_at).toLocaleDateString()
+                : new Date(active.updated_at || active.created_at).toLocaleDateString(),
+            };
+            await loadBudgetLineItems(active.id);
+          }
+        }
+      } catch (e) {
+        // Non-fatal: if the lookup fails, the user can still generate
+        // a fresh budget.
+      }
+    };
+
+    const onScopeChange = (scope) => {
+      const profileId = resolveProfile(scope);
+      if (profileId) bootstrap();
+    };
 
     const selectedActivities = computed(() =>
       selectedIds.value
@@ -504,15 +542,38 @@ export default {
     );
 
     const rowTotal = (r) => {
-      if (r && r.total_cost != null && r.total_cost !== 0) return r.total_cost;
-      return (r.unit_cost || 0) * (r.days || 0) * (r.units || 0);
+      if (r && Number(r.total_cost) > 0) return Number(r.total_cost);
+      return (
+        (Number(r.unit_cost) || 0)
+        * (Number(r.days) || 1)
+        * (Number(r.units) || 0)
+      );
     };
     const activityTotal = (a) =>
-      a.items.reduce((s, i) => s + rowTotal(i), 0);
+      (a.items || []).reduce((s, i) => s + rowTotal(i), 0);
 
     const grandTotal = computed(() =>
       selectedActivities.value.reduce((s, a) => s + activityTotal(a), 0),
     );
+
+    // Zero-unit gate: any loaded parameter row whose units === 0 must be
+    // explicitly confirmed before the user can generate.
+    const zeroUnitCount = computed(() =>
+      selectedActivities.value.reduce(
+        (n, a) =>
+          n + (a.items || []).filter((i) => (Number(i.units) || 0) === 0).length,
+        0,
+      ),
+    );
+    const zeroConfirmed = ref(false);
+    watch(zeroUnitCount, () => {
+      zeroConfirmed.value = false;
+    });
+
+    const rowClass = (r) => {
+      if ((Number(r.units) || 0) === 0) return 'row-zero';
+      return r.highlight ? 'row-highlight' : '';
+    };
 
     const filteredActivities = computed(() => {
       const q = searchTerm.value.trim().toLowerCase();
@@ -531,37 +592,56 @@ export default {
       { title: 'Description', key: 'description', dataIndex: 'description' },
       { title: 'Budget Item', key: 'item', dataIndex: 'item' },
       { title: 'Unit Cost', key: 'unit_cost', align: 'right', width: 120 },
-      { title: 'Days', key: 'days', align: 'right', width: 90 },
-      { title: 'Units', key: 'units', align: 'right', width: 90 },
+      { title: 'Days', key: 'days', align: 'right', width: 70 },
+      { title: 'Units', key: 'units', align: 'right', width: 110 },
       { title: 'Total (KES)', key: 'total', align: 'right', width: 140 },
     ];
 
+    /* Refresh activity tables from the canonical generated breakdown. */
+    const loadBudgetLineItems = async (budgetId) => {
+      if (!budgetId) return null;
+      try {
+        const { data } = await axios.get(`get_budget_line_items/${budgetId}`);
+        const payload = data?.data || data || {};
+        const map = payload.line_items || {};
+        activityCatalog.value.forEach((a) => {
+          const items = map[String(a.id)];
+          if (Array.isArray(items)) {
+            a.items = lineItemsToItems(items);
+            a.itemsLoaded = true;
+          }
+        });
+        viewMode.value = 'generated';
+        return payload;
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load generated line items',
+          description: err?.response?.data?.message || err.message,
+        });
+        return null;
+      }
+    };
+
     const regenerateBudget = async () => {
+      if (generated.value) {
+        notification.warning({
+          message: 'Budget already generated',
+          description:
+            'Void the current budget first if you need to make changes and regenerate.',
+        });
+        return;
+      }
       regenerating.value = true;
       try {
-        // 1) Fetch the user's profile (county or sub-county scope)
-        const { data: profileResp } = await axios.get('get_my_county_profile');
-
-        // 2) Reject users without a sub-county profile
-        if (!profileResp || profileResp.level !== 'sub_county') {
-          notification.error({
-            message: 'Access denied',
-            description:
-              'Only sub-county users can generate a sub-county budget. Your profile is not a sub-county profile.',
-          });
-          return;
-        }
-
-        const profileId =
-          profileResp.county_profile_id || profileResp.profile?.id;
+        // 1) Use the active sub-county profile resolved by the gate.
+        const profileId = countyProfileId.value;
         if (!profileId) {
           notification.error({
             message: 'Missing sub-county profile',
-            description: 'Unable to determine your county profile id.',
+            description: 'Pick a sub-county above before generating a budget.',
           });
           return;
         }
-        countyProfileId.value = profileId;
 
         const financialYear = String(new Date().getFullYear());
 
@@ -588,6 +668,11 @@ export default {
           return;
         }
         campaignBudgetId.value = budgetId;
+        budgetStatus.value =
+          createResp?.status
+          ?? createResp?.data?.status
+          ?? createResp?.budget?.status
+          ?? 'draft';
 
         // 4) Generate the campaign budget using the budget id
         const { data: genResp } = await axios.post(
@@ -604,11 +689,12 @@ export default {
                 ? genResp.budget
                 : genResp?.data ?? genResp ?? {};
 
-        // Replace activity tables with API-computed line items
-        if (Array.isArray(budget?.line_items) && budget.line_items.length) {
-          activityCatalog.value = groupBudgetLineItems(budget.line_items);
-          selectedIds.value = activityCatalog.value.map((a) => a.id);
-        }
+        // Don't overwrite the activity tables from generated line items.
+        // The tables reflect the persisted profile (via
+        // `get_category_parameters_for_profile`) which is the source of
+        // truth for what the user has actually set. Re-deriving units
+        // from generated line items (which expand defaults for every
+        // parameter) would make every row look "auto-populated".
 
         const rawTotal = budget?.grand_total ?? budget?.total;
         let apiTotal = rawTotal != null ? parseFloat(rawTotal) : NaN;
@@ -623,6 +709,9 @@ export default {
           total: Number.isFinite(apiTotal) ? apiTotal : grandTotal.value,
           date: new Date().toLocaleDateString(),
         };
+
+        // Refresh tables with the canonical generated breakdown.
+        await loadBudgetLineItems(budgetId);
 
         notification.success({ message: 'Sub-County budget generated.' });
       } catch (err) {
@@ -646,6 +735,7 @@ export default {
       submitting.value = true;
       try {
         await axios.post(`submit_campaign_budget/${campaignBudgetId.value}`);
+        budgetStatus.value = 'submitted';
         notification.success({
           message: 'Sub-County budget submitted to County.',
         });
@@ -656,6 +746,64 @@ export default {
         });
       } finally {
         submitting.value = false;
+      }
+    };
+
+    /* Void the active campaign budget so a new draft can be created.
+     * Backend allows voiding from `draft` or `submitted` state only and
+     * requires a reason of at least 10 characters. */
+    const voidModalOpen = ref(false);
+    const voidReason = ref('');
+    const voiding = ref(false);
+
+    const openVoidModal = () => {
+      voidReason.value = '';
+      voidModalOpen.value = true;
+    };
+
+    const confirmVoid = async () => {
+      if (!campaignBudgetId.value) {
+        notification.error({
+          message: 'Cannot void',
+          description: 'No active sub-county budget to void.',
+        });
+        return;
+      }
+      const reason = voidReason.value.trim();
+      if (reason.length < 10) {
+        notification.error({
+          message: 'Reason too short',
+          description: 'Please provide at least 10 characters explaining why this budget is being voided.',
+        });
+        return;
+      }
+      voiding.value = true;
+      try {
+        await axios.post(`void_campaign_budget/${campaignBudgetId.value}`, {
+          voided_reason: reason,
+        });
+        notification.success({
+          message: 'Sub-County budget voided',
+          description: 'You can now generate a new draft for this sub-county.',
+        });
+        // Reset local state so the page returns to the editable view and a
+        // fresh budget can be generated.
+        campaignBudgetId.value = null;
+        budgetStatus.value = null;
+        generated.value = null;
+        viewMode.value = 'profile';
+        voidModalOpen.value = false;
+        voidReason.value = '';
+        await Promise.all(
+          activityCatalog.value.map((a) => loadActivityParameters(a)),
+        );
+      } catch (err) {
+        notification.error({
+          message: 'Failed to void sub-county budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        voiding.value = false;
       }
     };
 
@@ -681,23 +829,48 @@ export default {
       const next = Number.isFinite(Number(val)) ? Number(val) : 0;
       record.units = next < 0 ? 0 : next;
       // Recompute total_cost so the table totals reflect the edit immediately
-      if (record.unit_cost != null && record.days != null) {
-        record.total_cost =
-          (Number(record.unit_cost) || 0) *
-          (Number(record.days) || 0) *
-          (Number(record.units) || 0);
-      }
+      record.total_cost =
+        (Number(record.unit_cost) || 0)
+        * (Number(record.days) || 1)
+        * (Number(record.units) || 0);
+      record._dirty = true;
       dirtyActivities.value = { ...dirtyActivities.value, [activity.id]: true };
     };
 
+    /* Persist edited unit values for one activity in a single batch call.
+     * `save_category_parameter_profiles` upserts by composite
+     * (category_parameter_id, county_profile_id) so it works for rows that
+     * have never been materialised — which is the common case for
+     * `unit_source: 'not_set'` parameters. The endpoint returns the refreshed
+     * list with newly-assigned `category_parameter_profile_id`s so subsequent
+     * edits resolve correctly. */
     const updateCategoryParameter = async (activity) => {
+      if (!countyProfileId.value) {
+        notification.error({
+          message: 'Missing profile',
+          description: 'Cannot save without a sub-county profile id.',
+        });
+        return;
+      }
+      const dirtyRows = (activity.items || []).filter((r) => r._dirty);
+      if (!dirtyRows.length) return;
+
       updatingActivityId.value = activity.id;
       try {
-        // No backend update endpoint is wired yet; persist locally and notify.
-        // When the API becomes available, send activity.items here.
+        await axios.post('save_category_parameter_profiles', {
+          county_profile_id: countyProfileId.value,
+          category_id: activity.id,
+          parameters: dirtyRows.map((r) => ({
+            category_parameter_id: r.category_parameter_id,
+            total_units: Number(r.units) || 0,
+          })),
+        });
         const next = { ...dirtyActivities.value };
         delete next[activity.id];
         dirtyActivities.value = next;
+        // Refresh from the server so each row gets its newly-assigned
+        // category_parameter_profile_id and unit_source flags.
+        await loadActivityParameters(activity);
         notification.success({
           message: 'Category parameter updated',
           description: `${activity.name} totals recalculated.`,
@@ -716,6 +889,8 @@ export default {
       subCounty,
       stage,
       loading,
+      readOnly,
+      onScopeChange,
       isExpanded,
       toggleExpanded,
       expandAll,
@@ -739,13 +914,43 @@ export default {
       onUnitsChange,
       updateCategoryParameter,
       updatingActivityId,
+      zeroUnitCount,
+      zeroConfirmed,
+      rowClass,
+      viewMode,
+      campaignBudgetId,
+      budgetStatus,
+      voidModalOpen,
+      voidReason,
+      voiding,
+      openVoidModal,
+      confirmVoid,
     };
   },
 };
 </script>
 
 <style lang="less" scoped>
-.minimal-dashboard {
+.bp-min {
+  /* Header */
+  .bp-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .bp-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2437;
+  }
+  .bp-sub {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #7a8a82;
+  }
   .stage-tag {
     background: #eef3fb;
     color: #2f6dcf;
@@ -756,11 +961,59 @@ export default {
     font-weight: 600;
   }
 
-  .panel-title.strong {
-    color: #1f2437;
-    font-size: 13px;
-    font-weight: 700;
+  /* Summary bar */
+  .bp-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    background: #fff;
+    border: 1px solid #e6ecef;
+    border-radius: 10px;
   }
+  .bp-totals {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    > div {
+      display: flex;
+      flex-direction: column;
+      .lbl {
+        font-size: 10px;
+        color: #9aa6ad;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        font-weight: 600;
+      }
+      strong {
+        font-size: 13px;
+        color: #15693c;
+        font-weight: 800;
+        &.warn { color: #d97706; }
+      }
+    }
+  }
+  .bp-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    .bp-search { width: 180px; }
+  }
+
+  /* Generic helpers */
+  .panel.center {
+    text-align: center;
+    padding: 24px 0;
+    color: #7a8a82;
+    font-size: 12px;
+    a { color: #15693c; font-weight: 600; margin-left: 4px; }
+  }
+  .panel.center.small { padding: 14px 0; }
+  .panel.center.muted { color: #9aa6ad; }
 
   .pill-btn {
     background: #fff !important;
@@ -768,195 +1021,42 @@ export default {
     color: #4d5661 !important;
     border-radius: 6px;
     font-weight: 600;
-    &:hover,
-    &:focus {
+    &:hover, &:focus {
       border-color: #9ad8b4 !important;
       color: #15693c !important;
     }
   }
 
-  /* ===== Workflow stepper ===== */
-  .workflow-stepper {
-    list-style: none;
-    margin: 4px 0 16px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
-    background: #ffffff;
-    border: 1px solid #e6ecef;
-    border-radius: 12px;
-    overflow-x: auto;
+  /* Activity panels */
+  .act {
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+    &.dirty { border-color: #f3c97c !important; }
   }
-  .ws-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    flex: 1 1 0;
-    min-width: 180px;
-    padding: 4px 6px;
-    border-radius: 8px;
-    transition: background 0.15s;
-    .ws-num {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      background: #eef1f5;
-      color: #7a8a82;
-      font-size: 12px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .ws-text { line-height: 1.2; }
-    .ws-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #5a6470;
-    }
-    .ws-sub {
-      font-size: 11px;
-      color: #9aa6ad;
-      margin-top: 2px;
-    }
-    &.active {
-      background: #f3fcf6;
-      .ws-num { background: #15693c; color: #fff; }
-      .ws-title { color: #15693c; }
-    }
-    &.done {
-      .ws-num { background: #c9e6d3; color: #15693c; }
-      .ws-title { color: #2f6746; }
-    }
-  }
-  .ws-sep {
-    align-self: center;
-    flex: 0 0 28px;
-    height: 1px;
-    background: #e1e6ec;
-  }
-
-  /* ===== Sticky summary bar ===== */
-  .summary-bar {
-    position: sticky;
-    top: 0;
-    z-index: 5;
+  .act-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    flex-wrap: wrap;
-    padding: 10px 14px;
-    margin-bottom: 12px;
-    background: rgba(255,255,255,0.96);
-    backdrop-filter: blur(6px);
-    border: 1px solid #e6ecef;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.04);
-    .sb-left {
-      display: flex;
-      gap: 22px;
-      flex-wrap: wrap;
-    }
-    .sb-stat .sb-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: #9aa6ad;
-      font-weight: 600;
-    }
-    .sb-stat .sb-value {
-      font-size: 14px;
-      font-weight: 800;
-      color: #15693c;
-      &.warn { color: #d97706; }
-    }
-    .sb-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .sb-search { width: 200px; }
-  }
-
-  /* ===== Empty state ===== */
-  .empty-panel {
-    text-align: center;
-    padding: 36px 20px;
-    .empty-icon {
-      font-size: 28px;
-      color: #c9cfd8;
-      margin-bottom: 10px;
-    }
-    .empty-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1f2437;
-      margin-bottom: 6px;
-    }
-    .empty-desc {
-      font-size: 12px;
-      color: #7a8a82;
-      max-width: 460px;
-      margin: 0 auto;
-      a { color: #15693c; font-weight: 600; }
-    }
-  }
-
-  /* Activity panels */
-  .activity-panel {
-    padding-top: 14px;
-    padding-bottom: 14px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    &.is-dirty-panel {
-      border-color: #f3c97c !important;
-      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.08);
-    }
-  }
-  .panel-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-  .activity-head {
     cursor: pointer;
     user-select: none;
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 4px 6px;
-    margin: -4px -6px 6px;
-    transition: background 0.12s;
+    margin: -4px -6px;
     &:hover { background: #f7faf8; }
     &:focus-visible { outline: 2px solid #9ad8b4; outline-offset: 2px; }
   }
-  .activity-title {
+  .act-name {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    .at-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: #1f2437;
-    }
+    .at-name { font-size: 13px; font-weight: 700; color: #1f2437; }
     .caret {
-      display: inline-block;
       color: #9aa6ad;
       font-size: 12px;
       transition: transform 0.15s;
       &.open { transform: rotate(90deg); color: #15693c; }
-    }
-    .item-count-tag {
-      background: #eef3fb;
-      color: #2f6dcf;
-      border: 1px solid #d7e3f5;
-      border-radius: 10px;
-      padding: 0 8px;
-      font-size: 10px;
-      line-height: 18px;
     }
     .dirty-tag {
       background: #fff4e0;
@@ -969,295 +1069,106 @@ export default {
       font-weight: 700;
     }
   }
-  .activity-total {
-    font-size: 12px;
-    color: #5a5f7d;
+  .act-total {
+    font-size: 13px;
+    font-weight: 800;
+    color: #15693c;
+  }
+  .act-foot {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: right;
-    .at-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: #9aa6ad;
-      font-weight: 600;
-    }
-    strong { color: #15693c; font-weight: 800; font-size: 13px; }
-    .at-hint {
-      font-size: 10px;
-      color: #9aa6ad;
-      padding-left: 10px;
-      border-left: 1px dashed #e1e6ec;
-    }
+    justify-content: flex-end;
+    margin-top: 8px;
   }
+  .units-input { width: 80px; }
 
-  .activity-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #f3fcf6;
-    border: 1px dashed #c9e6d3;
-    color: #2f6746;
-    border-radius: 6px;
-    font-size: 11px;
-    padding: 4px 10px;
-    margin: 0 0 10px;
-    .hint-icon { color: #15693c; font-weight: 700; }
-    strong { color: #15693c; }
-  }
-
-  .units-input {
-    width: 80px;
-  }
-
-  /* Update Category Parameter button: muted by default, green when dirty */
-  .update-cat-param-btn {
+  /* Save button: muted by default, green when dirty */
+  .save-btn {
     transition: all 0.15s ease-in-out;
-    &[disabled],
-    &.is-disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    &[disabled] { opacity: 0.6; cursor: not-allowed; }
     &.is-dirty {
       background: #1f9254 !important;
       border-color: #1f9254 !important;
-      color: #ffffff !important;
-      box-shadow: 0 1px 2px rgba(31, 146, 84, 0.25);
-      &:hover,
-      &:focus {
+      color: #fff !important;
+      &:hover, &:focus {
         background: #167a45 !important;
         border-color: #167a45 !important;
-        color: #ffffff !important;
+        color: #fff !important;
       }
     }
   }
 
-  .activity-foot {
+  /* Action row */
+  .action-row {
     display: flex;
     justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  /* Zero-unit warning */
+  .zero-warning {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
-    margin-top: 10px;
-    .dirty-note {
-      font-size: 11px;
-      color: #b35a00;
-      font-weight: 600;
+    padding: 10px 14px;
+    background: #fff8eb;
+    border: 1px solid #f3c97c !important;
+    .zw-text {
+      font-size: 12px;
+      color: #8a4a00;
+      flex: 1 1 320px;
+      strong { color: #8a4a00; font-weight: 800; }
+    }
+    .zw-confirm {
+      font-size: 12px;
+      color: #8a4a00;
     }
   }
 
-  /* ===== Step 3 — submit panel ===== */
-  .submit-panel .panel-subtitle {
-    margin: 2px 0 0;
-    font-size: 12px;
-    color: #7a8a82;
-    max-width: 640px;
-  }
-  .submit-panel .step-pill {
-    display: inline-block;
-    background: #15693c;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    border-radius: 10px;
-    padding: 2px 8px;
-    margin-right: 8px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-  }
-  .submit-warning {
+  /* Generated banner */
+  .gen-banner {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 12px;
-    padding: 8px 12px;
-    background: #fff8eb;
-    border: 1px solid #f3c97c;
-    border-radius: 8px;
-    color: #8a4a00;
-    font-size: 12px;
-    .sw-icon {
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: #f3c97c;
-      color: #fff;
-      font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+    gap: 14px;
+    padding: 10px 16px;
+    background: linear-gradient(90deg, #f3fcf6 0%, #ffffff 100%);
+    border: 1px solid #c9e6d3 !important;
+    .gen-lbl {
+      font-size: 10px;
+      color: #4d8a63;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
-    strong { color: #8a4a00; }
+    .gen-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: #15693c;
+    }
+    .gen-date {
+      margin-left: auto;
+      font-size: 11px;
+      color: #7a8a82;
+    }
   }
-  .status-tag {
-    margin-left: 8px;
-    border-radius: 10px;
+
+  /* Source tag */
+  .source-tag {
+    margin-left: 6px;
+    border-radius: 8px;
+    border: none;
     font-size: 10px;
     line-height: 18px;
     padding: 0 8px;
-    border: 1px solid transparent;
-    &.ok {
-      background: #e3faf3;
-      color: #15693c;
-      border-color: #c9e6d3;
-    }
-    &.muted {
-      background: #f0f2f5;
-      color: #7a8a82;
-      border-color: #e1e6ec;
-    }
-  }
-  .submit-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 14px;
-    @media (max-width: 780px) { grid-template-columns: 1fr; }
-  }
-  .submit-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    border: 1px solid #e6ecef;
-    border-radius: 10px;
-    padding: 14px 16px;
-    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-    &:hover {
-      border-color: #c9e6d3;
-      box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
-      transform: translateY(-1px);
-    }
-    &.primary {
-      background: linear-gradient(90deg, #f3fcf6 0%, #eaf7ef 100%);
-      border-color: #c9e6d3;
-    }
-    &.locked {
-      background: #fafbfc;
-      border-style: dashed;
-      .sc-title, .sc-desc { color: #9aa6ad; }
-      .sc-icon.send { background: #c9cfd8; }
-    }
-    .sc-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      font-weight: 700;
-      flex-shrink: 0;
-      &.regen { background: #eef3fb; color: #2f6dcf; }
-      &.send  { background: #15693c; color: #fff; }
-    }
-    .sc-body { flex: 1; min-width: 0; }
-    .sc-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #1f2437;
-    }
-    .sc-desc {
-      margin-top: 2px;
-      font-size: 11px;
-      color: #7a8a82;
-      line-height: 1.35;
-    }
+    &.fallback { background: #eef3fb; color: #2f6dcf; }
+    &.not_set  { background: #f0f2f5; color: #7a8a82; }
   }
 
-  /* ===== Generated Sub-County Budget ===== */
-  .generated-panel {
-    background: linear-gradient(135deg, #f3fcf6 0%, #ffffff 60%, #f4fbf6 100%) !important;
-    border-color: #c9e6d3 !important;
-  }
-  .gp-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-  .gp-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #1f2437;
-    .gp-icon { color: #15693c; }
-  }
-  .gp-meta {
-    margin-top: 4px;
-    font-size: 11px;
-    color: #7a8a82;
-    .sep { margin: 0 6px; color: #c9cfd8; }
-    strong { color: #1f2437; font-weight: 700; }
-  }
-  .gp-body {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) 2fr;
-    gap: 16px;
-    align-items: stretch;
-    @media (max-width: 780px) { grid-template-columns: 1fr; }
-  }
-  .gp-amount {
-    background: #fff;
-    border: 1px solid #c9e6d3;
-    border-radius: 10px;
-    padding: 16px 18px;
-    .gp-amount-label {
-      font-size: 11px;
-      color: #4d8a63;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-    }
-    .gp-amount-value {
-      margin-top: 4px;
-      font-size: 26px;
-      font-weight: 800;
-      color: #15693c;
-      line-height: 1.1;
-      .currency {
-        font-size: 13px;
-        font-weight: 700;
-        color: #4d8a63;
-        margin-right: 4px;
-      }
-    }
-  }
-  .gp-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    @media (max-width: 560px) { grid-template-columns: 1fr; }
-  }
-  .gp-stat {
-    background: #fff;
-    border: 1px solid #e1efe6;
-    border-radius: 10px;
-    padding: 14px 16px;
-    .gps-label {
-      font-size: 11px;
-      color: #7a8a82;
-      margin-bottom: 4px;
-    }
-    .gps-value {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1f2437;
-    }
-  }
-  .gp-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-
-  /* Row-level highlight and tags inside tables */
+  /* Tables */
   :deep(.activity-table) {
+    margin-top: 8px;
     .ant-table-thead > tr > th {
       background: #fff;
       border-bottom: 1px solid #eaf0ee;
@@ -1272,6 +1183,11 @@ export default {
     }
     .ant-table-tbody > tr:hover > td { background: #fafcfb; }
     .ant-table-tbody > tr.row-highlight > td { background: #fff9ec; }
+    .ant-table-tbody > tr.row-zero > td {
+      background: #fff5e6;
+      box-shadow: inset 3px 0 0 #f3c97c;
+    }
+    .ant-table-tbody > tr.row-zero:hover > td { background: #ffeed1; }
     .desc-cell { color: #2f6746; }
     .row-tag {
       margin-left: 6px;
@@ -1282,20 +1198,6 @@ export default {
       font-size: 10px;
       padding: 0 8px;
       line-height: 18px;
-    }
-    .row-edit {
-      margin-left: 8px;
-      color: #8a9399;
-      cursor: pointer;
-    }
-    .subtotal-row {
-      .ant-table-cell {
-        background: #f6f8fb;
-        color: #1f2437;
-        font-weight: 700;
-        border-top: 1px solid #e3e5ec;
-        border-bottom: none;
-      }
     }
   }
 }
