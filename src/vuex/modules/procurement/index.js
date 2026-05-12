@@ -135,7 +135,9 @@ const actions = {
     try {
       // Strip UI-only keys (camelCase `perPage`/`page`) before merging so they
       // are not forwarded as query params alongside the snake_case versions.
-      const { perPage: _perPage, page: _page, ...restOverrides } = overrides;
+      const restOverrides = { ...overrides };
+      delete restOverrides.perPage;
+      delete restOverrides.page;
       const params = {
         page: overrides.page || state.pagination.page,
         per_page: overrides.perPage || state.pagination.perPage,
@@ -183,10 +185,6 @@ const actions = {
       commit('upsertVendor', vendor);
       notification.success({ message: 'Vendor created' });
       return vendor;
-    } catch (err) {
-      // Re-throw so the caller (form modal) can surface the exact API error
-      // alongside per-field validation messages.
-      throw err;
     } finally {
       commit('setSaving', false);
     }
@@ -203,8 +201,6 @@ const actions = {
       commit('patchCurrentVendor', vendor);
       notification.success({ message: 'Vendor updated' });
       return vendor;
-    } catch (err) {
-      throw err;
     } finally {
       commit('setSaving', false);
     }
