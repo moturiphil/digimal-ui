@@ -30,12 +30,92 @@
           </div>
         </div>
 
+        <!-- Filter bar — visible on Levels 1 & 2 (hidden on single-budget detail) -->
+        <div v-if="!selectedBudget" class="nbr-filter-bar">
+          <div class="nbr-fb-row">
+            <div class="nbr-fb-field">
+              <label class="nbr-fb-label">County</label>
+              <a-select
+                v-model:value="filterCountyId"
+                show-search
+                allow-clear
+                option-filter-prop="label"
+                placeholder="All counties"
+                class="nbr-fb-control"
+                @change="onCountyFilterChange"
+              >
+                <a-select-option
+                  v-for="c in counties"
+                  :key="c.id"
+                  :value="c.id"
+                  :label="c.name"
+                >
+                  {{ c.name }}
+                </a-select-option>
+              </a-select>
+            </div>
+
+            <div class="nbr-fb-field">
+              <label class="nbr-fb-label">Sub-County</label>
+              <a-select
+                v-model:value="filterSubCountyId"
+                show-search
+                allow-clear
+                option-filter-prop="label"
+                placeholder="All sub-counties"
+                class="nbr-fb-control"
+                :disabled="!filterCountyId && subCountyOptions.length === 0"
+              >
+                <a-select-option
+                  v-for="sc in subCountyOptions"
+                  :key="sc.id"
+                  :value="sc.id"
+                  :label="sc.label"
+                >
+                  {{ sc.label }}
+                </a-select-option>
+              </a-select>
+            </div>
+
+            <div class="nbr-fb-field">
+              <label class="nbr-fb-label">Approval Stage</label>
+              <a-select
+                v-model:value="filterStage"
+                allow-clear
+                placeholder="All stages"
+                class="nbr-fb-control"
+              >
+                <a-select-option
+                  v-for="opt in stageOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </a-select-option>
+              </a-select>
+            </div>
+
+            <div class="nbr-fb-actions">
+              <sdButton
+                size="small"
+                @click="resetFilters"
+                :disabled="!hasActiveFilters"
+              >
+                Reset
+              </sdButton>
+              <span v-if="hasActiveFilters" class="nbr-fb-count">
+                {{ filteredCountResult }}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- ════════ LEVEL 1 · County grid ════════ -->
         <template v-if="!selectedCounty">
           <a-spin :spinning="loadingCounties">
             <div class="card-grid four-col">
               <div
-                v-for="c in counties"
+                v-for="c in filteredCounties"
                 :key="c.id"
                 class="drill-card"
                 @click="openCounty(c)"
@@ -49,8 +129,8 @@
                 <div class="dc-meta">{{ (c.sub_counties || []).length }} sub-counties</div>
                 <a-tag v-if="c.stage" class="dc-stage">{{ c.stage }}</a-tag>
               </div>
-              <div v-if="!loadingCounties && counties.length === 0" class="empty-hint">
-                No counties available.
+              <div v-if="!loadingCounties && filteredCounties.length === 0" class="empty-hint">
+                {{ hasActiveFilters ? 'No counties match the current filters.' : 'No counties available.' }}
               </div>
             </div>
           </a-spin>
@@ -68,6 +148,7 @@
           <a-spin :spinning="loadingDetail">
             <div class="card-grid four-col">
               <div
+                v-if="countyBudgetTileVisible"
                 class="drill-card"
                 :class="{ 'is-empty': !selectedCounty.county_budget }"
                 @click="openCountyBudget()"
@@ -89,7 +170,7 @@
                 </span>
               </div>
               <div
-                v-for="sc in (selectedCounty.sub_counties || [])"
+                v-for="sc in filteredSubCounties"
                 :key="sc.id"
                 class="drill-card"
                 :class="{ 'is-empty': !sc.budget }"
@@ -105,6 +186,12 @@
                 <span v-if="sc.budget && sc.budget.flags" class="dc-flag">
                   {{ sc.budget.flags }}
                 </span>
+              </div>
+              <div
+                v-if="!loadingDetail && !countyBudgetTileVisible && filteredSubCounties.length === 0"
+                class="empty-hint"
+              >
+                No budgets match the current filters.
               </div>
             </div>
           </a-spin>
@@ -239,7 +326,7 @@
               Approve
             </sdButton>
             <sdButton
-              v-if="selectedBudget.can_refer_back"
+              v-if="canReferBack"
               type="warning"
               @click="openReferModal(selectedBudget)"
             >
@@ -251,7 +338,7 @@
 
         <!-- Refer Back Modal -->
         <a-modal
-          v-model:open="referModal"
+          v-model:visible="referModal"
           title="Refer Budget Back"
           @ok="handleRefer"
           ok-text="Send Referral"
@@ -344,6 +431,133 @@ export default {
     const referring = ref(false);
     const referNote = ref('');
 
+    /* ────────── Filters ──────────
+     * filterCountyId       – restrict to a single county (also auto-drills
+     *                        into level 2 when explicitly picked).
+     * filterSubCountyId    – restrict to a single sub-county within the
+     *                        chosen / drilled-in county.
+     * filterStage          – restrict by `stage` label as emitted by the
+     *                        backend's statusToStageLabel().
+     *
+     * All filters are evaluated locally against the counties payload that
+     * is already loaded by fetchCounties() — no extra round-trip needed.
+     */
+    const filterCountyId = ref(null);
+    const filterSubCountyId = ref(null);
+    const filterStage = ref(null);
+
+    const stageOptions = [
+      { value: 'Preparatory Stage',      label: 'Preparatory Stage' },
+      { value: 'County Review',          label: 'County Review (sub-county submitted)' },
+      { value: 'Pending National Review', label: 'Pending National Review' },
+      { value: 'County Approved',        label: 'County Approved' },
+      { value: 'National Approved',      label: 'National Approved' },
+    ];
+
+    const hasActiveFilters = computed(() =>
+      !!(filterCountyId.value || filterSubCountyId.value || filterStage.value),
+    );
+
+    const resetFilters = () => {
+      filterCountyId.value = null;
+      filterSubCountyId.value = null;
+      filterStage.value = null;
+    };
+
+    /* Sub-county options derived from the active county scope. When the
+     * user is at level 2, options are drawn from the drilled-in county.
+     * When at level 1 with a county filter, options are drawn from that
+     * filtered county. Otherwise empty (we don't flatten across counties). */
+    const subCountyOptions = computed(() => {
+      const sourceCounty =
+        selectedCounty.value ||
+        (filterCountyId.value
+          ? counties.value.find((c) => c.id === filterCountyId.value)
+          : null);
+      if (!sourceCounty) return [];
+      return (sourceCounty.sub_counties || []).map((sc) => ({
+        id: sc.id,
+        label: sc.name,
+      }));
+    });
+
+    /* Clear sub-county selection whenever county scope changes. */
+    const onCountyFilterChange = () => {
+      filterSubCountyId.value = null;
+    };
+
+    /* Helpers — does a budget row match the stage filter? */
+    const stageMatches = (stage) => {
+      if (!filterStage.value) return true;
+      return stage === filterStage.value;
+    };
+
+    /* A county is included if either:
+     *   – its county-level budget matches, OR
+     *   – any sub-county budget under it matches.
+     * Plus, if a sub-county id filter is set, the county must contain it. */
+    const filteredCounties = computed(() => {
+      let list = counties.value;
+
+      if (filterCountyId.value) {
+        list = list.filter((c) => c.id === filterCountyId.value);
+      }
+
+      if (filterSubCountyId.value) {
+        list = list.filter((c) =>
+          (c.sub_counties || []).some((sc) => sc.id === filterSubCountyId.value),
+        );
+      }
+
+      if (filterStage.value) {
+        list = list.filter((c) => {
+          const cbMatch = c.county_budget && stageMatches(c.county_budget.stage);
+          const scMatch = (c.sub_counties || []).some(
+            (sc) => sc.budget && stageMatches(sc.budget.stage),
+          );
+          return cbMatch || scMatch;
+        });
+      }
+
+      return list;
+    });
+
+    /* Within level 2, sub-county cards visible after filters. */
+    const filteredSubCounties = computed(() => {
+      if (!selectedCounty.value) return [];
+      let list = selectedCounty.value.sub_counties || [];
+      if (filterSubCountyId.value) {
+        list = list.filter((sc) => sc.id === filterSubCountyId.value);
+      }
+      if (filterStage.value) {
+        list = list.filter((sc) => sc.budget && stageMatches(sc.budget.stage));
+      }
+      return list;
+    });
+
+    /* County-level budget tile visibility on level 2. Hidden if a
+     * sub-county is specifically targeted, or if the stage filter
+     * rules it out. */
+    const countyBudgetTileVisible = computed(() => {
+      if (!selectedCounty.value) return false;
+      if (filterSubCountyId.value) return false;
+      const cb = selectedCounty.value.county_budget;
+      if (filterStage.value) {
+        return !!(cb && stageMatches(cb.stage));
+      }
+      return true;
+    });
+
+    /* Compact count message shown beside the Reset button. */
+    const filteredCountResult = computed(() => {
+      if (selectedCounty.value) {
+        const n = filteredSubCounties.value.length + (countyBudgetTileVisible.value ? 1 : 0);
+        return `${n} budget${n === 1 ? '' : 's'}`;
+      }
+      const n = filteredCounties.value.length;
+      return `${n} county${n === 1 ? '' : 'ies'}`;
+    });
+
     /* fetch counties list -------------------------------- */
     const fetchCounties = async () => {
       loadingCounties.value = true;
@@ -398,6 +612,9 @@ export default {
     const goCounties = () => {
       selectedCounty.value = null;
       selectedBudget.value = null;
+      // Clearing the drill-in also clears the sub-county filter — its
+      // options were scoped to the previously-open county.
+      filterSubCountyId.value = null;
     };
     const goCountyBudgets = () => {
       selectedBudget.value = null;
@@ -441,6 +658,18 @@ export default {
       referNote.value = '';
       referModal.value = true;
     };
+    /* Locally-derived eligibility. The backend already returns
+     * `can_refer_back` but it depends on the National role being
+     * resolved server-side; surface the button purely from status
+     * so it always lights up when the budget is in a referrable
+     * state (sub-county submitted, or county submitted/approved).
+     * If the BE explicitly says false we still respect that. */
+    const canReferBack = computed(() => {
+      const b = selectedBudget.value;
+      if (!b) return false;
+      if (b.can_refer_back === false) return false;
+      return ['submitted', 'county_approved'].includes(b.status);
+    });
     const handleRefer = async () => {
       const note = referNote.value.trim();
       if (note.length < 10) {
@@ -509,8 +738,22 @@ export default {
       approveBudget,
       openReferModal,
       handleRefer,
+      canReferBack,
       downloadBudgetPDF,
       fmt,
+      /* filters */
+      filterCountyId,
+      filterSubCountyId,
+      filterStage,
+      stageOptions,
+      subCountyOptions,
+      hasActiveFilters,
+      resetFilters,
+      onCountyFilterChange,
+      filteredCounties,
+      filteredSubCounties,
+      countyBudgetTileVisible,
+      filteredCountResult,
     };
   },
 };
@@ -523,6 +766,55 @@ export default {
     color: #2f6746;
     font-weight: 600;
   }
+}
+
+/* ───────── Filter bar (Levels 1 & 2) ───────── */
+.nbr-filter-bar {
+  background: #fff;
+  border: 1px solid #e6ebf2;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(31, 41, 55, 0.04);
+}
+.nbr-fb-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+@media (max-width: 900px) {
+  .nbr-fb-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 540px) {
+  .nbr-fb-row { grid-template-columns: 1fr; }
+}
+.nbr-fb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.nbr-fb-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6b7388;
+}
+.nbr-fb-control {
+  width: 100%;
+}
+.nbr-fb-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.nbr-fb-count {
+  font-size: 12px;
+  color: #2f6746;
+  font-weight: 600;
 }
 
 /* ───────── Card grid for levels 1 & 2 ───────── */

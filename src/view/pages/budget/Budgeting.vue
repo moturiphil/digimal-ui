@@ -5,8 +5,9 @@
         <!-- Header -->
         <header class="bp-head">
           <div>
-            <h3 class="bp-title">Sub-County Budgeting</h3>
-            <p class="bp-sub">{{ subCounty.name }} · {{ subCounty.countyName }} County</p>
+            <h3 class="bp-title">
+              {{ subCounty.name && subCounty.name !== 'Sub-County' ? `${subCounty.name} Budgeting` : ' Budgeting' }}
+            </h3>
           </div>
           <a-tag class="stage-tag">{{ stage }}</a-tag>
         </header>
@@ -15,8 +16,31 @@
           <template #default="{ countyProfileId: gatedProfileId }">
             <span v-if="gatedProfileId" style="display:none;">{{ gatedProfileId }}</span>
 
+        <!-- Status card view (shown when budget is past draft or has been referred back) -->
+        <section v-if="showStatusCard" class="panel" style="padding: 0; border: 0; background: transparent;">
+          <BudgetStatusCard
+            :title="`${subCounty.name || 'Sub-County'} Budget`"
+            :status="budgetStatus"
+            :is-referred="isReferred"
+            :is-sub-county="true"
+            :financial-year="budgetFinancialYear"
+            :grand-total="generated && generated.total"
+            :submitted-at="budgetSubmittedAt"
+            @click="openBudgetDetail"
+          />
+        </section>
+
+        <!-- Referral feedback banner (only visible once user opens a referred budget) -->
+        <BudgetReferralBanner
+          v-if="!showStatusCard && isReferred"
+          :is-referred="isReferred"
+          :referrer="referredBy"
+          :referred-at="referredAt"
+          :message="referralMessage"
+        />
+
         <!-- Summary bar -->
-        <div class="bp-summary" v-if="!loading && selectedActivities.length">
+        <div class="bp-summary" v-if="!showStatusCard && !loading && selectedActivities.length">
           <div class="bp-totals">
             <div><span class="lbl">Total</span><strong>KES {{ fmt(grandTotal) }}</strong></div>
             <div><span class="lbl">Activities</span><strong>{{ selectedActivities.length }}</strong></div>
@@ -30,16 +54,20 @@
         </div>
 
         <!-- Loading / empty -->
-        <section v-if="loading" class="panel center"><a-spin /></section>
-        <section v-else-if="!selectedActivities.length" class="panel center muted">No activities available.</section>
-        <section v-else-if="!filteredActivities.length" class="panel center muted">
+        <section v-if="!showStatusCard && loading" class="panel bp-skeleton-panel">
+          <a-skeleton-input style="width: 60%; margin-bottom: 14px" active />
+          <a-skeleton active :paragraph="{ rows: 4 }" />
+          <a-skeleton active :paragraph="{ rows: 3 }" />
+        </section>
+        <section v-else-if="!showStatusCard && !selectedActivities.length" class="panel center muted">No activities available.</section>
+        <section v-else-if="!showStatusCard && !filteredActivities.length" class="panel center muted">
           No matches for “{{ searchTerm }}”.
           <a href="#" @click.prevent="searchTerm = ''">Clear</a>
         </section>
 
         <!-- Activity panels -->
         <section
-          v-for="a in filteredActivities"
+          v-for="a in (showStatusCard ? [] : filteredActivities)"
           :key="a.id"
           :class="['panel', 'act', { dirty: isActivityDirty(a.id) }]"
         >
@@ -116,7 +144,7 @@
 
         <!-- Zero-unit warning -->
         <section
-          v-if="!loading && selectedActivities.length && zeroUnitCount"
+          v-if="!showStatusCard && !loading && selectedActivities.length && zeroUnitCount"
           class="panel zero-warning"
         >
           <div class="zw-text">
@@ -131,7 +159,7 @@
         </section>
 
         <!-- Action row -->
-        <section v-if="!loading && selectedActivities.length" class="panel action-row">
+        <section v-if="!showStatusCard && !loading && selectedActivities.length" class="panel action-row">
           <a-tag
             v-if="readOnly"
             color="purple"
@@ -189,8 +217,7 @@
           @ok="confirmVoid"
         >
           <p style="margin-bottom: 8px">
-            Voiding is permanent. The budget will be discarded so a new draft
-            can be created for this sub-county. Provide a reason (minimum 10
+            The budget categories and parameters will be open for edits. Provide a reason (minimum 10
             characters) for the audit trail.
           </p>
           <a-textarea
@@ -203,7 +230,7 @@
         </a-modal>
 
         <!-- Generated banner -->
-        <section v-if="generated" class="panel gen-banner">
+        <section v-if="!showStatusCard && generated" class="panel gen-banner">
           <span class="gen-lbl">Generated total</span>
           <span class="gen-val">KES {{ fmt(generated.total) }}</span>
           <span class="gen-date">{{ generated.date }}</span>
@@ -222,6 +249,8 @@ import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import SubCountyAccessGate from './SubCountyAccessGate.vue';
+import BudgetStatusCard from './BudgetStatusCard.vue';
+import BudgetReferralBanner from './BudgetReferralBanner.vue';
 
 /* Normalise paginated/wrapped API payloads. */
 const normalizePayload = (raw) => {
@@ -340,7 +369,7 @@ const resolveSubCounty = () => {
 
 export default {
   name: 'SubCountyBudgeting',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper, SubCountyAccessGate },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper, SubCountyAccessGate, BudgetStatusCard, BudgetReferralBanner },
   setup() {
     // Level 1 (National / Super Admin) users can browse but never edit.
     const currentUser = (() => {
@@ -397,6 +426,18 @@ export default {
     // 'profile' = editable rows from get_category_parameters_for_profile
     // 'generated' = read-only rows from get_budget_line_items/{id}
     const viewMode = ref('profile');
+
+    // ── Status-card / referral state ─────────────────────────────────────
+    // showStatusCard is true when the budget should first render as a
+    // status summary card (submitted / county_approved / approved / referred).
+    // The user clicks the card to drill into the categories & parameters.
+    const showStatusCard = ref(false);
+    const budgetFinancialYear = ref(null);
+    const budgetSubmittedAt = ref(null);
+    const isReferred = ref(false);
+    const referredAt = ref(null);
+    const referralMessage = ref('');
+    const referredBy = ref(null);
 
     /* Sub-county scope is supplied by SubCountyAccessGate. The page
      * does not load any data until the gate has resolved a sub-county
@@ -479,7 +520,14 @@ export default {
     };
 
     /* Bootstrap data once the gate has resolved a sub-county profile.
-     * Re-runs whenever the user picks a different sub-county. */
+     * Re-runs whenever the user picks a different sub-county.
+     *
+     * Strategy: look up the active budget FIRST and decide whether to
+     * show the status card. Categories + parameters are only fetched
+     * when the user is actually going to edit (no budget yet, or it's
+     * still a draft). When a status card will be shown we defer that
+     * heavy work to `openBudgetDetail()` so the page renders in a
+     * single, predictable pass: skeleton → status card. */
     const bootstrap = async () => {
       // Reset prior state so we don't carry data across sub-counties.
       campaignBudgetId.value = null;
@@ -489,18 +537,18 @@ export default {
       activityCatalog.value = [];
       selectedIds.value = [];
       expandedIds.value = [];
+      showStatusCard.value = false;
+      budgetFinancialYear.value = null;
+      budgetSubmittedAt.value = null;
+      isReferred.value = false;
+      referredAt.value = null;
+      referralMessage.value = '';
+      referredBy.value = null;
 
       if (!countyProfileId.value) return;
-      await loadActivities();
-      await Promise.all(
-        activityCatalog.value.map((a) => loadActivityParameters(a)),
-      );
 
-      // Look up the latest non-voided budget for this profile so the
-      // user sees the existing draft / submitted state instead of an
-      // empty "Generate" screen. Without this the user assumes nothing
-      // is generated and clicks Generate again, creating duplicate
-      // budget rows that desync with what the County reviewer sees.
+      // Skeleton on while we figure out which view to render.
+      loading.value = true;
       try {
         const { data } = await axios.get('get_campaign_budgets', {
           params: { county_profile_id: countyProfileId.value },
@@ -514,6 +562,13 @@ export default {
         if (active) {
           campaignBudgetId.value = active.id;
           budgetStatus.value = active.status;
+          budgetFinancialYear.value = active.financial_year || null;
+          budgetSubmittedAt.value = active.submitted_at || null;
+          isReferred.value = !!active.is_referred;
+          referredAt.value = active.referred_at || null;
+          referralMessage.value = active.referral_message || '';
+          referredBy.value = null;
+
           if (active.status !== 'draft' || active.grand_total) {
             generated.value = {
               total: Number(active.grand_total) || 0,
@@ -521,18 +576,82 @@ export default {
                 ? new Date(active.submitted_at).toLocaleDateString()
                 : new Date(active.updated_at || active.created_at).toLocaleDateString(),
             };
-            await loadBudgetLineItems(active.id);
           }
+
+          // Whenever the budget has progressed past draft, or was
+          // referred back, render the status card first. Categories /
+          // parameters / line items are loaded lazily on click.
+          showStatusCard.value = isReferred.value || active.status !== 'draft';
         }
       } catch (e) {
         // Non-fatal: if the lookup fails, the user can still generate
         // a fresh budget.
+      }
+
+      // If we're going to show the status card, stop here — no need to
+      // load the editor's category tree until the user clicks in.
+      if (showStatusCard.value) {
+        loading.value = false;
+        return;
+      }
+
+      // Editor path: load activities + parameters, then the existing
+      // line items (if any) for the active draft.
+      try {
+        await loadActivities();
+        await Promise.all(
+          activityCatalog.value.map((a) => loadActivityParameters(a)),
+        );
+        if (campaignBudgetId.value && generated.value) {
+          await loadBudgetLineItems(campaignBudgetId.value);
+        }
+      } finally {
+        loading.value = false;
       }
     };
 
     const onScopeChange = (scope) => {
       const profileId = resolveProfile(scope);
       if (profileId) bootstrap();
+    };
+
+    /* Card → Detail transition. Loads the category tree, parameters and
+     * existing line items lazily — none of this is fetched on initial
+     * page load when the budget is already past draft. When the budget
+     * was referred back we also fetch the full record so the banner
+     * can show the referrer's name, role and message. */
+    const openBudgetDetail = async () => {
+      // Flip to the editor view immediately so the user sees a skeleton
+      // while categories / parameters / line items are fetched.
+      showStatusCard.value = false;
+      loading.value = true;
+      try {
+        if (!activityCatalog.value.length) {
+          await loadActivities();
+          await Promise.all(
+            activityCatalog.value.map((a) => loadActivityParameters(a)),
+          );
+        }
+        if (campaignBudgetId.value && generated.value) {
+          await loadBudgetLineItems(campaignBudgetId.value);
+        }
+        if (isReferred.value && !referredBy.value && campaignBudgetId.value) {
+          try {
+            const { data } = await axios.get(`get_campaign_budget/${campaignBudgetId.value}`);
+            const b = data?.data || data || {};
+            // Laravel's relation eager-load overwrites the FK column with
+            // the related User object under the same snake_case key.
+            const rb = b.referred_by;
+            if (rb && typeof rb === 'object') referredBy.value = rb;
+            if (b.referred_at && !referredAt.value) referredAt.value = b.referred_at;
+            if (b.referral_message && !referralMessage.value) referralMessage.value = b.referral_message;
+          } catch (e) {
+            // Non-fatal — banner still renders with whatever fields we have.
+          }
+        }
+      } finally {
+        loading.value = false;
+      }
     };
 
     const selectedActivities = computed(() =>
@@ -736,6 +855,15 @@ export default {
       try {
         await axios.post(`submit_campaign_budget/${campaignBudgetId.value}`);
         budgetStatus.value = 'submitted';
+        budgetSubmittedAt.value = new Date().toISOString();
+        // A fresh submission supersedes any prior referral.
+        isReferred.value = false;
+        referredAt.value = null;
+        referralMessage.value = '';
+        referredBy.value = null;
+        // Surface the status card immediately so the user lands on the
+        // “County Review” view post-submit.
+        showStatusCard.value = true;
         notification.success({
           message: 'Sub-County budget submitted to County.',
         });
@@ -925,6 +1053,14 @@ export default {
       voiding,
       openVoidModal,
       confirmVoid,
+      showStatusCard,
+      budgetFinancialYear,
+      budgetSubmittedAt,
+      isReferred,
+      referredAt,
+      referralMessage,
+      referredBy,
+      openBudgetDetail,
     };
   },
 };
@@ -932,22 +1068,26 @@ export default {
 
 <style lang="less" scoped>
 .bp-min {
+  /* Outer top/bottom padding now lives on BudgetPageWrapper
+     so every budget page shares the same vertical rhythm. */
   /* Header */
   .bp-head {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eef0f5;
   }
   .bp-title {
     margin: 0;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     color: #1f2437;
   }
   .bp-sub {
-    margin: 2px 0 0;
+    margin: 4px 0 0;
     font-size: 12px;
     color: #7a8a82;
   }
@@ -1014,6 +1154,17 @@ export default {
   }
   .panel.center.small { padding: 14px 0; }
   .panel.center.muted { color: #9aa6ad; }
+
+  /* Skeleton block shown while the first bootstrap is in flight */
+  .bp-skeleton-panel {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: #fff;
+    border: 1px solid #eef0f5;
+    border-radius: 10px;
+  }
 
   .pill-btn {
     background: #fff !important;
@@ -1103,6 +1254,7 @@ export default {
     justify-content: flex-end;
     gap: 8px;
     padding: 12px 14px;
+    margin-top: 16px;
   }
 
   /* Zero-unit warning */

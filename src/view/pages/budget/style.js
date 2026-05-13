@@ -238,6 +238,14 @@ const ActionBar = Styled.div`
    Page-level wrapper with utility classes
    ───────────────────────────────────────────── */
 const BudgetPageWrapper = Styled.div`
+  /* ───────────── Standard page vertical rhythm ─────────────
+     <Main> wrapper already supplies horizontal padding
+     (0 30px 20px). We add a consistent top/bottom gap so
+     every budget page has identical breathing room above
+     the first heading and below the last action row. */
+  padding-top: 18px;
+  padding-bottom: 24px;
+
   .tool-bar {
     background: #eef3fb;
     padding: 10px 16px;

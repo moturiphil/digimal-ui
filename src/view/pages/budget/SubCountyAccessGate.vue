@@ -55,6 +55,11 @@
       :countyName="resolvedCountyName"
       :subCountyName="resolvedSubCountyName"
     />
+    <div v-else-if="bootstrapping" class="scag-skeleton">
+      <a-skeleton-input style="width: 240px" active size="default" />
+      <a-skeleton active :paragraph="{ rows: 4 }" />
+      <a-skeleton active :paragraph="{ rows: 3 }" />
+    </div>
     <div v-else-if="isSubCountyLevel && !resolvedSubCountyProfileId" class="scag-empty">
       <span class="scag-empty-icon">⚠</span>
       <span>
@@ -128,6 +133,10 @@ export default {
     /* County picker (super admin) ------------------------------ */
     const counties = ref([]);
     const loadingCounties = ref(false);
+    // True while the gate is still doing its first resolution pass
+    // (fetching counties / sub-counties / own profile). Used to render
+    // a skeleton instead of the "no profile linked" empty state.
+    const bootstrapping = ref(true);
     const selectedCountyId = ref(null);
     const countyOptions = computed(() =>
       counties.value.map((c) => ({
@@ -341,12 +350,21 @@ export default {
     );
 
     onMounted(() => {
+      // Track initial scope resolution so the page can render a skeleton
+      // (instead of flashing the "no profile linked" empty state) while
+      // the auto-resolution / fetch is still in flight.
+      bootstrapping.value = true;
+      const done = () => {
+        bootstrapping.value = false;
+      };
       if (isLevelOne.value) {
-        fetchCounties();
+        fetchCounties().finally(done);
       } else if (isCountyLevel.value && ownCountyId.value) {
-        fetchSubCountiesForCounty(ownCountyId.value);
+        fetchSubCountiesForCounty(ownCountyId.value).finally(done);
       } else if (isSubCountyLevel.value) {
-        fetchOwnProfile();
+        fetchOwnProfile().finally(done);
+      } else {
+        done();
       }
     });
 
@@ -375,6 +393,7 @@ export default {
       pickerHint,
       onCountyChange,
       goToLogin,
+      bootstrapping,
     };
   },
 };
@@ -436,6 +455,16 @@ export default {
   justify-content: center;
   gap: 8px;
   .scag-empty-icon { color: #d8a89a; font-size: 16px; }
+}
+
+.scag-skeleton {
+  background: #fff;
+  border: 1px solid #eef0f5;
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 </style>
 

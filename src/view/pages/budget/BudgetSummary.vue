@@ -119,7 +119,7 @@
         </div>
 
         <!-- Submit Modal -->
-        <a-modal v-model:open="submitModal" title="Submit Budget for Review" @ok="submitBudget" ok-text="Yes, Submit" :confirm-loading="submitting">
+        <a-modal v-model:visible="submitModal" title="Submit Budget for Review" @ok="submitBudget" ok-text="Yes, Submit" :confirm-loading="submitting">
           <a-alert
             message="Once submitted you cannot edit until a county officer refers it back."
             type="warning" show-icon
