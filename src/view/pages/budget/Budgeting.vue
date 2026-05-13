@@ -195,7 +195,7 @@
             Submit to County
           </sdButton>
           <a-button
-            v-if="!readOnly && campaignBudgetId && budgetStatus === 'draft'"
+            v-if="canVoid"
             danger
             size="small"
             :loading="voiding"
@@ -675,6 +675,18 @@ export default {
       selectedActivities.value.reduce((s, a) => s + activityTotal(a), 0),
     );
 
+    // Void is available to the owner whenever the budget is still
+    // recoverable: any non-approved / non-voided draft or submitted
+    // budget, plus referred county_approved budgets (national bounced
+    // them back so the owner can rebuild).
+    const canVoid = computed(() => {
+      if (readOnly.value || !campaignBudgetId.value) return false;
+      const s = budgetStatus.value;
+      if (s === 'approved' || s === 'voided') return false;
+      if (s === 'draft' || s === 'submitted') return true;
+      return s === 'county_approved' && isReferred.value;
+    });
+
     // Zero-unit gate: any loaded parameter row whose units === 0 must be
     // explicitly confirmed before the user can generate.
     const zeroUnitCount = computed(() =>
@@ -1051,6 +1063,7 @@ export default {
       voidModalOpen,
       voidReason,
       voiding,
+      canVoid,
       openVoidModal,
       confirmVoid,
       showStatusCard,

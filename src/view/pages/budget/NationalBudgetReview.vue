@@ -687,13 +687,12 @@ export default {
         await axios.post(`reject_campaign_budget/${selectedBudget.value.id}`, {
           rejection_note: note,
         });
-        // submitted → draft, county_approved → submitted (handled by BE).
-        const previousStatus = selectedBudget.value.status;
-        selectedBudget.value.status =
-          previousStatus === 'county_approved' ? 'submitted' : 'draft';
+        // Both submitted and county_approved now revert to draft so the
+        // owning sub-county / county user can edit and resubmit.
+        selectedBudget.value.status = 'draft';
         selectedBudget.value.can_approve = false;
         selectedBudget.value.can_refer_back = false;
-        notification.success({ message: 'Budget referred back to the previous stage.' });
+        notification.success({ message: 'Budget referred back for revision.' });
         referModal.value = false;
         await fetchCounties();
       } catch (err) {
