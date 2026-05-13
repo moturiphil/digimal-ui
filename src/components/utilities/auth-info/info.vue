@@ -1,5 +1,7 @@
 <template>
   <InfoWraper>
+    <Notification />
+
     <div class="nav-author">
       <sdDropdown placement="bottomRight" :action="['click']">
         <template v-slot:overlay> </template>
@@ -22,6 +24,7 @@
 
 <script>
 import { InfoWraper } from "./auth-info-style";
+import Notification from "./Notification.vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { LogoutOutlined } from "@ant-design/icons-vue";
@@ -32,7 +35,7 @@ export default defineComponent({
   name: "AuthInfo",
   components: {
     InfoWraper,
-    // Notification,
+    Notification,
     LogoutOutlined,
   },
   data() {
