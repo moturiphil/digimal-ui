@@ -263,8 +263,8 @@ export default defineComponent({
   color: #5a5f7d;
   transition: color 0.2s ease, transform 0.2s ease;
 }
-.np-bell:hover { color: #20c997; }
-.np-bell--active { color: #20c997; }
+.np-bell:hover { color: #1f9254; }
+.np-bell--active { color: #1f9254; }
 .np-bell--active :deep(svg) { animation: np-shake 1.6s ease-in-out infinite; }
 
 @keyframes np-shake {
@@ -290,7 +290,7 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #0fbf8a 0%, #20c997 50%, #4cd9a4 100%);
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 60%, #36b16f 100%);
   color: #fff;
 }
 .np-head__title {

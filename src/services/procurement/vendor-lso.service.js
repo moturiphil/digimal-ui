@@ -20,6 +20,14 @@ class VendorLsoService {
     return axios.get(`get_vendor_lsos/${vendorId}`, { params });
   }
 
+  /**
+   * Cross-vendor paginated LSO list used by the top-level
+   * Procurement › LSOs page. Each row includes vendor + service type.
+   */
+  listAll(params = {}) {
+    return axios.get('get_all_vendor_lsos', { params });
+  }
+
   show(vendorId, lsoId) {
     return axios.get(`get_vendor_lso/${vendorId}/${lsoId}`);
   }

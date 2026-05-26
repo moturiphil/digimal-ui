@@ -1,6 +1,7 @@
 import { notification } from 'ant-design-vue';
 import vendorService from '@/services/procurement/vendor.service';
 import bankAccountService from '@/services/procurement/vendor-bank-account.service';
+import contactService from '@/services/procurement/vendor-contact.service';
 import lsoService from '@/services/procurement/vendor-lso.service';
 import lookupsService from '@/services/procurement/procurement-lookups.service';
 
@@ -29,7 +30,10 @@ const state = () => ({
   },
   currentVendor: null,
   bankAccounts: [],
+  contacts: [],
   lsos: [],
+  allLsos: [],
+  allLsosPagination: { page: 1, perPage: 15, total: 0 },
   banks: [],
   serviceTypes: [],
   counties: [],
@@ -97,6 +101,28 @@ const mutations = {
     }));
   },
 
+  setContacts(state, list) { state.contacts = Array.isArray(list) ? list : []; },
+  upsertContact(state, contact) {
+    const idx = state.contacts.findIndex((c) => c.id === contact.id);
+    if (idx === -1) state.contacts.push(contact);
+    else state.contacts.splice(idx, 1, contact);
+    if (contact.is_primary) {
+      state.contacts = state.contacts.map((c) => ({
+        ...c,
+        is_primary: c.id === contact.id,
+      }));
+    }
+  },
+  removeContact(state, id) {
+    state.contacts = state.contacts.filter((c) => c.id !== id);
+  },
+  markContactPrimary(state, id) {
+    state.contacts = state.contacts.map((c) => ({
+      ...c,
+      is_primary: c.id === id,
+    }));
+  },
+
   setLsos(state, list) { state.lsos = Array.isArray(list) ? list : []; },
   upsertLso(state, lso) {
     const idx = state.lsos.findIndex((l) => l.id === lso.id);
@@ -105,6 +131,22 @@ const mutations = {
   },
   removeLso(state, id) {
     state.lsos = state.lsos.filter((l) => l.id !== id);
+  },
+
+  setAllLsos(state, payload) {
+    if (Array.isArray(payload)) {
+      state.allLsos = payload;
+      state.allLsosPagination = { page: 1, perPage: payload.length, total: payload.length };
+    } else if (payload && Array.isArray(payload.data)) {
+      state.allLsos = payload.data;
+      state.allLsosPagination = {
+        page: payload.current_page || payload.meta?.current_page || 1,
+        perPage: payload.per_page || payload.meta?.per_page || 15,
+        total: payload.total || payload.meta?.total || payload.data.length,
+      };
+    } else {
+      state.allLsos = [];
+    }
   },
 
   setBanks(state, list) { state.banks = Array.isArray(list) ? list : []; },
@@ -167,6 +209,7 @@ const actions = {
       const vendor = unwrap(response);
       commit('setCurrentVendor', vendor);
       commit('setBankAccounts', vendor?.bank_accounts || vendor?.active_bank_accounts || []);
+      commit('setContacts', vendor?.contacts || vendor?.active_contacts || []);
       commit('setLsos', vendor?.lsos || vendor?.active_lsos || []);
       return vendor;
     } catch (err) {
@@ -285,6 +328,72 @@ const actions = {
     }
   },
 
+  // ── Contacts ───────────────────────────────────────────────────────────
+  async fetchContacts({ commit }, vendorId) {
+    try {
+      const response = await contactService.list(vendorId);
+      commit('setContacts', unwrap(response));
+    } catch (err) {
+      notification.error({ message: 'Unable to load contacts', description: errMessage(err) });
+    }
+  },
+
+  async fetchContact({ commit }, { vendorId, id }) {
+    try {
+      const response = await contactService.show(vendorId, id);
+      const contact = unwrap(response);
+      commit('upsertContact', contact);
+      return contact;
+    } catch (err) {
+      notification.error({ message: 'Unable to load contact', description: errMessage(err) });
+      throw err;
+    }
+  },
+
+  async createContact({ commit }, { vendorId, payload }) {
+    try {
+      const response = await contactService.create(vendorId, payload);
+      commit('upsertContact', unwrap(response));
+      notification.success({ message: 'Contact added' });
+    } catch (err) {
+      notification.error({ message: 'Unable to add contact', description: errMessage(err) });
+      throw err;
+    }
+  },
+
+  async updateContact({ commit }, { vendorId, id, payload }) {
+    try {
+      const response = await contactService.update(vendorId, id, payload);
+      commit('upsertContact', unwrap(response));
+      notification.success({ message: 'Contact updated' });
+    } catch (err) {
+      notification.error({ message: 'Unable to update contact', description: errMessage(err) });
+      throw err;
+    }
+  },
+
+  async deleteContact({ commit }, { vendorId, id }) {
+    try {
+      await contactService.destroy(vendorId, id);
+      commit('removeContact', id);
+      notification.success({ message: 'Contact removed' });
+    } catch (err) {
+      notification.error({ message: 'Unable to remove contact', description: errMessage(err) });
+      throw err;
+    }
+  },
+
+  async setPrimaryContact({ commit }, { vendorId, id }) {
+    try {
+      await contactService.setPrimary(vendorId, id);
+      commit('markContactPrimary', id);
+      notification.success({ message: 'Primary contact set' });
+    } catch (err) {
+      notification.error({ message: 'Unable to set primary', description: errMessage(err) });
+      throw err;
+    }
+  },
+
   // ── LSOs ───────────────────────────────────────────────────────────────
   async fetchLsos({ commit }, { vendorId, params = {} }) {
     try {
@@ -292,6 +401,18 @@ const actions = {
       commit('setLsos', unwrap(response));
     } catch (err) {
       notification.error({ message: 'Unable to load LSOs', description: errMessage(err) });
+    }
+  },
+
+  async fetchAllLsos({ commit }, params = {}) {
+    commit('setLoading', true);
+    try {
+      const response = await lsoService.listAll(params);
+      commit('setAllLsos', unwrap(response));
+    } catch (err) {
+      notification.error({ message: 'Unable to load LSOs', description: errMessage(err) });
+    } finally {
+      commit('setLoading', false);
     }
   },
 
@@ -383,6 +504,8 @@ const actions = {
 const getters = {
   primaryBankAccount: (state) =>
     state.bankAccounts.find((a) => a.is_primary) || null,
+  primaryContact: (state) =>
+    state.contacts.find((c) => c.is_primary) || null,
   activeLsos: (state) =>
     state.lsos.filter((l) => l.is_active !== false),
   subcountiesFor: (state) => (countyId) =>
