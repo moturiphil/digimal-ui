@@ -1,23 +1,18 @@
 <template>
   <Main>
-    <div class="event-hero">
-      <div class="event-hero-inner">
-        <div class="event-hero-text">
-          <span class="event-hero-icon">
-            <sdFeatherIcons type="calendar" size="20" />
-          </span>
-          <div>
-            <h2 class="event-hero-title">Create Event</h2>
-            <p class="event-hero-sub">
-              Capture campaign details, assign facilitators, schedule the activity and link any procurement that funds it.
-            </p>
-          </div>
+    <div class="event-pageheader">
+      <div class="event-pageheader-text">
+        <span class="event-pageheader-icon">
+          <sdFeatherIcons type="calendar" size="18" />
+        </span>
+        <div>
+          <h2 class="event-pageheader-title">Create Event</h2>
         </div>
-        <router-link to="/events/gf" class="event-hero-link">
-          <sdFeatherIcons type="list" size="14" />
-          <span>View all events</span>
-        </router-link>
       </div>
+      <router-link to="/events/gf" class="event-pageheader-link">
+        <sdFeatherIcons type="list" size="14" />
+        <span>View all events</span>
+      </router-link>
     </div>
 
     <a-row :gutter="15">
@@ -802,66 +797,64 @@ export default AddNew;
 </script>
 
 <style lang="less" scoped>
-.event-hero {
-  background: linear-gradient(135deg, #15693c 0%, #1f9254 60%, #36b16f 100%);
-  border-radius: 14px;
-  padding: 22px 28px;
-  margin-bottom: 22px;
-  box-shadow: 0 12px 28px rgba(20, 60, 38, 0.18);
-  color: #fff;
-}
-.event-hero-inner {
+.event-pageheader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
   flex-wrap: wrap;
+  padding: 24px 4px 18px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #eef2f5;
 }
-.event-hero-text {
+.event-pageheader-text {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  min-width: 0;
 }
-.event-hero-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+.event-pageheader-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eafff5;
+  border: 1px solid #c9e6d3;
+  color: #15693c;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  flex-shrink: 0;
 }
-.event-hero-title {
+.event-pageheader-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: #1d2226;
   letter-spacing: 0.2px;
+  line-height: 1.2;
 }
-.event-hero-sub {
-  margin: 4px 0 0;
+.event-pageheader-sub {
+  margin: 3px 0 0;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
+  color: #7a8a82;
   max-width: 640px;
   line-height: 1.5;
 }
-.event-hero-link {
+.event-pageheader-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 7px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  color: #fff !important;
+  background: #fff;
+  border: 1px solid #e6ecef;
+  color: #15693c !important;
   font-size: 12px;
   font-weight: 600;
-  transition: background 0.15s, transform 0.15s;
+  transition: background 0.15s, border-color 0.15s;
   &:hover {
-    background: rgba(255, 255, 255, 0.26);
-    transform: translateY(-1px);
+    background: #eafff5;
+    border-color: #c9e6d3;
   }
 }
 

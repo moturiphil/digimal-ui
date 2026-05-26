@@ -125,6 +125,9 @@
         <a-menu-item key="procurementVendors">
           <router-link to="/procurement/vendors">Vendors</router-link>
         </a-menu-item>
+        <a-menu-item key="procurementLsos">
+          <router-link to="/procurement/lsos">LSOs / LPOs</router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder && canCreateCampaign">
         <template v-slot:title>

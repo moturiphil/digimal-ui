@@ -293,6 +293,105 @@
             </button>
           </div>
 
+          <!-- Section: Contacts -->
+          <div class="vm-section">
+            <h4 class="vm-section-title">
+              <span class="vm-dot info"></span> Contact persons
+              <span class="vm-section-tag">{{ form.contacts.length }} contact{{ form.contacts.length === 1 ? '' : 's' }}</span>
+            </h4>
+            <p v-if="!isEdit" class="vm-section-hint">
+              Optional. Add the people we should reach out to for this vendor (e.g. bank contact / accounts payable).
+            </p>
+
+            <div v-if="errors.contacts" class="form-error-banner">
+              <sdFeatherIcons type="alert-triangle" size="13" />
+              {{ errors.contacts }}
+            </div>
+
+            <div
+              v-for="(contact, idx) in form.contacts"
+              :key="idx"
+              class="bank-row"
+              :class="{ 'is-primary': contact.is_primary }"
+            >
+              <div class="bank-row-head">
+                <span class="bank-row-index">#{{ idx + 1 }}</span>
+                <span v-if="contact.is_primary" class="bank-primary-pill">
+                  <sdFeatherIcons type="star" size="11" /> Primary
+                </span>
+                <button
+                  type="button"
+                  class="bank-remove"
+                  title="Remove"
+                  @click="removeContactRow(idx)"
+                >
+                  <sdFeatherIcons type="x" size="13" />
+                </button>
+              </div>
+              <a-row :gutter="12">
+                <a-col :span="8">
+                  <a-form-item
+                    label="First Name"
+                    :validate-status="contactErrors[idx]?.first_name ? 'error' : ''"
+                    :help="contactErrors[idx]?.first_name"
+                  >
+                    <a-input v-model:value="contact.first_name" maxlength="100" />
+                  </a-form-item>
+                </a-col>
+                <a-col :span="8">
+                  <a-form-item
+                    label="Middle Name"
+                    :validate-status="contactErrors[idx]?.middle_name ? 'error' : ''"
+                    :help="contactErrors[idx]?.middle_name"
+                  >
+                    <a-input v-model:value="contact.middle_name" maxlength="100" />
+                  </a-form-item>
+                </a-col>
+                <a-col :span="8">
+                  <a-form-item
+                    label="Last Name"
+                    :validate-status="contactErrors[idx]?.last_name ? 'error' : ''"
+                    :help="contactErrors[idx]?.last_name"
+                  >
+                    <a-input v-model:value="contact.last_name" maxlength="100" />
+                  </a-form-item>
+                </a-col>
+              </a-row>
+              <a-row :gutter="12">
+                <a-col :span="9">
+                  <a-form-item
+                    label="Phone"
+                    :validate-status="contactErrors[idx]?.phone_number ? 'error' : ''"
+                    :help="contactErrors[idx]?.phone_number"
+                  >
+                    <a-input v-model:value="contact.phone_number" maxlength="20" />
+                  </a-form-item>
+                </a-col>
+                <a-col :span="12">
+                  <a-form-item
+                    label="Email"
+                    :validate-status="contactErrors[idx]?.email ? 'error' : ''"
+                    :help="contactErrors[idx]?.email"
+                  >
+                    <a-input v-model:value="contact.email" maxlength="255" />
+                  </a-form-item>
+                </a-col>
+                <a-col :span="3">
+                  <a-form-item label="Primary">
+                    <a-switch
+                      :checked="contact.is_primary"
+                      @change="(v) => setPrimaryContact(idx, v)"
+                    />
+                  </a-form-item>
+                </a-col>
+              </a-row>
+            </div>
+
+            <button type="button" class="add-bank-btn" @click="addContactRow">
+              <sdFeatherIcons type="plus" size="13" /> Add contact person
+            </button>
+          </div>
+
           <!-- Section: LSO / LPO (create-mode only, always required) -->
           <div v-if="!isEdit" class="vm-section">
             <h4 class="vm-section-title">
@@ -410,6 +509,17 @@ const blankBankAccount = (isPrimary = false) => ({
   is_primary: isPrimary,
 });
 
+const blankContact = (isPrimary = false) => ({
+  id: undefined,
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  phone_number: '',
+  email: '',
+  is_primary: isPrimary,
+  is_active: true,
+});
+
 const blankForm = () => ({
   name: '',
   method_of_procurement: null,
@@ -421,6 +531,7 @@ const blankForm = () => ({
   tax_certificate_expiry: null,
   tax_compliance_certificate: null, // File
   bank_accounts: [blankBankAccount(true)],
+  contacts: [],
   lso: {
     lso_number: '',
     issue_date: null,
@@ -442,6 +553,7 @@ export default {
     const form = reactive(blankForm());
     const errors = reactive({});
     const bankErrors = ref([]);
+    const contactErrors = ref([]);
     const taxCertFileList = ref([]);
     const lsoFileList = ref([]);
 
@@ -463,6 +575,7 @@ export default {
       Object.assign(form, blankForm());
       Object.keys(errors).forEach((k) => delete errors[k]);
       bankErrors.value = [];
+      contactErrors.value = [];
       taxCertFileList.value = [];
       lsoFileList.value = [];
     };
@@ -490,6 +603,17 @@ export default {
             is_primary: !!a.is_primary,
           }))
         : [blankBankAccount(true)];
+      const cts = v.contacts || v.active_contacts || [];
+      form.contacts = cts.map((c) => ({
+        id: c.id,
+        first_name: c.first_name || '',
+        middle_name: c.middle_name || '',
+        last_name: c.last_name || '',
+        phone_number: c.phone_number || '',
+        email: c.email || '',
+        is_primary: !!c.is_primary,
+        is_active: c.is_active !== false,
+      }));
       // ensure subcounties cached
       if (form.county_id) {
         store.dispatch('procurement/fetchSubcounties', { countyId: form.county_id });
@@ -594,9 +718,30 @@ export default {
       }
     };
 
+    const setPrimaryContact = (idx, value) => {
+      form.contacts.forEach((c, i) => {
+        c.is_primary = value ? i === idx : c.is_primary && i !== idx;
+      });
+      if (value && !form.contacts.some((c) => c.is_primary) && form.contacts[idx]) {
+        form.contacts[idx].is_primary = true;
+      }
+    };
+
+    const addContactRow = () => {
+      const isFirst = form.contacts.length === 0;
+      form.contacts.push(blankContact(isFirst));
+    };
+    const removeContactRow = (idx) => {
+      const removed = form.contacts.splice(idx, 1)[0];
+      if (removed?.is_primary && form.contacts.length) {
+        form.contacts[0].is_primary = true;
+      }
+    };
+
     const validate = () => {
       Object.keys(errors).forEach((k) => delete errors[k]);
       bankErrors.value = form.bank_accounts.map(() => ({}));
+      contactErrors.value = form.contacts.map(() => ({}));
 
       if (!form.name?.trim()) errors.name = 'Name is required';
       else if (form.name.length > 255) errors.name = 'Max 255 characters';
@@ -647,6 +792,19 @@ export default {
         bankErrors.value[i] = e;
       });
 
+      if (form.contacts.length && !form.contacts.some((c) => c.is_primary)) {
+        errors.contacts = 'One contact must be marked primary';
+      }
+      form.contacts.forEach((c, i) => {
+        const e = {};
+        if (!c.first_name?.trim()) e.first_name = 'Required';
+        if (!c.last_name?.trim()) e.last_name = 'Required';
+        if (!c.phone_number?.trim()) e.phone_number = 'Required';
+        else if (c.phone_number.length > 20) e.phone_number = 'Max 20 chars';
+        if (c.email && !/^\S+@\S+\.\S+$/.test(c.email)) e.email = 'Invalid email';
+        contactErrors.value[i] = e;
+      });
+
       if (!isEdit.value) {
         if (!form.lso.lso_number?.trim()) {
           errors['lsos.0.lso_number'] = 'Reference number is required';
@@ -667,7 +825,8 @@ export default {
 
       const hasFieldErrors = Object.keys(errors).length > 0;
       const hasBankErrors = bankErrors.value.some((e) => Object.keys(e).length);
-      return !hasFieldErrors && !hasBankErrors;
+      const hasContactErrors = contactErrors.value.some((e) => Object.keys(e).length);
+      return !hasFieldErrors && !hasBankErrors && !hasContactErrors;
     };
 
     const buildPayload = () => {
@@ -686,6 +845,18 @@ export default {
           is_primary: !!a.is_primary,
         })),
       };
+      if (form.contacts.length) {
+        payload.contacts = form.contacts.map((c) => ({
+          ...(c.id ? { id: c.id } : {}),
+          first_name: c.first_name.trim(),
+          middle_name: c.middle_name?.trim() || null,
+          last_name: c.last_name.trim(),
+          phone_number: c.phone_number.trim(),
+          email: c.email?.trim() || null,
+          is_primary: !!c.is_primary,
+          is_active: c.is_active !== false,
+        }));
+      }
       if (form.category === 'private') {
         payload.kra_pin = form.kra_pin.trim().toUpperCase();
         payload.tax_certificate_expiry = form.tax_certificate_expiry;
@@ -749,6 +920,7 @@ export default {
       form,
       errors,
       bankErrors,
+      contactErrors,
       taxCertFileList,
       lsoFileList,
       banks,
@@ -768,6 +940,9 @@ export default {
       setPrimary,
       addBankRow,
       removeBankRow,
+      setPrimaryContact,
+      addContactRow,
+      removeContactRow,
       onSubmit,
       close,
     };

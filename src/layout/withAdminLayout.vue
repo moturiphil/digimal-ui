@@ -42,7 +42,11 @@
               "
               to="/"
             >
-              <span style="color: #22c997"><b>DigiMal-KE</b></span>
+              <span class="digimal-brand">
+                <span class="digimal-brand-text">
+                  <span class="digimal-brand-name">DigiMal</span><span class="digimal-brand-ke">KE</span>
+                </span>
+              </span>
             </router-link>
           </a-col>
 
@@ -73,6 +77,7 @@
               <sdButton
                 type="success"
                 size="extra-small"
+                class="topbar-gradient-btn"
                 style="margin-right: 10px"
               >
                 <sdFeatherIcons type="search" />
@@ -80,7 +85,7 @@
               </sdButton>
             </router-link>
             <router-link to="/user/profile" style="margin-right: 10px">
-              <sdButton type="success" size="extra-small">
+              <sdButton type="success" size="extra-small" class="topbar-gradient-btn">
                 <sdFeatherIcons type="user" />
                 <span v-if="innerWidth > 532">My Account</span>
               </sdButton>
@@ -333,5 +338,92 @@ export default defineComponent({
 <style>
 .ps {
   height: calc(100vh - 100px);
+}
+
+/* Gradient buttons in the topbar (matches the New LSO hero gradient) */
+.topbar-gradient-btn,
+.topbar-gradient-btn.ant-btn {
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 60%, #36b16f 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 4px 10px rgba(20, 60, 38, 0.18) !important;
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.topbar-gradient-btn:hover,
+.topbar-gradient-btn:focus,
+.topbar-gradient-btn.ant-btn:hover,
+.topbar-gradient-btn.ant-btn:focus {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(20, 60, 38, 0.24) !important;
+  color: #fff !important;
+}
+.topbar-gradient-btn svg {
+  color: #fff !important;
+  stroke: #fff !important;
+}
+
+/* DigiMal-KE brand mark in the topbar */
+.digimal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 1999px;
+  background: linear-gradient(135deg, rgba(21, 105, 60, 0.08) 0%, rgba(54, 177, 111, 0.08) 100%);
+  border: 2px solid rgba(21, 105, 60, 0.18);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.digimal-brand:hover {
+  filter: brightness(1.02);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(20, 60, 38, 0.12);
+}
+.digimal-brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 60%, #36b16f 100%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(20, 60, 38, 0.25);
+  flex-shrink: 0;
+}
+.digimal-brand-mark svg {
+  color: #fff !important;
+  stroke: #fff !important;
+}
+.digimal-brand-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 55%, #36b16f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #15693c; /* fallback */
+}
+.digimal-brand-sep {
+  font-weight: 700;
+  opacity: 0.55;
+  -webkit-text-fill-color: initial;
+  color: #1f9254;
+}
+.digimal-brand-ke {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  -webkit-text-fill-color: initial;
+  color: #1f9254;
+  background: rgba(31, 146, 84, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 </style>

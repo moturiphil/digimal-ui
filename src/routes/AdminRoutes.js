@@ -981,6 +981,24 @@ const routes = [
       ),
     meta: { auth: true },
   },
+  {
+    path: "/procurement/lsos",
+    name: "procurement-lsos",
+    component: () =>
+      import(
+        /* webpackChunkName: "Procurement" */ "@/view/pages/procurement/LsosList.vue"
+      ),
+    meta: { auth: true },
+  },
+  {
+    path: "/procurement/lsos/:vendorId/:id",
+    name: "procurement-lso-detail",
+    component: () =>
+      import(
+        /* webpackChunkName: "Procurement" */ "@/view/pages/procurement/LsoDetail.vue"
+      ),
+    meta: { auth: true },
+  },
 
   ...Apps,
 ];

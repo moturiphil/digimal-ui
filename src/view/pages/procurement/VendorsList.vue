@@ -3,16 +3,11 @@
     <ProcurementPageWrapper class="bp-min">
       <!-- Header -->
       <header class="bp-head">
-        <div>
-          <h3 class="bp-title">
-            <span class="bp-icon">▦</span> Vendor Management
-          </h3>
-          <p class="bp-sub">
-            Suppliers, bank accounts and Local Service Orders.
-          </p>
+        <div class="bp-head-main">
+          <h3 class="bp-title">Vendors</h3>
+          <span class="bp-sub">{{ fmt(pagination.total) }} total</span>
         </div>
         <div class="bp-head-actions">
-          <a-tag class="stage-tag green">{{ pagination.total }} total</a-tag>
           <sdButton size="small" class="pill-btn" :disabled="loading" @click="refresh">
             <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
           </sdButton>
@@ -27,43 +22,16 @@
         </div>
       </header>
 
-      <!-- Summary bar -->
-      <div class="bp-summary">
-        <div class="bp-totals">
-          <div>
-            <span class="lbl">Total</span>
-            <strong>{{ fmt(pagination.total) }}</strong>
-          </div>
-          <div>
-            <span class="lbl">Active (page)</span>
-            <strong>{{ pageStats.active }}<span class="muted-suffix">{{ pageStats.activePct }}%</span></strong>
-          </div>
-          <div>
-            <span class="lbl">Inactive (page)</span>
-            <strong :class="pageStats.inactive ? 'warn' : 'muted'">{{ pageStats.inactive }}</strong>
-          </div>
-          <div>
-            <span class="lbl">Categories</span>
-            <strong class="muted">
-              {{ pageStats.privateCount }} priv &middot; {{ pageStats.publicCount }} pub
-            </strong>
-          </div>
-        </div>
-        <div class="bp-tools">
-          <a-input
-            v-model:value="filters.search"
-            placeholder="Search name, KRA…"
-            allow-clear
-            size="small"
-            class="bp-search"
-            @change="onSearchInputChange"
-            @pressEnter="onFilterChange"
-          />
-        </div>
-      </div>
-
       <!-- Filter row -->
       <div class="filter-row">
+        <a-input
+          v-model:value="filters.search"
+          placeholder="Search name, KRA…"
+          allow-clear
+          size="small"
+          class="bp-search"
+          @pressEnter="onFilterChange"
+        />
         <a-select
           v-model:value="filters.category"
           placeholder="Category"
@@ -121,9 +89,6 @@
           :disabled="!hasActiveFilters"
           @click="resetFilters"
         >Clear</sdButton>
-        <span class="result-counter">
-          Showing {{ vendors.length }} of {{ fmt(pagination.total) }}
-        </span>
       </div>
 
       <!-- Table -->
@@ -246,7 +211,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useStore } from 'vuex';
 import { Main } from '../../styled';
 import VendorFormModal from './VendorFormModal.vue';
@@ -294,23 +259,6 @@ export default {
       size: 'small',
     }));
 
-    const pageStats = computed(() => {
-      const list = vendors.value || [];
-      const active = list.filter((v) => v.is_active).length;
-      const inactive = list.length - active;
-      const cats = new Set(list.map((v) => v.category).filter(Boolean));
-      const privateCount = list.filter((v) => v.category === 'private').length;
-      const publicCount = list.filter((v) => v.category === 'public').length;
-      return {
-        active,
-        inactive,
-        categories: cats.size,
-        privateCount,
-        publicCount,
-        activePct: list.length ? Math.round((active / list.length) * 100) : 0,
-      };
-    });
-
     const hasActiveFilters = computed(() =>
       Boolean(
         filters.search ||
@@ -341,6 +289,13 @@ export default {
       if (searchTimer) clearTimeout(searchTimer);
       searchTimer = setTimeout(() => dispatchFetch({ page: 1 }), 350);
     };
+
+    // Debounced search-as-you-type. Watches v-model so typing AND the
+    // allow-clear (×) button both trigger a fetch.
+    watch(
+      () => filters.search,
+      () => onSearchInputChange(),
+    );
 
     const onCountyChange = (countyId) => {
       filters.sub_county_id = null;
@@ -409,7 +364,6 @@ export default {
       loading,
       pagination,
       paginationConfig,
-      pageStats,
       hasActiveFilters,
       columns,
       modalOpen,
@@ -433,10 +387,20 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.muted-suffix {
-  color: #9aa6ad;
-  font-weight: 600;
-  font-size: 11px;
-  margin-left: 4px;
+.bp-min {
+  padding-top: 24px;
+}
+.bp-head-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.bp-head-main .bp-sub {
+  color: #7a8a82;
+  font-size: 13px;
+}
+.filter-row .bp-search {
+  width: 220px;
 }
 </style>

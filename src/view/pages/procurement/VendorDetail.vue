@@ -12,19 +12,22 @@
 
           <!-- Header -->
           <header class="bp-head">
-            <div>
-              <h3 class="bp-title">
-                <span class="bp-icon">▦</span> {{ vendor.name }}
-              </h3>
-              <p class="bp-sub">
-                {{ vendor.physical_address || 'No physical address recorded' }}
-              </p>
+            <div class="bp-head-main">
+              <h3 class="bp-title">{{ vendor.name }}</h3>
+              <div class="bp-meta">
+                <span
+                  class="v-chip"
+                  :class="vendor.is_active ? 'green' : 'muted'"
+                >
+                  {{ vendor.is_active ? 'Active' : 'Inactive' }}
+                </span>
+                <span v-if="taxCertExpired" class="v-chip warn">Tax cert expired</span>
+                <span v-if="vendor.physical_address" class="bp-sub">
+                  {{ vendor.physical_address }}
+                </span>
+              </div>
             </div>
             <div class="bp-head-actions">
-              <a-tag class="stage-tag" :class="vendor.is_active ? 'green' : ''">
-                {{ vendor.is_active ? 'Active' : 'Inactive' }}
-              </a-tag>
-              <a-tag v-if="taxCertExpired" class="stage-tag warn">Tax cert expired</a-tag>
               <sdButton size="small" class="pill-btn" @click="goBack">
                 <sdFeatherIcons type="arrow-left" size="13" /> Back
               </sdButton>
@@ -50,43 +53,6 @@
               </sdButton>
             </div>
           </header>
-
-          <!-- Summary bar -->
-          <div class="bp-summary">
-            <div class="bp-totals">
-              <div>
-                <span class="lbl">KRA PIN</span>
-                <strong class="muted">{{ vendor.kra_pin || '—' }}</strong>
-              </div>
-              <div>
-                <span class="lbl">Tax Cert. Expiry</span>
-                <strong :class="taxCertExpired ? 'danger' : 'muted'">
-                  {{ vendor.tax_certificate_expiry || '—' }}
-                </strong>
-              </div>
-              <div>
-                <span class="lbl">Bank Accounts</span>
-                <strong>{{ bankAccountsCount }}</strong>
-              </div>
-              <div>
-                <span class="lbl">Active LSOs</span>
-                <strong>{{ activeLsosCount }}</strong>
-              </div>
-              <div>
-                <span class="lbl">Expired LSOs</span>
-                <strong :class="hasExpiredLso ? 'warn' : 'muted'">
-                  {{ expiredLsosCount }}
-                </strong>
-              </div>
-            </div>
-            <div class="bp-tools">
-              <a v-if="taxCertUrl" :href="taxCertUrl" target="_blank" rel="noopener">
-                <sdButton size="small" class="pill-btn">
-                  <sdFeatherIcons type="file-text" size="13" /> View tax certificate
-                </sdButton>
-              </a>
-            </div>
-          </div>
 
           <!-- Tabs -->
           <section class="panel">
@@ -160,6 +126,15 @@
                 <BankAccountsTab :vendor-id="vendorId" />
               </a-tab-pane>
 
+              <a-tab-pane key="contacts">
+                <template #tab>
+                  <span class="vendor-tab-label">
+                    Contacts<span v-if="contactsCount" class="vendor-tab-count">({{ contactsCount }})</span>
+                  </span>
+                </template>
+                <ContactsTab :vendor-id="vendorId" />
+              </a-tab-pane>
+
               <a-tab-pane key="lso">
                 <template #tab>
                   <span class="vendor-tab-label">
@@ -203,6 +178,7 @@ import dayjs from 'dayjs';
 import { Main } from '../../styled';
 import VendorFormModal from './VendorFormModal.vue';
 import BankAccountsTab from './BankAccountsTab.vue';
+import ContactsTab from './ContactsTab.vue';
 import LsosTab from './LsosTab.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { ProcurementPageWrapper } from './style';
@@ -213,6 +189,7 @@ export default {
     Main,
     VendorFormModal,
     BankAccountsTab,
+    ContactsTab,
     LsosTab,
     ProcurementPageWrapper,
   },
@@ -229,6 +206,7 @@ export default {
     const vendor = computed(() => store.state.procurement.currentVendor);
     const loading = computed(() => store.state.procurement.loading);
     const bankAccounts = computed(() => store.state.procurement.bankAccounts);
+    const contacts = computed(() => store.state.procurement.contacts);
     const lsos = computed(() => store.state.procurement.lsos);
 
     const taxCertUrl = computed(
@@ -243,6 +221,7 @@ export default {
     });
 
     const bankAccountsCount = computed(() => bankAccounts.value.length);
+    const contactsCount = computed(() => contacts.value.length);
     const totalLsosCount = computed(() => lsos.value.length);
     const expiredLsosCount = computed(
       () =>
@@ -288,6 +267,7 @@ export default {
       taxCertUrl,
       taxCertExpired,
       bankAccountsCount,
+      contactsCount,
       totalLsosCount,
       activeLsosCount,
       expiredLsosCount,
@@ -302,6 +282,26 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.bp-min {
+  padding-top: 24px;
+}
+.bp-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.bp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  .bp-sub {
+    color: #7a8a82;
+    font-size: 13px;
+    margin: 0;
+  }
+}
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
