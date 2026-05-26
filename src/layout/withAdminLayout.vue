@@ -7,11 +7,16 @@
           width: '100%',
           top: 0,
           [!rtl ? 'left' : 'right']: 0,
+          display: 'flex',
+          alignItems: 'center',
+          paddingTop: 0,
+          paddingBottom: 0,
+          lineHeight: 'normal',
         }"
       >
         <a-row
           :class="rtl ? 'ant-row-rtl' : ''"
-          style="display: flex; justify-content: space-between"
+          style="display: flex; justify-content: space-between; align-items: center; width: 100%; height: 100%;"
         >
           <!-- Left-aligned content -->
           <a-col
@@ -367,17 +372,15 @@ export default defineComponent({
 .digimal-brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px 4px 4px;
-  border-radius: 1999px;
-  background: linear-gradient(135deg, rgba(21, 105, 60, 0.08) 0%, rgba(54, 177, 111, 0.08) 100%);
-  border: 2px solid rgba(21, 105, 60, 0.18);
-  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  transition: filter 0.15s ease, transform 0.15s ease;
 }
 .digimal-brand:hover {
-  filter: brightness(1.02);
+  filter: brightness(1.05);
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(20, 60, 38, 0.12);
 }
 .digimal-brand-mark {
   width: 26px;
