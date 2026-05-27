@@ -22,7 +22,7 @@
           <a-col
             :lg="!topMenu ? 4 : 3"
             :sm="6"
-            :xs="12"
+            :xs="8"
             class="align-left-v navbar-brand"
           >
             <sdButton
@@ -61,7 +61,7 @@
             :lg="!topMenu ? 20 : 21"
             :md="16"
             :sm="18"
-            :xs="12"
+            :xs="16"
             style="
               display: flex;
               justify-content: flex-end;
@@ -428,5 +428,78 @@ export default defineComponent({
   background: rgba(31, 146, 84, 0.12);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+/* ─── Mobile topbar: prevent overlap on narrow screens ── */
+@media (max-width: 767px) {
+  .ant-layout-header {
+    padding: 0 12px !important;
+  }
+  .navbar-brand {
+    min-width: 0;
+  }
+  /* Allow brand text to truncate instead of pushing into the right column */
+  .navbar-brand .striking-logo {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .navbar-brand .digimal-brand {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .navbar-brand .digimal-brand-text {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 575px) {
+  /* Tighter gaps between topbar items so they fit without overlap */
+  .navbar-brand .ant-btn,
+  .ant-layout-header .topbar-gradient-btn {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .ant-layout-header a[href="/search-hh"],
+  .ant-layout-header a[href="/user/profile"] {
+    margin-right: 6px !important;
+  }
+  /* Compact the gradient buttons to icon-only on very narrow screens */
+  .topbar-gradient-btn {
+    min-width: 32px !important;
+    height: 32px !important;
+    padding: 0 8px !important;
+  }
+  .topbar-gradient-btn svg {
+    margin: 0 !important;
+  }
+  /* Compact the logout pill: keep red border + icon, drop label */
+  .logout-btn {
+    padding: 0 8px !important;
+    min-width: 32px !important;
+    justify-content: center !important;
+  }
+  .logout-btn .logout-btn-label {
+    display: none !important;
+  }
+  /* Smaller bell footprint */
+  .np-bell {
+    margin: 0 4px !important;
+  }
+  /* Hide the DigiMal wordmark on the tiniest screens; show only the KE badge */
+  .digimal-brand-name {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .digimal-brand-ke {
+    font-size: 11px;
+    padding: 2px 5px;
+  }
 }
 </style>

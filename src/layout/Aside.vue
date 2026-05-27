@@ -136,9 +136,9 @@
         <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetEventVenues" v-if="canCreateEvent">
+        <!-- <a-menu-item key="widgetEventVenues" v-if="canCreateEvent">
           <router-link to="/events/venue"> Event Venues</router-link>
-        </a-menu-item>
+        </a-menu-item> -->
         <a-sub-menu key="gf-events">
           <template v-slot:title>
             <sdFeatherIcons type="globe" /><span>Global Fund</span>

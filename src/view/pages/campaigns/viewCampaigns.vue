@@ -1,459 +1,559 @@
 <template>
   <div class="campaigns-wrapper">
-    <div class="campaigns-header">
-      <div class="header-content">
-        <sdHeading as="h1" class="page-title">
-          Campaigns
-        </sdHeading>
-        <p class="page-subtitle">Manage and view all your campaigns</p>
-      </div>
-      <div class="header-actions">
-        <sdButton class="btn-create-campaign" size="large" type="success">
-          <router-link to="/campaigns/create-campaign">
-            <sdFeatherIcons type="plus" size="16" /> 
-            <span>Create Campaign</span>
-          </router-link>
-        </sdButton>
-      </div>
-    </div>
-
     <Main>
-      <div class="campaigns-content">
-        <a-spin :spinning="isLoading" tip="Loading campaigns...">
-          <div v-if="dataSource && dataSource.length > 0" class="campaigns-grid">
-            <div
-              v-for="(item, index) in dataSource"
-              :key="item.id || index"
-              class="campaign-card"
-              :style="{ animationDelay: `${index * 0.1}s` }"
-            >
-              <div class="card-header">
-                <h3 class="campaign-name">{{ item.name }}</h3>
-              </div>
-              <div class="card-body">
-                <div class="info-item">
-                  <sdFeatherIcons type="calendar" size="16" class="info-icon" />
-                  <div class="info-content">
-                    <span class="info-label">Start Date</span>
-                    <span class="info-value">{{ formatDate(item.start_date) }}</span>
-                  </div>
-                </div>
-                <div class="info-item">
-                  <sdFeatherIcons type="calendar" size="16" class="info-icon" />
-                  <div class="info-content">
-                    <span class="info-label">End Date</span>
-                    <span class="info-value">{{ formatDate(item.end_date) }}</span>
-                  </div>
-                </div>
-              </div>
-              <!-- <div class="card-footer">
-                <sdButton class="btn-view" type="success" size="default">
-                  <router-link :to="`/campaigns/view/${item.id}`">
-                    <sdFeatherIcons type="eye" size="16" />
-                    <span>View Details</span>
-                  </router-link>
-                </sdButton>
-              </div> -->
-            </div>
+      <!-- Page header -->
+      <div class="cmp-pageheader">
+        <div class="cmp-pageheader-text">
+          <span class="cmp-pageheader-icon">
+            <sdFeatherIcons type="layers" size="18" />
+          </span>
+          <div>
+            <h2 class="cmp-pageheader-title">Campaigns</h2>
+            <p class="cmp-pageheader-sub">
+              Manage and review every campaign currently running in the system.
+            </p>
           </div>
-          <div v-else-if="!isLoading" class="empty-state">
-            <sdFeatherIcons type="inbox" size="64" class="empty-icon" />
-            <h3>No Campaigns Yet</h3>
-            <p>Create your first campaign to get started</p>
-            <sdButton class="btn-create-first" size="large" type="success">
-              <router-link to="/campaigns/create-campaign">
-                <sdFeatherIcons type="plus" size="16" />
-                <span>Create Your First Campaign</span>
-              </router-link>
-            </sdButton>
-          </div>
-        </a-spin>
+        </div>
+        <router-link to="/campaigns/create-campaign" class="cmp-create-btn">
+          <sdFeatherIcons type="plus" size="14" />
+          <span>Create Campaign</span>
+        </router-link>
       </div>
+
+      <!-- Stats strip -->
+      <div v-if="!isLoading && dataSource.length" class="cmp-stats">
+        <div class="cmp-stat">
+          <span class="cmp-stat-label">Total</span>
+          <span class="cmp-stat-value">{{ dataSource.length }}</span>
+        </div>
+        <div class="cmp-stat">
+          <span class="cmp-stat-label">Active</span>
+          <span class="cmp-stat-value">{{ counts.active }}</span>
+        </div>
+        <div class="cmp-stat">
+          <span class="cmp-stat-label">Upcoming</span>
+          <span class="cmp-stat-value">{{ counts.upcoming }}</span>
+        </div>
+        <div class="cmp-stat">
+          <span class="cmp-stat-label">Ended</span>
+          <span class="cmp-stat-value">{{ counts.ended }}</span>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="cmp-toolbar">
+        <a-input
+          v-model:value="search"
+          allow-clear
+          placeholder="Search campaign by name…"
+          class="cmp-search"
+        >
+          <template #prefix>
+            <sdFeatherIcons type="search" size="14" />
+          </template>
+        </a-input>
+        <a-select v-model:value="statusFilter" class="cmp-filter" size="middle">
+          <a-select-option value="all">All statuses</a-select-option>
+          <a-select-option value="active">Active</a-select-option>
+          <a-select-option value="upcoming">Upcoming</a-select-option>
+          <a-select-option value="ended">Ended</a-select-option>
+        </a-select>
+        <span v-if="!isLoading" class="cmp-result-count">
+          {{ filteredCampaigns.length }} of {{ dataSource.length }} shown
+        </span>
+      </div>
+
+      <!-- Content -->
+      <a-spin :spinning="isLoading" tip="Loading campaigns…">
+        <div v-if="!isLoading && filteredCampaigns.length" class="campaigns-grid">
+          <router-link
+            v-for="(item, index) in filteredCampaigns"
+            :key="item.id || index"
+            :to="`/campaigns/view/${item.id}`"
+            class="campaign-card"
+            :style="{ animationDelay: `${index * 0.05}s` }"
+          >
+            <header class="card-head">
+              <span class="card-status" :class="`is-${statusOf(item)}`">
+                {{ statusLabel(statusOf(item)) }}
+              </span>
+              <span class="card-arrow">
+                <sdFeatherIcons type="arrow-up-right" size="14" />
+              </span>
+            </header>
+
+            <h3 class="campaign-name">{{ item.name }}</h3>
+
+            <div class="card-meta">
+              <div class="meta-row">
+                <sdFeatherIcons type="play-circle" size="13" class="meta-icon" />
+                <span class="meta-label">Starts</span>
+                <span class="meta-value">{{ formatDate(item.start_date) }}</span>
+              </div>
+              <div class="meta-row">
+                <sdFeatherIcons type="flag" size="13" class="meta-icon" />
+                <span class="meta-label">Ends</span>
+                <span class="meta-value">{{ formatDate(item.end_date) }}</span>
+              </div>
+              <div v-if="durationDays(item) !== null" class="meta-row">
+                <sdFeatherIcons type="clock" size="13" class="meta-icon" />
+                <span class="meta-label">Duration</span>
+                <span class="meta-value">{{ durationDays(item) }} days</span>
+              </div>
+            </div>
+
+            <footer class="card-foot">
+              <span class="card-cta">
+                View details
+                <sdFeatherIcons type="chevron-right" size="13" />
+              </span>
+            </footer>
+          </router-link>
+        </div>
+
+        <!-- No matches in filter -->
+        <div
+          v-else-if="!isLoading && dataSource.length && !filteredCampaigns.length"
+          class="empty-state subtle"
+        >
+          <sdFeatherIcons type="search" size="40" class="empty-icon" />
+          <h3>No campaigns match your search</h3>
+          <p>Try a different name or change the status filter.</p>
+          <button class="cmp-ghost-btn" @click="clearFilters">Clear filters</button>
+        </div>
+
+        <!-- Empty (no data at all) -->
+        <div v-else-if="!isLoading" class="empty-state">
+          <sdFeatherIcons type="inbox" size="48" class="empty-icon" />
+          <h3>No campaigns yet</h3>
+          <p>Create your first campaign to get started.</p>
+          <router-link to="/campaigns/create-campaign" class="cmp-create-btn">
+            <sdFeatherIcons type="plus" size="14" />
+            <span>Create Your First Campaign</span>
+          </router-link>
+        </div>
+      </a-spin>
     </Main>
   </div>
 </template>
 
-<script>
-import { Main } from "../../styled";
-import { defineComponent, computed, onMounted, ref, reactive } from "vue";
-import { useStore } from "vuex";
-import authHeader from "../../../services/auth-header";
-import { notification } from "ant-design-vue";
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import { Main } from '../../styled';
+import authHeader from '../../../services/auth-header';
+import { notification } from 'ant-design-vue';
+import dayjs from 'dayjs';
 
-export default defineComponent({
-  name: "ViewCampaigns",
-  components: {
-    Main,
-  },
-  setup() {
-    const { state, dispatch } = useStore();
-    const crud = computed(() => state.crud.data);
-    const isLoading = ref(false);
-    const selectedRowKeys = ref([]);
-    const dataSource = ref([]);
+const isLoading = ref(false);
+const dataSource = ref([]);
+const search = ref('');
+const statusFilter = ref('all');
 
-    const formatDate = (dateString) => {
-      if (!dateString) return "N/A";
-      const date = new Date(dateString);
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    };
+const formatDate = (value) => {
+  if (!value) return '—';
+  const d = dayjs(value);
+  return d.isValid() ? d.format('DD MMM YYYY') : '—';
+};
 
-    onMounted(async () => {
-      isLoading.value = true;
-      try {
-        const response = await fetch(
-          `${process.env.VUE_APP_BASE_URL}/campaign_all`,
-          {
-            method: "GET",
-            headers: authHeader(),
-          }
-        );
-        const data = await response.json();
-        dataSource.value = data.data || [];
-      } catch (error) {
-        console.error(error);
-        notification.error({
-          message: "Error Loading Campaigns",
-          description: "Failed to fetch campaigns. Please try again later.",
-        });
-      } finally {
-        isLoading.value = false;
-      }
-    });
+const statusOf = (item) => {
+  const now = dayjs();
+  const start = item.start_date ? dayjs(item.start_date) : null;
+  const end = item.end_date ? dayjs(item.end_date) : null;
+  if (start && start.isAfter(now, 'day')) return 'upcoming';
+  if (end && end.isBefore(now, 'day')) return 'ended';
+  return 'active';
+};
 
-    const handleDelete = (id) => {
-      const confirm = window.confirm("Are you sure delete this?");
-      if (confirm) {
-        dispatch("axiosDataDelete", {
-          id,
-          getData: () => {
-            dispatch("axiosCrudGetData");
-          },
-        });
-      }
+const statusLabel = (s) =>
+  s === 'active' ? 'Active' : s === 'upcoming' ? 'Upcoming' : 'Ended';
+
+const durationDays = (item) => {
+  if (!item.start_date || !item.end_date) return null;
+  const start = dayjs(item.start_date);
+  const end = dayjs(item.end_date);
+  if (!start.isValid() || !end.isValid()) return null;
+  return Math.max(0, end.diff(start, 'day'));
+};
+
+const counts = computed(() => ({
+  active: dataSource.value.filter((c) => statusOf(c) === 'active').length,
+  upcoming: dataSource.value.filter((c) => statusOf(c) === 'upcoming').length,
+  ended: dataSource.value.filter((c) => statusOf(c) === 'ended').length,
+}));
+
+const filteredCampaigns = computed(() => {
+  const term = search.value.trim().toLowerCase();
+  return dataSource.value.filter((c) => {
+    if (statusFilter.value !== 'all' && statusOf(c) !== statusFilter.value) {
       return false;
-    };
+    }
+    if (!term) return true;
+    return (c.name || '').toLowerCase().includes(term);
+  });
+});
 
-    const formState = reactive({
-      searchItem: "",
+const clearFilters = () => {
+  search.value = '';
+  statusFilter.value = 'all';
+};
+
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/campaign_all`,
+      { method: 'GET', headers: authHeader() },
+    );
+    const data = await response.json();
+    dataSource.value = data.data || [];
+  } catch (error) {
+    console.error(error);
+    notification.error({
+      message: 'Error Loading Campaigns',
+      description: 'Failed to fetch campaigns. Please try again later.',
     });
-
-    const onSelectChange = (selectedRowKey) => {
-      selectedRowKeys.value = selectedRowKey;
-    };
-
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: onSelectChange,
-    };
-
-    return {
-      crud,
-      isLoading,
-      selectedRowKeys,
-      handleDelete,
-      rowSelection,
-      onSelectChange,
-      dataSource,
-      formState,
-      formatDate,
-    };
-  },
+  } finally {
+    isLoading.value = false;
+  }
 });
 </script>
 
 <style scoped>
-/* Main Wrapper */
+/* ─── Wrapper ──────────────────────────────────────────── */
 .campaigns-wrapper {
   min-height: 100vh;
-  background: #ffffff;
-  padding: 30px;
+  background: #fafbfb;
+  padding: 24px 28px 48px;
 }
 
-/* Header Section */
-.campaigns-header {
+/* ─── Page header ──────────────────────────────────────── */
+.cmp-pageheader {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  animation: fadeInDown 0.6s ease-out;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 8px 4px 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #eef2f5;
 }
-
-.header-content {
-  flex: 1;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #272b41;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, #20c997 0%, #17a589 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.page-subtitle {
-  font-size: 16px;
-  color: #868eae;
-  margin: 0;
-  font-weight: 500;
-}
-
-.header-actions {
+.cmp-pageheader-text {
   display: flex;
   align-items: center;
-}
-
-.btn-create-campaign {
-  height: 48px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 16px;
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(32, 201, 151, 0.25);
-  transition: all 0.3s ease;
-}
-
-.btn-create-campaign:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(32, 201, 151, 0.35);
-}
-
-.btn-create-campaign a {
-  color: inherit;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Content Area */
-.campaigns-content {
-  animation: fadeInUp 0.6s ease-out 0.2s both;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
-  min-height: 400px;
-}
-
-/* Grid Layout */
-.campaigns-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 28px;
-  padding: 0;
-}
-
-/* Campaign Card */
-.campaign-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: fadeInUp 0.5s ease-out both;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  position: relative;
-  overflow: hidden;
-}
-
-.campaign-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #20c997 0%, #17a589 100%);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.campaign-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
-}
-
-.campaign-card:hover::before {
-  transform: scaleX(1);
-}
-
-.card-header {
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f2f5;
-}
-
-.campaign-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: #272b41;
-  margin: 0;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-.card-body {
-  margin-bottom: 24px;
-}
-
-.info-item {
-  display: flex;
-  align-items: flex-start;
   gap: 12px;
-  padding: 12px 0;
+  min-width: 0;
 }
-
-.info-icon {
-  color: #20c997;
-  margin-top: 2px;
+.cmp-pageheader-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eafff5;
+  border: 1px solid #c9e6d3;
+  color: #15693c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
+.cmp-pageheader-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d2226;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+}
+.cmp-pageheader-sub {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: #7a8a82;
+  max-width: 640px;
+  line-height: 1.5;
+}
 
-.info-content {
-  flex: 1;
+/* ─── Brand-green primary button ───────────────────────── */
+.cmp-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 60%, #36b16f 100%);
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 4px 10px rgba(20, 60, 38, 0.18);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cmp-create-btn:hover,
+.cmp-create-btn:focus {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(20, 60, 38, 0.26);
+  color: #fff !important;
+}
+
+.cmp-ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: #15693c;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #c9e6d3;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cmp-ghost-btn:hover {
+  background: #eafff5;
+  border-color: #1f9254;
+}
+
+/* ─── Stats strip ──────────────────────────────────────── */
+.cmp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.cmp-stat {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid #eef2f5;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(20, 60, 38, 0.03);
 }
-
-.info-label {
-  font-size: 13px;
-  color: #868eae;
-  font-weight: 500;
+.cmp-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #8a9399;
+}
+.cmp-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #15693c;
+  line-height: 1;
 }
 
-.info-value {
-  font-size: 15px;
-  color: #272b41;
-  font-weight: 600;
-}
-
-.card-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 16px;
-  border-top: 2px solid #f0f2f5;
-}
-
-.btn-view {
-  border-radius: 10px;
-  font-weight: 600;
-  height: 44px;
-  padding: 0 24px;
+/* ─── Toolbar ──────────────────────────────────────────── */
+.cmp-toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.cmp-search {
+  width: 320px;
+  max-width: 100%;
+}
+.cmp-filter {
+  width: 160px;
+}
+.cmp-result-count {
+  font-size: 12px;
+  color: #8a9399;
+  font-weight: 600;
+  margin-left: auto;
 }
 
-.btn-view a {
-  color: inherit;
+/* ─── Cards grid ──────────────────────────────────────── */
+.campaigns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.campaign-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #eef2f5;
+  border-radius: 14px;
+  padding: 18px 18px 14px;
   text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 2px rgba(20, 60, 38, 0.03);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    transform 0.18s ease;
+  animation: fadeInUp 0.4s ease-out both;
+  overflow: hidden;
+}
+.campaign-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, #15693c, #1f9254, #36b16f);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.campaign-card:hover {
+  border-color: #c9e6d3;
+  box-shadow: 0 10px 24px rgba(20, 60, 38, 0.08);
+  transform: translateY(-3px);
+}
+.campaign-card:hover::before {
+  opacity: 1;
+}
+
+.card-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  margin-bottom: 10px;
+}
+.card-status {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.card-status.is-active {
+  background: #eafff5;
+  color: #15693c;
+  border: 1px solid #c9e6d3;
+}
+.card-status.is-upcoming {
+  background: #fff7e8;
+  color: #a06200;
+  border: 1px solid #ffe2a8;
+}
+.card-status.is-ended {
+  background: #f5f6f8;
+  color: #6b7480;
+  border: 1px solid #e6ecef;
+}
+.card-arrow {
+  color: #8a9399;
+  display: inline-flex;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+.campaign-card:hover .card-arrow {
+  color: #15693c;
+  transform: translate(2px, -2px);
 }
 
-.btn-view:hover {
-  transform: translateX(4px);
+.campaign-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1d2226;
+  line-height: 1.35;
+  margin: 0 0 12px;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Empty State */
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  margin: 0 0 4px;
+  border-top: 1px dashed #eef2f5;
+  border-bottom: 1px dashed #eef2f5;
+}
+.meta-row {
+  display: grid;
+  grid-template-columns: 16px 72px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.meta-icon {
+  color: #1f9254;
+}
+.meta-label {
+  color: #8a9399;
+  font-weight: 600;
+}
+.meta-value {
+  color: #1d2226;
+  font-weight: 600;
+}
+
+.card-foot {
+  padding-top: 10px;
+}
+.card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #15693c;
+}
+
+/* ─── Empty / no-match states ─────────────────────────── */
 .empty-state {
   text-align: center;
-  padding: 80px 20px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  animation: fadeIn 0.6s ease-out;
-}
-
-.empty-icon {
-  color: #d0d4e4;
-  margin-bottom: 24px;
-}
-
-.empty-state h3 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #272b41;
-  margin-bottom: 12px;
-}
-
-.empty-state p {
-  font-size: 16px;
-  color: #868eae;
-  margin-bottom: 32px;
-}
-
-.btn-create-first {
-  height: 48px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 16px;
-  padding: 0 32px;
-  box-shadow: 0 4px 12px rgba(32, 201, 151, 0.25);
-}
-
-.btn-create-first a {
-  color: inherit;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Loading Spinner */
-.ant-spin-nested-loading {
-  min-height: 400px;
-}
-
-:deep(.ant-spin) {
-  color: #20c997;
-}
-
-:deep(.ant-spin-dot-item) {
-  background-color: #20c997;
-}
-
-:deep(.ant-spin-text) {
-  color: #272b41;
-  font-size: 14px;
+  padding: 56px 24px;
+  background: #fff;
+  border: 1px solid #eef2f5;
+  border-radius: 14px;
   margin-top: 8px;
 }
-
-/* Animations */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.empty-state.subtle {
+  background: #fafbfb;
+  border-style: dashed;
+}
+.empty-icon {
+  color: #c9e6d3;
+  margin-bottom: 16px;
+}
+.empty-state h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1d2226;
+  margin: 0 0 6px;
+}
+.empty-state p {
+  font-size: 13px;
+  color: #7a8a82;
+  margin: 0 0 18px;
 }
 
+/* ─── Spinner accent ──────────────────────────────────── */
+:deep(.ant-spin) {
+  color: #1f9254;
+}
+:deep(.ant-spin-dot-item) {
+  background-color: #1f9254;
+}
+:deep(.ant-spin-text) {
+  color: #1d2226;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* ─── Animations ──────────────────────────────────────── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -461,149 +561,28 @@ export default defineComponent({
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cmp-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .campaigns-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .campaigns-wrapper {
-    padding: 20px;
-  }
-
-  .campaigns-header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 24px;
-    gap: 20px;
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .btn-create-campaign {
-    width: 100%;
-    justify-content: center;
-    height: 46px;
-    font-size: 15px;
-  }
-
-  .page-title {
-    font-size: 26px;
-  }
-
-  .page-subtitle {
-    font-size: 14px;
-  }
-
-  .campaigns-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 10px;
-  }
-
-  .campaign-card {
-    padding: 24px;
-  }
-
-  .campaign-name {
-    font-size: 18px;
-  }
-}
-
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .campaigns-wrapper {
     padding: 16px;
   }
-
-  .campaigns-header {
-    padding: 20px;
-    margin-bottom: 24px;
+  .cmp-pageheader {
+    align-items: flex-start;
   }
-
-  .page-title {
-    font-size: 22px;
-  }
-
-  .page-subtitle {
-    font-size: 13px;
-  }
-
-  .btn-create-campaign {
-    height: 44px;
-    font-size: 14px;
-    padding: 0 20px;
-  }
-
-  .campaign-card {
-    padding: 20px;
-  }
-
-  .campaign-name {
-    font-size: 17px;
-  }
-
-  .info-label {
-    font-size: 12px;
-  }
-
-  .info-value {
-    font-size: 14px;
-  }
-
-  .btn-view {
+  .cmp-search,
+  .cmp-filter {
     width: 100%;
-    justify-content: center;
-    font-size: 14px;
-    height: 42px;
   }
-
-  .empty-state {
-    padding: 60px 20px;
+  .cmp-result-count {
+    margin-left: 0;
   }
-
-  .empty-state h3 {
-    font-size: 20px;
-  }
-
-  .empty-state p {
-    font-size: 14px;
-  }
-
-  .btn-create-first {
-    width: 100%;
-    height: 44px;
-    font-size: 14px;
-  }
-}
-
-/* Touch device optimizations */
-@media (hover: none) and (pointer: coarse) {
-  .btn-create-campaign,
-  .btn-view,
-  .btn-create-first {
-    min-height: 44px;
-  }
-
-  .campaign-card:hover {
-    transform: none;
-  }
-
-  .campaign-card:active {
-    transform: scale(0.98);
+  .campaigns-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
