@@ -20,7 +20,7 @@
         <RecordFormWrapper>
           <sdCards headless>
             <a-row justify="center">
-              <a-col :xl="14" :md="20" :xs="24">
+              <a-col :xl="20" :md="20" :xs="24">
                 <BasicFormWrapper>
                   <a-form
                     class="add-record-form event-form-shell"

@@ -170,7 +170,7 @@
   </Main>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
@@ -183,101 +183,54 @@ import LsosTab from './LsosTab.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { ProcurementPageWrapper } from './style';
 
-export default {
-  name: 'VendorDetail',
-  components: {
-    Main,
-    VendorFormModal,
-    BankAccountsTab,
-    ContactsTab,
-    LsosTab,
-    ProcurementPageWrapper,
-  },
-  setup() {
-    const store = useStore();
-    const route = useRoute();
-    const router = useRouter();
-    const permissions = useProcurementPermissions();
+const store = useStore();
+const route = useRoute();
+const router = useRouter();
+const { canManageVendors, canApproveVendor } = useProcurementPermissions();
 
-    const activeTab = ref('profile');
-    const editModalOpen = ref(false);
+const activeTab = ref('profile');
+const editModalOpen = ref(false);
 
-    const vendorId = computed(() => Number(route.params.id));
-    const vendor = computed(() => store.state.procurement.currentVendor);
-    const loading = computed(() => store.state.procurement.loading);
-    const bankAccounts = computed(() => store.state.procurement.bankAccounts);
-    const contacts = computed(() => store.state.procurement.contacts);
-    const lsos = computed(() => store.state.procurement.lsos);
+const vendorId = computed(() => Number(route.params.id));
+const vendor = computed(() => store.state.procurement.currentVendor);
+const loading = computed(() => store.state.procurement.loading);
+const bankAccounts = computed(() => store.state.procurement.bankAccounts);
+const contacts = computed(() => store.state.procurement.contacts);
+const lsos = computed(() => store.state.procurement.lsos);
 
-    const taxCertUrl = computed(
-      () =>
-        vendor.value?.tax_certificate_url ||
-        vendor.value?.tax_compliance_certificate_url ||
-        null,
-    );
-    const taxCertExpired = computed(() => {
-      const d = vendor.value?.tax_certificate_expiry;
-      return d ? dayjs(d).isBefore(dayjs(), 'day') : false;
-    });
+const taxCertUrl = computed(
+  () =>
+    vendor.value?.tax_certificate_url ||
+    vendor.value?.tax_compliance_certificate_url ||
+    null,
+);
+const taxCertExpired = computed(() => {
+  const d = vendor.value?.tax_certificate_expiry;
+  return d ? dayjs(d).isBefore(dayjs(), 'day') : false;
+});
 
-    const bankAccountsCount = computed(() => bankAccounts.value.length);
-    const contactsCount = computed(() => contacts.value.length);
-    const totalLsosCount = computed(() => lsos.value.length);
-    const expiredLsosCount = computed(
-      () =>
-        lsos.value.filter(
-          (l) => l.expiry_date && dayjs(l.expiry_date).isBefore(dayjs(), 'day'),
-        ).length,
-    );
-    const activeLsosCount = computed(
-      () => totalLsosCount.value - expiredLsosCount.value,
-    );
-    const hasExpiredLso = computed(() => expiredLsosCount.value > 0);
+const bankAccountsCount = computed(() => bankAccounts.value.length);
+const contactsCount = computed(() => contacts.value.length);
+const totalLsosCount = computed(() => lsos.value.length);
 
-    const fetchVendor = () =>
-      store.dispatch('procurement/fetchVendor', vendorId.value);
+const fetchVendor = () =>
+  store.dispatch('procurement/fetchVendor', vendorId.value);
 
-    onMounted(fetchVendor);
-    watch(vendorId, (id) => {
-      if (id) fetchVendor();
-    });
+onMounted(fetchVendor);
+watch(vendorId, (id) => {
+  if (id) fetchVendor();
+});
 
-    const goBack = () => router.push('/procurement/vendors');
-    const openEdit = () => {
-      editModalOpen.value = true;
-    };
-    const onEditSaved = () => {
-      editModalOpen.value = false;
-      fetchVendor();
-    };
-    const onToggle = async () => {
-      await store.dispatch(
-        'procurement/toggleVendorStatus',
-        vendorId.value,
-      );
-    };
-
-    return {
-      ...permissions,
-      activeTab,
-      editModalOpen,
-      vendorId,
-      vendor,
-      loading,
-      taxCertUrl,
-      taxCertExpired,
-      bankAccountsCount,
-      contactsCount,
-      totalLsosCount,
-      activeLsosCount,
-      expiredLsosCount,
-      hasExpiredLso,
-      goBack,
-      openEdit,
-      onEditSaved,
-      onToggle,
-    };
-  },
+const goBack = () => router.push('/procurement/vendors');
+const openEdit = () => {
+  editModalOpen.value = true;
+};
+const onEditSaved = () => {
+  editModalOpen.value = false;
+  fetchVendor();
+};
+const onToggle = async () => {
+  await store.dispatch('procurement/toggleVendorStatus', vendorId.value);
 };
 </script>
 

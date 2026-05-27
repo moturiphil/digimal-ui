@@ -74,7 +74,7 @@
                   :help="errors.category"
                 >
                   <a-select v-model:value="form.category" placeholder="Select category">
-                    <a-select-option value="public">Public</a-select-option>
+                    <a-select-option value="public">Public Institute</a-select-option>
                     <a-select-option value="fbo">Faith-Based Organization (FBO)</a-select-option>
                     <a-select-option value="cbo">Community-Based Organization (CBO)</a-select-option>
                     <a-select-option value="ngo">Non-Governmental Organization (NGO)</a-select-option>
@@ -106,6 +106,7 @@
                     v-model:value="form.county_id"
                     placeholder="Select county"
                     show-search
+                    option-filter-prop="label"
                     :filter-option="optionFilter"
                     @change="onCountyChange"
                   >
@@ -113,6 +114,7 @@
                       v-for="c in counties"
                       :key="c.id"
                       :value="c.id"
+                      :label="c.name || c.county_name"
                     >{{ c.name || c.county_name }}</a-select-option>
                   </a-select>
                 </a-form-item>
@@ -127,6 +129,7 @@
                     v-model:value="form.subcounty_id"
                     placeholder="Select sub-county"
                     show-search
+                    option-filter-prop="label"
                     :filter-option="optionFilter"
                     :disabled="!form.county_id"
                   >
@@ -134,6 +137,7 @@
                       v-for="s in subcountiesForCounty"
                       :key="s.id"
                       :value="s.id"
+                      :label="s.name || s.sub_county_name"
                     >{{ s.name || s.sub_county_name }}</a-select-option>
                   </a-select>
                 </a-form-item>
@@ -239,27 +243,55 @@
                 </button>
               </div>
               <a-row :gutter="12">
-                <a-col :span="8">
+                <a-col :span="12">
                   <a-form-item
-                    label="Bank"
+                    label="Bank Name"
+                    :validate-status="bankErrors[idx]?.bank_key ? 'error' : ''"
+                    :help="bankErrors[idx]?.bank_key"
+                  >
+                    <a-select
+                      v-model:value="account.bank_key"
+                      placeholder="Select bank"
+                      show-search
+                      option-filter-prop="label"
+                      :filter-option="optionFilter"
+                      @change="(v) => onBankNameChange(idx, v)"
+                    >
+                      <a-select-option
+                        v-for="bankOption in bankNameOptions"
+                        :key="bankOption.key"
+                        :value="bankOption.key"
+                        :label="bankOption.label"
+                      >{{ bankOption.label }}</a-select-option>
+                    </a-select>
+                  </a-form-item>
+                </a-col>
+                <a-col :span="12">
+                  <a-form-item
+                    label="Branch"
                     :validate-status="bankErrors[idx]?.bank_id ? 'error' : ''"
                     :help="bankErrors[idx]?.bank_id"
                   >
                     <a-select
                       v-model:value="account.bank_id"
-                      placeholder="Select bank"
+                      placeholder="Select branch"
                       show-search
+                      option-filter-prop="label"
                       :filter-option="optionFilter"
+                      :disabled="!account.bank_key"
                     >
                       <a-select-option
-                        v-for="b in banks"
-                        :key="b.id"
-                        :value="b.id"
-                      >{{ b.name || b.bank_name }}</a-select-option>
+                        v-for="branch in branchesForBank(account.bank_key)"
+                        :key="branch.id"
+                        :value="branch.id"
+                        :label="branch.branch_name || branch.name"
+                      >{{ branch.branch_name || branch.name }}</a-select-option>
                     </a-select>
                   </a-form-item>
                 </a-col>
-                <a-col :span="7">
+              </a-row>
+              <a-row :gutter="12">
+                <a-col :span="9">
                   <a-form-item
                     label="Account #"
                     :validate-status="bankErrors[idx]?.account_number ? 'error' : ''"
@@ -268,7 +300,7 @@
                     <a-input v-model:value="account.account_number" maxlength="30" />
                   </a-form-item>
                 </a-col>
-                <a-col :span="6">
+                <a-col :span="12">
                   <a-form-item
                     label="Account Name"
                     :validate-status="bankErrors[idx]?.account_name ? 'error' : ''"
@@ -392,17 +424,26 @@
             </button>
           </div>
 
-          <!-- Section: LSO / LPO (create-mode only, always required) -->
+          <!-- Section: LSO / LPO (create-mode only, optional) -->
           <div v-if="!isEdit" class="vm-section">
             <h4 class="vm-section-title">
               <span class="vm-dot"></span> LSO/LPO details
-              <span class="vm-section-tag">Required</span>
+              <span class="vm-section-tag">Optional</span>
             </h4>
             <p class="vm-section-hint">
-              Captures the order issued to this vendor, used downstream for payment processing.
+              Add this only when an LSO/LPO has already been issued for the vendor.
             </p>
 
-            <div class="lso-fields">
+            <label class="lso-toggle" :class="{ 'is-on': includeLsoDetails }">
+              <a-checkbox :checked="includeLsoDetails" @change="onLsoToggleChange">
+                <span class="lso-toggle-label">Add LSO/LPO details</span>
+              </a-checkbox>
+              <span class="lso-toggle-hint">
+                Enable to open LSO/LPO fields and attach the order document.
+              </span>
+            </label>
+
+            <div v-if="includeLsoDetails" class="lso-fields">
               <a-row :gutter="16">
                 <a-col :span="12">
                   <a-form-item
@@ -503,6 +544,7 @@ const KRA_REGEX = /^[A-Z]\d{9}[A-Z]$/i;
 
 const blankBankAccount = (isPrimary = false) => ({
   id: undefined,
+  bank_key: null,
   bank_id: null,
   account_number: '',
   account_name: '',
@@ -556,8 +598,20 @@ export default {
     const contactErrors = ref([]);
     const taxCertFileList = ref([]);
     const lsoFileList = ref([]);
+    const includeLsoDetails = ref(false);
 
     const banks = computed(() => store.state.procurement.banks);
+    const bankNameOptions = computed(() => {
+      const map = new Map();
+      (banks.value || []).forEach((bank) => {
+        const key = bankKeyOf(bank);
+        if (!key || map.has(key)) return;
+        const name = bank.bank_name || bank.name || '';
+        const code = bank.bank_code ? ` (${bank.bank_code})` : '';
+        map.set(key, { key, label: `${name}${code}` });
+      });
+      return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+    });
     const counties = computed(() => store.state.procurement.counties);
     const subcountiesForCounty = computed(() =>
       store.getters['procurement/subcountiesFor'](form.county_id)
@@ -578,6 +632,7 @@ export default {
       contactErrors.value = [];
       taxCertFileList.value = [];
       lsoFileList.value = [];
+      includeLsoDetails.value = false;
     };
 
     const populateFromVendor = (v) => {
@@ -597,12 +652,14 @@ export default {
       form.bank_accounts = accs.length
         ? accs.map((a) => ({
             id: a.id,
+            bank_key: null,
             bank_id: a.bank_id,
             account_number: a.account_number,
             account_name: a.account_name,
             is_primary: !!a.is_primary,
           }))
         : [blankBankAccount(true)];
+      syncBankKeys();
       const cts = v.contacts || v.active_contacts || [];
       form.contacts = cts.map((c) => ({
         id: c.id,
@@ -650,11 +707,49 @@ export default {
       delete errors.method_of_procurement;
     };
 
-    const optionFilter = (input, option) =>
-      (option?.children?.[0]?.children || '')
-        .toString()
-        .toLowerCase()
-        .includes(input.toLowerCase());
+    const bankKeyOf = (bank) => {
+      if (!bank) return null;
+      const code = bank.bank_code || '';
+      const name = bank.bank_name || bank.name || '';
+      return `${code}::${name}`;
+    };
+
+    const optionFilter = (input, option) => {
+      const text = (
+        option?.label
+        || option?.children?.[0]?.children
+        || option?.children
+        || ''
+      ).toString().toLowerCase();
+      return text.includes((input || '').toLowerCase());
+    };
+
+    const branchesForBank = (bankKey) => (banks.value || [])
+      .filter((bank) => bankKeyOf(bank) === bankKey)
+      .sort((a, b) => (a.branch_name || '').localeCompare(b.branch_name || ''));
+
+    const onBankNameChange = (idx, bankKey) => {
+      if (!form.bank_accounts[idx]) return;
+      form.bank_accounts[idx].bank_key = bankKey;
+      form.bank_accounts[idx].bank_id = null;
+      if (bankErrors.value[idx]) {
+        delete bankErrors.value[idx].bank_key;
+        delete bankErrors.value[idx].bank_id;
+      }
+    };
+
+    const syncBankKeys = () => {
+      if (!Array.isArray(form.bank_accounts) || !banks.value?.length) return;
+      form.bank_accounts.forEach((account) => {
+        if (account.bank_key || !account.bank_id) return;
+        const selected = banks.value.find((bank) => bank.id === account.bank_id);
+        if (selected) account.bank_key = bankKeyOf(selected);
+      });
+    };
+
+    watch(banks, () => {
+      syncBankKeys();
+    });
 
     const disablePastDates = (current) =>
       current && current.valueOf() <= dayjs().endOf('day').valueOf();
@@ -699,6 +794,17 @@ export default {
     const clearLsoFile = () => {
       form.lso.file = null;
       lsoFileList.value = [];
+    };
+
+    const onLsoToggleChange = (event) => {
+      includeLsoDetails.value = !!event?.target?.checked;
+      if (!includeLsoDetails.value) {
+        delete errors['lsos.0.lso_number'];
+        delete errors['lsos.0.issue_date'];
+        delete errors['lsos.0.event_description'];
+        delete errors['lsos.0.notes'];
+        delete errors['lsos.0.file'];
+      }
     };
 
     const setPrimary = (idx, value) => {
@@ -785,6 +891,7 @@ export default {
 
       form.bank_accounts.forEach((a, i) => {
         const e = {};
+        if (!a.bank_key) e.bank_key = 'Required';
         if (!a.bank_id) e.bank_id = 'Required';
         if (!a.account_number?.trim()) e.account_number = 'Required';
         else if (a.account_number.length > 30) e.account_number = 'Max 30 chars';
@@ -805,7 +912,7 @@ export default {
         contactErrors.value[i] = e;
       });
 
-      if (!isEdit.value) {
+      if (!isEdit.value && includeLsoDetails.value) {
         if (!form.lso.lso_number?.trim()) {
           errors['lsos.0.lso_number'] = 'Reference number is required';
         }
@@ -864,7 +971,7 @@ export default {
           payload.tax_compliance_certificate = form.tax_compliance_certificate;
         }
       }
-      if (!isEdit.value) {
+      if (!isEdit.value && includeLsoDetails.value) {
         const lsoEntry = {
           lso_number: form.lso.lso_number.trim(),
           issue_date: form.lso.issue_date,
@@ -923,7 +1030,9 @@ export default {
       contactErrors,
       taxCertFileList,
       lsoFileList,
+      includeLsoDetails,
       banks,
+      bankNameOptions,
       counties,
       subcountiesForCounty,
       saving,
@@ -932,11 +1041,14 @@ export default {
       onCountyChange,
       onMethodChange,
       optionFilter,
+      branchesForBank,
+      onBankNameChange,
       disablePastDates,
       onPickTaxCert,
       clearTaxCert,
       onPickLsoFile,
       clearLsoFile,
+      onLsoToggleChange,
       setPrimary,
       addBankRow,
       removeBankRow,
