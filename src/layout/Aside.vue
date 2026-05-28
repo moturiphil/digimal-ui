@@ -245,11 +245,21 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdValidation" v-if="canValidateHH">
-          <router-link to="/household/validation">
+        <a-sub-menu key="widgetHouseholdValidation" v-if="canValidateHH">
+          <template v-slot:title>
             HouseHolds Validation
-          </router-link>
-        </a-menu-item>
+          </template>
+          <a-menu-item key="widgetHouseholdValidationDashboard">
+            <router-link to="/household/validation/dashboard">
+              Dashboard
+            </router-link>
+          </a-menu-item>
+          <a-menu-item key="widgetHouseholdValidationHouseholds">
+            <router-link to="/household/validation/households">
+              Households
+            </router-link>
+          </a-menu-item>
+        </a-sub-menu>
         <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
           <router-link to="/household/irs">
             Household IRS
@@ -551,7 +561,7 @@ const viewRegHHRoles = [
 ];
 
 const viewHHValidationRoles = [
-  53
+  53, 77
   // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
 
   // 36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,84
