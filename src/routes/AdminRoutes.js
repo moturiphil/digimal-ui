@@ -726,10 +726,52 @@ const routes = [
   {
     path: "/household/validation",
     name: "hh-validation",
+    redirect: "/household/validation/dashboard",
+  },
+  {
+    path: "/household/validation/dashboard",
+    name: "hh-validation-dashboard",
     component: () =>
       import(
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
+    props: { section: "dashboard" },
+  },
+  {
+    path: "/household/validation/households",
+    name: "hh-validation-households",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
+      ),
+    props: { section: "households" },
+  },
+  {
+    path: "/household/validation/feedback",
+    name: "hh-validation-feedback",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
+      ),
+    props: { section: "feedback" },
+  },
+  {
+    path: "/household/validation/alerts",
+    name: "hh-validation-alerts",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
+      ),
+    props: { section: "alerts" },
+  },
+  {
+    path: "/household/validation/audit",
+    name: "hh-validation-audit",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
+      ),
+    props: { section: "audit" },
   },
   //IRS
   {
