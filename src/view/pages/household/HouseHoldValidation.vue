@@ -260,6 +260,9 @@
               <template #status="{ record }">
                 <a-tag :color="statusColor(record)">{{ statusLabel(record) }}</a-tag>
               </template>
+              <template #phone="{ record }">
+                {{ maskPhone(record.phone_no) }}
+              </template>
               <template #action="{ record }">
                 <a @click="openHouseholdModal(village.id, record.id)">View</a>
               </template>
@@ -362,8 +365,6 @@
                 </p>
                 <h3 class="name">{{ activeHouseholdFullName || 'Unknown household' }}</h3>
                 <div class="meta-row">
-                  <span class="meta-chip"><IdcardOutlined /> {{ activeHousehold.id_no || 'No ID' }}</span>
-                  <span class="meta-chip"><PhoneOutlined /> {{ activeHousehold.phone_no || 'No phone' }}</span>
                   <span class="meta-chip"><EnvironmentOutlined /> {{ activeVillageName }}</span>
                 </div>
               </div>
@@ -394,17 +395,8 @@
           </div>
         </header>
 
-        <!-- Body: featured stat + facts sheet -->
-        <section class="hh-body">
-          <div class="hero-stat">
-            <div class="stat-icon"><GiftOutlined /></div>
-            <div class="stat-content">
-              <div class="stat-label">Nets allocated</div>
-              <div class="stat-value">{{ activeHousehold.actual_allocation || activeHousehold.sys_allocation || '—' }}</div>
-              <div class="stat-sub">based on {{ activeHousehold.hh_size || '?' }} household members</div>
-            </div>
-          </div>
-
+        <!-- Body: facts sheet -->
+        <section class="hh-body single">
           <div class="facts-card">
             <div class="facts-card-head">Household details</div>
             <dl class="facts-grid">
@@ -422,15 +414,12 @@
               </div>
               <div class="fact">
                 <dt><UserOutlined /> CHP</dt>
-                <dd>{{ activeHousehold.chw_id || '—' }}</dd>
-              </div>
-              <div class="fact">
-                <dt><EnvironmentOutlined /> Village</dt>
-                <dd>{{ activeVillageName }}</dd>
-              </div>
-              <div class="fact">
-                <dt><CheckCircleFilled /> Status</dt>
-                <dd>{{ statusLabel(activeHousehold) }}</dd>
+                <dd>
+                  {{ activeHousehold.chw_id || '—' }}
+                  <span v-if="activeHousehold.chw_phone_no" class="fact-sub">
+                    {{ activeHousehold.chw_phone_no }}
+                  </span>
+                </dd>
               </div>
             </dl>
           </div>
@@ -473,7 +462,7 @@
             >
               <RightOutlined />
             </button>
-            <span class="kbd-hint"><span class="kbd">←</span><span class="kbd">→</span></span>
+            <!-- <span class="kbd-hint"><span class="kbd">←</span><span class="kbd">→</span></span> -->
           </div>
           <div class="action-buttons">
             <a-button
@@ -562,45 +551,8 @@
           <div class="panel-body">
             <div class="field-grid">
               <div class="field">
-                <label class="field-label">Change type <span class="req">*</span></label>
-                <a-select v-model:value="changeForm.type" style="width: 100%">
-                  <a-select-option value="phone_change">Phone change</a-select-option>
-                  <a-select-option value="head_change">Deceased head change</a-select-option>
-                  <a-select-option value="transfer_in">Transfer</a-select-option>
-                </a-select>
-              </div>
-            </div>
-
-            <div v-if="changeForm.type === 'phone_change'" class="field-grid">
-              <div class="field">
                 <label class="field-label">New phone number <span class="req">*</span></label>
                 <a-input v-model:value="changeForm.new_phone_no" placeholder="e.g. 0712 345 678" />
-              </div>
-            </div>
-
-            <div v-if="changeForm.type === 'head_change'" class="field-grid two-col">
-              <div class="field">
-                <label class="field-label">New ID number <span class="req">*</span></label>
-                <a-input v-model:value="changeForm.new_id_no" placeholder="National ID of new head" />
-              </div>
-              <div class="field">
-                <label class="field-label">New phone number</label>
-                <a-input v-model:value="changeForm.new_phone_no" placeholder="Phone number of new head" />
-              </div>
-            </div>
-
-            <div v-if="changeForm.type === 'transfer_in'" class="field-grid two-col">
-              <div class="field">
-                <label class="field-label">New village <span class="req">*</span></label>
-                <a-select v-model:value="changeForm.new_location_id" placeholder="Select new village" style="width: 100%" show-search :filter-option="(input, option) => option.children?.[0]?.children?.toLowerCase?.().includes(input.toLowerCase())">
-                  <a-select-option v-for="item in villages" :key="item.id" :value="item.id">
-                    {{ item.name }}
-                  </a-select-option>
-                </a-select>
-              </div>
-              <div class="field">
-                <label class="field-label">New post ID <span class="hint">(optional)</span></label>
-                <a-input-number v-model:value="changeForm.new_post_id" placeholder="Numeric post ID" :min="1" style="width: 100%" />
               </div>
             </div>
 
@@ -667,7 +619,6 @@ import {
   IdcardOutlined,
   PhoneOutlined,
   TeamOutlined,
-  GiftOutlined,
   UserOutlined,
   EnvironmentOutlined,
   CheckCircleFilled,
@@ -811,7 +762,7 @@ const villageColumns = [
 const householdColumns = [
   { title: "Serial No.", dataIndex: "serial", key: "serial", width: 80 },
   { title: "Head of Household", dataIndex: "head", key: "head" },
-  { title: "Phone", dataIndex: "phone_no", key: "phone_no" },
+  { title: "Phone", dataIndex: "phone_no", key: "phone_no", slots: { customRender: "phone" } },
   { title: "Status", key: "status", slots: { customRender: "status" } },
   { title: "Open", key: "action", slots: { customRender: "action" }, width: 80 },
 ];
@@ -1295,6 +1246,18 @@ const statusColor = (record) => {
   if (status === "Validated") return "gold";
   if (status === "Muted") return "default";
   return "blue";
+};
+
+// Mask the middle 4 digits of a phone number for line-list display.
+// e.g. "0715765988" -> "071****988", "254712345678" -> "2547****5678".
+// The household review modal continues to read `phone_no` directly, so the
+// full number remains visible there.
+const maskPhone = (phone) => {
+  if (phone === null || phone === undefined || phone === "") return "—";
+  const s = String(phone);
+  if (s.length <= 4) return s;
+  const start = Math.floor((s.length - 4) / 2);
+  return s.slice(0, start) + "****" + s.slice(start + 4);
 };
 
 const historyStatusColor = (status) => {
@@ -2239,6 +2202,13 @@ const handleModalKeydown = (event) => {
     font-size: 14px;
     word-break: break-word;
   }
+  .facts-grid dd .fact-sub {
+    display: block;
+    margin-top: 2px;
+    color: #6f8076;
+    font-weight: 500;
+    font-size: 12px;
+  }
 
   .modal-note {
     margin: 14px 28px 0;
@@ -2779,10 +2749,11 @@ const handleModalKeydown = (event) => {
   // ── Body ──
   .hh-body {
     display: grid;
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
     padding: 20px 28px 0;
   }
+  .hh-body.single { grid-template-columns: 1fr; }
 
   .hero-stat {
     display: flex;
@@ -2883,6 +2854,13 @@ const handleModalKeydown = (event) => {
     font-weight: 600;
     font-size: 14px;
     word-break: break-word;
+  }
+  .facts-grid dd .fact-sub {
+    display: block;
+    margin-top: 2px;
+    color: #6f8076;
+    font-weight: 500;
+    font-size: 12px;
   }
 
   .modal-note {

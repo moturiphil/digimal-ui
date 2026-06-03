@@ -233,7 +233,7 @@
 
       <a-sub-menu
         key="house-holds"
-        v-if="canViewRegHH || canValidateHH || canViewNetsDistributed"
+        v-if="canViewRegHH || canValidateHH || canReviewHHChanges || canViewNetsDistributed"
       >
         <template v-slot:title>
           <sdFeatherIcons type="home" />
@@ -259,7 +259,17 @@
               Households
             </router-link>
           </a-menu-item>
+          <a-menu-item key="widgetMyHHChangeRequests" v-if="canSubmitHHChanges">
+            <router-link to="/household/my-change-requests">
+              My Change Requests
+            </router-link>
+          </a-menu-item>
         </a-sub-menu>
+        <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges">
+          <router-link to="/household/change-requests/review">
+            Change Request Review
+          </router-link>
+        </a-menu-item>
         <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
           <router-link to="/household/irs">
             Household IRS
@@ -567,6 +577,12 @@ const viewHHValidationRoles = [
   // 36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,84
 ];
 
+// SCMCC + super admin can review/approve CHA-submitted change requests.
+const reviewHHChangesRoles = [53, 37];
+
+// CHAs submit change requests and can view their own history.
+const submitHHChangesRoles = [77];
+
 const viewNetsDistributedRoles = [
   53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
   36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17, 65,84,6
@@ -655,6 +671,8 @@ export default defineComponent({
     const canViewOrgUnits = hasRole(viewOrgUnitsRoles);
     const canViewRegHH = hasRole(viewRegHHRoles);
     const canValidateHH = hasRole(viewHHValidationRoles);
+    const canReviewHHChanges = hasRole(reviewHHChangesRoles);
+    const canSubmitHHChanges = hasRole(submitHHChangesRoles);
     const canViewNetsDistributed = hasRole(viewNetsDistributedRoles);
     const canCreateDropOffPoint = hasRole(createDropOffPoint);
     const canViewDropOffPoint = hasRole(viewDropoffPointsRoles);
@@ -760,6 +778,8 @@ export default defineComponent({
       canViewActivities,
       canViewRegHH,
       canValidateHH,
+      canReviewHHChanges,
+      canSubmitHHChanges,
       canViewNetsDistributed,
       canCreateDropOffPoint,
       canViewDropOffPoint,

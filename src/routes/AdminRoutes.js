@@ -773,6 +773,22 @@ const routes = [
       ),
     props: { section: "audit" },
   },
+  {
+    path: "/household/change-requests/review",
+    name: "hh-change-requests-review",
+    component: () =>
+      import(
+        /* webpackChunkName: "ScmccReview" */ "@/view/pages/household/SCMCCChangeRequestReview.vue"
+      ),
+  },
+  {
+    path: "/household/my-change-requests",
+    name: "hh-my-change-requests",
+    component: () =>
+      import(
+        /* webpackChunkName: "MyChangeRequests" */ "@/view/pages/household/MyChangeRequests.vue"
+      ),
+  },
   //IRS
   {
     path: "/household/irs",
