@@ -736,6 +736,10 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
     props: { section: "dashboard" },
+    // CHA (level 3) and SCMCC (level 2 sub-county roles are handled by role check below)
+    // act on household data. County (2) and National (1) users are redirected to the
+    // aggregate, read-only overview by the global router guard.
+    meta: { householdRestricted: true },
   },
   {
     path: "/household/validation/households",
@@ -745,6 +749,7 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
     props: { section: "households" },
+    meta: { householdRestricted: true },
   },
   {
     path: "/household/validation/feedback",
@@ -754,6 +759,7 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
     props: { section: "feedback" },
+    meta: { householdRestricted: true },
   },
   {
     path: "/household/validation/alerts",
@@ -763,6 +769,7 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
     props: { section: "alerts" },
+    meta: { householdRestricted: true },
   },
   {
     path: "/household/validation/audit",
@@ -772,6 +779,7 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
       ),
     props: { section: "audit" },
+    meta: { householdRestricted: true },
   },
   {
     path: "/household/change-requests/review",
@@ -780,6 +788,7 @@ const routes = [
       import(
         /* webpackChunkName: "ScmccReview" */ "@/view/pages/household/SCMCCChangeRequestReview.vue"
       ),
+    meta: { allowedRoles: [37, 53] }, // SCMCC only
   },
   {
     path: "/household/my-change-requests",
@@ -788,6 +797,16 @@ const routes = [
       import(
         /* webpackChunkName: "MyChangeRequests" */ "@/view/pages/household/MyChangeRequests.vue"
       ),
+    meta: { allowedRoles: [77] }, // CHA only
+  },
+  {
+    path: "/household/change-requests/overview",
+    name: "hh-change-requests-overview",
+    component: () =>
+      import(
+        /* webpackChunkName: "NationalSummary" */ "@/view/pages/household/NationalChangeRequestSummary.vue"
+      ),
+    meta: { allowedLevels: [1, 2] }, // National (1) and County (2) only — read-only
   },
   //IRS
   {

@@ -42,29 +42,65 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.auth && (user_object == null)) {
     next({ path: "/auth/login" });
-  } else {
-    if (user_object != null && user_object.token != null && to.matched.length === 0) {
-      // User is logged in but the route is not defined, redirect to 404
-      next({ path: "/404" });
-    }
-    if (user_object && user_object.token) {
-      resetInactivityTimer();
-      // User is authenticated, allow navigation
-      next();
-    }
-    if (to.name === "login") {
-      resetInactivityTimer();
-      // User is not authenticated and trying to access the login page, allow navigation
-      next();
-    }
+    return;
+  }
+
+  if (user_object != null && user_object.token != null && to.matched.length === 0) {
+    // User is logged in but the route is not defined, redirect to 404
+    next({ path: "/404" });
+    return;
+  }
+
+  // ── Household change-request access control ──────────────────────────────
+  // Build a flat list of meta entries from to.matched so we honour parent meta.
+  const profile = user_object?.user || user_object || {};
+  const userLevelId = Number(profile.level_id || 0);
+  const userRoleId = Number(profile.role_id || 0);
+
+  const allowedLevels = to.matched
+    .map((r) => r.meta?.allowedLevels)
+    .filter(Boolean)
+    .pop();
+  const allowedRoles = to.matched
+    .map((r) => r.meta?.allowedRoles)
+    .filter(Boolean)
+    .pop();
+  const householdRestricted = to.matched.some((r) => r.meta?.householdRestricted);
+
   if (user_object && user_object.token) {
-    // User has a token, allow navigation
+    // National (1) and County (2) users cannot access per-household validation
+    // pages — they get the read-only aggregate overview instead.
+    if (householdRestricted && (userLevelId === 1 || userLevelId === 2)) {
+      resetInactivityTimer();
+      next({ path: "/household/change-requests/overview" });
+      return;
+    }
+
+    if (allowedLevels && !allowedLevels.includes(userLevelId)) {
+      resetInactivityTimer();
+      next({ path: "/403" });
+      return;
+    }
+
+    if (allowedRoles && !allowedRoles.includes(userRoleId)) {
+      resetInactivityTimer();
+      next({ path: "/403" });
+      return;
+    }
+
+    resetInactivityTimer();
     next();
-  } else {
-    //User is not logged in but is on the login page, allow navigation
+    return;
+  }
+
+  if (to.name === "login") {
+    resetInactivityTimer();
     next();
+    return;
   }
-  }
+
+  // Default: allow (covers unauthenticated public pages).
+  next();
   window.scrollTo(0, 0);
 });
 
