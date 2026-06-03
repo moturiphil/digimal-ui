@@ -233,7 +233,7 @@
 
       <a-sub-menu
         key="house-holds"
-        v-if="canViewRegHH || canValidateHH || canReviewHHChanges || canViewNetsDistributed"
+        v-if="canViewRegHH || canValidateHH || canReviewHHChanges || canViewNetsDistributed || isLevelOne || isCountyLevel"
       >
         <template v-slot:title>
           <sdFeatherIcons type="home" />
@@ -245,7 +245,7 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-sub-menu key="widgetHouseholdValidation" v-if="canValidateHH">
+        <a-sub-menu key="widgetHouseholdValidation" v-if="canValidateHH && !isLevelOne && !isCountyLevel">
           <template v-slot:title>
             HouseHolds Validation
           </template>
@@ -265,9 +265,14 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges">
+        <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges && !isLevelOne && !isCountyLevel">
           <router-link to="/household/change-requests/review">
             Change Request Review
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetHouseholdChangeOverview" v-if="isLevelOne || isCountyLevel">
+          <router-link to="/household/change-requests/overview">
+            Change Requests Overview
           </router-link>
         </a-menu-item>
         <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">

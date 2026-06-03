@@ -208,7 +208,7 @@
             <a-button
               type="primary"
               :disabled="isActiveVillageSubmitted"
-              @click="createModalOpen = true"
+              @click="openCreateModal"
             >New household request</a-button>
           </a-space>
         </div>
@@ -551,10 +551,92 @@
           <div class="panel-body">
             <div class="field-grid">
               <div class="field">
+                <label class="field-label">Change type <span class="req">*</span></label>
+                <a-segmented
+                  v-model:value="changeForm.type"
+                  :options="changeTypeOptions"
+                  block
+                />
+                <p class="hint inline-hint">{{ changeTypeHint }}</p>
+              </div>
+            </div>
+
+            <!-- Phone change -->
+            <div v-if="changeForm.type === 'phone_change'" class="field-grid">
+              <div class="field">
                 <label class="field-label">New phone number <span class="req">*</span></label>
                 <a-input v-model:value="changeForm.new_phone_no" placeholder="e.g. 0712 345 678" />
               </div>
             </div>
+
+            <!-- Head change (deceased) -->
+            <template v-else-if="changeForm.type === 'head_change'">
+              <div class="field-grid two-col">
+                <div class="field">
+                  <label class="field-label">Successor ID number <span class="req">*</span></label>
+                  <a-input v-model:value="changeForm.new_id_no" placeholder="National ID of the new head" />
+                </div>
+                <div class="field">
+                  <label class="field-label">Successor phone <span class="req">*</span></label>
+                  <a-input v-model:value="changeForm.new_phone_no" placeholder="e.g. 0712 345 678" />
+                </div>
+              </div>
+              <p class="hint">
+                Approval will mute the current household (reason: deceased) and create a
+                new household record with the successor's details. The successor's
+                household will require fresh verification.
+              </p>
+            </template>
+
+            <!-- Transfer -->
+            <template v-else-if="changeForm.type === 'transfer_in'">
+              <div class="field-grid two-col">
+                <div class="field">
+                  <label class="field-label">Destination village <span class="req">*</span></label>
+                  <a-select
+                    v-model:value="changeForm.new_location_id"
+                    show-search
+                    :filter-option="filterVillageOption"
+                    placeholder="Pick the new village"
+                    style="width: 100%"
+                  >
+                    <a-select-option
+                      v-for="item in villages"
+                      :key="item.id"
+                      :value="item.id"
+                      :disabled="item.id === activeHousehold?.location_id"
+                    >
+                      {{ item.name }}
+                    </a-select-option>
+                  </a-select>
+                </div>
+                <div class="field">
+                  <label class="field-label">New household size <span class="hint">(optional)</span></label>
+                  <a-input-number
+                    v-model:value="changeForm.new_hh_size"
+                    :min="1"
+                    style="width: 100%"
+                    placeholder="Leave blank to keep current"
+                  />
+                </div>
+              </div>
+              <div class="field-grid">
+                <div class="field">
+                  <label class="field-label">New post ID <span class="hint">(optional)</span></label>
+                  <a-input-number
+                    v-model:value="changeForm.new_post_id"
+                    :min="1"
+                    style="width: 100%"
+                    placeholder="Distribution post at destination"
+                  />
+                </div>
+              </div>
+              <p class="hint">
+                Approval will move the household to the destination village. If you
+                change the household size, system &amp; actual allocations will be
+                recalculated automatically.
+              </p>
+            </template>
 
             <div class="field-grid">
               <div class="field">
@@ -565,9 +647,14 @@
           </div>
           <footer class="panel-footer">
             <a-button @click="showChangePanel = false">Cancel</a-button>
-            <a-button type="primary" class="panel-cta change-cta" @click="submitChange">
+            <a-button
+              type="primary"
+              class="panel-cta change-cta"
+              :disabled="!canSubmitChange"
+              @click="submitChange"
+            >
               <template #icon><EditOutlined /></template>
-              Submit change request
+              Submit {{ changeTypeLabel }} request
             </a-button>
           </footer>
         </section>
@@ -591,12 +678,25 @@
         <a-row :gutter="12">
           <a-col :span="12">
             <a-form-item label="Location">
-              <a-select v-model:value="createForm.location_id" style="width: 100%">
+              <a-select v-model:value="createForm.location_id" style="width: 100%" @change="fetchCreatePosts">
                 <a-select-option v-for="item in villages" :key="item.id" :value="item.id">{{ item.name }}</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
-          <a-col :span="12"><a-form-item label="Post ID"><a-input-number v-model:value="createForm.post_id" :min="1" style="width: 100%" /></a-form-item></a-col>
+          <a-col :span="12">
+            <a-form-item label="Distribution Post">
+              <a-select
+                v-model:value="createForm.post_id"
+                style="width: 100%"
+                :loading="createPostsLoading"
+                :options="createPostOptions"
+                placeholder="Select post"
+                allow-clear
+                show-search
+                :filter-option="filterVillageOption"
+              />
+            </a-form-item>
+          </a-col>
         </a-row>
         <a-form-item label="Notes"><a-input v-model:value="createForm.notes" /></a-form-item>
       </a-form>
@@ -672,10 +772,93 @@ const changeForm = ref({
   new_id_no: "",
   new_location_id: null,
   new_post_id: null,
+  new_hh_size: null,
   notes: "",
 });
 
+const changeTypeOptions = [
+  { label: "Phone change", value: "phone_change" },
+  { label: "Head change", value: "head_change" },
+  { label: "Transfer", value: "transfer_in" },
+];
+
+const changeTypeLabel = computed(
+  () =>
+    ({
+      phone_change: "phone change",
+      head_change: "head change",
+      transfer_in: "transfer",
+    }[changeForm.value.type] || "change")
+);
+
+const changeTypeHint = computed(
+  () =>
+    ({
+      phone_change: "Update the household's primary contact number.",
+      head_change:
+        "The current household head is deceased. Mute the household and create a successor record.",
+      transfer_in:
+        "Move this household to a different village (e.g. relocation).",
+    }[changeForm.value.type] || "")
+);
+
+const canSubmitChange = computed(() => {
+  const f = changeForm.value;
+  if (f.type === "phone_change") return !!f.new_phone_no;
+  if (f.type === "head_change") return !!f.new_id_no && !!f.new_phone_no;
+  if (f.type === "transfer_in") return !!f.new_location_id;
+  return false;
+});
+
+const filterVillageOption = (input, option) => {
+  const label = (option?.children?.[0]?.children || option?.label || "")
+    .toString()
+    .toLowerCase();
+  return label.includes(String(input).toLowerCase());
+};
+
+const resetChangeForm = () => {
+  changeForm.value = {
+    type: changeForm.value.type || "phone_change",
+    new_phone_no: "",
+    new_id_no: "",
+    new_location_id: null,
+    new_post_id: null,
+    new_hh_size: null,
+    notes: "",
+  };
+};
+
 const createModalOpen = ref(false);
+const createPosts = ref([]);
+const createPostsLoading = ref(false);
+const createPostOptions = computed(() =>
+  createPosts.value.map((p) => ({
+    value: p.id,
+    label: p.name || p.post_name || `Post #${p.id}`,
+  }))
+);
+const fetchCreatePosts = async (villageId) => {
+  const vId = villageId || createForm.value.location_id;
+  createForm.value.post_id = null;
+  if (!vId) {
+    createPosts.value = [];
+    return;
+  }
+  createPostsLoading.value = true;
+  try {
+    const { data } = await axios.get(`sublocation_posts?village_id=${vId}`);
+    createPosts.value = data?.data || [];
+  } catch (e) {
+    createPosts.value = [];
+  } finally {
+    createPostsLoading.value = false;
+  }
+};
+const openCreateModal = () => {
+  createModalOpen.value = true;
+  if (createForm.value.location_id) fetchCreatePosts(createForm.value.location_id);
+};
 const createForm = ref({
   first_name: "",
   last_name: "",
@@ -1365,6 +1548,26 @@ const toggleChangePanel = () => {
   showMutePanel.value = false;
 };
 
+// Advance the modal to the next household in the current village list
+// without unmounting it. Used after Confirm / Mute / Request change so the
+// CHA can keep reviewing without re-opening the modal each time.
+const advanceToNextHousehold = () => {
+  const list = activeHouseholds.value;
+  if (!list.length) return;
+  const currentIndex = activeHouseholdIndex.value;
+  const nextHouseholdId =
+    currentIndex >= 0 && currentIndex + 1 < list.length
+      ? list[currentIndex + 1].id
+      : null;
+  showMutePanel.value = false;
+  showChangePanel.value = false;
+  if (nextHouseholdId) {
+    activeHouseholdId.value = nextHouseholdId;
+  } else {
+    notification.info({ message: "All households in this village have been reviewed." });
+  }
+};
+
 const submitMute = async () => {
   if (!activeHousehold.value) return;
   try {
@@ -1375,8 +1578,11 @@ const submitMute = async () => {
     });
     notification.success({ message: "Mute request submitted" });
     muteForm.value.notes = "";
-    showMutePanel.value = false;
-    await refreshAll();
+    advanceToNextHousehold();
+    // Refresh village-level progress + history in the background so the
+    // dashboard cards update without unmounting the modal.
+    fetchVillages(villagesPaginationMeta.value.current || 1).catch(() => {});
+    fetchHistory().catch(() => {});
   } catch (error) {
     notification.error({
       message: "Failed to submit mute request",
@@ -1387,6 +1593,13 @@ const submitMute = async () => {
 
 const submitChange = async () => {
   if (!activeHousehold.value) return;
+  if (!canSubmitChange.value) {
+    notification.warning({
+      message: "Missing required fields",
+      description: "Please fill in the required fields for this change type.",
+    });
+    return;
+  }
 
   const type = changeForm.value.type;
   let endpoint = "";
@@ -1406,18 +1619,16 @@ const submitChange = async () => {
     endpoint = "hh_change_request/transfer";
     payload.new_location_id = changeForm.value.new_location_id;
     if (changeForm.value.new_post_id) payload.new_post_id = changeForm.value.new_post_id;
+    if (changeForm.value.new_hh_size) payload.new_hh_size = changeForm.value.new_hh_size;
   }
 
   try {
     await axios.post(endpoint, payload);
     notification.success({ message: "Change request submitted" });
-    changeForm.value.new_phone_no = "";
-    changeForm.value.new_id_no = "";
-    changeForm.value.new_location_id = null;
-    changeForm.value.new_post_id = null;
-    changeForm.value.notes = "";
-    showChangePanel.value = false;
-    await refreshAll();
+    resetChangeForm();
+    advanceToNextHousehold();
+    fetchVillages(villagesPaginationMeta.value.current || 1).catch(() => {});
+    fetchHistory().catch(() => {});
   } catch (error) {
     notification.error({
       message: "Failed to submit change request",
