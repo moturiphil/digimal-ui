@@ -90,6 +90,7 @@
               :loading="loading"
               :pagination="{ pageSize: 12, showSizeChanger: false }"
               row-key="id"
+              :row-class-name="highlightRowClass"
               class="requests-table"
               :scroll="{ x: 1080 }"
               size="middle"
@@ -255,7 +256,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { message } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 import { Main } from "../../styled";
@@ -565,6 +567,54 @@ const openDetail = (record) => {
   detailOpen.value = true;
 };
 
+const route = useRoute();
+const router = useRouter();
+const highlightId = ref(route.query.highlight ? String(route.query.highlight) : null);
+const highlightRowClass = (record) =>
+  String(record.id) === String(highlightId.value) ? "highlighted-row" : "";
+
+const applyHighlight = async () => {
+  const id = highlightId.value;
+  if (!id) return;
+  let match = requests.value.find((r) => String(r.id) === String(id));
+  // If the target request isn't in the cached list yet (e.g. a freshly-approved
+  // request the user hasn't refreshed for), pull a fresh list once.
+  if (!match) {
+    await fetchRequests();
+    match = requests.value.find((r) => String(r.id) === String(id));
+    if (!match) return;
+  }
+  await nextTick();
+  const el = document.querySelector(`[data-row-key="${id}"]`);
+  if (el && typeof el.scrollIntoView === "function") {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  openDetail(match);
+  setTimeout(() => {
+    highlightId.value = null;
+    if (route.query.highlight) {
+      const { highlight, _t, ...rest } = route.query;
+      void highlight; void _t;
+      router.replace({ query: rest });
+    }
+  }, 1500);
+};
+
+watch(() => route.query.highlight, (val) => {
+  highlightId.value = val ? String(val) : null;
+  applyHighlight();
+});
+// Cache-buster from the bell when same-path/same-highlight navigation occurs.
+watch(() => route.query._t, () => {
+  if (route.query.highlight) {
+    highlightId.value = String(route.query.highlight);
+    applyHighlight();
+  }
+});
+watch(requests, () => {
+  if (highlightId.value) applyHighlight();
+});
+
 onMounted(fetchRequests);
 </script>
 
@@ -712,6 +762,33 @@ onMounted(fetchRequests);
 
     strong { color: #15693c; }
     .muted { color: #7a8a82; font-size: 11.5px; }
+  }
+
+  :deep(.highlighted-row > td) {
+    background: #fff8d6 !important;
+    transition: background 0.4s ease;
+  }
+
+  /* ── Mobile responsive ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .panel { padding: 12px 12px 14px; border-radius: 8px; }
+    .page-heading { flex-direction: column; align-items: stretch; gap: 8px; }
+    .ph-title { font-size: 15px; }
+    .ph-subtitle { font-size: 11.5px; }
+    .filter-row { flex-direction: column; align-items: stretch; }
+    .filter-row .search { max-width: 100%; }
+    .tile-row,
+    .tile-row-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .tile { padding: 10px 8px; }
+    .tile-value { font-size: 18px; }
+    .tile-label, .tile-sub { font-size: 10.5px; }
+  }
+  @media (max-width: 480px) {
+    .tile-row,
+    .tile-row-4 { grid-template-columns: 1fr; }
   }
 }
 </style>
