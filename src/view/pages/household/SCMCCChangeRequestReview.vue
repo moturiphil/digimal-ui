@@ -678,12 +678,10 @@ const fetchRequests = async () => {
       ? payload
       : (payload && payload.data) || [];
     const totals = res.data && res.data.totals;
-    if (totals && typeof totals === "object") {
-      decisionTotals.value = {
-        accepted: Number(totals.accepted) || 0,
-        rejected: Number(totals.rejected) || 0,
-      };
-    }
+    decisionTotals.value = {
+      accepted: Number(totals && totals.accepted) || 0,
+      rejected: Number(totals && totals.rejected) || 0,
+    };
   } catch (err) {
     message.error(
       (err && err.response && err.response.data && err.response.data.message) ||
