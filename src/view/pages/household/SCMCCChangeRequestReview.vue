@@ -380,6 +380,7 @@ const highlightId = ref(route.query.highlight ? String(route.query.highlight) : 
 const cardRefs = {};
 const registerCardRef = (id, el) => {
   if (el) cardRefs[id] = el;
+  else delete cardRefs[id];
 };
 
 const detailOpen = ref(false);
