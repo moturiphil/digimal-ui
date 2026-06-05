@@ -180,8 +180,8 @@ export default defineComponent({
         const data = await response.json();
         closures.value = data.data || [];
       } catch (error) {
-        console.error(error);
-      } finally {
+        notification.error({ message: "Failed to load flagged closures", description: error?.message || String(error) });
+      }
         isLoadingClosures.value = false;
       }
     };
