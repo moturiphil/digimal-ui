@@ -379,6 +379,11 @@
         <a-menu-item key="widgetPostSummary">
           <router-link to="/nets/post-summary"> Posts Summary </router-link>
         </a-menu-item>
+        <a-menu-item key="widgetSupervisorReview">
+          <router-link to="/nets/supervisor-review">
+            Stock Review
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="supply-chain" v-if="canViewInventory">
         <template v-slot:title>

@@ -1,75 +1,210 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader ghost :title="`${post_name} - Post Workers`" />
-
     <Main>
-      <sdButton type="success" size="extra-small">
-        <router-link
-          :to="{
-            path: `/assign-worker`,
-            query: { id: post_id },
-          }"
-          class="btn-icon"
-          type="success"
-          shape="circle"
-        >
-          &nbsp;&nbsp; Assign Post Workers
-        </router-link>
-      </sdButton>
-      &nbsp;&nbsp;
-      <sdButton
-        class="button-container"
-        size="extra-small"
-        type="warning"
-        @click="openModal()"
-      >
-        Add Security
-      </sdButton>
-      <br>
-      <br>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
-            </div>
+      <div class="pw-page">
+        <!-- Header -->
+        <header class="pw-head">
+          <div class="pw-head-left">
+            <h3 class="pw-title">
+              <span class="pw-icon">▦</span> Post Workers
+            </h3>
+            <p class="pw-subtitle">{{ post_name }}</p>
+          </div>
+          <div class="pw-head-actions">
+            <sdButton type="success" size="small">
+              <router-link
+                :to="{ path: `/assign-worker`, query: { id: post_id } }"
+                class="btn-icon"
+              >
+                <sdFeatherIcons type="user-plus" size="14" /> &nbsp;Assign
+                Workers
+              </router-link>
+            </sdButton>
+            <sdButton type="warning" size="small" @click="openModal()">
+              <sdFeatherIcons type="shield" size="14" /> &nbsp;Add Security
+            </sdButton>
+          </div>
+        </header>
 
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                  :scroll="{ x: 50 }"
-                  :expand-column-width="100"
-                >
-                  <template #workers="{ record }">
-                    <td>
-                      <div class="table-actions">
-                        <sdButton
-                          size="extra-small"
-                          type="danger"
-                          :disabled="isStarting"
-                          @click="removeMatrix(record.id)"
-                        >
-                          <span> De-Assign Post Worker </span>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
-                          size="extra-small"
-                          type="success"
-                          :disabled="isStarting"
-                          @click="openShiftModal(record.id)"
-                          v-if="record.role_id == 'Security Guard - Post'"
-                        >
-                          <span> Edit Shift </span>
-                        </sdButton>
-                      </div>
-                    </td>
-                  </template>
-                </a-table>
-              </TableWrapper>
+        <!-- Summary chips -->
+        <div class="pw-stats">
+          <div class="pw-stat">
+            <span class="pw-stat-icon total"
+              ><sdFeatherIcons type="users" size="16"
+            /></span>
+            <div class="pw-stat-body">
+              <span class="pw-stat-value">{{ totalWorkers }}</span>
+              <span class="pw-stat-label">Total Workers</span>
             </div>
+          </div>
+          <div class="pw-stat">
+            <span class="pw-stat-icon active"
+              ><sdFeatherIcons type="check-circle" size="16"
+            /></span>
+            <div class="pw-stat-body">
+              <span class="pw-stat-value">{{ activeWorkers }}</span>
+              <span class="pw-stat-label">Active</span>
+            </div>
+          </div>
+          <div class="pw-stat">
+            <span class="pw-stat-icon security"
+              ><sdFeatherIcons type="shield" size="16"
+            /></span>
+            <div class="pw-stat-body">
+              <span class="pw-stat-value">{{ securityWorkers }}</span>
+              <span class="pw-stat-label">Security</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="pw-toolbar">
+          <div class="pw-search">
+            <span class="search-icon"
+              ><sdFeatherIcons type="search" size="14"
+            /></span>
+            <a-input
+              v-model:value="searchTerm"
+              placeholder="Search by name, ID, phone or role"
+              allow-clear
+            />
+          </div>
+        </div>
+
+        <div v-if="isLoading" class="pw-loading"><a-spin /></div>
+
+        <div v-else>
+          <!-- Desktop / tablet table -->
+          <TableWrapper class="table-data-view table-responsive pw-table">
+            <a-table
+              :pagination="{ pageSize: 10, showSizeChanger: true }"
+              :dataSource="filteredWorkers"
+              :columns="columns"
+              :scroll="{ x: 'max-content' }"
+              row-key="id"
+              size="middle"
+            >
+              <template #name="{ record }">
+                <td>
+                  <div class="pw-name-cell">
+                    <span class="pw-avatar">{{ initials(record) }}</span>
+                    <span class="pw-name-text"
+                      >{{ record.first_name }} {{ record.last_name }}</span
+                    >
+                  </div>
+                </td>
+              </template>
+              <template #role="{ record }">
+                <td>
+                  <span class="pw-role-tag" :class="roleClass(record.role_id)">{{
+                    record.role_id
+                  }}</span>
+                </td>
+              </template>
+              <template #status="{ record }">
+                <td>
+                  <span
+                    class="pw-status"
+                    :class="statusClass(record.status)"
+                    >{{ record.status || "—" }}</span
+                  >
+                </td>
+              </template>
+              <template #workers="{ record }">
+                <td>
+                  <div class="table-actions">
+                    <sdButton
+                      size="extra-small"
+                      type="danger"
+                      outlined
+                      :disabled="isStarting"
+                      @click="removeMatrix(record.id)"
+                    >
+                      De-Assign
+                    </sdButton>
+                    <sdButton
+                      size="extra-small"
+                      type="success"
+                      outlined
+                      :disabled="isStarting"
+                      @click="openShiftModal(record.id)"
+                      v-if="record.role_id == 'Security Guard - Post'"
+                    >
+                      Edit Shift
+                    </sdButton>
+                  </div>
+                </td>
+              </template>
+            </a-table>
+          </TableWrapper>
+
+          <!-- Mobile card list -->
+          <div class="pw-cards">
+            <article
+              v-for="record in filteredWorkers"
+              :key="record.id"
+              class="pw-card"
+            >
+              <div class="pw-card-head">
+                <span class="pw-avatar">{{ initials(record) }}</span>
+                <div class="pw-card-id">
+                  <span class="pw-card-name"
+                    >{{ record.first_name }} {{ record.last_name }}</span
+                  >
+                  <span class="pw-role-tag" :class="roleClass(record.role_id)">{{
+                    record.role_id
+                  }}</span>
+                </div>
+                <span class="pw-status" :class="statusClass(record.status)">{{
+                  record.status || "—"
+                }}</span>
+              </div>
+              <div class="pw-card-meta">
+                <div>
+                  <span class="lbl">Phone</span>
+                  <span class="val">{{ record.phone_no || "—" }}</span>
+                </div>
+                <div>
+                  <span class="lbl">ID No</span>
+                  <span class="val">{{ record.id_no || "—" }}</span>
+                </div>
+                <div>
+                  <span class="lbl">Location</span>
+                  <span class="val">{{ record.location_id || "—" }}</span>
+                </div>
+                <div>
+                  <span class="lbl">Shift</span>
+                  <span class="val">{{ record.shift || "—" }}</span>
+                </div>
+              </div>
+              <div class="pw-card-actions">
+                <sdButton
+                  size="extra-small"
+                  type="danger"
+                  outlined
+                  :disabled="isStarting"
+                  @click="removeMatrix(record.id)"
+                >
+                  De-Assign Worker
+                </sdButton>
+                <sdButton
+                  size="extra-small"
+                  type="success"
+                  outlined
+                  :disabled="isStarting"
+                  @click="openShiftModal(record.id)"
+                  v-if="record.role_id == 'Security Guard - Post'"
+                >
+                  Edit Shift
+                </sdButton>
+              </div>
+            </article>
+            <div v-if="!filteredWorkers.length" class="pw-empty">
+              No post workers found.
+            </div>
+          </div>
+        </div>
+        <sdCards headless class="pw-modal-host">
             <!-- Add Security modal -->
             <a-modal
               title="Add Security"
@@ -330,12 +465,8 @@
               </BasicFormWrapper>
             </a-modal>
             <!-- End of Update Guard Shift modal -->
-          </sdCards>
-        </a-col>
-      </a-row>
-      <a-col :xs="24">
-        <DragAndDropTable />
-      </a-col>
+        </sdCards>
+      </div>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -353,14 +484,10 @@ import store from "../../../vuex/store";
 const dateFormat = "YYYY-MM-DD";
 const columns = [
   {
-    title: "First Name",
+    title: "Name",
     dataIndex: "first_name",
-    key: "id",
-  },
-  {
-    title: "Last Name",
-    dataIndex: "last_name",
-    key: "id",
+    key: "name",
+    slots: { customRender: "name" },
   },
   {
     title: "Phone No",
@@ -375,22 +502,24 @@ const columns = [
   {
     title: "Location",
     dataIndex: "location_id",
-    key: "id",
+    key: "location_id",
   },
   {
     title: "Role",
     dataIndex: "role_id",
-    key: "id",
+    key: "role_id",
+    slots: { customRender: "role" },
   },
   {
     title: "Shift",
     dataIndex: "shift",
-    key: "id",
+    key: "shift",
   },
   {
     title: "Status",
     dataIndex: "status",
-    key: "id",
+    key: "status",
+    slots: { customRender: "status" },
   },
   {
     title: "Action",
@@ -410,6 +539,7 @@ const DragAndDropTable = defineComponent({
     const isLoading = computed(() => state.crud.loading);
     const selectedRowKeys = ref([]);
     const dataSource = ref([]);
+    const searchTerm = ref("");
     const isModalOpen = ref(false);
     const postdata = ref([]);
     const { query } = useRoute();
@@ -453,6 +583,61 @@ const DragAndDropTable = defineComponent({
     const post_name = query.name;
 
     console.log(post_name);
+
+    // ── Derived stats + search/filter + display helpers ──
+    const totalWorkers = computed(() => dataSource.value.length);
+    const securityWorkers = computed(
+      () =>
+        dataSource.value.filter(
+          (w) => (w.role_id || "").toLowerCase().includes("security")
+        ).length
+    );
+    const activeWorkers = computed(
+      () =>
+        dataSource.value.filter(
+          (w) => (w.status || "").toLowerCase() === "active"
+        ).length
+    );
+
+    const filteredWorkers = computed(() => {
+      const q = searchTerm.value.trim().toLowerCase();
+      if (!q) return dataSource.value;
+      return dataSource.value.filter((w) =>
+        [
+          w.first_name,
+          w.last_name,
+          w.phone_no,
+          w.id_no,
+          w.role_id,
+          w.location_id,
+        ]
+          .filter(Boolean)
+          .some((field) => String(field).toLowerCase().includes(q))
+      );
+    });
+
+    const initials = (record) => {
+      const f = (record.first_name || "").charAt(0);
+      const l = (record.last_name || "").charAt(0);
+      return (f + l).toUpperCase() || "?";
+    };
+
+    const roleClass = (role) => {
+      const r = (role || "").toLowerCase();
+      if (r.includes("security")) return "role-security";
+      if (r.includes("supervisor")) return "role-supervisor";
+      if (r.includes("chv") || r.includes("chp") || r.includes("community"))
+        return "role-chv";
+      if (r.includes("elder")) return "role-elder";
+      return "role-default";
+    };
+
+    const statusClass = (status) => {
+      const s = (status || "").toLowerCase();
+      if (s === "active") return "status-active";
+      if (s === "inactive") return "status-inactive";
+      return "status-default";
+    };
 
     onMounted(async () => {
       try {
@@ -768,6 +953,14 @@ const DragAndDropTable = defineComponent({
       rowSelection,
       onSelectChange,
       dataSource,
+      searchTerm,
+      filteredWorkers,
+      totalWorkers,
+      activeWorkers,
+      securityWorkers,
+      initials,
+      roleClass,
+      statusClass,
       columns,
       formState,
       post_id,
@@ -795,6 +988,353 @@ const DragAndDropTable = defineComponent({
 
 export default DragAndDropTable;
 </script>
+<style lang="less" scoped>
+.pw-page {
+  padding-top: 6px;
+  padding-bottom: 18px;
+
+  /* Header */
+  .pw-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .pw-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1f2437;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pw-icon {
+    color: #2f6746;
+  }
+  .pw-subtitle {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #8a90a6;
+  }
+  .pw-head-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    :deep(.btn-icon) {
+      display: inline-flex;
+      align-items: center;
+      color: inherit;
+    }
+  }
+
+  /* Summary chips */
+  .pw-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .pw-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #e6f2eb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 3px 10px rgba(28, 122, 72, 0.05);
+  }
+  .pw-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pw-stat-icon.total {
+    background: #ebebff;
+    color: #5f63f2;
+  }
+  .pw-stat-icon.active {
+    background: #e3faf3;
+    color: #20c997;
+  }
+  .pw-stat-icon.security {
+    background: #fff4e0;
+    color: #fa8b0c;
+  }
+  .pw-stat-body {
+    display: flex;
+    flex-direction: column;
+  }
+  .pw-stat-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1f2437;
+    line-height: 1.1;
+  }
+  .pw-stat-label {
+    font-size: 11px;
+    color: #8a90a6;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  /* Toolbar / search */
+  .pw-toolbar {
+    margin-bottom: 14px;
+  }
+  .pw-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 360px;
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      color: #9ab8a8;
+      display: flex;
+      z-index: 1;
+    }
+    :deep(.ant-input-affix-wrapper),
+    :deep(input) {
+      border-radius: 22px;
+      border: 1px solid #d9f0e2;
+      background: #f7fdf9;
+      padding-left: 36px;
+      height: 40px;
+    }
+  }
+
+  .pw-loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+  }
+
+  /* Avatar + name */
+  .pw-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #20c997 0%, #36ddb3 100%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pw-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pw-name-text {
+    font-weight: 600;
+    color: #2f3a35;
+  }
+
+  /* Role + status tags */
+  .pw-role-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 2px 10px;
+    white-space: nowrap;
+  }
+  .role-security {
+    background: #fff4e0;
+    color: #fa8b0c;
+  }
+  .role-supervisor {
+    background: #ebebff;
+    color: #5f63f2;
+  }
+  .role-chv {
+    background: #e5f3ff;
+    color: #2c99ff;
+  }
+  .role-elder {
+    background: #f3ebff;
+    color: #9254de;
+  }
+  .role-default {
+    background: #eef2f0;
+    color: #4d7a63;
+  }
+  .pw-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    &::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+  }
+  .status-active {
+    color: #20c997;
+  }
+  .status-inactive {
+    color: #ff4d4f;
+  }
+  .status-default {
+    color: #9299b8;
+  }
+
+  /* Desktop table */
+  .pw-table {
+    :deep(.ant-table) {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e6f2eb;
+      box-shadow: 0 4px 14px rgba(28, 122, 72, 0.06);
+    }
+    :deep(.ant-table-thead > tr > th) {
+      background: #f4fbf6;
+      color: #2f6746;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid #e1efe6;
+    }
+    :deep(.ant-table-thead > tr > th::before) {
+      display: none;
+    }
+    :deep(.ant-table-tbody > tr > td) {
+      border-bottom: 1px solid #f1f7f3;
+    }
+    :deep(.ant-table-tbody > tr:hover > td) {
+      background: #f3fbf6;
+    }
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* Mobile cards */
+  .pw-cards {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .pw-card {
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+  }
+  .pw-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .pw-card-id {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .pw-card-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #15693c;
+    line-height: 1.2;
+  }
+  .pw-card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    margin-bottom: 14px;
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .lbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7a8a82;
+      font-weight: 600;
+    }
+    .val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2f3a35;
+      word-break: break-word;
+    }
+  }
+  .pw-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    :deep(.ant-btn) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  .pw-empty {
+    text-align: center;
+    padding: 40px 0;
+    color: #7a8a82;
+    font-size: 13px;
+  }
+
+  .pw-modal-host {
+    display: none;
+  }
+
+  /* ── Mobile-first breakpoints ── */
+  @media (max-width: 991px) {
+    .pw-table {
+      display: none;
+    }
+    .pw-cards {
+      display: flex;
+    }
+  }
+  @media (max-width: 575px) {
+    .pw-head-actions {
+      width: 100%;
+    }
+    .pw-head-actions :deep(.ant-btn) {
+      flex: 1;
+      justify-content: center;
+    }
+    .pw-stats {
+      grid-template-columns: 1fr;
+    }
+    .pw-search {
+      max-width: 100%;
+    }
+    .pw-card-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+</style>
 <style>
 .full-modal {
   .ant-modal {
