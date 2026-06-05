@@ -293,11 +293,9 @@
                                 <span class="val">{{ record.issued_by || "—" }}</span>
                               </div>
                             </div>
-                            <div class="rns-card-actions">
-                              <sdButton type="success" size="extra-small"
-                                >Cancel</sdButton
-                              >
-                            </div>
+<div class="rns-card-actions">
+  <sdButton type="success" size="extra-small" @click="cancelTransfer(record.id)">Cancel</sdButton>
+</div>
                           </article>
                           <div v-if="!fromWarehouse.length" class="rns-empty">
                             No records found.
