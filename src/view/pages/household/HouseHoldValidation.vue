@@ -217,7 +217,7 @@
           <a-collapse-panel
             v-for="village in villages"
             :key="String(village.id)"
-            @click="ensureVillageLoaded(village.id)"
+            @click="ensureVillageInitiallyLoaded(village.id)"
           >
             <template #header>
               <div class="village-header">
@@ -248,8 +248,9 @@
               :data-source="filteredHouseholds(village.id)"
               :pagination="{
                 current: getCurrentHouseholdPage(village.id),
-                pageSize: 100,
+                pageSize: HOUSEHOLDS_PAGE_SIZE,
                 total: householdCount(village.id),
+                showSizeChanger: false,
                 showTotal: (total) => `Total ${total} households`,
               }"
               :loading="villageLoading[village.id]"
@@ -562,10 +563,27 @@
             </div>
 
             <!-- Phone change -->
-            <div v-if="changeForm.type === 'phone_change'" class="field-grid">
+            <div v-if="changeForm.type === 'phone_change'" class="field-grid two-col">
               <div class="field">
                 <label class="field-label">New phone number <span class="req">*</span></label>
-                <a-input v-model:value="changeForm.new_phone_no" placeholder="e.g. 0712 345 678" />
+                <a-input
+                  v-model:value="changeForm.new_phone_no"
+                  placeholder="e.g. 0712 345 678"
+                  :maxlength="10"
+                  autocomplete="off"
+                />
+                <p v-if="phoneFormatError" class="hint field-error">{{ phoneFormatError }}</p>
+              </div>
+              <div class="field">
+                <label class="field-label">Confirm phone number <span class="req">*</span></label>
+                <a-input
+                  v-model:value="changeForm.new_phone_no_confirm"
+                  placeholder="Re-enter the new phone number"
+                  :maxlength="10"
+                  autocomplete="off"
+                  @paste.prevent
+                />
+                <p v-if="phoneMismatchError" class="hint field-error">{{ phoneMismatchError }}</p>
               </div>
             </div>
 
@@ -578,7 +596,26 @@
                 </div>
                 <div class="field">
                   <label class="field-label">Successor phone <span class="req">*</span></label>
-                  <a-input v-model:value="changeForm.new_phone_no" placeholder="e.g. 0712 345 678" />
+                  <a-input
+                    v-model:value="changeForm.new_phone_no"
+                    placeholder="e.g. 0712 345 678"
+                    :maxlength="10"
+                    autocomplete="off"
+                  />
+                  <p v-if="phoneFormatError" class="hint field-error">{{ phoneFormatError }}</p>
+                </div>
+              </div>
+              <div class="field-grid">
+                <div class="field">
+                  <label class="field-label">Confirm successor phone <span class="req">*</span></label>
+                  <a-input
+                    v-model:value="changeForm.new_phone_no_confirm"
+                    placeholder="Re-enter the successor phone number"
+                    :maxlength="10"
+                    autocomplete="off"
+                    @paste.prevent
+                  />
+                  <p v-if="phoneMismatchError" class="hint field-error">{{ phoneMismatchError }}</p>
                 </div>
               </div>
               <p class="hint">
@@ -738,6 +775,11 @@ const navItems = [
   { key: "households", label: "Households", path: "/household/validation/households" },
 ];
 
+// Households per village are paginated server-side. Keep the page size small
+// (10) so each request returns a tiny payload even when villages contain
+// thousands of registered households.
+const HOUSEHOLDS_PAGE_SIZE = 10;
+
 const isLoading = ref(true);
 const villages = ref([]);
 const householdsByVillage = ref({});
@@ -769,6 +811,7 @@ const muteForm = ref({
 const changeForm = ref({
   type: "phone_change",
   new_phone_no: "",
+  new_phone_no_confirm: "",
   new_id_no: "",
   new_location_id: null,
   new_post_id: null,
@@ -804,10 +847,50 @@ const changeTypeHint = computed(
 
 const canSubmitChange = computed(() => {
   const f = changeForm.value;
-  if (f.type === "phone_change") return !!f.new_phone_no;
-  if (f.type === "head_change") return !!f.new_id_no && !!f.new_phone_no;
+  if (f.type === "phone_change") return !!f.new_phone_no && isPhoneValid.value && isPhoneConfirmed.value;
+  if (f.type === "head_change") return !!f.new_id_no && !!f.new_phone_no && isPhoneValid.value && isPhoneConfirmed.value;
   if (f.type === "transfer_in") return !!f.new_location_id;
   return false;
+});
+
+// --- Phone validation -------------------------------------------------------
+// Accept Kenyan mobile numbers only: must start with 0 and be 10 digits long,
+// with a second digit of 7 (07XX — Safaricom/Airtel/Telkom mobile) or 1 (01XX —
+// newer Safaricom/Airtel mobile range). Whitespace inside the input is stripped
+// before validation so users can type "0712 345 678".
+const KE_MOBILE_REGEX = /^0(7|1)\d{8}$/;
+const normalizedNewPhone = computed(() =>
+  String(changeForm.value.new_phone_no || "").replace(/\s+/g, "")
+);
+const normalizedNewPhoneConfirm = computed(() =>
+  String(changeForm.value.new_phone_no_confirm || "").replace(/\s+/g, "")
+);
+const phoneRequiresValidation = computed(() =>
+  changeForm.value.type === "phone_change" || changeForm.value.type === "head_change"
+);
+const isPhoneValid = computed(() => KE_MOBILE_REGEX.test(normalizedNewPhone.value));
+const isPhoneConfirmed = computed(
+  () => normalizedNewPhone.value === normalizedNewPhoneConfirm.value
+);
+const phoneFormatError = computed(() => {
+  if (!phoneRequiresValidation.value) return "";
+  const value = normalizedNewPhone.value;
+  if (!value) return "";
+  if (!/^\d+$/.test(value)) return "Phone number must contain digits only.";
+  if (!value.startsWith("0")) return "Phone number must start with 0.";
+  if (value.length !== 10) return "Phone number must be exactly 10 digits.";
+  if (!KE_MOBILE_REGEX.test(value)) {
+    return "Enter a valid Kenyan mobile number (Safaricom, Airtel or Telkom).";
+  }
+  return "";
+});
+const phoneMismatchError = computed(() => {
+  if (!phoneRequiresValidation.value) return "";
+  if (!normalizedNewPhoneConfirm.value) return "";
+  if (normalizedNewPhone.value !== normalizedNewPhoneConfirm.value) {
+    return "Phone numbers do not match. Please re-enter.";
+  }
+  return "";
 });
 
 const filterVillageOption = (input, option) => {
@@ -821,6 +904,7 @@ const resetChangeForm = () => {
   changeForm.value = {
     type: changeForm.value.type || "phone_change",
     new_phone_no: "",
+    new_phone_no_confirm: "",
     new_id_no: "",
     new_location_id: null,
     new_post_id: null,
@@ -1281,12 +1365,23 @@ const resetDrilldown = async () => {
   await refreshAll();
 };
 
-const ensureVillageLoaded = async (villageId, page = 1) => {
+const ensureVillageLoaded = async (villageId, page = 1, { force = false } = {}) => {
   const cacheKey = `${villageId}_${page}`;
-  if (householdsByVillage.value[cacheKey]) return;
+  if (!force && householdsByVillage.value[cacheKey]) {
+    // Make sure the active page meta reflects this cached page so the table
+    // paginator shows the right "current" value when re-opening a panel.
+    const existingMeta = householdsPaginationMeta.value[villageId];
+    if (existingMeta && existingMeta.current !== page) {
+      householdsPaginationMeta.value = {
+        ...householdsPaginationMeta.value,
+        [villageId]: { ...existingMeta, current: page },
+      };
+    }
+    return;
+  }
   villageLoading.value = { ...villageLoading.value, [villageId]: true };
   try {
-    const pageSize = 100;
+    const pageSize = HOUSEHOLDS_PAGE_SIZE;
     const { data } = await axios.get(`village_hh?village_id=${villageId}&page=${page}&per_page=${pageSize}`);
     const allRows = data?.data || [];
     const rows = allRows.map((row, index) => ({
@@ -1341,7 +1436,31 @@ const handleVillagePageChange = async (pagination) => {
 };
 
 const handleHouseholdPageChange = async (villageId, page) => {
+  // Record the new current page up-front so the paginator UI updates even
+  // while the request is in flight (and so it persists when the response
+  // is served from cache and short-circuits the meta refresh).
+  const existingMeta = householdsPaginationMeta.value[villageId] || {
+    current: 1,
+    pageSize: HOUSEHOLDS_PAGE_SIZE,
+    total: 0,
+  };
+  householdsPaginationMeta.value = {
+    ...householdsPaginationMeta.value,
+    [villageId]: { ...existingMeta, current: page },
+  };
   await ensureVillageLoaded(villageId, page);
+};
+
+// Called by the collapse panel header click. The header is a wide hit-target
+// that fires every time the user clicks anywhere in the panel chrome — we
+// must NOT reload page 1 each time, otherwise the active paginator + cache
+// key snap back to page 1 (breaking the modal view and the next-page click).
+const ensureVillageInitiallyLoaded = (villageId) => {
+  const hasAnyPageCached = Object.keys(householdsByVillage.value).some((key) =>
+    key.startsWith(`${villageId}_`),
+  );
+  if (hasAnyPageCached) return;
+  ensureVillageLoaded(villageId, 1);
 };
 
 const refreshAll = async () => {
@@ -1459,7 +1578,12 @@ const prettyAction = (action) => {
 };
 
 const openHouseholdModal = async (villageId, householdId) => {
-  await ensureVillageLoaded(villageId);
+  // Load the page the user is currently viewing — not page 1 — otherwise
+  // the active cache key (and the table's current page) would snap back to
+  // page 1 and the household id from a later page would be missing from
+  // `activeHouseholds`, leaving the modal grayed out with no body.
+  const page = getCurrentHouseholdPage(villageId);
+  await ensureVillageLoaded(villageId, page);
   activeVillageId.value = villageId;
   activeHouseholdId.value = householdId;
   isHouseholdModalOpen.value = true;
@@ -1610,11 +1734,11 @@ const submitChange = async () => {
 
   if (type === "phone_change") {
     endpoint = "hh_change_request/phone_change";
-    payload.new_phone_no = changeForm.value.new_phone_no;
+    payload.new_phone_no = normalizedNewPhone.value;
   } else if (type === "head_change") {
     endpoint = "hh_change_request/head_change";
     payload.new_id_no = changeForm.value.new_id_no;
-    payload.new_phone_no = changeForm.value.new_phone_no;
+    payload.new_phone_no = normalizedNewPhone.value;
   } else {
     endpoint = "hh_change_request/transfer";
     payload.new_location_id = changeForm.value.new_location_id;
@@ -2725,6 +2849,47 @@ const handleModalKeydown = (event) => {
     .who .name { font-size: 19px; }
     .stat-value { font-size: 32px; }
   }
+
+  /* ── Additional mobile UX hardening ───────────────────────────── */
+  @media (max-width: 760px) {
+    .panel {
+      padding: 12px 12px 14px;
+      border-radius: 8px;
+    }
+    .page-heading {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .ph-title { font-size: 15px; }
+    .ph-subtitle { font-size: 11.5px; }
+    .ph-actions {
+      width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      &::-webkit-scrollbar { height: 4px; }
+    }
+    .nav-item {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      font-size: 11.5px;
+    }
+    .dashboard-grid { gap: 8px; }
+    .stat-card { padding: 10px 12px; }
+    .value-row { font-size: 18px; }
+    .chips { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .chips span { font-size: 10.5px; padding: 5px 6px; }
+    .scope-meta { font-size: 10.5px; }
+  }
+
+  @media (max-width: 480px) {
+    .ph-title { font-size: 14px; }
+    .nav-item { padding: 5px 9px; font-size: 11px; }
+    .value-row { font-size: 16px; }
+    .chips { grid-template-columns: 1fr; }
+  }
 }
 </style>
 
@@ -3344,6 +3509,12 @@ const handleModalKeydown = (event) => {
     text-transform: none;
     letter-spacing: normal;
     margin-left: 4px;
+  }
+  .form-panel .field .field-error {
+    margin: 4px 0 0;
+    color: #c0392b;
+    font-size: 11.5px;
+    font-weight: 500;
   }
   .form-panel .field .ant-input,
   .form-panel .field .ant-input-number,

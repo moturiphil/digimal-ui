@@ -149,7 +149,7 @@
           <!-- ───────── Sub-counties drill-down ───────── -->
           <section class="panel" v-if="selectedCounty">
             <div class="panel-title with-back">
-              <a-button type="link" size="small" class="back-btn" @click="clearCounty">
+              <a-button v-if="isNationalUser" type="link" size="small" class="back-btn" @click="clearCounty">
                 ← Back to all counties
               </a-button>
               <span>
@@ -258,6 +258,17 @@ import { RecordViewWrapper, BudgetPageWrapper } from "../budget/style";
 
 const user = ref(JSON.parse(sessionStorage.getItem("user") || "null"));
 
+// `user` in sessionStorage is shaped { user: { ... }, token, ... } on some
+// endpoints and a flat object on others; normalise both forms.
+const userLevelId = computed(() => {
+  return Number(user.value?.user?.level_id ?? user.value?.level_id ?? 0);
+});
+const userLocationId = computed(() => {
+  return Number(user.value?.user?.location_id ?? user.value?.location_id ?? 0);
+});
+const isNationalUser = computed(() => userLevelId.value === 1);
+const isCountyUser = computed(() => userLevelId.value === 2);
+
 const loading = ref(false);
 const requestsLoading = ref(false);
 
@@ -361,6 +372,14 @@ const buildParams = () => {
 };
 
 const loadSummary = async () => {
+  // County users (CMCC, level 2) cannot call the national summary endpoint
+  // (the backend rejects non-national users with 401). They have their own
+  // county-scoped endpoint that returns totals + subcounty breakdown in one
+  // payload, so we dispatch by level here and auto-pin the county selection.
+  if (isCountyUser.value) {
+    return loadCountySummary();
+  }
+
   loading.value = true;
   try {
     const res = await axios.get("hh_change_requests/national/summary", {
@@ -386,7 +405,48 @@ const loadSummary = async () => {
   }
 };
 
+/**
+ * County-scoped equivalent of loadSummary for CMCC users. Hits the dedicated
+ * /hh_change_requests/county/summary endpoint which returns totals, by_action
+ * and the sub-county breakdown for the authenticated user's county only.
+ * We pre-select the county so the existing drill-down UI works unchanged —
+ * the only visual difference is the "By County" table is hidden via
+ * v-if="!selectedCounty" because the county is always selected.
+ */
+const loadCountySummary = async () => {
+  loading.value = true;
+  try {
+    const res = await axios.get("hh_change_requests/county/summary", {
+      params: buildParams(),
+    });
+    const data = res?.data?.data || {};
+    totals.value = data.totals || { total: 0, pending: 0, approved: 0, rejected: 0 };
+    byAction.value = data.by_action || {};
+    counties.value = []; // intentional — county user has no cross-county view
+    subcounties.value = data.subcounties || [];
+    const county = data.county || { id: userLocationId.value, name: "My County" };
+    selectedCounty.value = { id: county.id, name: county.name };
+    if (selectedSubcounty.value) {
+      await loadSubcountyRequests(selectedSubcounty.value.subcounty_id, 1);
+    }
+  } catch (e) {
+    notification.error({
+      message: "Failed to load county summary",
+      description: e?.response?.data?.message || e.message,
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
 const loadCounty = async (countyId) => {
+  // For a national user this is a drill-down. For a county user the county
+  // summary endpoint already returned the subcounties, so a refresh just
+  // re-runs the same call.
+  if (isCountyUser.value) {
+    return loadCountySummary();
+  }
+
   try {
     const res = await axios.get(`hh_change_requests/national/county/${countyId}`, {
       params: buildParams(),
@@ -408,6 +468,12 @@ const drillIntoCounty = async (record) => {
 };
 
 const clearCounty = () => {
+  // County users have no "all counties" view to fall back to — their county
+  // is always pinned. Suppress the action entirely so the back button is a
+  // no-op for them (the markup hides it via v-if="isNationalUser" too).
+  if (isCountyUser.value) {
+    return;
+  }
   selectedCounty.value = null;
   selectedSubcounty.value = null;
   subcounties.value = [];
@@ -637,5 +703,29 @@ onMounted(loadSummary);
   .accent-success-text { color: #20c997; }
   .accent-warning-text { color: #fa8b0c; font-weight: 600; }
   .accent-danger-text { color: #ff4d4f; }
+
+  /* ── Mobile responsive ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .panel { padding: 12px 12px 14px; border-radius: 8px; }
+    .page-heading { flex-direction: column; align-items: stretch; gap: 8px; }
+    .ph-title { font-size: 15px; }
+    .ph-subtitle { font-size: 11.5px; }
+    .filter-row { flex-direction: column; align-items: stretch; }
+    .filter-row .search { max-width: 100%; }
+    .tile-row,
+    [class*="tile-row-"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 8px;
+    }
+    .tile { padding: 10px 8px; }
+    .tile-value { font-size: 18px; }
+    .tile-label, .tile-sub { font-size: 10.5px; }
+  }
+  @media (max-width: 480px) {
+    .tile-row,
+    [class*="tile-row-"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
 }
 </style>

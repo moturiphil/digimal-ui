@@ -84,7 +84,7 @@
           </perfect-scrollbar>
 
           <footer class="np-foot">
-            <a @click="goToAll">View all activity</a>
+            <a @click.stop="goToAll">View all activity</a>
           </footer>
         </div>
       </template>
@@ -95,6 +95,77 @@
         </a>
       </a-badge>
     </a-popover>
+
+    <!-- Full activity modal: paginated list of every notification -->
+    <a-modal
+      v-model:visible="allModalOpen"
+      title="All notifications"
+      :footer="null"
+      width="640px"
+      wrap-class-name="np-all-modal"
+      :destroy-on-close="true"
+      @cancel="allModalOpen = false"
+    >
+      <div class="np-modal-toolbar">
+        <span class="np-modal-meta">
+          {{ allMeta.total }} total · {{ allUnread }} unread
+        </span>
+        <a-space>
+          <a-button
+            v-if="allUnread > 0"
+            size="small"
+            type="link"
+            @click="markAllRead"
+          >
+            Mark all read
+          </a-button>
+          <a-button size="small" type="link" @click="fetchAllPage(1)">
+            Refresh
+          </a-button>
+        </a-space>
+      </div>
+
+      <div v-if="allLoading" class="np-state">
+        <div class="np-spinner" />
+        <p>Loading notifications…</p>
+      </div>
+      <div v-else-if="!allItems.length" class="np-state">
+        <p class="np-state__title">No notifications yet</p>
+      </div>
+      <ul v-else class="np-list np-list--modal">
+        <li
+          v-for="n in allItems"
+          :key="n.id"
+          class="np-row"
+          :class="{ 'np-row--unread': !n.read_at }"
+          @click="openNotification(n, { fromModal: true })"
+        >
+          <span class="np-row__rail" :class="iconBg(n.type)" />
+          <div class="np-row__icon" :class="iconBg(n.type)">
+            <sdFeatherIcons :type="iconFor(n.type)" size="16" />
+          </div>
+          <div class="np-row__body">
+            <div class="np-row__top">
+              <span class="np-row__title">{{ n.title }}</span>
+              <span class="np-row__time">{{ relativeTime(n.created_at) }}</span>
+            </div>
+            <p class="np-row__msg">{{ n.message }}</p>
+          </div>
+          <span v-if="!n.read_at" class="np-row__dot" aria-label="unread" />
+        </li>
+      </ul>
+
+      <div v-if="allMeta.last_page > 1" class="np-modal-pager">
+        <a-pagination
+          v-model:current="allMeta.current_page"
+          :total="allMeta.total"
+          :page-size="allMeta.per_page"
+          :show-size-changer="false"
+          size="small"
+          @change="fetchAllPage"
+        />
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -109,7 +180,7 @@
  */
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 import "vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css";
-import { defineComponent, ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { defineComponent, ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import axios from "@/Axiosconfig";
 
@@ -126,6 +197,18 @@ export default defineComponent({
     const popoverOpen = ref(false);
     const activeFilter = ref("all");
     let pollTimer     = null;
+
+    // "View all activity" modal state
+    const allModalOpen = ref(false);
+    const allLoading   = ref(false);
+    const allItems     = ref([]);
+    const allMeta      = reactive({
+      current_page: 1,
+      per_page: 15,
+      total: 0,
+      last_page: 1,
+    });
+    const allUnread = computed(() => allItems.value.filter((n) => !n.read_at).length);
 
     const filteredItems = computed(() =>
       activeFilter.value === "unread"
@@ -152,42 +235,55 @@ export default defineComponent({
       }
     };
 
+    const fetchAllPage = async (page = 1) => {
+      allLoading.value = true;
+      try {
+        const { data } = await axios.get("notifications", {
+          params: { per_page: allMeta.per_page, page },
+        });
+        const body = data || {};
+        allItems.value      = body.data || [];
+        allMeta.current_page = body.current_page || page;
+        allMeta.per_page     = body.per_page || allMeta.per_page;
+        allMeta.total        = body.total ?? allItems.value.length;
+        allMeta.last_page    = body.last_page || 1;
+      } catch (_) {
+        allItems.value = [];
+      } finally {
+        allLoading.value = false;
+      }
+    };
+
     const onVisibleChange = (visible) => {
       if (visible) fetchList();
     };
 
-    const openNotification = async (n) => {
-      if (!n.read_at) {
-        n.read_at = new Date().toISOString();
-        unreadCount.value = Math.max(0, unreadCount.value - 1);
-        axios.post(`notifications/${n.id}/read`).catch(() => {});
+    // Defensive parser — the data column is JSON; Laravel casts to array, but
+    // legacy rows / raw inserts may surface it as a string.
+    const parseData = (raw) => {
+      if (!raw) return {};
+      if (typeof raw === "object") return raw;
+      if (typeof raw === "string") {
+        try { return JSON.parse(raw) || {}; } catch { return {}; }
       }
-      popoverOpen.value = false;
-      const route = resolveRouteForUser();
-      if (route) router.push(route).catch(() => {});
+      return {};
     };
 
-    const markAllRead = async () => {
-      try {
-        await axios.post("notifications/read_all");
-        const now = new Date().toISOString();
-        items.value = items.value.map((n) => ({ ...n, read_at: n.read_at || now }));
-        unreadCount.value = 0;
-      } catch (_) { /* preserve current state on error */ }
-    };
-
-    const goToAll = () => {
-      popoverOpen.value = false;
-      const route = resolveRouteForUser();
-      if (route) router.push(route).catch(() => {});
-    };
-
-    // Bell is global so we don't know the page context here. Pick a
-    // destination per level:
-    //   1 (National)   → national review queue
-    //   2 (County)     → county budgeting page
-    //   3 (Sub-county) → sub-county budgeting page
-    const resolveRouteForUser = () => {
+    // Fallback route resolution for legacy notifications that have no `url`
+    // stored on the data payload (e.g. budget approval emails). For brand-new
+    // event types we always carry a `url` so this is only a safety net.
+    const fallbackRouteForType = (type) => {
+      if (!type) return null;
+      if (type.startsWith("hh_change_request.submitted")) {
+        return "/household/change-requests/review";
+      }
+      if (
+        type.startsWith("hh_change_request.approved") ||
+        type.startsWith("hh_change_request.rejected")
+      ) {
+        return "/household/my-change-requests";
+      }
+      // Legacy budget notifications — keep the original level-based behaviour.
       try {
         const raw = localStorage.getItem("currentUser");
         const lvl = raw ? Number(JSON.parse(raw)?.user?.level_id) : null;
@@ -198,12 +294,108 @@ export default defineComponent({
       return null;
     };
 
+    const openNotification = async (n, opts = {}) => {
+      // Close UI surfaces FIRST so the route change isn't competing with the
+      // overlay/modal teardown (a common cause of "click does nothing").
+      popoverOpen.value = false;
+      if (opts.fromModal) allModalOpen.value = false;
+
+      // Mark read in the background — do not block navigation on this.
+      if (!n.read_at) {
+        const stamp = new Date().toISOString();
+        n.read_at = stamp;
+        const a = items.value.find((i) => i.id === n.id);
+        if (a) a.read_at = stamp;
+        const b = allItems.value.find((i) => i.id === n.id);
+        if (b) b.read_at = stamp;
+        unreadCount.value = Math.max(0, unreadCount.value - 1);
+        axios.post(`notifications/${n.id}/read`).catch(() => {});
+      }
+
+      const data = parseData(n.data);
+
+      // Resolve target route + highlight query.
+      let path = null;
+      const query = {};
+
+      const explicitUrl = typeof data.url === "string" ? data.url : null;
+      if (explicitUrl) {
+        const [p, queryString] = explicitUrl.split("?");
+        path = p;
+        if (queryString) {
+          const params = new URLSearchParams(queryString);
+          for (const [k, v] of params.entries()) {
+            query[k] = v;
+          }
+        }
+        path = fallbackRouteForType(n.type);
+      }
+
+      // Always include highlight when we know the request id — target pages
+      // key off this to scroll and open the drawer.
+      if (!query.highlight && data.request_id != null) {
+        query.highlight = String(data.request_id);
+      }
+
+      if (!path) return;
+
+      // If stored url doesn't resolve to a known route, fall back by type.
+      let resolved = null;
+      try { resolved = router.resolve({ path }); } catch { resolved = null; }
+      if (!resolved || !resolved.matched || resolved.matched.length === 0) {
+        const fb = fallbackRouteForType(n.type);
+        if (fb) path = fb;
+        else return;
+      }
+
+      // Already on the target page with the same highlight? Bump a cache-buster
+      // so the route.query watcher on the target page re-fires.
+      const current = router.currentRoute.value;
+      if (
+        current.path === path &&
+        String(current.query.highlight || "") === String(query.highlight || "") &&
+        query.highlight
+      ) {
+        query._t = String(Date.now());
+      }
+
+      // Let the popover/modal teardown commit before navigating.
+      await nextTick();
+
+      router.push({ path, query }).catch((err) => {
+        if (err && err.name !== "NavigationDuplicated") {
+          // eslint-disable-next-line no-console
+          console.warn("Notification navigation failed:", err);
+        }
+      });
+    };
+
+    const markAllRead = async () => {
+      try {
+        await axios.post("notifications/read_all");
+        const now = new Date().toISOString();
+        items.value = items.value.map((n) => ({ ...n, read_at: n.read_at || now }));
+        allItems.value = allItems.value.map((n) => ({ ...n, read_at: n.read_at || now }));
+        unreadCount.value = 0;
+      } catch (_) { /* preserve current state on error */ }
+    };
+
+    const goToAll = async () => {
+      popoverOpen.value = false;
+      await nextTick();
+      allModalOpen.value = true;
+      fetchAllPage(1);
+    };
+
     const iconFor = (type) => {
       switch (type) {
         case "budget.submitted":       return "send";
         case "budget.county_approved": return "check";
         case "budget.approved":        return "check-circle";
         case "budget.referred":        return "rotate-ccw";
+        case "hh_change_request.submitted": return "send";
+        case "hh_change_request.approved": return "check-circle";
+        case "hh_change_request.rejected": return "x-circle";
         default:                       return "bell";
       }
     };
@@ -213,6 +405,9 @@ export default defineComponent({
         case "budget.county_approved": return "bg-primary";
         case "budget.referred":        return "bg-warning";
         case "budget.submitted":       return "bg-info";
+        case "hh_change_request.submitted": return "bg-info";
+        case "hh_change_request.approved": return "bg-success";
+        case "hh_change_request.rejected": return "bg-warning";
         default:                       return "bg-secondary";
       }
     };
@@ -249,6 +444,13 @@ export default defineComponent({
       iconFor,
       iconBg,
       relativeTime,
+      // "View all activity" modal
+      allModalOpen,
+      allLoading,
+      allItems,
+      allMeta,
+      allUnread,
+      fetchAllPage,
     };
   },
 });
@@ -522,4 +724,63 @@ export default defineComponent({
 .np-popover .ant-popover-inner-content { padding: 0; }
 .np-popover .ant-popover-inner { border-radius: 12px; overflow: hidden; box-shadow: 0 12px 32px rgba(36, 46, 92, 0.18); }
 .np-popover .ant-popover-arrow { display: none; }
+
+/* "View all activity" modal (unscoped \u2014 antdv renders to body) */
+.np-all-modal .ant-modal-body { padding: 0; }
+.np-all-modal .np-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f1f2f6;
+  background: #fafbff;
+}
+.np-all-modal .np-modal-meta { font-size: 12px; color: #5a5f7d; }
+.np-all-modal .np-list--modal { max-height: 60vh; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+.np-all-modal .np-list--modal .np-row {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f4f5f7;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.np-all-modal .np-list--modal .np-row:hover { background: #f7fafc; }
+.np-all-modal .np-list--modal .np-row--unread { background: #f0f9f3; }
+.np-all-modal .np-list--modal .np-row__rail {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.np-all-modal .np-list--modal .np-row__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.np-all-modal .np-list--modal .np-row__body { flex: 1; min-width: 0; }
+.np-all-modal .np-list--modal .np-row__top {
+  display: flex; justify-content: space-between; gap: 8px; align-items: baseline;
+}
+.np-all-modal .np-list--modal .np-row__title { font-weight: 600; font-size: 13px; color: #272b41; }
+.np-all-modal .np-list--modal .np-row__time { font-size: 11px; color: #868eae; flex-shrink: 0; }
+.np-all-modal .np-list--modal .np-row__msg {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #5a5f7d;
+  line-height: 1.4;
+}
+.np-all-modal .np-list--modal .np-row__dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #1f9254; align-self: center; flex-shrink: 0;
+}
+.np-all-modal .np-modal-pager {
+  display: flex; justify-content: center;
+  padding: 12px 16px;
+  border-top: 1px solid #f1f2f6;
+}
 </style>

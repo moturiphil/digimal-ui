@@ -26,7 +26,7 @@
           <!-- ── Summary tiles ──────────────────────────────────────────── -->
           <section class="panel">
             <div class="panel-title">Pending Summary</div>
-            <div class="tile-row tile-row-6">
+            <div class="tile-row tile-row-8">
               <div class="tile">
                 <div class="tile-icon">▦</div>
                 <div class="tile-label">Total Pending</div>
@@ -63,61 +63,17 @@
                 <div class="tile-value">{{ fmt(counts.create) }}</div>
                 <div class="tile-sub">Newly registered HH</div>
               </div>
-            </div>
-          </section>
-
-          <!-- ── Filters ────────────────────────────────────────────────── -->
-          <section class="panel filter-panel">
-            <div class="filter-row">
-              <a-segmented
-                v-model:value="activeFilter"
-                :options="filterOptions"
-                @change="fetchRequests"
-              />
-              <a-input
-                v-model:value="search"
-                placeholder="Search by head, ID or phone"
-                allow-clear
-                class="search"
-              >
-                <template #prefix><SearchOutlined /></template>
-              </a-input>
-            </div>
-          </section>
-
-          <!-- ── Pending requests grouped as status columns ─────────────── -->
-          <section class="panel">
-            <div class="panel-title">Pending Requests by Action Type</div>
-            <div class="status-row">
-              <div
-                v-for="col in statusColumns"
-                :key="col.key"
-                class="status-col"
-              >
-                <div class="status-col-head">
-                  <span class="status-col-title">{{ col.title }}</span>
-                  <span class="status-col-count" :class="col.accent">{{ col.list.length }}</span>
-                </div>
-                <div v-if="!col.list.length" class="status-col-empty">
-                  {{ col.empty }}
-                </div>
-                <ul v-else class="status-col-list">
-                  <li
-                    v-for="req in col.list"
-                    :key="req.id"
-                    class="status-col-item"
-                    @click="openDetail(req)"
-                  >
-                    <span class="sci-icon">◉</span>
-                    <span class="sci-body">
-                      <span class="sci-name">{{ householdHead(req) }}</span>
-                      <span class="sci-meta">
-                        {{ maskId(req.household && req.household.id_no) || '—' }}
-                        · {{ relativeTime(req.created_at) }}
-                      </span>
-                    </span>
-                  </li>
-                </ul>
+              <div class="tile">
+                <div class="tile-icon accent-success">✓</div>
+                <div class="tile-label">Accepted</div>
+                <div class="tile-value">{{ fmt(decisionTotals.accepted) }}</div>
+                <div class="tile-sub">Approved by you</div>
+              </div>
+              <div class="tile">
+                <div class="tile-icon accent-danger">✗</div>
+                <div class="tile-label">Rejected</div>
+                <div class="tile-value">{{ fmt(decisionTotals.rejected) }}</div>
+                <div class="tile-sub">Rejected by you</div>
               </div>
             </div>
           </section>
@@ -125,13 +81,16 @@
           <!-- ── Detailed pending table ─────────────────────────────────── -->
           <section class="panel">
             <div class="panel-title">All Pending Requests</div>
+
+            <!-- Desktop / tablet: table -->
             <a-table
               :columns="columns"
               :data-source="filteredRequests"
               :loading="loading"
               :pagination="{ pageSize: 12, showSizeChanger: false }"
               row-key="id"
-              class="requests-table"
+              :row-class-name="highlightRowClass"
+              class="requests-table desktop-only"
               :scroll="{ x: 1080 }"
               size="middle"
             >
@@ -154,8 +113,8 @@
 
                 <template v-else-if="column.key === 'initiator'">
                   <div class="hh-cell">
-                    <strong>{{ (record.initiator && record.initiator.name) || '—' }}</strong>
-                    <span class="muted">CHA</span>
+                    <strong>{{ chaName(record) }}</strong>
+                    <span class="muted">CHA · {{ chaSubLocation(record) }}</span>
                   </div>
                 </template>
 
@@ -164,33 +123,50 @@
                 </template>
 
                 <template v-else-if="column.key === 'actions'">
-                  <a-space>
-                    <a-button size="small" @click="openDetail(record)">
-                      <template #icon><EyeOutlined /></template>
-                      View
-                    </a-button>
-                    <a-button
-                      size="small"
-                      type="primary"
-                      :loading="actingId === record.id && actingType === 'approve'"
-                      @click="approve(record)"
-                    >
-                      <template #icon><CheckOutlined /></template>
-                      Approve
-                    </a-button>
-                    <a-button
-                      size="small"
-                      danger
-                      :loading="actingId === record.id && actingType === 'reject'"
-                      @click="openReject(record)"
-                    >
-                      <template #icon><CloseOutlined /></template>
-                      Reject
-                    </a-button>
-                  </a-space>
+                  <a-button size="small" type="primary" ghost @click="openDetail(record)">
+                    <template #icon><EyeOutlined /></template>
+                    Review
+                  </a-button>
                 </template>
               </template>
             </a-table>
+
+            <!-- Mobile: card list -->
+            <div class="mobile-only request-cards">
+              <div
+                v-for="req in filteredRequests"
+                :key="'m-' + req.id"
+                :class="['req-card', { highlighted: String(req.id) === String(highlightId) }]"
+                :ref="(el) => registerCardRef(req.id, el)"
+                @click="openDetail(req)"
+              >
+                <div class="rc-head">
+                  <a-tag :color="actionColor(req.action_type)" class="rc-tag">
+                    {{ actionLabel(req.action_type) }}
+                  </a-tag>
+                  <span class="rc-time">{{ relativeTime(req.created_at) }}</span>
+                </div>
+                <div class="rc-name">{{ householdHead(req) }}</div>
+                <div class="rc-meta">
+                  <span>ID {{ maskId(req.household && req.household.id_no) || '—' }}</span>
+                  <span>{{ maskPhone(req.household && req.household.phone_no) || '—' }}</span>
+                  <span v-if="householdVillage(req)">Village: {{ householdVillage(req) }}</span>
+                </div>
+                <div class="rc-footer">
+                  <span class="rc-by">
+                    By <strong>{{ chaName(req) }}</strong>
+                    · CHA · {{ chaSubLocation(req) }}
+                  </span>
+                  <a-button size="small" type="primary" ghost @click.stop="openDetail(req)">
+                    <template #icon><EyeOutlined /></template>
+                    Review
+                  </a-button>
+                </div>
+              </div>
+              <div v-if="!filteredRequests.length && !loading" class="req-cards-empty">
+                No pending requests.
+              </div>
+            </div>
           </section>
         </a-spin>
 
@@ -283,11 +259,49 @@
             </div>
 
             <div class="detail-section">
-              <h4>Submitted by</h4>
-              <p>
-                <strong>{{ (detailRequest.initiator && detailRequest.initiator.name) || '—' }}</strong>
-                <span class="muted"> · CHA</span>
-              </p>
+              <h4>Submitted by (CHA)</h4>
+              <div class="hh-snapshot">
+                <div class="snap-row">
+                  <span class="snap-label">Name</span>
+                  <span class="snap-value">{{ chaName(detailRequest) }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">Sub-location</span>
+                  <span class="snap-value">{{ chaSubLocation(detailRequest) }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">Phone</span>
+                  <span class="snap-value">
+                    <template v-if="chaPhone(detailRequest)">
+                      <a :href="`tel:${chaPhone(detailRequest)}`">{{ chaPhone(detailRequest) }}</a>
+                    </template>
+                    <template v-else>—</template>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prev/next pager (sticky on mobile) -->
+            <div class="drawer-pager">
+              <a-button
+                :disabled="!hasPrevRequest"
+                @click="gotoPrev"
+                class="pager-btn"
+              >
+                <template #icon><LeftOutlined /></template>
+                Previous
+              </a-button>
+              <span class="pager-counter">
+                {{ currentDetailIndex + 1 }} / {{ filteredRequests.length }}
+              </span>
+              <a-button
+                :disabled="!hasNextRequest"
+                @click="gotoNext"
+                class="pager-btn"
+              >
+                Next
+                <template #icon><RightOutlined /></template>
+              </a-button>
             </div>
           </div>
 
@@ -338,26 +352,36 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { message, Modal } from "ant-design-vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "@/Axiosconfig";
 import { Main } from "../../styled";
 import { RecordViewWrapper, BudgetPageWrapper } from "../budget/style";
 import {
   ReloadOutlined,
-  SearchOutlined,
   EyeOutlined,
-  CheckOutlined,
-  CloseOutlined,
   ArrowRightOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from "@ant-design/icons-vue";
 
 const loading = ref(false);
 const requests = ref([]);
+const decisionTotals = ref({ accepted: 0, rejected: 0 });
 const search = ref("");
 const activeFilter = ref("all");
 const actingId = ref(null);
 const actingType = ref(null);
+
+const route = useRoute();
+const router = useRouter();
+const highlightId = ref(route.query.highlight ? String(route.query.highlight) : null);
+const cardRefs = {};
+const registerCardRef = (id, el) => {
+  if (el) cardRefs[id] = el;
+  else delete cardRefs[id];
+};
 
 const detailOpen = ref(false);
 const detailRequest = ref(null);
@@ -366,21 +390,12 @@ const rejectOpen = ref(false);
 const rejectReason = ref("");
 const rejectTarget = ref(null);
 
-const filterOptions = [
-  { label: "All", value: "all" },
-  { label: "Phone change", value: "phone_change" },
-  { label: "Mute", value: "mute" },
-  { label: "Head change", value: "head_change" },
-  { label: "Transfer", value: "transfer_in" },
-  { label: "New household", value: "create" },
-];
-
 const columns = [
-  { title: "Action", key: "action_type", width: 140 },
+  { title: "Action", key: "action_type", width: 130 },
   { title: "Household", key: "household" },
-  { title: "Submitted by", key: "initiator", width: 180 },
+  { title: "Submitted by (CHA · Sub-location)", key: "initiator", width: 220 },
   { title: "Submitted", key: "submitted_at", width: 160 },
-  { title: "", key: "actions", width: 270, align: "right" },
+  { title: "", key: "actions", width: 130, align: "right" },
 ];
 
 const actionLabel = (type) =>
@@ -417,6 +432,37 @@ const householdHead = (req) => {
   return (
     [h.first_name, h.middle_name, h.last_name].filter(Boolean).join(" ") || "—"
   );
+};
+
+const chaName = (req) => {
+  const u = req && req.initiator;
+  if (!u) return "—";
+  const composed = [u.first_name, u.middle_name, u.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  return composed || u.name || u.email || "—";
+};
+
+const chaSubLocation = (req) => {
+  const u = req && req.initiator;
+  if (u && u.location && (u.location.name || u.location.org_name)) {
+    return u.location.name || u.location.org_name;
+  }
+  return "—";
+};
+
+const chaPhone = (req) => {
+  const u = req && req.initiator;
+  return (u && (u.phone_no || u.phone)) || "";
+};
+
+const householdVillage = (req) => {
+  const h = req && req.household;
+  if (h && h.location && (h.location.name || h.location.org_name)) {
+    return h.location.name || h.location.org_name;
+  }
+  return "";
 };
 
 const maskPhone = (phone) => {
@@ -496,56 +542,6 @@ const filteredRequests = computed(() => {
     });
   }
   return rows;
-});
-
-const statusColumns = computed(() => {
-  const groups = {
-    phone_change: [],
-    mute: [],
-    head_change: [],
-    transfer_in: [],
-    create: [],
-  };
-  for (const r of requests.value) {
-    if (groups[r.action_type]) groups[r.action_type].push(r);
-  }
-  return [
-    {
-      key: "phone_change",
-      title: "Phone Change",
-      accent: "accent-info",
-      empty: "No pending phone changes",
-      list: groups.phone_change,
-    },
-    {
-      key: "mute",
-      title: "Mute",
-      accent: "accent-danger",
-      empty: "No pending mutes",
-      list: groups.mute,
-    },
-    {
-      key: "head_change",
-      title: "Head Change",
-      accent: "accent-warning",
-      empty: "No pending head changes",
-      list: groups.head_change,
-    },
-    {
-      key: "transfer_in",
-      title: "Transfer",
-      accent: "accent-info",
-      empty: "No pending transfers",
-      list: groups.transfer_in,
-    },
-    {
-      key: "create",
-      title: "New Household",
-      accent: "accent-success",
-      empty: "No new household requests",
-      list: groups.create,
-    },
-  ];
 });
 
 // Prefer the immutable snapshot captured at approval time so the "Before"
@@ -682,6 +678,11 @@ const fetchRequests = async () => {
     requests.value = Array.isArray(payload)
       ? payload
       : (payload && payload.data) || [];
+    const totals = res.data && res.data.totals;
+    decisionTotals.value = {
+      accepted: Number(totals && totals.accepted) || 0,
+      rejected: Number(totals && totals.rejected) || 0,
+    };
   } catch (err) {
     message.error(
       (err && err.response && err.response.data && err.response.data.message) ||
@@ -695,6 +696,28 @@ const fetchRequests = async () => {
 const openDetail = (record) => {
   detailRequest.value = record;
   detailOpen.value = true;
+};
+
+// Drawer pager — navigate prev/next within the current filtered list.
+const currentDetailIndex = computed(() => {
+  if (!detailRequest.value) return -1;
+  return filteredRequests.value.findIndex(
+    (r) => String(r.id) === String(detailRequest.value.id)
+  );
+});
+const hasPrevRequest = computed(() => currentDetailIndex.value > 0);
+const hasNextRequest = computed(
+  () =>
+    currentDetailIndex.value >= 0 &&
+    currentDetailIndex.value < filteredRequests.value.length - 1
+);
+const gotoPrev = () => {
+  if (!hasPrevRequest.value) return;
+  detailRequest.value = filteredRequests.value[currentDetailIndex.value - 1];
+};
+const gotoNext = () => {
+  if (!hasNextRequest.value) return;
+  detailRequest.value = filteredRequests.value[currentDetailIndex.value + 1];
 };
 
 const approve = (record) => {
@@ -770,6 +793,58 @@ const confirmReject = async () => {
 };
 
 onMounted(fetchRequests);
+
+// Watch route + requests so a notification deep-link (?highlight=ID) scrolls
+// to and opens the target request once it has loaded.
+const applyHighlight = async () => {
+  const id = highlightId.value;
+  if (!id) return;
+  let match = requests.value.find((r) => String(r.id) === String(id));
+  // If the highlighted request isn't in our cached list (e.g. brand-new
+  // submission while the user was on a different page), refresh once before
+  // giving up.
+  if (!match) {
+    await fetchRequests();
+    match = requests.value.find((r) => String(r.id) === String(id));
+    if (!match) return;
+  }
+  await nextTick();
+  const el = cardRefs[id] || document.querySelector(`[data-row-key="${id}"]`);
+  if (el && typeof el.scrollIntoView === "function") {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  openDetail(match);
+  // Clear after applying so it doesn't re-trigger.
+  setTimeout(() => {
+    highlightId.value = null;
+    if (route.query.highlight) {
+      const { highlight, _t, ...rest } = route.query;
+      void highlight; void _t;
+      router.replace({ query: rest });
+    }
+  }, 1500);
+};
+
+watch(() => route.query.highlight, (val) => {
+  highlightId.value = val ? String(val) : null;
+  applyHighlight();
+});
+
+// Also react when the bell appends a `_t` cache-buster to force re-navigation
+// while already on this page (same path + same highlight).
+watch(() => route.query._t, () => {
+  if (route.query.highlight) {
+    highlightId.value = String(route.query.highlight);
+    applyHighlight();
+  }
+});
+
+watch(requests, () => {
+  if (highlightId.value) applyHighlight();
+});
+
+const highlightRowClass = (record) =>
+  String(record.id) === String(highlightId.value) ? "highlighted-row" : "";
 </script>
 
 <style lang="less" scoped>
@@ -842,9 +917,32 @@ onMounted(fetchRequests);
   .tile-row-6 {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+  .tile-row-8 {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  @media (max-width: 1400px) {
+    .tile-row-8 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
   @media (max-width: 1100px) {
-    .tile-row-6 {
+    .tile-row-6,
+    .tile-row-8 {
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+  }
+  @media (max-width: 640px) {
+    .tile-row,
+    .tile-row-6,
+    .tile-row-8 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .tile {
+      padding: 10px 8px;
+      .tile-value { font-size: 18px; }
+      .tile-label { font-size: 10px; }
+      .tile-sub { font-size: 10px; }
     }
   }
 
@@ -1051,6 +1149,118 @@ onMounted(fetchRequests);
       font-size: 11.5px;
     }
   }
+
+  /* ── Desktop vs mobile rendering of the requests list ─────────── */
+  .desktop-only { display: block; }
+  .mobile-only { display: none !important; }
+
+  /* Highlighted row from notification deep-link */
+  :deep(.highlighted-row > td) {
+    background: #fff8d6 !important;
+    transition: background 0.4s ease;
+  }
+  .req-card.highlighted {
+    border-color: #f0c000;
+    box-shadow: 0 0 0 2px rgba(240, 192, 0, 0.35);
+    background: #fffbe5;
+  }
+
+  /* ── Mobile request cards ─────────────────────────────────────── */
+  .request-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .req-card {
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 6px rgba(28, 122, 72, 0.05);
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+    &:active {
+      transform: scale(0.995);
+      border-color: #9ad8b4;
+    }
+
+    .rc-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .rc-tag {
+      margin: 0;
+      font-size: 11px;
+    }
+    .rc-time {
+      font-size: 11px;
+      color: #7a8a82;
+      white-space: nowrap;
+    }
+    .rc-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #15693c;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .rc-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      font-size: 11.5px;
+      color: #7a8a82;
+      margin-bottom: 10px;
+    }
+    .rc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed #eef5f1;
+
+      .rc-by {
+        font-size: 11.5px;
+        color: #7a8a82;
+        strong { color: #2f6746; }
+      }
+    }
+  }
+  .req-cards-empty {
+    text-align: center;
+    color: #b0b8c3;
+    font-size: 12px;
+    padding: 24px 8px;
+  }
+
+  /* ── Mobile responsive ───────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block !important; }
+    .mobile-only.request-cards { display: flex !important; }
+
+    .panel {
+      padding: 12px 12px 14px;
+      border-radius: 8px;
+    }
+    .page-heading {
+      .ph-title { font-size: 16px; }
+      .ph-subtitle { font-size: 12px; }
+    }
+  }
+  @media (max-width: 480px) {
+    .page-heading {
+      flex-direction: column;
+      align-items: stretch;
+      .ph-actions { justify-content: flex-end; }
+    }
+  }
 }
 </style>
 
@@ -1214,6 +1424,82 @@ onMounted(fetchRequests);
       font-size: 18px;
       padding: 0 2px;
     }
+  }
+
+  /* Prev/Next navigation — inline on desktop, sticky footer on mobile */
+  .drawer-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 18px 0 6px;
+    padding: 10px 12px;
+    background: #f6fbf8;
+    border: 1px solid #e1efe6;
+    border-radius: 10px;
+
+    .pager-counter {
+      font-size: 12px;
+      color: #4d8a63;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      min-width: 56px;
+      text-align: center;
+    }
+    .pager-btn {
+      min-width: 110px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+  }
+}
+
+/* Mobile responsive drawer */
+@media (max-width: 640px) {
+  .ant-drawer-content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .ant-drawer .detail {
+    /* Reserve space for the sticky pager so it doesn't cover content */
+    padding-bottom: 72px;
+
+    .diff-grid {
+      grid-template-columns: 1fr;
+    }
+    .diff-arrow-col {
+      transform: rotate(90deg);
+      padding: 4px 0;
+    }
+    .hh-snapshot .snap-row {
+      flex-direction: column;
+      align-items: flex-start;
+      .snap-value { max-width: 100%; text-align: left; }
+    }
+
+    .drawer-pager {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 64px; /* sits above the drawer footer (approve/reject) */
+      margin: 0;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      padding: 10px 14px;
+      background: #ffffff;
+      box-shadow: 0 -6px 14px rgba(15, 23, 42, 0.08);
+      z-index: 5;
+
+      .pager-btn { min-width: 0; flex: 1; }
+    }
+  }
+  .ant-drawer .ant-drawer-footer .ant-space {
+    float: none !important;
+    width: 100%;
+    display: flex !important;
+    justify-content: flex-end;
+    flex-wrap: wrap;
   }
 }
 </style>
