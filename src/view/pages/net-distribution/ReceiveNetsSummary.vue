@@ -8,15 +8,16 @@
             <p class="pd-sub">{{ todayLabel }}</p>
           </div>
           <nav class="ph-actions" aria-label="Inventory sections">
-            <a
-              v-for="tab in primaryTabs"
-              :key="tab.key"
-              class="nav-item"
-              :class="{ active: activeTransaction === tab.key }"
-              @click="handleTransactions(tab.key)"
-            >
-              {{ tab.label }}
-            </a>
+<button
+  v-for="tab in primaryTabs"
+  :key="tab.key"
+  type="button"
+  class="nav-item"
+  :class="{ active: activeTransaction === tab.key }"
+  @click="handleTransactions(tab.key)"
+>
+  {{ tab.label }}
+</button>
           </nav>
         </header>
 
