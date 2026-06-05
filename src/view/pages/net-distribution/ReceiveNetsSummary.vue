@@ -182,11 +182,11 @@
                           v-show="activeClass === 'do_point'"
                           class="rns-cards"
                         >
-                          <article
-                            v-for="(record, i) in fromDropoffpoint"
-                            :key="i"
-                            class="rns-card"
-                          >
+<article
+  v-for="record in fromDropoffpoint"
+  :key="record.distribution_id"
+  class="rns-card"
+>
                             <div class="rns-card-head">
                               <span class="rns-card-title">{{
                                 record.drop_off_point_name || "—"
