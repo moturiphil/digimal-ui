@@ -323,12 +323,11 @@ export default defineComponent({
         const [p, queryString] = explicitUrl.split("?");
         path = p;
         if (queryString) {
-          for (const part of queryString.split("&")) {
-            const [k, v] = part.split("=");
-            if (k) query[decodeURIComponent(k)] = v ? decodeURIComponent(v) : "";
+          const params = new URLSearchParams(queryString);
+          for (const [k, v] of params.entries()) {
+            query[k] = v;
           }
         }
-      } else {
         path = fallbackRouteForType(n.type);
       }
 
