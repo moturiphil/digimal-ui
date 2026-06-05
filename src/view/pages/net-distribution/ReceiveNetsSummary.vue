@@ -1,166 +1,125 @@
 <template>
-  <div>
-    <sdPageHeader ghost :title="`Nets Summary at ${post_name}`" />
+  <RecordViewWrapper>
     <Main>
-      <SearchResultWrapper>
-        <a-row :gutter="25">
-          <a-col :xs="24">
-            <div class="search-filter-menu">
-              <ul>
-                <li>
-                  <a
-                    :class="
-                      activeTransaction === 'receive' ? 'active' : 'deactivate'
-                    "
-                    @click="handleTransactions('receive')"
-                    href="#"
-                  >
-                    Received Nets
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeTransaction === 'transfer' ? 'active' : 'deactivate'
-                    "
-                    @click="handleTransactions('transfer')"
-                    href="#"
-                  >
-                    Nets Transfer
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeTransaction === 'return' ? 'active' : 'deactivate'
-                    "
-                    @click="handleTransactions('return')"
-                    href="#"
-                  >
-                    Return Nets to Drop Off Point
-                  </a>
-                </li>
-                <li>
-                  <sdButton
-                    class="btn-import"
-                    type="warning"
-                    @click="openTransferModal()"
-                    size="extra-small"
-                  >
-                    Transfer Households
-                  </sdButton>
-                </li>
-              </ul>
-            </div>
-            <div class="search-filter-menu">
-              <ul>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'do_point' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('do_point')"
-                    :hidden="activeTransaction !== 'receive'"
-                  >
-                    Received from DropOff Point
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'warehouse' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('warehouse')"
-                    :hidden="activeTransaction !== 'receive'"
-                  >
-                    Received from Warehouse
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'do_post_summary'
-                        ? 'active'
-                        : 'deactivate'
-                    "
-                    @click="handleChange('do_post_summary')"
-                    :hidden="activeTransaction !== 'receive'"
-                  >
-                    Post Summary
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'do_post_worker_summary'
-                        ? 'active'
-                        : 'deactivate'
-                    "
-                    @click="handleChange('do_post_worker_summary')"
-                    :hidden="activeTransaction !== 'receive'"
-                  >
-                    Post Worker Summary
-                  </a>
-                </li>
-              </ul>
-              <ul>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'transfer_ins' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('transfer_ins')"
-                    :hidden="activeTransaction !== 'transfer'"
-                  >
-                    Transfer In's
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'transfer_outs' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('transfer_outs')"
-                    :hidden="activeTransaction !== 'transfer'"
-                  >
-                    Transfer Out's
-                  </a>
-                </li>
-                <li>
-                  <sdButton
-                    size="extra-small"
-                    type="warning"
-                    @click="openmodal"
-                    :hidden="activeTransaction !== 'transfer'"
-                  >
-                    <sdFeatherIcons type="plus" size="14" /> &nbsp; New Transfer
-                  </sdButton>
-                </li>
-              </ul>
-              <ul>
-                <li v-if="is_pmi_county === true">
-                  <a
-                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
-                    @click="openReturnsModal()"
-                    :hidden="activeTransaction !== 'return'"
-                    type="warning"
-                  >
-                    Return to Dropoff Point
-                  </a>
-                </li>
-                <li v-if="is_pmi_county === false">
-                  <a
-                    :class="activeClass === 'return' ? 'active' : 'deactivate'"
-                    @click="openreverseLogisticsModal()"
-                    :hidden="activeTransaction !== 'return'"
-                    type="warning"
-                  >
-                    Return to Dropoff Point
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </a-col>
+      <BudgetPageWrapper class="minimal-dashboard rns-page">
+        <!-- Page heading + primary tabs -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <p class="pd-sub">{{ todayLabel }}</p>
+          </div>
+          <nav class="ph-actions" aria-label="Inventory sections">
+            <a
+              v-for="tab in primaryTabs"
+              :key="tab.key"
+              class="nav-item"
+              :class="{ active: activeTransaction === tab.key }"
+              @click="handleTransactions(tab.key)"
+            >
+              {{ tab.label }}
+            </a>
+          </nav>
+        </header>
+
+        <!-- Secondary navigation / context actions -->
+        <section
+          v-if="['receive', 'transfer'].includes(activeTransaction)"
+          class="panel sub-nav-panel"
+        >
+          <div class="sub-nav">
+            <template v-if="activeTransaction === 'receive'">
+              <a
+                v-for="sub in receiveSubTabs"
+                :key="sub.key"
+                class="pill"
+                :class="{ active: activeClass === sub.key }"
+                @click="handleChange(sub.key)"
+              >
+                {{ sub.label }}
+              </a>
+            </template>
+            <template v-else-if="activeTransaction === 'transfer'">
+              <a
+                v-for="sub in transferSubTabs"
+                :key="sub.key"
+                class="pill"
+                :class="{ active: activeClass === sub.key }"
+                @click="handleChange(sub.key)"
+              >
+                {{ sub.label }}
+              </a>
+            </template>
+          </div>
+          <div class="sub-actions">
+            <sdButton
+              v-if="activeTransaction === 'receive'"
+              type="warning"
+              size="extra-small"
+              @click="openTransferModal()"
+            >
+              <sdFeatherIcons type="repeat" size="14" /> &nbsp;Transfer
+              Households
+            </sdButton>
+            <sdButton
+              v-if="activeTransaction === 'transfer' && activeClass !== 'return'"
+              type="warning"
+              size="extra-small"
+              @click="openmodal"
+            >
+              <sdFeatherIcons type="plus" size="14" /> &nbsp;New Transfer
+            </sdButton>
+            <sdButton
+              v-if="
+                activeTransaction === 'transfer' &&
+                activeClass === 'return' &&
+                is_pmi_county === true
+              "
+              type="warning"
+              size="extra-small"
+              @click="openReturnsModal()"
+            >
+              <sdFeatherIcons type="corner-up-left" size="14" /> &nbsp;Return to
+              Dropoff Point
+            </sdButton>
+            <sdButton
+              v-if="
+                activeTransaction === 'transfer' &&
+                activeClass === 'return' &&
+                is_pmi_county === false
+              "
+              type="warning"
+              size="extra-small"
+              @click="openreverseLogisticsModal()"
+            >
+              <sdFeatherIcons type="corner-up-left" size="14" /> &nbsp;Return to
+              Dropoff Point
+            </sdButton>
+          </div>
+        </section>
+
+        <!-- Embedded post management sections (moved from Distribution Posts) -->
+        <section v-if="activeTransaction === 'dashboard'" class="embed-section">
+          <PostDashboard />
+        </section>
+        <section v-if="activeTransaction === 'bale'" class="embed-section">
+          <BaleVerification />
+        </section>
+        <section v-if="activeTransaction === 'workers'" class="embed-section">
+          <ViewWorker />
+        </section>
+        <section v-if="activeTransaction === 'balances'" class="embed-section">
+          <PostDailyBalance />
+        </section>
+        <section v-if="activeTransaction === 'closure'" class="embed-section">
+          <PostClosureReport />
+        </section>
+        <section v-if="activeTransaction === 'log'" class="embed-section">
+          <PostStockLog />
+        </section>
+
+        <a-row
+          v-if="['receive', 'transfer'].includes(activeTransaction)"
+          :gutter="25"
+        >
           <a-col :xs="24">
             <sdCards headless>
               <div class="result-list-content">
@@ -173,7 +132,7 @@
 
                       <div v-else>
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive rns-table"
                           v-show="activeClass === 'do_point'"
                         >
                           <a-table
@@ -183,6 +142,7 @@
                             }"
                             :dataSource="fromDropoffpoint"
                             :columns="do_columns"
+                            size="middle"
                           >
                             <template #action="{ record }">
                               <td :style="{ 'margin-left': '4px' }">
@@ -217,10 +177,70 @@
                             </template>
                           </a-table>
                         </TableWrapper>
+                        <!-- Mobile cards: Received from DropOff Point -->
+                        <div
+                          v-show="activeClass === 'do_point'"
+                          class="rns-cards"
+                        >
+                          <article
+                            v-for="(record, i) in fromDropoffpoint"
+                            :key="i"
+                            class="rns-card"
+                          >
+                            <div class="rns-card-head">
+                              <span class="rns-card-title">{{
+                                record.drop_off_point_name || "—"
+                              }}</span>
+                              <span class="rns-chip">{{
+                                record.quantity_issued
+                              }} nets</span>
+                            </div>
+                            <div class="rns-card-grid">
+                              <div>
+                                <span class="lbl">Date of Issue</span>
+                                <span class="val">{{ record.issue_date || "—" }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Issued By</span>
+                                <span class="val">{{ record.issued_by || "—" }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Date Received</span>
+                                <span class="val">{{ record.date_received || "—" }}</span>
+                              </div>
+                            </div>
+                            <div class="rns-card-actions">
+                              <sdButton
+                                @click="
+                                  openReceiveModal(
+                                    `receive`,
+                                    record.distribution_id
+                                  )
+                                "
+                                type="success"
+                                :disabled="record.status === 1"
+                                size="extra-small"
+                                >Receive</sdButton
+                              >
+                              <sdButton
+                                @click="
+                                  openUpdateReceiveModal(record.distribution_id)
+                                "
+                                type="warning"
+                                :disabled="record.status === 0"
+                                size="extra-small"
+                                >Update Receive Date</sdButton
+                              >
+                            </div>
+                          </article>
+                          <div v-if="!fromDropoffpoint.length" class="rns-empty">
+                            No records found.
+                          </div>
+                        </div>
                         &nbsp;&nbsp;
 
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive rns-table"
                           v-show="activeClass === 'warehouse'"
                         >
                           <a-table
@@ -230,6 +250,7 @@
                             }"
                             :dataSource="fromWarehouse"
                             :columns="columns"
+                            size="middle"
                           >
                             <template #action="{}">
                               <td :style="{ 'margin-left': '3px' }">
@@ -242,10 +263,50 @@
                             </template>
                           </a-table>
                         </TableWrapper>
+                        <!-- Mobile cards: Received from Warehouse -->
+                        <div
+                          v-show="activeClass === 'warehouse'"
+                          class="rns-cards"
+                        >
+                          <article
+                            v-for="(record, i) in fromWarehouse"
+                            :key="i"
+                            class="rns-card"
+                          >
+                            <div class="rns-card-head">
+                              <span class="rns-card-title">{{
+                                record.from_post_name || "—"
+                              }}
+                                <small>→ {{ record.to_post_name || "—" }}</small>
+                              </span>
+                              <span class="rns-chip">{{
+                                record.number_of_nets
+                              }} nets</span>
+                            </div>
+                            <div class="rns-card-grid">
+                              <div>
+                                <span class="lbl">Date of Transfer</span>
+                                <span class="val">{{ record.date_issued || "—" }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Issued By</span>
+                                <span class="val">{{ record.issued_by || "—" }}</span>
+                              </div>
+                            </div>
+                            <div class="rns-card-actions">
+                              <sdButton type="success" size="extra-small"
+                                >Cancel</sdButton
+                              >
+                            </div>
+                          </article>
+                          <div v-if="!fromWarehouse.length" class="rns-empty">
+                            No records found.
+                          </div>
+                        </div>
 
                         <!-- Net TransfersIn table -->
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive rns-table"
                           v-show="activeClass === 'transfer_ins'"
                         >
                           <a-table
@@ -255,6 +316,7 @@
                             }"
                             :dataSource="transferIns"
                             :columns="transferscolumns"
+                            size="middle"
                           >
                             <template #status="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
@@ -295,11 +357,75 @@
                             </template>
                           </a-table>
                         </TableWrapper>
+                        <!-- Mobile cards: Transfer In's -->
+                        <div
+                          v-show="activeClass === 'transfer_ins'"
+                          class="rns-cards"
+                        >
+                          <article
+                            v-for="(record, i) in transferIns"
+                            :key="i"
+                            class="rns-card"
+                          >
+                            <div class="rns-card-head">
+                              <span class="rns-card-title">{{
+                                record.from_post_name || "—"
+                              }}
+                                <small>→ {{ record.to_post_name || "—" }}</small>
+                              </span>
+                              <span
+                                class="badge"
+                                :class="
+                                  record.status == 1
+                                    ? 'badge-green'
+                                    : record.status == 2
+                                    ? 'badge-warning'
+                                    : 'badge-red'
+                                "
+                                >{{
+                                  record.status == 1
+                                    ? "Received"
+                                    : record.status == 2
+                                    ? "Cancelled"
+                                    : "Pending"
+                                }}</span
+                              >
+                            </div>
+                            <div class="rns-card-grid">
+                              <div>
+                                <span class="lbl">Number of Nets</span>
+                                <span class="val">{{ record.number_of_nets }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Date of Transfer</span>
+                                <span class="val">{{ record.date_issued || "—" }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Issued By</span>
+                                <span class="val">{{ record.issued_by || "—" }}</span>
+                              </div>
+                            </div>
+                            <div class="rns-card-actions">
+                              <sdButton
+                                @click="openReceiveModal(`transfers`, record.id)"
+                                type="success"
+                                :disabled="
+                                  record.status == 1 || record.status == 2
+                                "
+                                size="extra-small"
+                                >Receive</sdButton
+                              >
+                            </div>
+                          </article>
+                          <div v-if="!transferIns.length" class="rns-empty">
+                            No records found.
+                          </div>
+                        </div>
                         <!-- end of Net Transfers table -->
 
                         <!-- Net TransfersOut table -->
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive rns-table"
                           v-show="activeClass === 'transfer_outs'"
                         >
                           <a-table
@@ -309,6 +435,7 @@
                             }"
                             :dataSource="transferOuts"
                             :columns="transferscolumns"
+                            size="middle"
                           >
                             <template #status="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
@@ -346,6 +473,70 @@
                             </template>
                           </a-table>
                         </TableWrapper>
+                        <!-- Mobile cards: Transfer Out's -->
+                        <div
+                          v-show="activeClass === 'transfer_outs'"
+                          class="rns-cards"
+                        >
+                          <article
+                            v-for="(record, i) in transferOuts"
+                            :key="i"
+                            class="rns-card"
+                          >
+                            <div class="rns-card-head">
+                              <span class="rns-card-title">{{
+                                record.from_post_name || "—"
+                              }}
+                                <small>→ {{ record.to_post_name || "—" }}</small>
+                              </span>
+                              <span
+                                class="badge"
+                                :class="
+                                  record.status == 1
+                                    ? 'badge-green'
+                                    : record.status == 2
+                                    ? 'badge-warning'
+                                    : 'badge-red'
+                                "
+                                >{{
+                                  record.status == 1
+                                    ? "Received"
+                                    : record.status == 2
+                                    ? "Cancelled"
+                                    : "Pending"
+                                }}</span
+                              >
+                            </div>
+                            <div class="rns-card-grid">
+                              <div>
+                                <span class="lbl">Number of Nets</span>
+                                <span class="val">{{ record.number_of_nets }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Date of Transfer</span>
+                                <span class="val">{{ record.date_issued || "—" }}</span>
+                              </div>
+                              <div>
+                                <span class="lbl">Issued By</span>
+                                <span class="val">{{ record.issued_by || "—" }}</span>
+                              </div>
+                            </div>
+                            <div class="rns-card-actions">
+                              <sdButton
+                                type="success"
+                                :disabled="
+                                  record.status == 1 || record.status == 2
+                                "
+                                @click="cancelTransfer(record.id)"
+                                size="extra-small"
+                                >Cancel</sdButton
+                              >
+                            </div>
+                          </article>
+                          <div v-if="!transferOuts.length" class="rns-empty">
+                            No records found.
+                          </div>
+                        </div>
                         <!-- end of Net TransfersOut table -->
 
                         <!-- Dropoff Returns -->
@@ -355,26 +546,6 @@
                         />
 
                         <!-- End of Dropoff Returns -->
-
-                        <!--Distribution Post Summary-->
-                        <DistributionPostWorkerSummary
-                          :post_id="query.id"
-                          v-if="activeClass === 'do_post_worker_summary'"
-                        />
-                        <!-- end of returns table -->
-
-                        <!--Distribution Post Summary-->
-                        <DistributionPostSummary
-                          :post_id="query.id"
-                          v-if="activeClass === 'do_post_summary'"
-                        />
-                        <!--End Distribution Post Summary-->
-                        <!--Distribution Post Summary-->
-                        <DistributionPostWorkerSummary
-                          :post_id="query.id"
-                          v-if="activeClass === 'do_post_worker_summary'"
-                        />
-                        <!--End Distribution Post Summary-->
 
                         <!-- Transfer modal -->
                         <a-modal
@@ -1086,18 +1257,22 @@
             </sdCards>
           </a-col>
         </a-row>
-      </SearchResultWrapper>
+      </BudgetPageWrapper>
     </Main>
-  </div>
+  </RecordViewWrapper>
 </template>
 
 <script setup>
 import { Main, BasicFormWrapper } from "../../styled";
-import { SearchResultWrapper } from "./../style";
+import { RecordViewWrapper, BudgetPageWrapper } from "../budget/style";
 import { onMounted, ref, reactive } from "vue";
-import DistributionPostSummary from "@/view/pages/net-distribution/DistributionPostSummary";
-import DistributionPostWorkerSummary from "./DistributionPostWorkerSummary.vue";
 import DropOffReturns from "./DropOffReturns.vue";
+import BaleVerification from "./BaleVerification.vue";
+import ViewWorker from "./ViewWorker.vue";
+import PostDailyBalance from "./PostDailyBalance.vue";
+import PostClosureReport from "./PostClosureReport.vue";
+import PostDashboard from "./PostDashboard.vue";
+import PostStockLog from "./PostStockLog.vue";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRoute } from "vue-router";
@@ -1105,6 +1280,25 @@ import dayjs from "dayjs";
 import axios from "@/Axiosconfig";
 
 const dateFormat = "YYYY-MM-DD";
+const primaryTabs = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "workers", label: "Post Workers" },
+  { key: "receive", label: "Received Nets" },
+  { key: "transfer", label: "Nets Transfer" },
+  { key: "bale", label: "Bale Verification" },
+  { key: "balances", label: "Daily Balances" },
+  { key: "closure", label: "Closure Report" },
+  { key: "log", label: "Log" },
+];
+const receiveSubTabs = [
+  { key: "do_point", label: "Received from DropOff Point" },
+  { key: "warehouse", label: "Received from Warehouse" },
+];
+const transferSubTabs = [
+  { key: "transfer_ins", label: "Transfer In's" },
+  { key: "transfer_outs", label: "Transfer Out's" },
+  { key: "return", label: "Return to Drop Off" },
+];
 const transferscolumns = [
   {
     title: "From Post",
@@ -1219,7 +1413,7 @@ const columns = [
 ];
 
 const activeClass = ref("do_point");
-const activeTransaction = ref("receive");
+const activeTransaction = ref("dashboard");
 const transaction_type = ref("");
 const postdata = ref([]);
 const dropoffpoints = ref([]);
@@ -1309,8 +1503,6 @@ const handleTransactions = (tab) => {
     ? handleChange("do_point")
     : tab === "transfer"
     ? handleChange("transfer_ins")
-    : tab === "return"
-    ? handleChange("return") //openReturnsModal()
     : null;
 };
 
@@ -2072,28 +2264,325 @@ const handleCancelTransfer = () => {
 };
 </script>
 <style scoped>
+.rns-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+
+  .panel {
+    background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+    border: 1px solid #d9f0e2;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+  }
+
+  /* primary tab pills in heading */
+  .ph-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .nav-item {
+    padding: 7px 14px;
+    border-radius: 18px;
+    border: 1px solid #d9f0e2;
+    background: #ffffff;
+    color: #2f6746;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-item:hover {
+    border-color: #9ad8b4;
+    background: #f3fcf6;
+  }
+  .nav-item.active {
+    background: #daf4e4;
+    border-color: #9ad8b4;
+    color: #15693c;
+  }
+
+  /* secondary sub-nav */
+  .sub-nav-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .sub-nav {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .sub-nav > .pill {
+    flex: 0 0 auto;
+  }
+  .pill {
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 1px solid #e1efe6;
+    background: #fff;
+    color: #4d7a63;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover {
+    border-color: #9ad8b4;
+    background: #f6fbf8;
+  }
+  .pill.active {
+    background: linear-gradient(90deg, #20c997 0%, #36ddb3 100%);
+    border-color: #20c997;
+    color: #fff;
+  }
+  .sub-hint {
+    font-size: 12px;
+    color: #4d7a63;
+    font-weight: 500;
+  }
+  .sub-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .embed-section {
+    margin-bottom: 14px;
+  }
+
+  /* keep embedded child pages from adding excessive outer padding */
+  .embed-section :deep(.ant-page-header) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* tables must never push the page wider than the viewport */
+  :deep(.table-responsive),
+  :deep(.table-data-view) {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ───────── Improved desktop / tablet table design ───────── */
+  .rns-table {
+    :deep(.ant-table) {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e6f2eb;
+      box-shadow: 0 4px 14px rgba(28, 122, 72, 0.06);
+    }
+    :deep(.ant-table-thead > tr > th) {
+      background: #f4fbf6;
+      color: #2f6746;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid #e1efe6;
+      padding: 12px 16px;
+    }
+    :deep(.ant-table-thead > tr > th::before) {
+      display: none;
+    }
+    :deep(.ant-table-tbody > tr > td) {
+      border-bottom: 1px solid #f1f7f3;
+      padding: 12px 16px;
+      color: #3a463f;
+      font-size: 13px;
+    }
+    :deep(.ant-table-tbody > tr:nth-child(even) > td) {
+      background: #fbfdfb;
+    }
+    :deep(.ant-table-tbody > tr:hover > td) {
+      background: #f3fbf6;
+    }
+    :deep(.ant-table-tbody > tr:last-child > td) {
+      border-bottom: none;
+    }
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* ───────── Mobile card list (hidden by default) ───────── */
+  .rns-cards {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .rns-card {
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+  }
+  .rns-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .rns-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #15693c;
+    line-height: 1.3;
+    small {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #5a7a68;
+      margin-top: 2px;
+    }
+  }
+  .rns-chip {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2f6746;
+    background: #daf4e4;
+    border: 1px solid #9ad8b4;
+    border-radius: 12px;
+    padding: 2px 10px;
+    white-space: nowrap;
+  }
+  .rns-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    margin-bottom: 14px;
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .lbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7a8a82;
+      font-weight: 600;
+    }
+    .val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2f3a35;
+      word-break: break-word;
+    }
+  }
+  .rns-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    :deep(.ant-btn) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  .rns-empty {
+    text-align: center;
+    padding: 36px 0;
+    color: #7a8a82;
+    font-size: 13px;
+  }
+
+  @media (max-width: 767px) {
+    .ph-actions {
+      width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sub-nav-panel {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .sub-nav {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sub-actions {
+      width: 100%;
+    }
+    .sub-actions :deep(.ant-btn) {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Swap tables for cards */
+    .rns-table {
+      display: none !important;
+    }
+    .rns-cards {
+      display: flex;
+    }
+
+    /* Neutralise Ant row gutter negative margins that overflow the viewport */
+    :deep(.ant-row) {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+    :deep(.ant-col) {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    /* Trim nested card padding so content fits small screens */
+    :deep(.ant-card-body) {
+      padding: 12px !important;
+    }
+  }
+}
+
 .badge-green {
   background-color: #1ec997;
   color: white;
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 12px;
 }
 .badge-warning {
   background-color: #f7b924;
   color: white;
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 12px;
 }
 .badge-red {
   background-color: #f0506e;
   color: white;
-  /* padding: 2px;
-      border-radius: 3px; */
-  /* size */
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-weight: 600;
   font-size: 12px;
 }
 .title-success {

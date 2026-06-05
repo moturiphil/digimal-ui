@@ -57,6 +57,21 @@ export default [
         component: () =>import("../view/pages/net-distribution/BaleVerification.vue"),
       },
       {
+        path: "daily-balance",
+        name: "post-daily-balance",
+        component: () =>import("../view/pages/net-distribution/PostDailyBalance.vue"),
+      },
+      {
+        path: "closure-report",
+        name: "post-closure-report",
+        component: () =>import("../view/pages/net-distribution/PostClosureReport.vue"),
+      },
+      {
+        path: "supervisor-review",
+        name: "supervisor-balance-review",
+        component: () =>import("../view/pages/net-distribution/SupervisorBalanceReview.vue"),
+      },
+      {
         name: "post-create",
         path: "post-create",
         component: () =>
