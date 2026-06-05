@@ -164,8 +164,8 @@ export default defineComponent({
         const data = await response.json();
         balances.value = data.data || [];
       } catch (error) {
-        console.error(error);
-      } finally {
+        notification.error({ message: "Failed to load flagged balances", description: error?.message || String(error) });
+      }
         isLoadingBalances.value = false;
       }
     };
