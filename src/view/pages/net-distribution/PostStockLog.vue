@@ -43,7 +43,7 @@
               }}</a-tag>
             </td>
           </template>
-          <template #qdelta="{ record }">
+          <!-- <template #qdelta="{ record }">
             <td>
               <span :class="deltaClass(record.quantity_delta)">
                 {{ record.quantity_delta > 0 ? "+" : ""
@@ -58,7 +58,7 @@
                 }}{{ record.quantity_verified_delta }}
               </span>
             </td>
-          </template>
+          </template> -->
         </a-table>
       </TableWrapper>
 
@@ -76,7 +76,7 @@
             <span class="pl-time">{{ m.created_at }}</span>
           </div>
           <div class="pl-card-grid">
-            <div>
+            <!-- <div>
               <span class="lbl">Δ System</span>
               <span class="val" :class="deltaClass(m.quantity_delta)"
                 >{{ m.quantity_delta > 0 ? "+" : "" }}{{ m.quantity_delta }}</span
@@ -88,7 +88,7 @@
                 >{{ m.quantity_verified_delta > 0 ? "+" : ""
                 }}{{ m.quantity_verified_delta }}</span
               >
-            </div>
+            </div> -->
             <div>
               <span class="lbl">Bal. System</span>
               <span class="val">{{ m.balance_after }}</span>
@@ -129,8 +129,8 @@ const search = ref("");
 const columns = [
   { title: "Date / Time", dataIndex: "created_at", key: "created_at" },
   { title: "Type", key: "type", slots: { customRender: "type" } },
-  { title: "Δ System", key: "qdelta", slots: { customRender: "qdelta" } },
-  { title: "Δ Verified", key: "vdelta", slots: { customRender: "vdelta" } },
+  // { title: "Δ System", key: "qdelta", slots: { customRender: "qdelta" } },
+  // { title: "Δ Verified", key: "vdelta", slots: { customRender: "vdelta" } },
   { title: "Bal. System", dataIndex: "balance_after", key: "balance_after" },
   {
     title: "Bal. Verified",
@@ -177,12 +177,12 @@ const typeColor = (t) => {
   return "default";
 };
 
-const deltaClass = (v) => {
-  const n = Number(v);
-  if (n > 0) return "pos";
-  if (n < 0) return "neg";
-  return "muted";
-};
+// const deltaClass = (v) => {
+//   const n = Number(v);
+//   if (n > 0) return "pos";
+//   if (n < 0) return "neg";
+//   return "muted";
+// };
 
 const fetchMovements = async () => {
   try {

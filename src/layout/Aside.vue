@@ -338,7 +338,7 @@
 
       <a-sub-menu
         key="nets-distribution"
-        v-if="canCreateDistributionPost || canViewDistributitionPostRole"
+        v-if="canCreateDistributionPost || canViewDistributitionPostRole || isOversightUser"
       >
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Distribution Post</span>
@@ -346,6 +346,14 @@
         <!-- <a-menu-item key="widgetCreatePost" v-if="canCreateDistributionPost">
           <router-link to="/nets/post-create"> Create Post </router-link>
         </a-menu-item> -->
+        <a-menu-item
+          key="widgetDistributionDashboard"
+          v-if="isOversightUser"
+        >
+          <router-link to="/nets/distribution-dashboard">
+            Distribution Dashboard
+          </router-link>
+        </a-menu-item>
         <a-menu-item
           key="widgetDistributionPost"
           v-if="canViewDistributitionPostRole"
@@ -723,6 +731,11 @@ export default defineComponent({
       return level_id.value === 3;
     });
 
+    // Oversight users (National / County / Sub-County) for the distribution dashboard.
+    const isOversightUser = computed(() => {
+      return [1, 2, 3].includes(level_id.value);
+    });
+
     const router = computed(() => useRoute());
     const state = reactive({
       selectedKeys: ["home"],
@@ -774,6 +787,7 @@ export default defineComponent({
       isLevelOne,
       isCountyLevel,
       isSubCountyLevel,
+      isOversightUser,
       isAdmin,
       isTechSupport,
       isAIEHolder,
