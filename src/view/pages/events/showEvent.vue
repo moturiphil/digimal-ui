@@ -169,11 +169,21 @@ const ProjectDetails = defineComponent({
             content: "Payroll Generated Successfully",
           });
         } else {
-          Modal.error({
-            title: "Error",
-            content:
-              "Something went wrong, ensure you have assigned payroll matrix to the event",
-          });
+          // Surface the backend message (e.g. payroll gating: event must be
+          // closed and submitted for payroll before generation is allowed).
+          let content =
+            "Something went wrong, ensure you have assigned payroll matrix to the event";
+          try {
+            const body = await response.json();
+            if (body && body.message) content = body.message;
+          } catch (e) {
+            // keep default content
+          }
+          if (response.status === 422) {
+            Modal.warning({ title: "Payroll not available yet", content });
+          } else {
+            Modal.error({ title: "Error", content });
+          }
         }
       } catch (error) {
         console.error(error);

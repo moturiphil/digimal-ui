@@ -19,7 +19,11 @@
     <Main>
       <div class="button-container">
         <sdButton
-          v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
+          v-if="
+            isApprovedGenerator &&
+            event_payroll_status !== 'Generated' &&
+            event_payroll_status !== 'Paid'
+          "
           class="btn-import"
           type="success"
           size="extra-small"
@@ -35,11 +39,20 @@
               : "Generate Payroll"
           }}
         </sdButton>
-        <span v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
+        <span
+          v-if="
+            isApprovedGenerator &&
+            event_payroll_status !== 'Generated' &&
+            event_payroll_status !== 'Paid'
+          "
           >&nbsp;</span
         >
         <sdButton
-          v-if="isApprovedGenerator && event_payroll_status == 'Generated' || event_payroll_status == 'Paid'"
+          v-if="
+            isApprovedGenerator &&
+            (event_payroll_status == 'Generated' ||
+              event_payroll_status == 'Paid')
+          "
           class="btn-import"
           type="warning"
           size="extra-small"
@@ -800,7 +813,7 @@ const generatePayroll = async () => {
     }
   } catch (error) {
     console.error(error);
-    handleErrorResponse();
+    handleErrorResponse(error);
   }
 };
 
@@ -829,7 +842,7 @@ const reGeneratePayroll = async () => {
     }
   } catch (error) {
     console.error(error);
-    handleErrorResponse();
+    handleErrorResponse(error);
   }
 };
 
@@ -969,12 +982,34 @@ const handleArchiveEvent = async () => {
   }
 };
 
-const handleErrorResponse = (response) => {
-  console.log(response);
+const handleErrorResponse = (error) => {
   store.commit("setIsGenerating", false);
+
+  // Surface the backend's specific message (e.g. payroll gating: the event must
+  // be closed and submitted for payroll before generation is allowed).
+  const data = error?.response?.data;
+  const statusCode = error?.response?.status;
+  const message = data?.message;
+
+  if (statusCode === 422 && message) {
+    Modal.warning({
+      title: "Payroll not available yet",
+      content: message,
+    });
+    return; // do not reload — let the host act on the message
+  }
+
+  if (statusCode === 401 && message) {
+    Modal.error({
+      title: "Not allowed",
+      content: message,
+    });
+    return;
+  }
+
   Modal.error({
     title: "Error",
-    content: "Something went wrong, contact admin",
+    content: message || "Something went wrong, contact admin",
   });
   setTimeout(() => location.reload(), 4000);
 };

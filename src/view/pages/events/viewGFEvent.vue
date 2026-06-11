@@ -1,105 +1,112 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="MassNet GF Events">
-      <template #subTitle> </template>
-      <template #buttons>
-        <div class="search-box">
-          <span class="search-icon">
-            <!-- Increase the size of the search icon by setting the 'font-size' property -->
-            <sdFeatherIcons type="search" size="24" />
-          </span>
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name code, venue or location"
-            style="
-              font-size: 15px;
-              width: 100%;
-              max-width: 300px;
-              height: 2.5rem;
-            "
-          />
-        </div>
-      </template>
-    </sdPageHeader>
     <Main>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
+      <BudgetPageWrapper class="minimal-dashboard ev-events-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▦</span> MassNet GF Events
+            </h3>
+            <p class="ph-subtitle">
+              Manage events, registration, trainers &amp; payroll status
+            </p>
+          </div>
+          <div class="ph-actions">
+            <div class="ev-search">
+              <span class="search-icon">
+                <sdFeatherIcons type="search" size="14" />
+              </span>
+              <a-input
+                v-model:value="searchItem"
+                type="text"
+                name="dataSource"
+                placeholder="Search by name, code, venue or location"
+                allow-clear
+              />
             </div>
+            <div class="ev-view-toggle" role="group" aria-label="Toggle view">
+              <button
+                type="button"
+                class="ev-toggle-btn"
+                :class="{ active: viewMode === 'cards' }"
+                @click="viewMode = 'cards'"
+              >
+                <sdFeatherIcons type="grid" size="14" />
+                <span>Cards</span>
+              </button>
+              <button
+                type="button"
+                class="ev-toggle-btn"
+                :class="{ active: viewMode === 'table' }"
+                @click="viewMode = 'table'"
+              >
+                <sdFeatherIcons type="list" size="14" />
+                <span>Table</span>
+              </button>
+            </div>
+          </div>
+        </header>
 
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-row class="" :gutter="3">
-                  <a-space>
-                    <a-col
-                      :xxl="28"
-                      :xl="28"
-                      :md="28"
-                      :sm="28"
-                      v-if="allowedLevels.includes('county')"
-                    >
-                      <a-select
-                        v-model:value="county"
-                        show-search
-                        placeholder="Select County"
-                        style="width: 100%"
-                        :options="counties"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'county')"
-                      ></a-select>
-                    </a-col>
-                    <a-col
-                      :xxl="24"
-                      :xl="24"
-                      :md="24"
-                      :sm="24"
-                      v-if="allowedLevels.includes('subcounty')"
-                    >
-                      <a-select
-                        v-model:value="subcounty"
-                        show-search
-                        placeholder="Select Sub County"
-                        style="width: 100%"
-                        :options="subcounties"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'subcounty')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-model:value="gfevent"
-                        show-search
-                        placeholder="Select an Event"
-                        style="width: 100%"
-                        :options="events"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'event')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
+        <!-- Filter panel -->
+        <section class="panel filter-panel">
+          <div class="filter-grid">
+            <a-select
+              v-if="allowedLevels.includes('county')"
+              v-model:value="county"
+              show-search
+              placeholder="Select County"
+              :options="counties"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'county')"
+            ></a-select>
+            <a-select
+              v-if="allowedLevels.includes('subcounty')"
+              v-model:value="subcounty"
+              show-search
+              placeholder="Select Sub County"
+              :options="subcounties"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'subcounty')"
+            ></a-select>
+            <a-select
+              v-model:value="gfevent"
+              show-search
+              placeholder="Select an Event"
+              :options="events"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'event')"
+            ></a-select>
+            <a-select
+              v-model:value="payroll_status"
+              show-search
+              placeholder="Event Payroll Status"
+              :options="payroll_status_options"
+              :filter-option="filterOption"
+              @change="handleChange($event, 'payroll_status')"
+            ></a-select>
+          </div>
+        </section>
 
-                      <a-select
-                        v-model:value="payroll_status"
-                        show-search
-                        placeholder="Event Payroll Status"
-                        style="width: 100%"
-                        :options="payroll_status_options"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'payroll_status')"
-                      ></a-select>
-                    </a-col>
-                  </a-space>
-                </a-row>
-                <a-table
-                  :pagination="false"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                >
-                  <template #events="{ record }">
+        <!-- Events list -->
+        <section class="panel events-panel">
+          <div v-if="isLoading" class="ev-loading">
+            <a-spin />
+          </div>
+
+          <div v-else>
+            <!-- Table view -->
+            <TableWrapper
+              v-if="viewMode === 'table'"
+              class="table-data-view table-responsive ev-table-shell"
+            >
+              <a-table
+                :pagination="false"
+                :dataSource="dataSource"
+                :columns="columns"
+                row-key="id"
+              >
+                <template #events="{ record }">
                     <td>
                       <div class="table-actions">
                         <sdButton
@@ -155,6 +162,7 @@
                           @click="startEvent(record.id)"
                           v-if="
                             !record.status &&
+                            !record.start_date &&
                             record.payroll_status === 'Pending'
                           "
                         >
@@ -167,24 +175,154 @@
                           type="danger"
                           :disabled="isStarting"
                           v-if="record.status && record.payroll_status === 'Pending'"
-                          @click="closeEvent(record.id)"
+                          @click="openCloseModal(record)"
                         >
                           <sdFeatherIcons type="x-circle" size="small" />
                           <span> Close Event </span>
+                        </sdButton>
+                        &nbsp;&nbsp;
+                        <sdButton
+                          size="extra-small"
+                          type="primary"
+                          v-if="
+                            !record.status &&
+                            record.start_date &&
+                            !record.payroll_submitted &&
+                            record.payroll_status === 'Pending'
+                          "
+                          @click="openSubmitModal(record)"
+                        >
+                          <sdFeatherIcons type="send" size="small" />
+                          <span> Submit for Payroll </span>
                         </sdButton>
                       </div>
                     </td>
                   </template>
                 </a-table>
-                <a-pagination
-                  :current="currentPage"
-                  :total="datatotal"
-                  :pageSize="pageSize"
-                  :showSizeChanger="true"
-                  :pagination="true"
-                  @change="onPageChange($event)"
-                />
               </TableWrapper>
+
+            <!-- Card view -->
+            <div v-else class="ev-card-list">
+              <article
+                v-for="record in dataSource"
+                :key="record.id"
+                class="ev-card"
+              >
+                <div class="ev-card-head">
+                  <div class="ev-card-title">{{ record.name }}</div>
+                  <span class="ev-card-code">{{ record.event_code }}</span>
+                </div>
+                <div class="ev-card-meta">
+                  <div>
+                    <span class="lbl">Location</span>
+                    <span class="val">{{ record.location_id || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Venue</span>
+                    <span class="val">{{ record.venue || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Payroll Status</span>
+                    <span class="val">{{ record.payroll_status || "—" }}</span>
+                  </div>
+                </div>
+                <div class="ev-card-actions">
+                  <sdButton
+                    @click="handleRegistration(record.event_code)"
+                    size="extra-small"
+                    type="success"
+                    v-if="record.payroll_status === 'Pending'"
+                  >
+                    <sdFeatherIcons type="user-plus" size="small" />
+                    &nbsp; Register
+                  </sdButton>
+                  <sdButton size="extra-small" type="success">
+                    <router-link
+                      :to="{
+                        name: `view-details`,
+                        params: { id: record.id },
+                        query: {
+                          encryptedData: encodeURIComponent(
+                            encrypt({
+                              id: record.id,
+                              name: record.name,
+                              event_code: record.event_code,
+                              event_host_id: record.event_host_id,
+                              funding_id: record.funding_source,
+                              start_date: record.start_date,
+                              event_list_id: record.event_list_id,
+                              location: record.county,
+                              payroll_status: record.payroll_status,
+                            })
+                          ),
+                        },
+                      }"
+                    >
+                      View Event
+                    </router-link>
+                  </sdButton>
+                  <sdButton
+                    size="extra-small"
+                    type="success"
+                    @click="manageEvent(record.event_code)"
+                  >
+                    View Trainers
+                  </sdButton>
+                  <sdButton
+                    size="extra-small"
+                    type="success"
+                    :disabled="isStarting"
+                    @click="startEvent(record.id)"
+                    v-if="
+                      !record.status &&
+                      !record.start_date &&
+                      record.payroll_status === 'Pending'
+                    "
+                  >
+                    <sdFeatherIcons type="play-circle" size="small" />
+                    <span>Start Event</span>
+                  </sdButton>
+                  <sdButton
+                    size="extra-small"
+                    type="danger"
+                    :disabled="isStarting"
+                    v-if="record.status && record.payroll_status === 'Pending'"
+                    @click="openCloseModal(record)"
+                  >
+                    <sdFeatherIcons type="x-circle" size="small" />
+                    <span>Close Event</span>
+                  </sdButton>
+                  <sdButton
+                    size="extra-small"
+                    type="primary"
+                    v-if="
+                      !record.status &&
+                      record.start_date &&
+                      !record.payroll_submitted &&
+                      record.payroll_status === 'Pending'
+                    "
+                    @click="openSubmitModal(record)"
+                  >
+                    <sdFeatherIcons type="send" size="small" />
+                    <span>Submit for Payroll</span>
+                  </sdButton>
+                </div>
+              </article>
+              <div v-if="!dataSource.length" class="ev-empty">
+                No events found.
+              </div>
+            </div>
+
+            <div class="ev-pagination">
+              <a-pagination
+                :current="currentPage"
+                :total="datatotal"
+                :pageSize="pageSize"
+                :showSizeChanger="true"
+                @change="onPageChange($event)"
+              />
+            </div>
+
               <!-- view trainers modal -->
               <a-modal
                 title="Event Trainers"
@@ -230,22 +368,38 @@
                   <input type="number" v-model="inputValue" />
                 </div>
               </a-modal>
-            </div>
-          </sdCards>
-        </a-col>
-      </a-row>
+
+              <!-- close event workflow -->
+              <EventClosureModal
+                v-model:visible="isCloseModalOpen"
+                :event="selectedEvent"
+                @closed="onEventClosed"
+              />
+
+              <!-- submit for payroll workflow -->
+              <EventSubmitPayrollModal
+                v-model:visible="isSubmitModalOpen"
+                :event="selectedEvent"
+                @submitted="onEventSubmitted"
+              />
+          </div>
+        </section>
+      </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 <script setup>
 import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "./style";
+import { BudgetPageWrapper } from "../budget/style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 import { encrypt } from "@/cryptoHelper";
+import EventClosureModal from "./components/EventClosureModal.vue";
+import EventSubmitPayrollModal from "./components/EventSubmitPayrollModal.vue";
 
 const router = useRouter();
 
@@ -290,6 +444,13 @@ const isLoading = ref(true);
 const dataSource = ref([]);
 const eventCode = ref("");
 const searchItem = ref("");
+const gfevent = ref(null);
+const viewMode = ref(
+  typeof window !== "undefined" && window.innerWidth <= 991 ? "cards" : "table"
+);
+const isCloseModalOpen = ref(false);
+const isSubmitModalOpen = ref(false);
+const selectedEvent = ref(null);
 let isModalOpen = ref(false);
 const isTrainerModalOpen = ref(false);
 const recordId = ref(null);
@@ -522,39 +683,20 @@ const startEvent = async (id) => {
     isStarting.value = false;
   }
 };
-// close an event == only host can start/close
-const closeEvent = async (id) => {
-  try {
-    isStarting.value = true;
-    const response = await axios.get(`event_close_trigger/${id}`);
-    const data = await response.data;
-    console.log(data);
-    if (data.status === true) {
-      eventStatus.value[id] = true;
-      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-      // notify the user
-      notification.success({
-        message: "Event Closed",
-        description: "Event has been closed successfully",
-      });
-      await new Promise((resolve) => {
-        setTimeout(resolve, 2000); // Wait for 2 seconds (adjust the time as needed)
-      });
-      location.reload();
-    } else {
-      eventStatus.value[id] = false;
-      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
-      notification.error({
-        message: "Event Not Closed",
-        description: "Only event host can close event",
-      });
-    }
-    // location.reload();
-  } catch (error) {
-    console.error(error);
-  } finally {
-    isStarting.value = true;
-  }
+// Event closure & payroll submission are handled by dedicated modals.
+const openCloseModal = (record) => {
+  selectedEvent.value = record;
+  isCloseModalOpen.value = true;
+};
+const openSubmitModal = (record) => {
+  selectedEvent.value = record;
+  isSubmitModalOpen.value = true;
+};
+const onEventClosed = () => {
+  setTimeout(() => location.reload(), 1500);
+};
+const onEventSubmitted = () => {
+  setTimeout(() => location.reload(), 1500);
 };
 
 const handleCancel = () => {
@@ -710,5 +852,250 @@ computed(() => {
 .remove-button {
   margin-left: 15px; /* Adjust the value as needed */
   margin-right: -25px;
+}
+</style>
+
+<style lang="less" scoped>
+.ev-events-page {
+  /* heading search box */
+  .ev-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 280px;
+    max-width: 100%;
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      color: #9ab8a8;
+      display: flex;
+      z-index: 1;
+    }
+    :deep(input) {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    :deep(.ant-input-affix-wrapper) {
+      display: flex;
+      align-items: center;
+      border-radius: 22px;
+      border: 1px solid #d9f0e2;
+      background: #f7fdf9;
+      padding: 0 16px 0 36px;
+      height: 40px;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  /* card / table view toggle */
+  .ev-view-toggle {
+    display: inline-flex;
+    background: #f0f7f3;
+    border: 1px solid #d9f0e2;
+    border-radius: 22px;
+    padding: 3px;
+    gap: 2px;
+    .ev-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 0;
+      background: transparent;
+      color: #5f7268;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      &.active {
+        background: #fff;
+        color: #15693c;
+        box-shadow: 0 2px 6px rgba(28, 122, 72, 0.12);
+      }
+    }
+  }
+
+  .panel {
+    background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+    border: 1px solid #d9f0e2;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+  }
+
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+    :deep(.ant-select) {
+      width: 100%;
+    }
+  }
+
+  .events-panel {
+    padding: 10px;
+  }
+
+  .ev-loading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 0;
+  }
+
+  /* table */
+  .ev-table-shell {
+    :deep(.ant-table) {
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    :deep(.ant-table-thead > tr > th) {
+      background: #f4fbf6;
+      color: #2f6746;
+      font-weight: 700;
+      border-bottom: 1px solid #e1efe6;
+    }
+    :deep(.ant-table-tbody > tr > td) {
+      border-bottom: 1px solid #f0f7f3;
+    }
+    :deep(.ant-table-tbody > tr:hover > td) {
+      background: #f5fbf7;
+    }
+    :deep(.table-actions) {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* card list */
+  .ev-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px;
+  }
+
+  .ev-card {
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+  }
+
+  .ev-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .ev-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #15693c;
+    line-height: 1.3;
+  }
+
+  .ev-card-code {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2f6746;
+    background: #daf4e4;
+    border: 1px solid #9ad8b4;
+    border-radius: 12px;
+    padding: 2px 10px;
+  }
+
+  .ev-card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    margin-bottom: 14px;
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .lbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7a8a82;
+      font-weight: 600;
+    }
+    .val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2f3a35;
+      word-break: break-word;
+    }
+  }
+
+  .ev-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    :deep(.ant-btn) {
+      width: 100%;
+      justify-content: center;
+    }
+    :deep(a) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+    }
+  }
+
+  .ev-empty {
+    text-align: center;
+    padding: 40px 0;
+    color: #7a8a82;
+    font-size: 13px;
+  }
+
+  .ev-pagination {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 8px 6px;
+  }
+
+  /* ───────── Mobile-first tweaks ───────── */
+  @media (max-width: 991px) {
+    .ph-actions {
+      width: 100%;
+    }
+    .ev-pagination {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .ev-search,
+    .ev-view-toggle {
+      width: 100%;
+    }
+    .ev-view-toggle {
+      justify-content: center;
+    }
+    .filter-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .ev-card-meta {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 </style>
