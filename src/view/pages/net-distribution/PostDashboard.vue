@@ -67,45 +67,72 @@
           <sdFeatherIcons type="alert-triangle" size="18" /> &nbsp;Nets
           unaccounted for
         </h3>
+
+        <!-- Plain-language explainer -->
+        <p class="var-explain">
+          A variance is recorded whenever a post's <strong>physical count</strong>
+          (the nets actually on the ground) differs from the
+          <strong>system-expected</strong> figure at an opening or closing
+          balance. A
+          <span class="chip neg-chip">shortage (−)</span>
+          means fewer nets were counted than expected;
+          a <span class="chip pos-chip">surplus (+)</span>
+          means more were found.
+        </p>
+
+        <!-- Headline: total nets unaccounted -->
         <div class="var-grid">
-          <div>
-            <span class="var-label">Net Variance (loose)</span>
-            <span
-              class="var-value"
-              :class="
-                summary.total_variance_loose < 0
-                  ? 'neg'
-                  : summary.total_variance_loose > 0
-                  ? 'pos'
-                  : ''
-              "
-              >{{ summary.total_variance_loose > 0 ? "+" : ""
-              }}{{ summary.total_variance_loose }}</span
-            >
+          <div class="var-cell var-cell--lead">
+            <span class="var-label">Total Nets Unaccounted</span>
+            <span class="var-value" :class="signClass(totalNetVariance)">
+              {{ totalNetVariance > 0 ? "+" : "" }}{{ totalNetVariance }}
+            </span>
+            <span class="var-foot">
+              {{ varianceDirection(totalNetVariance) }} across
+              {{ summary.variances.length }}
+              balance{{ summary.variances.length === 1 ? "" : "s" }}
+            </span>
           </div>
-          <div>
-            <span class="var-label">Net Variance (bales)</span>
-            <span
-              class="var-value"
-              :class="
-                summary.total_variance_bales < 0
-                  ? 'neg'
-                  : summary.total_variance_bales > 0
-                  ? 'pos'
-                  : ''
-              "
-              >{{ summary.total_variance_bales > 0 ? "+" : ""
-              }}{{ summary.total_variance_bales }}</span
-            >
-          </div>
-          <div>
-            <span class="var-label">Adjusted Loose Nets</span>
-            <span class="var-value">{{ summary.loose_nets }}</span>
+          <div class="var-cell">
+            <span class="var-label">Variance in Bales</span>
+            <span class="var-value" :class="signClass(summary.total_variance_bales)">
+              {{ summary.total_variance_bales > 0 ? "+" : ""
+              }}{{ summary.total_variance_bales }}
+            </span>
             <span class="var-foot"
-              >System {{ systemLoose }} adjusted by variances</span
+              >≈ {{ Math.abs(summary.total_variance_bales) * summary.nets_per_bale }}
+              nets</span
             >
+          </div>
+          <div class="var-cell">
+            <span class="var-label">Variance in Loose Nets</span>
+            <span class="var-value" :class="signClass(summary.total_variance_loose)">
+              {{ summary.total_variance_loose > 0 ? "+" : ""
+              }}{{ summary.total_variance_loose }}
+            </span>
+            <span class="var-foot">loose pieces</span>
           </div>
         </div>
+
+        <!-- How the figure is derived -->
+        <div class="var-formula">
+          <span class="vf-label">How this is calculated</span>
+          <span class="vf-eq">
+            Physical counted
+            <strong>{{ summary.loose_nets }}</strong> loose
+            <span class="vf-op">−</span>
+            System expected
+            <strong>{{ systemLoose }}</strong> loose
+            <span class="vf-op">=</span>
+            <strong :class="signClass(summary.today_variance_loose)">
+              {{ summary.today_variance_loose > 0 ? "+" : ""
+              }}{{ summary.today_variance_loose }}
+            </strong>
+            today's loose variance
+          </span>
+        </div>
+
+        <p class="var-table-cap">Where each variance came from</p>
         <TableWrapper class="table-responsive">
           <a-table
             :dataSource="summary.variances"
@@ -114,9 +141,16 @@
             size="small"
             row-key="date"
           >
+            <template #source="{ record }">
+              <td>
+                <a-tag :color="record.type === 'closing' ? 'volcano' : 'geekblue'">
+                  {{ record.type === "closing" ? "Closing count" : "Opening count" }}
+                </a-tag>
+              </td>
+            </template>
             <template #vbales="{ record }">
               <td>
-                <span :class="record.variance_bales !== 0 ? 'neg bold' : ''">
+                <span :class="record.variance_bales !== 0 ? signClass(record.variance_bales) + ' bold' : 'muted'">
                   {{ record.variance_bales > 0 ? "+" : ""
                   }}{{ record.variance_bales }}
                 </span>
@@ -124,21 +158,40 @@
             </template>
             <template #vloose="{ record }">
               <td>
-                <span :class="record.variance_loose !== 0 ? 'neg bold' : ''">
+                <span :class="record.variance_loose !== 0 ? signClass(record.variance_loose) + ' bold' : 'muted'">
                   {{ record.variance_loose > 0 ? "+" : ""
                   }}{{ record.variance_loose }}
                 </span>
               </td>
             </template>
+            <template #netEquiv="{ record }">
+              <td>
+                <span :class="netEquiv(record) !== 0 ? signClass(netEquiv(record)) + ' bold' : 'muted'">
+                  {{ netEquiv(record) > 0 ? "+" : "" }}{{ netEquiv(record) }}
+                </span>
+              </td>
+            </template>
+            <template #direction="{ record }">
+              <td>
+                <a-tag
+                  v-if="netEquiv(record) !== 0"
+                  :color="netEquiv(record) < 0 ? 'red' : 'green'"
+                >
+                  {{ varianceDirection(netEquiv(record)) }}
+                </a-tag>
+                <span v-else class="muted">Balanced</span>
+              </td>
+            </template>
             <template #reason="{ record }">
               <td>
                 <span v-if="record.reason">{{ record.reason }}</span>
-                <em v-else class="muted">No reason recorded</em>
+                <em v-else class="muted reason-warn">⚠ No reason recorded</em>
               </td>
             </template>
           </a-table>
         </TableWrapper>
       </section>
+
 
       <!-- Post Worker Summary chart + table -->
       <!-- Worker + Distribution summary side by side -->
@@ -256,7 +309,19 @@
 
       <!-- Household collection summary -->
       <section class="panel">
-        <h3 class="panel-title">Household Distribution</h3>
+        <div class="hh-head">
+          <h3 class="panel-title">Household Distribution</h3>
+          <a-input
+            v-model:value="hhSearch"
+            placeholder="Search households by name or phone…"
+            allow-clear
+            class="hh-search"
+          >
+            <template #prefix>
+              <sdFeatherIcons type="search" size="14" />
+            </template>
+          </a-input>
+        </div>
         <div class="hh-summary">
           <div class="hh-stat pending">
             <div class="hh-stat-icon">
@@ -294,14 +359,15 @@
         />
 
         <div class="hh-tables">
-          <div class="hh-table-block">
+          <div class="hh-table-block pending">
             <h4 class="hh-table-title">
+              <span class="hh-dot warn-dot"></span>
               Pending Households
-              <span class="hh-count-pill warn">{{ pendingCount }}</span>
+              <span class="hh-count-pill warn">{{ filteredPending.length }}</span>
             </h4>
             <TableWrapper class="table-responsive">
               <a-table
-                :dataSource="pendingHouseholds"
+                :dataSource="filteredPending"
                 :columns="hhColumns"
                 :pagination="{ pageSize: 5, showSizeChanger: false }"
                 size="small"
@@ -309,14 +375,15 @@
               />
             </TableWrapper>
           </div>
-          <div class="hh-table-block">
+          <div class="hh-table-block served">
             <h4 class="hh-table-title">
+              <span class="hh-dot ok-dot"></span>
               Served Households
-              <span class="hh-count-pill ok">{{ servedCount }}</span>
+              <span class="hh-count-pill ok">{{ filteredServed.length }}</span>
             </h4>
             <TableWrapper class="table-responsive">
               <a-table
-                :dataSource="servedHouseholds"
+                :dataSource="filteredServed"
                 :columns="hhColumns"
                 :pagination="{ pageSize: 5, showSizeChanger: false }"
                 size="small"
@@ -369,6 +436,20 @@ const servedHouseholds = ref([]);
 const pendingCount = ref(0);
 const servedCount = ref(0);
 
+// Single search box shared across both household tables.
+const hhSearch = ref("");
+const filterHouseholds = (rows) => {
+  const q = hhSearch.value.trim().toLowerCase();
+  if (!q) return rows;
+  return rows.filter(
+    (h) =>
+      String(h.hh_name || "").toLowerCase().includes(q) ||
+      String(h.hh_phone_number || "").toLowerCase().includes(q)
+  );
+};
+const filteredPending = computed(() => filterHouseholds(pendingHouseholds.value));
+const filteredServed = computed(() => filterHouseholds(servedHouseholds.value));
+
 const hhColumns = [
   { title: "Name", dataIndex: "hh_name", key: "hh_name" },
   { title: "Phone Number", dataIndex: "hh_phone_number", key: "hh_phone_number" },
@@ -402,10 +483,37 @@ const systemLoose = computed(
   () => summary.value.loose_nets - summary.value.today_variance_loose
 );
 
+// Sign-based colour helper: shortage (negative) = red, surplus (positive) = green.
+const signClass = (n) => (n < 0 ? "neg" : n > 0 ? "pos" : "");
+
+// Human-readable direction for a variance value.
+const varianceDirection = (n) =>
+  n < 0 ? "Shortage" : n > 0 ? "Surplus" : "Balanced";
+
+// Net-equivalent of a variance row: bales converted to nets + loose pieces.
+const netEquiv = (record) =>
+  (record.variance_bales || 0) * (summary.value.nets_per_bale || 50) +
+  (record.variance_loose || 0);
+
+// Total nets unaccounted for across all recorded variances.
+const totalNetVariance = computed(
+  () =>
+    (summary.value.total_variance_bales || 0) *
+      (summary.value.nets_per_bale || 50) +
+    (summary.value.total_variance_loose || 0)
+);
+
 const varianceColumns = [
   { title: "Date", dataIndex: "date", key: "date" },
-  { title: "Var bales", key: "vbales", slots: { customRender: "vbales" } },
-  { title: "Var loose", key: "vloose", slots: { customRender: "vloose" } },
+  { title: "Source", key: "source", slots: { customRender: "source" } },
+  { title: "Var. bales", key: "vbales", slots: { customRender: "vbales" } },
+  { title: "Var. loose", key: "vloose", slots: { customRender: "vloose" } },
+  {
+    title: "Net equivalent",
+    key: "netEquiv",
+    slots: { customRender: "netEquiv" },
+  },
+  { title: "Status", key: "direction", slots: { customRender: "direction" } },
   { title: "Reason", key: "reason", slots: { customRender: "reason" } },
 ];
 
@@ -608,6 +716,16 @@ onMounted(async () => {
     gap: 14px;
     margin-bottom: 16px;
   }
+  .var-cell {
+    background: #fafbfc;
+    border: 1px solid #eef0f4;
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .var-cell--lead {
+    background: #fff5f5;
+    border-color: #ffd5d5;
+  }
   .var-label {
     display: block;
     font-size: 11px;
@@ -625,6 +743,77 @@ onMounted(async () => {
   .var-foot {
     font-size: 11px;
     color: #8a90a6;
+  }
+
+  /* Plain-language explainer + chips */
+  .var-explain {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #5b6072;
+    background: #fffaf0;
+    border: 1px solid #ffe7ba;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 11.5px;
+    white-space: nowrap;
+  }
+  .neg-chip {
+    background: #fff1f0;
+    color: #ff4d4f;
+    border: 1px solid #ffccc7;
+  }
+  .pos-chip {
+    background: #f6ffed;
+    color: #20c997;
+    border: 1px solid #b7eb8f;
+  }
+
+  /* Derivation strip */
+  .var-formula {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    background: #f4f8ff;
+    border: 1px solid #d6e4ff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+  .vf-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    color: #2f54eb;
+    margin-right: 6px;
+  }
+  .vf-eq {
+    font-size: 12.5px;
+    color: #5b6072;
+  }
+  .vf-op {
+    font-weight: 800;
+    color: #2f54eb;
+    margin: 0 2px;
+  }
+  .var-table-cap {
+    font-size: 12px;
+    font-weight: 700;
+    color: #5b6072;
+    margin: 0 0 8px;
+  }
+  .reason-warn {
+    color: #fa8c16 !important;
+    font-style: normal;
+    font-weight: 600;
   }
   .neg {
     color: #ff4d4f;
@@ -801,6 +990,35 @@ onMounted(async () => {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
+  .hh-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .hh-head .panel-title {
+    margin-bottom: 0;
+  }
+  .hh-search {
+    max-width: 320px;
+    border-radius: 8px;
+  }
+  .hh-table-block {
+    border: 1px solid #eef1f5;
+    border-radius: 12px;
+    padding: 14px 14px 6px;
+    background: #fcfdfe;
+  }
+  .hh-table-block.pending {
+    border-top: 3px solid #fa8b0c;
+    background: #fffdf8;
+  }
+  .hh-table-block.served {
+    border-top: 3px solid #20c997;
+    background: #f8fffc;
+  }
   .hh-table-title {
     font-size: 13px;
     font-weight: 700;
@@ -810,11 +1028,24 @@ onMounted(async () => {
     align-items: center;
     gap: 8px;
   }
+  .hh-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .hh-dot.warn-dot {
+    background: #fa8b0c;
+  }
+  .hh-dot.ok-dot {
+    background: #20c997;
+  }
   .hh-count-pill {
     font-size: 11px;
     font-weight: 700;
     border-radius: 12px;
     padding: 1px 10px;
+    margin-left: auto;
   }
   .hh-count-pill.warn {
     background: #fff4e0;

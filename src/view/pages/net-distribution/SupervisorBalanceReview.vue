@@ -165,7 +165,7 @@ export default defineComponent({
         balances.value = data.data || [];
       } catch (error) {
         notification.error({ message: "Failed to load flagged balances", description: error?.message || String(error) });
-      }
+      } finally {
         isLoadingBalances.value = false;
       }
     };
@@ -181,7 +181,7 @@ export default defineComponent({
         closures.value = data.data || [];
       } catch (error) {
         notification.error({ message: "Failed to load flagged closures", description: error?.message || String(error) });
-      }
+      } finally {
         isLoadingClosures.value = false;
       }
     };

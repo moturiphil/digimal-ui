@@ -16,6 +16,14 @@ export default [
       ),
     children: [
       {
+        name: "distribution-post-dashboard",
+        path: "distribution-dashboard",
+        component: () =>
+          import(
+            /* webpackChunkName: "DistributionPostDashboard" */ "../view/pages/net-distribution/DistributionPostDashboard.vue"
+          ),
+      },
+      {
         name: "distribution-post",
         path: "distribution-post",
         component: () =>
