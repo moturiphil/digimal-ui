@@ -28,6 +28,15 @@ const routes = [
         meta: { auth: true },
       },
       {
+        path: "/admin/server-metrics",
+        name: "server-metrics",
+        component: () =>
+          import(
+            /* webpackChunkName: "ServerMetrics" */ "@/view/pages/admin/ServerMetrics.vue"
+          ),
+        meta: { auth: true, allowedRoles: [53] }, // Super Admin only
+      },
+      {
         path: "/MNEDashboard",
         name: "MNEDashboard",
         component: () =>

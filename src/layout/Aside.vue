@@ -532,6 +532,11 @@
           <sdFeatherIcons type="clipboard" /><span> Audit Logs </span>
         </router-link>
       </a-menu-item>
+      <a-menu-item v-if="isAdmin" key="server-metrics">
+        <router-link to="/admin/server-metrics">
+          <sdFeatherIcons type="activity" /><span> Server Metrics </span>
+        </router-link>
+      </a-menu-item>
     </a-menu-item-group>
   </a-menu>
 </template>

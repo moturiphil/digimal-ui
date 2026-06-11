@@ -33,6 +33,71 @@
 
       <div class="vm-body">
         <a-form layout="vertical" class="vm-form">
+          <!-- Section: ERP Vendor Lookup (create-mode only) -->
+          <div v-if="!isEdit" class="vm-section erp-section">
+            <h4 class="vm-section-title">
+              <span class="vm-dot info"></span> ERP vendor lookup
+              <span class="vm-section-tag">Step 1</span>
+            </h4>
+
+            <!-- A vendor has been selected from the ERP -->
+            <div v-if="erpSelected" class="erp-selected">
+              <div class="erp-selected-main">
+                <sdFeatherIcons type="check-circle" size="16" />
+                <div>
+                  <strong>{{ selectedErpName }}</strong>
+                  <span class="erp-selected-meta">ERP ID: {{ form.erp_id }}</span>
+                </div>
+              </div>
+              <sdButton size="small" class="pill-btn" @click="onErpChange">Change</sdButton>
+            </div>
+
+            <!-- Manual entry was chosen -->
+            <div v-else-if="erpSkipped" class="erp-manual-note">
+              <span>
+                <sdFeatherIcons type="edit-3" size="13" />
+                Manual entry — this vendor will not be linked to an ERP record.
+              </span>
+              <button type="button" class="erp-manual-link" @click="onErpChange">
+                Search the ERP instead
+              </button>
+            </div>
+
+            <!-- Search step -->
+            <template v-else>
+              <p class="vm-section-hint">
+                Search the ERP for an existing vendor. Selecting a match pre-fills the
+                known details below — you only complete the remaining fields.
+              </p>
+              <a-form-item label="Search ERP vendor by name">
+                <a-select
+                  v-model:value="erpSelectedId"
+                  show-search
+                  :filter-option="false"
+                  :not-found-content="erpNotFoundContent"
+                  placeholder="Type at least 2 characters to search…"
+                  @search="onErpSearch"
+                  @change="onErpSelect"
+                >
+                  <a-select-option
+                    v-for="r in erpResults"
+                    :key="r.id"
+                    :value="r.id"
+                    :label="r.vendor_name"
+                  >
+                    {{ r.vendor_name }}
+                    <span v-if="r.county" class="erp-opt-meta">— {{ r.county.name }}</span>
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+              <button type="button" class="erp-manual-link" @click="onErpManual">
+                Vendor not in ERP — enter manually
+              </button>
+            </template>
+          </div>
+
+          <!-- Remaining vendor fields unlock after an ERP selection or manual entry -->
+          <template v-if="formUnlocked">
           <!-- Section: Basics -->
           <div class="vm-section">
             <h4 class="vm-section-title">
@@ -108,6 +173,7 @@
                     show-search
                     option-filter-prop="label"
                     :filter-option="optionFilter"
+                    :disabled="erpLocked"
                     @change="onCountyChange"
                   >
                     <a-select-option
@@ -121,9 +187,9 @@
               </a-col>
               <a-col :span="12">
                 <a-form-item
-                  label="Sub-County"
+                  :label="erpCountyLevel ? 'Sub-County (not applicable)' : 'Sub-County'"
                   :validate-status="errors.subcounty_id ? 'error' : ''"
-                  :help="errors.subcounty_id"
+                  :help="errors.subcounty_id || (erpCountyLevel ? 'County-level vendor — no sub-county required.' : '')"
                 >
                   <a-select
                     v-model:value="form.subcounty_id"
@@ -131,7 +197,7 @@
                     show-search
                     option-filter-prop="label"
                     :filter-option="optionFilter"
-                    :disabled="!form.county_id"
+                    :disabled="erpLocked || !form.county_id"
                   >
                     <a-select-option
                       v-for="s in subcountiesForCounty"
@@ -297,7 +363,13 @@
                     :validate-status="bankErrors[idx]?.account_number ? 'error' : ''"
                     :help="bankErrors[idx]?.account_number"
                   >
-                    <a-input v-model:value="account.account_number" maxlength="30" />
+                    <a-input
+                      v-model:value="account.account_number"
+                      maxlength="30"
+                      inputmode="numeric"
+                      placeholder="Digits only"
+                      @input="onAccountNumberInput(idx, $event)"
+                    />
                   </a-form-item>
                 </a-col>
                 <a-col :span="12">
@@ -509,6 +581,7 @@
               </a-form-item>
             </div>
           </div>
+          </template>
         </a-form>
       </div>
 
@@ -539,6 +612,7 @@ import { ref, reactive, computed, watch } from 'vue';
 import { useStore } from 'vuex';
 import { notification } from 'ant-design-vue';
 import dayjs from 'dayjs';
+import vendorService from '@/services/procurement/vendor.service';
 
 const KRA_REGEX = /^[A-Z]\d{9}[A-Z]$/i;
 
@@ -564,6 +638,7 @@ const blankContact = (isPrimary = false) => ({
 
 const blankForm = () => ({
   name: '',
+  erp_id: null,
   method_of_procurement: null,
   category: null,
   physical_address: '',
@@ -600,6 +675,18 @@ export default {
     const lsoFileList = ref([]);
     const includeLsoDetails = ref(false);
 
+    // ── ERP vendor lookup state (create-mode only) ──────────────────────────
+    const erpResults = ref([]);
+    const erpSearching = ref(false);
+    const erpSelected = ref(false);
+    const erpSkipped = ref(false);
+    const erpSelectedId = ref(undefined);
+    const selectedErpName = ref('');
+    // True when the selected ERP vendor is a county-level vendor (no
+    // sub-county). Such vendors must not require a sub-county on submit.
+    const erpCountyLevel = ref(false);
+    let erpSearchTimer = null;
+
     const banks = computed(() => store.state.procurement.banks);
     const bankNameOptions = computed(() => {
       const map = new Map();
@@ -620,6 +707,18 @@ export default {
 
     const isEdit = computed(() => !!props.vendor?.id);
 
+    // The rest of the form unlocks once the user either selects an ERP vendor
+    // or explicitly chooses manual entry. In edit mode it is always unlocked.
+    const formUnlocked = computed(
+      () => isEdit.value || erpSelected.value || erpSkipped.value
+    );
+    // County/sub-county come from the ERP record, so they are read-only once a
+    // vendor is selected (but remain editable for manual entry and edit mode).
+    const erpLocked = computed(() => !isEdit.value && erpSelected.value);
+    const erpNotFoundContent = computed(() =>
+      erpSearching.value ? 'Searching…' : 'No matching ERP vendors'
+    );
+
     const existingTaxCertUrl = computed(() => {
       const v = props.vendor;
       return v?.tax_certificate_url || v?.tax_compliance_certificate_url || null;
@@ -633,6 +732,13 @@ export default {
       taxCertFileList.value = [];
       lsoFileList.value = [];
       includeLsoDetails.value = false;
+      erpResults.value = [];
+      erpSearching.value = false;
+      erpSelected.value = false;
+      erpSkipped.value = false;
+      erpSelectedId.value = undefined;
+      selectedErpName.value = '';
+      erpCountyLevel.value = false;
     };
 
     const populateFromVendor = (v) => {
@@ -695,6 +801,68 @@ export default {
       if (id) store.dispatch('procurement/fetchSubcounties', { countyId: id });
     };
 
+    // ── ERP vendor lookup handlers ──────────────────────────────────────────
+    const onErpSearch = (value) => {
+      const term = (value || '').trim();
+      if (erpSearchTimer) clearTimeout(erpSearchTimer);
+      if (term.length < 2) {
+        erpResults.value = [];
+        erpSearching.value = false;
+        return;
+      }
+      erpSearching.value = true;
+      erpSearchTimer = setTimeout(async () => {
+        try {
+          const { data } = await vendorService.searchErp(term);
+          erpResults.value = data?.data || [];
+        } catch (e) {
+          erpResults.value = [];
+        } finally {
+          erpSearching.value = false;
+        }
+      }, 300);
+    };
+
+    const onErpSelect = (id) => {
+      const record = erpResults.value.find((r) => r.id === id);
+      if (!record) return;
+      form.erp_id = record.erp_id;
+      form.name = record.vendor_name || '';
+      if (record.kra_pin) form.kra_pin = record.kra_pin;
+      form.county_id = record.county_id || null;
+      form.subcounty_id = record.subcounty_id || null;
+      // A county-level ERP vendor has no sub-county; flag it so validation
+      // does not force the user to pick one (the field is also locked).
+      erpCountyLevel.value = !record.subcounty_id;
+      if (form.county_id) {
+        store.dispatch('procurement/fetchSubcounties', { countyId: form.county_id });
+      }
+      selectedErpName.value = record.vendor_name || '';
+      erpSelected.value = true;
+      erpSkipped.value = false;
+      delete errors.name;
+      delete errors.county_id;
+      delete errors.subcounty_id;
+    };
+
+    const onErpManual = () => {
+      erpSkipped.value = true;
+      erpSelected.value = false;
+      erpCountyLevel.value = false;
+      form.erp_id = null;
+    };
+
+    const onErpChange = () => {
+      // Return to the search step, discarding any ERP-derived selection.
+      erpSelected.value = false;
+      erpSkipped.value = false;
+      erpSelectedId.value = undefined;
+      erpResults.value = [];
+      selectedErpName.value = '';
+      erpCountyLevel.value = false;
+      form.erp_id = null;
+    };
+
     const onMethodChange = (val) => {
       // RFQ vendors are all treated as 'private' on the backend
       // (KRA/tax compliance branch). Direct vendors must explicitly pick a category.
@@ -736,6 +904,15 @@ export default {
         delete bankErrors.value[idx].bank_key;
         delete bankErrors.value[idx].bank_id;
       }
+    };
+
+    // Account numbers must be numeric — strip any non-digit characters as the
+    // user types so the field can never hold mixed alphanumeric input.
+    const onAccountNumberInput = (idx, event) => {
+      if (!form.bank_accounts[idx]) return;
+      const digitsOnly = (event?.target?.value || '').replace(/\D/g, '');
+      form.bank_accounts[idx].account_number = digitsOnly;
+      if (bankErrors.value[idx]) delete bankErrors.value[idx].account_number;
     };
 
     const syncBankKeys = () => {
@@ -866,7 +1043,11 @@ export default {
 
       if (!form.physical_address?.trim()) errors.physical_address = 'Address is required';
       if (!form.county_id) errors.county_id = 'County is required';
-      if (!form.subcounty_id) errors.subcounty_id = 'Sub-County is required';
+      // County-level vendors (e.g. a county-level ERP vendor) have no
+      // sub-county, so it is only required for sub-county vendors.
+      if (!form.subcounty_id && !erpCountyLevel.value) {
+        errors.subcounty_id = 'Sub-County is required';
+      }
 
       if (form.category === 'private') {
         if (!form.kra_pin?.trim()) errors.kra_pin = 'KRA PIN required for private vendors';
@@ -894,6 +1075,7 @@ export default {
         if (!a.bank_key) e.bank_key = 'Required';
         if (!a.bank_id) e.bank_id = 'Required';
         if (!a.account_number?.trim()) e.account_number = 'Required';
+        else if (!/^\d+$/.test(a.account_number.trim())) e.account_number = 'Digits only';
         else if (a.account_number.length > 30) e.account_number = 'Max 30 chars';
         if (!a.account_name?.trim()) e.account_name = 'Required';
         bankErrors.value[i] = e;
@@ -952,6 +1134,9 @@ export default {
           is_primary: !!a.is_primary,
         })),
       };
+      if (!isEdit.value && form.erp_id) {
+        payload.erp_id = form.erp_id;
+      }
       if (form.contacts.length) {
         payload.contacts = form.contacts.map((c) => ({
           ...(c.id ? { id: c.id } : {}),
@@ -1037,12 +1222,27 @@ export default {
       subcountiesForCounty,
       saving,
       isEdit,
+      formUnlocked,
+      erpLocked,
+      erpResults,
+      erpSearching,
+      erpSelected,
+      erpSkipped,
+      erpSelectedId,
+      selectedErpName,
+      erpNotFoundContent,
+      erpCountyLevel,
+      onErpSearch,
+      onErpSelect,
+      onErpManual,
+      onErpChange,
       existingTaxCertUrl,
       onCountyChange,
       onMethodChange,
       optionFilter,
       branchesForBank,
       onBankNameChange,
+      onAccountNumberInput,
       disablePastDates,
       onPickTaxCert,
       clearTaxCert,
@@ -1219,6 +1419,71 @@ export default {
   font-size: 12px;
   color: #6b7682;
   margin: -4px 0 12px;
+}
+
+/* ERP vendor lookup section */
+.erp-section {
+  background: #f5fbff;
+  border: 1px solid #d6ecfb;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.erp-opt-meta {
+  color: #6b7682;
+  font-size: 12px;
+}
+.erp-manual-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2C99FF;
+  text-decoration: underline;
+}
+.erp-manual-link:hover {
+  color: #1170c4;
+}
+.erp-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #eafff5;
+  border: 1px solid #c9e6d3;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.erp-selected-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #15693c;
+  min-width: 0;
+}
+.erp-selected-main strong {
+  display: block;
+  color: #1f2437;
+  font-size: 13px;
+}
+.erp-selected-meta {
+  display: block;
+  font-size: 11px;
+  color: #6b7682;
+}
+.erp-manual-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7682;
+}
+.erp-manual-note span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Reinforce error state — Ant defaults are subtle on some fields */

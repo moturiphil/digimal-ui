@@ -20,6 +20,15 @@ class VendorService {
   }
 
   /**
+   * Search ERP reference vendors by name. Results are scoped server-side to
+   * the authenticated user's location (county/sub-county users only see ERP
+   * vendors within their own county; national users see all).
+   */
+  searchErp(name) {
+    return axios.get('search_erp_vendors', { params: { name } });
+  }
+
+  /**
    * Create a vendor. Always sent as multipart/form-data because the
    * payload may include the tax compliance certificate file and initial
    * LSO files.
