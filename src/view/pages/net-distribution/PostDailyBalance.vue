@@ -290,6 +290,12 @@ export default defineComponent({
       () => expected.has_expected && variance.value !== 0
     );
 
+    // Any change to the actual variance value invalidates a prior
+    // acknowledgement, forcing the user to re-confirm the current variance.
+    watch(variance, () => {
+      varianceConfirmed.value = false;
+    });
+
     const fetchExpected = async () => {
       expectedLoading.value = true;
       try {

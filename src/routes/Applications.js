@@ -20,7 +20,7 @@ export default [
         path: "distribution-dashboard",
         component: () =>
           import(
-            /* webpackChunkName: "PostDashboard" */ "../view/pages/net-distribution/DistributionPostDashboard.vue"
+            /* webpackChunkName: "DistributionPostDashboard" */ "../view/pages/net-distribution/DistributionPostDashboard.vue"
           ),
       },
       {
