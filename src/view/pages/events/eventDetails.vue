@@ -64,7 +64,7 @@
             type="success"
             size="extra-small"
             @click="generatePayroll"
-            :disabled="isGenerating"
+            :disabled="isGenerating || !canGeneratePayroll"
           >
             {{
               isLoading
@@ -74,6 +74,18 @@
                 : "Generate Payroll"
             }}
           </sdButton>
+          <span
+            v-if="
+              isApprovedGenerator &&
+              !canGeneratePayroll &&
+              event_payroll_status !== 'Generated' &&
+              event_payroll_status !== 'Paid'
+            "
+            class="ev-workflow-hint"
+          >
+            Payroll generation unlocks once the event host submits the closed
+            event for payroll.
+          </span>
           <sdButton
             v-if="
               isApprovedGenerator &&
@@ -286,7 +298,18 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'pending'"
                         >
-                          <div class="ev-validate-bar">
+                          <div
+                            v-if="pendingAutoValidated"
+                            class="ev-validate-bar is-auto"
+                          >
+                            <span class="ev-validate-hint">
+                              <sdFeatherIcons type="check-circle" size="14" />
+                              &nbsp; Today's confirmed participants match the
+                              total registered. Pending participants are
+                              automatically validated.
+                            </span>
+                          </div>
+                          <div v-else class="ev-validate-bar">
                             <span class="ev-validate-hint">
                               Confirm attendance for participants who have not
                               yet confirmed.
@@ -320,29 +343,41 @@
                             :dataSource="filteredData"
                             :columns="columns"
                             :row-key="(record) => record.id"
-                            :row-selection="{
-                              selectedRowKeys: selectedPendingKeys,
-                              onChange: onPendingSelectionChange,
-                            }"
+                            :row-selection="
+                              pendingAutoValidated
+                                ? undefined
+                                : {
+                                    selectedRowKeys: selectedPendingKeys,
+                                    onChange: onPendingSelectionChange,
+                                  }
+                            "
                           >
                             <template #participants="{ record }">
                               <td>
                                 <div class="table-actions">
-                                  <sdButton
-                                    type="success"
-                                    size="extra-small"
-                                    :disabled="isValidating"
-                                    @click="validateSinglePending(record.id)"
+                                  <a-tag
+                                    v-if="pendingAutoValidated"
+                                    color="success"
                                   >
-                                    Confirm Attendance
-                                  </sdButton>
-                                  <sdButton
-                                    type="warning"
-                                    size="extra-small"
-                                    @click="resendConfirmation(record.id)"
-                                  >
-                                    Resend Confirmation
-                                  </sdButton>
+                                    Auto-validated
+                                  </a-tag>
+                                  <template v-else>
+                                    <sdButton
+                                      type="success"
+                                      size="extra-small"
+                                      :disabled="isValidating"
+                                      @click="validateSinglePending(record.id)"
+                                    >
+                                      Confirm Attendance
+                                    </sdButton>
+                                    <sdButton
+                                      type="warning"
+                                      size="extra-small"
+                                      @click="resendConfirmation(record.id)"
+                                    >
+                                      Resend Confirmation
+                                    </sdButton>
+                                  </template>
                                 </div>
                               </td>
                             </template>
@@ -681,6 +716,12 @@ const matrix_column = [
 const recordCount = computed(() => dataSource.value.length);
 const confirmedCount = computed(() => confirmed.value.length);
 const pendingCount = computed(() => pending.value.length);
+// When today's confirmed participants equal the total registered, the pending
+// participants are treated as automatically validated (display state only — no
+// backend confirmation is triggered for the remaining pending rows).
+const pendingAutoValidated = computed(
+  () => recordCount.value > 0 && confirmedCount.value === recordCount.value
+);
 const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 const event_name = plainquery.name;
@@ -747,6 +788,14 @@ const isPayrollPending = computed(
 // its final scheduled day. The list page drives the daily start/close cycle.
 const canSubmitEvent = computed(
   () => !!liveEvent.value.can_submit_payroll && isPayrollPending.value
+);
+
+// Payroll generation only unlocks once the event host has submitted the closed
+// event for payroll. The backend exposes this as `can_generate_payroll`
+// (event closed AND submitted), with `payroll_submitted` as a fallback.
+const canGeneratePayroll = computed(
+  () =>
+    !!(liveEvent.value.can_generate_payroll ?? liveEvent.value.payroll_submitted)
 );
 
 // ── Presentation helpers for the detail header ──
@@ -1528,6 +1577,16 @@ const getPostCount = async () => {
   border: 1px solid #cfeadb;
   border-radius: 10px;
   background: #f3fbf6;
+}
+.ev-validate-bar.is-auto {
+  border-color: #1ec997;
+  background: #e8faf2;
+}
+.ev-validate-bar.is-auto .ev-validate-hint {
+  display: flex;
+  align-items: center;
+  color: #1b7a5a;
+  font-weight: 500;
 }
 .ev-validate-hint {
   font-size: 12px;

@@ -153,10 +153,20 @@ const fetchReadiness = async () => {
   if (!props.event) return;
   loading.value = true;
   try {
-    const res = await axios.get(`get_vendor_uploads/event/${props.event.id}`);
+    const res = await axios.get(`event_payroll_readiness/${props.event.id}`);
     const data = res.data?.data || {};
-    uploadStatus.complete = !!data.complete;
-    uploadStatus.requires_uploads = !!data.requires_uploads;
+
+    if (data.participants) {
+      participants.confirmed = data.participants.confirmed ?? 0;
+      participants.pending = data.participants.pending ?? 0;
+      participants.total = data.participants.total ?? 0;
+    }
+
+    const status = data.status || {};
+    uploadStatus.complete = !!status.complete;
+    uploadStatus.requires_uploads = !!status.requires_uploads;
+
+    blockers.value = Array.isArray(data.blockers) ? data.blockers : [];
   } catch (e) {
     // Non-fatal: submit endpoint re-validates server-side.
     uploadStatus.complete = false;
