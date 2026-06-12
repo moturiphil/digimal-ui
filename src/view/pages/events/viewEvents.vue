@@ -9,8 +9,8 @@
               <span class="ph-icon">▦</span> MassNet Events
             </h3>
             <p class="ph-subtitle">
-              Manage events, registration, trainers &amp; the close →
-              submit-for-payroll workflow
+              Global Fund &amp; PMI events in one place — open an event to manage
+              registration, trainers and payroll
             </p>
           </div>
           <div class="ph-actions">
@@ -100,15 +100,6 @@
                 <template #events="{ record }">
                   <td>
                     <div class="table-actions">
-                      <sdButton
-                        @click="handleRegistration(record.event_code)"
-                        size="extra-small"
-                        type="success"
-                        v-if="record.payroll_status === 'Pending'"
-                      >
-                        <sdFeatherIcons type="user-plus" size="small" />
-                        &nbsp; Register
-                      </sdButton>
                       <sdButton size="extra-small" type="success">
                         <router-link
                           :to="{
@@ -126,6 +117,8 @@
                                   event_list_id: record.event_list_id,
                                   location: record.county,
                                   payroll_status: record.payroll_status,
+                                  status: record.status,
+                                  payroll_submitted: record.payroll_submitted,
                                 })
                               ),
                             },
@@ -135,57 +128,30 @@
                         </router-link>
                       </sdButton>
                       <sdButton
+                        v-if="isPending(record)"
                         size="extra-small"
                         type="success"
-                        @click="manageEvent(record.event_code)"
+                        @click="openRegisterModal(record)"
                       >
-                        View Trainers
+                        <sdFeatherIcons type="user-plus" size="12" /> Register
                       </sdButton>
                       <sdButton
-                        size="extra-small"
-                        type="success"
-                        :disabled="isStarting"
-                        @click="startEvent(record.id)"
-                        v-if="
-                          !record.status &&
-                          !record.start_date &&
-                          record.payroll_status === 'Pending'
-                        "
-                      >
-                        <sdFeatherIcons type="play-circle" size="small" />
-                        <span>Start Event</span>
-                      </sdButton>
-                      <sdButton
-                        size="extra-small"
-                        type="danger"
-                        :disabled="isStarting"
-                        v-if="record.status && record.payroll_status === 'Pending'"
-                        @click="openCloseModal(record)"
-                      >
-                        <sdFeatherIcons type="x-circle" size="small" />
-                        <span>Close Event</span>
-                      </sdButton>
-                      <sdButton
+                        v-if="canStart(record)"
                         size="extra-small"
                         type="primary"
-                        v-if="
-                          !record.status &&
-                          record.start_date &&
-                          !record.payroll_submitted &&
-                          record.payroll_status === 'Pending'
-                        "
-                        @click="openSubmitModal(record)"
+                        :disabled="isStarting"
+                        @click="startEvent(record)"
                       >
-                        <sdFeatherIcons type="send" size="small" />
-                        <span>Submit for Payroll</span>
+                        <sdFeatherIcons type="play-circle" size="12" /> Start
                       </sdButton>
-                      <span
-                        v-if="record.payroll_submitted && record.payroll_status === 'Pending'"
-                        class="ev-submitted-chip"
+                      <sdButton
+                        v-if="canClose(record)"
+                        size="extra-small"
+                        type="danger"
+                        @click="openCloseModal(record)"
                       >
-                        <sdFeatherIcons type="check-circle" size="12" />
-                        Submitted
-                      </span>
+                        <sdFeatherIcons type="x-circle" size="12" /> Close
+                      </sdButton>
                     </div>
                   </td>
                 </template>
@@ -229,15 +195,6 @@
                   </div>
                 </div>
                 <div class="ev-card-actions">
-                  <sdButton
-                    @click="handleRegistration(record.event_code)"
-                    size="extra-small"
-                    type="success"
-                    v-if="record.payroll_status === 'Pending'"
-                  >
-                    <sdFeatherIcons type="user-plus" size="small" />
-                    &nbsp; Register
-                  </sdButton>
                   <sdButton size="extra-small" type="success">
                     <router-link
                       :to="{
@@ -255,6 +212,8 @@
                               event_list_id: record.event_list_id,
                               location: record.county,
                               payroll_status: record.payroll_status,
+                              status: record.status,
+                              payroll_submitted: record.payroll_submitted,
                             })
                           ),
                         },
@@ -264,57 +223,30 @@
                     </router-link>
                   </sdButton>
                   <sdButton
+                    v-if="isPending(record)"
                     size="extra-small"
                     type="success"
-                    @click="manageEvent(record.event_code)"
+                    @click="openRegisterModal(record)"
                   >
-                    View Trainers
+                    <sdFeatherIcons type="user-plus" size="12" /> Register
                   </sdButton>
                   <sdButton
-                    size="extra-small"
-                    type="success"
-                    :disabled="isStarting"
-                    @click="startEvent(record.id)"
-                    v-if="
-                      !record.status &&
-                      !record.start_date &&
-                      record.payroll_status === 'Pending'
-                    "
-                  >
-                    <sdFeatherIcons type="play-circle" size="small" />
-                    <span>Start Event</span>
-                  </sdButton>
-                  <sdButton
-                    size="extra-small"
-                    type="danger"
-                    :disabled="isStarting"
-                    v-if="record.status && record.payroll_status === 'Pending'"
-                    @click="openCloseModal(record)"
-                  >
-                    <sdFeatherIcons type="x-circle" size="small" />
-                    <span>Close Event</span>
-                  </sdButton>
-                  <sdButton
+                    v-if="canStart(record)"
                     size="extra-small"
                     type="primary"
-                    v-if="
-                      !record.status &&
-                      record.start_date &&
-                      !record.payroll_submitted &&
-                      record.payroll_status === 'Pending'
-                    "
-                    @click="openSubmitModal(record)"
+                    :disabled="isStarting"
+                    @click="startEvent(record)"
                   >
-                    <sdFeatherIcons type="send" size="small" />
-                    <span>Submit for Payroll</span>
+                    <sdFeatherIcons type="play-circle" size="12" /> Start
                   </sdButton>
-                  <span
-                    v-if="record.payroll_submitted && record.payroll_status === 'Pending'"
-                    class="ev-submitted-chip"
+                  <sdButton
+                    v-if="canClose(record)"
+                    size="extra-small"
+                    type="danger"
+                    @click="openCloseModal(record)"
                   >
-                    <sdFeatherIcons type="check-circle" size="12" />
-                    Submitted for payroll
-                  </span>
+                    <sdFeatherIcons type="x-circle" size="12" /> Close
+                  </sdButton>
                 </div>
               </article>
               <div v-if="!dataSource.length" class="ev-empty">
@@ -331,64 +263,36 @@
                 @change="onPageChange($event)"
               />
             </div>
-
-            <!-- register -->
-            <a-modal
-              title="Event Confirmation"
-              :visible="isModalOpen"
-              @ok="handleOk(recordId, inputValue)"
-              @cancel="handleCancel"
-              class="title-success"
-            >
-              <div>
-                <p>Registration Confirmation processing</p>
-                <input type="number" v-model="inputValue" />
-              </div>
-            </a-modal>
-
-            <!-- view trainers modal -->
-            <a-modal
-              title="Event Trainers"
-              :visible="isTrainerModalOpen"
-              @ok="handleOkTrainers"
-              @cancel="handleTrainerCancel"
-              class="title-success"
-            >
-              <div>
-                <h4>
-                  <b><u> Event Host </u></b>
-                </h4>
-                <p>{{ event_host }}</p>
-                <h4>
-                  <b><u> Event Facilitators </u></b>
-                </h4>
-                <br />
-                <ul>
-                  <li
-                    v-for="facilitator in event_facilitators"
-                    :key="facilitator"
-                  >
-                    {{ facilitator }}
-                  </li>
-                </ul>
-              </div>
-            </a-modal>
-
-            <!-- close event workflow -->
-            <EventClosureModal
-              v-model:visible="isCloseModalOpen"
-              :event="selectedEvent"
-              @closed="onEventClosed"
-            />
-
-            <!-- submit for payroll workflow -->
-            <EventSubmitPayrollModal
-              v-model:visible="isSubmitModalOpen"
-              :event="selectedEvent"
-              @submitted="onEventSubmitted"
-            />
           </div>
         </section>
+
+        <!-- Register participant modal -->
+        <a-modal
+          title="Register Participant"
+          :visible="isRegisterModalOpen"
+          @ok="confirmRegistration"
+          @cancel="closeRegisterModal"
+          class="title-success"
+        >
+          <div>
+            <p>
+              Enter the participant registration code to confirm attendance for
+              <b>{{ activeEvent.name }}</b
+              >.
+            </p>
+            <a-input
+              v-model:value="registrationCode"
+              placeholder="Registration code"
+            />
+          </div>
+        </a-modal>
+
+        <!-- Close event workflow -->
+        <EventClosureModal
+          v-model:visible="isCloseModalOpen"
+          :event="activeEvent"
+          @closed="onEventClosed"
+        />
       </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
@@ -399,10 +303,10 @@ import { RecordViewWrapper } from "./style";
 import { BudgetPageWrapper } from "../budget/style";
 import { Main } from "../../styled";
 import { onMounted, ref, watch } from "vue";
-import { notification } from "ant-design-vue";
 import { encrypt } from "@/cryptoHelper";
+import { notification } from "ant-design-vue";
+import authHeader from "../../../services/auth-header";
 import EventClosureModal from "./components/EventClosureModal.vue";
-import EventSubmitPayrollModal from "./components/EventSubmitPayrollModal.vue";
 
 const columns = [
   { title: "Event Name", dataIndex: "name", key: "id" },
@@ -446,24 +350,9 @@ const viewMode = ref(
 const fundingSource = ref(null);
 const payrollStatus = ref(null);
 
-// workflow modals
-const isCloseModalOpen = ref(false);
-const isSubmitModalOpen = ref(false);
-const selectedEvent = ref(null);
-
-let isModalOpen = ref(false);
-const isTrainerModalOpen = ref(false);
-const recordId = ref(null);
-const inputValue = ref("");
-const event_host = ref("");
-const event_facilitators = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(100);
 const datatotal = ref(0);
-const visible = ref(false);
-const colorVisible = ref(false);
-const isStarting = ref(false);
-const eventStatus = ref({});
 
 const fundingLabel = (source) =>
   Number(source) === 1 ? "GF" : Number(source) === 2 ? "PMI" : "—";
@@ -512,107 +401,84 @@ const handleFilterChange = () => {
   getEvents();
 };
 
-// debounced-ish search
-watch(
-  () => searchItem.value,
-  () => {
-    currentPage.value = 1;
-    getEvents();
-  }
-);
+// ── Event lifecycle (register / trainers / start / close) ──
+const activeEvent = ref({});
+const isStarting = ref(false);
+const isCloseModalOpen = ref(false);
+const isRegisterModalOpen = ref(false);
+const registrationCode = ref("");
 
-onMounted(() => {
-  getEvents();
-});
+// An event is still in the registration/attendance phase while its payroll
+// has not yet been generated or paid.
+const isPending = (record) => record.payroll_status === "Pending";
 
-// start an event == only host can start/close
-const startEvent = async (id) => {
+// The host starts the event each day. Starting is available whenever the
+// event is not currently running and has not yet been submitted for payroll.
+const canStart = (record) =>
+  !record.status && !record.payroll_submitted && isPending(record);
+
+// Closing is available while the event is currently running.
+const canClose = (record) => !!record.status;
+
+const startEvent = async (record) => {
   try {
     isStarting.value = true;
-    const response = await axios.get(`event_start_trigger/${id}`);
-    const data = await response.data;
+    const response = await axios.get(`event_start_trigger/${record.id}`, {
+      headers: authHeader(),
+    });
+    const data = response.data;
     if (data.status === true) {
-      eventStatus.value[id] = true;
-      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
       notification.success({
         message: "Event Started",
         description: data.message,
       });
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      location.reload();
+      getEvents();
     } else {
-      eventStatus.value[id] = false;
-      localStorage.setItem("eventStatus", JSON.stringify(eventStatus.value));
       notification.error({
         message: "Event Not Started",
         description: data.message,
       });
     }
   } catch (error) {
-    console.error(error);
+    notification.error({
+      message: "Error",
+      description: error?.response?.data?.message || "Unable to start event",
+    });
   } finally {
     isStarting.value = false;
   }
 };
 
-// Event closure & payroll submission are handled by dedicated modals.
 const openCloseModal = (record) => {
-  selectedEvent.value = record;
+  activeEvent.value = record;
   isCloseModalOpen.value = true;
 };
-const openSubmitModal = (record) => {
-  selectedEvent.value = record;
-  isSubmitModalOpen.value = true;
-};
 const onEventClosed = () => {
-  setTimeout(() => location.reload(), 1500);
-};
-const onEventSubmitted = () => {
-  setTimeout(() => location.reload(), 1500);
+  isCloseModalOpen.value = false;
+  getEvents();
 };
 
-const handleCancel = () => {
-  isModalOpen.value = false;
-  visible.value = false;
-  colorVisible.value = false;
+const openRegisterModal = (record) => {
+  activeEvent.value = record;
+  registrationCode.value = "";
+  isRegisterModalOpen.value = true;
 };
-const handleTrainerCancel = () => {
-  isTrainerModalOpen.value = false;
-  visible.value = false;
-  colorVisible.value = false;
+const closeRegisterModal = () => {
+  isRegisterModalOpen.value = false;
 };
-const handleOkTrainers = () => {
-  isTrainerModalOpen.value = false;
-  visible.value = false;
-  colorVisible.value = false;
-};
-const handleRegistration = (id) => {
-  isModalOpen.value = true;
-  recordId.value = id;
-};
-const manageEvent = async (code) => {
-  isTrainerModalOpen.value = true;
-  try {
-    const response = await axios.get(`event/${code}/facilitators`);
-    const eventDetails = response.data.data;
-    event_host.value = eventDetails.event_host;
-    event_facilitators.value = eventDetails.event_facilitators;
-  } catch (error) {
-    console.error(error);
-  }
-};
-// confirm participant registration code
-const handleOk = async (id, value) => {
+const confirmRegistration = async () => {
+  if (!registrationCode.value) return;
   try {
     const response = await axios.get(
-      `event/${recordId.value}/participant/${value}/assign`
+      `event/${activeEvent.value.event_code}/participant/${registrationCode.value}/assign`,
+      { headers: authHeader() }
     );
-    if (response.status == 200) {
+    if (response.status === 200) {
       notification.success({
         message: "Success",
         description: response.data.message,
       });
-    } else if (response.status == 208) {
+    } else if (response.status === 208) {
       notification.info({
         message: "Info",
         description: response.data.message,
@@ -625,10 +491,23 @@ const handleOk = async (id, value) => {
         "Participant Registration Failed, Registration Code does not exist",
     });
   } finally {
-    inputValue.value = "";
-    isModalOpen.value = true;
+    registrationCode.value = "";
+    isRegisterModalOpen.value = false;
   }
 };
+
+// debounced-ish search
+watch(
+  () => searchItem.value,
+  () => {
+    currentPage.value = 1;
+    getEvents();
+  }
+);
+
+onMounted(() => {
+  getEvents();
+});
 </script>
 
 <style lang="css">
