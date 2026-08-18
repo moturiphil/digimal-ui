@@ -189,6 +189,9 @@ export default {
   padding: 32px 24px;
   box-sizing: border-box;
   text-align: center;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Header Section */
@@ -201,6 +204,7 @@ export default {
 .header-section h1 {
   font-size: 32px;
   margin: 0;
+  color: #272b41;
 }
 
 .subtitle {
@@ -226,6 +230,8 @@ export default {
 .chp-form {
   width: 100%;
   max-width: 500px;
+  min-width: 0;
+  box-sizing: border-box;
   animation: fadeInUp 0.6s ease-out 0.2s both;
 }
 

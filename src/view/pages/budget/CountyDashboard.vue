@@ -240,7 +240,7 @@ export default {
     const dashboard = ref(null);
     const scopedCountyId = ref(null);
     const scopedCountyName = ref('');
-    const financialYear = ref('2025/2026');
+    const financialYear = ref(String(new Date().getFullYear()));
 
     const fetchDashboard = async () => {
       if (!scopedCountyId.value) return;
