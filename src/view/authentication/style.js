@@ -3,12 +3,23 @@ import Styled from 'vue3-styled-components';
 const AuthWrapper = Styled.div`
   height: 100%;
   padding: 40px;
+  box-sizing: border-box;
   @media only screen and (max-width: 1599px){
     padding: 25px;
   }
 
   @media only screen and (max-width: 767px){
+    padding: 14px;
+    box-sizing: border-box;
     text-align: center;
+    button{
+      &.btn-signin,
+      &.btn-create,
+      &.btn-reset{
+        min-width: 0;
+        width: 100%;
+      }
+    }
   }
   .auth-notice{
     text-align: right;
@@ -41,8 +52,14 @@ const AuthWrapper = Styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
     form{
-      width: 420px;
+      width: 100%;
+      max-width: 420px;
+      min-width: 0;
+      box-sizing: border-box;
       h1{
         font-size: 24px;
         font-weight: 600;

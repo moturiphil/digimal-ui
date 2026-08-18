@@ -20,7 +20,7 @@
         <!-- ───────── Submission Status ───────── -->
         <section class="panel">
           <div class="panel-title">Submission Status</div>
-          <div class="tile-row tile-row-6">
+          <div class="tile-row tile-row-8">
             <div class="tile">
               <div class="tile-icon">📍</div>
               <div class="tile-label">Counties</div>
@@ -65,6 +65,24 @@
               <div class="tile-foot">
                 <span>Counties: <strong>{{ submission.pendingCounties }}</strong></span>
                 <span>Sub-Counties: <strong>{{ submission.pendingSubCounties }}</strong></span>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="tile-icon accent-danger">↺</div>
+              <div class="tile-label">Referred</div>
+              <div class="tile-value">{{ fmt(submission.referred) }}</div>
+              <div class="tile-foot">
+                <span>Counties: <strong>{{ submission.referredCounties }}</strong></span>
+                <span>Sub-Counties: <strong>{{ submission.referredSubCounties }}</strong></span>
+              </div>
+            </div>
+            <div class="tile">
+              <div class="tile-icon accent-warning">◔</div>
+              <div class="tile-label">Yet to Submit</div>
+              <div class="tile-value">{{ fmt(submission.yetToSubmit) }}</div>
+              <div class="tile-foot">
+                <span>Counties: <strong>{{ submission.yetToSubmitCounties }}</strong></span>
+                <span>Sub-Counties: <strong>{{ submission.yetToSubmitSubCounties }}</strong></span>
               </div>
             </div>
           </div>
@@ -306,6 +324,8 @@ export default {
       const submitted = s.submitted || {};
       const approved = s.nationally_approved || {};
       const pending = s.pending || {};
+      const referred = s.referred || {};
+      const yetToSubmit = s.yet_to_submit || {};
       return {
         counties: s.counties || 0,
         subCounties: s.sub_counties || 0,
@@ -321,6 +341,12 @@ export default {
         pending: pending.total || 0,
         pendingCounties: pending.counties || 0,
         pendingSubCounties: pending.sub_counties || 0,
+        referred: referred.total || 0,
+        referredCounties: referred.counties || 0,
+        referredSubCounties: referred.sub_counties || 0,
+        yetToSubmit: yetToSubmit.total || 0,
+        yetToSubmitCounties: yetToSubmit.counties || 0,
+        yetToSubmitSubCounties: yetToSubmit.sub_counties || 0,
       };
     });
 
@@ -456,10 +482,12 @@ export default {
   .tile-row-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .tile-row-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .tile-row-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .tile-row-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   @media (max-width: 1100px) {
     .tile-row-4,
     .tile-row-5,
-    .tile-row-6 {
+    .tile-row-6,
+    .tile-row-8 {
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
   }
@@ -485,6 +513,7 @@ export default {
       &.accent-info { color: #2c99ff; }
       &.accent-success { color: #20c997; }
       &.accent-warning { color: #fa8b0c; }
+      &.accent-danger { color: #ff4d4f; }
     }
     .tile-label {
       font-size: 11px;

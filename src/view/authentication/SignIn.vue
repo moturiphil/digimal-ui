@@ -5,41 +5,51 @@
         <sdHeading as="h1">
           Welcome to <span class="color-success">DigiMal-KE</span>
         </sdHeading>
-        <sdHeading as="h1">
-          <span :class="envClass">{{ env }}</span>
-        </sdHeading>
+        <p class="subtitle">Campaign User Sign In</p>
+        <span v-if="env" :class="['env-badge', envClass]">{{ env }}</span>
+        <p class="description">
+          Enter your National ID number and password to access the campaign
+          dashboard.
+        </p>
       </div>
 
-      <p class="subtitle">Campaign User Sign In</p>
-
-      <a-form @finish="handleSubmit" :model="formState" layout="vertical" class="signin-form">
+      <a-form
+        @finish="handleSubmit"
+        :model="formState"
+        layout="vertical"
+        class="signin-form"
+      >
         <a-form-item name="id_no" label="National ID No">
           <a-input
-            type="number"
             v-model:value="formState.id_no"
+            type="number"
             placeholder="Enter ID No"
             required
-          />
+          >
+            <template #prefix>
+              <IdcardOutlined class="prefix-icon" />
+            </template>
+          </a-input>
         </a-form-item>
-        <a-form-item name="password" initialValue="" label="Password">
+
+        <a-form-item name="password" label="Password" initialValue="">
           <a-input-password
             v-model:value="formState.password"
             placeholder="Password"
             required
-          />
+          >
+            <template #prefix>
+              <LockOutlined class="prefix-icon" />
+            </template>
+          </a-input-password>
         </a-form-item>
 
         <div class="auth-form-action">
-          <a-checkbox v-model="checked" @change="onChange"
-            >Keep me logged in</a-checkbox
-          >
+          <a-checkbox v-model:checked="checked">Keep me logged in</a-checkbox>
           <a class="forgot-pass-link" @click="showModal"> Reset Password </a>
-
-          <router-link class="forgot-pass-link" to="/auth/register">
-            New User?
-          </router-link>
         </div>
-        <a-form-item>
+
+        <a-form-item class="submit-item">
           <sdButton
             class="btn-signin"
             htmlType="submit"
@@ -57,20 +67,24 @@
       </div>
 
       <div class="footer-section">
+        <router-link class="register-link" to="/auth/register">
+          New User? Create an account
+        </router-link>
         <p class="return-text">
           <router-link to="/auth/login">← Back to User Selection</router-link>
         </p>
       </div>
+
       <div>
         <a-modal
-          v-model="visible"
+          v-model:visible="visible"
           title="Reset Password"
+          wrap-class-name="reset-password-modal"
           :ok-button-props="{ props: { disabled: true } }"
           :cancel-button-props="{ props: { disabled: true } }"
           @ok="handleOk"
           centered="false"
           @cancel="handleCancel"
-          :visible="visible"
         >
           <a-form
             v-on:submit="resetPassword"
@@ -136,16 +150,6 @@
           <template #footer></template>
         </a-modal>
       </div>
-      <!-- implement the notification if user is not authorized -->
-      <a-notification
-        v-if="isError"
-        :message="errorMessage"
-        type="error"
-        :description="errorDescription"
-        :showIcon="true"
-        :duration="0"
-        :style="{ width: '100%' }"
-      />
     </div>
   </AuthWrapper>
 </template>
@@ -158,10 +162,11 @@ import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import { notification } from "ant-design-vue";
 import axios from "axios";
+import { IdcardOutlined, LockOutlined } from "@ant-design/icons-vue";
 
 export default {
   name: "SignInPage",
-  components: { AuthWrapper },
+  components: { AuthWrapper, IdcardOutlined, LockOutlined },
   setup() {
     const isLoading = computed(() => store.state.auth.loading);
     const checked = ref(null);
@@ -184,14 +189,10 @@ export default {
       r_password: "",
       r_confPassword: "",
     });
-    const showPassword = ref(false);
 
     const getPasswordToggleIcon = (visible) => {
       return visible ? "hide" : "show";
     };
-    // const toggleShowPassword = () => {
-    //   showPassword.value = !showPassword.value;
-    // };
 
     const showModal = () => {
       visible.value = true;
@@ -250,7 +251,6 @@ export default {
     };
 
     const resetPassword = async (e) => {
-      // const API_URL = process.env.VUE_APP_API_URL;
       e.preventDefault();
       let url = "";
       let data = {};
@@ -327,9 +327,7 @@ export default {
       checked,
       handleSubmit,
       formState,
-      showPassword,
       getPasswordToggleIcon,
-      // toggleShowPassword,
       proceed,
       resetPassword,
       visible,
@@ -341,7 +339,6 @@ export default {
     };
   },
   computed: {
-    // Check if the current URL is the training instance
     isTrainingInstance() {
       return this.currentHostname === "training.digimal.uonbi.ac.ke";
     },
@@ -357,77 +354,149 @@ export default {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: 32px 24px;
   box-sizing: border-box;
   text-align: center;
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Header Section */
 .header-section {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   animation: fadeInDown 0.6s ease-out;
-  width: 100%;
 }
 
 .header-section h1 {
-  font-size: clamp(20px, 5vw, 28px);
-  margin-bottom: 8px;
-  word-wrap: break-word;
+  font-size: 32px;
+  margin: 0;
+  color: #272b41;
 }
 
 .subtitle {
   color: #868eae;
-  font-size: clamp(14px, 3.5vw, 18px);
-  margin: 0 0 30px 0;
+  font-size: 20px;
+  margin: 12px 0 0 0;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
+  animation: fadeIn 0.6s ease-out 0.3s both;
+}
+
+.env-badge {
+  display: inline-block;
+  margin-top: 12px;
+}
+
+.pilot-badge {
+  background: linear-gradient(90deg, #fff7e6 0%, #fff1cc 100%);
+  color: #ad4e00;
+  border: 1px solid #ffd591;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.training-badge {
+  background: linear-gradient(90deg, #f6ffed 0%, #eafff0 100%);
+  color: #237804;
+  border: 1px solid #b7eb8f;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.description {
+  color: #868eae;
+  font-size: 15px;
+  margin: 12px 0 32px 0;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 500px;
   animation: fadeIn 0.6s ease-out 0.3s both;
 }
 
 /* Form Styling */
 .signin-form {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
+  min-width: 0;
+  box-sizing: border-box;
   animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.signin-form .ant-form-item {
+  margin-bottom: 18px;
 }
 
 .signin-form .ant-form-item-label > label {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #272b41;
 }
 
 .signin-form .ant-input,
-.signin-form .ant-input-password {
+.signin-form .ant-input-affix-wrapper {
   font-size: 15px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #e8e8e8;
+  transition: all 0.3s ease;
+  background: #ffffff;
+}
+
+.signin-form .ant-input:hover,
+.signin-form .ant-input-affix-wrapper:hover {
+  border-color: #20c997;
+}
+
+.signin-form .ant-input:focus,
+.signin-form .ant-input:focused,
+.signin-form .ant-input-affix-wrapper-focused {
+  border-color: #20c997;
+  box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.1);
+}
+
+.signin-form .ant-input-affix-wrapper {
+  padding: 0 12px;
+}
+
+.signin-form .ant-input-affix-wrapper .ant-input {
+  border: 0 none;
+  box-shadow: none;
+  padding: 12px 0;
+}
+
+.prefix-icon {
+  color: #9cabb6;
+  font-size: 16px;
+  margin-right: 6px;
 }
 
 .auth-form-action {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-  align-items: flex-start;
-  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: -4px 0 10px;
 }
 
 .auth-form-action .ant-checkbox-wrapper {
-  font-size: 15px;
+  font-size: 14px;
+  color: #555e7d;
 }
 
 .forgot-pass-link {
   color: #20c997;
+  font-weight: 600;
+  font-size: 14px;
   text-decoration: none;
-  font-weight: 500;
-  font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-block;
+  transition: color 0.2s ease;
 }
 
 .forgot-pass-link:hover {
@@ -437,20 +506,32 @@ export default {
 
 .btn-signin {
   width: 100%;
-  height: 48px;
+  height: 52px;
   font-size: 16px;
   font-weight: 600;
   border-radius: 10px;
-  margin-top: 10px;
+  margin-top: 12px;
+  box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3);
+  transition: all 0.3s ease;
+  background: #20c997 !important;
+  border-color: #20c997 !important;
+  color: #ffffff !important;
+}
+
+.btn-signin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(32, 201, 151, 0.4);
+  background: #17a589 !important;
+  border-color: #17a589 !important;
 }
 
 /* Divider */
 .divider {
   position: relative;
   text-align: center;
-  margin: 30px 0 25px 0;
+  margin: 32px 0 28px 0;
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   animation: fadeIn 0.6s ease-out 0.4s both;
 }
 
@@ -461,14 +542,20 @@ export default {
   right: 0;
   top: 50%;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #e8e8e8 20%, #e8e8e8 80%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #e8e8e8 20%,
+    #e8e8e8 80%,
+    transparent 100%
+  );
 }
 
 .divider span {
   background: #fff;
-  padding: 0 15px;
+  padding: 0 16px;
   color: #868eae;
-  font-size: 16px;
+  font-size: 15px;
   position: relative;
   font-weight: 500;
 }
@@ -476,63 +563,54 @@ export default {
 /* Footer Section */
 .footer-section {
   text-align: center;
-  animation: fadeIn 0.6s ease-out 0.5s both;
   width: 100%;
+  max-width: 500px;
+  min-width: 0;
+  box-sizing: border-box;
+  animation: fadeIn 0.6s ease-out 0.5s both;
+}
+
+.register-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 13px 16px;
+  border: 2px solid #20c997;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #20c997;
+  font-size: 15.5px;
+  font-weight: 700;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.register-link:hover {
+  background: #e9fbf3;
+  border-color: #17a589;
+  color: #17a589;
 }
 
 .return-text {
-  margin: 0;
+  margin: 18px 0 0;
   font-size: 15px;
 }
 
 .return-text a {
   color: #20c997;
   text-decoration: none;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  word-wrap: break-word;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .return-text a:hover {
   color: #17a589;
-  text-decoration: underline;
-}
-
-/* Environment badges */
-.pilot-badge {
-  display: inline-block;
-  background: linear-gradient(90deg, #fff7e6 0%, #fff1cc 100%);
-  color: #ad4e00;
-  border: 1px solid #ffd591;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(250, 173, 20, 0.12);
-  font-size: clamp(13px, 3vw, 15px);
-  max-width: 100%;
-  word-wrap: break-word;
-}
-
-.training-badge {
-  display: inline-block;
-  background: linear-gradient(90deg, #f6ffed 0%, #eafff0 100%);
-  color: #237804;
-  border: 1px solid #b7eb8f;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: clamp(13px, 3vw, 15px);
-  max-width: 100%;
-  word-wrap: break-word;
-}
-
-/* Modal responsive styling */
-.ant-modal {
-  max-width: 95vw;
-}
-
-.ant-modal-body {
-  padding: 16px;
+  transform: translateX(-4px);
 }
 
 /* Animations */
@@ -564,277 +642,130 @@ export default {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-/* Tablet screens (768px - 1024px) */
-@media (max-width: 1024px) {
+/* Responsive design */
+@media (max-width: 992px) {
   .auth-contents {
-    padding: 16px;
-  }
-
-  .header-section {
-    margin-bottom: 16px;
-  }
-
-  .subtitle {
-    margin-bottom: 24px;
-  }
-
-  .signin-form {
-    max-width: 400px;
-  }
-}
-
-/* Mobile landscape and small tablets (481px - 768px) */
-@media (max-width: 768px) {
-  .auth-contents {
-    padding: 16px 12px;
-    min-height: 100dvh; /* Use dynamic viewport height */
-  }
-
-  .header-section {
-    margin-bottom: 12px;
+    padding: 28px 20px;
   }
 
   .header-section h1 {
-    margin-bottom: 6px;
+    font-size: 28px;
   }
 
   .subtitle {
-    font-size: 15px;
+    font-size: 18px;
+  }
+
+  .description {
+    font-size: 14px;
+    max-width: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-contents {
+    padding: 24px 16px;
+    min-height: 100dvh;
+  }
+
+  .header-section {
     margin-bottom: 20px;
   }
 
-  .signin-form {
-    max-width: 100%;
-  }
-
-  .signin-form .ant-form-item-label > label {
-    font-size: 14px;
-  }
-
-  .signin-form .ant-input,
-  .signin-form .ant-input-password {
-    font-size: 14px;
-    padding: 9px 11px;
-  }
-
-  .auth-form-action {
-    gap: 8px;
-  }
-
-  .auth-form-action .ant-checkbox-wrapper {
-    font-size: 14px;
-  }
-
-  .forgot-pass-link {
-    font-size: 14px;
-  }
-
-  .btn-signin {
-    height: 44px;
-    font-size: 15px;
-  }
-
-  .divider {
-    margin: 20px 0 18px 0;
-  }
-
-  .divider span {
-    font-size: 14px;
-  }
-
-  .return-text {
-    font-size: 14px;
-  }
-
-  .pilot-badge,
-  .training-badge {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
-}
-
-/* Mobile portrait (320px - 480px) */
-@media (max-width: 480px) {
-  .auth-contents {
-    padding: 12px 10px;
-    justify-content: flex-start;
-    padding-top: 20px;
-  }
-
-  .header-section {
-    margin-bottom: 10px;
-  }
-
   .header-section h1 {
-    font-size: 20px;
-    line-height: 1.3;
+    font-size: 24px;
   }
 
   .subtitle {
+    font-size: 17px;
+  }
+
+  .description {
     font-size: 14px;
-    margin-bottom: 16px;
-  }
-
-  .signin-form .ant-form-item {
-    margin-bottom: 12px;
-  }
-
-  .signin-form .ant-form-item-label > label {
-    font-size: 13px;
-  }
-
-  .signin-form .ant-input,
-  .signin-form .ant-input-password {
-    font-size: 14px;
-    padding: 8px 10px;
-  }
-
-  .auth-form-action {
-    gap: 6px;
-  }
-
-  .auth-form-action .ant-checkbox-wrapper {
-    font-size: 13px;
-  }
-
-  .forgot-pass-link {
-    font-size: 13px;
-  }
-
-  .btn-signin {
-    height: 42px;
-    font-size: 14px;
-    margin-top: 8px;
-  }
-
-  .divider {
-    margin: 16px 0 14px 0;
-  }
-
-  .divider span {
-    font-size: 13px;
+    margin: 12px 0 28px 0;
+    max-width: 100%;
     padding: 0 10px;
   }
 
-  .return-text {
-    font-size: 13px;
-  }
-
-  .pilot-badge,
-  .training-badge {
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 8px;
-  }
-
-  /* Modal adjustments */
-  .ant-modal {
-    margin: 0;
-    max-width: 100vw;
-    padding-bottom: 0;
-  }
-
-  .ant-modal-body {
-    padding: 12px;
-  }
-
-  .ant-modal .ant-form-item {
-    margin-bottom: 10px;
-  }
-
-  .ant-modal .btn-signin {
-    height: 40px;
-    font-size: 14px;
+  .auth-form-action {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 
-/* Extra small devices (max-width: 360px) */
-@media (max-width: 360px) {
+@media (max-width: 480px) {
   .auth-contents {
-    padding: 10px 8px;
+    padding: 20px 12px;
+  }
+
+  .register-link {
+    font-size: 14.5px;
+    padding: 12px 12px;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .auth-contents {
+    justify-content: flex-start;
     padding-top: 16px;
   }
 
-  .header-section h1 {
-    font-size: 18px;
-  }
-
-  .subtitle {
-    font-size: 13px;
+  .header-section {
     margin-bottom: 14px;
   }
 
-  .signin-form .ant-input,
-  .signin-form .ant-input-password {
-    font-size: 13px;
-    padding: 7px 9px;
-  }
-
-  .btn-signin {
-    height: 40px;
-    font-size: 13px;
-  }
-
-  .pilot-badge,
-  .training-badge {
-    padding: 5px 10px;
-    font-size: 12px;
+  .description {
+    margin-bottom: 20px;
   }
 }
+</style>
 
-/* Landscape orientation for mobile devices */
-@media (max-height: 600px) and (orientation: landscape) {
-  .auth-contents {
-    padding: 10px;
-    justify-content: flex-start;
-  }
-
-  .header-section {
-    margin-bottom: 8px;
-  }
-
-  .header-section h1 {
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
-
-  .subtitle {
-    font-size: 13px;
-    margin-bottom: 12px;
-  }
-
-  .signin-form .ant-form-item {
-    margin-bottom: 8px;
-  }
-
-  .btn-signin {
-    height: 38px;
-    font-size: 13px;
-  }
-
-  .divider {
-    margin: 12px 0 10px 0;
-  }
+<style>
+/* The ant-design-vue Modal is teleported to <body>, so these
+   styles must live outside the scoped block. */
+.reset-password-modal .ant-modal {
+  max-width: 95vw;
 }
 
-/* Touch device optimizations */
-@media (hover: none) and (pointer: coarse) {
-  .forgot-pass-link,
-  .return-text a {
-    padding: 4px;
-    margin: -4px;
-  }
+.reset-password-modal .ant-modal-content {
+  border-radius: 16px;
+}
 
-  .btn-signin {
-    min-height: 44px; /* Ensure touch-friendly height */
-  }
+.reset-password-modal .ant-modal-header {
+  border-bottom: 1px solid #eef3f6;
+  border-radius: 16px 16px 0 0;
+}
 
-  .auth-form-action .ant-checkbox-wrapper {
-    padding: 4px 0;
-  }
+.reset-password-modal .ant-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #18212e;
+}
+
+.reset-password-modal .ant-modal-body {
+  padding: 20px;
+}
+
+.reset-password-modal .ant-modal .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.reset-password-modal .btn-signin {
+  width: 100%;
+  height: 44px;
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  background: #20c997;
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(32, 201, 151, 0.32);
+}
+
+.reset-password-modal .form-divider {
+  display: none;
 }
 </style>

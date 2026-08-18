@@ -11,7 +11,12 @@
       </div>
 
       <p class="subtitle">Choose your role to continue</p>
-      
+
+      <div class="mobile-brand">
+        <h1 class="mobile-brand-title">DigiMal-KE</h1>
+        <p class="mobile-brand-tagline">National Mass Net Distribution Campaign</p>
+      </div>
+
       <div class="user-type-container">
         <div 
           class="user-type-card" 
@@ -78,12 +83,9 @@
       </div>
 
       <div class="footer-section">
-        <p class="help-text">Need an account?</p>
-        <p class="link-wrapper">
-          <router-link class="link-primary" to="/auth/register">
-            Contact Administrator
-          </router-link>
-        </p>
+        <router-link class="link-primary register-link" to="/auth/register">
+          New User? Register here
+        </router-link>
       </div>
     </div>
   </AuthWrapper>
@@ -172,6 +174,10 @@ export default {
   text-align: center;
   margin-bottom: 20px;
   animation: fadeInDown 0.6s ease-out;
+}
+
+.header-section h1 {
+  color: #272b41;
 }
 
 .subtitle {
@@ -490,5 +496,129 @@ export default {
 
 .user-type-card:focus:not(:focus-visible) {
   outline: none;
+}
+
+/* ---------- Mobile: clean white layout with platform title ---------- */
+.mobile-brand {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .auth-contents {
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 28px 20px 32px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    background-image: none !important;
+  }
+
+  .mobile-brand {
+    display: block;
+    text-align: center;
+    margin: 0 auto 26px;
+  }
+
+  .mobile-brand-title {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    color: #0b6b3a;
+  }
+
+  .mobile-brand-tagline {
+    margin: 8px auto 0;
+    max-width: 320px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #5f8572;
+  }
+
+  .header-section,
+  .subtitle,
+  .divider {
+    display: none;
+  }
+
+  .user-type-container {
+    width: 100%;
+    gap: 14px;
+  }
+
+  .user-type-card {
+    background: #ffffff;
+    border: 1px solid #eef2f5;
+    box-shadow: 0 8px 24px rgba(9, 45, 58, 0.08);
+  }
+
+  .card-content {
+    padding: 18px 16px;
+  }
+
+  .card-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .card-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .card-text h4 {
+    font-size: 18px;
+  }
+
+  .card-text p {
+    font-size: 14px;
+    margin: 6px 0 0;
+  }
+
+  .card-arrow {
+    display: none;
+  }
+
+  .footer-section {
+    margin-top: 24px;
+    width: 100%;
+  }
+
+  .register-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 15px 16px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 2px solid #20c997;
+    color: #20c997;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .register-link:hover,
+  .register-link:active {
+    background: #e9fbf3;
+    border-color: #17a589;
+  }
+}
+
+/* Short landscape phones: keep the content in view */
+@media (max-width: 767px) and (max-height: 560px) {
+  .auth-contents {
+    justify-content: flex-start;
+  }
+
+  .mobile-brand {
+    margin-bottom: 16px;
+  }
 }
 </style>
