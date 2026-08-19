@@ -1,171 +1,268 @@
 <template>
-  <div>
-    <sdPageHeader
-      ghost
-      :title="`${event_name} Event - ${event_code} on ${formattedStartDate}`"
-    >
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search Participant"
-          />
-        </div>
-      </template>
-    </sdPageHeader>
-
+  <div class="event-detail-page">
     <Main>
-      <div class="button-container">
-        <sdButton
-          v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
-          class="btn-import"
-          type="success"
-          size="extra-small"
-          @click="generatePayroll"
-          :disabled="isGenerating"
-        >
-          <!-- Generate Payroll -->
-          {{
-            isLoading
-              ? "Loading..."
-              : isGenerating
-              ? "Processing ..."
-              : "Generate Payroll"
-          }}
-        </sdButton>
-        <span v-if="isApprovedGenerator && event_payroll_status !== 'Generated' || event_payroll_status !== 'Paid'"
-          >&nbsp;</span
-        >
-        <sdButton
-          v-if="isApprovedGenerator && event_payroll_status == 'Generated' || event_payroll_status == 'Paid'"
-          class="btn-import"
-          type="warning"
-          size="extra-small"
-          @click="reGeneratePayroll"
-          :disabled="isReGenerating"
-        >
-          <!-- Generate Payroll -->
-          {{
-            isLoading
-              ? "Loading..."
-              : isGenerating
-              ? "Processing ..."
-              : "Re-Generate Payroll"
-          }}
-        </sdButton>
-        &nbsp;
-        <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
+      <header class="ev-detail-header">
+        <div class="ev-detail-heading">
+          <h2 class="ev-detail-title">{{ event_name }}</h2>
+          <div class="ev-detail-chips">
+            <span class="ev-chip ev-chip-code">{{ event_code }}</span>
+            <span class="ev-status-badge" :class="statusBadgeClass">
+              <span class="dot"></span> {{ eventStatusLabel }}
+            </span>
+            <span class="ev-status-badge payroll" :class="payrollBadgeClass">
+              <sdFeatherIcons type="dollar-sign" size="12" /> {{ payrollLabel }}
+            </span>
+            <span
+              v-if="lsoMissing"
+              class="ev-status-badge is-idle"
+              title="An LSO/LPO is required for payroll submission"
+            >
+              <sdFeatherIcons type="alert-circle" size="12" /> LSO/LPO Missing
+            </span>
+          </div>
+        </div>
+      </header>
 
-        <sdButton class="btn-import" type="success" size="extra-small">
-          <router-link to="/events/add-stakeholder">
-            Add Stakeholder</router-link
+      <!--
+        LSO/LPO notice: shown ONLY to the event host when the event has no
+        LSO/LPO attached. Payroll submission is blocked in that state; the
+        host must upload / link the LSO/LPO for the event vendor first.
+      -->
+      <a-alert
+        v-if="isEventHost && lsoMissing && isPayrollPending"
+        type="warning"
+        show-icon
+        class="ev-lso-alert"
+      >
+        <template #message>LSO/LPO required for payroll submission</template>
+        <template #description>
+          <p class="ev-lso-desc">
+            This event does not yet have an LSO/LPO attached. Please upload
+            the LSO/LPO for this event's vendor. Payroll submission remains
+            disabled until the LSO/LPO is linked.
+          </p>
+          <div class="ev-lso-actions">
+            <sdButton
+              type="warning"
+              size="extra-small"
+              @click="openLsoUploadModal"
+            >
+              <sdFeatherIcons type="upload-cloud" size="13" />&nbsp; Upload / Link LSO/LPO
+            </sdButton>
+          </div>
+        </template>
+      </a-alert>
+
+      <div class="ev-detail-toolbar">
+        <!-- Event lifecycle actions -->
+        <div class="ev-toolbar-section">
+          <span class="ev-toolbar-label">
+            <sdFeatherIcons type="zap" size="13" /> Workflow
+          </span>
+          <div class="ev-toolbar-group">
+          <sdButton
+            class="btn-import"
+            type="light"
+            outlined
+            size="extra-small"
+            @click="openTrainersModal"
           >
-        </sdButton>
-        <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
-        <sdButton
-          class="btn-import"
-          type="success"
-          @click="exportParticipants"
-          size="extra-small"
-        >
-          {{
-            isLoading
-              ? "Downloading..."
-              : isDownloading
-              ? "Processing..."
-              : "Download List"
-          }}
-          &nbsp; &nbsp;
-          <sdFeatherIcons type="download-cloud" size="extra-small" />
-        </sdButton>
-        <span v-if="isApprovedGenerator">&nbsp;&nbsp;</span>
-        <sdButton
-          class="btn-import"
-          type="warning"
-          @click="openModal()"
-          size="extra-small"
-        >
-          Archive Event &nbsp; &nbsp;
-          <sdFeatherIcons type="archive" size="extra-small" />
-        </sdButton>
-        &nbsp; &nbsp;
-        <sdButton
-          class="btn-import"
-          type="warning"
-          @click="openMatrixModal()"
-          size="extra-small"
-        >
-          Event Matrix &nbsp; &nbsp;
-          <sdFeatherIcons type="award" size="extra-small" />
-        </sdButton>
+            <sdFeatherIcons type="users" size="14" /> &nbsp; View Trainers
+          </sdButton>
+          <sdButton
+            v-if="canSubmitEvent"
+            class="btn-import"
+            type="primary"
+            size="extra-small"
+            @click="openSubmitModal"
+          >
+            <sdFeatherIcons type="send" size="14" /> &nbsp; Submit for Payroll
+          </sdButton>
+          <span
+            v-if="!canSubmitEvent && isPayrollPending"
+            class="ev-workflow-hint"
+          >
+            <template v-if="lsoMissing">
+              An LSO/LPO must be attached to this event before it can be
+              submitted for payroll.
+            </template>
+            <template v-else>
+              Start and close the event each day on the list page. Submit for
+              payroll unlocks after the final day's closure.
+            </template>
+          </span>
+          </div>
+        </div>
+
+        <!-- Management actions -->
+        <div class="ev-toolbar-section">
+          <span class="ev-toolbar-label">
+            <sdFeatherIcons type="settings" size="13" /> Manage
+          </span>
+          <div class="ev-toolbar-group">
+          <sdButton
+            v-if="
+              isApprovedGenerator &&
+              event_payroll_status !== 'Generated' &&
+              event_payroll_status !== 'Paid'
+            "
+            class="btn-import"
+            type="success"
+            size="extra-small"
+            @click="generatePayroll"
+            :disabled="isGenerating || !canGeneratePayroll"
+          >
+            {{
+              isLoading
+                ? "Loading..."
+                : isGenerating
+                ? "Processing ..."
+                : "Generate Payroll"
+            }}
+          </sdButton>
+          <span
+            v-if="
+              isApprovedGenerator &&
+              !canGeneratePayroll &&
+              event_payroll_status !== 'Generated' &&
+              event_payroll_status !== 'Paid'
+            "
+            class="ev-workflow-hint"
+          >
+            Payroll generation unlocks once the event host submits the closed
+            event for payroll.
+          </span>
+          <sdButton
+            v-if="
+              isApprovedGenerator &&
+              (event_payroll_status == 'Generated' ||
+                event_payroll_status == 'Paid')
+            "
+            class="btn-import"
+            type="warning"
+            size="extra-small"
+            @click="reGeneratePayroll"
+            :disabled="isGenerating"
+          >
+            {{
+              isLoading
+                ? "Loading..."
+                : isGenerating
+                ? "Processing ..."
+                : "Re-Generate Payroll"
+            }}
+          </sdButton>
+          <sdButton
+            class="btn-import"
+            type="success"
+            @click="exportParticipants"
+            size="extra-small"
+          >
+            {{
+              isLoading
+                ? "Downloading..."
+                : isDownloading
+                ? "Processing..."
+                : "Download List"
+            }}
+            &nbsp;
+            <sdFeatherIcons type="download-cloud" size="extra-small" />
+          </sdButton>
+          <sdButton
+            class="btn-import"
+            type="warning"
+            @click="openCadreModal()"
+            size="extra-small"
+          >
+            Participation Summary &nbsp;
+            <sdFeatherIcons type="users" size="extra-small" />
+          </sdButton>
+          <sdButton
+            v-if="event_list_id == 29"
+            class="btn-import"
+            type="warning"
+            size="extra-small"
+          >
+            <router-link
+              :to="{
+                path: `/event/post-security-summary`,
+                query: { event_location_id: event_location_id },
+              }"
+            >
+              Post Security Summary
+            </router-link>
+          </sdButton>
+          <sdButton
+            class="btn-import"
+            type="warning"
+            @click="openMatrixModal()"
+            size="extra-small"
+          >
+            Event Matrix &nbsp;
+            <sdFeatherIcons type="award" size="extra-small" />
+          </sdButton>
+          <sdButton
+            class="btn-import"
+            type="warning"
+            @click="openModal()"
+            size="extra-small"
+          >
+            Archive Event &nbsp;
+            <sdFeatherIcons type="archive" size="extra-small" />
+          </sdButton>
+          </div>
+        </div>
       </div>
 
       <SearchResultWrapper>
         <a-row :gutter="25">
           <a-col :xs="24">
-            <div class="search-filter-menu">
-              <ul>
-                <li>
-                  <a
-                    :class="activeClass === 'all' ? 'active' : 'deactivate'"
-                    @click="handleChange('all')"
-                    href="#"
-                  >
-                    All Participants
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="
-                      activeClass === 'confirmed' ? 'active' : 'deactivate'
-                    "
-                    @click="handleChange('confirmed')"
-                    href="#"
-                  >
-                    Confirmed Participants
-                  </a>
-                </li>
-                <li>
-                  <a
-                    :class="activeClass === 'pending' ? 'active' : 'deactivate'"
-                    @click="handleChange('pending')"
-                    href="#"
-                  >
-                    Pending Participants
-                  </a>
-                </li>
-                <li>
-                  <sdButton
-                    class="btn-import"
-                    type="warning"
-                    @click="openCadreModal()"
-                    size="extra-small"
-                  >
-                    Participation Summary &nbsp; &nbsp;
-                    <sdFeatherIcons type="users" size="extra-small" />
-                  </sdButton>
-                </li>
-                <sdButton
-                  class="btn-import"
-                  type="warning"
-                  size="extra-small"
-                  v-if="event_list_id == 29"
-                >
-                  <router-link
-                    :to="{
-                      path: `/event/post-security-summary`,
-                      query: { event_location_id: event_location_id },
-                    }"
-                    class="btn-icon"
-                    type="success"
-                    shape="circle"
-                  >
-                    Post Security Summary
-                  </router-link>
-                </sdButton>
-              </ul>
+            <div class="ev-participant-bar">
+              <a-tabs
+                v-model:activeKey="activeClass"
+                class="ev-participant-tabs"
+              >
+                <a-tab-pane key="all">
+                  <template #tab>
+                    <span class="ev-tab-label">
+                      <sdFeatherIcons type="users" size="14" /> All Participants
+                      <span class="ev-tab-count">{{ recordCount }}</span>
+                    </span>
+                  </template>
+                </a-tab-pane>
+                <a-tab-pane key="confirmed">
+                  <template #tab>
+                    <span class="ev-tab-label">
+                      <sdFeatherIcons type="check-circle" size="14" /> Confirmed
+                      <span class="ev-tab-count confirmed">{{
+                        confirmedCount
+                      }}</span>
+                    </span>
+                  </template>
+                </a-tab-pane>
+                <a-tab-pane key="pending">
+                  <template #tab>
+                    <span class="ev-tab-label">
+                      <sdFeatherIcons type="clock" size="14" /> Pending
+                      <span class="ev-tab-count pending">{{
+                        pendingCount
+                      }}</span>
+                    </span>
+                  </template>
+                </a-tab-pane>
+              </a-tabs>
+              <div class="ev-table-search">
+                <span class="search-icon">
+                  <sdFeatherIcons type="search" size="14" />
+                </span>
+                <a-input
+                  v-model:value="searchItem"
+                  type="text"
+                  name="dataSource"
+                  placeholder="Search participant by name, phone, role…"
+                  allow-clear
+                />
+              </div>
             </div>
           </a-col>
           <a-col :xs="24">
@@ -183,17 +280,6 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'all'"
                         >
-                          <p>
-                            <b>Total Records: </b>
-                            {{ recordCount }} &nbsp;&nbsp;
-                            <span v-if = "event_list_id == 20"
-                              ><b>Total Posts: </b>
-                              {{ total_sub_county_post }}</span
-                            >
-                          </p>
-                          &nbsp; &nbsp;
-                          <p></p>
-
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -243,7 +329,6 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'confirmed'"
                         >
-                          <p><b>Total Records: </b> {{ confirmedCount }}</p>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -259,7 +344,24 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'pending'"
                         >
-                          <p><b>Total Records: </b> {{ pendingCount }}</p>
+                          <!--
+                            Host-driven attendance confirmation has been
+                            disabled. Attendance is now self-confirmed by
+                            participants (SMS OTP / registration code) only.
+                            The pending list stays read-only; the host can
+                            resend the confirmation code but cannot mark a
+                            participant present on their behalf.
+                          -->
+                          <div class="ev-validate-bar is-notice">
+                            <span class="ev-validate-hint">
+                              <sdFeatherIcons type="info" size="14" />
+                              &nbsp; Attendance is confirmed by participants
+                              themselves via their SMS confirmation code —
+                              the host cannot confirm attendance on their
+                              behalf. Use "Resend Confirmation" to re-send a
+                              participant's code if needed.
+                            </span>
+                          </div>
                           <a-table
                             :pagination="{
                               pageSize: 100,
@@ -267,6 +369,7 @@
                             }"
                             :dataSource="filteredData"
                             :columns="columns"
+                            :row-key="(record) => record.id"
                           >
                             <template #participants="{ record }">
                               <td>
@@ -511,6 +614,87 @@
           </a-col>
         </a-row>
       </SearchResultWrapper>
+
+      <!-- Submit for payroll workflow -->
+      <EventSubmitPayrollModal
+        v-model:visible="isSubmitModalOpen"
+        :event="liveEvent"
+        @submitted="onEventSubmitted"
+      />
+
+      <!-- Event trainers modal -->
+      <a-modal
+        title="Event Trainers"
+        :visible="isTrainersModalOpen"
+        :footer="null"
+        @cancel="closeTrainersModal"
+        class="title-success"
+      >
+        <div>
+          <h4><b><u>Event Host</u></b></h4>
+          <p>{{ trainers_host || "—" }}</p>
+          <h4><b><u>Event Facilitators</u></b></h4>
+          <br />
+          <ul>
+            <li v-for="f in trainers_facilitators" :key="f">{{ f }}</li>
+            <li v-if="!trainers_facilitators.length">—</li>
+          </ul>
+        </div>
+      </a-modal>
+
+      <!-- LSO/LPO upload/link modal (host only) -->
+      <a-modal
+        :visible="isLsoModalOpen"
+        title="Upload / Link LSO/LPO"
+        :footer="null"
+        :mask-closable="false"
+        @cancel="closeLsoUploadModal"
+        class="title-success"
+      >
+        <div class="ev-lso-modal">
+          <p class="ev-lso-modal-hint">
+            Select the open LSO/LPO covering this event's vendor. This will
+            link the LSO/LPO to the event so payroll submission can proceed.
+          </p>
+          <a-form layout="vertical">
+            <a-form-item label="Open LSO/LPO">
+              <a-select
+                v-model:value="lsoUpload.vendor_lso_id"
+                placeholder="Select an open LSO/LPO"
+                allow-clear
+                show-search
+                option-filter-prop="label"
+                :loading="lsoUpload.loadingList"
+                style="width: 100%"
+              >
+                <a-select-option
+                  v-for="lso in lsoUpload.openLsos"
+                  :key="lso.id"
+                  :value="lso.id"
+                  :label="`${lso.lso_number || 'LSO'} — ${lso.vendor?.name || 'Vendor'}`"
+                >
+                  <strong>{{ lso.lso_number || "LSO" }}</strong>
+                  <span> — {{ lso.vendor?.name || "Vendor" }}</span>
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-form>
+          <div class="ev-lso-modal-actions">
+            <sdButton size="small" type="light" outlined @click="closeLsoUploadModal">
+              Cancel
+            </sdButton>
+            <sdButton
+              type="primary"
+              size="small"
+              :disabled="!lsoUpload.vendor_lso_id || lsoUpload.saving"
+              @click="submitLsoLink"
+            >
+              <sdFeatherIcons type="link" size="13" />&nbsp;
+              {{ lsoUpload.saving ? "Linking…" : "Link LSO/LPO" }}
+            </sdButton>
+          </div>
+        </div>
+      </a-modal>
     </Main>
   </div>
 </template>
@@ -518,7 +702,7 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./style";
-import { computed, onMounted, ref, reactive, watch } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "@/Axiosconfig";
 import { useStore } from "vuex";
@@ -527,6 +711,7 @@ import { useRoute, useRouter } from "vue-router";
 import store from "../../../vuex/store";
 import { decrypt } from "@/cryptoHelper";
 import { notification } from "ant-design-vue";
+import EventSubmitPayrollModal from "./components/EventSubmitPayrollModal.vue";
 
 const columns = [
   {
@@ -626,42 +811,214 @@ const participant = ref("");
 const id_user = ref("");
 const searchItem = ref("");
 const isDownloading = ref(false);
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const monthIndex = date.getMonth();
-  const year = date.getFullYear();
 
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+// ── Event lifecycle (submit for payroll / generate payroll) ──
+const liveEvent = ref({
+  id: plainquery.id,
+  name: event_name,
+  event_code: event_code,
+  status: plainquery.status,
+  start_date: plainquery.start_date,
+  payroll_status: event_payroll_status,
+  payroll_submitted: plainquery.payroll_submitted,
+});
+// Kept only to disable the facilitator assign/de-assign buttons while a
+// background mutation is in flight.
+const isStarting = ref(false);
+const isSubmitModalOpen = ref(false);
+// Flips true once `fetchLiveEvent()` has resolved with the authoritative
+// event payload (which is when we finally know `vendor_lso_id` /
+// `has_lso_attached`). Any UI that depends on those fields — the missing
+// LSO badge, the host-only LSO alert, workflow hints — must wait for this
+// flag before rendering to avoid an initial false-positive flicker.
+const liveEventLoaded = ref(false);
 
-  // Function to get the ordinal suffix for a number
-  const getOrdinalSuffix = (n) => {
-    const s = ["th", "st", "nd", "rd"];
-    const v = n % 100;
-    return s[(v - 20) % 10] || s[v] || s[0];
-  };
+// ── Event trainers ──
+const isTrainersModalOpen = ref(false);
+const trainers_host = ref("");
+const trainers_facilitators = ref([]);
 
-  const formattedDay = `${day}${getOrdinalSuffix(day)}`;
-  const formattedMonth = monthNames[monthIndex];
+// ── LSO/LPO gating (host-only notice) ──
+// True when the current session user is the event host (the person who
+// created / was assigned as the event facilitator with `isTrainer = null`).
+const currentUserId = (() => {
+  try {
+    const u = JSON.parse(sessionStorage.getItem("user"));
+    return u?.user?.id ?? null;
+  } catch (e) {
+    return null;
+  }
+})();
+const isEventHost = computed(
+  () =>
+    currentUserId != null &&
+    Number(currentUserId) === Number(plainquery.event_host_id)
+);
+// True when the event does not have an LSO/LPO attached yet. The backend's
+// `events/{id}/show` endpoint returns `vendor_lso_id` and `has_lso_attached`;
+// we only trust those values *after* the live payload has been loaded to
+// avoid a false-positive flash while the request is in flight (the URL
+// payload doesn't include the LSO fields, so relying on it up-front would
+// briefly show the "LSO/LPO Missing" chip and host alert before hiding
+// them again once the real data arrives).
+const lsoMissing = computed(() => {
+  if (!liveEventLoaded.value) return false;
+  const live = liveEvent.value || {};
+  if (live.has_lso_attached === false) return true;
+  if (live.has_lso_attached === true) return false;
+  return !live.vendor_lso_id;
+});
 
-  return `${formattedDay} ${formattedMonth} ${year}`;
+// LSO/LPO upload/link modal state
+const isLsoModalOpen = ref(false);
+const lsoUpload = reactive({
+  vendor_lso_id: null,
+  openLsos: [],
+  loadingList: false,
+  saving: false,
+});
+
+const openLsoUploadModal = async () => {
+  lsoUpload.vendor_lso_id = null;
+  isLsoModalOpen.value = true;
+  lsoUpload.loadingList = true;
+  try {
+    const res = await axios.get(`open_vendor_lsos`, { headers: authHeader() });
+    lsoUpload.openLsos = res.data?.data || [];
+  } catch (e) {
+    lsoUpload.openLsos = [];
+    notification.error({
+      message: "Error",
+      description:
+        e?.response?.data?.message ||
+        "Could not load the list of open LSO/LPOs.",
+    });
+  } finally {
+    lsoUpload.loadingList = false;
+  }
 };
 
-const start_date = plainquery.start_date;
-const formattedStartDate = formatDate(start_date);
+const closeLsoUploadModal = () => {
+  isLsoModalOpen.value = false;
+};
+
+const submitLsoLink = async () => {
+  if (!lsoUpload.vendor_lso_id) return;
+  lsoUpload.saving = true;
+  try {
+    const fd = new FormData();
+    fd.append("upload_type", "lso");
+    fd.append("vendor_lso_id", lsoUpload.vendor_lso_id);
+    await axios.post(
+      `create_vendor_upload/event/${plainquery.id}`,
+      fd,
+      { headers: authHeader() }
+    );
+    notification.success({
+      message: "LSO/LPO linked",
+      description:
+        "The LSO/LPO has been attached to this event. You can now submit the event for payroll.",
+    });
+    isLsoModalOpen.value = false;
+    // Refresh the live event so the notice/badge and the Submit button
+    // reflect the newly linked LSO/LPO.
+    await fetchLiveEvent();
+  } catch (e) {
+    notification.error({
+      message: "Could not link LSO/LPO",
+      description:
+        e?.response?.data?.message ||
+        "Please try again, or contact support if the problem persists.",
+    });
+  } finally {
+    lsoUpload.saving = false;
+  }
+};
+
+const isPayrollPending = computed(
+  () => (liveEvent.value.payroll_status || event_payroll_status) === "Pending"
+);
+// Submission is gated by the backend: the event must be closed on (or after)
+// its final scheduled day. The list page drives the daily start/close cycle.
+const canSubmitEvent = computed(
+  () => !!liveEvent.value.can_submit_payroll && isPayrollPending.value
+);
+
+// Payroll generation only unlocks once the event host has submitted the closed
+// event for payroll. The backend exposes this as `can_generate_payroll`
+// (event closed AND submitted), with `payroll_submitted` as a fallback.
+const canGeneratePayroll = computed(
+  () =>
+    !!(liveEvent.value.can_generate_payroll ?? liveEvent.value.payroll_submitted)
+);
+
+// ── Presentation helpers for the detail header ──
+const eventStatusLabel = computed(() => {
+  if (liveEvent.value.status) return "Active";
+  if (liveEvent.value.start_date) return "Closed";
+  return "Not Started";
+});
+const statusBadgeClass = computed(() => {
+  if (liveEvent.value.status) return "is-active";
+  if (liveEvent.value.start_date) return "is-closed";
+  return "is-idle";
+});
+const payrollLabel = computed(() => {
+  const status = liveEvent.value.payroll_status || event_payroll_status;
+  if (status === "Generated") return "Payroll Generated";
+  if (status === "Paid") return "Payroll Paid";
+  return "Payroll Pending";
+});
+const payrollBadgeClass = computed(() => {
+  const status = liveEvent.value.payroll_status || event_payroll_status;
+  if (status === "Generated") return "is-generated";
+  if (status === "Paid") return "is-paid";
+  return "is-pending";
+});
+
+const fetchLiveEvent = async () => {
+  try {
+    const response = await axios.get(`events/${plainquery.id}/show`, {
+      headers: authHeader(),
+    });
+    if (response.data && response.data.data) {
+      liveEvent.value = response.data.data;
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    // Mark the live event as loaded even if the request failed so the UI
+    // doesn't stay pinned to a loading state indefinitely. On failure we
+    // simply keep whatever `liveEvent` was seeded with from the URL.
+    liveEventLoaded.value = true;
+  }
+};
+
+const openSubmitModal = () => {
+  isSubmitModalOpen.value = true;
+};
+const onEventSubmitted = () => {
+  setTimeout(() => location.reload(), 1500);
+};
+
+const openTrainersModal = async () => {
+  trainers_host.value = "";
+  trainers_facilitators.value = [];
+  isTrainersModalOpen.value = true;
+  try {
+    const response = await axios.get(`event/${event_code}/facilitators`, {
+      headers: authHeader(),
+    });
+    const details = response.data.data;
+    trainers_host.value = details.event_host;
+    trainers_facilitators.value = details.event_facilitators || [];
+  } catch (error) {
+    console.error(error);
+  }
+};
+const closeTrainersModal = () => {
+  isTrainersModalOpen.value = false;
+};
 
 const formState = reactive({
   reason_for_voiding: "",
@@ -674,6 +1031,7 @@ const rt = useRouter();
 onMounted(async () => {
   isLoading.value = true;
   getEventParticipants();
+  fetchLiveEvent();
   if (event_list_id == 20) {
     getPostCount();
   }
@@ -748,33 +1106,6 @@ const getEventParticipants = async () => {
   }
 };
 
-const filteredParticipantData = computed(() => {
-  if (!searchItem.value) {
-    return dataSource.value;
-  }
-  return dataSource.value.filter((item) => {
-    // Convert search term to lowercase for case-insensitive comparison
-    const lowerSearch = searchItem.value.toLowerCase();
-    return (
-      item.fullName.toLowerCase().includes(lowerSearch) ||
-      item.phone_no.toLowerCase().includes(lowerSearch) ||
-      item.location_id.toLowerCase().includes(lowerSearch) ||
-      item.level_id.toLowerCase().includes(lowerSearch) ||
-      item.org_types_id.toLowerCase().includes(lowerSearch) ||
-      item.role_id.toLowerCase().includes(lowerSearch)
-    );
-  });
-});
-
-// Watch for changes in the searchItem
-watch(
-  () => searchItem.value,
-  (newValue) => {
-    console.log(newValue);
-    dataSource.value = filteredParticipantData.value;
-  }
-);
-
 const generatePayroll = async () => {
   store.commit("setIsGenerating", true);
 
@@ -800,7 +1131,7 @@ const generatePayroll = async () => {
     }
   } catch (error) {
     console.error(error);
-    handleErrorResponse();
+    handleErrorResponse(error);
   }
 };
 
@@ -829,9 +1160,17 @@ const reGeneratePayroll = async () => {
     }
   } catch (error) {
     console.error(error);
-    handleErrorResponse();
+    handleErrorResponse(error);
   }
 };
+
+// ── Host attendance validation (pending tab) ──
+// The host-driven attendance-confirmation feature has been removed:
+// attendance can only be confirmed by the participant themselves via the
+// SMS registration/OTP code. The template no longer exposes any UI that
+// posts to the (now-disabled) `validate_participants` endpoint. The
+// pending list stays visible; the host can still resend a confirmation
+// code (see `resendConfirmation` below).
 
 // resendConfirmation
 const resendConfirmation = async (id) => {
@@ -969,12 +1308,34 @@ const handleArchiveEvent = async () => {
   }
 };
 
-const handleErrorResponse = (response) => {
-  console.log(response);
+const handleErrorResponse = (error) => {
   store.commit("setIsGenerating", false);
+
+  // Surface the backend's specific message (e.g. payroll gating: the event must
+  // be closed and submitted for payroll before generation is allowed).
+  const data = error?.response?.data;
+  const statusCode = error?.response?.status;
+  const message = data?.message;
+
+  if (statusCode === 422 && message) {
+    Modal.warning({
+      title: "Payroll not available yet",
+      content: message,
+    });
+    return; // do not reload — let the host act on the message
+  }
+
+  if (statusCode === 401 && message) {
+    Modal.error({
+      title: "Not allowed",
+      content: message,
+    });
+    return;
+  }
+
   Modal.error({
     title: "Error",
-    content: "Something went wrong, contact admin",
+    content: message || "Something went wrong, contact admin",
   });
   setTimeout(() => location.reload(), 4000);
 };
@@ -1080,10 +1441,6 @@ const exportParticipants = async () => {
   }
 };
 
-const handleChange = (tab) => {
-  activeClass.value = tab;
-};
-
 const assignFacilitator = (user) => {
   isAssignModal.value = true;
   console.log(user.first_name);
@@ -1178,15 +1535,31 @@ const handleDeassign = async () => {
 };
 
 const filteredData = computed(() => {
+  let list;
   if (activeClass.value === "confirmed") {
-    console.log(confirmed.value);
-    return confirmed.value;
+    list = confirmed.value;
   } else if (activeClass.value === "pending") {
-    console.log(dataSource.value);
-    return pending.value;
+    list = pending.value;
   } else {
-    return dataSource.value;
+    list = dataSource.value;
   }
+
+  const term = searchItem.value ? searchItem.value.toLowerCase() : "";
+  if (!term) return list;
+
+  return list.filter((item) => {
+    const fields = [
+      item.fullName,
+      item.phone_no,
+      item.location_id,
+      item.level_id,
+      item.org_types_id,
+      item.role_id,
+    ];
+    return fields.some((f) =>
+      String(f ?? "").toLowerCase().includes(term)
+    );
+  });
 });
 
 const user = JSON.parse(sessionStorage.getItem("user"));
@@ -1254,6 +1627,454 @@ const getPostCount = async () => {
   margin: 5px;
 }
 
+/* ───────── Event detail header ───────── */
+.event-detail-page {
+  padding: 16px 12px 0;
+}
+.ev-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ev-detail-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.ev-detail-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1b3b2a;
+  margin: 0;
+  line-height: 1.25;
+}
+.ev-detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ev-workflow-hint {
+  font-size: 12px;
+  color: #7d8c84;
+  max-width: 520px;
+  line-height: 1.4;
+}
+.ev-lso-alert {
+  margin: 10px 0 16px;
+  border-radius: 10px;
+}
+.ev-lso-alert .ev-lso-desc {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #6b5010;
+}
+.ev-lso-alert .ev-lso-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ev-lso-modal {
+  padding: 4px 0;
+}
+.ev-lso-modal .ev-lso-modal-hint {
+  font-size: 12.5px;
+  color: #5f6c64;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.ev-lso-modal .ev-lso-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #eef3f1;
+  padding-top: 14px;
+  margin-top: 4px;
+}
+.ev-participant-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ev-validate-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border: 1px solid #cfeadb;
+  border-radius: 10px;
+  background: #f3fbf6;
+}
+.ev-validate-bar.is-notice {
+  border-color: #cfe0ea;
+  background: #f2f7fb;
+}
+.ev-validate-bar.is-notice .ev-validate-hint {
+  display: flex;
+  align-items: center;
+  color: #365b7a;
+  font-weight: 500;
+}
+.ev-validate-hint {
+  font-size: 12px;
+  color: #5c6f64;
+}
+.ev-validate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ev-table-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 300px;
+  min-width: 220px;
+}
+.ev-table-search .search-icon {
+  position: absolute;
+  left: 14px;
+  z-index: 1;
+  display: flex;
+  color: #6fae8b;
+}
+.ev-table-search :deep(.ant-input-affix-wrapper),
+.ev-table-search .ant-input-affix-wrapper {
+  border-radius: 22px;
+  border: 1px solid #cfeadb;
+  background: #fff;
+  padding-left: 38px;
+  height: 40px;
+  width: 100%;
+}
+.ev-table-search input {
+  border: 0;
+  background: transparent;
+}
+
+/* ───────── Event hero summary (legacy) ───────── */
+.ev-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: linear-gradient(120deg, #f1fbf5 0%, #f9fffb 45%, #eef9f2 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 18px rgba(28, 122, 72, 0.07);
+}
+.ev-hero-main {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.ev-hero-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ev-hero-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1b3b2a;
+  margin: 0;
+  line-height: 1.25;
+}
+.ev-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 3px 12px;
+  letter-spacing: 0.02em;
+}
+.ev-chip-code {
+  background: #e6f4ed;
+  color: #15693c;
+  border: 1px solid #bfe4cd;
+}
+.ev-chip-gf {
+  background: #daf4e4;
+  color: #15693c;
+  border: 1px solid #9ad8b4;
+}
+.ev-chip-pmi {
+  background: #e0ecff;
+  color: #1d4ed8;
+  border: 1px solid #b3ccff;
+}
+.ev-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.ev-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 4px 12px;
+  border: 1px solid transparent;
+}
+.ev-status-badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.ev-status-badge.is-active {
+  color: #15693c;
+  background: #e3f7ec;
+  border-color: #9ad8b4;
+}
+.ev-status-badge.is-idle {
+  color: #8a6d1b;
+  background: #fdf6e3;
+  border-color: #ecd9a0;
+}
+.ev-status-badge.is-closed {
+  color: #9b2c2c;
+  background: #fdecec;
+  border-color: #f3b5b5;
+}
+.ev-status-badge.payroll.is-pending {
+  color: #6b7280;
+  background: #f3f4f6;
+  border-color: #d8dce2;
+}
+.ev-status-badge.payroll.is-generated {
+  color: #1d4ed8;
+  background: #e6efff;
+  border-color: #b3ccff;
+}
+.ev-status-badge.payroll.is-paid {
+  color: #15693c;
+  background: #e3f7ec;
+  border-color: #9ad8b4;
+}
+.ev-status-badge.submitted {
+  color: #15693c;
+  background: #f3fcf6;
+  border-color: #cdead9;
+}
+.ev-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 18px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ev-meta li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #2f6746;
+}
+.ev-meta li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #4a9d6f;
+}
+.ev-meta .meta-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ev-meta .lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #7d9488;
+  font-weight: 600;
+}
+.ev-meta .val {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #243831;
+  word-break: break-word;
+}
+.ev-hero-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 320px;
+  min-width: 240px;
+}
+.ev-hero-search .search-icon {
+  position: absolute;
+  left: 14px;
+  z-index: 1;
+  display: flex;
+  color: #6fae8b;
+}
+.ev-hero-search :deep(.ant-input-affix-wrapper),
+.ev-hero-search .ant-input-affix-wrapper {
+  border-radius: 22px;
+  border: 1px solid #cfeadb;
+  background: #fff;
+  padding-left: 38px;
+  height: 42px;
+  width: 100%;
+}
+.ev-hero-search input {
+  border: 0;
+  background: transparent;
+}
+
+/* ───────── Quick stats ───────── */
+.ev-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.ev-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e6eef0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 3px 10px rgba(20, 60, 40, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ev-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(20, 60, 40, 0.1);
+}
+.ev-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: #fff;
+}
+.ev-stat-card.all .ev-stat-icon {
+  background: linear-gradient(135deg, #2f9e6b, #1c7a48);
+}
+.ev-stat-card.confirmed .ev-stat-icon {
+  background: linear-gradient(135deg, #34c38f, #18a06f);
+}
+.ev-stat-card.pending .ev-stat-icon {
+  background: linear-gradient(135deg, #f1b44c, #e08e0b);
+}
+.ev-stat-card.posts .ev-stat-icon {
+  background: linear-gradient(135deg, #4f8cff, #1d4ed8);
+}
+.ev-stat-body {
+  display: flex;
+  flex-direction: column;
+}
+.ev-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b3b2a;
+  line-height: 1.1;
+}
+.ev-stat-label {
+  font-size: 12px;
+  color: #7d9488;
+  font-weight: 600;
+}
+
+/* ── Reorganised action toolbar ── */
+.ev-detail-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 18px;
+  background: #fff;
+  border: 1px solid #e6eef0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 3px 10px rgba(20, 60, 40, 0.04);
+}
+.ev-toolbar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ev-toolbar-section:not(:last-child) {
+  padding-bottom: 14px;
+  border-bottom: 1px dashed #e1efe6;
+}
+.ev-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: #8a9d93;
+}
+.ev-toolbar-label svg {
+  color: #4a9d6f;
+}
+.ev-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ev-toolbar-group .btn-import {
+  margin: 0;
+}
+.ev-toolbar-group .btn-import a {
+  color: inherit;
+}
+
+/* ── Participant tabs ── */
+.ev-participant-tabs .ev-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ev-participant-tabs .ev-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #eef3f0;
+  color: #2f6746;
+}
+.ev-participant-tabs .ev-tab-count.confirmed {
+  background: #e3f7ec;
+  color: #15693c;
+}
+.ev-participant-tabs .ev-tab-count.pending {
+  background: #fdf6e3;
+  color: #a9802a;
+}
+
 .cadre-list {
   list-style-type: none;
   padding: 0;
@@ -1281,6 +2102,18 @@ const getPostCount = async () => {
   .button-container sdButton {
     margin: 5px 0;
     padding: 5px;
+  }
+  .ev-toolbar-group {
+    justify-content: flex-start;
+  }
+  .ev-hero {
+    padding: 16px;
+  }
+  .ev-hero-title {
+    font-size: 19px;
+  }
+  .ev-hero-search {
+    flex: 1 1 100%;
   }
 }
 </style>

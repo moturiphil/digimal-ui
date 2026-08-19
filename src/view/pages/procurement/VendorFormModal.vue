@@ -400,11 +400,15 @@
           <!-- Section: Contacts -->
           <div class="vm-section">
             <h4 class="vm-section-title">
-              <span class="vm-dot info"></span> Contact persons
+              <span class="vm-dot warn"></span> Contact persons
+              <span class="vm-required-tag">Required</span>
               <span class="vm-section-tag">{{ form.contacts.length }} contact{{ form.contacts.length === 1 ? '' : 's' }}</span>
             </h4>
             <p v-if="!isEdit" class="vm-section-hint">
-              Optional. Add the people we should reach out to for this vendor (e.g. bank contact / accounts payable).
+              At least one contact person is required. Provide the people we
+              should reach out to for this vendor (e.g. bank contact / accounts
+              payable). Phone numbers must be in international format
+              (+254 followed by 9 digits).
             </p>
 
             <div v-if="errors.contacts" class="form-error-banner">
@@ -427,6 +431,7 @@
                   type="button"
                   class="bank-remove"
                   title="Remove"
+                  :disabled="form.contacts.length <= 1"
                   @click="removeContactRow(idx)"
                 >
                   <sdFeatherIcons type="x" size="13" />
@@ -466,9 +471,13 @@
                   <a-form-item
                     label="Phone"
                     :validate-status="contactErrors[idx]?.phone_number ? 'error' : ''"
-                    :help="contactErrors[idx]?.phone_number"
+                    :help="contactErrors[idx]?.phone_number || 'Format: +254712345678'"
                   >
-                    <a-input v-model:value="contact.phone_number" maxlength="20" />
+                    <a-input
+                      v-model:value="contact.phone_number"
+                      maxlength="20"
+                      placeholder="+254712345678"
+                    />
                   </a-form-item>
                 </a-col>
                 <a-col :span="12">
@@ -603,6 +612,106 @@
           </sdButton>
         </div>
       </footer>
+
+      </div>
+  </a-modal>
+
+  <!-- Confirmation dialog before final submit (sibling of main modal) -->
+  <a-modal
+    :visible="confirmOpen"
+    title="Please confirm the details"
+    :width="620"
+    :footer="null"
+    :mask-closable="false"
+    @cancel="cancelConfirm"
+    wrap-class-name="vendor-confirm-modal"
+  >
+    <div class="vcm-body">
+      <p class="vcm-intro">
+        <sdFeatherIcons type="alert-triangle" size="16" style="color:#fa8b0c;margin-right:6px;vertical-align:middle" />
+        Please verify the following details before submitting. Incorrect
+        bank account information may cause payment delays.
+      </p>
+
+      <!-- Vendor summary -->
+      <section class="vcm-section">
+        <h4 class="vcm-section-title">Vendor</h4>
+        <div class="vcm-grid">
+          <div class="vcm-field">
+            <span class="vcm-label">Name</span>
+            <span class="vcm-value">{{ form.name || '—' }}</span>
+          </div>
+          <div class="vcm-field">
+            <span class="vcm-label">Category</span>
+            <span class="vcm-value">{{ form.category === 'private' ? 'Private' : 'Public' }}</span>
+          </div>
+          <div class="vcm-field">
+            <span class="vcm-label">KRA PIN</span>
+            <span class="vcm-value">{{ form.kra_pin || '—' }}</span>
+          </div>
+          <div class="vcm-field">
+            <span class="vcm-label">Procurement method</span>
+            <span class="vcm-value">{{ form.method_of_procurement ? form.method_of_procurement.toUpperCase() : '—' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bank accounts -->
+      <section class="vcm-section">
+        <h4 class="vcm-section-title">
+          Bank accounts
+          <span class="vcm-badge">{{ form.bank_accounts.length }}</span>
+        </h4>
+        <div
+          v-for="(a, i) in form.bank_accounts"
+          :key="i"
+          class="vcm-bank-card"
+          :class="{ 'is-primary': a.is_primary }"
+        >
+          <div class="vcm-bank-head">
+            <span class="vcm-bank-name">{{ bankLabel(a) }}</span>
+            <span v-if="a.is_primary" class="vcm-primary-pill">Primary</span>
+          </div>
+          <div class="vcm-bank-details">
+            <span><strong>Account name:</strong> {{ a.account_name || '—' }}</span>
+            <span><strong>Account number:</strong> {{ a.account_number || '—' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact persons -->
+      <section v-if="form.contacts.length" class="vcm-section">
+        <h4 class="vcm-section-title">
+          Contact persons
+          <span class="vcm-badge">{{ form.contacts.length }}</span>
+        </h4>
+        <div
+          v-for="(c, i) in form.contacts"
+          :key="i"
+          class="vcm-contact-row"
+          :class="{ 'is-primary': c.is_primary }"
+        >
+          <span class="vcm-contact-name">
+            {{ c.first_name }} {{ c.middle_name }} {{ c.last_name }}
+            <span v-if="c.is_primary" class="vcm-primary-pill">Primary</span>
+          </span>
+          <span class="vcm-contact-phone">{{ c.phone_number || '—' }}</span>
+          <span v-if="c.email" class="vcm-contact-email">{{ c.email }}</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="vcm-actions">
+      <sdButton size="small" class="pill-btn" @click="cancelConfirm">Cancel</sdButton>
+      <sdButton
+        size="small"
+        class="pill-btn is-primary"
+        :loading="confirmSubmitting"
+        @click="confirmSubmit"
+      >
+        <sdFeatherIcons type="check" size="14" />
+        &nbsp; Yes, submit
+      </sdButton>
     </div>
   </a-modal>
 </template>
@@ -648,7 +757,10 @@ const blankForm = () => ({
   tax_certificate_expiry: null,
   tax_compliance_certificate: null, // File
   bank_accounts: [blankBankAccount(true)],
-  contacts: [],
+  // At least one contact person is mandatory for every vendor registration,
+  // so we seed a blank primary contact row so the user always sees the
+  // required fields when the modal opens.
+  contacts: [blankContact(true)],
   lso: {
     lso_number: '',
     issue_date: null,
@@ -1081,15 +1193,27 @@ export default {
         bankErrors.value[i] = e;
       });
 
-      if (form.contacts.length && !form.contacts.some((c) => c.is_primary)) {
+      // Contact persons are mandatory on both create and edit paths.
+      if (!form.contacts.length) {
+        errors.contacts = 'At least one contact person is required';
+      } else if (!form.contacts.some((c) => c.is_primary)) {
         errors.contacts = 'One contact must be marked primary';
       }
+      // Accept Kenyan phone numbers in the canonical +254 international
+      // format only (the backend re-validates and rejects malformed values).
+      const PHONE_REGEX = /^\+254[17]\d{8}$/;
       form.contacts.forEach((c, i) => {
         const e = {};
         if (!c.first_name?.trim()) e.first_name = 'Required';
         if (!c.last_name?.trim()) e.last_name = 'Required';
-        if (!c.phone_number?.trim()) e.phone_number = 'Required';
-        else if (c.phone_number.length > 20) e.phone_number = 'Max 20 chars';
+        const phone = (c.phone_number || '').replace(/[\s\-()]/g, '');
+        if (!phone) {
+          e.phone_number = 'Required';
+        } else if (phone.length > 20) {
+          e.phone_number = 'Max 20 chars';
+        } else if (!PHONE_REGEX.test(phone)) {
+          e.phone_number = 'Use +254 followed by 9 digits (e.g. +254712345678)';
+        }
         if (c.email && !/^\S+@\S+\.\S+$/.test(c.email)) e.email = 'Invalid email';
         contactErrors.value[i] = e;
       });
@@ -1138,12 +1262,22 @@ export default {
         payload.erp_id = form.erp_id;
       }
       if (form.contacts.length) {
+        // Send phone numbers in canonical +254 format so the backend regex
+        // validator accepts them consistently regardless of local input
+        // habits (leading 0, spaces, "254...").
+        const normalisePhone = (raw) => {
+          let value = (raw || '').replace(/[\s\-()]/g, '');
+          if (!value) return '';
+          if (value.startsWith('0')) return '+254' + value.substring(1);
+          if (value.startsWith('254')) return '+' + value;
+          return value;
+        };
         payload.contacts = form.contacts.map((c) => ({
           ...(c.id ? { id: c.id } : {}),
           first_name: c.first_name.trim(),
           middle_name: c.middle_name?.trim() || null,
           last_name: c.last_name.trim(),
-          phone_number: c.phone_number.trim(),
+          phone_number: normalisePhone(c.phone_number),
           email: c.email?.trim() || null,
           is_primary: !!c.is_primary,
           is_active: c.is_active !== false,
@@ -1169,22 +1303,60 @@ export default {
       return payload;
     };
 
-    const onSubmit = async () => {
+    // ── Confirmation-before-submit ─────────────────────────────────────────
+    // The user must explicitly confirm that the details (especially bank
+    // account information) are correct before the vendor record is created
+    // or updated. The payload is built once and kept until the user either
+    // confirms (submit proceeds) or cancels back to the form.
+    const confirmOpen = ref(false);
+    const confirmSubmitting = ref(false);
+    const pendingSubmit = ref(null); // { isEdit, payload }
+
+    // Resolve a readable bank name from the currently loaded banks list.
+    const bankLabel = (account) => {
+      const key = account?.bank_key || account?.bank_id;
+      if (key == null) return '—';
+      const bank = (banks.value || []).find(
+        (b) => String(bankKeyOf(b)) === String(key) || String(b.id) === String(key)
+      );
+      if (bank) return bank.bank_name || bank.name || `Bank #${key}`;
+      return `Bank #${key}`;
+    };
+
+    const onSubmit = () => {
       if (!validate()) {
         notification.warning({ message: 'Please fix the highlighted fields' });
         return;
       }
-      const payload = buildPayload();
+      // Defer the actual save until the user confirms the summary.
+      pendingSubmit.value = {
+        isEdit: isEdit.value,
+        payload: buildPayload(),
+      };
+      confirmOpen.value = true;
+    };
+
+    const cancelConfirm = () => {
+      confirmOpen.value = false;
+      pendingSubmit.value = null;
+    };
+
+    const confirmSubmit = async () => {
+      const pending = pendingSubmit.value;
+      if (!pending) return;
+      confirmSubmitting.value = true;
       try {
-        if (isEdit.value) {
+        if (pending.isEdit) {
           await store.dispatch('procurement/updateVendor', {
             id: props.vendor.id,
-            payload,
+            payload: pending.payload,
             withFile: !!form.tax_compliance_certificate,
           });
         } else {
-          await store.dispatch('procurement/createVendor', payload);
+          await store.dispatch('procurement/createVendor', pending.payload);
         }
+        confirmOpen.value = false;
+        pendingSubmit.value = null;
         emit('saved');
       } catch (e) {
         const data = e?.response?.data || {};
@@ -1203,6 +1375,12 @@ export default {
           description: descriptionLines.length ? descriptionLines.join('\n') : undefined,
           duration: 8,
         });
+        // Keep the confirmation open so the user can retry, or close it so
+        // they can fix the form. We close it so field errors are visible.
+        confirmOpen.value = false;
+        pendingSubmit.value = null;
+      } finally {
+        confirmSubmitting.value = false;
       }
     };
 
@@ -1244,6 +1422,11 @@ export default {
       onBankNameChange,
       onAccountNumberInput,
       disablePastDates,
+      confirmOpen,
+      confirmSubmitting,
+      confirmSubmit,
+      cancelConfirm,
+      bankLabel,
       onPickTaxCert,
       clearTaxCert,
       onPickLsoFile,
@@ -1414,6 +1597,18 @@ export default {
   border: 1px solid #c9e6d3;
   padding: 1px 8px;
   border-radius: 10px;
+}
+.vm-required-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  background: #fff2eb;
+  color: #b04b00;
+  border: 1px solid #f8c7a5;
+  padding: 1px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
 }
 .vm-section-hint {
   font-size: 12px;
@@ -1701,5 +1896,145 @@ export default {
       color: #fff !important;
     }
   }
+}
+
+/* ── Confirmation modal styles ───────────────────────────────────────── */
+.vendor-confirm-modal .vcm-body {
+  max-height: 560px;
+  overflow-y: auto;
+  padding: 2px 0 6px;
+}
+.vendor-confirm-modal .vcm-intro {
+  font-size: 13px;
+  color: #5f6c64;
+  margin-bottom: 16px;
+  line-height: 1.55;
+  background: #fffaf0;
+  border: 1px solid #ffd591;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.vendor-confirm-modal .vcm-section {
+  margin-bottom: 16px;
+}
+.vendor-confirm-modal .vcm-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #272b41;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.vendor-confirm-modal .vcm-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #eafff5;
+  color: #15693c;
+  font-size: 10px;
+  font-weight: 700;
+}
+.vendor-confirm-modal .vcm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.vendor-confirm-modal .vcm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.vendor-confirm-modal .vcm-label {
+  font-size: 11px;
+  color: #8a9399;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.vendor-confirm-modal .vcm-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2a3036;
+}
+.vendor-confirm-modal .vcm-bank-card {
+  background: #fafcfa;
+  border: 1px solid #e6eae8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.vendor-confirm-modal .vcm-bank-card.is-primary {
+  border-color: #9ad8b4;
+  background: #f3fbf7;
+}
+.vendor-confirm-modal .vcm-bank-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.vendor-confirm-modal .vcm-bank-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2a3036;
+}
+.vendor-confirm-modal .vcm-primary-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #1f9254;
+  color: #fff;
+  padding: 1px 8px;
+  border-radius: 999px;
+  line-height: 1;
+}
+.vendor-confirm-modal .vcm-bank-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12.5px;
+  color: #5f6c64;
+}
+.vendor-confirm-modal .vcm-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 6px 0;
+  border-bottom: 1px solid #eef1ef;
+}
+.vendor-confirm-modal .vcm-contact-row.is-primary {
+  background: #f7fbf9;
+  margin: 0 -8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.vendor-confirm-modal .vcm-contact-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a3036;
+  flex: 1 1 180px;
+}
+.vendor-confirm-modal .vcm-contact-phone {
+  font-size: 12.5px;
+  color: #5f6c64;
+}
+.vendor-confirm-modal .vcm-contact-email {
+  font-size: 12.5px;
+  color: #15693c;
+}
+.vendor-confirm-modal .vcm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #eaf0ee;
+  margin-top: 4px;
 }
 </style>

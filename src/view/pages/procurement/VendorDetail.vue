@@ -1,36 +1,40 @@
 <template>
-  <Main>
-    <ProcurementPageWrapper class="bp-min">
-      <a-spin :spinning="loading">
-        <div v-if="vendor">
-          <!-- Breadcrumb -->
-          <div class="bp-crumb">
-            <span class="crumb-link" @click="goBack">Procurement · Vendors</span>
-            <span class="crumb-sep">›</span>
-            <span class="crumb-here">{{ vendor.name }}</span>
-          </div>
-
-          <!-- Header -->
-          <header class="bp-head">
-            <div class="bp-head-main">
-              <h3 class="bp-title">{{ vendor.name }}</h3>
-              <div class="bp-meta">
-                <span
-                  class="v-chip"
-                  :class="vendor.is_active ? 'green' : 'muted'"
-                >
-                  {{ vendor.is_active ? 'Active' : 'Inactive' }}
-                </span>
-                <span v-if="taxCertExpired" class="v-chip warn">Tax cert expired</span>
-                <span v-if="vendor.physical_address" class="bp-sub">
-                  {{ vendor.physical_address }}
-                </span>
-              </div>
+  <RecordViewWrapper>
+    <Main>
+      <BudgetPageWrapper class="minimal-dashboard procurement-page">
+        <a-spin :spinning="loading">
+          <div v-if="vendor">
+            <!-- Breadcrumb -->
+            <div class="bp-crumb">
+              <span class="crumb-link" @click="goBack">Procurement · Vendors</span>
+              <span class="crumb-sep">›</span>
+              <span class="crumb-here">{{ vendor.name }}</span>
             </div>
-            <div class="bp-head-actions">
-              <sdButton size="small" class="pill-btn" @click="goBack">
-                <sdFeatherIcons type="arrow-left" size="13" /> Back
-              </sdButton>
+
+            <!-- Header -->
+            <header class="page-heading">
+              <div class="ph-left">
+                <h3 class="ph-title">
+                  <span class="ph-icon">🏢</span> {{ vendor.name }}
+                </h3>
+                <p class="ph-subtitle">
+                  {{ vendor.physical_address || '—' }}
+                  <span
+                    class="v-chip"
+                    :class="vendor.is_active ? 'green' : 'muted'"
+                  >
+                    {{ vendor.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                  <span v-if="taxCertExpired" class="v-chip warn">Tax cert expired</span>
+                  <span class="v-cat" :class="vendor.category === 'private' ? 'private' : 'public'">
+                    {{ vendor.category === 'private' ? 'Private' : 'Public' }}
+                  </span>
+                </p>
+              </div>
+              <div class="ph-actions">
+                <sdButton size="small" class="pill-btn" @click="goBack">
+                  <sdFeatherIcons type="arrow-left" size="13" /> Back
+                </sdButton>
               <sdButton
                 v-if="canApproveVendor"
                 size="small"
@@ -166,8 +170,9 @@
           </div>
         </div>
       </a-spin>
-    </ProcurementPageWrapper>
-  </Main>
+    </BudgetPageWrapper>
+    </Main>
+  </RecordViewWrapper>
 </template>
 
 <script setup>
@@ -181,7 +186,8 @@ import BankAccountsTab from './BankAccountsTab.vue';
 import ContactsTab from './ContactsTab.vue';
 import LsosTab from './LsosTab.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
-import { ProcurementPageWrapper } from './style';
+import { RecordViewWrapper } from '../events/style';
+import { BudgetPageWrapper } from '../budget/style';
 
 const store = useStore();
 const route = useRoute();
@@ -278,5 +284,25 @@ const onToggle = async () => {
 .vendor-tab-count {
   color: #7a8a82;
   font-weight: 500;
+}
+.v-cat {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  &.private {
+    background: #eafff5;
+    color: #15693c;
+    border: 1px solid #c9e6d3;
+  }
+  &.public {
+    background: #e8effb;
+    color: #335ec7;
+    border: 1px solid #c7d8f3;
+  }
 }
 </style>

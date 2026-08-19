@@ -80,6 +80,7 @@
             <div class="act-name">
               <span :class="['caret', { open: isExpanded(a.id) }]" aria-hidden="true">▸</span>
               <span class="at-name">{{ a.order }}. {{ a.name }}</span>
+              <a-tag v-if="hasSessionMultiplier(a)" class="multiplier-tag">{{ a.multiplier_display }}</a-tag>
               <a-tag v-if="isActivityDirty(a.id)" class="dirty-tag">Unsaved</a-tag>
             </div>
             <div class="act-total">KES {{ fmt(activityTotal(a)) }}</div>
@@ -126,6 +127,37 @@
               <span v-else-if="column.key === 'total'">{{ fmt(rowTotal(record)) }}</span>
             </template>
           </a-table>
+
+          <!-- Session multiplier row: shows the profile-derived multiplier
+               and lets the user apply it to the line subtotals. -->
+          <div
+            v-if="hasSessionMultiplier(a) && isExpanded(a.id) && !a.loading"
+            class="act-multiplier"
+          >
+            <div class="mp-left">
+              <span class="mp-title">Session Multiplier</span>
+              <span class="mp-badge">{{ a.multiplier_display }}</span>
+            </div>
+            <div class="mp-mid">
+              <template v-if="a.multiplierApplied">
+                Subtotal: <strong>KES {{ fmt(activitySubtotal(a)) }}</strong>
+                <span class="mp-arrow">→</span>
+                Total: <strong class="mp-total">KES {{ fmt(activityTotal(a)) }}</strong>
+              </template>
+              <span v-else class="mp-hint">
+                Line totals are subtotals. Apply the session multiplier to compute the budget total.
+              </span>
+            </div>
+            <div class="mp-right">
+              <sdButton
+                size="small"
+                :class="['pill-btn', 'mp-btn', { applied: a.multiplierApplied }]"
+                @click="applyMultiplier(a)"
+              >
+                {{ a.multiplierApplied ? '✓ Multiplier Applied' : 'Apply Multiplier' }}
+              </sdButton>
+            </div>
+          </div>
 
           <div class="act-foot" v-show="isExpanded(a.id) && viewMode === 'profile' && !readOnly">
             <sdButton
@@ -280,6 +312,9 @@ const categoriesToActivities = (cats) =>
       set_count: 0,
       fallback_count: 0,
       not_set_count: 0,
+      session_multiplier: 1,
+      multiplier_display: '',
+      multiplierApplied: false,
     }));
 
 /* Convert the parameters array returned by `get_category_parameters_for_profile`
@@ -294,10 +329,13 @@ const categoriesToActivities = (cats) =>
 const paramsToItems = (params, activity) => {
   const daysOf = (p) =>
     Number(p.number_of_days) || Number(activity?.default_days) || 1;
+  const multiplier = Number(activity?.session_multiplier) || 1;
+  const applied = !!activity?.multiplierApplied;
   return (params || []).map((p) => {
     const u = Number(p.total_units) || 0;
     const d = daysOf(p);
     const cost = Number(p.unit_cost) || 0;
+    const subtotal = cost * d * u;
     return {
       category_parameter_profile_id: p.category_parameter_profile_id || null,
       category_parameter_id: p.category_parameter_id,
@@ -309,7 +347,9 @@ const paramsToItems = (params, activity) => {
       unit_cost: cost,
       days: d,
       units: u,
-      total_cost: cost * d * u,
+      _subtotal: subtotal,
+      _session_multiplier: multiplier,
+      total_cost: applied ? subtotal * multiplier : subtotal,
       unit_source: p.unit_source || 'not_set',
       highlight: /fuel/i.test(p.parameter_key || ''),
     };
@@ -528,6 +568,8 @@ export default {
         activity.set_count = Number(payload.set_count || 0);
         activity.fallback_count = Number(payload.fallback_count || 0);
         activity.not_set_count = Number(payload.not_set_count || 0);
+        activity.session_multiplier = Number(payload.session_multiplier) || 1;
+        activity.multiplier_display = payload.multiplier_display || '';
         if (payload.category) {
           activity.description =
             payload.category.description || activity.description;
@@ -979,13 +1021,51 @@ export default {
     const onUnitsChange = (activity, record, val) => {
       const next = Number.isFinite(Number(val)) ? Number(val) : 0;
       record.units = next < 0 ? 0 : next;
-      // Recompute total_cost so the table reflects the edit immediately.
-      record.total_cost =
+      // Recompute subtotal and apply multiplier if active
+      record._subtotal =
         (Number(record.unit_cost) || 0)
         * (Number(record.days) || 1)
         * (Number(record.units) || 0);
+      const m = activity.multiplierApplied
+        ? (Number(activity.session_multiplier) || 1)
+        : 1;
+      record.total_cost = record._subtotal * m;
       record._dirty = true;
       dirtyActivities.value = { ...dirtyActivities.value, [activity.id]: true };
+    };
+
+    /* Session multiplier helpers ----------------------------------------- */
+
+    /* A category only shows the multiplier row when its profile-derived
+     * session multiplier is greater than 1. */
+    const hasSessionMultiplier = (a) =>
+      (Number(a?.session_multiplier) || 1) > 1;
+
+    /* Base subtotal for one row: unit_cost × days × units (no multiplier). */
+    const rowSubtotal = (r) =>
+      Number(r?._subtotal) || (
+        (Number(r?.unit_cost) || 0)
+        * (Number(r?.days) || 1)
+        * (Number(r?.units) || 0)
+      );
+
+    /* Sum of row subtotals — used to display the pre-multiplier value. */
+    const activitySubtotal = (a) =>
+      (a.items || []).reduce((s, i) => s + rowSubtotal(i), 0);
+
+    /* Toggle the session multiplier on/off for one activity. When turned on,
+     * every row total becomes subtotal × session_multiplier, mirroring the
+     * formula BudgetCalculationService uses at generation time. The
+     * multiplier itself is never sent on save — it is read from the profile. */
+    const applyMultiplier = (activity) => {
+      activity.multiplierApplied = !activity.multiplierApplied;
+      const m = activity.multiplierApplied
+        ? (Number(activity.session_multiplier) || 1)
+        : 1;
+      (activity.items || []).forEach((item) => {
+        item._subtotal = rowSubtotal(item);
+        item.total_cost = item._subtotal * m;
+      });
     };
 
     /* Persist edited unit values for one activity in a single batch call.
@@ -1084,6 +1164,9 @@ export default {
       referralMessage,
       referredBy,
       openBudgetDetail,
+      hasSessionMultiplier,
+      activitySubtotal,
+      applyMultiplier,
     };
   },
 };
@@ -1242,6 +1325,16 @@ export default {
       line-height: 18px;
       font-weight: 700;
     }
+    .multiplier-tag {
+      background: #e8f6ee;
+      color: #15693c;
+      border: 1px solid #9ad8b4;
+      border-radius: 10px;
+      padding: 0 8px;
+      font-size: 10px;
+      line-height: 18px;
+      font-weight: 700;
+    }
   }
   .act-total {
     font-size: 13px;
@@ -1254,6 +1347,75 @@ export default {
     margin-top: 8px;
   }
   .units-input { width: 80px; }
+
+  /* Session multiplier row: sits between the parameter table and the save
+   * button, shows the profile-derived multiplier and lets the user apply it
+   * to the line subtotals. */
+  .act-multiplier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f7fbf8;
+    border: 1px solid #c9e6d3;
+    border-radius: 8px;
+    .mp-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      .mp-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #4d8a63;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      .mp-badge {
+        background: #e8f6ee;
+        color: #15693c;
+        border: 1px solid #9ad8b4;
+        border-radius: 10px;
+        padding: 0 8px;
+        font-size: 10px;
+        line-height: 18px;
+        font-weight: 700;
+      }
+    }
+    .mp-mid {
+      flex: 1 1 260px;
+      font-size: 12px;
+      color: #2f6746;
+      .mp-arrow {
+        margin: 0 6px;
+        color: #15693c;
+        font-weight: 700;
+      }
+      .mp-total {
+        color: #15693c;
+        font-weight: 800;
+      }
+      .mp-hint {
+        color: #7a8a82;
+        font-style: italic;
+      }
+    }
+    .mp-btn {
+      &.applied {
+        background: #1f9254 !important;
+        border-color: #1f9254 !important;
+        color: #fff !important;
+        &:hover, &:focus {
+          background: #167a45 !important;
+          border-color: #167a45 !important;
+          color: #fff !important;
+        }
+      }
+    }
+  }
 
   /* Save button: muted by default, green when dirty */
   .save-btn {

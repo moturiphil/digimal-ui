@@ -9,7 +9,7 @@
           <h2 class="event-pageheader-title">Create Event</h2>
         </div>
       </div>
-      <router-link to="/events/gf" class="event-pageheader-link">
+      <router-link to="/events/event-view" class="event-pageheader-link">
         <sdFeatherIcons type="list" size="14" />
         <span>View all events</span>
       </router-link>
@@ -177,15 +177,16 @@
                     </a-form-item>
 
                     <!-- Trainer Select -->
-                    <a-form-item label="Facilitators">
+                    <a-form-item name="trainer_id" label="Facilitators">
                       <a-select
                         mode="multiple"
                         v-model:value="formState.trainer_id"
                         v-if="!loading"
-                        placeholder="Select facilitators"
+                        placeholder="Select facilitators (min 1, max 5)"
                         show-search
                         option-filter-prop="label"
-                        @change="handleChange"
+                        :max-tag-count="5"
+                        @change="handleTrainerChange"
                         @blur="validate('trainer_id')"
                         @keypress="validate('trainer_id')"
                         @search="handleSearch"
@@ -195,11 +196,21 @@
                           :key="trainer.id"
                           :value="trainer.id"
                           :label="trainer.label"
+                          :disabled="
+                            formState.trainer_id.length >= 5 &&
+                            !formState.trainer_id.includes(trainer.id)
+                          "
                         >
                           {{ trainer.first_name }} {{ trainer.last_name }} -
                           {{ trainer.role_id }}
                         </a-select-option>
                       </a-select>
+                      <p class="facilitator-hint">
+                        Select between 1 and 5 facilitators.
+                        <span v-if="formState.trainer_id.length">
+                          ({{ formState.trainer_id.length }}/5 selected)
+                        </span>
+                      </p>
                       <p
                         class="errors"
                         style="color: red"
@@ -223,13 +234,15 @@
                         </div>
                       </div>
 
-                    <a-form-item name="no-of-days" label="No of Days">
+                    <a-form-item name="no_of_days" label="No of Days">
                       <a-input-number
                         type="number"
                         v-model:value="formState.no_of_days"
                         placeholder="No of Days"
-                        :min="0"
+                        :min="1"
+                        :precision="0"
                         @blur="validate('no_of_days')"
+                        @change="validate('no_of_days')"
                         @keypress="validate('no_of_days')"
                       />
                       <p
@@ -342,13 +355,13 @@
                     <!-- /Schedule & Venue -->
 
                     <div class="event-actions">
-                      <router-link to="/events/gf" class="btn-cancel">Cancel</router-link>
+                      <router-link to="/events/event-view" class="btn-cancel">Cancel</router-link>
                       <sdButton
                         size="default"
                         htmlType="Save"
                         type="success"
                         class="btn-save"
-                        :disabled="isSubmitting"
+                        :disabled="isSubmitting || submitted"
                       >
                         <sdFeatherIcons type="check" size="14" />
                         <span>{{
@@ -356,6 +369,8 @@
                             ? "Loading..."
                             : isSubmitting
                             ? "Processing ..."
+                            : submitted
+                            ? "Event Created"
                             : "Submit"
                         }}</span>
                       </sdButton>
@@ -381,14 +396,16 @@ import {
   defineComponent,
   computed,
   onMounted,
+  nextTick,
 } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
-// import { useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import store from "../../../vuex/store";
 import { PROCUREMENT_ROLES } from "@/config/procurement-roles";
+import { encrypt } from "@/cryptoHelper";
 
 // testing app
 
@@ -405,7 +422,9 @@ const AddNew = defineComponent({
     const isFileLoading = computed(() => state.crud.fileLoading);
     const join = ref("");
 
-    // const router = useRouter();
+    // Router is used to redirect the user to the newly created event's
+    // details page immediately after a successful save.
+    const router = useRouter();
 
     const API_URL = `${process.env.VUE_APP_BASE_URL}/event/with_facilitator`;
 
@@ -580,6 +599,59 @@ const AddNew = defineComponent({
       requires_fuel: false,
     });
 
+    // Tracks whether the event has been successfully submitted. Used to
+    // disable the submit button so users cannot create duplicate events by
+    // clicking submit again after a successful save.
+    const submitted = ref(false);
+
+    // Human-friendly labels used in error notifications so users can quickly
+    // identify which field failed validation.
+    const fieldLabels = {
+      campaign_id: "Campaign Name",
+      name: "Event Type",
+      county_id: "County",
+      facilitator_id: "Host",
+      trainer_id: "Facilitators",
+      no_of_days: "No of Days",
+      venue: "Venue",
+    };
+
+    // Scrolls to the first field that has an error so the user can see and
+    // fix the issue immediately.
+    const scrollToField = (fieldName) => {
+      if (!fieldName) return;
+      nextTick(() => {
+        const el =
+          document.querySelector(
+            `.event-form-shell [name="${fieldName}"]`
+          ) ||
+          document.querySelector(
+            `.event-form-shell [id$="_${fieldName}"]`
+          );
+        const target = el ? el.closest(".ant-form-item") || el : null;
+        if (target && typeof target.scrollIntoView === "function") {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          if (typeof el.focus === "function") {
+            setTimeout(() => el.focus({ preventScroll: true }), 350);
+          }
+        }
+      });
+    };
+
+    // Enforces the maximum of 5 facilitators. Any selection beyond 5 is
+    // silently trimmed and the user is warned.
+    const handleTrainerChange = (value) => {
+      if (Array.isArray(value) && value.length > 5) {
+        formState.trainer_id = value.slice(0, 5);
+        notification.warning({
+          message: "Facilitator limit reached",
+          description: "You can only select up to 5 facilitators.",
+          duration: 4,
+        });
+      }
+      validate("trainer_id");
+    };
+
     // Procurement: LSO/LPO picker visible to SCMCC + Super Admin
     const userRoleId = user?.user?.role_id ?? user?.user?.role ?? null;
     const showProcurementSection = computed(() =>
@@ -642,23 +714,46 @@ const AddNew = defineComponent({
         // Clearing the LSO releases the venue field for manual edits.
         return;
       }
-      const lso = openLsos.value.find((l) => l.id === lsoId);
-      if (lso && lso.event_description) {
-        formState.venue = lso.event_description;
-        // Auto-tick paid venue so the venue field is shown when SCMCC.
-        formState.requires_paid_venue = true;
+
+      // Selecting an LSO/LPO implies a paid venue, so always tick the venue
+      // checkbox. For procurement users this also reveals the venue field.
+      formState.requires_paid_venue = true;
+
+      // Match loosely so an id type mismatch (string vs number) coming from
+      // the select does not prevent the lookup.
+      const lso = openLsos.value.find(
+        (l) => String(l.id) === String(lsoId)
+      );
+
+      if (lso) {
+        // Use the vendor (e.g. the hotel) name as the venue for now, falling
+        // back to the LSO event description when no vendor name is present.
+        const venueName = lso.vendor?.name || lso.event_description || "";
+        if (venueName) {
+          // The venue field only renders once requires_paid_venue is true, so
+          // defer the assignment until after that render to guarantee the
+          // input reflects the auto-filled venue.
+          nextTick(() => {
+            formState.venue = venueName;
+          });
+        }
       }
     };
 
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign is required"),
-      name: Yup.string().required("Name is required"),
+      name: Yup.string().required("Event Type is required"),
       // county_id: Yup.string().required(),
       facilitator_id: Yup.string().required("Host is required"),
       trainer_id: Yup.array()
-        .min(1, "At least 1 facilitator required")
-        .required(),
-      no_of_days: Yup.number().required("No of days is required"),
+        .min(1, "At least 1 facilitator is required")
+        .max(5, "You can select a maximum of 5 facilitators")
+        .required("At least 1 facilitator is required"),
+      no_of_days: Yup.number()
+        .typeError("No of days must be a number")
+        .integer("No of days must be a whole number")
+        .min(1, "No of days must be greater than 0")
+        .required("No of days is required"),
       venue: Yup.string().when([], {
         is: () => showProcurementSection.value && !formState.requires_paid_venue,
         then: (schema) => schema.notRequired().nullable(),
@@ -677,6 +772,10 @@ const AddNew = defineComponent({
     console.log(user_data.user.location_id);
 
     const handleSubmit = () => {
+      // Guard against duplicate submissions.
+      if (submitted.value || isSubmitting.value) {
+        return;
+      }
       store.commit("setIsSubmitting", true);
       if (formState.county_id == "") {
         formState.county_id = user_data.user.location_id;
@@ -707,51 +806,147 @@ const AddNew = defineComponent({
             },
             body: JSON.stringify(data),
           })
-            .then((response) => response.json())
-            .then(({ success, data }) => {
-              if (success) {
+            .then(async (response) => {
+              const json = await response.json().catch(() => ({}));
+              return { ok: response.ok, status: response.status, json };
+            })
+            .then(({ ok, status, json }) => {
+              const { success, data, message, errors: apiErrors } = json || {};
+              if (ok && success) {
                 store.commit("setIsSubmitting", false);
-                // router.push("event-create");
+                submitted.value = true;
+
+                const createdEvent = (data && data.event) || {};
+                const createdHost = (data && data.facilitator) || {};
+
                 notification["success"]({
                   message: "Event Created",
-                  description: `Event Created successfully. Your event code is ${data.event.event_code}`,
-                  duration: 5.5,
+                  description: `Event Created successfully. Your event code is ${createdEvent.event_code}. Redirecting to event details...`,
+                  duration: 4,
+                });
+
+                // Build the encrypted payload the way viewEvents.vue does so
+                // eventDetails.vue can decrypt it on arrival.
+                try {
+                  const encryptedData = encodeURIComponent(
+                    encrypt({
+                      id: createdEvent.id,
+                      name: createdEvent.name,
+                      event_code: createdEvent.event_code,
+                      event_host_id:
+                        createdHost.id || createdEvent.user_id || null,
+                      funding_id: createdEvent.funding_id,
+                      start_date: createdEvent.start_date,
+                      event_list_id: createdEvent.event_list_id,
+                      location: createdEvent.location_id,
+                      payroll_status: createdEvent.payroll_status || "Pending",
+                      status: createdEvent.status,
+                      payroll_submitted:
+                        createdEvent.payroll_submitted || false,
+                    })
+                  );
+
+                  // Delay slightly so the success toast is visible before the
+                  // route change.
+                  setTimeout(() => {
+                    router.push({
+                      name: "view-details",
+                      params: { id: createdEvent.id },
+                      query: { encryptedData },
+                    });
+                  }, 1200);
+                } catch (redirectError) {
+                  // If anything goes wrong building the redirect, fall back to
+                  // the events list so the user can locate their new event.
+                  console.error("Redirect after create failed:", redirectError);
+                  setTimeout(() => {
+                    router.push("/events/event-view");
+                  }, 1200);
+                }
+                return;
+              }
+
+              // Server responded with a failure — surface each field error
+              // and point the user to the exact place where the error is.
+              store.commit("setIsSubmitting", false);
+              const fieldMessages = [];
+              let firstErrorField = null;
+
+              if (apiErrors && typeof apiErrors === "object") {
+                Object.entries(apiErrors).forEach(([field, msgs]) => {
+                  // Map backend field names to our form field names.
+                  const mapBackToForm = {
+                    number_of_days: "no_of_days",
+                    event_list_id: "name",
+                    location_id: "county_id",
+                    facilitator: "facilitator_id",
+                    trainers: "trainer_id",
+                  };
+                  const formField = mapBackToForm[field] || field;
+                  const first = Array.isArray(msgs) ? msgs[0] : String(msgs);
+                  if (this.errors && formField in this.errors) {
+                    this.errors[formField] = first;
+                  }
+                  if (!firstErrorField) firstErrorField = formField;
+                  const label = fieldLabels[formField] || formField;
+                  fieldMessages.push(`• ${label}: ${first}`);
                 });
               }
-              // show error message from the api response
-              else {
-                store.commit("setIsSubmitting", false);
-                notification["error"]({
-                  message: "Error!",
-                  description: "Fail to create event",
-                  duration: 5.5,
-                });
-              }
+
+              notification["error"]({
+                message: message
+                  ? `Error: ${message}`
+                  : `Failed to create event${status ? ` (HTTP ${status})` : ""}`,
+                description:
+                  fieldMessages.length > 0
+                    ? fieldMessages.join("\n")
+                    : "The event could not be created. Please review the form and try again.",
+                duration: 7,
+                style: { whiteSpace: "pre-line" },
+              });
+
+              scrollToField(firstErrorField);
             })
             .catch((error) => {
               store.commit("setIsSubmitting", false);
               notification["error"]({
-                message: "Error!",
-                description: `${error}`,
-                duration: 5.5,
+                message: "Network Error",
+                description: `Unable to reach the server: ${error}. Please check your connection and try again.`,
+                duration: 7,
               });
             });
         })
         .catch((err) => {
           store.commit("setIsSubmitting", false);
+          const fieldMessages = [];
+          let firstErrorField = null;
+          if (err && Array.isArray(err.inner)) {
+            err.inner.forEach((e) => {
+              if (this.errors && e.path in this.errors) {
+                this.errors[e.path] = e.message;
+              }
+              if (!firstErrorField) firstErrorField = e.path;
+              const label = fieldLabels[e.path] || e.path;
+              fieldMessages.push(`• ${label}: ${e.message}`);
+            });
+          }
           notification.error({
-            message: "Could not submit!",
-            description: "An error has occured. Please try again later.",
+            message: "Please fix the highlighted fields",
+            description:
+              fieldMessages.length > 0
+                ? fieldMessages.join("\n")
+                : "An error has occurred. Please try again later.",
+            duration: 7,
+            style: { whiteSpace: "pre-line" },
           });
-          err.inner.forEach((e) => {
-            this.errors[e.path] = e.message;
-          });
+          scrollToField(firstErrorField);
         });
     };
 
     return {
       isLoading,
       isSubmitting,
+      submitted,
       apiUrl,
       isFileLoading,
       join,
@@ -765,6 +960,7 @@ const AddNew = defineComponent({
       sub_counties,
       getSubCounties,
       handleChange,
+      handleTrainerChange,
       events_list,
       validate,
       handleSearch,
@@ -954,6 +1150,12 @@ export default AddNew;
   margin: 6px 0 0;
   font-size: 11px;
   color: #8a9399;
+}
+.facilitator-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.4;
 }
 .lso-opt-venue {
   display: inline-flex;
