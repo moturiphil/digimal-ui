@@ -313,8 +313,8 @@ const categoriesToActivities = (cats) =>
       set_count: 0,
       fallback_count: 0,
       not_set_count: 0,
-      session_multiplier: 1,
-      multiplier_display: '',
+      session_multiplier: c.session_multiplier ?? 1,
+      multiplier_display: c.multiplier_display || '',
       multiplierApplied: false,
     }));
 
