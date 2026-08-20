@@ -80,7 +80,7 @@
             <div class="act-name">
               <span :class="['caret', { open: isExpanded(a.id) }]" aria-hidden="true">▸</span>
               <span class="at-name">{{ a.order }}. {{ a.name }}</span>
-              <a-tag v-if="hasSessionMultiplier(a)" class="multiplier-tag">{{ a.multiplier_display }}</a-tag>
+              <a-tag v-if="a.multiplier_display" class="multiplier-tag">{{ a.multiplier_display }}</a-tag>
               <a-tag v-if="isActivityDirty(a.id)" class="dirty-tag">Unsaved</a-tag>
             </div>
             <div class="act-total">KES {{ fmt(activityTotal(a)) }}</div>
@@ -131,7 +131,7 @@
           <!-- Session multiplier row: shows the profile-derived multiplier
                and lets the user apply it to the line subtotals. -->
           <div
-            v-if="hasSessionMultiplier(a) && isExpanded(a.id) && !a.loading"
+            v-if="a.multiplier_display && isExpanded(a.id) && !a.loading"
             class="act-multiplier"
           >
             <div class="mp-left">
@@ -150,6 +150,7 @@
             </div>
             <div class="mp-right">
               <sdButton
+                v-if="hasSessionMultiplier(a)"
                 size="small"
                 :class="['pill-btn', 'mp-btn', { applied: a.multiplierApplied }]"
                 @click="applyMultiplier(a)"
