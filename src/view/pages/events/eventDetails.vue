@@ -374,13 +374,29 @@
                             <template #participants="{ record }">
                               <td>
                                 <div class="table-actions">
-                                  <sdButton
-                                    type="warning"
-                                    size="extra-small"
-                                    @click="resendConfirmation(record.id)"
+                                  <a-tag
+                                    v-if="pendingAutoValidated"
+                                    color="success"
                                   >
-                                    Resend Confirmation
-                                  </sdButton>
+                                    Auto-validated
+                                  </a-tag>
+                                  <template v-else>
+                                    <sdButton
+                                      type="success"
+                                      size="extra-small"
+                                      :disabled="isValidating"
+                                      @click="validateSinglePending(record.id)"
+                                    >
+                                      Confirm Attendance
+                                    </sdButton>
+                                    <sdButton
+                                      type="warning"
+                                      size="extra-small"
+                                      @click="resendConfirmation(record.id)"
+                                    >
+                                      Resend Confirmation
+                                    </sdButton>
+                                  </template>
                                 </div>
                               </td>
                             </template>
@@ -773,6 +789,12 @@ const matrix_column = [
 const recordCount = computed(() => dataSource.value.length);
 const confirmedCount = computed(() => confirmed.value.length);
 const pendingCount = computed(() => pending.value.length);
+// When today's confirmed participants equal the total registered, the pending
+// participants are treated as automatically validated (display state only — no
+// backend confirmation is triggered for the remaining pending rows).
+const pendingAutoValidated = computed(
+  () => recordCount.value > 0 && confirmedCount.value === recordCount.value
+);
 const { query } = useRoute();
 const plainquery = decrypt(decodeURIComponent(query.encryptedData));
 const event_name = plainquery.name;
