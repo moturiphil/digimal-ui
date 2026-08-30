@@ -381,6 +381,7 @@ import {
   defineComponent,
   computed,
   onMounted,
+  nextTick,
 } from "vue";
 // import axios from "axios";
 import authHeader from "../../../services/auth-header";
@@ -642,11 +643,29 @@ const AddNew = defineComponent({
         // Clearing the LSO releases the venue field for manual edits.
         return;
       }
-      const lso = openLsos.value.find((l) => l.id === lsoId);
-      if (lso && lso.event_description) {
-        formState.venue = lso.event_description;
-        // Auto-tick paid venue so the venue field is shown when SCMCC.
-        formState.requires_paid_venue = true;
+
+      // Selecting an LSO/LPO implies a paid venue, so always tick the venue
+      // checkbox. For procurement users this also reveals the venue field.
+      formState.requires_paid_venue = true;
+
+      // Match loosely so an id type mismatch (string vs number) coming from
+      // the select does not prevent the lookup.
+      const lso = openLsos.value.find(
+        (l) => String(l.id) === String(lsoId)
+      );
+
+      if (lso) {
+        // Use the vendor (e.g. the hotel) name as the venue for now, falling
+        // back to the LSO event description when no vendor name is present.
+        const venueName = lso.vendor?.name || lso.event_description || "";
+        if (venueName) {
+          // The venue field only renders once requires_paid_venue is true, so
+          // defer the assignment until after that render to guarantee the
+          // input reflects the auto-filled venue.
+          nextTick(() => {
+            formState.venue = venueName;
+          });
+        }
       }
     };
 

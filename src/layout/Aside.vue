@@ -139,22 +139,12 @@
         <!-- <a-menu-item key="widgetEventVenues" v-if="canCreateEvent">
           <router-link to="/events/venue"> Event Venues</router-link>
         </a-menu-item> -->
-        <a-sub-menu key="gf-events">
-          <template v-slot:title>
-            <sdFeatherIcons type="globe" /><span>Global Fund</span>
-          </template>
-          <a-menu-item key="widgetGFevents">
-            <router-link to="/events/gf"> List Events </router-link>
-          </a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="pmi-events">
-          <template v-slot:title>
-            <sdFeatherIcons type="radio" /><span>PMI</span>
-          </template>
-          <a-menu-item key="widgetPMIevents">
-            <router-link to="/events/pmi"> List Events </router-link>
-          </a-menu-item>
-        </a-sub-menu>
+        <a-menu-item key="widgetListEvents">
+          <router-link to="/events/event-view"> List Events </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetEventsDashboard" v-if="isOversightUser">
+          <router-link to="/events/dashboard"> Events Dashboard </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="events" v-if="!isLevelOne && !isCommunityHealthWorker">
         <template v-slot:title>
@@ -165,6 +155,9 @@
         </a-menu-item>
         <a-menu-item key="widgetGFevents">
           <router-link to="/events/event-view"> List Events </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetEventsDashboardScoped" v-if="isOversightUser">
+          <router-link to="/events/dashboard"> Events Dashboard </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
