@@ -1,26 +1,31 @@
 <template>
-  <Main>
-    <ProcurementPageWrapper class="bp-min">
-      <!-- Header -->
-      <header class="bp-head">
-        <div class="bp-head-main">
-          <h3 class="bp-title">LSOs / LPOs</h3>
-          <span class="bp-sub">{{ fmt(pagination.total) }} total</span>
-        </div>
-        <div class="bp-head-actions">
-          <sdButton size="small" class="pill-btn" :disabled="loading" @click="refresh">
-            <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
-          </sdButton>
-          <sdButton
-            v-if="canManageVendors"
-            size="small"
-            class="pill-btn is-primary"
-            @click="openCreate"
-          >
-            <sdFeatherIcons type="plus" size="13" /> New LSO
-          </sdButton>
-        </div>
-      </header>
+  <RecordViewWrapper>
+    <Main>
+      <BudgetPageWrapper class="minimal-dashboard procurement-page">
+        <!-- Page heading (matching events/budget design) -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▤</span> LSOs / LPOs
+            </h3>
+            <p class="ph-subtitle">
+              Local Service Orders &amp; LPOs linked to vendors across all sub-counties.
+            </p>
+          </div>
+          <div class="ph-actions">
+            <sdButton size="small" class="pill-btn" :disabled="loading" @click="refresh">
+              <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
+            </sdButton>
+            <sdButton
+              v-if="canManageVendors"
+              size="small"
+              class="pill-btn is-primary"
+              @click="openCreate"
+            >
+              <sdFeatherIcons type="plus" size="13" /> New LSO
+            </sdButton>
+          </div>
+        </header>
 
       <!-- Filter row -->
       <div class="filter-row">
@@ -159,6 +164,11 @@
                 <a-tooltip title="Download">
                   <span class="action-icon" @click="download(record)">
                     <sdFeatherIcons type="download" size="13" />
+                  </span>
+                </a-tooltip>
+                <a-tooltip v-if="canManageVendors" title="Edit">
+                  <span class="action-icon" @click="openEdit(record)">
+                    <sdFeatherIcons type="edit-2" size="13" />
                   </span>
                 </a-tooltip>
               </a-space>
@@ -401,8 +411,148 @@
           </div>
         </a-form>
       </a-modal>
-    </ProcurementPageWrapper>
-  </Main>
+
+      <!-- Edit LSO modal (edit directly from the list) -->
+      <a-modal
+        :visible="editModalOpen"
+        :title="`Edit LSO — ${editing?.lso_number || ''}`"
+        :confirm-loading="editSubmitting"
+        :ok-text="editSubmitting ? 'Saving…' : 'Save Changes'"
+        cancel-text="Cancel"
+        :mask-closable="false"
+        width="680px"
+        wrap-class-name="lso-edit-modal"
+        @cancel="closeEditModal"
+        @ok="onSubmitEdit"
+        @update:visible="(v) => (editModalOpen = v)"
+      >
+        <a-form layout="vertical" class="lso-form">
+          <a-row :gutter="16">
+            <a-col :span="12">
+              <a-form-item
+                label="LSO / LPO Number"
+                :validate-status="editErrors.lso_number ? 'error' : ''"
+                :help="editErrors.lso_number"
+              >
+                <a-input
+                  v-model:value="editForm.lso_number"
+                  placeholder="e.g. LPO/2026/0421"
+                  size="large"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item
+                label="Service Type"
+                :validate-status="editErrors.service_type_id ? 'error' : ''"
+                :help="editErrors.service_type_id"
+              >
+                <a-select
+                  v-model:value="editForm.service_type_id"
+                  placeholder="Select service type"
+                  size="large"
+                >
+                  <a-select-option
+                    v-for="t in serviceTypes"
+                    :key="t.id"
+                    :value="t.id"
+                  >{{ t.name || t.service_type_name }}</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-row :gutter="16">
+            <a-col :span="12">
+              <a-form-item
+                label="Issue Date"
+                :validate-status="editErrors.issue_date ? 'error' : ''"
+                :help="editErrors.issue_date"
+              >
+                <a-date-picker
+                  v-model:value="editForm.issue_date"
+                  style="width: 100%"
+                  size="large"
+                  value-format="YYYY-MM-DD"
+                  :disabled-date="disableFutureIssue"
+                  placeholder="YYYY-MM-DD"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item
+                label="Expiry Date"
+                :validate-status="editErrors.expiry_date ? 'error' : ''"
+                :help="editErrors.expiry_date"
+              >
+                <a-date-picker
+                  v-model:value="editForm.expiry_date"
+                  style="width: 100%"
+                  size="large"
+                  value-format="YYYY-MM-DD"
+                  :disabled-date="disableBeforeIssueEdit"
+                  placeholder="YYYY-MM-DD"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-form-item
+            label="Notes"
+            :validate-status="editErrors.notes ? 'error' : ''"
+            :help="editErrors.notes"
+          >
+            <a-textarea
+              v-model:value="editForm.notes"
+              :rows="3"
+              :maxlength="1000"
+              show-count
+              placeholder="Scope of work, payment terms, or any relevant detail"
+            />
+          </a-form-item>
+          <a-form-item
+            label="Replace document (optional)"
+            :validate-status="editErrors.file ? 'error' : ''"
+            :help="editErrors.file"
+          >
+            <a-upload-dragger
+              :file-list="editFileList"
+              :before-upload="onPickEditFile"
+              :max-count="1"
+              accept=".pdf,.jpg,.jpeg,.png"
+              :show-upload-list="false"
+              class="lso-dropzone"
+              @remove="clearEditFile"
+            >
+              <div v-if="!editForm.file" class="lso-dropzone-empty">
+                <div class="lso-dropzone-icon">
+                  <sdFeatherIcons type="upload-cloud" size="22" />
+                </div>
+                <div class="lso-dropzone-title">Drop a new document or click to replace</div>
+                <div class="lso-dropzone-sub">PDF, JPG or PNG &middot; up to 10 MB</div>
+              </div>
+              <div v-else class="lso-file-card" @click.stop>
+                <div class="lso-file-icon">
+                  <sdFeatherIcons
+                    :type="editForm.file?.type === 'application/pdf' ? 'file-text' : 'image'"
+                    size="18"
+                  />
+                </div>
+                <div class="lso-file-body">
+                  <div class="lso-file-name">{{ editForm.file.name }}</div>
+                  <div class="lso-file-meta">
+                    {{ humanSize(editForm.file.size) }} &middot; {{ fileLabel(editForm.file.type) }}
+                  </div>
+                </div>
+                <a class="lso-file-remove" @click.stop="clearEditFile">
+                  <sdFeatherIcons type="x" size="14" />
+                </a>
+              </div>
+            </a-upload-dragger>
+          </a-form-item>
+        </a-form>
+      </a-modal>
+    </BudgetPageWrapper>
+    </Main>
+  </RecordViewWrapper>
 </template>
 
 <script>
@@ -413,7 +563,8 @@ import dayjs from 'dayjs';
 import { Main } from '../../styled';
 import lsoService from '@/services/procurement/vendor-lso.service';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
-import { ProcurementPageWrapper } from './style';
+import { RecordViewWrapper } from '../events/style';
+import { BudgetPageWrapper } from '../budget/style';
 
 const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
@@ -435,7 +586,7 @@ const blankForm = () => ({
 
 export default {
   name: 'LsosList',
-  components: { Main, ProcurementPageWrapper },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper },
   setup() {
     const store = useStore();
     const permissions = useProcurementPermissions();
@@ -642,6 +793,119 @@ export default {
       }
     };
 
+    // ── edit modal ────────────────────────────────────────────────────────
+    const editModalOpen = ref(false);
+    const editSubmitting = ref(false);
+    const editing = ref(null);
+    const editForm = reactive({
+      service_type_id: null,
+      lso_number: '',
+      issue_date: null,
+      expiry_date: null,
+      notes: '',
+      file: null,
+    });
+    const editErrors = reactive({});
+    const editFileList = ref([]);
+
+    const editBlankForm = (record) => ({
+      service_type_id: record.service_type_id,
+      lso_number: record.lso_number || '',
+      issue_date: record.issue_date,
+      expiry_date: record.expiry_date,
+      notes: record.notes || '',
+      file: null,
+    });
+
+    const resetEdit = () => {
+      Object.assign(editForm, { service_type_id: null, lso_number: '', issue_date: null, expiry_date: null, notes: '', file: null });
+      Object.keys(editErrors).forEach((k) => delete editErrors[k]);
+      editFileList.value = [];
+      editing.value = null;
+    };
+
+    const openEdit = (record) => {
+      resetEdit();
+      editing.value = record;
+      Object.assign(editForm, editBlankForm(record));
+      editModalOpen.value = true;
+    };
+
+    const closeEditModal = () => {
+      editModalOpen.value = false;
+      resetEdit();
+    };
+
+    const onPickEditFile = (file) => {
+      const okType = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'].includes(file.type);
+      const okSize = file.size <= 10 * 1024 * 1024;
+      if (!okType) {
+        notification.error({ message: 'Invalid file type', description: 'PDF, JPG, JPEG or PNG only.' });
+        return false;
+      }
+      if (!okSize) {
+        notification.error({ message: 'File too large', description: 'Max size 10MB.' });
+        return false;
+      }
+      editForm.file = file;
+      editFileList.value = [{ uid: file.uid, name: file.name, status: 'done' }];
+      return false;
+    };
+
+    const clearEditFile = () => { editForm.file = null; editFileList.value = []; };
+
+    const validateEdit = () => {
+      Object.keys(editErrors).forEach((k) => delete editErrors[k]);
+      if (!editForm.service_type_id) editErrors.service_type_id = 'Required';
+      if (!editForm.lso_number?.trim()) editErrors.lso_number = 'Required';
+      if (!editForm.issue_date) editErrors.issue_date = 'Required';
+      if (!editForm.expiry_date) editErrors.expiry_date = 'Required';
+      else if (editForm.issue_date && dayjs(editForm.expiry_date).isBefore(dayjs(editForm.issue_date))) {
+        editErrors.expiry_date = 'Must be after issue date';
+      }
+      if (editForm.notes && editForm.notes.length > 1000) editErrors.notes = 'Max 1000 characters';
+      return Object.keys(editErrors).length === 0;
+    };
+
+    const disableBeforeIssueEdit = (current) => {
+      if (!current) return false;
+      const ref = editForm.issue_date ? dayjs(editForm.issue_date) : null;
+      return ref ? current.isBefore(ref, 'day') : false;
+    };
+
+    const onSubmitEdit = async () => {
+      if (!validateEdit()) return;
+      editSubmitting.value = true;
+      try {
+        const payload = {
+          service_type_id: editForm.service_type_id,
+          lso_number: editForm.lso_number.trim(),
+          issue_date: editForm.issue_date,
+          expiry_date: editForm.expiry_date,
+          notes: editForm.notes || '',
+        };
+        if (editForm.file) payload.file = editForm.file;
+
+        await store.dispatch('procurement/updateLso', {
+          vendorId: editing.value.vendor_id,
+          id: editing.value.id,
+          payload,
+        });
+        editModalOpen.value = false;
+        resetEdit();
+        fetch();
+      } catch (e) {
+        const fe = e?.response?.data?.errors;
+        if (fe) {
+          Object.entries(fe).forEach(([k, v]) => {
+            editErrors[k] = Array.isArray(v) ? v[0] : String(v);
+          });
+        }
+      } finally {
+        editSubmitting.value = false;
+      }
+    };
+
     const download = async (lso) => {
       try {
         const response = await lsoService.download(lso.vendor_id, lso.id);
@@ -713,6 +977,19 @@ export default {
       validityClass,
       humanSize,
       fileLabel,
+      // edit modal
+      editModalOpen,
+      editSubmitting,
+      editing,
+      editForm,
+      editErrors,
+      editFileList,
+      openEdit,
+      closeEditModal,
+      onPickEditFile,
+      clearEditFile,
+      onSubmitEdit,
+      disableBeforeIssueEdit,
     };
   },
 };

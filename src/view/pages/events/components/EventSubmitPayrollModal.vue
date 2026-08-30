@@ -25,6 +25,15 @@
             <sdFeatherIcons :type="isClosed ? 'check-circle' : 'alert-circle'" size="15" />
             <span>Event is closed</span>
           </li>
+          <li :class="checkClass(hasLso)">
+            <sdFeatherIcons :type="hasLso ? 'check-circle' : 'alert-circle'" size="15" />
+            <span>
+              LSO/LPO attached to the event vendor
+              <em v-if="!hasLso" class="sp-meta">
+                (upload the LSO/LPO for this event's vendor before submitting)
+              </em>
+            </span>
+          </li>
           <li :class="checkClass(participantsValid)">
             <sdFeatherIcons :type="participantsValid ? 'check-circle' : 'alert-circle'" size="15" />
             <span>
@@ -111,7 +120,11 @@ const comments = ref("");
 const commentsTouched = ref(false);
 const blockers = ref([]);
 const participants = reactive({ confirmed: 0, pending: 0, total: 0 });
-const uploadStatus = reactive({ complete: false, requires_uploads: false });
+const uploadStatus = reactive({
+  complete: false,
+  requires_uploads: false,
+  has_lso: false,
+});
 
 const isClosed = computed(() => props.event && props.event.status === false);
 const participantsValid = computed(
@@ -120,6 +133,10 @@ const participantsValid = computed(
 const uploadsComplete = computed(
   () => !uploadStatus.requires_uploads || uploadStatus.complete
 );
+// LSO/LPO is required on every event before payroll submission, regardless
+// of whether the event was flagged as requiring a paid venue. The readiness
+// endpoint returns `status.has_lso`.
+const hasLso = computed(() => !!uploadStatus.has_lso);
 
 const commentsError = computed(() =>
   commentsTouched.value && !String(comments.value).trim()
@@ -130,6 +147,7 @@ const commentsError = computed(() =>
 const canSubmit = computed(
   () =>
     isClosed.value &&
+    hasLso.value &&
     participantsValid.value &&
     uploadsComplete.value &&
     String(comments.value).trim().length > 0
@@ -165,12 +183,14 @@ const fetchReadiness = async () => {
     const status = data.status || {};
     uploadStatus.complete = !!status.complete;
     uploadStatus.requires_uploads = !!status.requires_uploads;
+    uploadStatus.has_lso = !!status.has_lso;
 
     blockers.value = Array.isArray(data.blockers) ? data.blockers : [];
   } catch (e) {
     // Non-fatal: submit endpoint re-validates server-side.
     uploadStatus.complete = false;
     uploadStatus.requires_uploads = false;
+    uploadStatus.has_lso = false;
   } finally {
     loading.value = false;
   }
@@ -211,6 +231,7 @@ const submit = async () => {
       if (data.status) {
         uploadStatus.complete = !!data.status.complete;
         uploadStatus.requires_uploads = !!data.status.requires_uploads;
+        uploadStatus.has_lso = !!data.status.has_lso;
       }
       notification.warning({
         message: "Cannot submit yet",

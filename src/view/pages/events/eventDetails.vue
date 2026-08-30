@@ -12,9 +12,46 @@
             <span class="ev-status-badge payroll" :class="payrollBadgeClass">
               <sdFeatherIcons type="dollar-sign" size="12" /> {{ payrollLabel }}
             </span>
+            <span
+              v-if="lsoMissing"
+              class="ev-status-badge is-idle"
+              title="An LSO/LPO is required for payroll submission"
+            >
+              <sdFeatherIcons type="alert-circle" size="12" /> LSO/LPO Missing
+            </span>
           </div>
         </div>
       </header>
+
+      <!--
+        LSO/LPO notice: shown ONLY to the event host when the event has no
+        LSO/LPO attached. Payroll submission is blocked in that state; the
+        host must upload / link the LSO/LPO for the event vendor first.
+      -->
+      <a-alert
+        v-if="isEventHost && lsoMissing && isPayrollPending"
+        type="warning"
+        show-icon
+        class="ev-lso-alert"
+      >
+        <template #message>LSO/LPO required for payroll submission</template>
+        <template #description>
+          <p class="ev-lso-desc">
+            This event does not yet have an LSO/LPO attached. Please upload
+            the LSO/LPO for this event's vendor. Payroll submission remains
+            disabled until the LSO/LPO is linked.
+          </p>
+          <div class="ev-lso-actions">
+            <sdButton
+              type="warning"
+              size="extra-small"
+              @click="openLsoUploadModal"
+            >
+              <sdFeatherIcons type="upload-cloud" size="13" />&nbsp; Upload / Link LSO/LPO
+            </sdButton>
+          </div>
+        </template>
+      </a-alert>
 
       <div class="ev-detail-toolbar">
         <!-- Event lifecycle actions -->
@@ -41,9 +78,18 @@
           >
             <sdFeatherIcons type="send" size="14" /> &nbsp; Submit for Payroll
           </sdButton>
-          <span v-if="!canSubmitEvent && isPayrollPending" class="ev-workflow-hint">
-            Start and close the event each day on the list page. Submit for
-            payroll unlocks after the final day's closure.
+          <span
+            v-if="!canSubmitEvent && isPayrollPending"
+            class="ev-workflow-hint"
+          >
+            <template v-if="lsoMissing">
+              An LSO/LPO must be attached to this event before it can be
+              submitted for payroll.
+            </template>
+            <template v-else>
+              Start and close the event each day on the list page. Submit for
+              payroll unlocks after the final day's closure.
+            </template>
           </span>
           </div>
         </div>
@@ -298,42 +344,23 @@
                           class="table-data-view table-responsive"
                           v-show="activeClass === 'pending'"
                         >
-                          <div
-                            v-if="pendingAutoValidated"
-                            class="ev-validate-bar is-auto"
-                          >
+                          <!--
+                            Host-driven attendance confirmation has been
+                            disabled. Attendance is now self-confirmed by
+                            participants (SMS OTP / registration code) only.
+                            The pending list stays read-only; the host can
+                            resend the confirmation code but cannot mark a
+                            participant present on their behalf.
+                          -->
+                          <div class="ev-validate-bar is-notice">
                             <span class="ev-validate-hint">
-                              <sdFeatherIcons type="check-circle" size="14" />
-                              &nbsp; Today's confirmed participants match the
-                              total registered. Pending participants are
-                              automatically validated.
+                              <sdFeatherIcons type="info" size="14" />
+                              &nbsp; Attendance is confirmed by participants
+                              themselves via their SMS confirmation code —
+                              the host cannot confirm attendance on their
+                              behalf. Use "Resend Confirmation" to re-send a
+                              participant's code if needed.
                             </span>
-                          </div>
-                          <div v-else class="ev-validate-bar">
-                            <span class="ev-validate-hint">
-                              Confirm attendance for participants who have not
-                              yet confirmed.
-                            </span>
-                            <div class="ev-validate-actions">
-                              <sdButton
-                                type="success"
-                                size="extra-small"
-                                :disabled="isValidating || !pending.length"
-                                @click="validateAllPending"
-                              >
-                                <sdFeatherIcons type="check-circle" size="14" />
-                                &nbsp; Validate All
-                              </sdButton>
-                              <sdButton
-                                type="primary"
-                                size="extra-small"
-                                :disabled="isValidating || !selectedPendingKeys.length"
-                                @click="validateSelectedPending"
-                              >
-                                <sdFeatherIcons type="check" size="14" /> &nbsp;
-                                Confirm Selected ({{ selectedPendingKeys.length }})
-                              </sdButton>
-                            </div>
                           </div>
                           <a-table
                             :pagination="{
@@ -343,14 +370,6 @@
                             :dataSource="filteredData"
                             :columns="columns"
                             :row-key="(record) => record.id"
-                            :row-selection="
-                              pendingAutoValidated
-                                ? undefined
-                                : {
-                                    selectedRowKeys: selectedPendingKeys,
-                                    onChange: onPendingSelectionChange,
-                                  }
-                            "
                           >
                             <template #participants="{ record }">
                               <td>
@@ -638,6 +657,60 @@
           </ul>
         </div>
       </a-modal>
+
+      <!-- LSO/LPO upload/link modal (host only) -->
+      <a-modal
+        :visible="isLsoModalOpen"
+        title="Upload / Link LSO/LPO"
+        :footer="null"
+        :mask-closable="false"
+        @cancel="closeLsoUploadModal"
+        class="title-success"
+      >
+        <div class="ev-lso-modal">
+          <p class="ev-lso-modal-hint">
+            Select the open LSO/LPO covering this event's vendor. This will
+            link the LSO/LPO to the event so payroll submission can proceed.
+          </p>
+          <a-form layout="vertical">
+            <a-form-item label="Open LSO/LPO">
+              <a-select
+                v-model:value="lsoUpload.vendor_lso_id"
+                placeholder="Select an open LSO/LPO"
+                allow-clear
+                show-search
+                option-filter-prop="label"
+                :loading="lsoUpload.loadingList"
+                style="width: 100%"
+              >
+                <a-select-option
+                  v-for="lso in lsoUpload.openLsos"
+                  :key="lso.id"
+                  :value="lso.id"
+                  :label="`${lso.lso_number || 'LSO'} — ${lso.vendor?.name || 'Vendor'}`"
+                >
+                  <strong>{{ lso.lso_number || "LSO" }}</strong>
+                  <span> — {{ lso.vendor?.name || "Vendor" }}</span>
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-form>
+          <div class="ev-lso-modal-actions">
+            <sdButton size="small" type="light" outlined @click="closeLsoUploadModal">
+              Cancel
+            </sdButton>
+            <sdButton
+              type="primary"
+              size="small"
+              :disabled="!lsoUpload.vendor_lso_id || lsoUpload.saving"
+              @click="submitLsoLink"
+            >
+              <sdFeatherIcons type="link" size="13" />&nbsp;
+              {{ lsoUpload.saving ? "Linking…" : "Link LSO/LPO" }}
+            </sdButton>
+          </div>
+        </div>
+      </a-modal>
     </Main>
   </div>
 </template>
@@ -775,11 +848,114 @@ const liveEvent = ref({
 // background mutation is in flight.
 const isStarting = ref(false);
 const isSubmitModalOpen = ref(false);
+// Flips true once `fetchLiveEvent()` has resolved with the authoritative
+// event payload (which is when we finally know `vendor_lso_id` /
+// `has_lso_attached`). Any UI that depends on those fields — the missing
+// LSO badge, the host-only LSO alert, workflow hints — must wait for this
+// flag before rendering to avoid an initial false-positive flicker.
+const liveEventLoaded = ref(false);
 
 // ── Event trainers ──
 const isTrainersModalOpen = ref(false);
 const trainers_host = ref("");
 const trainers_facilitators = ref([]);
+
+// ── LSO/LPO gating (host-only notice) ──
+// True when the current session user is the event host (the person who
+// created / was assigned as the event facilitator with `isTrainer = null`).
+const currentUserId = (() => {
+  try {
+    const u = JSON.parse(sessionStorage.getItem("user"));
+    return u?.user?.id ?? null;
+  } catch (e) {
+    return null;
+  }
+})();
+const isEventHost = computed(
+  () =>
+    currentUserId != null &&
+    Number(currentUserId) === Number(plainquery.event_host_id)
+);
+// True when the event does not have an LSO/LPO attached yet. The backend's
+// `events/{id}/show` endpoint returns `vendor_lso_id` and `has_lso_attached`;
+// we only trust those values *after* the live payload has been loaded to
+// avoid a false-positive flash while the request is in flight (the URL
+// payload doesn't include the LSO fields, so relying on it up-front would
+// briefly show the "LSO/LPO Missing" chip and host alert before hiding
+// them again once the real data arrives).
+const lsoMissing = computed(() => {
+  if (!liveEventLoaded.value) return false;
+  const live = liveEvent.value || {};
+  if (live.has_lso_attached === false) return true;
+  if (live.has_lso_attached === true) return false;
+  return !live.vendor_lso_id;
+});
+
+// LSO/LPO upload/link modal state
+const isLsoModalOpen = ref(false);
+const lsoUpload = reactive({
+  vendor_lso_id: null,
+  openLsos: [],
+  loadingList: false,
+  saving: false,
+});
+
+const openLsoUploadModal = async () => {
+  lsoUpload.vendor_lso_id = null;
+  isLsoModalOpen.value = true;
+  lsoUpload.loadingList = true;
+  try {
+    const res = await axios.get(`open_vendor_lsos`, { headers: authHeader() });
+    lsoUpload.openLsos = res.data?.data || [];
+  } catch (e) {
+    lsoUpload.openLsos = [];
+    notification.error({
+      message: "Error",
+      description:
+        e?.response?.data?.message ||
+        "Could not load the list of open LSO/LPOs.",
+    });
+  } finally {
+    lsoUpload.loadingList = false;
+  }
+};
+
+const closeLsoUploadModal = () => {
+  isLsoModalOpen.value = false;
+};
+
+const submitLsoLink = async () => {
+  if (!lsoUpload.vendor_lso_id) return;
+  lsoUpload.saving = true;
+  try {
+    const fd = new FormData();
+    fd.append("upload_type", "lso");
+    fd.append("vendor_lso_id", lsoUpload.vendor_lso_id);
+    await axios.post(
+      `create_vendor_upload/event/${plainquery.id}`,
+      fd,
+      { headers: authHeader() }
+    );
+    notification.success({
+      message: "LSO/LPO linked",
+      description:
+        "The LSO/LPO has been attached to this event. You can now submit the event for payroll.",
+    });
+    isLsoModalOpen.value = false;
+    // Refresh the live event so the notice/badge and the Submit button
+    // reflect the newly linked LSO/LPO.
+    await fetchLiveEvent();
+  } catch (e) {
+    notification.error({
+      message: "Could not link LSO/LPO",
+      description:
+        e?.response?.data?.message ||
+        "Please try again, or contact support if the problem persists.",
+    });
+  } finally {
+    lsoUpload.saving = false;
+  }
+};
 
 const isPayrollPending = computed(
   () => (liveEvent.value.payroll_status || event_payroll_status) === "Pending"
@@ -832,6 +1008,11 @@ const fetchLiveEvent = async () => {
     }
   } catch (error) {
     console.error(error);
+  } finally {
+    // Mark the live event as loaded even if the request failed so the UI
+    // doesn't stay pinned to a loading state indefinitely. On failure we
+    // simply keep whatever `liveEvent` was seeded with from the URL.
+    liveEventLoaded.value = true;
   }
 };
 
@@ -1006,65 +1187,12 @@ const reGeneratePayroll = async () => {
 };
 
 // ── Host attendance validation (pending tab) ──
-const selectedPendingKeys = ref([]);
-const isValidating = ref(false);
-
-const onPendingSelectionChange = (keys) => {
-  selectedPendingKeys.value = keys;
-};
-
-const validatePendingParticipants = async (payload, successMessage) => {
-  isValidating.value = true;
-  try {
-    const response = await axios.post(
-      `event/${plainquery.id}/validate_participants`,
-      payload,
-      { headers: authHeader() }
-    );
-    if (response.data && response.data.success) {
-      notification.success({
-        message: "Attendance Confirmed",
-        description: response.data.message || successMessage,
-      });
-      selectedPendingKeys.value = [];
-      await getEventParticipants();
-    } else {
-      notification.info({
-        message: "Info",
-        description: response.data?.message || "No participants were updated.",
-      });
-    }
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description:
-        error?.response?.data?.message ||
-        "Unable to confirm participant attendance.",
-    });
-  } finally {
-    isValidating.value = false;
-  }
-};
-
-const validateAllPending = () =>
-  validatePendingParticipants(
-    { validate_all: true },
-    "All pending participants confirmed."
-  );
-
-const validateSelectedPending = () => {
-  if (!selectedPendingKeys.value.length) return;
-  validatePendingParticipants(
-    { user_ids: selectedPendingKeys.value },
-    "Selected participants confirmed."
-  );
-};
-
-const validateSinglePending = (id) =>
-  validatePendingParticipants(
-    { user_ids: [id] },
-    "Participant attendance confirmed."
-  );
+// The host-driven attendance-confirmation feature has been removed:
+// attendance can only be confirmed by the participant themselves via the
+// SMS registration/OTP code. The template no longer exposes any UI that
+// posts to the (now-disabled) `validate_participants` endpoint. The
+// pending list stays visible; the host can still resend a confirmation
+// code (see `resendConfirmation` below).
 
 // resendConfirmation
 const resendConfirmation = async (id) => {
@@ -1559,6 +1687,38 @@ const getPostCount = async () => {
   max-width: 520px;
   line-height: 1.4;
 }
+.ev-lso-alert {
+  margin: 10px 0 16px;
+  border-radius: 10px;
+}
+.ev-lso-alert .ev-lso-desc {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #6b5010;
+}
+.ev-lso-alert .ev-lso-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ev-lso-modal {
+  padding: 4px 0;
+}
+.ev-lso-modal .ev-lso-modal-hint {
+  font-size: 12.5px;
+  color: #5f6c64;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.ev-lso-modal .ev-lso-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #eef3f1;
+  padding-top: 14px;
+  margin-top: 4px;
+}
 .ev-participant-bar {
   display: flex;
   flex-wrap: wrap;
@@ -1578,14 +1738,14 @@ const getPostCount = async () => {
   border-radius: 10px;
   background: #f3fbf6;
 }
-.ev-validate-bar.is-auto {
-  border-color: #1ec997;
-  background: #e8faf2;
+.ev-validate-bar.is-notice {
+  border-color: #cfe0ea;
+  background: #f2f7fb;
 }
-.ev-validate-bar.is-auto .ev-validate-hint {
+.ev-validate-bar.is-notice .ev-validate-hint {
   display: flex;
   align-items: center;
-  color: #1b7a5a;
+  color: #365b7a;
   font-weight: 500;
 }
 .ev-validate-hint {

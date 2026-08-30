@@ -99,8 +99,12 @@
                 </template>
                 <template #events="{ record }">
                   <td>
-                    <div class="table-actions">
-                      <sdButton size="extra-small" type="success">
+                    <div class="table-actions ev-actions">
+                      <sdButton
+                        size="extra-small"
+                        type="primary"
+                        class="ev-action-btn"
+                      >
                         <router-link
                           :to="{
                             name: `view-details`,
@@ -124,13 +128,15 @@
                             },
                           }"
                         >
-                          View Event
+                          <sdFeatherIcons type="eye" size="12" /> View Event
                         </router-link>
                       </sdButton>
                       <sdButton
                         v-if="isPending(record)"
                         size="extra-small"
-                        type="success"
+                        type="light"
+                        outlined
+                        class="ev-action-btn"
                         @click="openRegisterModal(record)"
                       >
                         <sdFeatherIcons type="user-plus" size="12" /> Register
@@ -138,7 +144,8 @@
                       <sdButton
                         v-if="canStart(record)"
                         size="extra-small"
-                        type="primary"
+                        type="success"
+                        class="ev-action-btn"
                         :disabled="isStarting"
                         @click="startEvent(record)"
                       >
@@ -148,6 +155,7 @@
                         v-if="canClose(record)"
                         size="extra-small"
                         type="danger"
+                        class="ev-action-btn"
                         @click="openCloseModal(record)"
                       >
                         <sdFeatherIcons type="x-circle" size="12" /> Close
@@ -195,7 +203,11 @@
                   </div>
                 </div>
                 <div class="ev-card-actions">
-                  <sdButton size="extra-small" type="success">
+                  <sdButton
+                    size="extra-small"
+                    type="primary"
+                    class="ev-action-btn"
+                  >
                     <router-link
                       :to="{
                         name: `view-details`,
@@ -219,13 +231,15 @@
                         },
                       }"
                     >
-                      View Event
+                      <sdFeatherIcons type="eye" size="12" /> View Event
                     </router-link>
                   </sdButton>
                   <sdButton
                     v-if="isPending(record)"
                     size="extra-small"
-                    type="success"
+                    type="light"
+                    outlined
+                    class="ev-action-btn"
                     @click="openRegisterModal(record)"
                   >
                     <sdFeatherIcons type="user-plus" size="12" /> Register
@@ -233,7 +247,8 @@
                   <sdButton
                     v-if="canStart(record)"
                     size="extra-small"
-                    type="primary"
+                    type="success"
+                    class="ev-action-btn"
                     :disabled="isStarting"
                     @click="startEvent(record)"
                   >
@@ -243,6 +258,7 @@
                     v-if="canClose(record)"
                     size="extra-small"
                     type="danger"
+                    class="ev-action-btn"
                     @click="openCloseModal(record)"
                   >
                     <sdFeatherIcons type="x-circle" size="12" /> Close
@@ -669,6 +685,58 @@ onMounted(() => {
     }
   }
 
+  /* ─── Uniform Action button styling ───
+     All action buttons on the MassNet Events page (row + card views) share
+     the same size, icon alignment and pill silhouette. Only the semantic
+     `type` prop drives the accent colour (primary for view, success for
+     start, danger for close, light-outlined for register) to keep the
+     look consistent with the rest of the platform. */
+  :deep(.ev-action-btn.ant-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: none;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: inherit;
+    }
+    &:hover:not([disabled]) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 105, 60, 0.15);
+    }
+    svg {
+      flex-shrink: 0;
+    }
+  }
+  :deep(.ev-action-btn.ant-btn-primary) { /* View Event — informational blue */
+    background: #2C99FF;
+    border-color: #2C99FF;
+    color: #fff;
+    &:hover:not([disabled]) {
+      background: #1a86ec;
+      border-color: #1a86ec;
+    }
+  }
+  :deep(.ev-action-btn[type='light']) { /* Register — subtle secondary */
+    background: #fff;
+    border-color: #d9e0e4;
+    color: #2f6746;
+    &:hover:not([disabled]) {
+      background: #f4fbf7;
+      border-color: #9ad8b4;
+    }
+  }
+
   /* card list */
   .ev-card-list {
     display: flex;
@@ -738,17 +806,26 @@ onMounted(() => {
 
   .ev-card-actions {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
-    :deep(.ant-btn) {
-      width: 100%;
-      justify-content: center;
-    }
+    padding-top: 10px;
+    border-top: 1px dashed #e1efe6;
     :deep(a) {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       color: inherit;
+    }
+  }
+  /* Only stack the card action buttons on very narrow screens. */
+  @media (max-width: 480px) {
+    .ev-card-actions {
+      flex-direction: column;
+      align-items: stretch;
+      :deep(.ev-action-btn.ant-btn) {
+        width: 100%;
+      }
     }
   }
 
