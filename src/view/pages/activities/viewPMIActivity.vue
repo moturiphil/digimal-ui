@@ -95,6 +95,9 @@
                                 created_by: record.created_by,
                                 start_date: record.start_date,
                                 activity_list_id: record.activity_list_id,
+                                campaign_budget_id: record.campaign_budget_id ?? null,
+                                budget_category_id: record.budget_category_id ?? null,
+                                budget_category_name: record.budget_category_name ?? null,
                               },
                             }"
                             class="btn-icon"

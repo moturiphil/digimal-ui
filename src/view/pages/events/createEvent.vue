@@ -234,6 +234,27 @@
                         </div>
                       </div>
 
+                    <a-form-item name="start_date" label="Start Date">
+                      <a-date-picker
+                        v-model:value="formState.start_date"
+                        type="date"
+                        name="start_date"
+                        placeholder="Select Start Date"
+                        :format="'YYYY-MM-DD'"
+                        :disabled-date="disabledStartDate"
+                        style="width: 100%"
+                        @change="onStartDateChange"
+                        @blur="validate('start_date')"
+                      />
+                      <p
+                        class="errors"
+                        style="color: red"
+                        v-if="!!errors.start_date"
+                      >
+                        {{ errors.start_date }}
+                      </p>
+                    </a-form-item>
+
                     <a-form-item name="no_of_days" label="No of Days">
                       <a-input-number
                         type="number"
@@ -251,6 +272,16 @@
                         v-if="!!errors.no_of_days"
                       >
                         {{ errors.no_of_days }}
+                      </p>
+                      <p v-if="eventEndDate" class="pb-hint schedule-hint">
+                        <sdFeatherIcons type="calendar" size="11" />
+                        <span>
+                          The event runs from
+                          <b>{{ formatDisplayDate(formState.start_date) }}</b>
+                          to <b>{{ eventEndDate }}</b>
+                          ({{ formState.no_of_days }}
+                          {{ formState.no_of_days === 1 ? "day" : "days" }}).
+                        </span>
                       </p>
                     </a-form-item>
 
@@ -403,6 +434,7 @@ import authHeader from "../../../services/auth-header";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
 import * as Yup from "yup";
+import dayjs from "dayjs";
 import store from "../../../vuex/store";
 import { PROCUREMENT_ROLES } from "@/config/procurement-roles";
 import { encrypt } from "@/cryptoHelper";
@@ -592,6 +624,7 @@ const AddNew = defineComponent({
       county_id: "",
       facilitator_id: "",
       trainer_id: [],
+      start_date: null,
       no_of_days: null,
       venue: "",
       vendor_lso_id: null,
@@ -612,6 +645,7 @@ const AddNew = defineComponent({
       county_id: "County",
       facilitator_id: "Host",
       trainer_id: "Facilitators",
+      start_date: "Start Date",
       no_of_days: "No of Days",
       venue: "Venue",
     };
@@ -740,6 +774,31 @@ const AddNew = defineComponent({
       }
     };
 
+    // ── Schedule: start date + computed end date ──
+    // The event's end date is derived from the start date plus the number of
+    // days (e.g. a 3-day event starting 2026-09-04 ends 2026-09-06). This is
+    // the same rule the backend uses at closing (Event::finalDay()).
+    const disabledStartDate = (current) =>
+      current && current < dayjs().startOf("day");
+
+    const onStartDateChange = () => {
+      validate("start_date");
+    };
+
+    const formatDisplayDate = (value) =>
+      value && dayjs(value).isValid()
+        ? dayjs(value).format("DD MMM YYYY")
+        : null;
+
+    const eventEndDate = computed(() => {
+      if (!formState.start_date || !formState.no_of_days) return null;
+      if (!dayjs(formState.start_date).isValid()) return null;
+      const days = Math.max(1, Math.floor(Number(formState.no_of_days) || 1));
+      return formatDisplayDate(
+        dayjs(formState.start_date).add(days - 1, "day")
+      );
+    });
+
     const ArticleSchema = Yup.object().shape({
       campaign_id: Yup.string().required("Campaign is required"),
       name: Yup.string().required("Event Type is required"),
@@ -749,6 +808,11 @@ const AddNew = defineComponent({
         .min(1, "At least 1 facilitator is required")
         .max(5, "You can select a maximum of 5 facilitators")
         .required("At least 1 facilitator is required"),
+      start_date: Yup.mixed()
+        .required("Start date is required")
+        .test("valid-date", "Start date must be a valid date", (value) =>
+          !value || dayjs(value).isValid()
+        ),
       no_of_days: Yup.number()
         .typeError("No of days must be a number")
         .integer("No of days must be a whole number")
@@ -789,6 +853,9 @@ const AddNew = defineComponent({
         trainers: formState.trainer_id,
         number_of_days: formState.no_of_days,
         event_list_id: formState.name,
+        start_date: formState.start_date
+          ? dayjs(formState.start_date).format("YYYY-MM-DD")
+          : null,
       };
       if (showProcurementSection.value) {
         data.vendor_lso_id = formState.vendor_lso_id || null;
@@ -975,6 +1042,10 @@ const AddNew = defineComponent({
       filterVenueOption,
       handleVenueSearch,
       onLsoChange,
+      disabledStartDate,
+      onStartDateChange,
+      formatDisplayDate,
+      eventEndDate,
       errors: {
         campaign_id: null,
         name: null,
@@ -982,6 +1053,7 @@ const AddNew = defineComponent({
         location_type: null,
         facilitator_id: "",
         trainer_id: null,
+        start_date: null,
         no_of_days: null,
         venue: "",
       },
@@ -1206,6 +1278,11 @@ export default AddNew;
   margin: 4px 0 0;
   font-size: 11px;
   color: #8a9399;
+}
+.schedule-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .pb-checkboxes {
   display: grid;

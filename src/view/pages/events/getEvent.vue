@@ -118,6 +118,7 @@
   <script>
   import axios from "axios";
   import authHeader from "../../../services/auth-header";
+  import { confirmErrorMessage } from "../../../services/budgetCapacity";
   import { RecordViewWrapper } from "./style";
   import { Main, TableWrapper } from "../../styled";
   import { useStore } from "vuex";
@@ -240,9 +241,13 @@
                 content: "You have been registered for the event",
               });
             } catch (error) {
+              // For HTTP rejections use the budget-aware mapper; for locally
+              // thrown errors (invalid code, register failure) show their message.
               Modal.error({
                 title: "Error",
-                content: error.message,
+                content: error?.response
+                  ? confirmErrorMessage(error, "event")
+                  : error.message,
               });
             }
           },

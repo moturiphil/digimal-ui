@@ -79,6 +79,23 @@
           Activity Matrix &nbsp; &nbsp;
           <sdFeatherIcons type="award" size="extra-small" />
         </sdButton>
+        &nbsp; &nbsp;
+        <sdButton
+          class="btn-import"
+          type="success"
+          @click="openBudgetLinkModal"
+          size="extra-small"
+        >
+          <sdFeatherIcons type="link" size="extra-small" />
+          &nbsp;
+          {{
+            !activityBudget.budget_category_id
+              ? "Link Budget"
+              : canRelinkBudget
+                ? "Re-link Budget"
+                : "View Budget Link"
+          }}
+        </sdButton>
       </div>
 
       <SearchResultWrapper>
@@ -377,6 +394,17 @@
               </a-modal>
 
               <!-- End Activity Matrix modal -->
+
+              <!-- Budget template linking -->
+              <BudgetTemplateLinkModal
+                v-model:visible="isBudgetLinkModalOpen"
+                target-type="activity"
+                :target-id="query.id"
+                :target-name="event_name"
+                :current-link="activityBudget"
+                :allow-relink="canRelinkBudget"
+                @linked="onBudgetLinked"
+              />
             </sdCards>
           </a-col>
         </a-row>
@@ -396,6 +424,7 @@ import { useRoute, useRouter } from "vue-router";
 import store from "../../../vuex/store";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
+import BudgetTemplateLinkModal from "../../../components/budget/BudgetTemplateLinkModal.vue";
 
 const columns = [
   {
@@ -490,6 +519,35 @@ const activity_matrixes = ref([]);
 const org_matrixes = ref([]);
 const activity_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_matrix?activity_list_id=${query.activity_list_id}`;
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_org_matrix?activity_list_id=${query.activity_list_id}`;
+
+// ── Budget template linking ──
+const isBudgetLinkModalOpen = ref(false);
+const activityBudget = ref({
+  campaign_budget_id: query.campaign_budget_id ?? null,
+  budget_category_id: query.budget_category_id ?? null,
+  budget_category_name: query.budget_category_name ?? null,
+});
+const openBudgetLinkModal = () => {
+  isBudgetLinkModalOpen.value = true;
+};
+// Only super admin / accountant may re-link to a different budget template.
+// Mirrors BudgetDeductionService::canRelinkBudget() (super-admin set 1,53,63,
+// 64,59,4 + the Accountant role — id 65 used across the payroll screens).
+const canRelinkBudget = computed(() => {
+  const u = JSON.parse(sessionStorage.getItem("user"));
+  const rid = Number(u?.user?.role_id);
+  return [1, 53, 63, 64, 59, 4, 65].includes(rid);
+});
+const onBudgetLinked = (linked) => {
+  if (linked) {
+    activityBudget.value = {
+      campaign_budget_id: linked.campaign_budget_id ?? activityBudget.value.campaign_budget_id,
+      budget_category_id: linked.budget_category_id ?? activityBudget.value.budget_category_id,
+      budget_category_name:
+        linked.budget_category_name ?? activityBudget.value.budget_category_name,
+    };
+  }
+};
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);

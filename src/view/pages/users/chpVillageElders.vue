@@ -348,7 +348,12 @@ const DragAndDropTable = defineComponent({
       );
       const data = await response.json();
       console.log(data);
-      counties.value = data.map((county) => ({
+      const countiesList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
+      counties.value = countiesList.map((county) => ({
         ...county,
       }));
     };

@@ -60,6 +60,16 @@
               @change="handleFilterChange"
             ></a-select>
             <a-select
+              v-model:value="campaignFilter"
+              allow-clear
+              show-search
+              placeholder="Campaign"
+              :options="campaignOptions"
+              :filter-option="filterOption"
+              :loading="campaignsLoading"
+              @change="handleFilterChange"
+            ></a-select>
+            <a-select
               v-model:value="payrollStatus"
               allow-clear
               placeholder="Event Payroll Status"
@@ -142,6 +152,40 @@
                         <sdFeatherIcons type="user-plus" size="12" /> Register
                       </sdButton>
                       <sdButton
+                        v-if="needsBudgetLink(record)"
+                        size="extra-small"
+                        type="light"
+                        outlined
+                        class="ev-action-btn ev-link-start"
+                        title="Link this event to a budget template before starting it."
+                      >
+                        <router-link
+                          :to="{
+                            name: `view-details`,
+                            params: { id: record.id },
+                            query: {
+                              encryptedData: encodeURIComponent(
+                                encrypt({
+                                  id: record.id,
+                                  name: record.name,
+                                  event_code: record.event_code,
+                                  event_host_id: record.event_host_id,
+                                  funding_id: record.funding_source,
+                                  start_date: record.start_date,
+                                  event_list_id: record.event_list_id,
+                                  location: record.county,
+                                  payroll_status: record.payroll_status,
+                                  status: record.status,
+                                  payroll_submitted: record.payroll_submitted,
+                                })
+                              ),
+                            },
+                          }"
+                        >
+                          <sdFeatherIcons type="link" size="12" /> Link Budget to Start
+                        </router-link>
+                      </sdButton>
+                      <sdButton
                         v-if="canStart(record)"
                         size="extra-small"
                         type="success"
@@ -178,6 +222,10 @@
                   <span class="ev-card-code">{{ record.event_code }}</span>
                 </div>
                 <div class="ev-card-meta">
+                  <div>
+                    <span class="lbl">Campaign</span>
+                    <span class="val">{{ record.campaign_id || "—" }}</span>
+                  </div>
                   <div>
                     <span class="lbl">Funding</span>
                     <span class="val">
@@ -243,6 +291,40 @@
                     @click="openRegisterModal(record)"
                   >
                     <sdFeatherIcons type="user-plus" size="12" /> Register
+                  </sdButton>
+                  <sdButton
+                    v-if="needsBudgetLink(record)"
+                    size="extra-small"
+                    type="light"
+                    outlined
+                    class="ev-action-btn ev-link-start"
+                    title="Link this event to a budget template before starting it."
+                  >
+                    <router-link
+                      :to="{
+                        name: `view-details`,
+                        params: { id: record.id },
+                        query: {
+                          encryptedData: encodeURIComponent(
+                            encrypt({
+                              id: record.id,
+                              name: record.name,
+                              event_code: record.event_code,
+                              event_host_id: record.event_host_id,
+                              funding_id: record.funding_source,
+                              start_date: record.start_date,
+                              event_list_id: record.event_list_id,
+                              location: record.county,
+                              payroll_status: record.payroll_status,
+                              status: record.status,
+                              payroll_submitted: record.payroll_submitted,
+                            })
+                          ),
+                        },
+                      }"
+                    >
+                      <sdFeatherIcons type="link" size="12" /> Link Budget to Start
+                    </router-link>
                   </sdButton>
                   <sdButton
                     v-if="canStart(record)"
@@ -322,11 +404,13 @@ import { onMounted, ref, watch } from "vue";
 import { encrypt } from "@/cryptoHelper";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
+import { confirmErrorMessage } from "../../../services/budgetCapacity";
 import EventClosureModal from "./components/EventClosureModal.vue";
 
 const columns = [
   { title: "Event Name", dataIndex: "name", key: "id" },
   { title: "Event Code", dataIndex: "event_code", key: "id" },
+  { title: "Campaign", dataIndex: "campaign_id", key: "id" },
   {
     title: "Funding",
     dataIndex: "funding_source",
@@ -364,6 +448,9 @@ const viewMode = ref(
 
 // filters
 const fundingSource = ref(null);
+const campaignFilter = ref(null);
+const campaignOptions = ref([]);
+const campaignsLoading = ref(false);
 const payrollStatus = ref(null);
 
 const currentPage = ref(1);
@@ -372,6 +459,11 @@ const datatotal = ref(0);
 
 const fundingLabel = (source) =>
   Number(source) === 1 ? "GF" : Number(source) === 2 ? "PMI" : "—";
+
+const filterOption = (input, option) =>
+  String(option?.label ?? option?.children ?? "")
+    .toLowerCase()
+    .includes(String(input).toLowerCase());
 
 const buildQuery = (page = currentPage.value) => {
   const params = new URLSearchParams();
@@ -382,6 +474,8 @@ const buildQuery = (page = currentPage.value) => {
     params.append("funding_source", fundingSource.value);
   if (payrollStatus.value != null && payrollStatus.value !== "")
     params.append("payroll_status", payrollStatus.value);
+  if (campaignFilter.value != null && campaignFilter.value !== "")
+    params.append("campaign_id", campaignFilter.value);
   return params.toString();
 };
 
@@ -399,6 +493,27 @@ const getEvents = () => {
     .finally(() => {
       isLoading.value = false;
     });
+};
+
+const fetchCampaigns = async () => {
+  campaignsLoading.value = true;
+  try {
+    const res = await axios.get("campaign_all");
+    const json = res.data;
+    const list = Array.isArray(json)
+      ? json
+      : Array.isArray(json?.data)
+        ? json.data
+        : [];
+    campaignOptions.value = list
+      .filter((c) => c && c.id != null && c.name != null)
+      .map((c) => ({ value: c.id, label: c.name }));
+  } catch (error) {
+    console.error(error);
+    campaignOptions.value = [];
+  } finally {
+    campaignsLoading.value = false;
+  }
 };
 
 const onPageChange = async (page) => {
@@ -430,8 +545,21 @@ const isPending = (record) => record.payroll_status === "Pending";
 
 // The host starts the event each day. Starting is available whenever the
 // event is not currently running and has not yet been submitted for payroll.
+// An event MUST be linked to a budget template first — see the backend guard
+// in EventsController::eventStart().
 const canStart = (record) =>
-  !record.status && !record.payroll_submitted && isPending(record);
+  !record.status &&
+  !record.payroll_submitted &&
+  isPending(record) &&
+  !!record.budget_line_item_id;
+
+// True when the event is otherwise ready to start but is missing its budget
+// template link — shown as a hint so the host knows why Start is unavailable.
+const needsBudgetLink = (record) =>
+  !record.status &&
+  !record.payroll_submitted &&
+  isPending(record) &&
+  !record.budget_line_item_id;
 
 // Closing is available while the event is currently running.
 const canClose = (record) => !!record.status;
@@ -503,8 +631,7 @@ const confirmRegistration = async () => {
   } catch (error) {
     notification.error({
       message: "Error",
-      description:
-        "Participant Registration Failed, Registration Code does not exist",
+      description: confirmErrorMessage(error, "event"),
     });
   } finally {
     registrationCode.value = "";
@@ -523,6 +650,7 @@ watch(
 
 onMounted(() => {
   getEvents();
+  fetchCampaigns();
 });
 </script>
 
