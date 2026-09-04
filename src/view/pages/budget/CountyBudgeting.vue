@@ -7,12 +7,20 @@
           <div>
             <h3 class="bp-title">{{ county.name }} County Budgeting</h3>
           </div>
-          <a-tag class="stage-tag">{{ stage }}</a-tag>
+          <span class="header-tags">
+            <a-tag v-if="specialFlags.length" class="special-pill">
+              ✦ Special Area: {{ specialTypeSummary }}
+            </a-tag>
+            <a-tag class="stage-tag">{{ stage }}</a-tag>
+          </span>
         </header>
 
         <CountyAccessGate @scope-change="onScopeChange">
           <template #default="{ countyId: gatedId }">
             <span v-if="gatedId" style="display:none;">{{ gatedId }}</span>
+
+        <!-- Special Area Cost mapping banner — visible before, during and after generation -->
+        <SpecialAreaCostBanner :flags="specialFlags" :is-sub-county="false" />
 
         <!-- Status card view (shown when budget is past draft or has been referred back) -->
         <section v-if="showStatusCard" class="panel" style="padding: 0; border: 0; background: transparent;">
@@ -109,6 +117,9 @@
                 >
                   {{ record.unit_source === 'fallback' ? 'Inherited' : 'Not set' }}
                 </a-tag>
+                <a-tag v-if="record.is_special_cost" class="special-cost-tag">
+                  ✦ Special Cost — {{ specialTypeLabel(record.special_type) }}
+                </a-tag>
               </span>
               <span v-else-if="column.key === 'unit_cost'">{{ fmt(record.unit_cost) }}</span>
               <span v-else-if="column.key === 'days'">{{ record.days }}</span>
@@ -116,7 +127,8 @@
                 <a-input-number
                   v-if="viewMode === 'profile' && !readOnly"
                   :min="0"
-                  :step="1"
+                  :max="300"
+                  :precision="0"
                   size="small"
                   class="units-input"
                   :value="record.units"
@@ -264,6 +276,10 @@
         <section v-if="!showStatusCard && generated" class="panel gen-banner">
           <span class="gen-lbl">Generated total</span>
           <span class="gen-val">KES {{ fmt(generated.total) }}</span>
+          <span v-if="specialCostsTotal > 0" class="gen-special">
+            <span class="gen-special-lbl">Special Area Costs Added</span>
+            <span class="gen-special-val">KES {{ fmt(specialCostsTotal) }}</span>
+          </span>
           <span class="gen-date">{{ generated.date }}</span>
         </section>
           </template>
@@ -282,6 +298,18 @@ import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import CountyAccessGate from './CountyAccessGate.vue';
 import BudgetStatusCard from './BudgetStatusCard.vue';
 import BudgetReferralBanner from './BudgetReferralBanner.vue';
+import SpecialAreaCostBanner from './SpecialAreaCostBanner.vue';
+
+/* Human-readable label for a special_type enum value — mirrors the
+ * backend's CampaignBudgetController::humanizeSpecialType(). */
+const SPECIAL_TYPE_LABELS = {
+  boat_hire: 'Boat Hire',
+  enhanced_transport: 'Enhanced Transport',
+  security: 'Security',
+  dsa: 'DSA',
+};
+const specialTypeLabel = (type) =>
+  SPECIAL_TYPE_LABELS[type] || String(type || '').replace(/_/g, ' ');
 
 /* Sort and normalise budget categories returned by `get_budget_categories`
  * into the activity shape used by this page. Items are loaded lazily, on
@@ -386,7 +414,15 @@ const lineItemsToItems = (items) =>
 
 export default {
   name: 'CountyBudgeting',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper, CountyAccessGate, BudgetStatusCard, BudgetReferralBanner },
+  components: {
+    Main,
+    RecordViewWrapper,
+    BudgetPageWrapper,
+    CountyAccessGate,
+    BudgetStatusCard,
+    BudgetReferralBanner,
+    SpecialAreaCostBanner,
+  },
   setup() {
     // Level 1 (National / Super Admin) users get a read-only view across
     // all budget pages — they can browse county / sub-county data but
@@ -464,6 +500,44 @@ export default {
     const referredAt = ref(null);
     const referralMessage = ref('');
     const referredBy = ref(null);
+
+    // ── Special Area Cost mapping state ──────────────────────────────────
+    // Populated from `get_active_special_flags` once the gate resolves a
+    // county. Drives the header pill, the SpecialAreaCostBanner (visible
+    // before/during editing), and the "Special Cost" row tags + summary
+    // shown once the budget has been generated. County-wide flags only
+    // (sub_county_id is not passed for the county budgeting page).
+    const specialFlags = ref([]);
+
+    const specialTypeSummary = computed(() =>
+      [...new Set(specialFlags.value.map((f) => specialTypeLabel(f.special_type)))].join(', '),
+    );
+
+    const specialCostsTotal = computed(() =>
+      activityCatalog.value.reduce(
+        (sum, a) =>
+          sum + (a.items || [])
+            .filter((i) => i.is_special_cost)
+            .reduce((s, i) => s + (Number(i.total_cost) || 0), 0),
+        0,
+      ),
+    );
+
+    const fetchSpecialFlags = async () => {
+      if (!scopedCountyId.value) {
+        specialFlags.value = [];
+        return;
+      }
+      try {
+        const { data } = await axios.get('get_active_special_flags', {
+          params: { county_id: scopedCountyId.value },
+        });
+        specialFlags.value = Array.isArray(data?.flags) ? data.flags : [];
+      } catch (e) {
+        // Non-fatal — page still works without the mapping indicator.
+        specialFlags.value = [];
+      }
+    };
 
     /* Resolve the active county profile id. When the user is a County
      * officer (level 2) we trust `get_my_county_profile`. When the user
@@ -680,6 +754,7 @@ export default {
       scopedCountyId.value = countyId || null;
       scopedCountyName.value = countyName || '';
       bootstrap();
+      fetchSpecialFlags();
     };
 
     /* Card → Detail transition. Loads category tree, parameters and
@@ -769,6 +844,7 @@ export default {
     });
 
     const rowClass = (r) => {
+      if (r.is_special_cost) return 'row-special';
       if ((Number(r.units) || 0) === 0) return 'row-zero';
       return r.highlight ? 'row-highlight' : '';
     };
@@ -1020,8 +1096,11 @@ export default {
     );
 
     const onUnitsChange = (activity, record, val) => {
-      const next = Number.isFinite(Number(val)) ? Number(val) : 0;
-      record.units = next < 0 ? 0 : next;
+      // Units must be a positive integer (no decimals, no negatives), up to 300.
+      const raw = Number(val);
+      let next = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : 0;
+      next = Math.min(next, 300);
+      record.units = next;
       // Recompute subtotal and apply multiplier if active
       record._subtotal =
         (Number(record.unit_cost) || 0)
@@ -1168,6 +1247,10 @@ export default {
       hasSessionMultiplier,
       activitySubtotal,
       applyMultiplier,
+      specialFlags,
+      specialTypeSummary,
+      specialCostsTotal,
+      specialTypeLabel,
     };
   },
 };
@@ -1198,10 +1281,25 @@ export default {
     font-size: 12px;
     color: #7a8a82;
   }
+  .header-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
   .stage-tag {
     background: #eef3fb;
     color: #2f6dcf;
     border: 1px solid #d7e3f5;
+    border-radius: 12px;
+    padding: 2px 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .special-pill {
+    background: #fff4e6;
+    color: #b85c00;
+    border: 1px solid #f3c97c;
     border-radius: 12px;
     padding: 2px 12px;
     font-size: 11px;
@@ -1489,6 +1587,24 @@ export default {
       font-size: 11px;
       color: #7a8a82;
     }
+    .gen-special {
+      display: flex;
+      flex-direction: column;
+      padding-left: 14px;
+      border-left: 1px solid #d7e3f5;
+      .gen-special-lbl {
+        font-size: 10px;
+        color: #b85c00;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .gen-special-val {
+        font-size: 14px;
+        font-weight: 800;
+        color: #b85c00;
+      }
+    }
   }
 
   /* Source tag */
@@ -1501,6 +1617,19 @@ export default {
     padding: 0 8px;
     &.fallback { background: #eef3fb; color: #2f6dcf; }
     &.not_set  { background: #f0f2f5; color: #7a8a82; }
+  }
+
+  /* Special cost tag */
+  .special-cost-tag {
+    margin-left: 6px;
+    border-radius: 8px;
+    border: none;
+    font-size: 10px;
+    line-height: 18px;
+    padding: 0 8px;
+    background: #fff4e6;
+    color: #b85c00;
+    font-weight: 600;
   }
 
   /* Tables */
@@ -1525,6 +1654,11 @@ export default {
       box-shadow: inset 3px 0 0 #f3c97c;
     }
     .ant-table-tbody > tr.row-zero:hover > td { background: #ffeed1; }
+    .ant-table-tbody > tr.row-special > td {
+      background: #fffaf0;
+      box-shadow: inset 3px 0 0 #b85c00;
+    }
+    .ant-table-tbody > tr.row-special:hover > td { background: #fff2dc; }
     .desc-cell { color: #2f6746; }
     .row-tag {
       margin-left: 6px;

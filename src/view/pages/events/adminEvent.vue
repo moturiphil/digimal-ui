@@ -147,6 +147,7 @@
 <script>
 import axios from "axios";
 import authHeader from "../../../services/auth-header";
+import { confirmErrorMessage } from "../../../services/budgetCapacity";
 import { RecordViewWrapper } from "./style";
 import { Main } from "../../styled";
 import { useStore } from "vuex";
@@ -400,8 +401,7 @@ import GeekAdminWrapper from "../../../components/layout/GeekAdminWrapper.vue";
           console.log(error);
           notification.error({
             message: "Error",
-            description:
-              "Participant Registration Failed, Registration Code does not exist",
+            description: confirmErrorMessage(error, "event"),
           });
           inputValue = "";
         } finally {

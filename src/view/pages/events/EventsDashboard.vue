@@ -15,11 +15,25 @@
           </div>
           <div class="ph-actions">
             <a-tag color="green">{{ scopeLabel }}</a-tag>
+            <a-tag v-if="!scope.is_national && scope.location_name" color="blue">
+              {{ scope.location_name }}
+            </a-tag>
             <a-button size="small" :loading="loading" @click="getDashboard">
               <reload-outlined /> Refresh
             </a-button>
           </div>
         </div>
+
+        <a-alert
+          v-if="!scope.is_national && scope.location_name"
+          type="info"
+          show-icon
+          class="scope-banner"
+          :message="`Showing data for: ${scope.location_name}`"
+          :description="`You are viewing events located within your assigned ${
+            scopeLabel === 'County' ? 'county (including its sub-counties)' : 'sub-county'
+          }.`"
+        />
 
         <div v-if="loading" class="ev-dash-loading">
           <a-spin />
@@ -312,7 +326,12 @@ const totals = ref({
 const payroll = ref({ pending: 0, generated: 0, paid: 0 });
 const participants = ref({ confirmed: 0, pending: 0 });
 const breakdown = ref([]);
-const scope = ref({ level_id: null, is_national: false });
+const scope = ref({
+  level_id: null,
+  is_national: false,
+  location_id: null,
+  location_name: null,
+});
 // Events pending LSO/LPO upload (loaded from the dashboard endpoint).
 const pendingLsoEvents = ref([]);
 const pendingLsoTotal = ref(0);
@@ -418,8 +437,14 @@ const scopeLabel = computed(() => {
 });
 const scopeSubtitle = computed(() => {
   if (scope.value.is_national) return "across all counties and sub-counties";
-  if (scope.value.level_id === 2) return "across your county and its sub-counties";
-  if (scope.value.level_id === 3) return "within your sub-county";
+  if (scope.value.level_id === 2)
+    return `across your county and its sub-counties${
+      scope.value.location_name ? ` (${scope.value.location_name})` : ""
+    }`;
+  if (scope.value.level_id === 3)
+    return `within your sub-county${
+      scope.value.location_name ? ` (${scope.value.location_name})` : ""
+    }`;
   return "within your assigned location";
 });
 
@@ -568,6 +593,10 @@ onMounted(getDashboard);
     gap: 12px;
     flex-wrap: wrap;
     margin-bottom: 12px;
+  }
+  .scope-banner {
+    margin-bottom: 14px;
+    border-radius: 8px;
   }
   .pending-lso-filters {
     display: flex;

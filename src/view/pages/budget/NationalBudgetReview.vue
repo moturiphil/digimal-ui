@@ -13,7 +13,6 @@
             <h3 class="ph-title">
               <span class="ph-icon">▦</span> Budget Review &amp; Approval
             </h3>
-            <p class="ph-subtitle">Review and approve county and sub-county budget submissions</p>
           </div>
           <div class="ph-actions">
             <a-breadcrumb separator=">" class="review-crumbs">

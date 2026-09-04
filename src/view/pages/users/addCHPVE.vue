@@ -541,7 +541,12 @@ const AddNew = defineComponent({
       );
 
       const data = await response.json();
-      this.counties = data.map((county) => ({
+      const countiesList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
+      this.counties = countiesList.map((county) => ({
         ...county,
         // org_id: county.org_id,
       }));

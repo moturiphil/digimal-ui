@@ -66,6 +66,7 @@ import { Main } from "../styled";
 import { notification } from "ant-design-vue";
 
 import authHeader from "../../services/auth-header";
+import { confirmErrorMessage } from "../../services/budgetCapacity";
 
 const Sales = {
   name: "Sales",
@@ -148,31 +149,47 @@ const Sales = {
         "act_part_cfm?"
       );
       console.log(newUrl);
-      const confirm_response = fetch(
-        `${process.env.VUE_APP_BASE_URL}/${newUrl}`,
-        {
-          method: "GET",
-          headers: authHeader(),
-        }
-      );
-      // console.log(confirm_response);
-      confirm_response.then((res) => {
-        console.log(res);
-        // return res.json();
-        console.log(res);
-        if (res.status == 200) {
-          notification.success({
-            message: "Success",
-            description: "This activity participation has already been confirmed. Thank you!",
-          });
-          this.$router.push("/");
-        } else {
+      fetch(`${process.env.VUE_APP_BASE_URL}/${newUrl}`, {
+        method: "GET",
+        headers: authHeader(),
+      })
+        .then(async (res) => {
+          let body = {};
+          try {
+            body = await res.json();
+          } catch (e) {
+            body = {};
+          }
+          console.log(res, body);
+
+          if (res.ok || res.status === 200 || String(body.status) === "true") {
+            notification.success({
+              message: "Success",
+              description:
+                body.message ||
+                "Your activity participation successfully confirmed.",
+            });
+            this.$router.push("/");
+          } else {
+            // 208 = already confirmed; anything else may be a budget-linked
+            // rejection (capacity_reached / ineligible_org_type) — map it.
+            const message =
+              res.status === 208
+                ? "This activity participation has already been confirmed. Thank you!"
+                : confirmErrorMessage(body, "activity");
+            notification.error({
+              message: "Error",
+              description: message,
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
           notification.error({
             message: "Error",
-            description: res.statusText,
+            description: "Unable to confirm activity participation. Try again.",
           });
-        }
-      });
+        });
     },
   },
 };

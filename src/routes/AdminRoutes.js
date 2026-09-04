@@ -586,7 +586,7 @@ const routes = [
         name: "gf-activities",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewGFActivity.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
           ),
       },
 
@@ -595,7 +595,7 @@ const routes = [
         name: "pmi-activities",
         component: () =>
           import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewPMIActivity.vue"
+            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
           ),
       },
 

@@ -70,16 +70,19 @@
             <sdFeatherIcons type="users" size="14" /> &nbsp; View Trainers
           </sdButton>
           <sdButton
-            v-if="canSubmitEvent"
+            v-if="submitPayrollVisible"
             class="btn-import"
             type="primary"
             size="extra-small"
+            :disabled="!canSubmitEvent"
             @click="openSubmitModal"
           >
             <sdFeatherIcons type="send" size="14" /> &nbsp; Submit for Payroll
           </sdButton>
           <span
-            v-if="!canSubmitEvent && isPayrollPending"
+            v-if="
+              (!submitPayrollVisible || !canSubmitEvent) && isPayrollPending
+            "
             class="ev-workflow-hint"
           >
             <template v-if="lsoMissing">
@@ -200,6 +203,33 @@
           >
             Event Matrix &nbsp;
             <sdFeatherIcons type="award" size="extra-small" />
+          </sdButton>
+          <sdButton
+            v-if="!isNationalEvent"
+            class="btn-import"
+            type="success"
+            @click="openBudgetLinkModal"
+            size="extra-small"
+          >
+            <sdFeatherIcons type="link" size="13" />
+            &nbsp;
+            {{
+              !liveEvent.budget_category_id
+                ? "Link Budget"
+                : canRelinkBudget
+                  ? "Re-link Budget"
+                  : "View Budget Link"
+            }}
+          </sdButton>
+          <sdButton
+            v-if="canViewBudgetParams && !isNationalEvent"
+            class="btn-import"
+            type="success"
+            @click="openBudgetParamsModal"
+            size="extra-small"
+          >
+            <sdFeatherIcons type="bar-chart" size="13" />
+            &nbsp; View Budget Parameters
           </sdButton>
           <sdButton
             class="btn-import"
@@ -711,6 +741,27 @@
           </div>
         </div>
       </a-modal>
+
+      <!-- Budget template linking -->
+      <BudgetTemplateLinkModal
+        v-model:visible="isBudgetLinkModalOpen"
+        target-type="event"
+        :target-id="plainquery.id"
+        :target-name="event_name"
+        :current-link="eventBudgetLink"
+        :allow-relink="canRelinkBudget"
+        @linked="onBudgetLinked"
+      />
+
+      <!-- Budget category parameters (read-only, after linking) -->
+      <BudgetCategoryParametersModal
+        v-if="budgetParamsModalState"
+        v-model:visible="isBudgetParamsModalOpen"
+        :budget-id="budgetParamsModalState.budget_id"
+        :category-id="budgetParamsModalState.category_id"
+        :category-name="budgetParamsModalState.name"
+        :target-name="event_name"
+      />
     </Main>
   </div>
 </template>
@@ -728,6 +779,8 @@ import store from "../../../vuex/store";
 import { decrypt } from "@/cryptoHelper";
 import { notification } from "ant-design-vue";
 import EventSubmitPayrollModal from "./components/EventSubmitPayrollModal.vue";
+import BudgetTemplateLinkModal from "../../../components/budget/BudgetTemplateLinkModal.vue";
+import BudgetCategoryParametersModal from "./components/BudgetCategoryParametersModal.vue";
 
 const columns = [
   {
@@ -900,6 +953,66 @@ const lsoUpload = reactive({
   saving: false,
 });
 
+// ── Budget template linking ──
+const isNationalEvent = computed(() => !!liveEvent.value?.is_national);
+const isBudgetLinkModalOpen = ref(false);
+const openBudgetLinkModal = () => {
+  isBudgetLinkModalOpen.value = true;
+};
+const eventBudgetLink = computed(() => ({
+  campaign_budget_id: liveEvent.value?.campaign_budget_id ?? null,
+  budget_category_id: liveEvent.value?.budget_category_id ?? null,
+  budget_category_name: liveEvent.value?.budget_category_name ?? null,
+}));
+const onBudgetLinked = async () => {
+  // Refresh the live event so the UI reflects the newly linked template AND so
+  // the budget params modal is driven by the authoritative stored pair (from
+  // Event::format()) rather than the raw link response.
+  await fetchLiveEvent();
+  const b = eventBudgetLink.value;
+  if (b?.campaign_budget_id && b?.budget_category_id) {
+    budgetParamsModalState.value = {
+      budget_id: b.campaign_budget_id,
+      category_id: b.budget_category_id,
+      name: b.budget_category_name || null,
+    };
+    isBudgetParamsModalOpen.value = true;
+  }
+};
+
+// Only super admin / accountant may re-link to a different budget template.
+// Mirrors BudgetDeductionService::canRelinkBudget() (super-admin set 1,53,63,
+// 64,59,4 + the Accountant role — id 65 used across the payroll screens).
+const canRelinkBudget = computed(() => {
+  const u = JSON.parse(sessionStorage.getItem("user"));
+  const rid = Number(u?.user?.role_id);
+  return [1, 53, 63, 64, 59, 4, 65].includes(rid);
+});
+
+// ── Budget category parameters (read-only) ──
+const isBudgetParamsModalOpen = ref(false);
+const budgetParamsModalState = ref(null);
+// Host, admin, accountant, super admin (and the other generator/privileged
+// roles used across the app) may view the linked template's parameters.
+const canViewBudgetParams = computed(() => {
+  if (!eventBudgetLink.value.campaign_budget_id || !eventBudgetLink.value.budget_category_id) {
+    return false;
+  }
+  if (isEventHost.value) return true;
+  const u = JSON.parse(sessionStorage.getItem("user"));
+  return [1, 53, 63, 64, 59, 4].includes(Number(u?.user?.role_id));
+});
+const openBudgetParamsModal = () => {
+  const b = eventBudgetLink.value;
+  if (!b.campaign_budget_id || !b.budget_category_id) return;
+  budgetParamsModalState.value = {
+    budget_id: b.campaign_budget_id,
+    category_id: b.budget_category_id,
+    name: b.budget_category_name || null,
+  };
+  isBudgetParamsModalOpen.value = true;
+};
+
 const openLsoUploadModal = async () => {
   lsoUpload.vendor_lso_id = null;
   isLsoModalOpen.value = true;
@@ -965,6 +1078,20 @@ const isPayrollPending = computed(
 const canSubmitEvent = computed(
   () => !!liveEvent.value.can_submit_payroll && isPayrollPending.value
 );
+
+// The "Submit for Payroll" button is always available to the event host and to
+// privileged (super-admin/admin) roles — they just see it disabled until the
+// backend's conditions are met (`canSubmitEvent`). Previously the button was
+// hidden entirely before those conditions were true, which made it appear
+// "missing" for hosts and super admins.
+const submitPayrollVisible = computed(() => {
+  if (isEventHost.value) return true;
+  const u = JSON.parse(sessionStorage.getItem("user"));
+  const rid = Number(u?.user?.role_id);
+  // 1 = Super Admin (RoleSeeder), 53/63/64/59/4 = admin / approved-generator
+  // roles used across the app.
+  return [1, 53, 63, 64, 59, 4].includes(rid);
+});
 
 // Payroll generation only unlocks once the event host has submitted the closed
 // event for payroll. The backend exposes this as `can_generate_payroll`
@@ -1589,6 +1716,7 @@ console.log(event_list_id);
 
 const isApprovedGenerator = computed(() => {
   if (
+    user.user.role_id === 1 ||
     user.user.role_id === 53 ||
     user.user.role_id === 63 ||
     user.user.role_id === 64 ||

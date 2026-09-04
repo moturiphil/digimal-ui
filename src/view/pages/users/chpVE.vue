@@ -523,7 +523,12 @@ const handleOk = async (id, inputValue) => {
 const getCounties = async () => {
   const response = await axios.get(`get_counties`);
   const data = await response.data;
-  counties.value = data.map((county) => ({
+  const countiesList = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.data)
+      ? data.data
+      : [];
+  counties.value = countiesList.map((county) => ({
     ...county,
   }));
 };

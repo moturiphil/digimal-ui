@@ -136,7 +136,7 @@
                 suppressScrollX: true,
               }"
             >
-              <!-- <p class="sidebar-nav-title">MAIN MENU</p>  :toggleCollapsed="toggleCollapsedMobile" -->
+              <p v-if="!collapsed" class="sidebar-nav-title">MAIN MENU</p>
               <AsideItems
                 :toggleCollapsed="toggleCollapsedMobile"
                 :topMenu="topMenu"
@@ -500,6 +500,283 @@ export default defineComponent({
   .digimal-brand-ke {
     font-size: 11px;
     padding: 2px 5px;
+  }
+}
+/* ════════════════════════════════════════════════════════════════════
+   SIDEBAR — events-module aligned design
+   Palette:  deep   #15693c · mid #1f9254 · bright #36b16f
+   Tints:    #eff9f4 #f0f7f3 #daf4e4   Borders: #d9f0e2 #e1efe6
+   Radius:   12px section pills · 10px child pills
+   ════════════════════════════════════════════════════════════════════ */
+
+/* 1 ── Sider surface ──────────────────────────────────────────────── */
+.ant-layout-sider.ant-layout-sider-light {
+  background: linear-gradient(180deg, #eff9f4 0%, #ffffff 50%, #f6fcf8 100%) !important;
+  border-right: 1px solid #e1efe6;
+  box-shadow: 2px 0 16px rgba(28, 122, 72, 0.06) !important;
+}
+.ant-layout-sider.ant-layout-sider-dark {
+  background: linear-gradient(180deg, #141e18 0%, #272b41 120%) !important;
+  border-right: 1px solid #16241c;
+}
+html[dir='rtl'] .ant-layout-sider.ant-layout-sider-light {
+  border-right: 0 none;
+  border-left: 1px solid #e1efe6;
+}
+
+/* 2 ── Menu base ───────────────────────────────────────────────────── */
+.ant-layout-sider .ant-layout-sider-children .ant-menu {
+  background: transparent !important;
+  border-right: 0 none !important;
+  border-left: 0 none !important;
+  box-shadow: none !important;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* 3 ── Section label ("MAIN MENU") + group titles ──────────────────── */
+.sidebar-nav-title {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #7a8a82 !important;
+  padding: 16px 16px 8px !important;
+}
+.ant-layout-sider .ant-menu-item-group-title {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #7a8a82 !important;
+  padding: 16px 14px 6px !important;
+}
+/* 4 ── Section headers (submenu titles) ────────────────────────────── */
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title {
+  height: 44px !important;
+  line-height: 44px !important;
+  margin: 2px 0 !important;
+  border-radius: 12px !important;
+  padding: 0 30px 0 12px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #3c4b42 !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title:focus {
+  outline: none;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-title-content {
+  flex: 1;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title svg {
+  color: #1f9254 !important;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu:hover > .ant-menu-submenu-title,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-active > .ant-menu-submenu-title,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-open > .ant-menu-submenu-title,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background: #eaf7f0 !important;
+  color: #15693c !important;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu:hover > .ant-menu-submenu-title svg,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-active > .ant-menu-submenu-title svg,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-open > .ant-menu-submenu-title svg,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-selected > .ant-menu-submenu-title svg {
+  color: #15693c !important;
+}
+/* keep the expanded section readable */
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-open > .ant-menu-submenu-title {
+  background: #f0f7f3 !important;
+  font-weight: 700 !important;
+}
+
+/* nested submenu headers (e.g. GF / PMI under Payroll, MEDS / KEMSA under
+   Supply Chain) — visually subordinate with a deeper indent */
+.ant-layout-sider .ant-menu-sub .ant-menu-submenu > .ant-menu-submenu-title {
+  height: 36px !important;
+  line-height: 36px !important;
+  padding: 0 30px 0 24px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+html[dir='rtl'] .ant-layout-sider .ant-menu-sub .ant-menu-submenu > .ant-menu-submenu-title {
+  padding: 0 24px 0 30px !important;
+}
+
+/* 5 ── Submenu arrows (green) ──────────────────────────────────────── */
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+  transition: transform 0.2s ease;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-submenu-arrow::before,
+.ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title .ant-menu-submenu-arrow::after {
+  background: #1f9254 !important;
+  background-color: #1f9254 !important;
+  border-radius: 2px;
+}
+/* 6 ── Child menu items ────────────────────────────────────────────── */
+.ant-layout-sider .ant-menu-inline .ant-menu-item {
+  height: 38px !important;
+  line-height: 38px !important;
+  margin: 2px 0 !important;
+  border-radius: 10px !important;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-item a {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #5f7268 !important;
+  transition: color 0.2s ease;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-item a svg {
+  color: #7cb596 !important;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-item:not(.ant-menu-item-selected):hover {
+  background: #f0f7f3 !important;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-item:not(.ant-menu-item-selected):hover a {
+  color: #15693c !important;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-item:not(.ant-menu-item-selected):hover a svg {
+  color: #15693c !important;
+}
+/* active pill */
+.ant-layout-sider .ant-menu-inline .ant-menu-item.ant-menu-item-selected {
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 100%) !important;
+  box-shadow: 0 4px 10px rgba(15, 105, 60, 0.18) !important;
+  color: #fff !important;
+}
+.ant-layout-sider .ant-menu-inline .ant-menu-item.ant-menu-item-selected > .ant-menu-title-content,
+.ant-layout-sider .ant-menu-inline .ant-menu-item.ant-menu-item-selected a,
+.ant-layout-sider .ant-menu-inline .ant-menu-item.ant-menu-item-selected a span,
+.ant-layout-sider .ant-menu-inline .ant-menu-item.ant-menu-item-selected a svg {
+  color: #fff !important;
+}
+
+/* 7 ── Collapsed sidebar ───────────────────────────────────────────── */
+.ant-layout-sider.ant-layout-sider-collapsed .ant-layout-sider-children .ant-menu {
+  padding: 6px 9px;
+}
+.ant-layout-sider.ant-layout-sider-collapsed .ant-menu-inline-collapsed > .ant-menu-item,
+.ant-layout-sider.ant-layout-sider-collapsed .ant-menu-inline-collapsed > .ant-menu-submenu > .ant-menu-submenu-title {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  margin: 4px 0 !important;
+}
+.ant-layout-sider.ant-layout-sider-collapsed
+  .ant-menu-inline-collapsed
+  > .ant-menu-item.ant-menu-item-selected,
+.ant-layout-sider.ant-layout-sider-collapsed
+  .ant-menu-inline-collapsed
+  > .ant-menu-submenu.ant-menu-submenu-selected
+  > .ant-menu-submenu-title {
+  background: linear-gradient(135deg, #15693c 0%, #1f9254 100%) !important;
+  box-shadow: 0 4px 10px rgba(15, 105, 60, 0.18) !important;
+  color: #fff !important;
+}
+.ant-layout-sider.ant-layout-sider-collapsed
+  .ant-menu-inline-collapsed
+  > .ant-menu-item.ant-menu-item-selected svg,
+.ant-layout-sider.ant-layout-sider-collapsed
+  .ant-menu-inline-collapsed
+  > .ant-menu-submenu.ant-menu-submenu-selected
+  > .ant-menu-submenu-title svg {
+  color: #fff !important;
+}
+.ant-layout-sider.ant-layout-sider-collapsed .sidebar-nav-title {
+  display: none !important;
+}
+
+/* collapsed tooltip */
+.ant-tooltip.ant-menu-inline-collapsed-tooltip .ant-tooltip-inner {
+  background: #15693c !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(15, 105, 60, 0.25) !important;
+}
+.ant-tooltip.ant-menu-inline-collapsed-tooltip .ant-tooltip-arrow-content {
+  background-color: #15693c !important;
+}
+/* 8 ── Collapsed flyout popups (submenus) ──────────────────────────── */
+.ant-menu-submenu-popup .ant-menu-sub {
+  border: 1px solid #e1efe6 !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
+  box-shadow: 0 8px 24px rgba(28, 122, 72, 0.12) !important;
+  background: #fff !important;
+}
+.ant-menu-submenu-popup .ant-menu-submenu-title {
+  padding: 0 12px !important;
+}
+.ant-menu-submenu-popup .ant-menu-item {
+  border-radius: 8px !important;
+  margin: 2px 0 !important;
+}
+.ant-menu-submenu-popup .ant-menu-item a {
+  color: #5f7268 !important;
+}
+.ant-menu-submenu-popup .ant-menu-item.ant-menu-item-selected {
+  background: linear-gradient(135deg, #15693c, #1f9254) !important;
+  color: #fff !important;
+}
+.ant-menu-submenu-popup .ant-menu-item.ant-menu-item-selected a {
+  color: #fff !important;
+}
+
+/* 9 ── Dark theme variants ─────────────────────────────────────────── */
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title svg {
+  color: #36b16f !important;
+}
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-submenu:hover > .ant-menu-submenu-title,
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-active > .ant-menu-submenu-title,
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-open > .ant-menu-submenu-title,
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-submenu.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background: rgba(54, 177, 111, 0.16) !important;
+  color: #ffffff !important;
+}
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-item a {
+  color: rgba(255, 255, 255, 0.66) !important;
+}
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-item a svg {
+  color: #36b16f !important;
+}
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-item:not(.ant-menu-item-selected):hover {
+  background: rgba(54, 177, 111, 0.12) !important;
+}
+.ant-layout-sider-dark .ant-menu-inline .ant-menu-item:not(.ant-menu-item-selected):hover a {
+  color: #ffffff !important;
+}
+.ant-layout-sider-dark .sidebar-nav-title {
+  color: rgba(255, 255, 255, 0.42) !important;
+}
+.ant-layout-sider-dark .ps__thumb-y {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 10 ── Scrollbar (perfect-scrollbar) ──────────────────────────────── */
+.ant-layout-sider .ps__rail-y {
+  width: 5px !important;
+  opacity: 0.7;
+}
+.ant-layout-sider .ps__thumb-y {
+  background: rgba(31, 146, 84, 0.35) !important;
+  border-radius: 4px !important;
+  width: 5px !important;
+}
+
+/* RTL offset for section headers */
+html[dir='rtl'] .ant-layout-sider .ant-menu-inline .ant-menu-submenu > .ant-menu-submenu-title {
+  padding: 0 12px 0 30px !important;
+}
+
+@media (max-width: 991px) {
+  .ant-layout-sider.ant-layout-sider-light {
+    box-shadow: 2px 0 14px rgba(28, 122, 72, 0.1) !important;
   }
 }
 </style>

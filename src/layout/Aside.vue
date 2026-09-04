@@ -89,7 +89,7 @@
             County Budgeting
           </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetCountyBudgets" v-if="isCountyLevel || isLevelOne">
+        <a-menu-item key="budgetCountyBudgets" v-if="isCountyLevel || isAdmin">
           <router-link to="/budget/county-budgets">
             County Budgets Review
           </router-link>
@@ -105,13 +105,13 @@
         <!-- <a-menu-item key="budgetSummary" v-if="isSubCountyLevel || isLevelOne">
           <router-link to="/budget/summary"> Budget Summary </router-link>
         </a-menu-item> -->
-        <a-menu-item key="budgetCategories" v-if="isLevelOne">
+        <a-menu-item key="budgetCategories" v-if="canViewPayroll">
           <router-link to="/budget/categories"> Budget Categories </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetParameters" v-if="isLevelOne">
+        <a-menu-item key="budgetParameters" v-if="canViewPayroll">
           <router-link to="/budget/parameters"> Budget Parameters </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetSpecialAreaCost" v-if="isLevelOne">
+        <a-menu-item key="budgetSpecialAreaCost" v-if="canViewPayroll">
           <router-link to="/budget/special-area-costs"> Special Area Cost </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="budgetLocations" v-if="isLevelOne || isCountyLevel">
@@ -133,6 +133,9 @@
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
+        <a-menu-item key="widgetEventsDashboard" v-if="isOversightUser">
+          <router-link to="/events/dashboard"> Events Dashboard </router-link>
+        </a-menu-item>
         <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
@@ -141,9 +144,6 @@
         </a-menu-item> -->
         <a-menu-item key="widgetListEvents">
           <router-link to="/events/event-view"> List Events </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetEventsDashboard" v-if="isOversightUser">
-          <router-link to="/events/dashboard"> Events Dashboard </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="events" v-if="!isLevelOne && !isCommunityHealthWorker">
@@ -273,6 +273,11 @@
             Household IRS
           </router-link>
         </a-menu-item>
+        <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="hh-registration">
+        <router-link to="/add-household">
+          Register HouseHold
+        </router-link>
+      </a-menu-item>
         <!-- <a-menu-item key="widgetIncompleteHouseholdReg">
           <router-link to="/households-registrations/incomplete">
             Incomplete HouseHolds Registration
@@ -295,9 +300,14 @@
 
         <a-menu-item key="netDistribution" v-if="canViewRegHH">
           <router-link to="/nets/distributions">
-            Nets Distribution
+            <sdFeatherIcons type="share-2" /><span> Nets Distribution </span>
           </router-link>
         </a-menu-item>
+        <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="nets-issuance">
+        <router-link to="/issue-nets">
+          <sdFeatherIcons type="share-2" /><span> Issue Nets </span>
+        </router-link>
+      </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
         key="drop-off-point"
@@ -505,16 +515,6 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="hh-registration">
-        <router-link to="/add-household">
-          <sdFeatherIcons type="home" /><span> Register HouseHold </span>
-        </router-link>
-      </a-menu-item>
-      <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="nets-issuance">
-        <router-link to="/issue-nets">
-          <sdFeatherIcons type="share-2" /><span> Issue Nets </span>
-        </router-link>
-      </a-menu-item>
       <a-menu-item v-if="isAdmin || isTechSupport" key="massnet-admin">
         <router-link to="/admin-massnet">
           <sdFeatherIcons type="alert-triangle" /><span> Administrator </span>
