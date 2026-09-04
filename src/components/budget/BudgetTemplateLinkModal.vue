@@ -65,13 +65,24 @@
                 :key="b.id"
                 :value="b.id"
                 :label="b.label"
+                :disabled="!b.is_approved"
               >
                 <strong>{{ b.label }}</strong>
+                <a-tag v-if="!b.is_approved" color="orange" class="btl-status-tag">
+                  {{ b.status_label }}
+                </a-tag>
                 <span v-if="b.grand_total != null">
                   — KES {{ formatKes(b.grand_total) }}
                 </span>
               </a-select-option>
             </a-select>
+            <a-alert
+              v-if="hasUnapprovedBudgets"
+              type="info"
+              show-icon
+              class="btl-alert"
+              message="Some budgets are not yet approved. Only approved budgets can be linked — select the approved one (or wait for approval)."
+            />
           </a-form-item>
 
           <!-- Step 2: Budget template (category) -->
@@ -177,6 +188,10 @@ const linked = computed(
 
 const budgetHasCategories = computed(() => categories.value.length > 0);
 
+const hasUnapprovedBudgets = computed(
+  () => budgets.value.some((b) => !b.is_approved)
+);
+
 const canLink = computed(
   () =>
     !!selectedBudgetId.value &&
@@ -280,6 +295,7 @@ const close = () => {
 .btl-modal { padding-top: 4px; }
 .btl-loading { display: flex; align-items: center; gap: 10px; color: #666; }
 .btl-alert { margin-bottom: 12px; }
+.btl-status-tag { margin-left: 6px; font-size: 11px; line-height: 1; }
 .btl-intro { color: #555; margin-bottom: 12px; line-height: 1.5; }
 .btl-capacity { color: #555; }
 .btl-actions {

@@ -40,33 +40,74 @@ function budgetLabel(b) {
 }
 
 /**
- * Approved campaign budgets, newest budget cycle first. Loops through the
- * backend's paginated response up to a cap so the dropdown has a useful set.
+ * Campaign budgets for the current user's jurisdiction, newest budget cycle
+ * first. Scoped to the current user's own county / sub-county:
+ *   - County-level user (level_id == 2)  → their county budget (county_id)
+ *   - Sub-county-level user (level_id == 3) → their sub-county budget (sub_county_id)
+ *   - National / super-admin             → all budgets
+ *
+ * Returns ALL non-voided statuses (draft / submitted / county_approved /
+ * approved) so the link picker can surface unapproved budgets as informational
+ * (disabled) options — the user should know a budget template exists even if
+ * it is not yet approved and therefore cannot be linked.
  */
 export async function fetchApprovedBudgets() {
+  // Omit the `status` filter so unapproved budgets are returned too; the
+  // picker disables / tags them. (Voided budgets are excluded.)
+  const params = { page: 1 };
+
+  const user = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("user"))?.user;
+    } catch (e) {
+      return null;
+    }
+  })();
+  const levelId = Number(user?.level_id);
+  const locationId = user?.location_id;
+
+  if (levelId === 2 && locationId != null) {
+    params.county_id = locationId;
+  } else if (levelId === 3 && locationId != null) {
+    params.sub_county_id = locationId;
+  }
+
+  const STATUS_LABELS = {
+    approved: "Approved",
+    county_approved: "County Approved",
+    submitted: "Submitted (unapproved)",
+    draft: "Draft (unapproved)",
+  };
+
   const budgets = [];
   let page = 1;
   let lastPage = 1;
   const MAX_PAGES = 12; // cap to avoid hammering the API
 
   do {
-    const res = await axios.get("get_campaign_budgets", {
-      params: { status: "approved", page },
-    });
+    params.page = page;
+    const res = await axios.get("get_campaign_budgets", { params });
     const json = res.data || {};
     const rows = Array.isArray(json.data) ? json.data : [];
     budgets.push(
-      ...rows.map((b) => ({
-        id: b.id,
-        county_id: b.county_id,
-        sub_county_id: b.sub_county_id,
-        county: b.county,
-        sub_county: b.sub_county,
-        financial_year: b.financial_year,
-        grand_total: b.grand_total,
-        status: b.status,
-        label: budgetLabel(b),
-      }))
+      ...rows
+        .filter((b) => String(b.status) !== "voided")
+        .map((b) => {
+          const status = String(b.status || "draft");
+          return {
+            id: b.id,
+            county_id: b.county_id,
+            sub_county_id: b.sub_county_id,
+            county: b.county,
+            sub_county: b.sub_county,
+            financial_year: b.financial_year,
+            grand_total: b.grand_total,
+            status,
+            is_approved: status === "approved",
+            status_label: STATUS_LABELS[status] ?? status,
+            label: budgetLabel(b),
+          };
+        })
     );
     lastPage = json.last_page ?? page;
     if (!rows.length) break;

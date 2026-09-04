@@ -205,6 +205,7 @@
             <sdFeatherIcons type="award" size="extra-small" />
           </sdButton>
           <sdButton
+            v-if="!isNationalEvent"
             class="btn-import"
             type="success"
             @click="openBudgetLinkModal"
@@ -221,7 +222,7 @@
             }}
           </sdButton>
           <sdButton
-            v-if="canViewBudgetParams"
+            v-if="canViewBudgetParams && !isNationalEvent"
             class="btn-import"
             type="success"
             @click="openBudgetParamsModal"
@@ -953,6 +954,7 @@ const lsoUpload = reactive({
 });
 
 // ── Budget template linking ──
+const isNationalEvent = computed(() => !!liveEvent.value?.is_national);
 const isBudgetLinkModalOpen = ref(false);
 const openBudgetLinkModal = () => {
   isBudgetLinkModalOpen.value = true;

@@ -81,6 +81,7 @@
         </sdButton>
         &nbsp; &nbsp;
         <sdButton
+          v-if="!isNationalActivity"
           class="btn-import"
           type="success"
           @click="openBudgetLinkModal"
@@ -521,6 +522,7 @@ const activity_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_matrix?ac
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_activity_org_matrix?activity_list_id=${query.activity_list_id}`;
 
 // ── Budget template linking ──
+const isNationalActivity = computed(() => !!query.is_national);
 const isBudgetLinkModalOpen = ref(false);
 const activityBudget = ref({
   campaign_budget_id: query.campaign_budget_id ?? null,

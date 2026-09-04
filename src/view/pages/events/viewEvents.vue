@@ -551,15 +551,17 @@ const canStart = (record) =>
   !record.status &&
   !record.payroll_submitted &&
   isPending(record) &&
-  !!record.budget_line_item_id;
+  (!!record.budget_line_item_id || !!record.is_national);
 
-// True when the event is otherwise ready to start but is missing its budget
-// template link — shown as a hint so the host knows why Start is unavailable.
+// True when an otherwise ready-to-start sub-county/county event still needs a
+// budget template link. National events (is_national) are exempt — they start
+// and run without a budget link.
 const needsBudgetLink = (record) =>
   !record.status &&
   !record.payroll_submitted &&
   isPending(record) &&
-  !record.budget_line_item_id;
+  !record.budget_line_item_id &&
+  !record.is_national;
 
 // Closing is available while the event is currently running.
 const canClose = (record) => !!record.status;

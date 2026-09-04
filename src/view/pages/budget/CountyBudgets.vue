@@ -206,6 +206,15 @@
                   <strong>KES {{ fmt(selectedBudget.total_budget) }}</strong>
                 </div>
 
+                <!-- status / approval awareness banner -->
+                <a-alert
+                  v-if="selectedBudget.approval_note"
+                  class="approval-note"
+                  show-icon
+                  :type="approvalBannerType(selectedBudget.approval_status)"
+                  :message="selectedBudget.approval_note"
+                />
+
                 <!-- actions -->
                 <div class="detail-actions">
                   <sdButton
@@ -309,6 +318,8 @@ const mapDetail = (d) => {
     })),
     can_approve: !!review.can_approve,
     can_refer_back: !!review.can_refer_back,
+    approval_note: review.approval_note || '',
+    approval_status: review.approval_status || 'actionable',
     history: review.history || [],
   };
 };
@@ -480,6 +491,17 @@ export default {
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
+    /* map a status to an alert style so the reviewer sees the context */
+    const approvalBannerType = (status) => {
+      if (status === 'approved') return 'success';
+      if (status === 'county_approved') return 'success';
+      if (status === 'actionable') return 'warning';
+      if (status === 'draft') return 'info';
+      if (status === 'referred') return 'error';
+      if (status === 'county_budget') return 'info';
+      return 'info';
+    };
+
     return {
       scopedCountyId,
       scopedCountyName,
@@ -503,6 +525,7 @@ export default {
       openReferModal,
       handleRefer,
       downloadBudgetPDF,
+      approvalBannerType,
       fmt,
     };
   },
@@ -731,5 +754,9 @@ export default {
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+.approval-note {
+  margin: 10px 0 6px;
+  font-size: 12.5px;
 }
 </style>
