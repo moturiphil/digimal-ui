@@ -129,7 +129,8 @@
                 <a-input-number
                   v-if="viewMode === 'profile' && !readOnly"
                   :min="0"
-                  :step="1"
+                  :max="300"
+                  :precision="0"
                   size="small"
                   class="units-input"
                   :value="record.units"
@@ -1092,8 +1093,11 @@ export default {
     });
 
     const onUnitsChange = (activity, record, val) => {
-      const next = Number.isFinite(Number(val)) ? Number(val) : 0;
-      record.units = next < 0 ? 0 : next;
+      // Units must be a positive integer (no decimals, no negatives), up to 300.
+      const raw = Number(val);
+      let next = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : 0;
+      next = Math.min(next, 300);
+      record.units = next;
       // Recompute subtotal and apply multiplier if active
       record._subtotal =
         (Number(record.unit_cost) || 0)
