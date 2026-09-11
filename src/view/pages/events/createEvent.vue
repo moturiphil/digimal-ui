@@ -67,6 +67,12 @@
                       >
                         {{ errors.campaign_id }}
                       </p>
+                      <p
+                        class="venue-hint"
+                        v-if="!loading && !errors.campaign_id && campaigns.length"
+                      >
+                        <span>Only campaigns active today (start/end date covering today) can be selected.</span>
+                      </p>
                     </a-form-item>
                     <a-form-item label="Event Type">
                       <a-select
@@ -441,6 +447,21 @@ import { encrypt } from "@/cryptoHelper";
 
 // testing app
 
+/**
+ * List-type API endpoints return a plain array on some deployments, a wrapper
+ * object ({ success, data }) on others, or an error payload { message } when
+ * the caller lacks the permission / scope for the request. Normalize all of
+ * those shapes so pages degrade to an empty list instead of crashing with
+ * "data.data is undefined".
+ */
+const normalizeListResponse = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.data)) return payload.data.data; // paginator
+  if (Array.isArray(payload?.message)) return payload.message;
+  return [];
+};
+
 const AddNew = defineComponent({
   name: "AddNew",
   components: { RecordFormWrapper, Main, BasicFormWrapper },
@@ -462,7 +483,7 @@ const AddNew = defineComponent({
 
     const searchItem = ref("");
 
-    const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all`;
+    const campaign_url = `${process.env.VUE_APP_BASE_URL}/campaign_all?active=1`;
 
     const events_url = `${process.env.VUE_APP_BASE_URL}/events_list`;
 
@@ -482,6 +503,7 @@ const AddNew = defineComponent({
       campaigns: "",
       loading: true,
       facilitators: [],
+      trainers: [],
       counties: [],
       sub_county_id: "",
       events_list: [],
@@ -527,7 +549,7 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      const transformedData = data.data.map((fac) => ({
+      const transformedData = normalizeListResponse(data).map((fac) => ({
         ...fac,
         label: `${fac.first_name} ${fac.last_name} - ${fac.role_id}`,
       }));
@@ -544,7 +566,7 @@ const AddNew = defineComponent({
         },
       });
       const data = await response.json();
-      const transformedData = data.data.map((trainer) => ({
+      const transformedData = normalizeListResponse(data).map((trainer) => ({
         ...trainer,
         label: `${trainer.first_name} ${trainer.last_name} - ${trainer.role_id}`,
       }));
