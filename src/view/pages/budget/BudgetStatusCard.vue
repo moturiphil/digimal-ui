@@ -56,17 +56,20 @@ export default {
      * Derives the user-facing stage label per the lifecycle:
      *   Sub-county: submitted → County Review,
      *               county_approved → County Approved,
+     *               dnmp_reviewed → National Review (awaiting Finance Officer),
      *               approved → National Approved
-     *   County:     submitted → National Review,
+     *   County:     submitted → DNMP Review,
+     *               dnmp_reviewed → National Review (awaiting Finance Officer),
      *               approved → National Approved
      *   is_referred=true overrides any of the above with "Referred".
      */
     label() {
       if (this.isReferred) return 'Referred';
       if (this.status === 'approved') return 'National Approved';
+      if (this.status === 'dnmp_reviewed') return 'National Review';
       if (this.status === 'county_approved') return 'County Approved';
       if (this.status === 'submitted') {
-        return this.isSubCounty ? 'County Review' : 'National Review';
+        return this.isSubCounty ? 'County Review' : 'DNMP Review';
       }
       if (this.status === 'draft') return 'Draft';
       if (this.status === 'voided') return 'Voided';
@@ -76,6 +79,7 @@ export default {
     kind() {
       if (this.isReferred) return 'referred';
       if (this.status === 'approved') return 'national-approved';
+      if (this.status === 'dnmp_reviewed') return 'national-review';
       if (this.status === 'county_approved') return 'county-approved';
       if (this.status === 'submitted') {
         return this.isSubCounty ? 'county-review' : 'national-review';

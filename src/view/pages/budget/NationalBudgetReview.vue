@@ -1,7 +1,7 @@
 <template>
   <RecordViewWrapper>
     <Main>
-      <BudgetPageWrapper>
+      <BudgetPageWrapper class="minimal-dashboard nbr-review-page">
         <!-- Slim top bar -->
         <div class="tool-bar">
           <span class="tool-bar-title">Budget Preparation Tool</span>
@@ -13,6 +13,10 @@
             <h3 class="ph-title">
               <span class="ph-icon">▦</span> Budget Review &amp; Approval
             </h3>
+            <p class="ph-subtitle">
+              Review county and sub-county budgets, mark them as reviewed by
+              the DNMP Accountant, then approve at national level.
+            </p>
           </div>
           <div class="ph-actions">
             <a-breadcrumb separator=">" class="review-crumbs">
@@ -29,74 +33,61 @@
           </div>
         </div>
 
-        <!-- Filter bar — visible on Levels 1 & 2 (hidden on single-budget detail) -->
-        <div v-if="!selectedBudget" class="nbr-filter-bar">
-          <div class="nbr-fb-row">
-            <div class="nbr-fb-field">
-              <label class="nbr-fb-label">County</label>
-              <a-select
-                v-model:value="filterCountyId"
-                show-search
-                allow-clear
-                option-filter-prop="label"
-                placeholder="All counties"
-                class="nbr-fb-control"
-                @change="onCountyFilterChange"
+        <!-- Filter panel — visible on Levels 1 & 2 (hidden on single-budget detail) -->
+        <section v-if="!selectedBudget" class="panel nbr-filter-panel">
+          <div class="filter-grid">
+            <a-select
+              v-model:value="filterCountyId"
+              show-search
+              allow-clear
+              option-filter-prop="label"
+              placeholder="Filter by County"
+              @change="onCountyFilterChange"
+            >
+              <a-select-option
+                v-for="c in counties"
+                :key="c.id"
+                :value="c.id"
+                :label="c.name"
               >
-                <a-select-option
-                  v-for="c in counties"
-                  :key="c.id"
-                  :value="c.id"
-                  :label="c.name"
-                >
-                  {{ c.name }}
-                </a-select-option>
-              </a-select>
-            </div>
-
-            <div class="nbr-fb-field">
-              <label class="nbr-fb-label">Sub-County</label>
-              <a-select
-                v-model:value="filterSubCountyId"
-                show-search
-                allow-clear
-                option-filter-prop="label"
-                placeholder="All sub-counties"
-                class="nbr-fb-control"
-                :disabled="!filterCountyId && subCountyOptions.length === 0"
+                {{ c.name }}
+              </a-select-option>
+            </a-select>
+            <a-select
+              v-model:value="filterSubCountyId"
+              show-search
+              allow-clear
+              option-filter-prop="label"
+              placeholder="Filter by Sub-County"
+              :disabled="!filterCountyId && subCountyOptions.length === 0"
+            >
+              <a-select-option
+                v-for="sc in subCountyOptions"
+                :key="sc.id"
+                :value="sc.id"
+                :label="sc.label"
               >
-                <a-select-option
-                  v-for="sc in subCountyOptions"
-                  :key="sc.id"
-                  :value="sc.id"
-                  :label="sc.label"
-                >
-                  {{ sc.label }}
-                </a-select-option>
-              </a-select>
-            </div>
-
-            <div class="nbr-fb-field">
-              <label class="nbr-fb-label">Approval Stage</label>
-              <a-select
-                v-model:value="filterStage"
-                allow-clear
-                placeholder="All stages"
-                class="nbr-fb-control"
+                {{ sc.label }}
+              </a-select-option>
+            </a-select>
+            <a-select
+              v-model:value="filterStage"
+              allow-clear
+              placeholder="Approval Stage"
+            >
+              <a-select-option
+                v-for="opt in stageOptions"
+                :key="opt.value"
+                :value="opt.value"
               >
-                <a-select-option
-                  v-for="opt in stageOptions"
-                  :key="opt.value"
-                  :value="opt.value"
-                >
-                  {{ opt.label }}
-                </a-select-option>
-              </a-select>
-            </div>
-
-            <div class="nbr-fb-actions">
+                {{ opt.label }}
+              </a-select-option>
+            </a-select>
+            <div class="nbr-filter-actions">
               <sdButton
                 size="small"
+                class="nbr-action-btn"
+                type="light"
                 @click="resetFilters"
                 :disabled="!hasActiveFilters"
               >
@@ -107,7 +98,7 @@
               </span>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- ════════ LEVEL 1 · County grid ════════ -->
         <template v-if="!selectedCounty">
@@ -313,12 +304,45 @@
             <strong>KES {{ fmt(selectedBudget.total_budget) }}</strong>
           </div>
 
+          <!-- DNMP Accountant review strip -->
+          <div
+            v-if="selectedBudget.dnmp_review"
+            class="dnmp-review-strip"
+          >
+            <strong>Reviewed by DNMP Accountant</strong>
+            <span>
+              {{ selectedBudget.dnmp_review.reviewed_by?.name || '—' }}
+              · {{ formatReviewDate(selectedBudget.dnmp_review.reviewed_at) }}
+            </span>
+            <span v-if="selectedBudget.dnmp_review.notes" class="dnmp-notes">
+              “{{ selectedBudget.dnmp_review.notes }}”
+            </span>
+          </div>
+
           <!-- actions -->
           <div class="detail-actions">
-            <sdButton @click="downloadBudgetPDF">Download PDF</sdButton>
             <sdButton
-              v-if="selectedBudget.status !== 'approved'"
+              type="light"
+              class="nbr-action-btn"
+              @click="downloadBudgetPDF"
+            >
+              Download PDF
+            </sdButton>
+            <!-- DNMP Accountant review step — before the Finance Officer can approve -->
+            <sdButton
+              v-if="selectedBudget.can_review && canReview"
+              type="primary"
+              class="nbr-action-btn"
+              :loading="reviewing"
+              @click="openReviewModal"
+            >
+              Mark as Reviewed
+            </sdButton>
+            <!-- Final national approval — Finance Officer (or super admin) -->
+            <sdButton
+              v-if="selectedBudget.can_approve && canApprove"
               type="success"
+              class="nbr-action-btn"
               :loading="approving"
               @click="approveBudget(selectedBudget)"
             >
@@ -327,11 +351,18 @@
             <sdButton
               v-if="canReferBack"
               type="warning"
+              class="nbr-action-btn"
               @click="openReferModal(selectedBudget)"
             >
               Refer Back
             </sdButton>
-            <sdButton @click="goCountyBudgets">Back to {{ selectedCounty.name }}</sdButton>
+            <sdButton
+              type="light"
+              class="nbr-action-btn"
+              @click="goCountyBudgets"
+            >
+              Back to {{ selectedCounty.name }}
+            </sdButton>
           </div>
         </template>
 
@@ -343,13 +374,32 @@
           ok-text="Send Referral"
           :confirm-loading="referring"
         >
-          <p style="color: #5a5f7d; margin-bottom: 12px">
+          <p style="color: #6b7a72; margin-bottom: 12px">
             Provide detailed feedback for revision and resubmission.
           </p>
           <a-textarea
             v-model:value="referNote"
             :rows="4"
             placeholder="Explain what needs to be corrected..."
+          />
+        </a-modal>
+
+        <!-- DNMP Accountant Review Modal -->
+        <a-modal
+          v-model:visible="reviewModal"
+          title="DNMP Accountant Review"
+          @ok="markReviewed"
+          ok-text="Mark as Reviewed"
+          :confirm-loading="reviewing"
+        >
+          <p style="color: #6b7a72; margin-bottom: 12px">
+            Confirm that you have reviewed this budget. It will then be
+            queued for final national approval by the Finance Officer.
+          </p>
+          <a-textarea
+            v-model:value="reviewNote"
+            :rows="3"
+            placeholder="Optional review notes..."
           />
         </a-modal>
       </BudgetPageWrapper>
@@ -361,6 +411,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { notification, message } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
+import { hasRoleByName } from '@/services/user-role';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 
@@ -408,8 +459,10 @@ const mapDetail = (d) => {
       })),
     })),
     can_approve: !!review.can_approve,
+    can_review: !!review.can_review,
     can_refer_back: !!review.can_refer_back,
     history: review.history || [],
+    dnmp_review: d.dnmp_review || null,
   };
 };
 
@@ -430,6 +483,11 @@ export default {
     const referring = ref(false);
     const referNote = ref('');
 
+    /* DNMP Accountant review (before Finance Officer approval) */
+    const reviewModal = ref(false);
+    const reviewing = ref(false);
+    const reviewNote = ref('');
+
     /* ────────── Filters ──────────
      * filterCountyId       – restrict to a single county (also auto-drills
      *                        into level 2 when explicitly picked).
@@ -446,11 +504,12 @@ export default {
     const filterStage = ref(null);
 
     const stageOptions = [
-      { value: 'Preparatory Stage',      label: 'Preparatory Stage' },
-      { value: 'County Review',          label: 'County Review (sub-county submitted)' },
-      { value: 'Pending National Review', label: 'Pending National Review' },
-      { value: 'County Approved',        label: 'County Approved' },
-      { value: 'National Approved',      label: 'National Approved' },
+      { value: 'Preparatory Stage',        label: 'Preparatory Stage' },
+      { value: 'County Review',            label: 'County Review (sub-county submitted)' },
+      { value: 'Pending DNMP Review',      label: 'Pending DNMP Review (county budget submitted)' },
+      { value: 'County Approved',          label: 'County Approved (awaiting DNMP review)' },
+      { value: 'Pending National Approval', label: 'Pending National Approval (reviewed, awaiting Finance Officer)' },
+      { value: 'National Approved',        label: 'National Approved' },
     ];
 
     const hasActiveFilters = computed(() =>
@@ -629,7 +688,51 @@ export default {
     ];
 
     /* actions -------------------------------------------- */
+    /* Button visibility is gated by the EXACT business roles (mirrors the
+     * strict backend gate in CampaignBudgetController):
+     *   • Accountant (DNMP) or Super Admin        → Mark as Reviewed
+     *   • Finance Officer (DNMP) or Super Admin   → Approve
+     * The budget state (server-side can_review / can_approve) must also
+     * allow it — e.g. Super Admin sees both buttons, but only when the
+     * budget is actually at the right stage. */
+    const canReview  = computed(() => hasRoleByName(['Super Admin', 'Accountant']).value);
+    const canApprove = computed(() => hasRoleByName(['Super Admin', 'Finance Officer']).value);
+
     const approving = ref(false);
+    const openReviewModal = () => {
+      reviewNote.value = '';
+      reviewModal.value = true;
+    };
+    const markReviewed = async () => {
+      const record = selectedBudget.value;
+      if (!record || !record.id) {
+        notification.error({ message: 'Cannot review: missing budget id.' });
+        return;
+      }
+      reviewing.value = true;
+      try {
+        await axios.post(`dnmp_review_campaign_budget/${record.id}`, {
+          review_notes: reviewNote.value.trim() || undefined,
+        });
+        record.status = 'dnmp_reviewed';
+        record.can_review = false;
+        record.can_approve = true;
+        notification.success({
+          message: `Budget for ${record.label} marked as reviewed.`,
+        });
+        reviewModal.value = false;
+        // Reload so the review strip shows the reviewer + notes from the server.
+        await fetchBudgetDetail(record.id);
+        await fetchCounties();
+      } catch (err) {
+        notification.error({
+          message: 'Failed to submit review',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        reviewing.value = false;
+      }
+    };
     const approveBudget = async (record) => {
       if (!record || !record.id) {
         notification.error({ message: 'Cannot approve: missing budget id.' });
@@ -640,6 +743,7 @@ export default {
         await axios.post(`approve_campaign_budget/${record.id}`);
         record.status = 'approved';
         record.can_approve = false;
+        record.can_review = false;
         record.can_refer_back = false;
         notification.success({
           message: `Budget for ${record.label} approved.`,
@@ -657,17 +761,18 @@ export default {
       referNote.value = '';
       referModal.value = true;
     };
-    /* Locally-derived eligibility. The backend already returns
-     * `can_refer_back` but it depends on the National role being
-     * resolved server-side; surface the button purely from status
-     * so it always lights up when the budget is in a referrable
-     * state (sub-county submitted, or county submitted/approved).
-     * If the BE explicitly says false we still respect that. */
+    /* Locally-derived eligibility. The backend strictly restricts national-stage
+     * referrals to the DNMP roles (Accountant | Finance Officer) plus Super
+     * Admin, so the button only renders for those exact roles. The budget
+     * must also be in a referrable state (sub-county submitted, county
+     * submitted/county-approved, or already DNMP-reviewed awaiting approval);
+     * if the BE explicitly says false we still respect that. */
     const canReferBack = computed(() => {
       const b = selectedBudget.value;
       if (!b) return false;
       if (b.can_refer_back === false) return false;
-      return ['submitted', 'county_approved'].includes(b.status);
+      if (!hasRoleByName(['Super Admin', 'Accountant', 'Finance Officer']).value) return false;
+      return ['submitted', 'county_approved', 'dnmp_reviewed'].includes(b.status);
     });
     const handleRefer = async () => {
       const note = referNote.value.trim();
@@ -686,10 +791,11 @@ export default {
         await axios.post(`reject_campaign_budget/${selectedBudget.value.id}`, {
           rejection_note: note,
         });
-        // Both submitted and county_approved now revert to draft so the
-        // owning sub-county / county user can edit and resubmit.
+        // submitted, county_approved and dnmp_reviewed now revert to draft so
+        // the owning sub-county / county user can edit and resubmit.
         selectedBudget.value.status = 'draft';
         selectedBudget.value.can_approve = false;
+        selectedBudget.value.can_review = false;
         selectedBudget.value.can_refer_back = false;
         notification.success({ message: 'Budget referred back for revision.' });
         referModal.value = false;
@@ -707,6 +813,14 @@ export default {
       notification.info({ message: 'PDF download started (demo).' });
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
+
+    const formatReviewDate = (iso) => {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
 
     onMounted(fetchCounties);
 
@@ -726,6 +840,9 @@ export default {
       referModal,
       referring,
       referNote,
+      reviewModal,
+      reviewing,
+      reviewNote,
       itemColumns,
       openCounty,
       openCountyBudget,
@@ -734,11 +851,16 @@ export default {
       goCountyBudgets,
       approving,
       approveBudget,
+      canReview,
+      canApprove,
+      openReviewModal,
+      markReviewed,
       openReferModal,
       handleRefer,
       canReferBack,
       downloadBudgetPDF,
       fmt,
+      formatReviewDate,
       /* filters */
       filterCountyId,
       filterSubCountyId,
@@ -758,6 +880,34 @@ export default {
 </script>
 
 <style lang="less" scoped>
+/* ───────── Slim top bar ───────── */
+.tool-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f4fbf6;
+  border: 1px solid #d9ecdf;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #2f6746;
+  font-weight: 600;
+}
+
+/* ───────── Page heading (platform theme) ───────── */
+.page-heading {
+  .ph-left {
+    .ph-title {
+      color: #15693c;
+    }
+    .ph-subtitle {
+      font-size: 13px;
+      color: #6b7a72;
+    }
+  }
+}
+
 .review-crumbs {
   font-size: 12px;
   :deep(a) {
@@ -766,53 +916,46 @@ export default {
   }
 }
 
-/* ───────── Filter bar (Levels 1 & 2) ───────── */
-.nbr-filter-bar {
-  background: #fff;
-  border: 1px solid #e6ebf2;
-  border-radius: 8px;
-  padding: 12px 14px;
+/* ───────── Section panel (platform theme) ───────── */
+.panel {
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+}
+
+/* ───────── Filter panel (Levels 1 & 2) ───────── */
+.panel.nbr-filter-panel {
+  padding: 12px 16px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(31, 41, 55, 0.04);
 }
-.nbr-fb-row {
+
+.filter-grid {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) auto;
-  gap: 12px;
-  align-items: end;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  align-items: center;
+  :deep(.ant-select) {
+    width: 100%;
+  }
 }
-@media (max-width: 900px) {
-  .nbr-fb-row { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 540px) {
-  .nbr-fb-row { grid-template-columns: 1fr; }
-}
-.nbr-fb-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.nbr-fb-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: #6b7388;
-}
-.nbr-fb-control {
-  width: 100%;
-}
-.nbr-fb-actions {
+
+.nbr-filter-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   white-space: nowrap;
 }
+
 .nbr-fb-count {
   font-size: 12px;
   color: #2f6746;
   font-weight: 600;
+  background: #e9f6ee;
+  border-radius: 12px;
+  padding: 2px 10px;
 }
 
 /* ───────── Card grid for levels 1 & 2 ───────── */
@@ -834,14 +977,14 @@ export default {
 .drill-card {
   position: relative;
   background: #fff;
-  border: 1px solid #e1efe6;
-  border-radius: 8px;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
   padding: 14px 16px;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
   &:hover {
-    border-color: #9ad8b4;
-    box-shadow: 0 6px 14px rgba(28, 122, 72, 0.1);
+    border-color: #4d8a63;
+    box-shadow: 0 4px 14px rgba(15, 105, 60, 0.08);
     transform: translateY(-1px);
   }
   &.is-active {
@@ -849,7 +992,13 @@ export default {
     background: #f4fbf6;
   }
   &.is-empty {
-    .dc-meta { color: #b0b8c3; }
+    opacity: 0.6;
+    cursor: default;
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .dc-meta { color: #8a9990; }
   }
 
   .dc-head {
@@ -860,9 +1009,9 @@ export default {
     margin-bottom: 6px;
   }
   .dc-title {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
-    color: #1f2437;
+    color: #15693c;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -872,30 +1021,41 @@ export default {
     font-size: 13px;
   }
   .dc-chevron {
-    color: #b0b8c3;
-    font-size: 16px;
+    color: #95a59b;
+    font-size: 18px;
     line-height: 1;
   }
   .dc-meta {
-    font-size: 11px;
-    color: #5a5f7d;
+    font-size: 12px;
+    color: #6b7a72;
   }
   .dc-stage,
   .dc-flag {
     display: inline-block;
     margin-top: 8px;
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 700;
     line-height: 1.4;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 10px;
-    background: #eaf4ff;
-    color: #2c99ff;
-    border: none;
+  }
+  .dc-stage {
+    background: #e9f6ee;
+    color: #15693c;
+    border: 1px solid #9ad8b4;
   }
   .dc-flag {
-    background: #eef3fb;
-    color: #2f6dcf;
+    background: #fff4e6;
+    color: #b85c00;
+    border: 1px solid #f0d3a0;
   }
+}
+
+.empty-hint {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #8a9990;
+  padding: 24px 0;
 }
 
 /* ───────── Level title (section header for lists) ───────── */
@@ -903,8 +1063,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
   color: #15693c;
   margin: 6px 2px 12px;
   .lt-icon { color: #20c997; }
@@ -928,9 +1088,9 @@ export default {
   margin-bottom: 14px;
   padding: 3px 12px;
   border-radius: 14px;
-  background: #e5f3ff;
-  color: #2c99ff;
-  border: 1px solid #b7dcff;
+  background: #e9f6ee;
+  color: #15693c;
+  border: 1px solid #9ad8b4;
   font-size: 12px;
   font-weight: 600;
 }
@@ -939,42 +1099,49 @@ export default {
 .stat-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
-  padding: 12px 2px 14px;
+  gap: 8px;
+  margin-bottom: 14px;
   .stat-chip {
+    background: #f4fbf6;
+    border: 1px solid #d9ecdf;
+    border-radius: 16px;
+    padding: 4px 12px;
     font-size: 12px;
-    color: #5a5f7d;
-    .sc-label { margin-right: 4px; }
-    strong { color: #1f2437; font-weight: 700; }
+    color: #4d6357;
+    .sc-label { color: #6b7a72; margin-right: 4px; }
+    strong { color: #15693c; font-weight: 700; }
   }
 }
 .summary-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 18px;
   @media (max-width: 900px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 .summary-tile {
   background: #fff;
-  border: 1px solid #e1efe6;
-  border-radius: 8px;
-  padding: 14px 16px;
-  text-align: center;
+  border: 1px solid #e2ebe5;
+  border-radius: 10px;
+  padding: 12px 14px;
   .st-label {
-    font-size: 11px;
-    color: #7a8a82;
+    font-size: 12px;
+    color: #6b7a72;
     margin-bottom: 4px;
   }
   .st-value {
-    font-size: 22px;
-    font-weight: 800;
-    color: #1f2437;
+    font-size: 18px;
+    font-weight: 700;
+    color: #15693c;
     line-height: 1.1;
+    margin-top: 4px;
   }
-  &.accent .st-value { color: #15693c; }
+  &.accent {
+    background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+    border-color: #c9e6d3;
+  }
 }
 
 /* ───────── Collapsible categories ───────── */
@@ -984,18 +1151,18 @@ export default {
 
   :deep(.ant-collapse-item) {
     background: #fff;
-    border: 1px solid #e6f0ea;
-    border-radius: 8px !important;
+    border: 1px solid #e2ebe5 !important;
+    border-radius: 10px !important;
     margin-bottom: 8px;
     overflow: hidden;
   }
   :deep(.ant-collapse-header) {
-    background: #f6fbf8;
-    padding: 10px 16px !important;
-    align-items: center;
+    align-items: center !important;
+    padding: 12px 14px !important;
+    background: #f9fcf8;
   }
   :deep(.ant-collapse-content) {
-    border-top: 1px solid #eaf4ee;
+    border-top: 1px solid #eaf2e9;
   }
   :deep(.ant-collapse-content-box) {
     padding: 0 !important;
@@ -1010,11 +1177,11 @@ export default {
       flex: 1;
       font-size: 13px;
       font-weight: 600;
-      color: #272b41;
+      color: #15693c;
     }
     .cat-badge {
-      background: #eef3fb;
-      color: #2f6dcf;
+      background: #e9f6ee;
+      color: #15693c;
       border: none;
       font-size: 10px;
       border-radius: 10px;
@@ -1032,8 +1199,8 @@ export default {
   .ant-table { background: transparent; }
   .ant-table-thead > tr > th {
     background: #fff;
-    border-bottom: 1px solid #eaf4ee;
-    color: #7a8a82;
+    border-bottom: 1px solid #eaf2e9;
+    color: #6b7a72;
     font-weight: 600;
     font-size: 11px;
     text-transform: none;
@@ -1041,11 +1208,11 @@ export default {
   .ant-table-tbody > tr > td {
     border-bottom: 1px solid #f4f8f5;
     font-size: 12px;
-    color: #1f2437;
+    color: #2f3a35;
   }
   .ant-table-tbody > tr:hover > td { background: #fafcfb; }
   .ant-table-summary {
-    background: #f6fbf8;
+    background: #f4fbf6;
     .ant-table-cell { border-bottom: none; }
   }
   .cat-item-total { color: #15693c; font-weight: 700; }
@@ -1055,16 +1222,32 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f2f3f7;
-  border: 1px solid #e6e8ef;
-  border-radius: 6px;
-  padding: 12px 18px;
-  margin-top: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #1f2437;
-  letter-spacing: 0.4px;
-  strong { color: #15693c; font-size: 14px; font-weight: 800; }
+  background: linear-gradient(90deg, #15693c 0%, #1f8b53 100%);
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 14px;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  strong { font-size: 18px; font-weight: 800; }
+}
+
+/* DNMP Accountant review strip */
+.dnmp-review-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border: 1px solid #9ad8b4;
+  border-left: 4px solid #15693c;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #2f3a35;
+  strong { color: #15693c; font-weight: 700; }
+  .dnmp-notes { color: #6b7a72; font-style: italic; }
 }
 
 .detail-actions {
@@ -1073,5 +1256,54 @@ export default {
   justify-content: flex-end;
   margin-top: 18px;
   flex-wrap: wrap;
+}
+
+/* ───────── Platform pill buttons (Activities / Events theme) ───────── */
+:deep(.nbr-action-btn.ant-btn) {
+  border-radius: 22px;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+:deep(.nbr-action-btn.ant-btn-primary) {
+  background: #2c99ff;
+  border-color: #2c99ff;
+  color: #fff;
+  &:hover:not([disabled]) {
+    background: #1a86ec;
+    border-color: #1a86ec;
+  }
+}
+:deep(.nbr-action-btn.ant-btn-success) {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+  &:hover:not([disabled]) {
+    background: #15803d;
+    border-color: #15803d;
+  }
+}
+:deep(.nbr-action-btn.ant-btn-warning) {
+  background: #fa8b0c;
+  border-color: #fa8b0c;
+  color: #fff;
+  &:hover:not([disabled]) {
+    background: #f07b00;
+    border-color: #f07b00;
+  }
+}
+:deep(.nbr-action-btn.ant-btn-light) {
+  background: #fff;
+  border-color: #d9e0e4;
+  color: #2f6746;
+  &:hover:not([disabled]) {
+    background: #f4fbf7;
+    border-color: #9ad8b4;
+  }
 }
 </style>

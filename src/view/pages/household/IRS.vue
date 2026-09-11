@@ -1,29 +1,84 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Household IRS Dasboard">
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search ..."
-          />
-        </div>
-      </template>
-    </sdPageHeader>
     <Main>
-      <a-row :gutter="16" class="search-row"> </a-row>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
+      <BudgetPageWrapper class="minimal-dashboard ou-units-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▦</span> Household IRS
+            </h3>
+            <div class="ou-crumb">
+              <span class="crumb-current">HouseHolds</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">IRS</span>
             </div>
+          </div>
+          <div class="ph-actions">
+            <div class="ou-search">
+              <span class="search-icon">
+                <sdFeatherIcons type="search" size="14" />
+              </span>
+              <a-input
+                v-model:value="searchItem"
+                type="text"
+                name="dataSource"
+                placeholder="Search ..."
+                allow-clear
+              />
+            </div>
+            <div class="ou-view-toggle" role="group" aria-label="Toggle view">
+              <button
+                type="button"
+                class="ou-toggle-btn"
+                :class="{ active: viewMode === 'cards' }"
+                @click="viewMode = 'cards'"
+              >
+                <sdFeatherIcons type="grid" size="14" />
+                <span>Cards</span>
+              </button>
+              <button
+                type="button"
+                class="ou-toggle-btn"
+                :class="{ active: viewMode === 'table' }"
+                @click="viewMode = 'table'"
+              >
+                <sdFeatherIcons type="list" size="14" />
+                <span>Table</span>
+              </button>
+            </div>
+          </div>
+        </header>
 
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-row>
+        <!-- Summary strip -->
+        <section class="panel ou-stats">
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="home" size="16" /></span>
+            <div>
+              <span class="val">{{ datatotal }}</span>
+              <span class="lbl">Total Households</span>
+            </div>
+          </div>
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="database" size="16" /></span>
+            <div>
+              <span class="val">{{ dataSource.length }}</span>
+              <span class="lbl">On This Page</span>
+            </div>
+          </div>
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="layers" size="16" /></span>
+            <div>
+              <span class="val">{{ pageSize }}</span>
+              <span class="lbl">Page Size</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="panel ou-filter-panel">
+          <div class="ou-filter-grid">
+            <a-row>
                   <a-col v-if="filterAccessList.includes('county')">
                     <a-select
                       v-model:value="county"
@@ -103,36 +158,89 @@
                     </a-button>
                   </a-col>
                 </a-row>
-                <a-table
-                  :pagination="{
-                    pageSize: 100,
-                    showSizeChanger: true,
-                    current: currentPage,
-                  }"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                  @change="handleTableChange"
-                >
-                </a-table>
+          </div>
+        </section>
+
+        <!-- Households list -->
+        <section class="panel ou-list-panel">
+          <div v-if="isLoading" class="ou-loading">
+            <a-spin />
+          </div>
+
+          <div v-else>
+            <TableWrapper
+              v-if="viewMode === 'table'"
+              class="table-data-view table-responsive ou-table-shell"
+            >
+              <a-table
+                :pagination="{
+                  pageSize: 100,
+                  showSizeChanger: true,
+                  current: currentPage,
+                }"
+                :dataSource="dataSource"
+                :columns="columns"
+                @change="handleTableChange"
+              >
+              </a-table>
+              <div class="ou-pagination">
                 <a-pagination
                   :current="currentPage"
                   :total="datatotal"
                   :pageSize="pageSize"
                   :showSizeChanger="true"
-                  :pagination="true"
                   @change="onPageChange($event)"
                 />
-              </TableWrapper>
+              </div>
+            </TableWrapper>
+
+            <div v-else class="ou-card-list">
+              <article
+                v-for="record in dataSource"
+                :key="record.id"
+                class="ou-card"
+              >
+                <div class="ou-card-head">
+                  <div class="ou-card-title">
+                    {{ record.first_name }} {{ record.last_name }}
+                  </div>
+                  <span class="ou-chip">
+                    {{ record.stand_alone_units_where_people_sleep || "—" }} units
+                  </span>
+                </div>
+                <div class="ou-card-meta">
+                  <div>
+                    <span class="lbl">Unit Capacity</span>
+                    <span class="val">{{ record.no_of_people_sleep_in_stand_alone_units || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Sprayable</span>
+                    <span class="val">{{ record.stand_alone_units_sprayable_surfaces || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Non-Sprayable</span>
+                    <span class="val">{{ record.no_of_stand_alone_non_sprayable_surfaces || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Near Water</span>
+                    <span class="val">{{ record.stand_alone_units_near_water_bodies || "—" }}</span>
+                  </div>
+                </div>
+              </article>
+              <div v-if="!dataSource.length" class="ou-empty">
+                No IRS households found.
+              </div>
             </div>
-          </sdCards>
-        </a-col>
-      </a-row>
+          </div>
+        </section>
+      </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 <script setup>
 import { RecordViewWrapper } from "../style";
-import { Main } from "../../styled";
+import { BudgetPageWrapper } from "../budget/style";
+import { Main, TableWrapper } from "../../styled";
 import { onMounted, ref, watch } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
@@ -192,6 +300,9 @@ const selecteLocation = ref("");
 var currentPage = ref(1);
 var pageSize = ref(100);
 var datatotal = ref(0);
+const viewMode = ref(
+  typeof window !== "undefined" && window.innerWidth <= 991 ? "cards" : "table"
+);
 
 //Drill down filters
 const access_level = ref({});

@@ -1,7 +1,9 @@
 import app from "./config/configApp";
 import router from "./routes/protectedRoute";
 import store from "@/vuex/store";
+import { startAccessSync } from "./services/access-sync";
 import "./static/css/style.css";
+import "./static/css/org-units-theme.css";
 // Vue 3rd party plugins
 import "@/core/plugins/ant-design";
 import "@/core/plugins/fonts";
@@ -73,6 +75,10 @@ app.use(store);
 app.use(router);
 app.use(HighchartsVue);
 app.mount("#app");
+
+// Keep the cached RBAC snapshot (role + permissions) in sync with the backend
+// so permission grants/revocations apply without a forced re-login.
+startAccessSync();
 
 if (process.env.NODE_ENV === "production") {
   console.log = () => {};

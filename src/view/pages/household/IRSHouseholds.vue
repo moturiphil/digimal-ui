@@ -1,8 +1,41 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="IRS Households Summary">
-      <template v-slot:buttons>
-        <a-row>
+    <Main>
+      <BudgetPageWrapper class="minimal-dashboard ou-units-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▦</span> IRS Households Summary
+            </h3>
+            <div class="ou-crumb">
+              <span class="crumb-current">HouseHolds</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">IRS</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">Summary</span>
+            </div>
+          </div>
+          <div class="ph-actions">
+            <a-button
+              type="success"
+              size="extra-small"
+              class="ou-action-btn"
+              @click="
+                getTrainingSummary(),
+                  (county = 'Select County'),
+                  (country = 'Select Country')
+              "
+            >
+              <ReloadOutlined /> Reset
+            </a-button>
+          </div>
+        </header>
+
+        <!-- Filters -->
+        <section class="panel ou-filter-panel">
+          <div class="ou-filter-grid">
+            <a-row>
           <a-col v-if="filterAccessList.includes('country')">
             <a-select
               v-model:value="country"
@@ -69,36 +102,12 @@
               @change="handleChange($event, 'sublocation')"
             ></a-select>
           </a-col>
-          <a-col
-            :style="{
-              padding: '2px',
-              marging: '1px 0px 1px 0px',
-              align: 'center',
-              justify: 'center',
-            }"
-          >
-            <a-button
-              @click="
-                getTrainingSummary(),
-                  (county = 'Select County'),
-                  (country = 'Select Country')
-              "
-              :style="{
-                padding: '2px',
-                background: '#24daa3',
-                marging: '1px 0px 1px 0px',
-                align: 'center',
-                justify: 'center',
-              }"
-            >
-              <ReloadOutlined />
-              Reset
-            </a-button>
-          </a-col>
-        </a-row>
-      </template>
-    </sdPageHeader>
-    <Main>
+          </a-row>
+          </div>
+        </section>
+
+        <!-- Summary stats -->
+        <section class="ou-irs-stats">
       <a-row :gutter="25">
         <a-col :xxl="12" :md="12" :sm="12" :xs="24" class="stat-col">
           <sdCards headless class="stat-card">
@@ -315,11 +324,14 @@
           </sdCards>
         </a-col>
       </a-row>
+        </section>
+      </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 <script setup>
 import { RecordViewWrapper } from "../style";
+import { BudgetPageWrapper } from "../budget/style";
 import { Main } from "../../styled";
 //import { useStore } from "vuex";
 import { onMounted, ref, reactive } from "vue";
@@ -604,6 +616,31 @@ const fetchCounties = async () => {
     });
 };
 </script>
+
+<style lang="less" scoped>
+/* Theme for the IRS summary stat tiles — matches the events/activities look */
+.ou-irs-stats {
+  .stat-card {
+    border: 1px solid #e1efe6;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+    overflow: hidden;
+    margin-bottom: 14px;
+    background: #fff;
+
+    .stat-title {
+      color: #15693c !important;
+    }
+    .stat-span {
+      color: #7a8a82 !important;
+      font-size: 12px;
+    }
+    .stat-table {
+      width: 100%;
+    }
+  }
+}
+</style>
 <style>
 .badge-orange {
   background-color: orange;

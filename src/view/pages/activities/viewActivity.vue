@@ -12,8 +12,20 @@
               All approved field activities in one place — open an activity to
               manage officers, participants and payroll.
             </p>
+            <span v-if="scopeLabel" class="ac-scope-chip">
+              <sdFeatherIcons type="map-pin" size="12" />
+              {{ scopeLabel }}
+            </span>
           </div>
           <div class="ph-actions">
+            <router-link
+              v-if="canCreateActivity"
+              to="/activities/activity-create"
+              class="ac-create-btn"
+            >
+              <sdFeatherIcons type="plus" size="14" />
+              Create Activity
+            </router-link>
             <div class="ac-search">
               <span class="search-icon">
                 <sdFeatherIcons type="search" size="14" />
@@ -85,13 +97,26 @@
               @change="handleFilterChange"
             ></a-select>
             <a-select
+              v-if="allowedLevels.includes('county')"
               v-model:value="countyFilter"
               allow-clear
               show-search
-              placeholder="County"
+              :placeholder="countyPlaceholder"
               :options="countyOptions"
               :filter-option="filterOption"
               :loading="countiesLoading"
+              :disabled="userLevelId === 2"
+              @change="handleCountyChange"
+            ></a-select>
+            <a-select
+              v-if="allowedLevels.includes('subcounty')"
+              v-model:value="subCountyFilter"
+              allow-clear
+              show-search
+              placeholder="Sub County"
+              :options="subCountyOptions"
+              :filter-option="filterOption"
+              :loading="subCountiesLoading"
               @change="handleFilterChange"
             ></a-select>
           </div>
@@ -246,10 +271,7 @@ import axios from "@/Axiosconfig";
 import { RecordViewWrapper } from "../style";
 import { BudgetPageWrapper } from "../budget/style";
 import { Main } from "../../styled";
-import { onMounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
-
-const route = useRoute();
+import { computed, onMounted, ref, watch } from "vue";
 
 const columns = [
   { title: "Activity Name", dataIndex: "name", key: "id" },
@@ -322,10 +344,99 @@ const payrollStatus = ref(null);
 const countyFilter = ref(null);
 const countyOptions = ref([]);
 const countiesLoading = ref(false);
+const subCountyFilter = ref(null);
+const subCountyOptions = ref([]);
+const subCountiesLoading = ref(false);
 
 const currentPage = ref(1);
 const pageSize = ref(100);
 const datatotal = ref(0);
+
+// ── Role & location aware access ────────────────────────────────────────────
+// The logged-in user lives in sessionStorage as { user: { level, location,
+// role, level_id, location_id, role_id } }. We use it to scope the listing:
+//   level 1 (national)   → filters for any county / sub-county
+//   level 2 (county)     → pinned to their own county, may drill into sub-counties
+//   level 3 (sub-county) → backend scopes data to their location, no pickers
+let userSession = null;
+try {
+  userSession = JSON.parse(sessionStorage.getItem("user") || "null");
+} catch (e) {
+  userSession = null;
+}
+const profile = userSession?.user || userSession || {};
+const userLevelId = Number(profile.level_id ?? profile.level?.id ?? 0);
+const userLocationId = Number(profile.location_id ?? profile.location?.id ?? 0);
+const userRoleName = profile.role?.name || "";
+const userLocationName = profile.location?.name || "";
+
+// Role-based access — the "Create Activity" shortcut is gated by the user's
+// role NAME (stable key from the API roles table), not a hard-coded role id.
+const canCreateActivity = computed(() => userRoleName === "Super Admin");
+
+// Human readable scope shown in the page header, e.g. "Super Admin · Nairobi".
+const scopeLabel = computed(() => {
+  const parts = [];
+  if (userRoleName) parts.push(userRoleName);
+  if (userLevelId === 1) parts.push("National");
+  else if (userLocationName) parts.push(userLocationName);
+  return parts.join(" · ");
+});
+
+const allowedLevels = ref(["county", "subcounty"]);
+const countyPlaceholder = userLevelId === 2 ? "Your County" : "County";
+
+// Decide which location pickers are rendered based on the user's level.
+const updateFilters = () => {
+  if (userLevelId === 1) {
+    allowedLevels.value = ["county", "subcounty"];
+  } else if (userLevelId === 2) {
+    // County users are pinned to their own county (the backend enforces the
+    // same scope) but can still drill down into sub-counties below it.
+    allowedLevels.value = ["county", "subcounty"];
+    countyFilter.value = userLocationId || null;
+    if (countyFilter.value) {
+      countyOptions.value = [
+        { value: countyFilter.value, label: userLocationName || "My County" },
+      ];
+    }
+  } else {
+    allowedLevels.value = [];
+  }
+};
+
+// Load sub-counties that belong to the selected county (numeric org_units id).
+const fetchSubCounties = async (countyId) => {
+  subCountyOptions.value = [];
+  if (!countyId) return;
+  subCountiesLoading.value = true;
+  try {
+    const res = await axios.get("get_subcounties", {
+      params: { county_id: countyId },
+    });
+    const json = res.data;
+    const list = Array.isArray(json)
+      ? json
+      : Array.isArray(json?.data)
+        ? json.data
+        : [];
+    subCountyOptions.value = list
+      .filter((s) => s && s.id != null && s.name != null)
+      .map((s) => ({ value: s.id, label: s.name }));
+  } catch (error) {
+    console.error(error);
+    subCountyOptions.value = [];
+  } finally {
+    subCountiesLoading.value = false;
+  }
+};
+
+const handleCountyChange = () => {
+  subCountyFilter.value = null;
+  subCountyOptions.value = [];
+  if (countyFilter.value) fetchSubCounties(countyFilter.value);
+  handleFilterChange();
+};
 
 const fundingLabel = (fundingId) =>
   Number(fundingId) === 1 ? "GF" : Number(fundingId) === 2 ? "PMI" : "—";
@@ -380,8 +491,18 @@ const buildQuery = (page = currentPage.value) => {
   if (searchItem.value) params.append("query", searchItem.value);
   if (payrollStatus.value != null && payrollStatus.value !== "")
     params.append("payroll_status", payrollStatus.value);
-  if (countyFilter.value != null && countyFilter.value !== "")
+  // County (level 2) users are already scoped to their own county by the
+  // backend. Sending the county param as well would additionally require a
+  // sub-county relation and drop county-level activities, so we only append
+  // it for national (level 1) users who actually pick a county.
+  if (
+    countyFilter.value != null &&
+    countyFilter.value !== "" &&
+    userLevelId !== 2
+  )
     params.append("county", countyFilter.value);
+  if (subCountyFilter.value != null && subCountyFilter.value !== "")
+    params.append("sub_county", subCountyFilter.value);
   if (activityType.value != null && activityType.value !== "")
     params.append("activity_list", activityType.value);
   if (campaignFilter.value != null && campaignFilter.value !== "")
@@ -424,6 +545,9 @@ const fetchActivities = async () => {
 };
 
 const fetchCounties = async () => {
+  // County (2) & sub-county (3) users never load the full county list — their
+  // scope is derived from their own location instead.
+  if (userLevelId !== 1) return;
   countiesLoading.value = true;
   try {
     const res = await axios.get("get_counties");
@@ -481,25 +605,17 @@ watch(
   }
 );
 
-// When the same page is reached via the "List Activities", "GF" or "PMI"
-// menu entries (all render this component), preset the funding filter to
-// match the routed scope. As the user changes the funding dropdown, the
-// filter takes over from the route.
-watch(
-  () => route.name,
-  (name) => {
-    if (name === "gf-activities") fundingSource.value = "gf";
-    else if (name === "pmi-activities") fundingSource.value = "pmi";
-    else fundingSource.value = "all";
-    currentPage.value = 1;
-    fetchActivities();
-  },
-  { immediate: true }
-);
-
 onMounted(() => {
-  fetchCounties();
+  // Scope the location filters to the logged-in user's level & location.
+  updateFilters();
+  if (userLevelId === 1) fetchCounties();
+  if (userLevelId === 2 && countyFilter.value)
+    fetchSubCounties(countyFilter.value);
   fetchCampaigns();
+  // Load the activity records. The original page relied on an immediate route
+  // watcher to trigger this; after the consolidation the mount hook is the
+  // single entry point, so it must call fetchActivities() explicitly.
+  fetchActivities();
 });
 </script>
 <style lang="less" scoped>
@@ -844,6 +960,41 @@ onMounted(() => {
     }
     .ac-card-meta {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* role / location scope chip in the page header */
+  .ac-scope-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #eaf7f0;
+    border: 1px solid #bfe6cd;
+    color: #15693c;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  /* role-based create shortcut in the page header */
+  .ac-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 22px;
+    background: #16a34a;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    &:hover {
+      background: #15803d;
+      color: #fff;
     }
   }
 }

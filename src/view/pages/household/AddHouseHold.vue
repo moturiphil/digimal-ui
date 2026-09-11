@@ -1,14 +1,36 @@
 <template>
-  <Main>
-    <sdPageHeader ghost :title="`Add Household from ${chp_village}`" />
+  <RecordViewWrapper>
+    <Main>
+      <BudgetPageWrapper class="minimal-dashboard ou-units-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▦</span> Register HouseHold
+              <span v-if="chp_village" class="ou-chip">{{ chp_village }}</span>
+            </h3>
+            <div class="ou-crumb">
+              <span class="crumb-current">HouseHolds</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">Register HouseHold</span>
+            </div>
+          </div>
+          <div class="ph-actions">
+            <router-link to="/households/list" class="ou-action-link">
+              <sdFeatherIcons type="list" size="14" />
+              <span>View all households</span>
+            </router-link>
+          </div>
+        </header>
 
-    <a-row :gutter="15">
-      <a-col :xs="24">
-        <RecordFormWrapper>
-          <sdCards headless>
-            <a-row justify="center">
-              <a-col :xl="10" :md="16" :xs="24">
-                <BasicFormWrapper>
+        <section class="panel ou-form-panel">
+        <a-row :gutter="15">
+          <a-col :xs="24">
+            <RecordFormWrapper>
+              <sdCards headless>
+                <a-row justify="center">
+                  <a-col :xl="10" :md="16" :xs="24">
+                    <BasicFormWrapper>
                   <a-form
                     class="add-record-form"
                     :style="{ width: '100%' }"
@@ -255,11 +277,15 @@
         </RecordFormWrapper>
       </a-col>
     </a-row>
-  </Main>
+      </section>
+      </BudgetPageWrapper>
+    </Main>
+  </RecordViewWrapper>
 </template>
 
 <script>
-import { RecordFormWrapper } from "./style";
+import { RecordFormWrapper, RecordViewWrapper } from "./style";
+import { BudgetPageWrapper } from "../budget/style";
 import { Main, BasicFormWrapper } from "../../styled";
 import { useStore } from "vuex";
 import { reactive, ref, defineComponent, computed } from "vue";
@@ -275,7 +301,13 @@ import store from "../../../vuex/store";
 
 const AddNewHH = defineComponent({
   name: "AddHH",
-  components: { RecordFormWrapper, Main, BasicFormWrapper },
+  components: {
+    RecordFormWrapper,
+    RecordViewWrapper,
+    BudgetPageWrapper,
+    Main,
+    BasicFormWrapper,
+  },
 
   data() {
     const { state } = useStore();
