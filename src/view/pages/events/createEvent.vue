@@ -306,7 +306,7 @@
                       <a-form-item label="LSO / LPO">
                         <a-select
                           v-model:value="formState.vendor_lso_id"
-                          placeholder="Pick an open LSO/LPO"
+                          placeholder="Pick an LSO/LPO"
                           allow-clear
                           show-search
                           option-filter-prop="label"
@@ -317,7 +317,8 @@
                             v-for="lso in openLsos"
                             :key="lso.id"
                             :value="lso.id"
-                            :label="`${lso.lso_number || 'LSO'} — ${lso.vendor?.name || 'Unknown vendor'}${lso.event_description ? ' — ' + lso.event_description : ''}`"
+                            :label="`${lso.lso_number || 'LSO'} — ${lso.vendor?.name || 'Unknown vendor'}${lso.event_description ? ' — ' + lso.event_description : ''}${isExpiredLso(lso) ? ' — Expired' : ''}`"
+                            :disabled="isExpiredLso(lso)"
                           >
                             <strong>{{ lso.lso_number || 'LSO' }}</strong>
                             <span> — {{ lso.vendor?.name || 'Unknown vendor' }}</span>
@@ -325,14 +326,17 @@
                               <sdFeatherIcons type="map-pin" size="11" />
                               {{ lso.event_description }}
                             </span>
+                            <span v-if="isExpiredLso(lso)" class="lso-opt-expired">
+                              <sdFeatherIcons type="x-circle" size="11" /> Expired
+                            </span>
                           </a-select-option>
                         </a-select>
                         <p class="pb-hint">
-                          <span v-if="lsoLoading">Loading open LSO/LPOs…</span>
+                          <span v-if="lsoLoading">Loading LSO/LPOs…</span>
                           <span v-else-if="openLsosTotal > 0">
-                            Showing {{ openLsos.length }} of {{ openLsosTotal }} open LSO/LPOs available for linking.
+                            Showing {{ openLsos.length }} of {{ openLsosTotal }} LSO/LPOs within your area — expired ones are disabled.
                           </span>
-                          <span v-else>No open LSO/LPOs found. Procurement must register one before linking it here.</span>
+                          <span v-else>No LSO/LPOs found. Procurement must register one before linking it here.</span>
                         </p>
                       </a-form-item>
 
@@ -357,28 +361,30 @@
                       :label="showProcurementSection && formState.requires_paid_venue ? 'Venue name' : 'Venue'"
                       v-if="!showProcurementSection || formState.requires_paid_venue"
                     >
-                      <a-auto-complete
+                      <a-select
                         v-model:value="formState.venue"
                         :options="venueAutoCompleteOptions"
-                        placeholder="Select an existing venue or type a new one"
-                        :filter-option="filterVenueOption"
+                        placeholder="Select a saved venue"
+                        show-search
                         allow-clear
+                        :loading="venuesLoading"
+                        :filter-option="filterVenueOption"
                         :disabled="!!formState.vendor_lso_id"
-                        @search="handleVenueSearch"
+                        @change="validate('venue')"
                         @blur="validate('venue')"
                       >
                         <template #notFoundContent>
                           <span v-if="venuesLoading">Loading…</span>
-                          <span v-else>No saved venues yet — type to add a new one.</span>
+                          <span v-else>No venues available yet.</span>
                         </template>
-                      </a-auto-complete>
+                      </a-select>
                       <p class="venue-hint" v-if="formState.vendor_lso_id">
                         <sdFeatherIcons type="lock" size="11" />
                         <span>Venue auto-filled from the selected LSO/LPO. Clear the LSO/LPO to edit.</span>
                       </p>
                       <p class="venue-hint" v-else-if="!venuesLoading && venueOptions.length">
                         <sdFeatherIcons type="map-pin" size="11" />
-                        <span>{{ venueOptions.length }} saved venue{{ venueOptions.length === 1 ? '' : 's' }} available — start typing to filter or add a new one.</span>
+                        <span>{{ venueOptions.length }} saved venue{{ venueOptions.length === 1 ? '' : 's' }} available — start typing to filter.</span>
                       </p>
                       <p
                         class="errors"
@@ -721,7 +727,7 @@ const AddNew = defineComponent({
       if (!showProcurementSection.value) return;
       lsoLoading.value = true;
       try {
-        const res = await fetch(`${process.env.VUE_APP_BASE_URL}/open_vendor_lsos`, {
+        const res = await fetch(`${process.env.VUE_APP_BASE_URL}/open_vendor_lsos?include_expired=1`, {
           method: "GET",
           headers: { "Content-Type": "application/json", ...authHeader() },
         });
@@ -761,8 +767,13 @@ const AddNew = defineComponent({
       const haystack = String(option?.value ?? option?.label ?? "").toLowerCase();
       return haystack.indexOf(String(input).toLowerCase()) >= 0;
     };
-    const handleVenueSearch = (val) => {
-      formState.venue = val;
+
+    // An LSO is expired once its expiry date is before today. Every LSO within
+    // the user's hierarchy is listed in the picker, but expired entries are
+    // disabled so they can never be linked to a new event.
+    const isExpiredLso = (lso) => {
+      const d = lso?.expiry_date;
+      return d ? dayjs(d).isBefore(dayjs(), "day") : false;
     };
 
     const onLsoChange = (lsoId) => {
@@ -780,6 +791,17 @@ const AddNew = defineComponent({
       const lso = openLsos.value.find(
         (l) => String(l.id) === String(lsoId)
       );
+
+      // Safety net — disabled options cannot normally be selected.
+      if (lso && isExpiredLso(lso)) {
+        formState.vendor_lso_id = null;
+        notification.error({
+          message: "Expired LSO/LPO",
+          description:
+            "This LSO/LPO has expired and can no longer be linked to an event.",
+        });
+        return;
+      }
 
       if (lso) {
         // Use the vendor (e.g. the hotel) name as the venue for now, falling
@@ -865,6 +887,22 @@ const AddNew = defineComponent({
       store.commit("setIsSubmitting", true);
       if (formState.county_id == "") {
         formState.county_id = user_data.user.location_id;
+      }
+
+      // Safety net: the LSO picker disables expired entries, but reject a
+      // stale selection anyway so an expired LSO/LPO is never submitted.
+      const selectedLso = openLsos.value.find(
+        (l) => String(l.id) === String(formState.vendor_lso_id)
+      );
+      if (selectedLso && isExpiredLso(selectedLso)) {
+        store.commit("setIsSubmitting", false);
+        formState.vendor_lso_id = null;
+        notification.error({
+          message: "Expired LSO/LPO",
+          description:
+            "The selected LSO/LPO has expired and can no longer be linked to an event. Please pick another.",
+        });
+        return;
       }
       const data = {
         // name: formState.name,
@@ -1062,8 +1100,8 @@ const AddNew = defineComponent({
       venuesLoading,
       venueAutoCompleteOptions,
       filterVenueOption,
-      handleVenueSearch,
       onLsoChange,
+      isExpiredLso,
       disabledStartDate,
       onStartDateChange,
       formatDisplayDate,
@@ -1295,6 +1333,26 @@ export default AddNew;
   font-size: 11px;
   color: #8a9399;
   line-height: 1.4;
+}
+/* Rich LSO/LPO option content inside the procurement picker */
+.lso-opt-venue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #15693c;
+}
+.lso-opt-expired {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  background: #fff1f1;
+  color: #c43d3d;
+  border: 1px solid #ffd1d1;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
 }
 .pb-hint {
   margin: 4px 0 0;

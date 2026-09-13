@@ -1,7 +1,7 @@
 <template>
   <RecordViewWrapper>
     <Main>
-      <BudgetPageWrapper class="minimal-dashboard ou-units-page">
+      <BudgetPageWrapper class="minimal-dashboard ou-units-page hh-registered-page">
         <!-- Page heading -->
         <header class="page-heading">
           <div class="ph-left">
@@ -15,18 +15,6 @@
             </div>
           </div>
           <div class="ph-actions">
-            <div class="ou-search">
-              <span class="search-icon">
-                <sdFeatherIcons type="search" size="14" />
-              </span>
-              <a-input
-                v-model:value="searchItem"
-                type="text"
-                name="dataSource"
-                placeholder="Search by ID No, Phone No, name"
-                allow-clear
-              />
-            </div>
             <div class="ou-view-toggle" role="group" aria-label="Toggle view">
               <button
                 type="button"
@@ -156,6 +144,19 @@
                               </a-col>
                             </a-space>
             </a-row>
+          </div>
+
+          <div class="ou-search">
+            <span class="search-icon">
+              <sdFeatherIcons type="search" size="14" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by ID No, Phone No, name"
+              allow-clear
+            />
           </div>
         </section>
 

@@ -1,7 +1,7 @@
 <template>
   <RecordViewWrapper>
     <Main>
-      <BudgetPageWrapper class="minimal-dashboard procurement-page">
+      <ProcurementPageWrapper class="bp-min">
         <a-spin :spinning="loading">
           <div v-if="vendor">
             <!-- Breadcrumb -->
@@ -86,7 +86,7 @@
                     <div class="info-row">
                       <span class="info-label">Sub-County</span>
                       <span class="info-value">
-                        {{ vendor.sub_county?.name || vendor.sub_county?.sub_county_name || '—' }}
+                        {{ subCounty?.name || subCounty?.sub_county_name || '—' }}
                       </span>
                     </div>
                   </div>
@@ -98,7 +98,7 @@
                     </div>
                     <div class="info-row" :class="taxCertExpired ? 'danger' : ''">
                       <span class="info-label">Tax Cert. Expiry</span>
-                      <span class="info-value">{{ vendor.tax_certificate_expiry || '—' }}</span>
+                      <span class="info-value">{{ taxCertExpiryLabel || '—' }}</span>
                     </div>
                     <div class="info-row">
                       <span class="info-label">Tax Certificate</span>
@@ -170,7 +170,7 @@
           </div>
         </div>
       </a-spin>
-    </BudgetPageWrapper>
+    </ProcurementPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -186,8 +186,7 @@ import BankAccountsTab from './BankAccountsTab.vue';
 import ContactsTab from './ContactsTab.vue';
 import LsosTab from './LsosTab.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
-import { RecordViewWrapper } from '../events/style';
-import { BudgetPageWrapper } from '../budget/style';
+import { RecordViewWrapper, ProcurementPageWrapper } from './style';
 
 const store = useStore();
 const route = useRoute();
@@ -210,9 +209,14 @@ const taxCertUrl = computed(
     vendor.value?.tax_compliance_certificate_url ||
     null,
 );
+const subCounty = computed(() => vendor.value?.subcounty || vendor.value?.sub_county || null);
 const taxCertExpired = computed(() => {
-  const d = vendor.value?.tax_certificate_expiry;
+  const d = vendor.value?.tax_compliance_expiry_date || vendor.value?.tax_certificate_expiry;
   return d ? dayjs(d).isBefore(dayjs(), 'day') : false;
+});
+const taxCertExpiryLabel = computed(() => {
+  const d = vendor.value?.tax_compliance_expiry_date || vendor.value?.tax_certificate_expiry;
+  return d ? dayjs(d).format('YYYY-MM-DD') : null;
 });
 
 const bankAccountsCount = computed(() => bankAccounts.value.length);
@@ -243,32 +247,6 @@ const onToggle = async () => {
 <style lang="less" scoped>
 .bp-min {
   padding-top: 24px;
-}
-.bp-head-main {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.bp-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  .bp-sub {
-    color: #7a8a82;
-    font-size: 13px;
-    margin: 0;
-  }
-}
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 32px;
-  padding: 6px 2px 4px;
-}
-@media (max-width: 768px) {
-  .info-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 .vendor-tabs {
   :deep(.ant-tabs-tab) {

@@ -59,21 +59,21 @@
           <div class="ou-stat">
             <span class="ic"><sdFeatherIcons type="home" size="16" /></span>
             <div>
-              <span class="val">{{ dataSource.length }}</span>
+              <span class="val">{{ summary.total }}</span>
               <span class="lbl">Households</span>
             </div>
           </div>
           <div class="ou-stat">
             <span class="ic"><sdFeatherIcons type="users" size="16" /></span>
             <div>
-              <span class="val">{{ totalHouseholdSize }}</span>
+              <span class="val">{{ summary.total_members }}</span>
               <span class="lbl">Total HH Members</span>
             </div>
           </div>
           <div class="ou-stat">
             <span class="ic"><sdFeatherIcons type="check-circle" size="16" /></span>
             <div>
-              <span class="val">{{ chpCount }}</span>
+              <span class="val">{{ summary.chp_count }}</span>
               <span class="lbl">CHPs</span>
             </div>
           </div>
@@ -301,16 +301,11 @@ export default defineComponent({
         router.push({ path: "/org-units/view" });
       }
     };
-    const totalHouseholdSize = computed(() =>
-      dataSource.value.reduce(
-        (sum, hh) => sum + (Number(hh.hh_size) || 0),
-        0
-      )
-    );
-    const chpCount = computed(
-      () =>
-        new Set(dataSource.value.map((hh) => hh.chw_id).filter(Boolean)).size
-    );
+    const summary = ref({
+      total: 0,
+      total_members: 0,
+      chp_count: 0,
+    });
     const inputValue = ref("");
     const household_id = ref("");
     const isModalOpen = ref(false);
@@ -329,6 +324,11 @@ export default defineComponent({
         })
         .then((response) => {
           console.log(response.data.data);
+          summary.value = response.data.summary || {
+            total: 0,
+            total_members: 0,
+            chp_count: 0,
+          };
           logs.value = response.data.data.map((item) => ({
             ...item,
             old_values: item.old_values,
@@ -439,8 +439,7 @@ export default defineComponent({
       searchItem,
       viewMode,
       goBack,
-      totalHouseholdSize,
-      chpCount,
+      summary,
       columns,
       handleChange,
       activeClass,

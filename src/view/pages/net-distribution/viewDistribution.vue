@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="legacy-platform-page">
     <sdPageHeader ghost title="Nets Distributions" />
 
     <Main>

@@ -26,18 +26,6 @@
               <sdFeatherIcons type="plus" size="14" />
               Create Activity
             </router-link>
-            <div class="ac-search">
-              <span class="search-icon">
-                <sdFeatherIcons type="search" size="14" />
-              </span>
-              <a-input
-                v-model:value="searchItem"
-                type="text"
-                name="dataSource"
-                placeholder="Search by name or activity code"
-                allow-clear
-              />
-            </div>
             <div class="ac-view-toggle" role="group" aria-label="Toggle view">
               <button
                 type="button"
@@ -120,6 +108,19 @@
               @change="handleFilterChange"
             ></a-select>
           </div>
+
+          <div class="ac-search">
+            <span class="search-icon">
+              <sdFeatherIcons type="search" size="14" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by name or activity code"
+              allow-clear
+            />
+          </div>
         </section>
 
         <!-- Activities list -->
@@ -195,10 +196,6 @@
                   <span class="ac-card-code">{{ record.activity_code }}</span>
                 </div>
                 <div class="ac-card-meta">
-                  <div>
-                    <span class="lbl">Campaign</span>
-                    <span class="val">{{ record.campaign_name || "—" }}</span>
-                  </div>
                   <div>
                     <span class="lbl">Funding</span>
                     <span class="val">
@@ -276,7 +273,6 @@ import { computed, onMounted, ref, watch } from "vue";
 const columns = [
   { title: "Activity Name", dataIndex: "name", key: "id" },
   { title: "Activity Code", dataIndex: "activity_code", key: "id" },
-  { title: "Campaign", dataIndex: "campaign_name", key: "id" },
   { title: "Start Date", dataIndex: "start_date", key: "id" },
   { title: "No. of Officers", dataIndex: "number_of_officers", key: "id" },
   { title: "No. of Days", dataIndex: "number_of_days", key: "id" },
@@ -692,7 +688,21 @@ onMounted(() => {
     box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
   }
 
+  /* Filter panel: filters on the left, search pinned to the right */
+  .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .filter-panel .ac-search {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
   .filter-grid {
+    flex: 1 1 0;
+    min-width: 240px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 10px;
@@ -709,6 +719,33 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     padding: 48px 0;
+  }
+
+  /* table (same look & feel as the Events list page) */
+  .ac-table-shell {
+    :deep(.ant-table) {
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    :deep(.ant-table-thead > tr > th) {
+      background: #f4fbf6;
+      color: #2f6746;
+      font-weight: 700;
+      border-bottom: 1px solid #e1efe6;
+    }
+    :deep(.ant-table-tbody > tr > td) {
+      border-bottom: 1px solid #f0f7f3;
+    }
+    :deep(.ant-table-tbody > tr:hover > td) {
+      background: #f5fbf7;
+    }
+    :deep(.table-actions) {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
   }
 
   /* status / payroll chip */

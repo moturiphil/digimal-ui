@@ -1,7 +1,9 @@
 import app from "./config/configApp";
 import router from "./routes/protectedRoute";
 import store from "@/vuex/store";
+import axios from "axios";
 import { startAccessSync } from "./services/access-sync";
+import { handleResponseError } from "./services/unauthenticated";
 import "./static/css/style.css";
 import "./static/css/org-units-theme.css";
 // Vue 3rd party plugins
@@ -71,6 +73,16 @@ console.error = function(...args) {
 };
 
 app.config.productionTip = false;
+
+// Global safety net: any request made via the default axios instance
+// (auth.service.js, user.service.js and pages that `import axios from "axios"`)
+// also re-routes the user to the login page on a 401
+// {"message":"Unauthenticated."} response. The shared instances created with
+// axios.create() in Axiosconfig.js and config/dataService/dataService.js do
+// NOT inherit default-instance interceptors, so they register their own copy
+// of the same handler.
+axios.interceptors.response.use((response) => response, handleResponseError);
+
 app.use(store);
 app.use(router);
 app.use(HighchartsVue);

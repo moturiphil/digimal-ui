@@ -1,5 +1,5 @@
 <template>
-  <RecordViewWrapper>
+  <RecordViewWrapper class="legacy-platform-page">
     <sdPageHeader title="Drop Off Points">
       <template #subTitle></template>
       <template #buttons>
