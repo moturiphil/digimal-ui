@@ -66,7 +66,7 @@ export const GATE_DEFINITIONS = Object.freeze({
   canViewActivities: { permissions: ["activity_list", "pmi_activities", "gf_activities"], roles: ["Super Admin"] },
   canViewOrgUnits: { permissions: ["counties_list", "list_subcounties", "sub_counties_list", "location_list", "sublocation_list", "wards_list"], roles: ADMIN_UNIT_OVERSIGHT },
   canViewRegHH: { permissions: ["households", "web_household_create"], roles: HOUSEHOLD_VIEW_OVERSIGHT },
-  canValidateHH: { permissions: ["household_validation", "hh_change_requests"], roles: ["Super Admin", "Community Health Assistant"] },
+  canValidateHH: { permissions: ["household-validation", "household_validation", "hh_change_requests"], roles: ["Super Admin", "Community Health Assistant"] },
   canReviewHHChanges: { permissions: ["hh_change_request_review"], roles: ["Super Admin", "SCMCC"] },
   canSubmitHHChanges: { permissions: ["hh_change_request_store"], roles: ["Community Health Assistant"] },
   canViewNetsDistributed: { permissions: ["net_distribution_by_post"], roles: NETS_MANAGEMENT },
@@ -209,7 +209,15 @@ export const NAV_MODULES = Object.freeze([
     label: "Households",
     pages: compact([
       { label: "HouseHolds Registered", path: "/households/list", permissions: ["households"] },
-      { label: "Households Validation", path: "/household/validation/dashboard", permissions: ["household_validation"] },
+      // `household-validation` is the canonical name the API middleware
+      // enforces (routes/api.php); `household_validation` is the legacy name
+      // older grants were made against — keep both so a grant of either shows
+      // the submenu and the dashboard actually loads.
+      {
+        label: "Households Validation",
+        path: "/household/validation/dashboard",
+        permissions: ["household-validation", "household_validation"],
+      },
       { label: "My Change Requests", path: "/household/my-change-requests", permissions: ["hh_change_request_store"] },
       { label: "Issue Nets", path: "/issue-nets", permissions: ["issue_nets"] },
     ]),
