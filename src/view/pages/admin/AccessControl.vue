@@ -55,6 +55,13 @@
                     </sdButton>
                   </div>
 
+                  <div v-if="permsLoadFailed" class="acs-perms-failed">
+                    ⚠ The permission list could not be loaded, so the module /
+                    sub-module checkboxes are disabled. Reload the page; if it
+                    persists, check that <code>massnet_permissions</code> has
+                    been seeded, then try again.
+                  </div>
+
                   <div v-if="permLoading" class="spin acs-spin">
                     <a-spin />
                   </div>
@@ -111,7 +118,16 @@
                           </label>
                         </div>
                         <div v-else class="acs-perm-grid">
-                          <span class="acs-no-perm">role-gated only (no API permission yet)</span>
+                          <span
+                            v-if="page.missingPermissions && page.missingPermissions.length"
+                            class="acs-no-perm"
+                          >
+                            No matching API permission in the database —
+                            {{ page.missingPermissions.join(', ') }}
+                          </span>
+                          <span v-else class="acs-no-perm">
+                            role-gated only (no API permission yet)
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -163,9 +179,9 @@
                   placeholder="Search by name, ID no or phone…"
                   allow-clear
                   style="width: 320px; max-width: 100%"
-                  @pressEnter="fetchUsers"
+                  @pressEnter="searchUsers"
                 />
-                <sdButton type="light" outlined @click="fetchUsers">
+                <sdButton type="light" outlined @click="searchUsers">
                   Search
                 </sdButton>
               </div>
@@ -173,9 +189,10 @@
                 <a-table
                   :data-source="users"
                   :columns="userColumns"
-                  :pagination="{ pageSize: 50, showSizeChanger: true }"
+                  :pagination="usersPagination"
                   row-key="id"
                   :loading="usersLoading"
+                  @change="onUsersTableChange"
                 >
                   <template #name="{ record }">
                     <span>{{ record.first_name }} {{ record.last_name }}</span>
@@ -295,12 +312,23 @@ const saving = ref(false);
 const groupedModules = computed(() =>
   NAV_MODULES.map((mod) => ({
     ...mod,
-    pages: mod.pages.map((page) => ({
-      ...page,
-      permissionItems: (page.permissions || [])
+    pages: mod.pages.map((page) => {
+      const items = (page.permissions || [])
         .map((name) => permissionByName.value[name])
-        .filter(Boolean),
-    })),
+        .filter(Boolean);
+      return {
+        ...page,
+        permissionItems: items,
+        // Permission names referenced by the navigation registry that have no
+        // matching row in `massnet_permissions` yet. Until those rows exist
+        // the checkbox has nothing to select — surface them so admins can seed
+        // them (PermissionSeeder / UrlPermissionGenerator) instead of hitting a
+        // page where clicking appears to do nothing.
+        missingPermissions: (page.permissions || []).filter(
+          (name) => !permissionByName.value[name]
+        ),
+      };
+    }),
   }))
 );
 
@@ -350,8 +378,22 @@ const moduleStateLabel = (mod) => {
   return checked >= ids.length ? "All granted" : checked > 0 ? "Partial" : "None";
 };
 
+// antdv checkbox `change` delivers a native-style event object
+// ({ target: { checked } }) — but some wrappers / future versions may emit a
+// plain boolean instead. Normalise both so the toggles never silently no-op.
+const eventChecked = (e) => {
+  if (typeof e === 'boolean') return e;
+  if (e && typeof e === 'object') {
+    if (e.target && typeof e.target === 'object' && 'checked' in e.target) {
+      return !!e.target.checked;
+    }
+    if ('checked' in e) return !!e.checked;
+  }
+  return !!e;
+};
+
 const togglePermission = (id, e) => {
-  if (e.target.checked) {
+  if (eventChecked(e)) {
     if (!checkedPermIds.value.includes(id)) checkedPermIds.value.push(id);
   } else {
     checkedPermIds.value = checkedPermIds.value.filter((x) => x !== id);
@@ -361,7 +403,7 @@ const togglePermission = (id, e) => {
 const togglePage = (page, e) => {
   const next = new Set(checkedPermIds.value);
   const ids = pageIds(page);
-  if (e.target.checked) ids.forEach((id) => next.add(id));
+  if (eventChecked(e)) ids.forEach((id) => next.add(id));
   else ids.forEach((id) => next.delete(id));
   checkedPermIds.value = Array.from(next);
 };
@@ -369,26 +411,31 @@ const togglePage = (page, e) => {
 const toggleModule = (mod, e) => {
   const next = new Set(checkedPermIds.value);
   const ids = moduleIds(mod);
-  if (e.target.checked) ids.forEach((id) => next.add(id));
+  if (eventChecked(e)) ids.forEach((id) => next.add(id));
   else ids.forEach((id) => next.delete(id));
   checkedPermIds.value = Array.from(next);
 };
 // ── Role / permission data loading ───────────────────────────────────────────
+const permsLoadFailed = ref(false);
+
 const loadPermissions = async () => {
   try {
-    const res = await axios.get("permissionsList");
+    const res = await axios.get('permissionsList');
     const data = res.data;
     allPermissions.value = Array.isArray(data)
       ? data
       : Array.isArray(data?.data)
         ? data.data
         : [];
+    // Zero permissions means every module/page checkbox has nothing to select.
+    permsLoadFailed.value = allPermissions.value.length === 0;
   } catch (error) {
     notification.error({
-      message: "Error",
-      description: "Failed to load permissions",
+      message: 'Error',
+      description: 'Failed to load permissions — module / sub-module checkboxes are disabled.',
     });
     allPermissions.value = [];
+    permsLoadFailed.value = true;
   }
 };
 
@@ -445,7 +492,23 @@ const saveRolePermissions = async () => {
 // ── Users & roles tab ────────────────────────────────────────────────────────
 const users = ref([]);
 const usersLoading = ref(false);
-const userQuery = ref("");
+const userQuery = ref('');
+// Server-side pagination state. Search runs on the backend across the WHOLE
+// user table (every page); the results are then paged in `per_page` chunks,
+// so paging through the table walks every match — not just the first fetch.
+const usersPage = ref(1);
+const usersPerPage = ref(50);
+const usersTotal = ref(0);
+
+const usersPagination = computed(() => ({
+  current: usersPage.value,
+  pageSize: usersPerPage.value,
+  total: usersTotal.value,
+  showSizeChanger: true,
+  pageSizeOptions: [10, 25, 50, 100],
+  showTotal: (t) =>
+    `${Number(t || 0).toLocaleString()} user${Number(t || 0) === 1 ? '' : 's'}`,
+}));
 
 // Level (National / County / Sub-County) and location (org unit) options for
 // the per-user editors. Loaded once via dedicated endpoints.
@@ -508,19 +571,53 @@ const userColumns = [
 const fetchUsers = async () => {
   usersLoading.value = true;
   try {
-    const res = await axios.get("users", {
-      params: { page: 1, per_page: 100, query: userQuery.value },
+    const res = await axios.get('users', {
+      params: {
+        page: usersPage.value,
+        per_page: usersPerPage.value,
+        query: userQuery.value.trim() || undefined,
+      },
     });
-    users.value = Array.isArray(res.data) ? res.data : res.data?.data || [];
+    const body = res.data || {};
+    users.value = Array.isArray(body.data) ? body.data : [];
+    const pg = body.pagination || {};
+    usersTotal.value = Number(pg.total) || users.value.length;
+    // Sync the table with the page the server actually served (it clamps to
+    // the last page, e.g. after deleting the last row of a page).
+    if (Number(pg.current_page)) usersPage.value = Number(pg.current_page);
   } catch (error) {
     notification.error({
-      message: "Error",
-      description: "Failed to load users",
+      message: 'Error',
+      description: 'Failed to load users',
     });
     users.value = [];
+    usersTotal.value = 0;
   } finally {
     usersLoading.value = false;
   }
+};
+
+// Search-based navigation: reset to page 1 so the user always starts at the
+// top of the result set. The query itself is applied server-side and matches
+// across every page of users (first / last name, phone, ID number).
+const searchUsers = () => {
+  usersPage.value = 1;
+  fetchUsers();
+};
+
+// antdv fires the table's `@change` with
+// (pagination, filters, sorter, { currentDataSource, action }) on paginate,
+// sort, or filter interactions. Only pagination matters here.
+const onUsersTableChange = (pagination, filters, sorter, changeInfo) => {
+  if (!pagination) return;
+  if (changeInfo && String(changeInfo.action) !== 'paginate') return;
+  const page = Number(pagination.current);
+  const size = Number(pagination.pageSize);
+  if (!page || !size) return;
+  if (page === usersPage.value && size === usersPerPage.value) return;
+  usersPage.value = page;
+  usersPerPage.value = size;
+  fetchUsers();
 };
 
 const changeUserRole = async (record, roleId) => {
@@ -667,6 +764,22 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     padding: 40px 0;
+  }
+
+  .acs-perms-failed {
+    margin: 10px 0 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #b3502f;
+    background: #fdf1ef;
+    border: 1px solid #f3d7d3;
+    border-radius: 8px;
+
+    code {
+      background: transparent;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
   }
 
   .acs-modules {
