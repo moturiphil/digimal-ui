@@ -391,6 +391,7 @@ export default defineComponent({
       switch (type) {
         case "budget.submitted":       return "send";
         case "budget.county_approved": return "check";
+        case "budget.dnmp_reviewed":   return "check";
         case "budget.approved":        return "check-circle";
         case "budget.referred":        return "rotate-ccw";
         case "hh_change_request.submitted": return "send";
@@ -403,6 +404,7 @@ export default defineComponent({
       switch (type) {
         case "budget.approved":        return "bg-success";
         case "budget.county_approved": return "bg-primary";
+        case "budget.dnmp_reviewed":   return "bg-primary";
         case "budget.referred":        return "bg-warning";
         case "budget.submitted":       return "bg-info";
         case "hh_change_request.submitted": return "bg-info";

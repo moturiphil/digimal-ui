@@ -3,6 +3,11 @@
     <Main>
       <header class="ev-detail-header">
         <div class="ev-detail-heading">
+          <div class="ev-detail-back">
+            <sdButton size="small" class="pill-btn" @click="goBack">
+              <sdFeatherIcons type="arrow-left" size="13" /> Back
+            </sdButton>
+          </div>
           <h2 class="ev-detail-title">{{ event_name }}</h2>
           <div class="ev-detail-chips">
             <span class="ev-chip ev-chip-code">{{ event_code }}</span>
@@ -281,6 +286,30 @@
                   </template>
                 </a-tab-pane>
               </a-tabs>
+              <div
+                class="ev-view-toggle"
+                role="group"
+                aria-label="Toggle participants view"
+              >
+                <button
+                  type="button"
+                  class="ev-toggle-btn"
+                  :class="{ active: viewMode === 'cards' }"
+                  @click="viewMode = 'cards'"
+                >
+                  <sdFeatherIcons type="grid" size="14" />
+                  <span>Cards</span>
+                </button>
+                <button
+                  type="button"
+                  class="ev-toggle-btn"
+                  :class="{ active: viewMode === 'table' }"
+                  @click="viewMode = 'table'"
+                >
+                  <sdFeatherIcons type="list" size="14" />
+                  <span>Table</span>
+                </button>
+              </div>
               <div class="ev-table-search">
                 <span class="search-icon">
                   <sdFeatherIcons type="search" size="14" />
@@ -306,8 +335,10 @@
                       </div>
 
                       <div v-else>
+                        <!-- Table view (desktop / user selected) -->
+                        <div v-if="viewMode === 'table'">
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive ev-table-shell"
                           v-show="activeClass === 'all'"
                         >
                           <a-table
@@ -356,7 +387,7 @@
                         </TableWrapper>
 
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive ev-table-shell"
                           v-show="activeClass === 'confirmed'"
                         >
                           <a-table
@@ -371,7 +402,7 @@
                         </TableWrapper>
 
                         <TableWrapper
-                          class="table-data-view table-responsive"
+                          class="table-data-view table-responsive ev-table-shell"
                           v-show="activeClass === 'pending'"
                         >
                           <!--
@@ -410,28 +441,192 @@
                                   >
                                     Auto-validated
                                   </a-tag>
-                                  <template v-else>
-                                    <sdButton
-                                      type="success"
-                                      size="extra-small"
-                                      :disabled="isValidating"
-                                      @click="validateSinglePending(record.id)"
-                                    >
-                                      Confirm Attendance
-                                    </sdButton>
-                                    <sdButton
-                                      type="warning"
-                                      size="extra-small"
-                                      @click="resendConfirmation(record.id)"
-                                    >
-                                      Resend Confirmation
-                                    </sdButton>
-                                  </template>
+                                  <sdButton
+                                    type="warning"
+                                    size="extra-small"
+                                    @click="resendConfirmation(record.id)"
+                                  >
+                                    Resend Confirmation
+                                  </sdButton>
                                 </div>
                               </td>
                             </template>
                           </a-table>
                         </TableWrapper>
+                        </div>
+
+                        <!-- Card view (default on mobile / user selectable on
+                             desktop). Mirrors the participant tables: one card
+                             per participant, grouped by the active tab. -->
+                        <div v-else class="ev-participant-cards">
+                          <!-- All participants -->
+                          <div v-show="activeClass === 'all'" class="ev-card-list">
+                            <article
+                              v-for="record in filteredData"
+                              :key="record.id"
+                              class="ev-card"
+                            >
+                              <div class="ev-card-head">
+                                <div class="ev-card-title">{{ record.fullName }}</div>
+                                <span class="ev-card-code">{{ record.phone_no }}</span>
+                              </div>
+                              <div class="ev-card-meta">
+                                <div>
+                                  <span class="lbl">Phone</span>
+                                  <span class="val">{{ record.phone_no || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Location</span>
+                                  <span class="val">{{ record.location_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Level</span>
+                                  <span class="val">{{ record.level_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Organization</span>
+                                  <span class="val">{{ record.org_types_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Role</span>
+                                  <span class="val">{{ record.role_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Attendance Days</span>
+                                  <span class="val">{{ record.no_of_days ?? "—" }}</span>
+                                </div>
+                              </div>
+                              <div class="ev-card-actions">
+                                <sdButton
+                                  v-if="record.is_facilitator == false"
+                                  size="extra-small"
+                                  type="success"
+                                  :disabled="isStarting"
+                                  @click="assignFacilitator(record)"
+                                >
+                                  Assign Facilitator
+                                </sdButton>
+                                <sdButton
+                                  v-if="record.is_facilitator == true"
+                                  size="extra-small"
+                                  type="warning"
+                                  :disabled="isStarting"
+                                  @click="deassignFacilitator(record)"
+                                >
+                                  De-assign Facilitator
+                                </sdButton>
+                                <sdButton
+                                  v-if="isApprovedGenerator"
+                                  size="extra-small"
+                                  type="danger"
+                                  @click="voidParticipant(record.id)"
+                                >
+                                  Void Participant
+                                </sdButton>
+                              </div>
+                            </article>
+                          </div>
+                          <!-- Confirmed participants -->
+                          <div v-show="activeClass === 'confirmed'" class="ev-card-list">
+                            <article
+                              v-for="record in filteredData"
+                              :key="record.id"
+                              class="ev-card"
+                            >
+                              <div class="ev-card-head">
+                                <div class="ev-card-title">{{ record.fullName }}</div>
+                                <span class="ev-card-code">{{ record.phone_no }}</span>
+                              </div>
+                              <div class="ev-card-meta">
+                                <div>
+                                  <span class="lbl">Phone</span>
+                                  <span class="val">{{ record.phone_no || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Location</span>
+                                  <span class="val">{{ record.location_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Level</span>
+                                  <span class="val">{{ record.level_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Organization</span>
+                                  <span class="val">{{ record.org_types_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Role</span>
+                                  <span class="val">{{ record.role_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Attendance Days</span>
+                                  <span class="val">{{ record.no_of_days ?? "—" }}</span>
+                                </div>
+                              </div>
+                            </article>
+                          </div>
+                          <!-- Pending participants -->
+                          <div v-show="activeClass === 'pending'" class="ev-card-list">
+                            <div class="ev-validate-bar is-notice">
+                              <span class="ev-validate-hint">
+                                <sdFeatherIcons type="info" size="14" />
+                                &nbsp; Attendance is confirmed by participants
+                                themselves via their SMS confirmation code —
+                                the host cannot confirm attendance on their
+                                behalf. Use "Resend Confirmation" to re-send a
+                                participant's code if needed.
+                              </span>
+                            </div>
+                            <article
+                              v-for="record in filteredData"
+                              :key="record.id"
+                              class="ev-card"
+                            >
+                              <div class="ev-card-head">
+                                <div class="ev-card-title">{{ record.fullName }}</div>
+                                <span class="ev-card-code">{{ record.phone_no }}</span>
+                              </div>
+                              <div class="ev-card-meta">
+                                <div>
+                                  <span class="lbl">Phone</span>
+                                  <span class="val">{{ record.phone_no || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Location</span>
+                                  <span class="val">{{ record.location_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Level</span>
+                                  <span class="val">{{ record.level_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Organization</span>
+                                  <span class="val">{{ record.org_types_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Role</span>
+                                  <span class="val">{{ record.role_id || "—" }}</span>
+                                </div>
+                                <div>
+                                  <span class="lbl">Attendance Days</span>
+                                  <span class="val">{{ record.no_of_days ?? "—" }}</span>
+                                </div>
+                              </div>
+                              <div class="ev-card-actions">
+                                <a-tag v-if="pendingAutoValidated" color="success">
+                                  Auto-validated
+                                </a-tag>
+                                <sdButton
+                                  type="warning"
+                                  size="extra-small"
+                                  @click="resendConfirmation(record.id)"
+                                >
+                                  Resend Confirmation
+                                </sdButton>
+                              </div>
+                            </article>
+                          </div>
+                        </div>
                       </div>
                       <!-- Void Participants Modal -->
                       <a-modal
@@ -856,6 +1051,16 @@ const event_location_id = plainquery.location;
 const event_code = plainquery.event_code;
 const event_payroll_status = plainquery.payroll_status;
 const router = useRouter();
+
+// Back to the events list. Uses the browser history when arriving via in-app
+// navigation; falls back to the Events list page on a hard refresh.
+const goBack = () => {
+  if (window.history.state?.back) {
+    router.back();
+  } else {
+    router.push({ name: "event-view" });
+  }
+};
 const { state } = useStore();
 const isLoading = ref(true);
 const dataSource = ref([]);
@@ -875,8 +1080,6 @@ const export_participants_url = `${process.env.VUE_APP_BASE_URL}/event_participa
 const event_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_matrix?event_list_id=${plainquery.event_list_id}`;
 const orgs_matrix = `${process.env.VUE_APP_BASE_URL}/view_event_org_matrix?event_list_id=${plainquery.event_list_id}`;
 const cadres_url = `${process.env.VUE_APP_BASE_URL}/get_event-registration_role_counts/${plainquery.id}`;
-const sub_county_post = `${process.env.VUE_APP_BASE_URL}/get_sub_county_posts?subcounty_id=${event_location_id}`;
-const total_sub_county_post = ref(0);
 const event_matrixes = ref([]);
 const org_matrixes = ref([]);
 const cadres = ref([]);
@@ -885,6 +1088,13 @@ const deassignModal = ref(false);
 const participant = ref("");
 const id_user = ref("");
 const searchItem = ref("");
+
+// Cards/Table view toggle for the participants list — mirrors the events &
+// activities list pages (cards by default on narrow/mobile screens, table on
+// desktop where the columns fit; the user can switch either way).
+const viewMode = ref(
+  typeof window !== "undefined" && window.innerWidth <= 991 ? "cards" : "table"
+);
 const isDownloading = ref(false);
 
 // ── Event lifecycle (submit for payroll / generate payroll) ──
@@ -1179,11 +1389,13 @@ const rt = useRouter();
 
 onMounted(async () => {
   isLoading.value = true;
+  // Essential first paint only: participant table data + the live event
+  // payload (header badges / LSO + payroll gating). Modal-only data
+  // (event matrix, org matrix, cadre summary, trainers, LSO list) is fetched
+  // on demand when the corresponding modal is opened — see openMatrixModal,
+  // openCadreModal, openTrainersModal and openLsoUploadModal.
   getEventParticipants();
   fetchLiveEvent();
-  if (event_list_id == 20) {
-    getPostCount();
-  }
 });
 
 const getEventParticipants = async () => {
@@ -1498,6 +1710,10 @@ const handleCancelArchive = () => {
 };
 
 const openMatrixModal = () => {
+  // Matrix + org-matrix are modal-only data — fetch them now that the modal
+  // is being opened instead of at page load.
+  getEventMatrix();
+  getOrgMatrix();
   isMatrixModalOpen.value = true;
 };
 
@@ -1506,6 +1722,8 @@ const handleCancelMatrix = () => {
 };
 
 const openCadreModal = () => {
+  // Cadre/participation summary is modal-only data — fetched on open.
+  getTraineCadres();
   isCadreModalOpen.value = true;
 };
 
@@ -1526,8 +1744,6 @@ const getEventMatrix = () => {
     });
 };
 
-getEventMatrix();
-
 const getOrgMatrix = () => {
   axios
     .get(orgs_matrix, {
@@ -1542,8 +1758,6 @@ const getOrgMatrix = () => {
     });
 };
 
-getOrgMatrix();
-
 const getTraineCadres = () => {
   axios
     .get(cadres_url, {
@@ -1557,8 +1771,6 @@ const getTraineCadres = () => {
       console.error(error);
     });
 };
-
-getTraineCadres();
 
 const exportParticipants = async () => {
   isDownloading.value = true;
@@ -1739,28 +1951,6 @@ computed(() => {
     return false;
   }
 });
-
-const getPostCount = async () => {
-  try {
-    const response = await fetch(sub_county_post, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-    });
-
-    const data = await response.json(); // Await here to resolve the JSON promise
-    console.log(data); // Log data after it has resolved
-    total_sub_county_post.value = data.total_posts;
-  } catch (error) {
-    console.error("Error:", error);
-    notification.error({
-      message: "Error",
-      description: `${error}`,
-    });
-  }
-};
 </script>
 
 <style>
@@ -2197,6 +2387,33 @@ const getPostCount = async () => {
   color: inherit;
 }
 
+/* ── Participant tables (same look & feel as the Events list page) ── */
+.ev-table-shell {
+  :deep(.ant-table) {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  :deep(.ant-table-thead > tr > th) {
+    background: #f4fbf6;
+    color: #2f6746;
+    font-weight: 700;
+    border-bottom: 1px solid #e1efe6;
+  }
+  :deep(.ant-table-tbody > tr > td) {
+    border-bottom: 1px solid #f0f7f3;
+  }
+  :deep(.ant-table-tbody > tr:hover > td) {
+    background: #f5fbf7;
+  }
+  :deep(.table-actions) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+}
+
 /* ── Participant tabs ── */
 .ev-participant-tabs .ev-tab-label {
   display: inline-flex;
@@ -2265,5 +2482,152 @@ const getPostCount = async () => {
   .ev-hero-search {
     flex: 1 1 100%;
   }
+}
+/* ── Cards / Table view toggle (participants) — mirrors the Events list page ── */
+.ev-view-toggle {
+  display: inline-flex;
+  background: #f0f7f3;
+  border: 1px solid #d9f0e2;
+  border-radius: 22px;
+  padding: 3px;
+  gap: 2px;
+}
+.ev-view-toggle .ev-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #5f7268;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.ev-view-toggle .ev-toggle-btn.active {
+  background: #fff;
+  color: #15693c;
+  box-shadow: 0 2px 6px rgba(28, 122, 72, 0.12);
+}
+
+/* ── Participant cards view ── */
+.ev-participant-cards .ev-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px;
+}
+.ev-participant-cards .ev-card {
+  background: #fff;
+  border: 1px solid #e1efe6;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+}
+.ev-participant-cards .ev-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ev-participant-cards .ev-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #15693c;
+  line-height: 1.3;
+}
+.ev-participant-cards .ev-card-code {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2f6746;
+  background: #daf4e4;
+  border: 1px solid #9ad8b4;
+  border-radius: 12px;
+  padding: 2px 10px;
+}
+.ev-participant-cards .ev-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 14px;
+}
+.ev-participant-cards .ev-card-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ev-participant-cards .ev-card-meta .lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #7a8a82;
+  font-weight: 600;
+}
+.ev-participant-cards .ev-card-meta .val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f3a35;
+  word-break: break-word;
+}
+.ev-participant-cards .ev-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed #e1efe6;
+}
+.ev-participant-cards .ev-card-actions .ant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Participant bar: keep the toggle from stretching */
+.ev-participant-bar .ev-view-toggle {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 575px) {
+  .ev-participant-bar .ev-view-toggle {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: center;
+  }
+  .ev-participant-cards .ev-card-meta {
+    grid-template-columns: 1fr;
+  }
+  .ev-participant-cards .ev-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ev-participant-cards .ev-card-actions .ant-btn {
+    width: 100%;
+  }
+}
+/* ── Back button (event details) ── */
+.ev-detail-back {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.event-detail-page .pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.event-detail-page .pill-btn:hover,
+.event-detail-page .pill-btn:focus {
+  border-color: #9ad8b4 !important;
+  color: #15693c !important;
 }
 </style>

@@ -1,211 +1,318 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader ghost :title="`${location_name} Sub Locations`">
-      <template #buttons>
-        <div class="search-box">
-          <span class="search-icon">
-            <sdFeatherIcons type="search" size="14" />
-          </span>
-          <a-input
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name"
-          /></div
-      ></template>
-    </sdPageHeader>
     <Main>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
+      <BudgetPageWrapper class="minimal-dashboard ou-units-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▦</span> {{ location_name }} Sub Locations
+            </h3>
+            <div class="ou-crumb">
+              <span class="crumb-link" @click="goBack">
+                <sdFeatherIcons type="arrow-left" size="12" /> Locations
+              </span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">{{ location_name }}</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">Sub Locations</span>
             </div>
-
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-table
-                  :pagination="{ pageSize: 10, showSizeChanger: true }"
-                  :dataSource="results"
-                  :columns="columns"
-                >
-                  <template #units="{ record }">
-                    <td>
-                      <div class="table-actions">
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/sub-location/posts/${record.org_id}`,
-                              query: {
-                                name: record.name,
-                                id: record.id,
-                                org_id: record.org_id,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            &nbsp;&nbsp; View Posts
-                          </router-link>
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
-                          type="success"
-                          size="extra-small"
-                          @click="openModal(record.id)"
-                        >
-                          Assign Supervisor
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton
-                          class="button-container"
-                          size="extra-small"
-                          type="success"
-                          @click="openAssignModal(record.org_id)"
-                        >
-                          Re-assing Sub-Location
-                        </sdButton>
-                        &nbsp;&nbsp;
-                        <sdButton size="extra-small" type="success">
-                          <router-link
-                            :to="{
-                              path: `/org-units/villages/${record.org_id}`,
-                              query: {
-                                name: record.name,
-                              },
-                            }"
-                            class="btn-icon"
-                            type="info"
-                            shape="circle"
-                          >
-                            &nbsp;&nbsp; View Villages
-                          </router-link>
-                        </sdButton>
-                      </div>
-                    </td>
-                  </template>
-                </a-table>
-              </TableWrapper>
+          </div>
+          <div class="ph-actions">
+            <div class="ou-search">
+              <span class="search-icon">
+                <sdFeatherIcons type="search" size="14" />
+              </span>
+              <a-input
+                v-model:value="searchItem"
+                type="text"
+                name="dataSource"
+                placeholder="Search by name"
+                allow-clear
+              />
             </div>
-            <!-- Assign supervisor -->
-            <a-modal
-              title="Assign Supervisor"
-              :visible="isModalOpen"
-              @cancel="handleCancel"
-              width="50%"
-              footer=""
-            >
-              <BasicFormWrapper>
-                <a-form
-                  class="add-record-form"
-                  :style="{ width: '100%' }"
-                  layout="vertical"
-                  name="addnew"
-                  :model="formState"
-                  @finish="handleSubmit"
-                >
-                  <a-form-item name="Supervisors" label="Select Supervisor">
-                    <a-select
-                      v-model:value="formState.user_id"
-                      show-search
-                      option-filter-prop="label"
-                      placeholder="Select one"
-                      :filter-option="filterOption"
-                      @search="handleSearch"
-                    >
-                      <a-select-option
-                        v-for="user in supervisors"
-                        :key="user.id"
-                        :value="user.id"
-                        :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
-                      >
-                        {{ user.first_name }} {{ user.last_name }}
-                        {{ user.other_name }} - {{ user.id_no }},{{
-                          user.role_id
-                        }}, {{ user.location_id }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-                  <div class="record-form-actions text-right">
-                    <sdButton size="default" htmlType="Save" type="success">
-                      {{ isLoading ? "Loading..." : "Submit" }}
-                    </sdButton>
-                  </div>
-                </a-form>
-              </BasicFormWrapper>
-            </a-modal>
-            <!-- End of assign supervisor -->
+            <div class="ou-view-toggle" role="group" aria-label="Toggle view">
+              <button
+                type="button"
+                class="ou-toggle-btn"
+                :class="{ active: viewMode === 'cards' }"
+                @click="viewMode = 'cards'"
+              >
+                <sdFeatherIcons type="grid" size="14" />
+                <span>Cards</span>
+              </button>
+              <button
+                type="button"
+                class="ou-toggle-btn"
+                :class="{ active: viewMode === 'table' }"
+                @click="viewMode = 'table'"
+              >
+                <sdFeatherIcons type="list" size="14" />
+                <span>Table</span>
+              </button>
+            </div>
+          </div>
+        </header>
 
-            <!-- Handle Reassignment Modal -->
-            <a-modal
-              title="Re-assign Sub Location to Location"
-              :visible="isAssignModalOpen"
-              @cancel="handleCancelAssign"
-              width="25%"
-              footer=""
-            >
-              <BasicFormWrapper>
-                <a-form
-                  class="add-record-form"
-                  :style="{ width: '100%' }"
-                  layout="vertical"
-                  name="addnew"
-                  :model="formState"
-                  @finish="handleAssignSubmit"
-                >
-                  <a-form-item name="location_id" label="Location">
-                    <a-select
-                      size="large"
-                      name="basic-select"
-                      class="sDash_fullwidth-select"
-                      placeholder="Select Location"
-                      v-model:value="formState.location_id"
-                    >
-                      <a-select-option
-                        v-for="location in remap_parent"
-                        :value="location.org_id"
-                        :key="location.id"
-                      >
-                        {{ location.name }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
+        <!-- Summary strip -->
+        <section class="panel ou-stats">
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="map-pin" size="16" /></span>
+            <div>
+              <span class="val">{{ results.length }}</span>
+              <span class="lbl">Sub Locations</span>
+            </div>
+          </div>
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="flag" size="16" /></span>
+            <div>
+              <span class="val">{{ location_name }}</span>
+              <span class="lbl">Parent Location</span>
+            </div>
+          </div>
+        </section>
 
-                  <div class="record-form-actions text-right">
-                    <sdButton
-                      size="default"
-                      htmlType="Save"
-                      type="success"
-                      :disabled="isSubmitting"
-                    >
-                      {{
-                        isLoading
-                          ? "Loading..."
-                          : isSubmitting
-                          ? "Processing ..."
-                          : "Assign"
-                      }}
-                    </sdButton>
+        <!-- Sub-locations list -->
+        <section class="panel ou-list-panel">
+          <div v-if="isLoading" class="ou-loading">
+            <a-spin />
+          </div>
+
+          <div v-else>
+            <TableWrapper
+              v-if="viewMode === 'table'"
+              class="table-data-view table-responsive ou-table-shell"
+            >
+              <a-table
+                :pagination="{ pageSize: 50, showSizeChanger: true }"
+                :dataSource="results"
+                :columns="columns"
+                row-key="org_id"
+              >
+                <template #units="{ record }">
+                  <td>
+                    <div class="table-actions">
+                      <sdButton
+                        size="extra-small"
+                        type="primary"
+                        class="ou-action-btn"
+                      >
+                        <router-link
+                          :to="{
+                            path: `/sub-location/posts/${record.org_id}`,
+                            query: {
+                              name: record.name,
+                              id: record.id,
+                              org_id: record.org_id,
+                            },
+                          }"
+                        >
+                          <sdFeatherIcons type="eye" size="12" /> View Posts
+                        </router-link>
+                      </sdButton>
+                      <sdButton
+                        size="extra-small"
+                        type="light"
+                        class="ou-action-btn"
+                        @click="openModal(record.id)"
+                      >
+                        Assign Supervisor
+                      </sdButton>
+                      <sdButton
+                        size="extra-small"
+                        type="light"
+                        class="ou-action-btn"
+                        @click="openAssignModal(record.org_id)"
+                      >
+                        Re-assign
+                      </sdButton>
+                      <sdButton
+                        size="extra-small"
+                        type="success"
+                        class="ou-action-btn"
+                      >
+                        <router-link
+                          :to="{
+                            path: `/org-units/villages/${record.org_id}`,
+                            query: {
+                              name: record.name,
+                            },
+                          }"
+                        >
+                          Villages
+                        </router-link>
+                      </sdButton>
+                    </div>
+                  </td>
+                </template>
+              </a-table>
+            </TableWrapper>
+            <div v-else class="ou-card-list">
+              <article
+                v-for="record in results"
+                :key="record.org_id"
+                class="ou-card"
+              >
+                <div class="ou-card-head">
+                  <div class="ou-card-title">{{ record.name }}</div>
+                  <span class="ou-card-code">{{ record.code }}</span>
+                </div>
+                <div class="ou-card-meta">
+                  <div>
+                    <span class="lbl">Sub Location Code</span>
+                    <span class="val">{{ record.code || "—" }}</span>
                   </div>
-                </a-form>
-              </BasicFormWrapper>
-            </a-modal>
-            <!-- End Reassignment Modal -->
-          </sdCards>
-        </a-col>
-      </a-row>
-      <a-col :xs="24">
-        <DragAndDropTable />
-      </a-col>
+                  <div>
+                    <span class="lbl">Org ID</span>
+                    <span class="val">{{ record.org_id || "—" }}</span>
+                  </div>
+                </div>
+                <div class="ou-card-actions">
+                  <sdButton
+                    size="extra-small"
+                    type="primary"
+                    class="ou-action-btn"
+                  >
+                    <router-link
+                      :to="{
+                        path: `/org-units/villages/${record.org_id}`,
+                        query: { name: record.name },
+                      }"
+                    >
+                      Villages
+                    </router-link>
+                  </sdButton>
+                  <sdButton
+                    size="extra-small"
+                    type="light"
+                    class="ou-action-btn"
+                    @click="openModal(record.id)"
+                  >
+                    Assign Supervisor
+                  </sdButton>
+                </div>
+              </article>
+              <div v-if="!results.length" class="ou-empty">
+                No sub locations found.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Assign supervisor modal -->
+        <a-modal
+          title="Assign Supervisor"
+          :visible="isModalOpen"
+          @cancel="handleCancel"
+          width="50%"
+          footer=""
+        >
+          <BasicFormWrapper>
+            <a-form
+              class="add-record-form ou-modal-form"
+              :style="{ width: '100%' }"
+              layout="vertical"
+              name="addnew"
+              :model="formState"
+              @finish="handleSubmit"
+            >
+              <a-form-item name="Supervisors" label="Select Supervisor">
+                <a-select
+                  v-model:value="formState.user_id"
+                  show-search
+                  option-filter-prop="label"
+                  placeholder="Select one"
+                  :filter-option="filterOption"
+                  @search="handleSearch"
+                >
+                  <a-select-option
+                    v-for="user in supervisors"
+                    :key="user.id"
+                    :value="user.id"
+                    :label="`${user.first_name} ${user.last_name} ${user.other_name} - ${user.id_no},${user.role_id}, ${user.location_id}`"
+                  >
+                    {{ user.first_name }} {{ user.last_name }}
+                    {{ user.other_name }} - {{ user.id_no }},{{
+                      user.role_id
+                    }}, {{ user.location_id }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+              <div class="record-form-actions text-right">
+                <sdButton size="default" htmlType="Save" type="success">
+                  {{ isLoading ? "Loading..." : "Submit" }}
+                </sdButton>
+              </div>
+            </a-form>
+          </BasicFormWrapper>
+        </a-modal>
+        <!-- End of assign supervisor -->
+
+        <!-- Reassignment Modal -->
+        <a-modal
+          title="Re-assign Sub Location to Location"
+          :visible="isAssignModalOpen"
+          @cancel="handleCancelAssign"
+          width="25%"
+          footer=""
+        >
+          <BasicFormWrapper>
+            <a-form
+              class="add-record-form ou-modal-form"
+              :style="{ width: '100%' }"
+              layout="vertical"
+              name="addnew"
+              :model="formState"
+              @finish="handleAssignSubmit"
+            >
+              <a-form-item name="location_id" label="Location">
+                <a-select
+                  size="large"
+                  name="basic-select"
+                  class="sDash_fullwidth-select"
+                  placeholder="Select Location"
+                  v-model:value="formState.location_id"
+                >
+                  <a-select-option
+                    v-for="location in remap_parent"
+                    :value="location.org_id"
+                    :key="location.id"
+                  >
+                    {{ location.name }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+
+              <div class="record-form-actions text-right">
+                <sdButton
+                  size="default"
+                  htmlType="Save"
+                  type="success"
+                  :disabled="isSubmitting"
+                >
+                  {{
+                    isLoading
+                      ? "Loading..."
+                      : isSubmitting
+                      ? "Processing ..."
+                      : "Assign"
+                  }}
+                </sdButton>
+              </div>
+            </a-form>
+          </BasicFormWrapper>
+        </a-modal>
+        <!-- End Reassignment Modal -->
+      </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 <script setup>
 import { RecordViewWrapper } from "../style";
-import { Main } from "../../styled";
+import { BudgetPageWrapper } from "../budget/style";
+import { Main, TableWrapper } from "../../styled";
 import { computed, onMounted, ref, reactive } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 import store from "../../../vuex/store";
@@ -244,6 +351,17 @@ const isLoading = ref(true);
 const dataSource = ref([]);
 const { params, query } = useRoute();
 const searchItem = ref("");
+const viewMode = ref(
+  typeof window !== "undefined" && window.innerWidth <= 991 ? "cards" : "table"
+);
+const router = useRouter();
+const goBack = () => {
+  if (window.history.state?.back) {
+    router.back();
+  } else {
+    router.push({ path: `/org-units/locations/${params.id}` });
+  }
+};
 const isModalOpen = ref(false);
 const isAssignModalOpen = ref(false);
 const supervisors = ref([]);

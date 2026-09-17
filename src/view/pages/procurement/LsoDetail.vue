@@ -107,7 +107,7 @@
                 <div class="info-row">
                   <span class="info-label">Sub-County</span>
                   <span class="info-value">
-                    {{ vendor?.sub_county?.name || vendor?.sub_county?.sub_county_name || '—' }}
+                    {{ vendor?.subcounty?.name || vendor?.subcounty?.sub_county_name || vendor?.sub_county?.name || vendor?.sub_county?.sub_county_name || '—' }}
                   </span>
                 </div>
                 <div v-if="primaryContact" class="info-row">

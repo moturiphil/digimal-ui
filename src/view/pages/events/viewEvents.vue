@@ -8,24 +8,8 @@
             <h3 class="ph-title">
               <span class="ph-icon">▦</span> MassNet Events
             </h3>
-            <p class="ph-subtitle">
-              Global Fund &amp; PMI events in one place — open an event to manage
-              registration, trainers and payroll
-            </p>
           </div>
           <div class="ph-actions">
-            <div class="ev-search">
-              <span class="search-icon">
-                <sdFeatherIcons type="search" size="14" />
-              </span>
-              <a-input
-                v-model:value="searchItem"
-                type="text"
-                name="dataSource"
-                placeholder="Search by name, code, venue or location"
-                allow-clear
-              />
-            </div>
             <div class="ev-view-toggle" role="group" aria-label="Toggle view">
               <button
                 type="button"
@@ -76,6 +60,19 @@
               :options="payroll_status_options"
               @change="handleFilterChange"
             ></a-select>
+          </div>
+
+          <div class="ev-search">
+            <span class="search-icon">
+              <sdFeatherIcons type="search" size="14" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by name, code, venue or location"
+              allow-clear
+            />
           </div>
         </section>
 
@@ -736,7 +733,21 @@ onMounted(() => {
     box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
   }
 
+  /* Filter panel: filters on the left, search pinned to the right */
+  .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .filter-panel .ev-search {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
   .filter-grid {
+    flex: 1 1 0;
+    min-width: 240px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 10px;

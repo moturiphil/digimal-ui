@@ -75,6 +75,7 @@ export async function fetchApprovedBudgets() {
   const STATUS_LABELS = {
     approved: "Approved",
     county_approved: "County Approved",
+    dnmp_reviewed: "DNMP Reviewed (awaiting approval)",
     submitted: "Submitted (unapproved)",
     draft: "Draft (unapproved)",
   };

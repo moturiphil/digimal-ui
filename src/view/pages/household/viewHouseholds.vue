@@ -1,47 +1,73 @@
 <template>
-  <div>
-    <sdPageHeader ghost title="HouseHolds">
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            style="
-              border: 1px solid #151414;
-              padding: 8px;
-              border-radius: 5px;
-              align-items: center;
-              justify-items: center;
-            "
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by ID No, Phone No, name"
-          />
-        </div>
-      </template>
-    </sdPageHeader>
+  <RecordViewWrapper>
     <Main>
-      <SearchResultWrapper>
-        <a-row :gutter="25">
-          <a-col :xs="24"> </a-col>
-          <a-col :xs="24">
-            <sdCards headless>
-              <div class="result-list-content">
-                <a-row :gutter="15">
-                  <a-col class="w-100" :md="24">
-                    <sdCards headless>
-                      <div v-if="isLoading" class="spin">
-                        <a-spin />
-                      </div>
+      <BudgetPageWrapper class="minimal-dashboard ou-units-page hh-registered-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">▦</span> HouseHolds Registered
+            </h3>
+            <div class="ou-crumb">
+              <span class="crumb-current">HouseHolds</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-current">Registered</span>
+            </div>
+          </div>
+          <div class="ph-actions">
+            <div class="ou-view-toggle" role="group" aria-label="Toggle view">
+              <button
+                type="button"
+                class="ou-toggle-btn"
+                :class="{ active: viewMode === 'cards' }"
+                @click="viewMode = 'cards'"
+              >
+                <sdFeatherIcons type="grid" size="14" />
+                <span>Cards</span>
+              </button>
+              <button
+                type="button"
+                class="ou-toggle-btn"
+                :class="{ active: viewMode === 'table' }"
+                @click="viewMode = 'table'"
+              >
+                <sdFeatherIcons type="list" size="14" />
+                <span>Table</span>
+              </button>
+            </div>
+          </div>
+        </header>
 
-                      <div v-else>
-                        Total Records:
-                        <br />
-                        <TableWrapper
-                          class="table-data-view table-responsive"
-                          v-show="activeClass === 'all'"
-                        >
-                          <a-row class="" :gutter="5">
-                            <a-space>
+        <!-- Summary strip -->
+        <section class="panel ou-stats">
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="home" size="16" /></span>
+            <div>
+              <span class="val">{{ datatotal }}</span>
+              <span class="lbl">Total Households</span>
+            </div>
+          </div>
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="database" size="16" /></span>
+            <div>
+              <span class="val">{{ dataSource.length }}</span>
+              <span class="lbl">On This Page</span>
+            </div>
+          </div>
+          <div class="ou-stat">
+            <span class="ic"><sdFeatherIcons type="layers" size="16" /></span>
+            <div>
+              <span class="val">{{ pageSize }}</span>
+              <span class="lbl">Page Size</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Location filters -->
+        <section class="panel ou-filter-panel">
+          <div class="ou-filter-grid">
+            <a-row class="" :gutter="5">
+              <a-space wrap>
                               <a-col :xxl="24" :xl="24" :md="24" :sm="24">
                                 <a-select
                                   v-if="filterAccessList.includes('country')"
@@ -117,41 +143,100 @@
                                 ></a-select>
                               </a-col>
                             </a-space>
-                          </a-row>
-                          <a-divider></a-divider>
-                          <a-table
-                            :pagination="false"
-                            :dataSource="dataSource"
-                            :columns="columns"
-                          >
-                          </a-table>
-                          <br />
-                          <br />
-                          <a-pagination
-                            :current="currentPage"
-                            :total="datatotal"
-                            :pageSize="pageSize"
-                            :showSizeChanger="true"
-                            :pagination="true"
-                            @change="onPageChange($event)"
-                          />
-                        </TableWrapper>
-                      </div>
-                    </sdCards>
-                  </a-col>
-                </a-row>
+            </a-row>
+          </div>
+
+          <div class="ou-search">
+            <span class="search-icon">
+              <sdFeatherIcons type="search" size="14" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search by ID No, Phone No, name"
+              allow-clear
+            />
+          </div>
+        </section>
+
+        <!-- Households list -->
+        <section class="panel ou-list-panel">
+          <div v-if="isLoading" class="ou-loading">
+            <a-spin />
+          </div>
+
+          <div v-else>
+            <TableWrapper
+              v-if="viewMode === 'table'"
+              class="table-data-view table-responsive ou-table-shell"
+            >
+              <a-table
+                :pagination="false"
+                :dataSource="dataSource"
+                :columns="columns"
+                row-key="id"
+              >
+              </a-table>
+              <div class="ou-pagination">
+                <a-pagination
+                  :current="currentPage"
+                  :total="datatotal"
+                  :pageSize="pageSize"
+                  :showSizeChanger="true"
+                  @change="onPageChange($event)"
+                />
               </div>
-            </sdCards>
-          </a-col>
-        </a-row>
-      </SearchResultWrapper>
+            </TableWrapper>
+
+            <div v-else class="ou-card-list">
+              <article
+                v-for="record in dataSource"
+                :key="record.id"
+                class="ou-card"
+              >
+                <div class="ou-card-head">
+                  <div class="ou-card-title">
+                    {{ record.first_name }} {{ record.last_name }}
+                  </div>
+                  <span class="ou-chip">
+                    {{ record.hh_size }} member(s)
+                  </span>
+                </div>
+                <div class="ou-card-meta">
+                  <div>
+                    <span class="lbl">Phone</span>
+                    <span class="val">{{ record.phone_no || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Village</span>
+                    <span class="val">{{ record.location_id || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Post</span>
+                    <span class="val">{{ record.post_id || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">CHP</span>
+                    <span class="val">{{ record.chw_id || "—" }}</span>
+                  </div>
+                </div>
+              </article>
+              <div v-if="!dataSource.length" class="ou-empty">
+                No households found.
+              </div>
+            </div>
+          </div>
+        </section>
+      </BudgetPageWrapper>
     </Main>
-  </div>
+  </RecordViewWrapper>
 </template>
 
 <script setup>
-import { Main } from "../../styled";
-import { SearchResultWrapper } from "../style";
+import { RecordViewWrapper } from "../style";
+import { BudgetPageWrapper } from "../budget/style";
+import { Main, TableWrapper } from "../../styled";
 import { onMounted, ref, defineProps, watch } from "vue";
 import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
@@ -215,8 +300,10 @@ var datatotal = ref(0);
 const searchItem = ref("");
 const isLoading = ref(true);
 const dataSource = ref([]);
-const activeClass = ref("all");
 const total_households = ref(0);
+const viewMode = ref(
+  typeof window !== "undefined" && window.innerWidth <= 991 ? "cards" : "table"
+);
 
 //Drill down filters
 const access_level = ref({});

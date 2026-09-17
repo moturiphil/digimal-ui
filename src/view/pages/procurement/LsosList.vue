@@ -27,74 +27,73 @@
           </div>
         </header>
 
-      <!-- Filter row -->
-      <div class="filter-row">
-        <a-input
-          v-model:value="filters.search"
-          placeholder="Search LSO number, vendor…"
-          allow-clear
-          size="small"
-          class="bp-search"
-          @pressEnter="onFilterChange"
-        />
-        <a-select
-          v-model:value="filters.vendor_id"
-          placeholder="Vendor"
-          allow-clear
-          show-search
-          size="small"
-          :filter-option="vendorFilter"
-          class="bp-select"
-          style="min-width: 180px"
-          @change="onFilterChange"
-        >
-          <a-select-option v-for="v in vendors" :key="v.id" :value="v.id">
-            {{ v.name }}
-          </a-select-option>
-        </a-select>
-        <a-select
-          v-model:value="filters.service_type_id"
-          placeholder="Service type"
-          allow-clear
-          size="small"
-          class="bp-select"
-          style="min-width: 160px"
-          @change="onFilterChange"
-        >
-          <a-select-option
-            v-for="t in serviceTypes"
-            :key="t.id"
-            :value="t.id"
-          >{{ t.name || t.service_type_name }}</a-select-option>
-        </a-select>
-        <a-select
-          v-model:value="filters.status"
-          placeholder="Status"
-          allow-clear
-          size="small"
-          class="bp-select"
-          style="min-width: 120px"
-          @change="onFilterChange"
-        >
-          <a-select-option value="active">Active</a-select-option>
-          <a-select-option value="expired">Expired</a-select-option>
-        </a-select>
-        <sdButton
-          size="small"
-          class="pill-btn"
-          :disabled="!hasActiveFilters"
-          @click="resetFilters"
-        >Clear</sdButton>
-      </div>
+      <!-- Filter panel (filters left, search right) -->
+      <section class="panel filter-panel">
+        <div class="filter-grid">
+          <a-select
+            v-model:value="filters.vendor_id"
+            placeholder="Vendor"
+            allow-clear
+            show-search
+            :filter-option="vendorFilter"
+            @change="onFilterChange"
+          >
+            <a-select-option v-for="v in vendors" :key="v.id" :value="v.id">
+              {{ v.name }}
+            </a-select-option>
+          </a-select>
+          <a-select
+            v-model:value="filters.service_type_id"
+            placeholder="Service type"
+            allow-clear
+            @change="onFilterChange"
+          >
+            <a-select-option
+              v-for="t in serviceTypes"
+              :key="t.id"
+              :value="t.id"
+            >{{ t.name || t.service_type_name }}</a-select-option>
+          </a-select>
+          <a-select
+            v-model:value="filters.status"
+            placeholder="Status"
+            allow-clear
+            @change="onFilterChange"
+          >
+            <a-select-option value="active">Active</a-select-option>
+            <a-select-option value="expired">Expired</a-select-option>
+          </a-select>
+          <sdButton
+            size="small"
+            class="pill-btn lso-clear-btn"
+            :disabled="!hasActiveFilters"
+            @click="resetFilters"
+          >Clear</sdButton>
+        </div>
 
-      <!-- Table -->
-      <section class="panel flush">
+        <div class="lso-search">
+          <span class="search-icon">
+            <sdFeatherIcons type="search" size="14" />
+          </span>
+          <a-input
+            v-model:value="filters.search"
+            type="text"
+            name="q"
+            placeholder="Search LSO number or vendor…"
+            allow-clear
+            @pressEnter="onFilterChange"
+          />
+        </div>
+      </section>
+
+      <!-- LSOs table -->
+      <section class="panel lso-content-panel">
         <a-table
           class="minimal-table"
           :data-source="lsos"
           :columns="columns"
           row-key="id"
-          size="small"
+          size="middle"
           :loading="loading"
           :pagination="paginationConfig"
           @change="onTableChange"
@@ -1009,8 +1008,212 @@ export default {
   color: #7a8a82;
   font-size: 13px;
 }
-.filter-row .bp-search {
-  width: 220px;
+
+/* Platform page heading + header search pill */
+.procurement-page {
+  :deep(.page-heading) {
+    .ph-title {
+      color: #1f2437;
+      .ph-icon {
+        color: #15693c;
+        font-size: 18px;
+      }
+    }
+    .ph-subtitle {
+      color: #7a8a82;
+    }
+  }
+
+  .lso-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 280px;
+    max-width: 100%;
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      color: #9ab8a8;
+      display: flex;
+      z-index: 1;
+    }
+    :deep(input) {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    :deep(.ant-input-affix-wrapper) {
+      display: flex;
+      align-items: center;
+      border-radius: 22px;
+      border: 1px solid #d9f0e2;
+      background: #f7fdf9;
+      padding: 0 16px 0 36px;
+      height: 40px;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 575px) {
+    .lso-search {
+      width: 100%;
+    }
+  }
+}
+
+/* Filter panel: filters on the left, search pinned to the right */
+.filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+}
+.filter-panel .lso-search {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.filter-grid {
+  flex: 1 1 0;
+  min-width: 240px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  :deep(.ant-select) {
+    width: 100%;
+  }
+}
+.lso-clear-btn {
+  height: 40px;
+  width: 100%;
+}
+@media (max-width: 575px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Content panel + table (matches the Distribution Posts listing look) */
+.panel {
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+  overflow: hidden;
+  &.flush { padding: 0; }
+}
+.lso-content-panel {
+  padding: 10px;
+}
+:deep(.minimal-table) {
+  .ant-table {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .ant-table-thead > tr > th {
+    background: #f4fbf6;
+    color: #2f6746;
+    font-weight: 700;
+    border-bottom: 1px solid #e1efe6;
+  }
+  .ant-table-tbody > tr > td {
+    border-bottom: 1px solid #f0f7f3;
+  }
+  .ant-table-tbody > tr:hover > td {
+    background: #f5fbf7;
+  }
+}
+
+/* Cell links / chips / actions / empty state / pills */
+.vendor-link {
+  font-weight: 700;
+  color: #1f2437;
+  cursor: pointer;
+  &:hover { color: #15693c; }
+}
+.vendor-meta {
+  font-size: 11px;
+  color: #8a90a6;
+  margin-top: 2px;
+}
+.danger {
+  color: #c43d3d;
+  font-weight: 700;
+}
+.v-chip {
+  display: inline-block;
+  background: #eef3fb;
+  color: #2f6dcf;
+  border: 1px solid #d7e3f5;
+  border-radius: 10px;
+  padding: 1px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  &.green { background: #eafff5; color: #15693c; border-color: #c9e6d3; }
+  &.purple { background: #f3ebff; color: #6f3fcc; border-color: #d8c5f5; }
+  &.warn { background: #fff4e0; color: #b35a00; border-color: #f3c97c; }
+  &.muted { background: #f0f2f5; color: #7a8a82; border-color: #e1e6ec; }
+}
+.action-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #5a6470;
+  transition: background 0.15s, color 0.15s;
+  &:hover {
+    background: #f0f7f2;
+    color: #15693c;
+  }
+  &.danger:hover {
+    background: #fff1f1;
+    color: #c43d3d;
+  }
+}
+.empty-state {
+  text-align: center;
+  padding: 48px 16px;
+  color: #9aa6ad;
+  .empty-icon { font-size: 38px; opacity: 0.4; margin-bottom: 8px; }
+  .empty-title { font-size: 14px; font-weight: 700; color: #4d5661; margin-bottom: 4px; }
+  .empty-desc { font-size: 12px; max-width: 340px; margin: 0 auto 12px; line-height: 1.5; }
+}
+.pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  &:hover, &:focus {
+    border-color: #9ad8b4 !important;
+    color: #15693c !important;
+  }
+  &.is-primary {
+    background: #1f9254 !important;
+    border-color: #1f9254 !important;
+    color: #fff !important;
+    &:hover, &:focus {
+      background: #167a45 !important;
+      border-color: #167a45 !important;
+      color: #fff !important;
+    }
+  }
 }
 </style>
 

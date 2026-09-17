@@ -12,20 +12,6 @@
               Manage post inventory, supervisors &amp; net distribution
             </p>
           </div>
-          <div class="ph-actions">
-            <div class="dp-search">
-              <span class="search-icon">
-                <sdFeatherIcons type="search" size="14" />
-              </span>
-              <a-input
-                v-model:value="searchItem"
-                type="text"
-                name="dataSource"
-                placeholder="Search distribution post"
-                allow-clear
-              />
-            </div>
-          </div>
         </header>
 
         <!-- Filter panel -->
@@ -85,6 +71,19 @@
               :filter-option="filterOption"
               @change="handleChange($event, 'sublocation')"
             ></a-select>
+          </div>
+
+          <div class="dp-search">
+            <span class="search-icon">
+              <sdFeatherIcons type="search" size="14" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="dataSource"
+              placeholder="Search distribution post"
+              allow-clear
+            />
           </div>
         </section>
 
@@ -806,8 +805,22 @@ const handleSubmit = async () => {
     box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
   }
 
+  /* Filter panel: filters on the left, search pinned to the right */
+  .filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .filter-panel .dp-search {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
   /* filter grid */
   .filter-grid {
+    flex: 1 1 0;
+    min-width: 240px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 10px;
@@ -968,11 +981,7 @@ const handleSubmit = async () => {
   }
 
   @media (max-width: 575px) {
-    .dp-search :deep(input),
-    .dp-search :deep(.ant-input-affix-wrapper) {
-      width: 100%;
-    }
-    .ph-actions {
+    .dp-search {
       width: 100%;
     }
     .filter-grid {

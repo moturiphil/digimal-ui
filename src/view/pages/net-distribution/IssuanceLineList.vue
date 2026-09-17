@@ -1,5 +1,5 @@
 <template>
-  <RecordViewWrapper>
+  <RecordViewWrapper class="legacy-platform-page">
     <sdPageHeader title="Issuance Linelist">
       <template #subTitle>
         <sdButton class="btn-add_new" size="default" type="success"> </sdButton>

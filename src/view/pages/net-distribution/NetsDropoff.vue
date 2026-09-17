@@ -1,5 +1,5 @@
 <template>
-  <RecordViewWrapper>
+  <RecordViewWrapper class="legacy-platform-page">
     <sdPageHeader title="All Drop Off Points">
       <template #subTitle>
         <sdButton class="btn-add_new" size="small" type="success"> </sdButton>

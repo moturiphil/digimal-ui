@@ -126,6 +126,38 @@ export const ProcurementPageWrapper = Styled.div`
     .bp-select { width: 160px; }
   }
 
+  /* ── Page heading (platform theme — matches the events/budget pages) ── */
+  .page-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 4px 2px 18px;
+    .ph-left { min-width: 0; }
+    .ph-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2437;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      .ph-icon { color: #1f2437; font-size: 18px; }
+    }
+    .ph-subtitle {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #8a90a6;
+    }
+    .ph-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+  }
+
   /* ── Panel base ── */
   .panel {
     background: #fff;

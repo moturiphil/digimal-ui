@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="legacy-platform-page">
     <sdPageHeader :title="` ${sublocation_name} Posts`" />
     <Main>
       <sdButton type="success" size="extra-small" @click="openModal()">

@@ -1,5 +1,5 @@
 <template>
-  <RecordViewWrapper>
+  <RecordViewWrapper class="legacy-platform-page">
     <sdPageHeader title="Village Elders & CHPs">
       <template #buttons>
         <div class="search-box">

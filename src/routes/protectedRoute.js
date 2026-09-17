@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from "vue-router";
 import adminRoutes from "./AdminRoutes";
 import authRoutes from "./authRoutes";
 import { resetInactivityTimer } from "../../src/components/utilities/userActivity";
+import { maybeSyncOnNavigation } from "../services/access-sync";
 
 const routes = [
   {
@@ -56,6 +57,9 @@ router.beforeEach((to, from, next) => {
   const profile = user_object?.user || user_object || {};
   const userLevelId = Number(profile.level_id || 0);
   const userRoleId = Number(profile.role_id || 0);
+  // Role names are the stable key from the API roles table — route guards
+  // accept names or numeric ids in meta.allowedRoles.
+  const userRoleName = profile.role?.name || "";
 
   const allowedLevels = to.matched
     .map((r) => r.meta?.allowedLevels)
@@ -68,6 +72,10 @@ router.beforeEach((to, from, next) => {
   const householdRestricted = to.matched.some((r) => r.meta?.householdRestricted);
 
   if (user_object && user_object.token) {
+    // Fire-and-forget re-sync of cached role/permissions — throttled, so it
+    // never blocks navigation but keeps gates fresh across route changes.
+    maybeSyncOnNavigation();
+
     // National (1) and County (2) users cannot access per-household validation
     // pages — they get the read-only aggregate overview instead.
     if (householdRestricted && (userLevelId === 1 || userLevelId === 2)) {
@@ -82,7 +90,10 @@ router.beforeEach((to, from, next) => {
       return;
     }
 
-    if (allowedRoles && !allowedRoles.includes(userRoleId)) {
+    if (
+      allowedRoles &&
+      !allowedRoles.some((r) => r === userRoleId || r === userRoleName)
+    ) {
       resetInactivityTimer();
       next({ path: "/403" });
       return;

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getItem } from '../../utility/localStorageControl';
+import { isUnauthenticatedError, redirectToLogin } from '../../services/unauthenticated';
 
 const API_ENDPOINT = process.env.VUE_APP_API_ENDPOINT;
 
@@ -84,6 +85,11 @@ client.interceptors.response.use(
      */
     const { response } = error;
     const originalRequest = error.config;
+    // Backend returned 401 {"message":"Unauthenticated."} (expired/revoked
+    // token) — sign the user out and re-route them to the login page.
+    if (isUnauthenticatedError(error)) {
+      redirectToLogin();
+    }
     if (response) {
       if (response.status === 500) {
         // do something here

@@ -34,7 +34,7 @@ const routes = [
           import(
             /* webpackChunkName: "ServerMetrics" */ "@/view/pages/admin/ServerMetrics.vue"
           ),
-        meta: { auth: true, allowedRoles: [53] }, // Super Admin only
+        meta: { auth: true, allowedRoles: ["Super Admin"] }, // Super Admin only
       },
       {
         path: "/MNEDashboard",
@@ -99,6 +99,15 @@ const routes = [
           import(
             /* webpackChunkName: "Business" */ "@/view/pages/users/usersRole.vue"
           ),
+      },
+      {
+        path: "admin/access-control",
+        name: "access-control",
+        component: () =>
+          import(
+            /* webpackChunkName: "Business" */ "@/view/pages/admin/AccessControl.vue"
+          ),
+        meta: { auth: true, allowedRoles: ["Super Admin"] }, // Super Admin only
       },
       {
         path: "assign-permission/:id",
@@ -215,11 +224,13 @@ const routes = [
         path: "/budget/county-profile",
         name: "budget-county-profile",
         component: () => import("@/view/pages/budget/CountyProfile.vue"),
+        meta: { auth: true, allowedLevels: [2] }, // County users only — hidden from National
       },
       {
         path: "/budget/county-budgeting",
         name: "budget-county-budgeting",
         component: () => import("@/view/pages/budget/CountyBudgeting.vue"),
+        meta: { auth: true, allowedLevels: [2] }, // County users only — hidden from National
       },
       {
         path: "/budget/county-budgets",
@@ -230,11 +241,13 @@ const routes = [
         path: "/budget/subcounty-profile",
         name: "budget-subcounty-profile",
         component: () => import("@/view/pages/budget/SubCountyProfile.vue"),
+        meta: { auth: true, allowedLevels: [3] }, // Sub-County users only — hidden from National
       },
       {
         path: "/budget/budgeting",
         name: "budget-budgeting",
         component: () => import("@/view/pages/budget/Budgeting.vue"),
+        meta: { auth: true, allowedLevels: [3] }, // Sub-County users only — hidden from National
       },
       {
         path: "/budget/summary",
@@ -245,16 +258,19 @@ const routes = [
         path: "/budget/parameters",
         name: "budget-parameters",
         component: () => import("@/view/pages/budget/BudgetParameters.vue"),
+        meta: { auth: true, allowedRoles: ["Super Admin"] }, // Admin only
       },
       {
         path: "/budget/categories",
         name: "budget-categories",
         component: () => import("@/view/pages/budget/BudgetCategories.vue"),
+        meta: { auth: true, allowedRoles: ["Super Admin"] }, // Admin only
       },
       {
         path: "/budget/special-area-costs",
         name: "budget-special-area-costs",
         component: () => import("@/view/pages/budget/SpecialAreaCosts.vue"),
+        meta: { auth: true, allowedRoles: ["Super Admin"] }, // Admin only
       },
       {
         path: "/budget/locations",
@@ -572,27 +588,11 @@ const routes = [
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
+      // Single merged "List Activities" page — the old GF / PMI split pages
+      // (viewGFActivity.vue / viewPMIActivity.vue) were consolidated here.
       {
         path: "view-activities",
         name: "view-activities",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
-          ),
-      },
-
-      {
-        path: "gf",
-        name: "gf-activities",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
-          ),
-      },
-
-      {
-        path: "pmi",
-        name: "pmi-activities",
         component: () =>
           import(
             /* webpackChunkName: "fireStore-view" */ "@/view/pages/activities/viewActivity.vue"
@@ -789,7 +789,7 @@ const routes = [
       import(
         /* webpackChunkName: "ScmccReview" */ "@/view/pages/household/SCMCCChangeRequestReview.vue"
       ),
-    meta: { allowedRoles: [37, 53] }, // SCMCC only
+    meta: { allowedRoles: ["SCMCC", "Super Admin"] }, // SCMCC (and Super Admin)
   },
   {
     path: "/household/my-change-requests",

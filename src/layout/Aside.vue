@@ -62,7 +62,7 @@
         </a-menu-item>
         <a-menu-item key="budgetNationalReview" v-if="isLevelOne">
           <router-link to="/budget/national-review">
-            National Budget Review
+            County & S.County Budget Review
           </router-link>
         </a-menu-item>
         <a-menu-item
@@ -75,7 +75,7 @@
         </a-menu-item>
         <a-menu-item
           key="budgetCountyProfile"
-          v-if="isCountyLevel || isLevelOne"
+          v-if="isCountyLevel"
         >
           <router-link to="/budget/county-profile">
             County Profile
@@ -83,7 +83,7 @@
         </a-menu-item>
         <a-menu-item
           key="budgetCountyBudgeting"
-          v-if="isCountyLevel || isLevelOne"
+          v-if="isCountyLevel"
         >
           <router-link to="/budget/county-budgeting">
             County Budgeting
@@ -91,27 +91,27 @@
         </a-menu-item>
         <a-menu-item key="budgetCountyBudgets" v-if="isCountyLevel || isAdmin">
           <router-link to="/budget/county-budgets">
-            County Budgets Review
+            S. County Budgets Review
           </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetSubCountyProfile" v-if="isSubCountyLevel || isLevelOne">
+        <a-menu-item key="budgetSubCountyProfile" v-if="isSubCountyLevel">
           <router-link to="/budget/subcounty-profile">
             Sub-County Profile
           </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetBudgeting" v-if="isSubCountyLevel || isLevelOne">
+        <a-menu-item key="budgetBudgeting" v-if="isSubCountyLevel">
           <router-link to="/budget/budgeting"> SubCounty Budgeting </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="budgetSummary" v-if="isSubCountyLevel || isLevelOne">
           <router-link to="/budget/summary"> Budget Summary </router-link>
         </a-menu-item> -->
-        <a-menu-item key="budgetCategories" v-if="canViewPayroll">
+        <a-menu-item key="budgetCategories" v-if="isAdmin">
           <router-link to="/budget/categories"> Budget Categories </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetParameters" v-if="canViewPayroll">
+        <a-menu-item key="budgetParameters" v-if="isAdmin">
           <router-link to="/budget/parameters"> Budget Parameters </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetSpecialAreaCost" v-if="canViewPayroll">
+        <a-menu-item key="budgetSpecialAreaCost" v-if="isAdmin">
           <router-link to="/budget/special-area-costs"> Special Area Cost </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="budgetLocations" v-if="isLevelOne || isCountyLevel">
@@ -185,26 +185,7 @@
             Pending Approval
           </router-link>
         </a-menu-item>
-        <a-sub-menu key="gf-activities" v-if="isLevelOne">
-          <template v-slot:title>
-            <sdFeatherIcons type="globe" /><span>GF</span>
-          </template>
-          <a-menu-item key="widgetGFactivities">
-            <router-link to="/activities/gf"> List Activities</router-link>
-          </a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="pmi-activities" v-if="isLevelOne">
-          <template v-slot:title>
-            <sdFeatherIcons type="radio" /><span>PMI</span>
-          </template>
-          <a-menu-item key="widgetPMIactivities">
-            <router-link to="/activities/pmi"> List Activities</router-link>
-          </a-menu-item>
-        </a-sub-menu>
-        <a-menu-item
-          key="widgetsListActivity"
-          v-if="canViewActivities && !isLevelOne"
-        >
+        <a-menu-item key="widgetsListActivity" v-if="canListActivities">
           <router-link to="/activities/view-activities">
             List Activities
           </router-link>
@@ -303,7 +284,7 @@
             <sdFeatherIcons type="share-2" /><span> Nets Distribution </span>
           </router-link>
         </a-menu-item>
-        <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="nets-issuance">
+        <a-menu-item v-if="canIssueNets" key="nets-issuance">
         <router-link to="/issue-nets">
           <sdFeatherIcons type="share-2" /><span> Issue Nets </span>
         </router-link>
@@ -426,7 +407,7 @@
           </a-menu-item>
         </a-sub-menu>
       </a-sub-menu>
-      <a-sub-menu key="payroll" v-if="canViewPayroll && isLevelOne">
+      <a-sub-menu key="payroll" v-if="canViewPayroll">
         <template v-slot:title>
           <sdFeatherIcons type="credit-card" /><span>Payroll</span>
         </template>
@@ -490,8 +471,13 @@
             >Registered CHA
           </router-link>
         </a-menu-item> -->
-        <a-menu-item v-if="isAdmin" key="widgetRoles">
+        <a-menu-item v-if="isAdmin || canViewRoles" key="widgetRoles">
           <router-link to="/user-roles">Roles </router-link>
+        </a-menu-item>
+        <a-menu-item v-if="isAdmin || canViewAccessControl" key="widgetAccessControl">
+          <router-link to="/admin/access-control">
+            Access Control
+          </router-link>
         </a-menu-item>
       </a-sub-menu>
 
@@ -547,106 +533,25 @@ import {
 import VueTypes from "vue-types";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
-import { fetchUserData, hasRole } from "../services/user-role";
+import { fetchUserData, hasRoleByName, satisfiesGate } from "../services/user-role";
+import { GATE_DEFINITIONS } from "../config/navigation-permissions";
 import { useProcurementPermissions } from "@/services/procurement/usePermissions";
 
-const adminRoles = [53];
-const aieHolderRoles = [1];
+// ── System flags & cross-cutting groups ──────────────────────────────────────
+// All menu gates are defined in src/config/navigation-permissions.js
+// (permission-first with role-name fallbacks). Only the "who manages the
+// system" flags and the community-health-worker group stay local, and they are
+// matched by role NAME (stable key from the API roles table) rather than IDs.
+const ADMIN_ROLE_NAMES = ["Super Admin"];
+const AIE_HOLDER_ROLE_NAMES = ["AIE Holder"];
+const TECH_SUPPORT_ROLE_NAMES = ["Technical Support"];
 
-const techSupportRoles = [56];
-const createCampaignRoles = [53, 5];
-const viewCampaignRoles = [
-  53
-];
-const createEventRoles = [53, 37, 21,
-// 5, 3, 39, 22, 36
-];
-
-const viewEventRoles = [
-  53
-  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 63, 64, 65,
-];
-const createActivityRoles = [53,
-//  5, 3, 21, 37, 22, 36
-];
-
-const viewActivitiesRoles = [
-  53
-  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 78, 17, 64, 65, 63,84
-];
-const viewOrgUnitsRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17,84
-];
-const viewRegHHRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,84,
-
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,
-];
-
-const viewHHValidationRoles = [
-  53, 77
-  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-
-  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 77, 78, 17, 35, 65,84
-];
-
-// SCMCC + super admin can review/approve CHA-submitted change requests.
-const reviewHHChangesRoles = [53, 37];
-
-// CHAs submit change requests and can view their own history.
-const submitHHChangesRoles = [77];
-
-const viewNetsDistributedRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 78, 17, 65,84,6
-];
-
-const viewDropoffPointsRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 55, 65, 78, 17, 84
-];
-
-const createDistributionPostRoles = [
-  53, 5, 3, 7, 8, 10, 11, 14, 15, 16, 21, 34, 36, 37, 39, 42, 44, 78,
-];
-
-const viewDistributionPostRoles = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34, 17, 
-
-  36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 34, 44, 55, 65, 78,84
-];
-
-const viewInventoryRoles = [
-  53
-  // , 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  // 36, 37, 39, 42, 44, 56, 57, 59, 60, 55, 77, 35, 34, 55, 65, 78, 17, 84
-];
-
-const viewPayrollRoles = [53
-// , 1, 2, 3, 4, 8, 11, 16, 17, 63, 64, 65, 59, 78, 17
-];
-
-const viewGFPayrollRoles = [53
-// , 1, 2, 4, 8, 78, 59, 17, 11
-];
-
-const viewPMIPayrollRoles = [53
-// , 63, 64, 65, 78
-];
-
-const viewUsersRoles = [
-  53, 1, 2, 3, 5, 7, 8, 11, 15, 16, 19, 20, 24, 26, 23, 22, 21, 34, 36, 37, 39,
-  42, 60, 34, 37, 56, 78, 17, 44, 35, 79, 65, 78,84
-];
-
-const viewMasterlistsRoles = [56, 7, 3];
-
-const createDropOffPoint = [
-  53, 1, 2, 3, 4, 5, 7, 8, 10, 11, 14, 15, 16, 18, 19, 21, 22, 23, 24, 26, 34,
-  36, 37, 39, 42, 44, 56, 57, 59,
+// Community health workers are a cross-cutting group (not tied to a menu gate).
+const CHW_ROLE_NAMES = [
+  "CHV", // 52
+  "Community Health Assistant", // 77
+  "Post in Charge", // 39
+  "Ward Health Care Worker", // 34
 ];
 
 export default defineComponent({
@@ -674,33 +579,47 @@ export default defineComponent({
     const current = ref("");
     const rt = useRouter();
 
-    // user roles
-    const isAIEHolder = hasRole(aieHolderRoles);
-    const isAdmin = hasRole(adminRoles);
-    const isTechSupport = hasRole(techSupportRoles);
-    const canCreateCampaign = hasRole(createCampaignRoles);
-    const canViewCampaign = hasRole(viewCampaignRoles);
-    const canCreateEvent = hasRole(createEventRoles);
-    const canViewEvent = hasRole(viewEventRoles);
-    const canCreateActivity = hasRole(createActivityRoles);
-    const canViewActivities = hasRole(viewActivitiesRoles);
-    const canViewOrgUnits = hasRole(viewOrgUnitsRoles);
-    const canViewRegHH = hasRole(viewRegHHRoles);
-    const canValidateHH = hasRole(viewHHValidationRoles);
-    const canReviewHHChanges = hasRole(reviewHHChangesRoles);
-    const canSubmitHHChanges = hasRole(submitHHChangesRoles);
-    const canViewNetsDistributed = hasRole(viewNetsDistributedRoles);
-    const canCreateDropOffPoint = hasRole(createDropOffPoint);
-    const canViewDropOffPoint = hasRole(viewDropoffPointsRoles);
-    const canCreateDistributionPost = hasRole(createDistributionPostRoles);
-    const canViewDistributitionPostRole = hasRole(viewDistributionPostRoles);
-    const canViewInventory = hasRole(viewInventoryRoles);
-    const canViewPayroll = hasRole(viewPayrollRoles);
-    const canViewGFPayroll = hasRole(viewGFPayrollRoles);
-    const canViewPMIPayroll = hasRole(viewPMIPayrollRoles);
-    const canViewUsers = hasRole(viewUsersRoles);
-    const canViewMasterlist = hasRole(viewMasterlistsRoles);
-    const isCommunityHealthWorker = hasRole([52, 77, 39, 34]);
+    // ── Access gates ─────────────────────────────────────────────────────────
+    // System-management flags stay role-based (matched by role name)…
+    const isAIEHolder = hasRoleByName(AIE_HOLDER_ROLE_NAMES);
+    const isAdmin = hasRoleByName(ADMIN_ROLE_NAMES);
+    const isTechSupport = hasRoleByName(TECH_SUPPORT_ROLE_NAMES);
+
+    // …every menu gate is permission-first with a role fallback, driven by
+    // the central registry so the Access Control page can manage it.
+    const canCreateCampaign = satisfiesGate(GATE_DEFINITIONS.canCreateCampaign);
+    const canViewCampaign = satisfiesGate(GATE_DEFINITIONS.canViewCampaign);
+    const canCreateEvent = satisfiesGate(GATE_DEFINITIONS.canCreateEvent);
+    const canViewEvent = satisfiesGate(GATE_DEFINITIONS.canViewEvent);
+    const canCreateActivity = satisfiesGate(GATE_DEFINITIONS.canCreateActivity);
+    const canViewActivities = satisfiesGate(GATE_DEFINITIONS.canViewActivities);
+    // The single merged "List Activities" page is available to anyone who can
+    // view activities OR any national (level 1) user — mirroring Events.
+    const canListActivities = computed(
+      () => canViewActivities.value || isAIEHolder.value || isLevelOne.value
+    );
+    const canViewOrgUnits = satisfiesGate(GATE_DEFINITIONS.canViewOrgUnits);
+    const canViewRegHH = satisfiesGate(GATE_DEFINITIONS.canViewRegHH);
+    const canValidateHH = satisfiesGate(GATE_DEFINITIONS.canValidateHH);
+    const canReviewHHChanges = satisfiesGate(GATE_DEFINITIONS.canReviewHHChanges);
+    const canSubmitHHChanges = satisfiesGate(GATE_DEFINITIONS.canSubmitHHChanges);
+    const canViewNetsDistributed = satisfiesGate(GATE_DEFINITIONS.canViewNetsDistributed);
+    const canCreateDropOffPoint = satisfiesGate(GATE_DEFINITIONS.canCreateDropOffPoint);
+    const canViewDropOffPoint = satisfiesGate(GATE_DEFINITIONS.canViewDropOffPoint);
+    const canCreateDistributionPost = satisfiesGate(GATE_DEFINITIONS.canCreateDistributionPost);
+    const canViewDistributitionPostRole = satisfiesGate(GATE_DEFINITIONS.canViewDistributitionPostRole);
+    const canViewInventory = satisfiesGate(GATE_DEFINITIONS.canViewInventory);
+    const canViewPayroll = satisfiesGate(GATE_DEFINITIONS.canViewPayroll);
+    const canViewGFPayroll = satisfiesGate(GATE_DEFINITIONS.canViewGFPayroll);
+    const canViewPMIPayroll = satisfiesGate(GATE_DEFINITIONS.canViewPMIPayroll);
+    const canViewUsers = satisfiesGate(GATE_DEFINITIONS.canViewUsers);
+    const canViewMasterlist = satisfiesGate(GATE_DEFINITIONS.canViewMasterlist);
+    const canIssueNets = satisfiesGate(GATE_DEFINITIONS.canIssueNets);
+    const canViewRoles = satisfiesGate(GATE_DEFINITIONS.canViewRoles);
+    const canViewAccessControl = satisfiesGate(
+      GATE_DEFINITIONS.canViewAccessControl
+    );
+    const isCommunityHealthWorker = hasRoleByName(CHW_ROLE_NAMES);
     const canAccessBudgeting = computed(
       () => !isCommunityHealthWorker.value && !!role_id.value
     );
@@ -798,6 +717,7 @@ export default defineComponent({
       canCreateActivity,
       canViewOrgUnits,
       canViewActivities,
+      canListActivities,
       canViewRegHH,
       canValidateHH,
       canReviewHHChanges,
@@ -811,6 +731,9 @@ export default defineComponent({
       canViewPayroll,
       canViewUsers,
       canViewMasterlist,
+      canIssueNets,
+      canViewRoles,
+      canViewAccessControl,
       canViewGFPayroll,
       canViewPMIPayroll
     };

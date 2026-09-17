@@ -171,6 +171,8 @@
               current: villagesPaginationMeta.current,
               pageSize: villagesPaginationMeta.pageSize,
               total: villagesPaginationMeta.total,
+              showSizeChanger: true,
+              pageSizeOptions: [25, 50, 100],
               showTotal: (total) => `Total ${total} villages`,
             }"
             :loading="isLoading"
@@ -243,7 +245,14 @@
               </div>
             </template>
 
+            <div
+              v-if="villageLoading[village.id] && !(householdsByVillage[getCurrentHouseholdCacheKey(village.id)] || []).length"
+              class="village-skeleton"
+            >
+              <a-skeleton active :paragraph="{ rows: 4 }" />
+            </div>
             <a-table
+              v-else
               :columns="householdColumns"
               :data-source="filteredHouseholds(village.id)"
               :pagination="{
@@ -276,7 +285,8 @@
             :current="villagesPaginationMeta.current"
             :page-size="villagesPaginationMeta.pageSize"
             :total="villagesPaginationMeta.total"
-            :show-size-changer="false"
+            :show-size-changer="true"
+            :page-size-options="[25, 50, 100]"
             :show-total="(total) => `Total ${total} villages`"
             @change="handleVillagePageChange"
           />
@@ -302,7 +312,17 @@
       </section>
     </main>
 
-    <div v-else class="loading-wrap"><a-spin /></div>
+    <main v-else class="workflow-content hh-skeleton">
+      <div class="dashboard-grid">
+        <div v-for="i in 5" :key="i" class="stat-card">
+          <a-skeleton active :paragraph="{ rows: 1 }" />
+        </div>
+      </div>
+      <div class="panel panel-full">
+        <div class="table-title"><a-skeleton active style="width: 220px" /></div>
+        <a-skeleton active :paragraph="{ rows: 5 }" />
+      </div>
+    </main>
 
     <a-modal
       v-model:visible="isHouseholdModalOpen"
@@ -321,7 +341,7 @@
           <button
             class="floating-pager prev"
             type="button"
-            :disabled="activeHouseholdIndex <= 0"
+            :disabled="activeHouseholdGlobalIndex <= 1"
             aria-label="Previous household"
             @click="goToHousehold('prev')"
           >
@@ -332,7 +352,7 @@
           <button
             class="floating-pager next"
             type="button"
-            :disabled="activeHouseholdIndex >= activeHouseholds.length - 1"
+            :disabled="activeHouseholdGlobalIndex >= activeVillageTotalHouseholds"
             aria-label="Next household"
             @click="goToHousehold('next')"
           >
@@ -362,7 +382,7 @@
                 <p class="eyebrow">
                   Household Review
                   <span class="dot-sep">·</span>
-                  <span class="record-pos">Record {{ activeHouseholdIndex + 1 }} of {{ activeHouseholds.length }}</span>
+                  <span class="record-pos">Record {{ activeHouseholdGlobalIndex }} of {{ activeVillageTotalHouseholds }}</span>
                 </p>
                 <h3 class="name">{{ activeHouseholdFullName || 'Unknown household' }}</h3>
                 <div class="meta-row">
@@ -447,17 +467,17 @@
             <button
               type="button"
               class="pager-btn"
-              :disabled="activeHouseholdIndex <= 0"
+              :disabled="activeHouseholdGlobalIndex <= 1"
               @click="goToHousehold('prev')"
               aria-label="Previous"
             >
               <LeftOutlined />
             </button>
-            <span class="pager-pos">{{ activeHouseholdIndex + 1 }} <span class="sep">/</span> {{ activeHouseholds.length }}</span>
+            <span class="pager-pos">{{ activeHouseholdGlobalIndex }} <span class="sep">/</span> {{ activeVillageTotalHouseholds }}</span>
             <button
               type="button"
               class="pager-btn"
-              :disabled="activeHouseholdIndex >= activeHouseholds.length - 1"
+              :disabled="activeHouseholdGlobalIndex >= activeVillageTotalHouseholds"
               @click="goToHousehold('next')"
               aria-label="Next"
             >
@@ -786,6 +806,11 @@ const householdsByVillage = ref({});
 const villageLoading = ref({});
 const villagesPaginationMeta = ref({ current: 1, pageSize: 100, total: 0 });
 const householdsPaginationMeta = ref({});
+// Per-village server-side progress (total / validated / reviewed / pending /
+// members) returned by the `village_hh` endpoint, keyed by village id. This
+// drives the modal progress bar + collapse header counts with server truth
+// instead of counting only the rows of the currently cached page.
+const villageSummaryByVillage = ref({});
 const villageSubmission = ref({});
 const submittingVillage = ref({});
 const counties = ref([]);
@@ -1052,6 +1077,45 @@ const activeHouseholdIndex = computed(() =>
   activeHouseholds.value.findIndex((item) => item.id === activeHouseholdId.value)
 );
 
+// The modal walks across PAGES of a village, so the position shown to the
+// user must be global: (page - 1) * pageSize + position-within-page + 1.
+const activeHouseholdGlobalIndex = computed(() => {
+  const meta = householdsPaginationMeta.value[activeVillageId.value];
+  const page = Number(meta?.current || 1);
+  const pageSize = Number(meta?.pageSize || HOUSEHOLDS_PAGE_SIZE);
+  const idx = activeHouseholdIndex.value;
+  return idx < 0 ? 0 : (page - 1) * pageSize + idx + 1;
+});
+
+const activeVillageTotalHouseholds = computed(() =>
+  householdCount(activeVillageId.value)
+);
+
+// Keep the modal's village-level progress live while a request is in flight:
+// the server snapshot (village_hh `summary`) is bumped locally after each
+// Confirm / Mute / Change action, then reconciled on the next page load.
+const bumpActiveVillageSummary = (kind) => {
+  const id = activeVillageId.value;
+  const current = villageSummaryByVillage.value[id];
+  if (!id || !current) return;
+  const total = Number(current.total || 0);
+  const next = {
+    ...current,
+    reviewed: Number(current.reviewed || 0) + 1,
+  };
+  if (kind === "verified") {
+    next.verified = Number(current.verified || 0) + 1;
+  }
+  if (total > 0) {
+    next.reviewed = Math.min(next.reviewed, total);
+    next.verified = Math.min(next.verified, total);
+  }
+  villageSummaryByVillage.value = {
+    ...villageSummaryByVillage.value,
+    [id]: next,
+  };
+};
+
 const activeHousehold = computed(() =>
   activeHouseholds.value.find((item) => item.id === activeHouseholdId.value) || null
 );
@@ -1116,38 +1180,35 @@ const villageProgressLabel = computed(() => {
 
 const villageSummaryRows = computed(() =>
   villages.value.map((village) => {
-    const hhs = householdsByVillage.value[`${village.id}_1`] || [];
-    const totalFromMeta = householdsPaginationMeta.value[village.id]?.total;
-    const totalHouseholds = Number(
-      village.no_of_registered_hh ?? totalFromMeta ?? hhs.length
+    const total = Number(village.no_of_registered_hh || 0);
+    const verified = Number(village.no_of_verified_hh || 0);
+    const reviewed = Number(
+      village.no_of_reviewed_hh ?? village.no_of_verified_hh ?? 0
     );
-    const verifiedHouseholds = Number(
-      village.no_of_verified_hh ??
-        hhs.filter((row) => row.validated === 1 || row.validated === true).length
-    );
-    const verifiedPercent = totalHouseholds
-      ? Math.round((verifiedHouseholds / totalHouseholds) * 100)
-      : 0;
     return {
       id: village.id,
       name: village.name,
-      total_households: totalHouseholds,
-      verified_households: verifiedHouseholds,
-      verified_percent: verifiedPercent,
-      population: hhs.reduce((sum, row) => sum + Number(row.hh_size || 0), 0),
+      total_households: total,
+      verified_households: verified,
+      reviewed_households: reviewed,
+      verified_percent: total ? Math.round((verified / total) * 100) : 0,
+      population: Number(village.total_members || 0),
     };
   })
 );
 
+// Dashboard aggregates come from the server-side per-village counts returned
+// by `villages/list` (AdministrativeUnit::formatVillages) — never from the
+// cached household pages, which only ever hold one page (10 rows) per village.
 const totalHouseholds = computed(() =>
-  Object.values(householdsByVillage.value).reduce((sum, list) => sum + list.length, 0)
+  villages.value.reduce((sum, v) => sum + Number(v.no_of_registered_hh || 0), 0)
 );
 
 const villagesReviewed = computed(() =>
   villages.value.filter((v) => {
-    const list = householdsByVillage.value[`${v.id}_1`] || [];
-    if (!list.length) return false;
-    return list.every((row) => statusLabel(row) !== "Pending Review");
+    const total = Number(v.no_of_registered_hh || 0);
+    const reviewed = Number(v.no_of_reviewed_hh ?? v.no_of_verified_hh ?? 0);
+    return total > 0 && reviewed >= total;
   }).length
 );
 
@@ -1282,7 +1343,7 @@ const fetchHistory = async () => {
 
 const fetchVillages = async (page = 1) => {
   const locationId = activeScopeLocationId.value;
-  const pageSize = 100;
+  const pageSize = villagesPaginationMeta.value.pageSize || 100;
   const endpoint = `villages/list?page=${page}&per_page=${pageSize}${locationId ? `&location_id=${locationId}` : ""}`;
   const { data } = await axios.get(endpoint);
   villages.value = data?.data || [];
@@ -1406,6 +1467,22 @@ const ensureVillageLoaded = async (villageId, page = 1, { force = false } = {}) 
       };
     }
 
+    // Server-side progress for this village — source of truth for the modal
+    // progress bar + collapse header counts regardless of which page of
+    // households the user is looking at.
+    if (data?.summary) {
+      villageSummaryByVillage.value = {
+        ...villageSummaryByVillage.value,
+        [villageId]: {
+          total: Number(data.summary.total || 0),
+          verified: Number(data.summary.validated || 0),
+          reviewed: Number(data.summary.reviewed ?? data.summary.validated ?? 0),
+          pending: Number(data.summary.pending || 0),
+          members: Number(data.summary.total_members || 0),
+        },
+      };
+    }
+
     householdsPaginationMeta.value = {
       ...householdsPaginationMeta.value,
       [villageId]: normalizePaginationMeta({
@@ -1425,13 +1502,17 @@ const ensureVillageLoaded = async (villageId, page = 1, { force = false } = {}) 
   }
 };
 
-const fetchAllVillageHouseholds = async () => {
-  await Promise.all(villages.value.map((v) => ensureVillageLoaded(v.id, 1)));
-};
-
 const handleVillagePageChange = async (pagination) => {
   const nextPage = Number(pagination?.current || pagination || 1);
-  villagesPaginationMeta.value.current = nextPage;
+  const nextSize =
+    Number(pagination?.pageSize) ||
+    villagesPaginationMeta.value.pageSize ||
+    100;
+  villagesPaginationMeta.value = {
+    ...villagesPaginationMeta.value,
+    current: nextPage,
+    pageSize: nextSize,
+  };
   await fetchVillages(nextPage);
 };
 
@@ -1468,13 +1549,20 @@ const refreshAll = async () => {
   try {
     householdsByVillage.value = {};
     householdsPaginationMeta.value = {};
+    villageSummaryByVillage.value = {};
     villageLoading.value = {};
     activeVillageKeys.value = [];
     activeVillageId.value = null;
+    activeHouseholdId.value = null;
     villagesPaginationMeta.value.current = 1;
+    // The dashboard only needs the server-side village aggregates
+    // (`villages/list`) + the change-request history. Households are NOT
+    // pre-fetched per village — they load lazily when the CHA expands a
+    // village (ensureVillageInitiallyLoaded / activeVillageKeys watch), so
+    // the initial route resolves in two requests regardless of how many
+    // villages the scope contains.
     await fetchHistory();
     await fetchVillages(1);
-    await fetchAllVillageHouseholds();
   } finally {
     isLoading.value = false;
   }
@@ -1488,11 +1576,32 @@ const openVillage = (villageId) => {
 const householdCount = (villageId) => {
   const total = householdsPaginationMeta.value[villageId]?.total;
   if (total !== undefined) return total;
+  const village = villages.value.find((v) => v.id === villageId);
+  if (
+    village &&
+    village.no_of_registered_hh !== undefined &&
+    village.no_of_registered_hh !== null
+  ) {
+    return Number(village.no_of_registered_hh);
+  }
   const cacheKey = getCurrentHouseholdCacheKey(villageId);
   return (householdsByVillage.value[cacheKey] || []).length;
 };
 
+// Server-authoritative "reviewed" count per village (validated OR muted) —
+// matches the backend's submission rule (submitVillage). Falls back to the
+// loaded page rows only when the aggregate sources haven't arrived yet.
 const reviewedCount = (villageId) => {
+  const summary = villageSummaryByVillage.value[villageId];
+  if (summary && summary.reviewed !== undefined) return Number(summary.reviewed);
+  const village = villages.value.find((v) => v.id === villageId);
+  if (
+    village &&
+    village.no_of_reviewed_hh !== undefined &&
+    village.no_of_reviewed_hh !== null
+  ) {
+    return Number(village.no_of_reviewed_hh);
+  }
   const cacheKey = getCurrentHouseholdCacheKey(villageId);
   return (householdsByVillage.value[cacheKey] || []).filter((row) => statusLabel(row) !== "Pending Review").length;
 };
@@ -1597,12 +1706,58 @@ const closeHouseholdModal = () => {
   showChangePanel.value = false;
 };
 
-const goToHousehold = (direction) => {
-  if (!activeHouseholds.value.length) return;
+const goToHousehold = async (direction) => {
+  const villageId = activeVillageId.value;
+  const list = activeHouseholds.value;
+  if (!villageId || !list.length) return;
   const index = activeHouseholdIndex.value;
-  const nextIndex = direction === "next" ? index + 1 : index - 1;
-  if (nextIndex < 0 || nextIndex >= activeHouseholds.value.length) return;
-  activeHouseholdId.value = activeHouseholds.value[nextIndex].id;
+  const meta = householdsPaginationMeta.value[villageId] || {
+    current: 1,
+    pageSize: HOUSEHOLDS_PAGE_SIZE,
+    total: 0,
+  };
+
+  if (direction === "next") {
+    if (index >= 0 && index + 1 < list.length) {
+      activeHouseholdId.value = list[index + 1].id;
+    } else {
+      // End of the current page — paginate forward transparently so the modal
+      // walks every household in the village, not just the current page.
+      const lastPage = Math.max(
+        Math.ceil((meta.total || 0) / (meta.pageSize || HOUSEHOLDS_PAGE_SIZE)),
+        meta.current
+      );
+      if (meta.current < lastPage) {
+        const nextPage = meta.current + 1;
+        await handleHouseholdPageChange(villageId, nextPage);
+        const nextList =
+          householdsByVillage.value[`${villageId}_${nextPage}`] || [];
+        if (nextList.length) activeHouseholdId.value = nextList[0].id;
+      } else {
+        notification.info({
+          message: "You've reached the last household in this village.",
+        });
+      }
+    }
+  } else {
+    if (index > 0) {
+      activeHouseholdId.value = list[index - 1].id;
+    } else if (meta.current > 1) {
+      // First row of this page — hop back to the previous page's last row.
+      const prevPage = meta.current - 1;
+      await handleHouseholdPageChange(villageId, prevPage);
+      const prevList =
+        householdsByVillage.value[`${villageId}_${prevPage}`] || [];
+      if (prevList.length) {
+        activeHouseholdId.value = prevList[prevList.length - 1].id;
+      }
+    } else {
+      notification.info({
+        message: "This is the first household in this village.",
+      });
+    }
+  }
+
   showMutePanel.value = false;
   showChangePanel.value = false;
 };
@@ -1622,6 +1777,10 @@ const confirmHousehold = async () => {
 
     await axios.patch(`verify_household?house_id=${currentHouseholdId}&inputValue=${hhSize}`);
     notification.success({ message: "Household confirmed" });
+
+    // Reflect the confirmation in the village-level progress immediately
+    // (the background fetchVillages / next page load reconcile from server).
+    bumpActiveVillageSummary("verified");
 
     // Update the local record in place so progress counters refresh and the
     // confirmed row shows as "Validated" — without unmounting the modal.
@@ -1647,7 +1806,10 @@ const confirmHousehold = async () => {
     if (nextHouseholdId) {
       activeHouseholdId.value = nextHouseholdId;
     } else {
-      notification.info({ message: "All households in this village have been reviewed." });
+      // End of the current page — advance into the next page's households
+      // instead of stopping the session ("next" shows the end-of-village
+      // message only after the true last household).
+      await goToHousehold("next");
     }
 
     // Refresh village-level progress + history in the background — these update
@@ -1688,7 +1850,9 @@ const advanceToNextHousehold = () => {
   if (nextHouseholdId) {
     activeHouseholdId.value = nextHouseholdId;
   } else {
-    notification.info({ message: "All households in this village have been reviewed." });
+    // End of the current page — advance into the next page's households
+    // ("next" shows the end-of-village message only after the true last row).
+    goToHousehold("next");
   }
 };
 
@@ -1701,6 +1865,9 @@ const submitMute = async () => {
       notes: muteForm.value.notes,
     });
     notification.success({ message: "Mute request submitted" });
+    // The household is now "reviewed" (validated OR mute-requested) — bump the
+    // local progress snapshot immediately.
+    bumpActiveVillageSummary("reviewed");
     muteForm.value.notes = "";
     advanceToNextHousehold();
     // Refresh village-level progress + history in the background so the
@@ -1749,6 +1916,9 @@ const submitChange = async () => {
   try {
     await axios.post(endpoint, payload);
     notification.success({ message: "Change request submitted" });
+    // The household is now "reviewed" (a request is in flight) — bump the
+    // local progress snapshot immediately.
+    bumpActiveVillageSummary("reviewed");
     resetChangeForm();
     advanceToNextHousehold();
     fetchVillages(villagesPaginationMeta.value.current || 1).catch(() => {});
@@ -2083,6 +2253,10 @@ const handleModalKeydown = (event) => {
     font-weight: 700;
     color: #2f6746;
     margin-bottom: 8px;
+  }
+
+  .village-skeleton {
+    padding: 12px 16px;
   }
 
   .verified-cell {

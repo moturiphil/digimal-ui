@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="legacy-platform-page">
     <sdPageHeader ghost :title="`Manage Inventory at ${drop_off_name}`" />
     <Main>
       <SearchResultWrapper>

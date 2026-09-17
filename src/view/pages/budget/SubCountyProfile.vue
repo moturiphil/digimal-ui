@@ -21,33 +21,6 @@
           </div>
         </div>
 
-        <!-- ───────── Workflow stepper ───────── -->
-        <ol class="workflow-stepper" aria-label="Profile workflow">
-          <li :class="['ws-step', { active: currentStep === 1, done: currentStep > 1 }]">
-            <span class="ws-num">1</span>
-            <div class="ws-text">
-              <div class="ws-title">Capture demographics</div>
-              <div class="ws-sub">Fill in the sub-county data fields below.</div>
-            </div>
-          </li>
-          <li class="ws-sep" aria-hidden="true"></li>
-          <li :class="['ws-step', { active: currentStep === 2, done: currentStep > 2 }]">
-            <span class="ws-num">2</span>
-            <div class="ws-text">
-              <div class="ws-title">Review computed values</div>
-              <div class="ws-sub">Verify auto-calculated campaign parameters.</div>
-            </div>
-          </li>
-          <li class="ws-sep" aria-hidden="true"></li>
-          <li :class="['ws-step', { active: currentStep === 3 }]">
-            <span class="ws-num">3</span>
-            <div class="ws-text">
-              <div class="ws-title">Save &amp; continue</div>
-              <div class="ws-sub">Persist the profile and proceed to budgeting.</div>
-            </div>
-          </li>
-        </ol>
-
         <a-spin :spinning="loading">
         <SubCountyAccessGate @scope-change="onScopeChange">
           <template #default="{ countyProfileId: gatedProfileId }">
@@ -56,15 +29,6 @@
         <!-- ───────── Sticky summary / save bar ───────── -->
         <div class="summary-bar" v-if="!loading">
           <div class="sb-left">
-            <div class="sb-stat">
-              <div class="sb-label">Profile completion</div>
-              <div class="sb-progress-wrap">
-                <div class="sb-progress">
-                  <div class="sb-progress-fill" :style="{ width: completionPercent + '%' }"></div>
-                </div>
-                <span class="sb-progress-text">{{ completionPercent }}%</span>
-              </div>
-            </div>
             <div class="sb-stat">
               <div class="sb-label">Last updated</div>
               <div class="sb-value muted">{{ lastUpdated }}</div>
@@ -76,7 +40,7 @@
           </div>
           <div class="sb-right">
             <a-tag v-if="readOnly" color="purple" class="stage-tag">
-              National view — read only
+              {{ readOnlyLabel }}
             </a-tag>
             <template v-else-if="!editing">
               <sdButton type="dark" size="small" class="pill-btn" @click="startEdit">
@@ -454,6 +418,7 @@ import { ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { notification } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
+import { hasRoleByName } from '@/services/user-role';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import SubCountyAccessGate from './SubCountyAccessGate.vue';
@@ -502,7 +467,10 @@ export default {
   components: { Main, RecordViewWrapper, BudgetPageWrapper, SubCountyAccessGate },
   setup() {
     // Level 1 (National / Super Admin) users get a strict view-only mode
-    // — no Edit, no Save, no Continue.
+    // — no Edit, no Save, no Continue. Additionally, once a sub-county
+    // budget has been APPROVED, the sub-county profile becomes view-only
+    // for every role EXCEPT the Super Admin (updates_locked is surfaced by
+    // the backend county-profile API).
     const currentUser = (() => {
       try {
         return JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -510,7 +478,30 @@ export default {
         return {};
       }
     })();
-    const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
+    const currentLevelId = Number(currentUser?.user?.level_id);
+    const isSuperAdmin = hasRoleByName(['Super Admin']);
+
+    // Set from the profile API (updates_locked) — true only for a sub-county
+    // profile whose budget has already been approved.
+    const updatesLocked = ref(false);
+
+    // A profile is read-only when:
+    //   • the user is not Super Admin AND
+    //   • either they are a National-level (1) user, OR the sub-county
+    //     profile has an approved budget (updatesLocked).
+    // Super Admin can always edit, even a locked profile.
+    const readOnly = computed(() => {
+      if (isSuperAdmin.value) return false;
+      if (currentLevelId === 1) return true;
+      return updatesLocked.value;
+    });
+
+    const readOnlyLabel = computed(() => {
+      if (isSuperAdmin.value) return 'Super Admin — editable';
+      if (updatesLocked.value) return 'Profile locked — budget approved';
+      if (currentLevelId === 1) return 'National view — read only';
+      return '';
+    });
 
     const router = useRouter();
     const editing = ref(false);
@@ -570,6 +561,10 @@ export default {
         sub_county_id: resp.sub_county_id || null,
         profile_id: resp.profile?.id || null,
       };
+      // Backend surfaces updates_locked = true when this sub-county profile
+      // has an approved budget (view-only except for Super Admin).
+      updatesLocked.value =
+        !!resp.profile?.updates_locked || !!resp.updates_locked;
       // Prefer name from API when available.
       const apiName =
         resp.sub_county?.name || resp.sub_county_name || resp.profile?.sub_county?.name;
@@ -608,6 +603,14 @@ export default {
           county: data?.county,
           profile: data,
         });
+
+        // If the loaded profile is read-only for this user (e.g. its budget
+        // has been approved), close any previous edit session so no inputs
+        // stay enabled.
+        if (readOnly.value) {
+          editing.value = false;
+          profileSaved.value = true;
+        }
       } catch (err) {
         notification.error({
           message: 'Failed to load profile',
@@ -752,6 +755,8 @@ export default {
       saving,
       loading,
       readOnly,
+      readOnlyLabel,
+      updatesLocked,
       onScopeChange,
       profileSaved,
       lastUpdated,

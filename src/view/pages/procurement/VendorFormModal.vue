@@ -234,11 +234,11 @@
               <a-col :span="12">
                 <a-form-item
                   label="Tax Cert. Expiry"
-                  :validate-status="errors.tax_certificate_expiry ? 'error' : ''"
-                  :help="errors.tax_certificate_expiry"
+                  :validate-status="errors.tax_compliance_expiry_date ? 'error' : ''"
+                  :help="errors.tax_compliance_expiry_date"
                 >
                   <a-date-picker
-                    v-model:value="form.tax_certificate_expiry"
+                    v-model:value="form.tax_compliance_expiry_date"
                     style="width: 100%"
                     :disabled-date="disablePastDates"
                     value-format="YYYY-MM-DD"
@@ -754,7 +754,7 @@ const blankForm = () => ({
   county_id: null,
   subcounty_id: null,
   kra_pin: '',
-  tax_certificate_expiry: null,
+  tax_compliance_expiry_date: null,
   tax_compliance_certificate: null, // File
   bank_accounts: [blankBankAccount(true)],
   // At least one contact person is mandatory for every vendor registration,
@@ -863,9 +863,10 @@ export default {
       form.county_id = v.county_id || v.county?.id || null;
       form.subcounty_id = v.subcounty_id || v.sub_county_id || v.sub_county?.id || null;
       form.kra_pin = v.kra_pin || '';
-      form.tax_certificate_expiry = v.tax_certificate_expiry
-        ? dayjs(v.tax_certificate_expiry).format('YYYY-MM-DD')
-        : null;
+      form.tax_compliance_expiry_date =
+        (v.tax_compliance_expiry_date || v.tax_certificate_expiry)
+          ? dayjs(v.tax_compliance_expiry_date || v.tax_certificate_expiry).format('YYYY-MM-DD')
+          : null;
       const accs = v.bank_accounts || v.active_bank_accounts || [];
       form.bank_accounts = accs.length
         ? accs.map((a) => ({
@@ -1165,10 +1166,10 @@ export default {
         if (!form.kra_pin?.trim()) errors.kra_pin = 'KRA PIN required for private vendors';
         else if (!KRA_REGEX.test(form.kra_pin.trim())) errors.kra_pin = 'Invalid KRA PIN format';
 
-        if (!form.tax_certificate_expiry) {
-          errors.tax_certificate_expiry = 'Expiry date required';
-        } else if (dayjs(form.tax_certificate_expiry).isBefore(dayjs().endOf('day'))) {
-          errors.tax_certificate_expiry = 'Must be after today';
+        if (!form.tax_compliance_expiry_date) {
+          errors.tax_compliance_expiry_date = 'Expiry date required';
+        } else if (dayjs(form.tax_compliance_expiry_date).isBefore(dayjs().endOf('day'))) {
+          errors.tax_compliance_expiry_date = 'Must be after today';
         }
 
         if (!isEdit.value && !form.tax_compliance_certificate) {
@@ -1285,7 +1286,7 @@ export default {
       }
       if (form.category === 'private') {
         payload.kra_pin = form.kra_pin.trim().toUpperCase();
-        payload.tax_certificate_expiry = form.tax_certificate_expiry;
+        payload.tax_compliance_expiry_date = form.tax_compliance_expiry_date;
         if (form.tax_compliance_certificate) {
           payload.tax_compliance_certificate = form.tax_compliance_certificate;
         }

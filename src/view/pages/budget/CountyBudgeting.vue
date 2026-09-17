@@ -713,14 +713,18 @@ export default {
           // referrer user object is lazy-loaded on card click via show().
           referredBy.value = active.referred_by_user || null;
 
-          if (active.status !== 'draft' || active.grand_total) {
-            generated.value = {
-              total: Number(active.grand_total) || 0,
-              date: active.submitted_at
-                ? new Date(active.submitted_at).toLocaleDateString()
-                : new Date(active.updated_at || active.created_at).toLocaleDateString(),
-            };
-          }
+          // `create_campaign_budget` generates the line items in the same
+          // call, so ANY existing (non-voided) budget row is an already-
+          // generated budget — even a draft whose grand_total is KES 0
+          // (e.g. all units were zero and the confirmation was accepted).
+          // Always marking it "generated" deactivates the Generate button
+          // on reload; the owner uses Void (draft) to rebuild it.
+          generated.value = {
+            total: Number(active.grand_total) || 0,
+            date: active.submitted_at
+              ? new Date(active.submitted_at).toLocaleDateString()
+              : new Date(active.updated_at || active.created_at).toLocaleDateString(),
+          };
 
           // Whenever the budget has progressed past draft, or was
           // referred back, render the status card first.
@@ -815,16 +819,13 @@ export default {
       selectedActivities.value.reduce((s, a) => s + activityTotal(a), 0),
     );
 
-    // Void is available to the owner whenever the budget is still
-    // recoverable: any non-approved / non-voided draft or submitted
-    // budget, plus referred county_approved budgets that were bounced
-    // back by national for rework.
+    // Void is only available while the budget is still a working draft.
+    // Once it is submitted to National, the review chain owns it — the
+    // owner must wait for it to be referred back (which returns it to
+    // draft) before it can be voided and regenerated.
     const canVoid = computed(() => {
       if (readOnly.value || !campaignBudgetId.value) return false;
-      const s = budgetStatus.value;
-      if (s === 'approved' || s === 'voided') return false;
-      if (s === 'draft' || s === 'submitted') return true;
-      return s === 'county_approved' && isReferred.value;
+      return budgetStatus.value === 'draft';
     });
 
     // Zero-unit gate: any loaded parameter row whose units === 0 must be
@@ -985,6 +986,41 @@ export default {
 
         notification.success({ message: 'County budget generated.' });
       } catch (err) {
+        // The backend refuses to create a second budget while an active
+        // (non-voided) one exists and returns it as `existing` so the
+        // caller can adopt it. Reuse that budget instead of failing
+        // loudly — the owner voids it (draft) to rebuild, or waits for
+        // the review chain if it is already upstream.
+        const body = err?.response?.data || {};
+        const existing = body?.existing ?? body?.budget ?? null;
+        if (err?.response?.status === 409 && existing?.id) {
+          campaignBudgetId.value = existing.id;
+          budgetStatus.value = existing.status || 'draft';
+          budgetFinancialYear.value = existing.financial_year || null;
+          budgetSubmittedAt.value = existing.submitted_at || null;
+          isReferred.value = !!existing.is_referred;
+          referredAt.value = existing.referred_at || null;
+          referralMessage.value = existing.referral_message || '';
+          referredBy.value = null;
+          generated.value = {
+            total: Number(existing.grand_total) || 0,
+            date: existing.submitted_at
+              ? new Date(existing.submitted_at).toLocaleDateString()
+              : new Date(existing.updated_at || existing.created_at).toLocaleDateString(),
+          };
+          showStatusCard.value = !!existing.is_referred || existing.status !== 'draft';
+          if (!showStatusCard.value) {
+            await loadBudgetLineItems(existing.id);
+          }
+          notification.warning({
+            message: 'A budget already exists for this county',
+            description:
+              existing.status === 'draft'
+                ? 'Void the draft budget to generate a new one instead, or submit it to National when ready.'
+                : `This budget is already ${existing.status} — it returns to draft only if a reviewer refers it back.`,
+          });
+          return;
+        }
         notification.error({
           message: 'Failed to generate county budget',
           description: err?.response?.data?.message || err.message,
