@@ -153,10 +153,10 @@
                   {{ selectedCounty.county_budget ? selectedCounty.county_budget.stage : 'No budget' }}
                 </div>
                 <span
-                  v-if="selectedCounty.county_budget && selectedCounty.county_budget.flags"
+                  v-if="selectedCounty.county_budget && selectedCounty.county_budget.special_area_cost"
                   class="dc-flag"
                 >
-                  {{ selectedCounty.county_budget.flags }}
+                  ✦ Special Area Cost
                 </span>
               </div>
               <div
@@ -173,8 +173,8 @@
                 <div class="dc-meta">
                   {{ sc.budget ? sc.budget.stage : 'No budget' }}
                 </div>
-                <span v-if="sc.budget && sc.budget.flags" class="dc-flag">
-                  {{ sc.budget.flags }}
+                <span v-if="sc.budget && sc.budget.special_area_cost" class="dc-flag">
+                  ✦ Special Area Cost
                 </span>
               </div>
               <div

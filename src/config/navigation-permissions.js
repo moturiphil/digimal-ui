@@ -143,7 +143,7 @@ export const NAV_MODULES = Object.freeze([
       // meta.allowedRoles ["Super Admin"], so only an admin can open them.
       { label: "Budget Categories", path: "/budget/categories", permissions: ["get_budget_categories", "get_budget_category", "get_budget_category_parameters", "get_category_line_items_preview", "create_budget_category", "update_budget_category", "delete_budget_category"] },
       { label: "Budget Parameters", path: "/budget/parameters", permissions: ["get_budget_parameters", "get_budget_parameter", "create_budget_parameter", "update_budget_parameter", "delete_budget_parameter"] },
-      { label: "Special Area Cost", path: "/budget/special-area-costs", permissions: ["get_special_cost_parameters", "get_special_cost_parameter", "create_special_cost_parameter", "update_special_cost_parameter", "delete_special_cost_parameter", "get_special_county_flags", "get_active_special_flags", "get_special_county_flag", "create_special_county_flag", "update_special_county_flag", "delete_special_county_flag"] },
+      { label: "Special Area Cost", path: "/budget/special-area-costs", permissions: ["get_county_profiles", "get_special_area_cost", "update_special_area_cost"] },
     ]),
   },
   {

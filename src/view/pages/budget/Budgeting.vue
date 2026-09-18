@@ -10,8 +10,8 @@
             </h3>
           </div>
           <span class="header-tags">
-            <a-tag v-if="specialFlags.length" class="special-pill">
-              ✦ Special Area: {{ specialTypeSummary }}
+            <a-tag v-if="isSpecialAreaApplicable" class="special-pill">
+              ✦ Special Area Cost Applicable
             </a-tag>
             <a-tag class="stage-tag">{{ stage }}</a-tag>
           </span>
@@ -20,9 +20,6 @@
         <SubCountyAccessGate @scope-change="onScopeChange">
           <template #default="{ countyProfileId: gatedProfileId }">
             <span v-if="gatedProfileId" style="display:none;">{{ gatedProfileId }}</span>
-
-        <!-- Special Area Cost mapping banner — visible before, during and after generation -->
-        <SpecialAreaCostBanner :flags="specialFlags" :is-sub-county="true" />
 
         <!-- Status card view (shown when budget is past draft or has been referred back) -->
         <section v-if="showStatusCard" class="panel" style="padding: 0; border: 0; background: transparent;">
@@ -204,6 +201,21 @@
         </section>
 
         <!-- Action row -->
+        <!-- Special Area Cost section — shown after all standard budget categories
+             when the sub-county is marked SAC-applicable in the Special Area
+             Costs mapping module. -->
+        <SpecialAreaCostsSection
+          v-if="!showStatusCard && !loading && isSpecialAreaApplicable && selectedActivities.length"
+          :categories="selectedActivities"
+          :view-mode="viewMode"
+          :read-only="readOnly"
+          :entries="sacEntries"
+          :get-generated-row="sacGeneratedRow"
+          :save-entries="saveSacCategory"
+          :fmt="fmt"
+          @sync="onSacSync"
+        />
+
         <section v-if="!showStatusCard && !loading && selectedActivities.length" class="panel action-row">
           <a-tag
             v-if="readOnly"
@@ -300,7 +312,7 @@ import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import SubCountyAccessGate from './SubCountyAccessGate.vue';
 import BudgetStatusCard from './BudgetStatusCard.vue';
 import BudgetReferralBanner from './BudgetReferralBanner.vue';
-import SpecialAreaCostBanner from './SpecialAreaCostBanner.vue';
+import SpecialAreaCostsSection from './SpecialAreaCostsSection.vue';
 
 /* Human-readable label for a special_type enum value — mirrors the
  * backend's CampaignBudgetController::humanizeSpecialType(). */
@@ -412,6 +424,7 @@ const lineItemsToItems = (items) =>
       sort_order: li.sort_order,
       is_special_cost: !!li.is_special_cost,
       special_type: li.special_type || null,
+      special_area_comment: li.special_area_comment || null,
       highlight: false,
     }));
 
@@ -445,7 +458,7 @@ export default {
     SubCountyAccessGate,
     BudgetStatusCard,
     BudgetReferralBanner,
-    SpecialAreaCostBanner,
+    SpecialAreaCostsSection,
   },
   setup() {
     // Level 1 (National / Super Admin) users can browse but never edit.
@@ -516,17 +529,145 @@ export default {
     const referralMessage = ref('');
     const referredBy = ref(null);
 
-    // ── Special Area Cost mapping state ──────────────────────────────────
-    // Populated from `get_active_special_flags` once the gate resolves a
-    // scope. Drives the header pill, the SpecialAreaCostBanner (visible
-    // before/during editing), and the "Special Cost" row tags + summary
-    // shown once the budget has been generated.
-    const specialFlags = ref([]);
+    // ── Special Area Cost state ─────────────────────────────────────────
+    // The SAC section is driven by a single flag on the sub-county profile
+    // (set in the Special Area Costs mapping module) plus the SAC rows
+    // entered in the section itself. Rows are sent to the backend with the
+    // `create_campaign_budget` payload; once generated they are read back as
+    // is_special_cost line items and are part of the grand total.
     const scopedCountyId = ref(null);
     const scopedSubCountyId = ref(null);
+    const isSpecialAreaApplicable = ref(false);
+    // key `${categoryId}:${specialType}` → rows kept in sync with the section
+    const sacRows = ref([]);   // [{budget_category_id, special_type, amount, units, comment}]
+    // Pre-generation entries persisted via the per-category Save actions.
+    const sacEntries = ref([]);
 
-    const specialTypeSummary = computed(() =>
-      [...new Set(specialFlags.value.map((f) => specialTypeLabel(f.special_type)))].join(', '),
+    const sacCategoryDays = (category) => {
+      const d = Number(category?.default_days || 0);
+      return d > 0 ? d : 1;
+    };
+
+    // Generated-mode row resolver for the SAC section (read-only display).
+    const sacGeneratedRow = (category, item) => {
+      if (!category) return { amount: 0, units: 0, comment: '', total: 0 };
+      const li = (category.items || []).find(
+        (r) => r.is_special_cost && r.special_type === item.type,
+      );
+      if (!li) {
+        return { amount: 0, units: 0, comment: '', total: 0 };
+      }
+      return {
+        amount: Number(li.unit_cost) || 0,
+        units: Number(li.units) || 0,
+        comment: li.special_area_comment || '',
+        total: Number(li.total_cost) || 0,
+      };
+    };
+
+    // Load SAC entries for the resolved profile (profile/draft editing).
+    const loadSacEntries = async () => {
+      if (!countyProfileId.value || viewMode.value !== 'profile') {
+        sacEntries.value = [];
+        return;
+      }
+      try {
+        const { data } = await axios.get('get_special_area_cost_entries', {
+          params: { county_profile_id: countyProfileId.value },
+        });
+        const payload = data?.data || data || {};
+        sacEntries.value = Array.isArray(payload.entries) ? payload.entries : [];
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load Special Area Cost entries',
+          description: err?.response?.data?.message || err.message,
+        });
+        sacEntries.value = [];
+      }
+    };
+
+    // Per-category Save from the SAC section — mirrors the standard grid.
+    // Backend validation failures surface in the UI and the edits stay staged.
+    const saveSacCategory = async (categoryId, rows) => {
+      if (!countyProfileId.value) {
+        notification.error({
+          message: 'Cannot save Special Area Costs',
+          description: 'The sub-county profile has not been resolved yet.',
+        });
+        return;
+      }
+      try {
+        const { data } = await axios.put('save_special_area_cost_entries', {
+          county_profile_id: countyProfileId.value,
+          budget_category_id: categoryId,
+          rows,
+        });
+        const payload = data?.data || data || {};
+        const saved = Array.isArray(payload.entries) ? payload.entries : [];
+        const kept = sacEntries.value.filter(
+          (e) => e.budget_category_id !== categoryId,
+        );
+        sacEntries.value = [...kept, ...saved];
+        const catName =
+          selectedActivities.value.find((a) => a.id === categoryId)?.name ||
+          `Category ${categoryId}`;
+        notification.success({
+          message: 'Special Area Costs saved',
+          description: `${catName} entries updated and staged for generation.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to save Special Area Costs',
+          description:
+            err?.response?.data?.message || err?.message || 'Unknown error.',
+        });
+        // Re-throw so the section can keep the row loading state consistent
+        // (its finally clears the spinner; the dirty chip stays visible).
+        throw err;
+      }
+    };
+
+    // The section reports every change; keep the row set in sync for the
+    // grand total and the generate payload.
+    const onSacSync = (rows) => {
+      sacRows.value = Array.isArray(rows) ? rows : [];
+    };
+
+    // In profile mode the SAC rows are held separately and added to the
+    // grand total; once generated they live inside the category line items
+    // (is_special_cost) and are already part of the existing sums.
+    const sacTotal = computed(() => {
+      if (viewMode.value !== 'profile') return 0;
+      return sacRows.value.reduce(
+        (sum, r) =>
+          sum
+            + (Number(r.amount) || 0)
+              * (Number(r.units) || 0)
+              * sacCategoryDays(
+                selectedActivities.value.find((a) => a.id === r.budget_category_id),
+              ),
+        0,
+      );
+    });
+
+    // Payload sent along with `create_campaign_budget`. Only rows with units
+    // are meaningful; comments ride along for rows that have them.
+    const sacPayload = computed(() =>
+      sacRows.value
+        .filter((r) => (Number(r.units) || 0) > 0)
+        .map((r) => {
+          const category = selectedActivities.value.find(
+            (a) => a.id === r.budget_category_id,
+          );
+          return {
+            budget_category_id: r.budget_category_id,
+            special_type: r.special_type,
+            unit_cost: Number(r.amount) || 0,
+            unit_count: Number(r.units) || 0,
+            number_of_days: sacCategoryDays(category),
+            comment: r.comment || null,
+          };
+        }),
     );
 
     const specialCostsTotal = computed(() =>
@@ -538,25 +679,6 @@ export default {
         0,
       ),
     );
-
-    const fetchSpecialFlags = async () => {
-      if (!scopedCountyId.value) {
-        specialFlags.value = [];
-        return;
-      }
-      try {
-        const { data } = await axios.get('get_active_special_flags', {
-          params: {
-            county_id: scopedCountyId.value,
-            sub_county_id: scopedSubCountyId.value || undefined,
-          },
-        });
-        specialFlags.value = Array.isArray(data?.flags) ? data.flags : [];
-      } catch (e) {
-        // Non-fatal — page still works without the mapping indicator.
-        specialFlags.value = [];
-      }
-    };
 
     /* Sub-county scope is supplied by SubCountyAccessGate. The page
      * does not load any data until the gate has resolved a sub-county
@@ -655,6 +777,9 @@ export default {
       budgetStatus.value = null;
       generated.value = null;
       viewMode.value = 'profile';
+      sacRows.value = [];
+      sacEntries.value = [];
+      isSpecialAreaApplicable.value = false;
       activityCatalog.value = [];
       selectedIds.value = [];
       expandedIds.value = [];
@@ -667,6 +792,18 @@ export default {
       referredBy.value = null;
 
       if (!countyProfileId.value) return;
+
+      // Resolve the SAC applicability flag for this sub-county profile.
+      try {
+        const { data } = await axios.get(
+          `get_county_profile/${countyProfileId.value}`,
+        );
+        const profile = data?.data || data || {};
+        isSpecialAreaApplicable.value = !!profile.is_special_area_cost;
+      } catch (e) {
+        // Non-fatal — the SAC section simply stays hidden.
+        isSpecialAreaApplicable.value = false;
+      }
 
       // Skeleton on while we figure out which view to render.
       loading.value = true;
@@ -727,6 +864,7 @@ export default {
         await Promise.all(
           activityCatalog.value.map((a) => loadActivityParameters(a)),
         );
+        await loadSacEntries();
         if (campaignBudgetId.value && generated.value) {
           await loadBudgetLineItems(campaignBudgetId.value);
         }
@@ -741,7 +879,6 @@ export default {
       scopedSubCountyId.value = scope?.subCountyId || null;
       if (profileId) {
         bootstrap();
-        fetchSpecialFlags();
       }
     };
 
@@ -802,7 +939,8 @@ export default {
       (a.items || []).reduce((s, i) => s + rowTotal(i), 0);
 
     const grandTotal = computed(() =>
-      selectedActivities.value.reduce((s, a) => s + activityTotal(a), 0),
+      selectedActivities.value.reduce((s, a) => s + activityTotal(a), 0)
+        + sacTotal.value,
     );
 
     // Void is only available while the budget is still a working draft.
@@ -908,6 +1046,7 @@ export default {
         const { data: createResp } = await axios.post('create_campaign_budget', {
           county_profile_id: profileId,
           financial_year: financialYear,
+          special_area_costs: sacPayload.value,
         });
 
         // Normalise wrapper shapes to find the new budget id.
@@ -1281,10 +1420,15 @@ export default {
       hasSessionMultiplier,
       activitySubtotal,
       applyMultiplier,
-      specialFlags,
-      specialTypeSummary,
       specialCostsTotal,
       specialTypeLabel,
+      isSpecialAreaApplicable,
+      sacEntries,
+      sacGeneratedRow,
+      saveSacCategory,
+      onSacSync,
+      sacTotal,
+      sacPayload,
     };
   },
 };
