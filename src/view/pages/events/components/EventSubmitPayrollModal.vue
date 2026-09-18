@@ -37,7 +37,7 @@
           <li :class="checkClass(participantsValid)">
             <sdFeatherIcons :type="participantsValid ? 'check-circle' : 'alert-circle'" size="15" />
             <span>
-              Participants validated
+              At least one confirmed participant
               <em class="sp-meta">
                 ({{ participants.confirmed }} confirmed{{
                   participants.pending ? `, ${participants.pending} pending` : ""
@@ -127,9 +127,7 @@ const uploadStatus = reactive({
 });
 
 const isClosed = computed(() => props.event && props.event.status === false);
-const participantsValid = computed(
-  () => participants.confirmed >= 1 && participants.pending === 0
-);
+const participantsValid = computed(() => participants.confirmed >= 1);
 const uploadsComplete = computed(
   () => !uploadStatus.requires_uploads || uploadStatus.complete
 );
