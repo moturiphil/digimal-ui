@@ -270,7 +270,19 @@ const routes = [
         path: "/budget/special-area-costs",
         name: "budget-special-area-costs",
         component: () => import("@/view/pages/budget/SpecialAreaCosts.vue"),
-        meta: { auth: true, allowedRoles: ["Super Admin"] }, // Admin only
+        // Super Admin + the National Accountant (SAC catalogue owner).
+        meta: { auth: true, allowedRoles: ["Super Admin", "Accountant"] },
+      },
+      {
+        // The SEPARATE Special Area Cost budget for a SAC-mapped sub-county.
+        // Submitted on its own straight to National (the county stage is
+        // skipped), reviewed by the Accountant and approved by the Finance
+        // Officer. Gated by permission/sidebar rather than a hard role list so
+        // the audience can be managed from Access Control.
+        path: "/budget/special-area-budget",
+        name: "budget-special-area-budget",
+        component: () => import("@/view/pages/budget/SpecialAreaBudget.vue"),
+        meta: { auth: true },
       },
       {
         path: "/budget/locations",

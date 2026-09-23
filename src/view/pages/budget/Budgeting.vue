@@ -117,7 +117,7 @@
                   {{ record.unit_source === 'fallback' ? 'Inherited' : 'Not set' }}
                 </a-tag>
                 <a-tag v-if="record.is_special_cost" class="special-cost-tag">
-                  ✦ Special Cost — {{ specialTypeLabel(record.special_type) }}
+                  ✦ Special Cost — {{ sacTypeLabel(record.special_type) }}
                 </a-tag>
               </span>
               <span v-else-if="column.key === 'unit_cost'">{{ fmt(record.unit_cost) }}</span>
@@ -200,21 +200,24 @@
           </a-checkbox>
         </section>
 
-        <!-- Action row -->
-        <!-- Special Area Cost section — shown after all standard budget categories
-             when the sub-county is marked SAC-applicable in the Special Area
-             Costs mapping module. -->
-        <SpecialAreaCostsSection
-          v-if="!showStatusCard && !loading && isSpecialAreaApplicable && selectedActivities.length"
-          :categories="selectedActivities"
-          :view-mode="viewMode"
-          :read-only="readOnly"
-          :entries="sacEntries"
-          :get-generated-row="sacGeneratedRow"
-          :save-entries="saveSacCategory"
-          :fmt="fmt"
-          @sync="onSacSync"
-        />
+        <!-- Special Area Cost is now a SEPARATE budget. When this unit is
+             SAC-mapped, the SAC items are budgeted and submitted independently
+             (straight to National), so the standard budget carries no SAC
+             section. -->
+        <section
+          v-if="!showStatusCard && !loading && isSpecialAreaApplicable"
+          class="panel sac-separate-notice"
+        >
+          <div class="ssn-text">
+            This sub-county is mapped as a <strong>Special Area Cost</strong> area. Its special
+            area costs (DSA, Boat, Enhanced Transport…) are budgeted
+            <strong>separately</strong> and submitted <strong>directly to National</strong> —
+            they are not part of this standard budget.
+          </div>
+          <router-link class="ssn-link" to="/budget/special-area-budget">
+            Open the Special Area Cost budget →
+          </router-link>
+        </section>
 
         <section v-if="!showStatusCard && !loading && selectedActivities.length" class="panel action-row">
           <a-tag
@@ -312,7 +315,7 @@ import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import SubCountyAccessGate from './SubCountyAccessGate.vue';
 import BudgetStatusCard from './BudgetStatusCard.vue';
 import BudgetReferralBanner from './BudgetReferralBanner.vue';
-import SpecialAreaCostsSection from './SpecialAreaCostsSection.vue';
+import { fetchSacItems, fallbackSacItems } from '@/services/specialAreaCosts';
 
 /* Human-readable label for a special_type enum value — mirrors the
  * backend's CampaignBudgetController::humanizeSpecialType(). */
@@ -458,7 +461,6 @@ export default {
     SubCountyAccessGate,
     BudgetStatusCard,
     BudgetReferralBanner,
-    SpecialAreaCostsSection,
   },
   setup() {
     // Level 1 (National / Super Admin) users can browse but never edit.
@@ -543,6 +545,25 @@ export default {
     // Pre-generation entries persisted via the per-category Save actions.
     const sacEntries = ref([]);
 
+    // Admin-managed SAC catalogue (get_special_area_cost_items) — loaded once
+    // per page and shared by every category panel. Falls back to the built-in
+    // SAC_ITEMS when the request fails, so the grid always renders.
+    const sacItems = ref(fallbackSacItems());
+    let sacItemsLoaded = false;
+    const loadSacItems = async () => {
+      if (sacItemsLoaded) return;
+      sacItemsLoaded = true;
+      const items = await fetchSacItems();
+      if (items.length) sacItems.value = items;
+    };
+
+    // Label resolver that prefers the catalogue over the built-in map, so an
+    // item added by an Accountant renders with its own name everywhere.
+    const sacTypeLabel = (type) => {
+      const item = sacItems.value.find((i) => i.type === type);
+      return item?.label || specialTypeLabel(type);
+    };
+
     const sacCategoryDays = (category) => {
       const d = Number(category?.default_days || 0);
       return d > 0 ? d : 1;
@@ -567,6 +588,10 @@ export default {
 
     // Load SAC entries for the resolved profile (profile/draft editing).
     const loadSacEntries = async () => {
+      // The catalogue drives the grid — load it before the entries so the
+      // panel renders with the admin-managed items on first paint.
+      await loadSacItems();
+
       if (!countyProfileId.value || viewMode.value !== 'profile') {
         sacEntries.value = [];
         return;
@@ -899,6 +924,9 @@ export default {
             activityCatalog.value.map((a) => loadActivityParameters(a)),
           );
         }
+        // The status-card path skips the editor bootstrap, so make sure the
+        // admin-managed SAC catalogue is loaded before the section renders.
+        await loadSacItems();
         if (campaignBudgetId.value && generated.value) {
           await loadBudgetLineItems(campaignBudgetId.value);
         }
@@ -1042,11 +1070,14 @@ export default {
 
         const financialYear = String(new Date().getFullYear());
 
-        // 3) Create the campaign budget and capture the returned budget id
+        // 3) Create the campaign budget and capture the returned budget id.
+        //    The standard budget is created explicitly as budget_type
+        //    'standard' and carries NO special area costs — the SAC items live
+        //    in their own budget (see SpecialAreaBudget.vue).
         const { data: createResp } = await axios.post('create_campaign_budget', {
           county_profile_id: profileId,
           financial_year: financialYear,
-          special_area_costs: sacPayload.value,
+          budget_type: 'standard',
         });
 
         // Normalise wrapper shapes to find the new budget id.
@@ -1422,8 +1453,10 @@ export default {
       applyMultiplier,
       specialCostsTotal,
       specialTypeLabel,
+      sacTypeLabel,
       isSpecialAreaApplicable,
       sacEntries,
+      sacItems,
       sacGeneratedRow,
       saveSacCategory,
       onSacSync,
@@ -1850,5 +1883,25 @@ export default {
       line-height: 18px;
     }
   }
+}
+/* Notice pointing the officer at the SEPARATE Special Area Cost budget. */
+.sac-separate-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-left: 4px solid #e2953f;
+  background: #fffaf3;
+}
+.sac-separate-notice .ssn-text {
+  font-size: 13px;
+  color: #6b4a2a;
+  max-width: 720px;
+}
+.sac-separate-notice .ssn-link {
+  font-weight: 600;
+  color: #8a4d1f;
+  white-space: nowrap;
 }
 </style>

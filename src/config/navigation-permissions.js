@@ -98,6 +98,22 @@ export const GATE_DEFINITIONS = Object.freeze({
     permissions: ["assign_permissions_to_role", "update_user_role"],
     roles: [],
   },
+  // Special Area Cost configuration — National Accountant + Super Admin.
+  // Reading the mapping is granted through `get_special_area_cost`; the
+  // catalogue (Cost Items tab) is driven by the *_special_area_cost_item
+  // permissions. Evaluated permission-first, so an admin can extend the
+  // audience from the Access Control page.
+  canManageSpecialAreaCost: {
+    permissions: [
+      "get_special_area_cost",
+      "update_special_area_cost",
+      "get_special_area_cost_items",
+      "create_special_area_cost_item",
+      "update_special_area_cost_item",
+      "delete_special_area_cost_item",
+    ],
+    roles: ["Super Admin", "Accountant"],
+  },
 });
 
 
@@ -143,7 +159,11 @@ export const NAV_MODULES = Object.freeze([
       // meta.allowedRoles ["Super Admin"], so only an admin can open them.
       { label: "Budget Categories", path: "/budget/categories", permissions: ["get_budget_categories", "get_budget_category", "get_budget_category_parameters", "get_category_line_items_preview", "create_budget_category", "update_budget_category", "delete_budget_category"] },
       { label: "Budget Parameters", path: "/budget/parameters", permissions: ["get_budget_parameters", "get_budget_parameter", "create_budget_parameter", "update_budget_parameter", "delete_budget_parameter"] },
-      { label: "Special Area Cost", path: "/budget/special-area-costs", permissions: ["get_county_profiles", "get_special_area_cost", "update_special_area_cost"] },
+      { label: "Special Area Cost", path: "/budget/special-area-costs", permissions: ["get_county_profiles", "get_special_area_cost", "update_special_area_cost", "get_special_area_cost_items", "create_special_area_cost_item", "update_special_area_cost_item", "delete_special_area_cost_item"] },
+      // The SEPARATE Special Area Cost budget (sub-county workspace). Shown to
+      // whoever may create a campaign budget; the page itself checks that the
+      // unit is SAC-mapped.
+      { label: "Special Area Budget", path: "/budget/special-area-budget", permissions: ["create_campaign_budget", "submit_campaign_budget", "get_campaign_budgets"] },
     ]),
   },
   {

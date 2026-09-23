@@ -102,6 +102,16 @@
         <a-menu-item key="budgetBudgeting" v-if="isSubCountyLevel">
           <router-link to="/budget/budgeting"> SubCounty Budgeting </router-link>
         </a-menu-item>
+        <!-- The SEPARATE Special Area Cost budget. It is submitted on its own
+             and pushed straight to National (the county stage is skipped). -->
+        <a-menu-item
+          key="budgetSpecialAreaBudget"
+          v-if="isSubCountyLevel || isCountyLevel || isAdmin"
+        >
+          <router-link to="/budget/special-area-budget">
+            Special Area Budget
+          </router-link>
+        </a-menu-item>
         <!-- <a-menu-item key="budgetSummary" v-if="isSubCountyLevel || isLevelOne">
           <router-link to="/budget/summary"> Budget Summary </router-link>
         </a-menu-item> -->
@@ -111,7 +121,10 @@
         <a-menu-item key="budgetParameters" v-if="isAdmin">
           <router-link to="/budget/parameters"> Budget Parameters </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetSpecialAreaCost" v-if="isAdmin">
+        <a-menu-item
+          key="budgetSpecialAreaCost"
+          v-if="isAdmin || canManageSpecialAreaCost"
+        >
           <router-link to="/budget/special-area-costs"> Special Area Cost </router-link>
         </a-menu-item>
         <!-- <a-menu-item key="budgetLocations" v-if="isLevelOne || isCountyLevel">
@@ -619,6 +632,10 @@ export default defineComponent({
     const canViewAccessControl = satisfiesGate(
       GATE_DEFINITIONS.canViewAccessControl
     );
+    // Special Area Cost configuration (National Accountant + Super Admin).
+    const canManageSpecialAreaCost = satisfiesGate(
+      GATE_DEFINITIONS.canManageSpecialAreaCost
+    );
     const isCommunityHealthWorker = hasRoleByName(CHW_ROLE_NAMES);
     const canAccessBudgeting = computed(
       () => !isCommunityHealthWorker.value && !!role_id.value
@@ -734,6 +751,7 @@ export default defineComponent({
       canIssueNets,
       canViewRoles,
       canViewAccessControl,
+      canManageSpecialAreaCost,
       canViewGFPayroll,
       canViewPMIPayroll
     };

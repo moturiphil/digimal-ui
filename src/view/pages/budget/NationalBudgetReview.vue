@@ -176,6 +176,18 @@
                 <span v-if="sc.budget && sc.budget.special_area_cost" class="dc-flag">
                   ✦ Special Area Cost
                 </span>
+
+                <!-- The SEPARATE Special Area Cost budget: submitted straight
+                     to National (no county approval). -->
+                <div
+                  v-if="sc.sac_budget"
+                  class="dc-sac-row"
+                  @click.stop="openSacBudget(sc)"
+                >
+                  <span class="dc-sac-label">✦ SAC Budget</span>
+                  <a-tag class="dc-sac-stage">{{ sc.sac_budget.stage }}</a-tag>
+                  <span class="dc-chevron">›</span>
+                </div>
               </div>
               <div
                 v-if="!loadingDetail && !countyBudgetTileVisible && filteredSubCounties.length === 0"
@@ -667,6 +679,13 @@ export default {
       if (!sc || !sc.budget || !sc.budget.id) return;
       fetchBudgetDetail(sc.budget.id);
     };
+    // The Special Area Cost budget is its own record — open it independently
+    // so the Accountant / Finance Officer review and approve it on its own.
+    const openSacBudget = (sc) => {
+      const sac = sc && sc.sac_budget;
+      if (!sac || !sac.id) return;
+      fetchBudgetDetail(sac.id);
+    };
     const goCounties = () => {
       selectedCounty.value = null;
       selectedBudget.value = null;
@@ -847,6 +866,7 @@ export default {
       openCounty,
       openCountyBudget,
       openSubCountyBudget,
+      openSacBudget,
       goCounties,
       goCountyBudgets,
       approving,
@@ -1305,5 +1325,46 @@ export default {
     background: #f4fbf7;
     border-color: #9ad8b4;
   }
+}
+.dc-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #fdeee7;
+  color: #b3402a;
+  font-size: 10px;
+  font-weight: 600;
+  align-self: flex-start;
+}
+/* The SEPARATE Special Area Cost budget row inside a sub-county card. */
+.dc-sac-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #fffaf3;
+  border: 1px dashed #f0dcbe;
+  cursor: pointer;
+}
+.dc-sac-row:hover {
+  background: #fdf3e3;
+}
+.dc-sac-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a4d1f;
+}
+.dc-sac-stage {
+  margin: 0;
+  font-size: 10px;
+  border-radius: 10px;
+  background: #f1e3cc;
+  color: #8a5a2b;
+  border: none;
 }
 </style>

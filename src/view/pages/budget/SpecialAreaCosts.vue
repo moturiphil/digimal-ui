@@ -9,10 +9,13 @@
               <span class="ph-icon">✦</span> Special Area Costs
             </h3>
             <p class="ph-subtitle">
-              Mark which counties and sub-counties are Special Area Cost areas. Each unit has a single
-              switch — when on, the unit's budget shows a Special Area Cost section after the standard
-              budget categories, and its totals roll into the budget grand total.
+              Mark which counties and sub-counties are Special Area Cost areas, and manage the
+              Special Area Cost items (DSA, Boat, Enhanced Transport…) shown under every budget
+              category. Each unit has a single switch — when on, the unit's budget shows a Special
+              Area Cost section after the standard budget categories, and its totals roll into the
+              budget grand total.
             </p>
+
           </div>
         </div>
 
@@ -20,6 +23,7 @@
           <a-tabs v-model:activeKey="activeTab" class="bp-tabs sac-tabs">
             <a-tab-pane key="county" tab="County Mapping" />
             <a-tab-pane key="sub_county" tab="Sub-County Mapping" />
+            <a-tab-pane key="cost_items" tab="Cost Items" />
           </a-tabs>
 
           <!-- ============================== COUNTY MAPPING ============================== -->
@@ -144,9 +148,188 @@
               </div>
             </sdCards>
           </div>
+
+          <!-- ============================== COST ITEMS ============================== -->
+          <div v-if="activeTab === 'cost_items'" class="sac-pane">
+            <sdCards headless class="sac-section">
+              <div class="sac-section-head">
+                <h4> Special area cost items</h4>
+                <span class="sac-section-note">
+                  Add or remove the cost items shown under every budget category (DSA, Boat,
+                  Enhanced Transport, Security…). For each item choose whether its units are
+                  <strong>Default</strong> (a fixed number of units applied automatically and
+                  read-only in the budgeting grid) or <strong>Dynamic</strong> (entered by the
+                  budgeting officer on each row).
+                </span>
+              </div>
+              <div class="sac-actions-row">
+                <sdButton class="pill-btn sac-add-btn" @click="openItemModal()">
+                  + Add cost item
+                </sdButton>
+                <a-checkbox
+                  v-model:checked="itemsIncludeInactive"
+                  @change="fetchItems"
+                >
+                  Show removed items
+                </a-checkbox>
+                <sdButton :disabled="itemsLoading" @click="fetchItems">Refresh</sdButton>
+              </div>
+            </sdCards>
+
+            <div v-if="itemsLoading" class="sac-loading">
+              <a-spin />
+            </div>
+            <div v-else-if="!items.length" class="sac-empty">
+              No Special Area Cost items yet. Add one to make it available in the budgeting grid.
+            </div>
+
+            <sdCards v-else headless class="sac-list-card">
+              <a-table
+                :dataSource="items"
+                :columns="itemColumns"
+                :pagination="false"
+                row-key="id"
+                size="small"
+                class="minimal-table sac-items-table"
+              >
+                <template #bodyCell="{ column, record }">
+                  <span v-if="column.key === 'label'" class="sac-item-cell">
+                    <span class="sac-item-label">{{ record.label }}</span>
+                    <code class="sac-code">{{ record.type }}</code>
+                    <a-tag v-if="!record.is_active" class="sac-removed-tag">Removed</a-tag>
+                  </span>
+                  <span v-else-if="column.key === 'amount'">
+                    <span v-if="record.locked" class="sac-fixed-amount">
+                      {{ fmtMoney(record.default_amount) }}
+                      <a-tag class="lc-tag">Fixed</a-tag>
+                    </span>
+                    <span v-else-if="record.default_amount !== null" class="sac-amount-hint">
+                      {{ fmtMoney(record.default_amount) }} default
+                    </span>
+                    <span v-else class="sac-comment-empty">Officer-entered</span>
+                    <div class="sac-max-hint">max {{ fmtMoney(record.max_amount) }}</div>
+                  </span>
+                  <span v-else-if="column.key === 'units'">
+                    <a-tag
+                      :class="record.units_mode === 'default' ? 'sac-units-default' : 'sac-units-dynamic'"
+                    >
+                      {{ record.units_mode === 'default'
+                        ? `Default · ${record.default_units} unit${record.default_units === 1 ? '' : 's'}`
+                        : 'Dynamic' }}
+                    </a-tag>
+                  </span>
+                  <span v-else-if="column.key === 'status'">
+                    <a-tag :class="record.is_active ? 'sac-on-tag' : 'sac-removed-tag'">
+                      {{ record.is_active ? 'Active' : 'Removed' }}
+                    </a-tag>
+                  </span>
+                  <span v-else-if="column.key === 'actions'" class="sac-row-actions">
+                    <a @click="openItemModal(record)">Edit</a>
+                    <a-popconfirm
+                      v-if="record.is_active"
+                      title="Remove this cost item from the budgeting grid?"
+                      ok-text="Remove"
+                      cancel-text="Cancel"
+                      @confirm="removeItem(record)"
+                    >
+                      <a class="sac-danger" :class="{ 'is-busy': isCellBusy(`item-${record.id}`) }">
+                        Remove
+                      </a>
+                    </a-popconfirm>
+                    <a v-else @click="restoreItem(record)">Restore</a>
+                  </span>
+                </template>
+              </a-table>
+            </sdCards>
+          </div>
+
         </sdCards>
       </BudgetPageWrapper>
     </Main>
+
+    <!-- Add / Edit cost item -->
+    <a-modal
+      v-model:visible="itemModal.open"
+      :title="itemModal.id ? 'Edit Special Area Cost item' : 'Add Special Area Cost item'"
+      :ok-text="itemModal.id ? 'Update' : 'Create'"
+      :confirm-loading="itemModal.saving"
+      width="560px"
+      @ok="saveItem"
+    >
+      <a-form layout="vertical" :model="itemModal.form">
+        <a-form-item label="Name" required>
+          <a-input
+            v-model:value="itemModal.form.label"
+            placeholder="e.g. Night Allowance"
+            :maxlength="120"
+          />
+        </a-form-item>
+
+        <a-form-item label="Code">
+          <a-input
+            v-model:value="itemModal.form.code"
+            placeholder="e.g. night_allowance"
+            :disabled="!!itemModal.id"
+          />
+          <p class="sac-hint">
+            Lower-case identifier stored on budgets. Generated from the name when left blank.
+            It cannot be changed after the item is created.
+          </p>
+        </a-form-item>
+
+        <a-form-item label="Amount">
+          <a-checkbox v-model:checked="itemModal.form.is_amount_fixed">
+            Fixed amount (locked — cannot be edited while budgeting)
+          </a-checkbox>
+          <a-input-number
+            v-model:value="itemModal.form.default_amount"
+            :min="0"
+            :precision="2"
+            class="sac-modal-input"
+            :placeholder="itemModal.form.is_amount_fixed ? 'Fixed amount' : 'Default amount (optional)'"
+          />
+        </a-form-item>
+
+        <a-form-item label="Maximum amount">
+          <a-input-number
+            v-model:value="itemModal.form.max_amount"
+            :min="0"
+            :precision="2"
+            class="sac-modal-input"
+            placeholder="10000"
+          />
+          <p class="sac-hint">
+            Highest amount an officer may enter when the amount is not fixed.
+          </p>
+        </a-form-item>
+
+        <a-form-item label="Units">
+          <a-radio-group v-model:value="itemModal.form.units_mode">
+            <a-radio value="default">Default — fixed number of units</a-radio>
+            <a-radio value="dynamic">Dynamic — entered per budget</a-radio>
+          </a-radio-group>
+          <a-input-number
+            v-if="itemModal.form.units_mode === 'default'"
+            v-model:value="itemModal.form.default_units"
+            :min="0"
+            :max="20"
+            :precision="0"
+            class="sac-modal-input sac-modal-units"
+            placeholder="Number of units"
+          />
+        </a-form-item>
+
+        <a-form-item label="Display order">
+          <a-input-number
+            v-model:value="itemModal.form.sort_order"
+            :min="0"
+            :precision="0"
+            class="sac-modal-input"
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
   </RecordViewWrapper>
 </template>
 <script>
@@ -155,15 +338,26 @@ import { notification } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
+import { normalizeSacItem } from '@/services/specialAreaCosts';
 
 /*
- * Special Area Cost — County & Sub-County Mapping (redesigned).
+ * Special Area Cost — admin configuration page.
  *
- * Removed: the SAC catalogue and the per-activity mapping. Applicability is
- * now a single flag per administrative unit, stored on
+ * Three tabs:
+ *   • County Mapping      — toggle county_profiles.is_special_area_cost.
+ *   • Sub-County Mapping  — toggle the same flag per sub-county profile.
+ *   • Cost Items          — the admin-managed SAC catalogue (DSA, Boat,
+ *                           Enhanced Transport, Security, …): add / remove
+ *                           items and set each item's units to 'default'
+ *                           (fixed) or 'dynamic' (entered per budget).
+ *
+ * Applicability is a single flag per administrative unit, stored on
  * county_profiles.is_special_area_cost and toggled here. The budgeting pages
  * (CountyBudgeting.vue / Budgeting.vue) read the same flag to decide whether
- * to render their SAC section.
+ * to render their SAC section, and render the catalogue managed in this page.
+ *
+ * Available to the National Accountant and the Super Admin (see
+ * SpecialAreaCostRolePermissionSeeder on the backend).
  */
 export default {
   name: 'SpecialAreaCosts',
@@ -221,9 +415,17 @@ const filteredCounties = computed(() => {
     const subCounties = ref([]);
     const subCountyFilters = reactive({ search: '', county_id: null });
 
+    // The API serialises the `subCounty` relation snake-cased as
+    // `sub_county`, and CountyProfile now also exposes a flat
+    // `sub_county_name` accessor. Reading only `p.subCounty.name` (camelCase)
+    // is what made this list show "Sub-County 123" instead of the real name.
     const normalizeSubCounty = (p) => ({
       id: p.id,
-      name: p?.subCounty?.name || p?.sub_county_name || `Sub-County ${p.sub_county_id}`,
+      name:
+        p?.sub_county?.name ||
+        p?.subCounty?.name ||
+        p?.sub_county_name ||
+        `Sub-County ${p.sub_county_id}`,
       county_id: p.county_id,
       county_name: p?.county?.name || p?.county_name || '—',
       is_special_area_cost: Boolean(p.is_special_area_cost),
@@ -301,10 +503,210 @@ const filteredCounties = computed(() => {
       }
     };
 
+    // ── Cost-item catalogue (Accountant / Super Admin) ────────────────
+    // Backed by `special_area_cost_items` via get/create/update/delete
+    // _special_area_cost_item. Removal deactivates items that are already
+    // referenced by saved budgets (the backend decides).
+    const items = ref([]);
+    const itemsLoading = ref(false);
+    const itemsIncludeInactive = ref(false);
+
+    const emptyItemForm = () => ({
+      label: '',
+      code: '',
+      default_amount: null,
+      max_amount: 10000,
+      is_amount_fixed: false,
+      units_mode: 'dynamic',
+      default_units: 0,
+      sort_order: 0,
+    });
+
+    const itemModal = reactive({
+      open: false,
+      saving: false,
+      id: null,
+      form: emptyItemForm(),
+    });
+
+    const itemColumns = [
+      { title: 'Cost item', key: 'label', dataIndex: 'label' },
+      { title: 'Amount (KES)', key: 'amount', width: 220 },
+      { title: 'Units', key: 'units', width: 190 },
+      { title: 'Status', key: 'status', width: 110 },
+      { title: 'Actions', key: 'actions', width: 170, align: 'center' },
+    ];
+
+    const fmtMoney = (value) =>
+      Number(value || 0).toLocaleString('en-KE', { maximumFractionDigits: 2 });
+
+    const fetchItems = async () => {
+      itemsLoading.value = true;
+      try {
+        const { data } = await axios.get('get_special_area_cost_items', {
+          params: itemsIncludeInactive.value ? { include_inactive: 1 } : {},
+        });
+        const payload = data?.data || data || {};
+        const rows = Array.isArray(payload.items)
+          ? payload.items
+          : Array.isArray(payload)
+            ? payload
+            : [];
+        items.value = rows
+          .map(normalizeSacItem)
+          .sort(
+            (a, b) =>
+              (a.sort_order || 0) - (b.sort_order || 0) ||
+              a.label.localeCompare(b.label),
+          );
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load Special Area Cost items',
+          description: err?.response?.data?.message || err.message,
+        });
+        items.value = [];
+      } finally {
+        itemsLoading.value = false;
+      }
+    };
+
+    const openItemModal = (record = null) => {
+      itemModal.id = record?.id ?? null;
+      itemModal.form = record
+        ? {
+            label: record.label,
+            code: record.type,
+            default_amount: record.default_amount,
+            max_amount: record.max_amount,
+            is_amount_fixed: !!record.locked,
+            units_mode: record.units_mode,
+            default_units: record.default_units,
+            sort_order: record.sort_order,
+          }
+        : emptyItemForm();
+      itemModal.open = true;
+    };
+
+    const saveItem = async () => {
+      const f = itemModal.form;
+
+      if (!String(f.label || '').trim()) {
+        notification.warning({ message: 'A name is required for the cost item.' });
+        return;
+      }
+
+      const isFixed = !!f.is_amount_fixed;
+      const unitsMode = f.units_mode === 'default' ? 'default' : 'dynamic';
+
+      if (isFixed && (f.default_amount === null || f.default_amount === '')) {
+        notification.warning({ message: 'A fixed-amount item needs a fixed amount.' });
+        return;
+      }
+
+      const payload = {
+        label: String(f.label).trim(),
+        default_amount:
+          f.default_amount === '' || f.default_amount === undefined
+            ? null
+            : f.default_amount,
+        max_amount:
+          f.max_amount === '' || f.max_amount === null ? 10000 : f.max_amount,
+        is_amount_fixed: isFixed,
+        units_mode: unitsMode,
+        default_units: unitsMode === 'default' ? Number(f.default_units) || 0 : 0,
+        sort_order: Number(f.sort_order) || 0,
+      };
+
+      // `code` is only accepted on create — it is immutable afterwards.
+      if (!itemModal.id && String(f.code || '').trim()) {
+        payload.code = String(f.code).trim();
+      }
+
+      itemModal.saving = true;
+      try {
+        if (itemModal.id) {
+          await axios.put(`update_special_area_cost_item/${itemModal.id}`, payload);
+          notification.success({
+            message: 'Cost item updated',
+            description: `${payload.label} saved.`,
+          });
+        } else {
+          await axios.post('create_special_area_cost_item', payload);
+          notification.success({
+            message: 'Cost item added',
+            description: `${payload.label} is now available in the budgeting grid.`,
+          });
+        }
+        itemModal.open = false;
+        await fetchItems();
+      } catch (err) {
+        const errors = err?.response?.data?.errors || {};
+        notification.error({
+          message: 'Failed to save the cost item',
+          description:
+            err?.response?.data?.message ||
+            Object.values(errors)[0]?.[0] ||
+            err.message,
+        });
+      } finally {
+        itemModal.saving = false;
+      }
+    };
+
+    const removeItem = async (record) => {
+      const key = `item-${record.id}`;
+      if (busyCells[key]) return;
+      busyCells[key] = true;
+      try {
+        const { data } = await axios.delete(
+          `delete_special_area_cost_item/${record.id}`,
+        );
+        const payload = data?.data || data || {};
+        notification.success({
+          message: payload.deactivated ? 'Cost item removed' : 'Cost item deleted',
+          description: payload.message || `${record.label} removed.`,
+        });
+        await fetchItems();
+      } catch (err) {
+        notification.error({
+          message: 'Failed to remove the cost item',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        busyCells[key] = false;
+      }
+    };
+
+    const restoreItem = async (record) => {
+      const key = `item-${record.id}`;
+      if (busyCells[key]) return;
+      busyCells[key] = true;
+      try {
+        await axios.put(`update_special_area_cost_item/${record.id}`, {
+          is_active: true,
+        });
+        notification.success({
+          message: 'Cost item restored',
+          description: `${record.label} is available in the budgeting grid again.`,
+        });
+        await fetchItems();
+      } catch (err) {
+        notification.error({
+          message: 'Failed to restore the cost item',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        busyCells[key] = false;
+      }
+    };
+
+
+
     // Switching tabs lazily loads the matching list.
     watch(activeTab, (tab) => {
       if (tab === 'county' && !counties.value.length) fetchCounties();
       if (tab === 'sub_county' && !subCounties.value.length) fetchSubCounties();
+      if (tab === 'cost_items' && !items.value.length) fetchItems();
     });
 
     // Load the county list on page mount (the default tab).
@@ -326,6 +728,18 @@ const filteredCounties = computed(() => {
       toggleRow,
       fetchCounties,
       fetchSubCounties,
+      // Cost items (catalogue management)
+      items,
+      itemsLoading,
+      itemsIncludeInactive,
+      itemColumns,
+      itemModal,
+      fmtMoney,
+      fetchItems,
+      openItemModal,
+      saveItem,
+      removeItem,
+      restoreItem,
     };
   },
 };
@@ -446,5 +860,91 @@ const filteredCounties = computed(() => {
   font-size: 13px;
   color: #3a3f5e;
   white-space: nowrap;
+}
+
+/* ── Cost Items tab ─────────────────────────────────────────────────── */
+.sac-add-btn {
+  background: #8a4d1f;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}
+.sac-items-table {
+  .sac-item-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sac-item-label {
+    font-weight: 600;
+    color: #3a3f5e;
+  }
+  .sac-code {
+    font-size: 11px;
+    color: #7a8599;
+    background: #f3f5fa;
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  .sac-max-hint {
+    font-size: 11px;
+    color: #9aa4b8;
+    margin-top: 2px;
+  }
+  .sac-amount-hint {
+    color: #5a6277;
+  }
+}
+.sac-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  a {
+    font-weight: 600;
+  }
+  .sac-danger {
+    color: #c0392b;
+    &.is-busy {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+}
+.sac-removed-tag {
+  background: #f1f2f6;
+  color: #7a8599;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sac-units-default {
+  background: #eef4ff;
+  color: #2f5fa8;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sac-units-dynamic {
+  background: #fdf3e3;
+  color: #8a5a2b;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sac-hint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #9aa4b8;
+}
+.sac-modal-input {
+  width: 100%;
+  margin-top: 8px;
+}
+.sac-modal-units {
+  margin-top: 8px;
 }
 </style>
