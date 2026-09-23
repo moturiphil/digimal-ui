@@ -107,7 +107,7 @@
           </section>
 
           <!-- ───────── By County (drill-in) ───────── -->
-          <section class="panel" v-if="!selectedCounty">
+          <section class="panel" v-if="!selectedCounty && !isSubcountyUser">
             <div class="panel-title">
               <span class="accent-success-text">▤</span> By County
             </div>
@@ -196,6 +196,7 @@
           <section class="panel" v-if="selectedSubcounty">
             <div class="panel-title with-back">
               <a-button
+                v-if="!isSubcountyUser"
                 type="link"
                 size="small"
                 class="back-btn"
@@ -268,6 +269,7 @@ const userLocationId = computed(() => {
 });
 const isNationalUser = computed(() => userLevelId.value === 1);
 const isCountyUser = computed(() => userLevelId.value === 2);
+const isSubcountyUser = computed(() => userLevelId.value === 3);
 
 const loading = ref(false);
 const requestsLoading = ref(false);
@@ -310,6 +312,7 @@ const scopeLabel = computed(() => {
   const lvl = Number(user.value?.user?.level_id || user.value?.level_id || 0);
   if (lvl === 1) return "National";
   if (lvl === 2) return "County";
+  if (lvl === 3) return "Sub-County";
   return "Overview";
 });
 
@@ -380,6 +383,12 @@ const loadSummary = async () => {
     return loadCountySummary();
   }
 
+  // Sub-county users (level 3 — SCHMT/SCMCC and the other sub-county roles)
+  // get the same read-only view, bounded to their own sub-county.
+  if (isSubcountyUser.value) {
+    return loadSubcountySummary();
+  }
+
   loading.value = true;
   try {
     const res = await axios.get("hh_change_requests/national/summary", {
@@ -439,12 +448,52 @@ const loadCountySummary = async () => {
   }
 };
 
+/**
+ * Sub-county-scoped equivalent for level 3 users. Hits
+ * /hh_change_requests/subcounty/summary which returns totals, by_action and a
+ * single sub-county row for the authenticated user's own sub-county. As with
+ * the county view we pin the selection so the drill-down UI works unchanged.
+ */
+const loadSubcountySummary = async () => {
+  loading.value = true;
+  try {
+    const res = await axios.get("hh_change_requests/subcounty/summary", {
+      params: buildParams(),
+    });
+    const data = res?.data?.data || {};
+    totals.value = data.totals || { total: 0, pending: 0, approved: 0, rejected: 0 };
+    byAction.value = data.by_action || {};
+    counties.value = []; // intentional — sub-county users have no cross-county view
+    subcounties.value = data.subcounties || [];
+    const county = data.county || null;
+    selectedCounty.value = county;
+    const mine = (data.subcounties || [])[0] || null;
+    selectedSubcounty.value = mine;
+    if (mine) {
+      await loadSubcountyRequests(mine.subcounty_id, 1);
+    } else {
+      subcountyRequests.value = [];
+    }
+  } catch (e) {
+    notification.error({
+      message: "Failed to load sub-county summary",
+      description: e?.response?.data?.message || e.message,
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
 const loadCounty = async (countyId) => {
   // For a national user this is a drill-down. For a county user the county
   // summary endpoint already returned the subcounties, so a refresh just
   // re-runs the same call.
   if (isCountyUser.value) {
     return loadCountySummary();
+  }
+  // Sub-county users have a single sub-county — re-run their own summary.
+  if (isSubcountyUser.value) {
+    return loadSubcountySummary();
   }
 
   try {
@@ -468,10 +517,10 @@ const drillIntoCounty = async (record) => {
 };
 
 const clearCounty = () => {
-  // County users have no "all counties" view to fall back to — their county
-  // is always pinned. Suppress the action entirely so the back button is a
-  // no-op for them (the markup hides it via v-if="isNationalUser" too).
-  if (isCountyUser.value) {
+  // County and sub-county users have no "all counties" view to fall back to —
+  // their location is always pinned. Suppress the action entirely so the back
+  // button is a no-op for them (the markup hides it via v-if="isNationalUser").
+  if (isCountyUser.value || isSubcountyUser.value) {
     return;
   }
   selectedCounty.value = null;
@@ -516,6 +565,10 @@ const drillIntoSubcounty = async (record) => {
 };
 
 const clearSubcounty = () => {
+  // Sub-county users cannot navigate away from their own sub-county.
+  if (isSubcountyUser.value) {
+    return;
+  }
   selectedSubcounty.value = null;
   subcountyRequests.value = [];
 };

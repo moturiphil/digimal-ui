@@ -57,6 +57,9 @@ router.beforeEach((to, from, next) => {
   const profile = user_object?.user || user_object || {};
   const userLevelId = Number(profile.level_id || 0);
   const userRoleId = Number(profile.role_id || 0);
+  // Org type drives the sub-county review restriction (SCHMT = 10): a user's
+  // role belongs to an org type and the org type carries the scope level.
+  const userOrgTypeId = Number(profile.org_types_id || 0);
   // Role names are the stable key from the API roles table — route guards
   // accept names or numeric ids in meta.allowedRoles.
   const userRoleName = profile.role?.name || "";
@@ -67,6 +70,10 @@ router.beforeEach((to, from, next) => {
     .pop();
   const allowedRoles = to.matched
     .map((r) => r.meta?.allowedRoles)
+    .filter(Boolean)
+    .pop();
+  const allowedOrgTypes = to.matched
+    .map((r) => r.meta?.allowedOrgTypes)
     .filter(Boolean)
     .pop();
   const householdRestricted = to.matched.some((r) => r.meta?.householdRestricted);
@@ -94,6 +101,14 @@ router.beforeEach((to, from, next) => {
       allowedRoles &&
       !allowedRoles.some((r) => r === userRoleId || r === userRoleName)
     ) {
+      resetInactivityTimer();
+      next({ path: "/403" });
+      return;
+    }
+
+    // Org-type gate — e.g. the household change-request review page is limited
+    // to sub-county users whose role belongs to the SCHMT org type.
+    if (allowedOrgTypes && !allowedOrgTypes.includes(userOrgTypeId)) {
       resetInactivityTimer();
       next({ path: "/403" });
       return;

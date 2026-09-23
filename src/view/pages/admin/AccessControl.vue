@@ -272,6 +272,7 @@ import {
   loadRolesOrgTypes,
   roleLabel,
 } from "../../../services/rbac-lookup";
+import { syncNow } from "../../../services/access-sync";
 
 // ── Tabs ───────────────────────────────────────────────────────────────────
 const activeTab = ref("role-permissions");
@@ -630,6 +631,29 @@ const changeUserRole = async (record, roleId) => {
       message: "Role updated",
       description: `${record.first_name} ${record.last_name} is now assigned to ${r?.name || roleId}.`,
     });
+    // The role's org type carries the scope level, so `level_id` may have been
+    // realigned server-side — re-fetch so the inline selects stay truthful.
+    fetchUsers();
+    // Editing your OWN account: the sidebar gates and the router guard read a
+    // cached profile (role name + permissions + level) from sessionStorage, so
+    // a plain role change would leave every gate evaluating the old role
+    // (typically landing on /403). Re-sync it and reload so all cached flags
+    // are rebuilt from the new role.
+    let current = null;
+    try {
+      current = JSON.parse(sessionStorage.getItem("user") || "null");
+    } catch (e) {
+      current = null;
+    }
+    if (current?.user?.id === record.id) {
+      await syncNow({ force: true });
+      notification.info({
+        message: "Session refreshed",
+        description: "Reloading to apply your new role and permissions…",
+        duration: 2,
+      });
+      setTimeout(() => window.location.reload(), 1200);
+    }
   } catch (error) {
     notification.error({
       message: "Error",

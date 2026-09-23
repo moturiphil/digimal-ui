@@ -1,4 +1,9 @@
 import Apps from "./Applications";
+import {
+  HH_CHANGE_OVERVIEW_LEVELS,
+  HH_CHANGE_REVIEW_LEVELS,
+  SCHMT_ORG_TYPE_ID,
+} from "@/config/navigation-permissions";
 
 const routes = [
   {
@@ -789,7 +794,7 @@ const routes = [
       import(
         /* webpackChunkName: "ScmccReview" */ "@/view/pages/household/SCMCCChangeRequestReview.vue"
       ),
-    meta: { allowedRoles: ["SCMCC", "Super Admin"] }, // SCMCC (and Super Admin)
+    meta: { allowedLevels: HH_CHANGE_REVIEW_LEVELS, allowedOrgTypes: [SCHMT_ORG_TYPE_ID] }, // sub-county SCHMT (SCMCC) only
   },
   {
     path: "/household/my-change-requests",
@@ -807,7 +812,7 @@ const routes = [
       import(
         /* webpackChunkName: "NationalSummary" */ "@/view/pages/household/NationalChangeRequestSummary.vue"
       ),
-    meta: { allowedLevels: [1, 2] }, // National (1) and County (2) only — read-only
+    meta: { allowedLevels: HH_CHANGE_OVERVIEW_LEVELS }, // National (1), County (2) and Sub-County (3) — read-only, location-scoped
   },
   //IRS
   {
