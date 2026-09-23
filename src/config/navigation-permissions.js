@@ -29,6 +29,22 @@ import { loadRolesOrgTypes, toRoleId, roleLevel, rolesForLevel, roleLabel } from
 
 export { loadRolesOrgTypes, toRoleId, roleLevel, rolesForLevel, roleLabel };
 
+/**
+ * Household change-request audiences.
+ *
+ * • READ-ONLY OVERVIEW — available to every national (1), county (2) and
+ *   sub-county (3) user; the API scopes the data by the caller's location
+ *   (national = everything, county = own county, sub-county = own sub-county).
+ * • APPROVE / REJECT — restricted to sub-county (level 3) users who belong to
+ *   the SCHMT org type (Sub-County Health Management Team, org type 10), which
+ *   is where the SCMCC role lives. Enforced in the router guard
+ *   (meta.allowedLevels + meta.allowedOrgTypes) AND in the API
+ *   (HouseHoldChangeRequestController::isScmcc).
+ */
+export const HH_CHANGE_OVERVIEW_LEVELS = Object.freeze([1, 2, 3]);
+export const HH_CHANGE_REVIEW_LEVELS = Object.freeze([3]);
+export const SCHMT_ORG_TYPE_ID = 10;
+
 const NATIONAL_MANAGEMENT = Object.freeze(["Super Admin","AIE Holder","Program head","Program officer - DNMP","Accountant","Finance Officer","Vector Unit Head","Program officer - MOH","MOH leadership","KEMSA","Program officer - TNT","Afya Ugavi","Kinga Malaria","LFA","Technical Support","Program Accountant","Development Agency","HealthIT Leadership","Procurement Officer"]);
 
 const COUNTY_MANAGEMENT = Object.freeze(["County Admin","County Commissioner","CMCC","CHRIO","CDH","CHMT Leadership","County Health Team"]);
@@ -67,8 +83,32 @@ export const GATE_DEFINITIONS = Object.freeze({
   canViewOrgUnits: { permissions: ["counties_list", "list_subcounties", "sub_counties_list", "location_list", "sublocation_list", "wards_list"], roles: ADMIN_UNIT_OVERSIGHT },
   canViewRegHH: { permissions: ["households", "web_household_create"], roles: HOUSEHOLD_VIEW_OVERSIGHT },
   canValidateHH: { permissions: ["household-validation", "household_validation", "hh_change_requests"], roles: ["Super Admin", "Community Health Assistant"] },
-  canReviewHHChanges: { permissions: ["hh_change_request_review"], roles: ["Super Admin", "SCMCC"] },
-  canSubmitHHChanges: { permissions: ["hh_change_request_store"], roles: ["Community Health Assistant"] },
+  // SCMCC (role 37) / SCHMT review queue — the page loads
+  // `hh_change_requests/pending` and decides through the approve / reject
+  // endpoints, so the gate must reference THOSE names (the previous
+  // `hh_change_request_review` was never a backend route or permission, so the
+  // gate could never be satisfied and the menu stayed hidden from SCMCC).
+  canReviewHHChanges: {
+    permissions: [
+      "hh_change_requests_pending",
+      "hh_change_request_approve",
+      "hh_change_request_reject",
+    ],
+    roles: ["Super Admin", "SCMCC"],
+  },
+  // CHA (role 77) submission entry points — these are the five route names the
+  // CHA posts to (routes/api.php). `hh_change_request_store` does not exist;
+  // that name belongs to the user change-request flow.
+  canSubmitHHChanges: {
+    permissions: [
+      "hh_change_request_create",
+      "hh_change_request_mute",
+      "hh_change_request_transfer",
+      "hh_change_request_phone_change",
+      "hh_change_request_head_change",
+    ],
+    roles: ["Community Health Assistant"],
+  },
   canViewNetsDistributed: { permissions: ["net_distribution_by_post"], roles: NETS_MANAGEMENT },
   canCreateDropOffPoint: { permissions: ["create_drop_off_point"], roles: DROPOFF_CREATE },
   canViewDropOffPoint: { permissions: ["drop_off_points_list", "drop_off_receipts"], roles: DROPOFF_VIEW },
@@ -218,7 +258,47 @@ export const NAV_MODULES = Object.freeze([
         path: "/household/validation/dashboard",
         permissions: ["household-validation", "household_validation"],
       },
-      { label: "My Change Requests", path: "/household/my-change-requests", permissions: ["hh_change_request_store"] },
+      // CHA (role 77) submissions — the sidebar "My Change Requests" item is
+      // gated by GATE_DEFINITIONS.canSubmitHHChanges, so list the same route
+      // names here to keep Access Control and the sidebar in sync.
+      {
+        label: "My Change Requests",
+        path: "/household/my-change-requests",
+        permissions: [
+          "hh_change_request_create",
+          "hh_change_request_mute",
+          "hh_change_request_transfer",
+          "hh_change_request_phone_change",
+          "hh_change_request_head_change",
+          "hh_change_requests_history",
+        ],
+      },
+      // SCMCC (role 37) / SCHMT review queue — approve or reject the changes
+      // submitted by the CHAs of the reviewer's sub-county.
+      {
+        label: "Change Request Review",
+        path: "/household/change-requests/review",
+        permissions: [
+          "hh_change_requests_pending",
+          "hh_change_request_approve",
+          "hh_change_request_reject",
+          "hh_change_requests_history",
+        ],
+      },
+      // Read-only overview of every change request, scoped by the caller's
+      // location. Available to all national / county / sub-county users (the
+      // sidebar item is level-gated via isOversightUser); the permissions below
+      // are what the read-only API endpoints enforce.
+      {
+        label: "Change Requests Overview",
+        path: "/household/change-requests/overview",
+        permissions: [
+          "hh_change_requests_national_summary",
+          "hh_change_requests_national_county",
+          "hh_change_requests_national_subcounty",
+          "hh_change_requests_subcounty_summary",
+        ],
+      },
       { label: "Issue Nets", path: "/issue-nets", permissions: ["issue_nets"] },
     ]),
   },

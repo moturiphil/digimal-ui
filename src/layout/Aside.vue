@@ -207,7 +207,7 @@
 
       <a-sub-menu
         key="house-holds"
-        v-if="canViewRegHH || canValidateHH || canReviewHHChanges || canViewNetsDistributed || isLevelOne || isCountyLevel"
+        v-if="canViewRegHH || canValidateHH || canReviewHHChanges || canViewNetsDistributed || isOversightUser"
       >
         <template v-slot:title>
           <sdFeatherIcons type="home" />
@@ -239,12 +239,12 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
-        <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges && !isLevelOne && !isCountyLevel">
+        <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges && isSchmtSubcountyUser">
           <router-link to="/household/change-requests/review">
             Change Request Review
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdChangeOverview" v-if="isLevelOne || isCountyLevel">
+        <a-menu-item key="widgetHouseholdChangeOverview" v-if="isOversightUser">
           <router-link to="/household/change-requests/overview">
             Change Requests Overview
           </router-link>
@@ -534,7 +534,7 @@ import VueTypes from "vue-types";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import { fetchUserData, hasRoleByName, satisfiesGate } from "../services/user-role";
-import { GATE_DEFINITIONS } from "../config/navigation-permissions";
+import { GATE_DEFINITIONS, SCHMT_ORG_TYPE_ID } from "../config/navigation-permissions";
 import { useProcurementPermissions } from "@/services/procurement/usePermissions";
 
 // ── System flags & cross-cutting groups ──────────────────────────────────────
@@ -576,6 +576,7 @@ export default defineComponent({
 
     const level_id = ref("");
     const role_id = ref("");
+    const org_types_id = ref("");
     const current = ref("");
     const rt = useRouter();
 
@@ -633,6 +634,7 @@ export default defineComponent({
       } else {
         level_id.value = user.user.level_id;
         role_id.value = user.user.role_id;
+        org_types_id.value = user.user.org_types_id;
       }
     });
 
@@ -651,6 +653,17 @@ export default defineComponent({
     // Oversight users (National / County / Sub-County) for the distribution dashboard.
     const isOversightUser = computed(() => {
       return [1, 2, 3].includes(level_id.value);
+    });
+
+    // Approve / reject audience: sub-county (level 3) users whose role belongs
+    // to the SCHMT org type (Sub-County Health Management Team — where the
+    // SCMCC role lives). Mirrors the API check in
+    // HouseHoldChangeRequestController::isScmcc and the review route meta.
+    const isSchmtSubcountyUser = computed(() => {
+      return (
+        Number(level_id.value) === 3 &&
+        Number(org_types_id.value) === SCHMT_ORG_TYPE_ID
+      );
     });
 
     const router = computed(() => useRoute());
@@ -705,6 +718,7 @@ export default defineComponent({
       isCountyLevel,
       isSubCountyLevel,
       isOversightUser,
+      isSchmtSubcountyUser,
       isAdmin,
       isTechSupport,
       isAIEHolder,
