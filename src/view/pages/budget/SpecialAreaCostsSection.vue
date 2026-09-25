@@ -3,8 +3,8 @@
     <div class="sac-panel-head">
       <h4 class="sac-panel-title">✦ Special Area Costs</h4>
       <p class="sac-panel-sub">
-        Enter special area costs per category. No. of Days is inherited from the standard budget
-        (read-only). Default amounts (Security 2,500 / DSA 14,000) are fixed and cannot be edited.
+        Enter special area costs per category. No. of Days is entered by you for each item.
+        Default amounts (Security 2,500 / DSA 14,000) are fixed and cannot be edited.
         Edits are staged per item — press Save under a category to persist it.
       </p>
     </div>
@@ -83,7 +83,18 @@
                 <a-tag v-if="record.units_locked" class="lc-tag">Default</a-tag>
               </span>
             </span>
-            <span v-else-if="column.key === 'days'" class="sac-days">{{ record.days }}</span>
+            <span v-else-if="column.key === 'days'">
+              <a-input-number
+                v-if="editable"
+                v-model:value="record._d.days"
+                :min="1"
+                :max="365"
+                :precision="0"
+                size="small"
+                class="sac-days-input"
+              />
+              <span v-else class="sac-days">{{ record.days }}</span>
+            </span>
             <span v-else-if="column.key === 'comment'">
               <a-input
                 v-if="editable && Number(record.units) > 0"
@@ -239,6 +250,7 @@ methods: {
           // Default-units items are system-driven: the unit count always comes
           // from the catalogue and is never user-editable.
           const isDefaultUnits = item.units_mode === 'default';
+          const categoryDays = this.daysOf(cat);
           const next = {
             amount: entry ? Number(entry.amount) || 0 : item.default_amount ?? 0,
             units: isDefaultUnits
@@ -246,6 +258,12 @@ methods: {
               : entry
                 ? Number(entry.units) || 0
                 : 0,
+            // No. of Days is officer-entered. Seed from the saved entry when
+            // present, otherwise from the category default.
+            days:
+              entry && entry.days !== undefined && entry.days !== null
+                ? Math.max(1, Number(entry.days) || categoryDays)
+                : categoryDays,
             comment: entry?.comment || '',
           };
           const cur = this.drafts[k];
@@ -268,7 +286,6 @@ methods: {
       );
     },
     rowFor(cat, item) {
-      const days = this.daysOf(cat);
       const unitsLocked = item.units_mode === 'default';
       if (this.viewMode !== 'profile') {
         const g = this.getGeneratedRow(cat, item) || {};
@@ -277,7 +294,7 @@ methods: {
           amount: Number(g.amount) || 0,
           units: Number(g.units) || 0,
           comment: g.comment || '',
-          days,
+          days: Number(g.days) || this.daysOf(cat),
           total: Number(g.total) || 0,
           locked: !!item.locked,
           units_locked: unitsLocked,
@@ -298,7 +315,7 @@ methods: {
         amount,
         units,
         comment: d?.comment || '',
-        days,
+        days: Number(d?.days) || this.daysOf(cat),
         total: 0,
         locked: !!item.locked,
         units_locked: unitsLocked,
@@ -339,9 +356,14 @@ methods: {
           if (!d) return false;
           const entry = this.entryFor(cat.id, item.type);
           const unitsLocked = item.units_mode === 'default';
+          const baseDays =
+            entry && entry.days !== undefined && entry.days !== null
+              ? Math.max(1, Number(entry.days) || this.daysOf(cat))
+              : this.daysOf(cat);
           return (
             (Number(d.amount) || 0) !== (entry ? Number(entry.amount) || 0 : item.default_amount ?? 0)
             || (!unitsLocked && (Number(d.units) || 0) !== (entry ? Number(entry.units) || 0 : 0))
+            || (Number(d.days) || this.daysOf(cat)) !== baseDays
             || (d.comment || '') !== (entry?.comment || '')
           );
         });
@@ -362,6 +384,7 @@ methods: {
             special_type: item.type,
             amount: item.locked ? item.default_amount ?? 0 : Number(d.amount) || 0,
             units,
+            number_of_days: Number(d.days) || this.daysOf(cat),
             comment: units > 0 ? (d.comment || null) : null,
           });
         });
@@ -381,6 +404,7 @@ methods: {
             special_type: item.type,
             amount: item.locked ? item.default_amount ?? 0 : Number(d.amount) || 0,
             units,
+            days: Number(d.days) || this.daysOf(cat),
             comment: units > 0 ? (d.comment || null) : null,
           };
         });
@@ -501,6 +525,7 @@ methods: {
   }
   .sac-amount-input { width: 140px; }
   .sac-units-input { width: 90px; }
+  .sac-days-input { width: 90px; }
   .sac-units-fixed {
     display: inline-flex;
     align-items: center;

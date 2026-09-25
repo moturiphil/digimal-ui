@@ -315,7 +315,10 @@ export default {
           const category = selectedActivities.value.find(
             (a) => a.id === r.budget_category_id,
           );
-          return sum + (Number(r.amount) || 0) * (Number(r.units) || 0) * daysOf(category);
+          // Prefer the officer-entered No. of Days; fall back to the
+          // category's default only when the row omits it.
+          const days = Number(r.number_of_days) || daysOf(category);
+          return sum + (Number(r.amount) || 0) * (Number(r.units) || 0) * days;
         },
         0,
       ),
@@ -323,14 +326,16 @@ export default {
 
     /** Generated-mode row resolver for the read-only SAC grid. */
     const sacGeneratedRow = (category, item) => {
-      if (!category) return { amount: 0, units: 0, comment: '', total: 0 };
+      const blank = { amount: 0, units: 0, days: 1, comment: '', total: 0 };
+      if (!category) return blank;
       const li = (category.items || []).find(
         (r) => r.is_special_cost && r.special_type === item.type,
       );
-      if (!li) return { amount: 0, units: 0, comment: '', total: 0 };
+      if (!li) return blank;
       return {
         amount: Number(li.unit_cost) || 0,
         units: Number(li.units) || 0,
+        days: Number(li.days) || 1,
         comment: li.special_area_comment || '',
         total: Number(li.total_cost) || 0,
       };
@@ -365,12 +370,22 @@ export default {
       });
       // Only categories selected for Special Area Cost (managed by the
       // National Accountant / Super Admin on the Special Area Cost →
-      // Budget Categories tab) render SAC rows here. Missing flag = allowed,
-      // so older responses keep working.
+      // Budget Categories tab) render SAC rows here.
+      //
+      // The API returns the raw tinyint (0 / 1), so comparing against `false`
+      // never matched and deselected categories slipped through. Treat
+      // 0 / '0' / false as "not selected"; a missing flag keeps the legacy
+      // behaviour (allowed) so older responses still work.
+      const allowsSpecialCosts = (c) => {
+        const v = c?.allows_special_costs;
+        if (v === undefined || v === null) return true;
+        return Number(v) !== 0;
+      };
+
       const cats = normalizePayload(data).filter(
         (c) =>
           (c.is_active === undefined || !!c.is_active) &&
-          c.allows_special_costs !== false,
+          allowsSpecialCosts(c),
       );
       activityCatalog.value = categoriesToActivities(cats);
     };
