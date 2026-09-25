@@ -47,7 +47,7 @@
           :dataSource="rowsFor(cat)"
           :columns="columns"
           :pagination="false"
-          row-key="special_type"
+          row-key="type"
           size="small"
           class="minimal-table sac-table"
         >
@@ -204,6 +204,10 @@ export default {
     entries: {
       handler() {
         this.seedDrafts();
+        // Recompute the dirty state too: entries arrive asynchronously and
+        // change after a Save, so the Save button must re-evaluate against the
+        // new baseline (otherwise it can stay hidden or stay stuck on).
+        this.refreshDirty();
       },
       deep: true,
     },
@@ -324,7 +328,23 @@ methods: {
       };
     },
     rowsFor(cat) {
-      return this.sacItems.map((item) => this.rowFor(cat, item));
+      return this.sacItems.map((item) => {
+        const k = this.key(cat.id, item.type);
+        // Safety net: guarantee a draft exists before an input binds to
+        // `record._d.*`. Binding to an undefined draft throws during render,
+        // which silently freezes the panel (the Save button never appears).
+        if (!this.drafts[k]) {
+          const seed = {
+            amount: item.default_amount ?? 0,
+            units: item.units_mode === 'default' ? Number(item.default_units) || 0 : 0,
+            days: this.daysOf(cat),
+            comment: '',
+          };
+          this.drafts[k] = { ...seed };
+          this.seeded[k] = { ...seed };
+        }
+        return this.rowFor(cat, item);
+      });
     },
     catTotal(cat) {
       return this.sacItems.reduce(

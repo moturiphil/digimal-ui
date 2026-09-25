@@ -803,31 +803,59 @@ export default {
      * grid is read-only past draft.
      */
     const saveSacCategory = async (categoryId, rows) => {
-      if (!countyProfileId.value) return;
+      if (!countyProfileId.value) {
+        notification.error({
+          message: 'Cannot save Special Area Costs',
+          description: 'The sub-county profile has not been resolved yet.',
+        });
+        return;
+      }
 
-      const { data } = await axios.put('save_special_area_cost_entries', {
-        county_profile_id: countyProfileId.value,
-        budget_category_id: categoryId,
-        rows,
-      });
+      const categoryName =
+        selectedActivities.value.find((a) => a.id === categoryId)?.name ||
+        `Category ${categoryId}`;
 
-      const payload = data?.data || data || {};
-      const saved = Array.isArray(payload.entries) ? payload.entries : [];
-      const kept = sacEntries.value.filter(
-        (e) => e.budget_category_id !== categoryId,
-      );
-      sacEntries.value = [...kept, ...saved];
+      try {
+        const { data } = await axios.put('save_special_area_cost_entries', {
+          county_profile_id: countyProfileId.value,
+          budget_category_id: categoryId,
+          rows,
+        });
 
-      // Keep a draft budget's generated rows in sync with the saved entries.
-      if (campaignBudgetId.value && budgetStatus.value === 'draft') {
-        const oldId = campaignBudgetId.value;
-        campaignBudgetId.value = null;
-        try {
-          await axios.delete(`delete_campaign_budget/${oldId}`);
-        } catch (err) {
-          // Already gone / no longer deletable — the create below reports it.
+        const payload = data?.data || data || {};
+        const saved = Array.isArray(payload.entries) ? payload.entries : [];
+        const kept = sacEntries.value.filter(
+          (e) => e.budget_category_id !== categoryId,
+        );
+        sacEntries.value = [...kept, ...saved];
+
+        // Keep a draft budget's generated rows in sync with the saved entries.
+        if (campaignBudgetId.value && budgetStatus.value === 'draft') {
+          const oldId = campaignBudgetId.value;
+          campaignBudgetId.value = null;
+          try {
+            await axios.delete(`delete_campaign_budget/${oldId}`);
+          } catch (err) {
+            // Already gone / no longer deletable — the create below reports it.
+          }
+          await createSacBudget({ silent: true });
         }
-        await createSacBudget({ silent: true });
+
+        notification.success({
+          message: 'Special Area Costs saved',
+          description: `${categoryName} saved.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to save Special Area Costs',
+          description:
+            err?.response?.data?.message ||
+            err?.response?.data?.error ||
+            err?.message ||
+            'Unknown error.',
+        });
+        // Re-throw so the section keeps the edits staged for a retry.
+        throw err;
       }
     };
 
