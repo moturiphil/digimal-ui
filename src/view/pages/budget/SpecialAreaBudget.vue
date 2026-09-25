@@ -363,8 +363,14 @@ export default {
       const { data } = await axios.get('get_budget_categories', {
         params: { scope: 'sub_county' },
       });
+      // Only categories selected for Special Area Cost (managed by the
+      // National Accountant / Super Admin on the Special Area Cost →
+      // Budget Categories tab) render SAC rows here. Missing flag = allowed,
+      // so older responses keep working.
       const cats = normalizePayload(data).filter(
-        (c) => c.is_active === undefined || !!c.is_active,
+        (c) =>
+          (c.is_active === undefined || !!c.is_active) &&
+          c.allows_special_costs !== false,
       );
       activityCatalog.value = categoriesToActivities(cats);
     };

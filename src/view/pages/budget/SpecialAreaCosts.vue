@@ -24,6 +24,7 @@
             <a-tab-pane key="county" tab="County Mapping" />
             <a-tab-pane key="sub_county" tab="Sub-County Mapping" />
             <a-tab-pane key="cost_items" tab="Cost Items" />
+            <a-tab-pane key="categories" tab="Budget Categories" />
           </a-tabs>
 
           <!-- ============================== COUNTY MAPPING ============================== -->
@@ -243,6 +244,84 @@
             </sdCards>
           </div>
 
+          <!-- ======================== BUDGET CATEGORIES ======================== -->
+          <div v-if="activeTab === 'categories'" class="sac-pane">
+            <sdCards headless class="sac-section">
+              <div class="sac-section-head">
+                <h4> Special Area Cost budget categories</h4>
+                <span class="sac-section-note">
+                  Select the budget categories Special Area Cost applies to. Only the selected
+                  categories show the Special Area Cost rows on the budgeting grid. Newly created
+                  categories are selected by default.
+                </span>
+              </div>
+              <div class="sac-actions-row">
+                <a-input
+                  v-model:value="categoryFilters.search"
+                  size="small"
+                  placeholder="Search budget categories…"
+                  allow-clear
+                  class="sac-search"
+                />
+                <a-select
+                  v-model:value="categoryFilters.stage"
+                  size="small"
+                  class="sac-filter"
+                  :options="categoryStageOptions"
+                  placeholder="All stages"
+                  allow-clear
+                />
+                <a-checkbox
+                  v-model:checked="categoriesIncludeInactive"
+                  @change="fetchCategories"
+                >
+                  Show inactive categories
+                </a-checkbox>
+                <sdButton :disabled="categoriesLoading" @click="fetchCategories">Refresh</sdButton>
+              </div>
+              <div class="sac-cat-summary">
+                <strong>{{ enabledCategoryCount }}</strong> of
+                <strong>{{ categories.length }}</strong> categories apply Special Area Cost.
+              </div>
+            </sdCards>
+
+            <div v-if="categoriesLoading" class="sac-loading">
+              <a-spin />
+            </div>
+            <div v-else-if="!filteredCategories.length" class="sac-empty">
+              No budget categories found.
+            </div>
+
+            <sdCards v-else headless class="sac-list-card">
+              <div class="sac-map-grid sac-map-head sac-cat-grid">
+                <div>Budget category</div>
+                <div>Applies Special Area Cost</div>
+              </div>
+              <div
+                v-for="row in filteredCategories"
+                :key="row.id"
+                class="sac-map-grid sac-map-row sac-cat-grid"
+              >
+                <div class="sac-unit">
+                  <span class="sac-unit-icon">▦</span>
+                  <span class="sac-unit-name">{{ row.name }}</span>
+                  <a-tag class="sac-stage-tag">{{ stageLabel(row.stage) }}</a-tag>
+                  <a-tag class="sac-scope-tag">{{ scopeLabel(row.scope) }}</a-tag>
+                  <a-tag v-if="!row.is_active" class="sac-removed-tag">Inactive</a-tag>
+                </div>
+                <div class="sac-switch-cell">
+                  <a-checkbox
+                    :checked="row.allows_special_costs"
+                    :disabled="isCellBusy(`category-${row.id}`)"
+                    @change="(e) => toggleCategory(row, e)"
+                  >
+                    Applies Special Area Cost
+                  </a-checkbox>
+                </div>
+              </div>
+            </sdCards>
+          </div>
+
         </sdCards>
       </BudgetPageWrapper>
     </Main>
@@ -343,13 +422,16 @@ import { normalizeSacItem } from '@/services/specialAreaCosts';
 /*
  * Special Area Cost — admin configuration page.
  *
- * Three tabs:
+ * Four tabs:
  *   • County Mapping      — toggle county_profiles.is_special_area_cost.
  *   • Sub-County Mapping  — toggle the same flag per sub-county profile.
  *   • Cost Items          — the admin-managed SAC catalogue (DSA, Boat,
  *                           Enhanced Transport, Security, …): add / remove
  *                           items and set each item's units to 'default'
  *                           (fixed) or 'dynamic' (entered per budget).
+ *   • Budget Categories   — select / deselect the budget categories the SAC
+ *                           rows are entered under
+ *                           (budget_categories.allows_special_costs).
  *
  * Applicability is a single flag per administrative unit, stored on
  * county_profiles.is_special_area_cost and toggled here. The budgeting pages
@@ -702,11 +784,114 @@ const filteredCounties = computed(() => {
 
 
 
+    // ── Budget-category applicability (Accountant / Super Admin) ──────
+    // `budget_categories.allows_special_costs` decides which categories the
+    // SAC grid renders. Backed by get / update_special_area_cost_category.
+    const categories = ref([]);
+    const categoriesLoading = ref(false);
+    const categoriesIncludeInactive = ref(false);
+    const categoryFilters = reactive({ search: '', stage: null });
+
+    const categoryStageOptions = [
+      { value: '1', label: 'Stage 1 · Pre-campaign' },
+      { value: '2', label: 'Stage 2 · Campaign' },
+      { value: '3', label: 'Stage 3 · Post-campaign' },
+    ];
+
+    const stageLabel = (stage) =>
+      ({ '1': 'Stage 1', '2': 'Stage 2', '3': 'Stage 3' }[String(stage)] || `Stage ${stage}`);
+
+    const scopeLabel = (scope) =>
+      ({ county: 'County', sub_county: 'Sub-County', both: 'County & Sub-County' }[scope] || scope);
+
+    const normalizeCategory = (c) => ({
+      id: c.id,
+      name: c.name || `Category ${c.id}`,
+      description: c.description || '',
+      type: c.type,
+      stage: c.stage,
+      scope: c.scope,
+      default_days: Number(c.default_days || 1),
+      sort_order: Number(c.sort_order || 0),
+      allows_special_costs: Boolean(c.allows_special_costs),
+      is_active: c.is_active === undefined ? true : Boolean(c.is_active),
+    });
+
+    const fetchCategories = async () => {
+      categoriesLoading.value = true;
+      try {
+        const { data } = await axios.get('get_special_area_cost_categories', {
+          params: categoriesIncludeInactive.value ? { include_inactive: 1 } : {},
+        });
+        const payload = data?.data || data || {};
+        const rows = Array.isArray(payload.categories)
+          ? payload.categories
+          : Array.isArray(payload)
+            ? payload
+            : [];
+        categories.value = rows.map(normalizeCategory);
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load budget categories',
+          description: err?.response?.data?.message || err.message,
+        });
+        categories.value = [];
+      } finally {
+        categoriesLoading.value = false;
+      }
+    };
+
+    const filteredCategories = computed(() => {
+      const q = (categoryFilters.search || '').trim().toLowerCase();
+      let rows = categories.value.slice().sort(
+        (a, b) =>
+          String(a.stage).localeCompare(String(b.stage)) ||
+          (a.sort_order || 0) - (b.sort_order || 0) ||
+          a.name.localeCompare(b.name),
+      );
+      if (categoryFilters.stage) {
+        rows = rows.filter((c) => String(c.stage) === String(categoryFilters.stage));
+      }
+      if (q) rows = rows.filter((c) => c.name.toLowerCase().includes(q));
+      return rows;
+    });
+
+    const enabledCategoryCount = computed(
+      () => categories.value.filter((c) => c.allows_special_costs).length,
+    );
+
+    const toggleCategory = async (row, e) => {
+      const checked = e?.target?.checked ?? !row.allows_special_costs;
+      const key = `category-${row.id}`;
+      if (busyCells[key]) return;
+      busyCells[key] = true;
+      try {
+        const { data } = await axios.put(
+          `update_special_area_cost_category/${row.id}`,
+          { allows_special_costs: checked },
+        );
+        const saved = data?.data || data || {};
+        row.allows_special_costs = Boolean(saved.allows_special_costs ?? checked);
+        notification.success({
+          message: 'Budget category updated',
+          description: `Special Area Cost ${row.allows_special_costs ? 'enabled' : 'disabled'} for ${row.name}.`,
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to update the budget category',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        busyCells[key] = false;
+      }
+    };
+
     // Switching tabs lazily loads the matching list.
     watch(activeTab, (tab) => {
       if (tab === 'county' && !counties.value.length) fetchCounties();
       if (tab === 'sub_county' && !subCounties.value.length) fetchSubCounties();
       if (tab === 'cost_items' && !items.value.length) fetchItems();
+      if (tab === 'categories' && !categories.value.length) fetchCategories();
     });
 
     // Load the county list on page mount (the default tab).
@@ -740,6 +925,18 @@ const filteredCounties = computed(() => {
       saveItem,
       removeItem,
       restoreItem,
+      // Budget-category applicability (SAC scope)
+      categories,
+      categoriesLoading,
+      categoriesIncludeInactive,
+      categoryFilters,
+      categoryStageOptions,
+      filteredCategories,
+      enabledCategoryCount,
+      stageLabel,
+      scopeLabel,
+      fetchCategories,
+      toggleCategory,
     };
   },
 };
@@ -843,6 +1040,31 @@ const filteredCounties = computed(() => {
 .sac-on-tag {
   background: #fdeee7;
   color: #b3402a;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+/* ── Budget Categories tab ──────────────────────────────────────────── */
+.sac-cat-grid {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
+.sac-cat-summary {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #5a6277;
+}
+.sac-stage-tag {
+  background: #eef4ff;
+  color: #2f5fa8;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sac-scope-tag {
+  background: #f1f2f6;
+  color: #5a6277;
   border: none;
   border-radius: 10px;
   font-size: 11px;
