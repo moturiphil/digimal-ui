@@ -70,7 +70,7 @@
             </span>
             <span v-else-if="column.key === 'units'">
               <a-input-number
-                v-if="editable"
+                v-if="editable && !record.units_locked"
                 v-model:value="record._d.units"
                 :min="0"
                 :max="20"
@@ -78,7 +78,10 @@
                 size="small"
                 class="sac-units-input"
               />
-              <span v-else>{{ fmt(record.units) }}</span>
+              <span v-else class="sac-units-fixed">
+                {{ fmt(record.units) }}
+                <a-tag v-if="record.units_locked" class="lc-tag">Default</a-tag>
+              </span>
             </span>
             <span v-else-if="column.key === 'days'" class="sac-days">{{ record.days }}</span>
             <span v-else-if="column.key === 'comment'">
@@ -109,9 +112,13 @@ import { SAC_ITEMS } from '@/services/specialAreaCosts';
  *
  * - Rendered only when the unit's profile has is_special_area_cost = true.
  * - Repeats the standard budget category list; each category is an
- *   expandable / collapsible panel listing the four fixed SAC line items
- *   (Enhanced Transport, Security, DSA, Boat).
- * - Default amounts (Security 2,500 / DSA 14,000) are FIXED.
+ *   expandable / collapsible panel listing the SAC line items from the
+ *   admin-managed catalogue (DSA, Boat, Enhanced Transport, Security, …)
+ *   passed in via the `items` prop. Falls back to the built-in SAC_ITEMS
+ *   when the parent has not loaded the catalogue.
+ * - Per item: a fixed (locked) amount cannot be edited; an item whose
+ *   `units_mode` is 'default' shows its configured unit count read-only,
+ *   while a 'dynamic' item lets the officer enter units per row.
  * - A comment field sits after No. of Days and appears only when units are
  *   entered for the row (units > 0).
  * - Each row is tracked independently (keyed by category + item) so editing
@@ -131,6 +138,10 @@ export default {
     readOnly: { type: Boolean, default: false },
     // Saved pre-generation entries (from get_special_area_cost_entries).
     entries: { type: Array, default: () => [] },
+    // Admin-managed SAC catalogue (get_special_area_cost_items). Falls back to
+    // the built-in SAC_ITEMS when the parent has not loaded it (or the
+    // request failed), so the grid always renders.
+    items: { type: Array, default: () => [] },
     // Generated-mode row resolver: (category, item) => {amount, units, comment, total}
     getGeneratedRow: { type: Function, default: () => ({}) },
     // Per-category persistence: (categoryId, rows) => Promise
@@ -150,6 +161,15 @@ export default {
   computed: {
     editable() {
       return this.viewMode === 'profile' && !this.readOnly;
+    },
+    /**
+     * The catalogue to render. Items loaded from the backend win; otherwise
+     * the built-in SAC_ITEMS fallback keeps the section usable offline.
+     */
+    sacItems() {
+      return Array.isArray(this.items) && this.items.length
+        ? this.items
+        : SAC_ITEMS;
     },
     columns() {
       return [
@@ -173,6 +193,15 @@ export default {
     entries: {
       handler() {
         this.seedDrafts();
+      },
+      deep: true,
+    },
+    items: {
+      // The catalogue loads asynchronously (and may change after an admin
+      // edits it) — re-seed so new/removed items appear immediately.
+      handler() {
+        this.seedDrafts();
+        this.refreshDirty();
       },
       deep: true,
     },
@@ -204,12 +233,19 @@ methods: {
     // never clobbered when entries load asynchronously or refresh after Save.
     seedDrafts() {
       this.categories.forEach((cat) => {
-        SAC_ITEMS.forEach((item) => {
+        this.sacItems.forEach((item) => {
           const k = this.key(cat.id, item.type);
           const entry = this.entryFor(cat.id, item.type);
+          // Default-units items are system-driven: the unit count always comes
+          // from the catalogue and is never user-editable.
+          const isDefaultUnits = item.units_mode === 'default';
           const next = {
             amount: entry ? Number(entry.amount) || 0 : item.default_amount ?? 0,
-            units: entry ? Number(entry.units) || 0 : 0,
+            units: isDefaultUnits
+              ? Number(item.default_units) || 0
+              : entry
+                ? Number(entry.units) || 0
+                : 0,
             comment: entry?.comment || '',
           };
           const cur = this.drafts[k];
@@ -233,6 +269,7 @@ methods: {
     },
     rowFor(cat, item) {
       const days = this.daysOf(cat);
+      const unitsLocked = item.units_mode === 'default';
       if (this.viewMode !== 'profile') {
         const g = this.getGeneratedRow(cat, item) || {};
         return {
@@ -243,6 +280,7 @@ methods: {
           days,
           total: Number(g.total) || 0,
           locked: !!item.locked,
+          units_locked: unitsLocked,
           editableAmount: false,
           _d: null,
         };
@@ -251,7 +289,10 @@ methods: {
       const amount = item.locked
         ? item.default_amount ?? 0
         : Number(d?.amount ?? item.default_amount ?? 0);
-      const units = Number(d?.units ?? 0) || 0;
+      // Default-units items: the catalogue owns the unit count.
+      const units = unitsLocked
+        ? Number(item.default_units) || 0
+        : Number(d?.units ?? 0) || 0;
       return {
         ...item,
         amount,
@@ -260,15 +301,16 @@ methods: {
         days,
         total: 0,
         locked: !!item.locked,
+        units_locked: unitsLocked,
         editableAmount: !item.locked && this.editable,
         _d: d,
       };
     },
     rowsFor(cat) {
-      return SAC_ITEMS.map((item) => this.rowFor(cat, item));
+      return this.sacItems.map((item) => this.rowFor(cat, item));
     },
     catTotal(cat) {
-      return SAC_ITEMS.reduce(
+      return this.sacItems.reduce(
         (sum, item) => sum + this.rowTotal(this.rowFor(cat, item)),
         0,
       );
@@ -292,13 +334,14 @@ methods: {
     },
     refreshDirty() {
       this.categories.forEach((cat) => {
-        const dirtyNow = SAC_ITEMS.some((item) => {
+        const dirtyNow = this.sacItems.some((item) => {
           const d = this.drafts[this.key(cat.id, item.type)];
           if (!d) return false;
           const entry = this.entryFor(cat.id, item.type);
+          const unitsLocked = item.units_mode === 'default';
           return (
             (Number(d.amount) || 0) !== (entry ? Number(entry.amount) || 0 : item.default_amount ?? 0)
-            || (Number(d.units) || 0) !== (entry ? Number(entry.units) || 0 : 0)
+            || (!unitsLocked && (Number(d.units) || 0) !== (entry ? Number(entry.units) || 0 : 0))
             || (d.comment || '') !== (entry?.comment || '')
           );
         });
@@ -309,9 +352,11 @@ methods: {
       if (this.viewMode !== 'profile') return [];
       const rows = [];
       this.categories.forEach((cat) => {
-        SAC_ITEMS.forEach((item) => {
+        this.sacItems.forEach((item) => {
           const d = this.drafts[this.key(cat.id, item.type)] || {};
-          const units = Number(d.units) || 0;
+          const units = item.units_mode === 'default'
+            ? Number(item.default_units) || 0
+            : Number(d.units) || 0;
           rows.push({
             budget_category_id: cat.id,
             special_type: item.type,
@@ -327,9 +372,11 @@ methods: {
       if (!this.saveEntries) return;
       this.savingCat = cat.id;
       try {
-        const rows = SAC_ITEMS.map((item) => {
+        const rows = this.sacItems.map((item) => {
           const d = this.drafts[this.key(cat.id, item.type)] || {};
-          const units = Number(d.units) || 0;
+          const units = item.units_mode === 'default'
+            ? Number(item.default_units) || 0
+            : Number(d.units) || 0;
           return {
             special_type: item.type,
             amount: item.locked ? item.default_amount ?? 0 : Number(d.amount) || 0,
@@ -454,6 +501,13 @@ methods: {
   }
   .sac-amount-input { width: 140px; }
   .sac-units-input { width: 90px; }
+  .sac-units-fixed {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #8a4d1f;
+  }
   .sac-comment-input { width: 100%; }
   .sac-save-btn {
     background: #8a4d1f;
