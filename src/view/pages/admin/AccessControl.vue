@@ -17,7 +17,12 @@
           </div>
         </header>
 
-        <a-tabs v-model:activeKey="activeTab" class="acs-tabs" type="card">
+        <a-tabs
+          v-model:activeKey="activeTab"
+          class="acs-tabs"
+          type="card"
+          @change="handleTabChange"
+        >
           <!-- ═══════════ Tab 1: Role ↔ Permissions ═══════════ -->
           <a-tab-pane key="role-permissions" tab="Role Permissions">
             <section class="panel acs-layout">
@@ -186,7 +191,42 @@
                 </sdButton>
               </div>
               <TableWrapper class="table-data-view table-responsive">
+                <!-- Skeleton placeholders mirror the table layout on first load,
+                     so opening the tab paints instantly while the (server
+                     paginated) users request is in flight instead of showing a
+                     bare spinner over an empty table. Subsequent page / search
+                     fetches keep the current rows and use the table overlay, so
+                     the grid never flashes empty. -->
+                <div
+                  v-if="showUsersSkeleton"
+                  class="acs-users-skeleton"
+                  aria-busy="true"
+                  aria-live="polite"
+                >
+                  <div class="acs-skeleton-row acs-skeleton-head" aria-hidden="true">
+                    <span
+                      v-for="col in userColumns"
+                      :key="`h-${col.key}`"
+                      class="acs-skeleton-cell"
+                    ></span>
+                  </div>
+                  <div
+                    v-for="row in usersSkeletonRows"
+                    :key="`r-${row}`"
+                    class="acs-skeleton-row"
+                    aria-hidden="true"
+                  >
+                    <span
+                      v-for="col in userColumns"
+                      :key="`${row}-${col.key}`"
+                      class="acs-skeleton-cell"
+                    >
+                      <a-skeleton-input active size="small" />
+                    </span>
+                  </div>
+                </div>
                 <a-table
+                  v-else
                   :data-source="users"
                   :columns="userColumns"
                   :pagination="usersPagination"
@@ -511,6 +551,14 @@ const usersPagination = computed(() => ({
     `${Number(t || 0).toLocaleString()} user${Number(t || 0) === 1 ? '' : 's'}`,
 }));
 
+// Skeleton rows: shown while the FIRST page of users is in flight (the table is
+// still empty). Later page / search fetches keep the existing rows on screen and
+// use the table's inline overlay, so the grid never flashes empty.
+const usersSkeletonRows = 8;
+const showUsersSkeleton = computed(
+  () => activeTab.value === 'users' && usersLoading.value && users.value.length === 0
+);
+
 // Level (National / County / Sub-County) and location (org unit) options for
 // the per-user editors. Loaded once via dedicated endpoints.
 const levels = ref([]); // [{ id, level_name }]
@@ -522,11 +570,22 @@ const levelOptions = computed(() =>
 
 // Locations filtered to the level currently selected for that user row, so a
 // County user only picks from counties, a Sub-County user from sub-counties.
+// Bucket the org units by level ONCE (instead of filtering the whole array on
+// every render of every table row), so the per-row selects stay cheap even with
+// thousands of org units and 100 rows on screen.
+const orgUnitsByLevel = computed(() => {
+  const map = new Map();
+  (orgUnits.value || []).forEach((u) => {
+    const key = Number(u.level_id);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push({ value: u.id, label: u.name });
+  });
+  return map;
+});
+
 const locationOptionsFor = (record) => {
   const lvl = Number(record.user_level_id || record.level_id || 0);
-  return (orgUnits.value || [])
-    .filter((u) => Number(u.level_id) === lvl)
-    .map((u) => ({ value: u.id, label: u.name }));
+  return orgUnitsByLevel.value.get(lvl) || [];
 };
 
 const fetchAccessLookups = async () => {
@@ -621,6 +680,24 @@ const onUsersTableChange = (pagination, filters, sorter, changeInfo) => {
   fetchUsers();
 };
 
+// ── Lazy tab loading ─────────────────────────────────────────────────────────
+// The default "Role Permissions" tab only needs the roles / permissions data,
+// so the much heavier users list (plus the level / location lookups) is deferred
+// until the admin actually opens the "Users & Roles" tab. Opening the page is
+// therefore instant, and the user query never runs for admins who never look at
+// it. Guarded so flipping back and forth fetches only once.
+const usersTabLoaded = ref(false);
+const loadUsersTab = () => {
+  if (usersTabLoaded.value) return;
+  usersTabLoaded.value = true;
+  fetchAccessLookups();
+  fetchUsers();
+};
+
+const handleTabChange = (key) => {
+  if (key === 'users') loadUsersTab();
+};
+
 const changeUserRole = async (record, roleId) => {
   try {
     await axios.put(`users/${record.id}/updateRole`, { role_id: roleId });
@@ -711,8 +788,10 @@ const matrixColumns = [
 onMounted(() => {
   loadRolesOrgTypes();
   loadPermissions();
-  fetchAccessLookups();
-  fetchUsers();
+  // If the page is opened straight onto the Users & Roles tab (e.g. via a deep
+  // link / active tab restored), fetch the users immediately — otherwise wait
+  // until the tab is actually opened (see handleTabChange).
+  if (activeTab.value === 'users') loadUsersTab();
 });
 </script>
 
@@ -922,6 +1001,46 @@ onMounted(() => {
     align-items: center;
     margin-bottom: 14px;
     flex-wrap: wrap;
+  }
+
+  // Skeleton placeholder that mirrors the table's column layout while the
+  // first page of users loads.
+  .acs-users-skeleton {
+    padding: 2px 0;
+  }
+
+  .acs-skeleton-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1.1fr 1.4fr 1.4fr;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #eef4f0;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .acs-skeleton-head {
+    background: #f6faf8;
+    border-bottom: 1px solid #e1efe6;
+
+    .acs-skeleton-cell {
+      height: 12px;
+      background: #e6efe9;
+      border-radius: 4px;
+    }
+  }
+
+  .acs-skeleton-cell {
+    display: block;
+    min-width: 0;
+
+    .ant-skeleton-input {
+      width: 100%;
+      min-width: 0;
+    }
   }
 }
 </style>

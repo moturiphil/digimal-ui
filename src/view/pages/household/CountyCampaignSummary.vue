@@ -160,11 +160,19 @@
             }
           );
           const data = await response.json();
-          console.log(data);
-          dataSource.value = data;
-          console.log(dataSource.value);
+          // The endpoint returns a bare array of county rows when there is
+          // data, but falls back to a `{ status: false, message: 'No data
+          // found.' }` object when there is nothing to show. a-table requires
+          // an array (it calls `records.forEach` internally), so normalise
+          // every possible shape to an array to avoid a runtime crash.
+          dataSource.value = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.data)
+              ? data.data
+              : [];
         } catch (error) {
           console.error(error);
+          dataSource.value = [];
         }
       });
   
@@ -190,15 +198,15 @@
         onChange: onSelectChange,
       };
       const results = computed(() => {
+        // `dataSource` is always an array (see onMounted normalisation) but keep
+        // this defensive so a stray non-array payload can never break the table.
+        const rows = Array.isArray(dataSource.value) ? dataSource.value : [];
         const query = searchItem.value.toLowerCase();
-        const regex = new RegExp(query, "i");
         if (!query) {
-          return dataSource.value;
-        } else {
-          return dataSource.value.filter((event) => {
-            return regex.test(event.name);
-          });
+          return rows;
         }
+        const regex = new RegExp(query, "i");
+        return rows.filter((event) => regex.test(event.name));
       });
   
       return {
