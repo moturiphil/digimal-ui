@@ -155,6 +155,15 @@ export const GATE_DEFINITIONS = Object.freeze({
     ],
     roles: ["Super Admin", "Accountant"],
   },
+  // Procurement / Vendor module (Vendors + LSOs pages). Evaluated
+  // permission-first, so the Procurement Officer sees the sidebar entry purely
+  // because the backend ProcurementRolePermissionSeeder grants `get_vendors` /
+  // `get_vendor` — no hard-coded role id needed. The `roles` list documents the
+  // audience the seeder provisions so Access Control stays self-describing.
+  canViewProcurement: {
+    permissions: ["get_vendors", "get_vendor"],
+    roles: ["Super Admin", "Procurement Officer", "SCMCC", "CMCC", "Accountant", "Finance Officer"],
+  },
 });
 
 
@@ -211,8 +220,58 @@ export const NAV_MODULES = Object.freeze([
     key: "procurement",
     label: "Procurement",
     pages: compact([
-      { label: "Vendors", path: "/procurement/vendors", permissions: ["get_vendors"] },
-      { label: "LSOs / LPOs", path: "/procurement/lsos", permissions: ["get_vendors"] },
+      // The Vendors workspace: list / view / create / update vendors plus
+      // their bank accounts and contacts. Permission names mirror the backend
+      // `role_permission:` middleware so Access Control can grant each action
+      // individually (see ProcurementRolePermissionSeeder).
+      {
+        label: "Vendors",
+        path: "/procurement/vendors",
+        permissions: [
+          "get_vendors",
+          "get_vendors_payload",
+          "get_vendor",
+          "create_vendor",
+          "update_vendor",
+          "delete_vendor",
+          "toggle_vendor_status",
+          "search_erp_vendors",
+          "get_vendor_bank_accounts",
+          "get_vendor_bank_account",
+          "create_vendor_bank_account",
+          "update_vendor_bank_account",
+          "delete_vendor_bank_account",
+          "set_primary_vendor_bank_account",
+          "get_vendor_contacts",
+          "get_vendor_contact",
+          "create_vendor_contact",
+          "update_vendor_contact",
+          "delete_vendor_contact",
+          "set_primary_vendor_contact",
+          "get_banks",
+          "get_bank",
+          "get_counties",
+          "get_subcounties",
+          "get_service_types",
+        ],
+      },
+      // The cross-vendor LSO / LPO register: list, upload, update and
+      // download vendor LSOs. `get_vendors` / `get_vendor` are included
+      // because each row renders its parent vendor.
+      {
+        label: "LSOs / LPOs",
+        path: "/procurement/lsos",
+        permissions: [
+          "get_vendors",
+          "get_vendor",
+          "get_vendor_lsos",
+          "get_vendor_lso",
+          "create_vendor_lso",
+          "update_vendor_lso",
+          "delete_vendor_lso",
+          "download_vendor_lso",
+        ],
+      },
     ]),
   },
   {

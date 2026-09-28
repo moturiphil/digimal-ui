@@ -131,7 +131,7 @@
           <router-link to="/budget/locations"> Locations </router-link>
         </a-menu-item> -->
       </a-sub-menu>
-      <a-sub-menu key="procurement" v-if="canViewVendors">
+      <a-sub-menu key="procurement" v-if="canViewProcurement">
         <template v-slot:title>
           <sdFeatherIcons type="briefcase" /><span>Procurement</span>
         </template>
@@ -548,7 +548,6 @@ import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import { fetchUserData, hasRoleByName, satisfiesGate } from "../services/user-role";
 import { GATE_DEFINITIONS, SCHMT_ORG_TYPE_ID } from "../config/navigation-permissions";
-import { useProcurementPermissions } from "@/services/procurement/usePermissions";
 
 // ── System flags & cross-cutting groups ──────────────────────────────────────
 // All menu gates are defined in src/config/navigation-permissions.js
@@ -641,7 +640,12 @@ export default defineComponent({
     const canAccessBudgeting = computed(
       () => !isCommunityHealthWorker.value && !!role_id.value
     );
-    const { canViewVendors } = useProcurementPermissions();
+    // Procurement / Vendor module — permission-first (granted to the
+    // Procurement Officer by ProcurementRolePermissionSeeder), so the sidebar
+    // entry follows Access Control instead of a hard-coded role id.
+    const canViewProcurement = satisfiesGate(
+      GATE_DEFINITIONS.canViewProcurement
+    );
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -741,7 +745,7 @@ export default defineComponent({
       isAIEHolder,
       isCommunityHealthWorker,
       canAccessBudgeting,
-      canViewVendors,
+      canViewProcurement,
       canViewCampaign,
       canCreateEvent,
       canViewEvent,
