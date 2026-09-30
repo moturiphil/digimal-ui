@@ -11,8 +11,7 @@
             <p class="bp-sub">
               A separate budget from the standard campaign budget. It is submitted on its own and
               pushed <strong>directly to National</strong> — the county stage is skipped. The
-              National Accountant (or Super Admin) reviews it, then the Finance Officer (or Super
-              Admin) approves it.
+              National Accountant reviews it, then the Finance Officer approves it.
             </p>
           </div>
           <div v-if="subCounty.name || subCounty.countyName" class="header-tags">
@@ -215,7 +214,7 @@ import { fetchSacItems, fallbackSacItems } from '@/services/specialAreaCosts';
  *   submitted on its own:
  *     draft → submitted → dnmp_reviewed → approved
  *   It is pushed straight to National for review by the National Accountant
- *   (or Super Admin) and approved by the Finance Officer (or Super Admin).
+ *   (or Super Admin) and approved by the Finance Officer.
  *
  * WHO budgets it, and for which locale:
  *   It is budgeted by the management committee of its OWN locale —
