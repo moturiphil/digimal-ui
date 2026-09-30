@@ -385,8 +385,8 @@
                                   <sdButton
                                     size="extra-small"
                                     type="danger"
-                                    @click="voidParticipant(record.id)"
-                                    v-if="isApprovedGenerator"
+                                    @click="voidParticipant(record)"
+                                    v-if="isEventHost"
                                   >
                                     Void Participant
                                   </sdButton>
@@ -453,6 +453,7 @@
                                   <sdButton
                                     type="warning"
                                     size="extra-small"
+                                    v-if="canResendConfirmation"
                                     @click="resendConfirmation(record.id)"
                                   >
                                     Resend Confirmation
@@ -525,10 +526,10 @@
                                   De-assign Facilitator
                                 </sdButton>
                                 <sdButton
-                                  v-if="isApprovedGenerator"
+                                  v-if="isEventHost"
                                   size="extra-small"
                                   type="danger"
-                                  @click="voidParticipant(record.id)"
+                                  @click="voidParticipant(record)"
                                 >
                                   Void Participant
                                 </sdButton>
@@ -628,6 +629,7 @@
                                 <sdButton
                                   type="warning"
                                   size="extra-small"
+                                  v-if="canResendConfirmation"
                                   @click="resendConfirmation(record.id)"
                                 >
                                   Resend Confirmation
@@ -637,30 +639,78 @@
                           </div>
                         </div>
                       </div>
-                      <!-- Void Participants Modal -->
+                      <!-- Void Participants Modal — lists the participant's
+                           confirmed days so the host can pick exactly which
+                           days to void instead of wiping the whole
+                           participation. Every confirmed day starts SELECTED;
+                           the host DESELECTS the days to void. -->
                       <a-modal
                         title="Void Participant"
                         :visible="isModalOpen"
                         @cancel="handleCancel"
-                        width="20%"
+                        width="38%"
                       >
-                        <p>Are you sure you want to void participant?</p>
+                        <p v-if="voidParticipantName">
+                          Confirmed days for
+                          <strong>{{ voidParticipantName }}</strong>. All
+                          confirmed days are selected —
+                          <strong>uncheck the days you want to void</strong>.
+                        </p>
 
-                        <a-form
-                          class="add-record-form"
-                          :style="{ width: '100%' }"
-                          layout="vertical"
-                          name="addactivity"
-                          :model="formState"
-                        >
-                          <a-form-item name="reason_for_voiding" label="Reason">
-                            <a-textarea
-                              v-model:value="formState.reason_for_voiding"
-                              placeholder="State reason for voiding..."
-                              :rows="4"
-                            />
-                          </a-form-item>
-                        </a-form>
+                        <div v-if="loadingDays" class="ev-void-loading">
+                          <a-spin size="small" />
+                          <span>&nbsp;Loading confirmed days…</span>
+                        </div>
+
+                        <div v-else>
+                          <p v-if="!confirmedDays.length" class="ev-void-empty">
+                            This participant has no confirmed days to void.
+                          </p>
+
+                          <template v-else>
+                            <a-checkbox-group
+                              v-model:value="selectedDayIds"
+                              style="width: 100%"
+                            >
+                              <div
+                                v-for="day in confirmedDays"
+                                :key="day.id"
+                                class="ev-void-day"
+                              >
+                                <a-checkbox :value="day.id">
+                                  Day {{ day.day }} —
+                                  {{ day.registration_date }}
+                                </a-checkbox>
+                              </div>
+                            </a-checkbox-group>
+
+                            <p class="ev-void-summary">
+                              {{ confirmedDays.length - selectedDayIds.length }}
+                              of {{ confirmedDays.length }} confirmed day(s)
+                              will be voided.
+                            </p>
+
+                            <a-form
+                              class="add-record-form"
+                              :style="{ width: '100%' }"
+                              layout="vertical"
+                              name="voidparticipant"
+                              :model="formState"
+                            >
+                              <a-form-item
+                                name="reason_for_voiding"
+                                label="Reason"
+                              >
+                                <a-textarea
+                                  v-model:value="formState.reason_for_voiding"
+                                  placeholder="State reason for voiding..."
+                                  :rows="4"
+                                />
+                              </a-form-item>
+                            </a-form>
+                          </template>
+                        </div>
+
                         <template #footer>
                           <a-button
                             key="cancel"
@@ -672,6 +722,12 @@
                           <a-button
                             key="confirm"
                             type="danger"
+                            :loading="voidSubmitting"
+                            :disabled="
+                              loadingDays ||
+                              !confirmedDays.length ||
+                              confirmedDays.length === selectedDayIds.length
+                            "
                             @click="handleVoid"
                           >
                             Confirm
@@ -1148,6 +1204,19 @@ const isArchiveModalOpen = ref(false);
 const isMatrixModalOpen = ref(false);
 const isCadreModalOpen = ref(false);
 const participant_id = ref("");
+
+// ── Void participant (per confirmed day) ──
+// When the host opens the void modal we fetch the participant's confirmed days
+// (event_registrations rows). Every day starts SELECTED — the host DESELECTS
+// the days they want to void and submits.
+const voidParticipantName = ref("");
+const confirmedDays = ref([]);
+const selectedDayIds = ref([]);
+const loadingDays = ref(false);
+const voidSubmitting = ref(false);
+// Guards against double-firing the resend action for the same participant.
+const resendingId = ref(null);
+
 const API_URL = `events/${plainquery.event_code}/participants`;
 const genetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/generate_events_pay_roll?status=1&event_code=${event_code}`;
 const reGenetatePayrollURL = `${process.env.VUE_APP_BASE_URL}/regenerate_event_payroll?status=1&event_code=${event_code}`;
@@ -1385,6 +1454,24 @@ const submitPayrollVisible = computed(() => {
 const canRegisterParticipants = computed(
   () =>
     liveEvent.value.can_register_participants === true || isEventHost.value
+);
+
+// Who may re-send a participant's confirmation code: the event host, any
+// facilitator of the event, or a super admin. `canRegisterParticipants` is the
+// backend flag that is true for the host OR a facilitator, so it already covers
+// the first two; super admins are matched by role id (1 = Super Admin,
+// 53 = config('roles.super_admin_role_id')).
+const isSuperAdmin = computed(() => {
+  try {
+    const u = JSON.parse(sessionStorage.getItem("user"));
+    const rid = Number(u?.user?.role_id);
+    return rid === 1 || rid === 53;
+  } catch (e) {
+    return false;
+  }
+});
+const canResendConfirmation = computed(
+  () => canRegisterParticipants.value || isSuperAdmin.value
 );
 
 // Payroll generation only unlocks once the event host has submitted the closed
@@ -1690,12 +1777,14 @@ const reGeneratePayroll = async () => {
 // pending list stays visible; the host can still resend a confirmation
 // code (see `resendConfirmation` below).
 
-// resendConfirmation
+// Resend a participant's confirmation code. Allowed for the event host,
+// facilitators and super admins; the backend caps resends at 3 per participant
+// within 5 hours and answers 429 once the cap is reached.
 const resendConfirmation = async (id) => {
-  console.log(id);
-  let user_id = id;
+  if (resendingId.value) return;
+  resendingId.value = id;
 
-  const url = `${process.env.VUE_APP_BASE_URL}/resend_event_registration_code/${plainquery.id}/${user_id}`;
+  const url = `${process.env.VUE_APP_BASE_URL}/resend_event_registration_code/${plainquery.id}/${id}`;
 
   try {
     const response = await fetch(url, {
@@ -1712,79 +1801,135 @@ const resendConfirmation = async (id) => {
         message: "Success",
         description: data,
       });
-      isModalOpen.value = false;
     } else {
-      notification.info({
-        message: "Info",
+      notification.warning({
+        message:
+          response.status === 429 ? "Resend limit reached" : "Could not resend",
         description: data,
       });
     }
-    isModalOpen.value = false;
   } catch (error) {
     console.error("Error:", error);
     notification.error({
       message: "Error",
       description: `${error}`,
     });
+  } finally {
+    resendingId.value = null;
   }
 };
 
-const voidParticipant = (id) => {
+// Open the void modal for a participant and load their confirmed days. Every
+// confirmed day starts SELECTED; the host deselects the ones to void.
+const voidParticipant = async (record) => {
+  participant_id.value = record.id;
+  voidParticipantName.value = record.fullName || "";
+  formState.reason_for_voiding = "";
+  confirmedDays.value = [];
+  selectedDayIds.value = [];
   isModalOpen.value = true;
-  console.log(id);
-  participant_id.value = id;
+
+  loadingDays.value = true;
+  try {
+    const response = await axios.get(
+      `event_participant_confirmed_days/${plainquery.id}/${record.id}`,
+      { headers: authHeader() }
+    );
+    const days = response.data?.data || [];
+    confirmedDays.value = days;
+    // All confirmed days are pre-selected (they stay confirmed on submit).
+    selectedDayIds.value = days.map((d) => d.id);
+  } catch (error) {
+    notification.error({
+      message: "Could not load confirmed days",
+      description:
+        error?.response?.data?.message ||
+        "Please try again, or contact support if the problem persists.",
+    });
+  } finally {
+    loadingDays.value = false;
+  }
 };
 
 const handleCancel = () => {
   isModalOpen.value = false;
 };
 
+// Void only the days the host deselected — everything left selected stays
+// confirmed.
 const handleVoid = async () => {
-  console.log(participant_id.value);
+  if (!confirmedDays.value.length) {
+    notification.info({
+      message: "Nothing to void",
+      description: "This participant has no confirmed days to void.",
+    });
+    return;
+  }
+
+  const daysToVoid = confirmedDays.value
+    .filter((day) => !selectedDayIds.value.includes(day.id))
+    .map((day) => day.id);
+
+  if (!daysToVoid.length) {
+    notification.info({
+      message: "No days to void",
+      description: "Uncheck at least one confirmed day to void it, or cancel.",
+    });
+    return;
+  }
+
+  if (!formState.reason_for_voiding || !formState.reason_for_voiding.trim()) {
+    notification.warning({
+      message: "Reason required",
+      description: "Please state a reason for voiding.",
+    });
+    return;
+  }
+
+  voidSubmitting.value = true;
   try {
     const data = {
       event_id: plainquery.id,
       user_id: participant_id.value,
       reason_for_voiding: formState.reason_for_voiding,
+      registration_ids: daysToVoid,
     };
-    console.log(data);
-    fetch(`${process.env.VUE_APP_BASE_URL}/void_event_participant`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then(({ success, message }) => {
-        console.log(message);
-        if (success == true) {
-          notification.success({
-            message: "Participant voided successfully",
-            description: message,
-          });
-          new Promise((resolve) => {
-            setTimeout(resolve, 3000);
-          });
-          location.reload();
-        } else {
-          notification.error({
-            message: "Participant voiding not successful",
-            description: message,
-          });
-        }
-      })
-      .catch((error) => {
-        store.commit("setIsSubmitting", false);
-        notification.error({
-          message: "Could not submit!",
-          description: "An error has occured. Please try again later.",
-        });
-        console.error("Error:", error);
+
+    const response = await fetch(
+      `${process.env.VUE_APP_BASE_URL}/void_event_participant`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader(),
+        },
+        body: JSON.stringify(data),
+      }
+    );
+    const { success, message } = await response.json();
+
+    if (success === true) {
+      notification.success({
+        message: "Participant days voided successfully",
+        description: message,
       });
+      isModalOpen.value = false;
+      // Refresh the participant lists so the voided days / attendance update.
+      getEventParticipants();
+    } else {
+      notification.error({
+        message: "Participant voiding not successful",
+        description: message,
+      });
+    }
   } catch (error) {
-    console.error(error);
+    notification.error({
+      message: "Could not submit!",
+      description: "An error has occurred. Please try again later.",
+    });
+    console.error("Error:", error);
+  } finally {
+    voidSubmitting.value = false;
   }
 };
 
@@ -2827,5 +2972,33 @@ computed(() => {
   justify-content: flex-end;
   gap: 10px;
   padding-top: 4px;
+}
+
+/* ── Void participant modal (per confirmed day) ── */
+.ev-void-loading {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 0;
+  color: #4d5661;
+  font-size: 13px;
+}
+.ev-void-empty {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #7d8c84;
+}
+.ev-void-day {
+  padding: 6px 10px;
+  border: 1px solid #e1e6ec;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: #fff;
+}
+.ev-void-summary {
+  margin: 10px 0 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #b42318;
 }
 </style>
