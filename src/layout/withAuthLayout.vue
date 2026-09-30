@@ -39,7 +39,11 @@
                 <img class="logo-img" :src="gfLogo" alt="The Global Fund" />
               </div>
               <div class="logo-tile logo-tile-wide">
-                <img class="logo-img" :src="nmcpLogo" alt="National Malaria Control Programme" />
+                <img
+                  class="logo-img"
+                  :src="dhaLogo"
+                  alt="Digital Health Agency — Digital Health"
+                />
               </div>
             </div>
             <div class="slider-dots">
@@ -69,6 +73,7 @@ import coatOfArms from "@/static/img/auth/kenya_coat_of_arms.png";
 import mohLogo from "@/static/img/auth/GOK.png";
 import nmcpLogo from "@/static/img/auth/dnmp.png";
 import gfLogo from "@/static/img/auth/global-fund.png";
+import dhaLogo from "@/static/img/auth/dha-logo.png";
 import vihiga from "@/static/img/auth/campaign/campaign-vihiga.jpg";
 import homabayBeneficiary from "@/static/img/auth/campaign/campaign-homabay-beneficiary.jpg";
 import homabayLaunch from "@/static/img/auth/campaign/campaign-homabay-launch.jpg";
@@ -93,6 +98,7 @@ const AuthLayout = {
       mohLogo,
       nmcpLogo,
       gfLogo,
+      dhaLogo,
     };
   },
   mounted() {
@@ -247,8 +253,8 @@ export default AuthLayout;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 540px;
-  padding: 20px 22px 18px;
+  max-width: 640px;
+  padding: 22px 24px 20px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.88);
   -webkit-backdrop-filter: blur(14px);
@@ -279,7 +285,7 @@ export default AuthLayout;
   align-items: center;
   justify-content: center;
   min-width: 0;
-  height: 96px;
+  height: 120px;
   border-radius: 16px;
   background: #ffffff;
   border: 1px solid rgba(13, 94, 50, 0.08);
@@ -306,19 +312,19 @@ export default AuthLayout;
 }
 
 .logo-tile .logo-img {
-  max-width: 82px;
-  max-height: 82px;
+  max-width: 104px;
+  max-height: 104px;
   object-fit: contain;
 }
 
 .logo-tile-wide {
   grid-column: 1 / -1;
-  height: 68px;
+  height: 104px;
 }
 
 .logo-tile-wide .logo-img {
-  max-width: 280px;
-  max-height: 50px;
+  max-width: 440px;
+  max-height: 86px;
 }
 
 .slider-dots {
@@ -408,21 +414,21 @@ export default AuthLayout;
   }
 
   .logo-tile {
-    height: 74px;
+    height: 96px;
   }
 
   .logo-tile .logo-img {
-    max-width: 62px;
-    max-height: 62px;
+    max-width: 84px;
+    max-height: 84px;
   }
 
   .logo-tile-wide {
-    height: 56px;
+    height: 84px;
   }
 
   .logo-tile-wide .logo-img {
-    max-width: 210px;
-    max-height: 42px;
+    max-width: 320px;
+    max-height: 66px;
   }
 
   .slider-dots {
@@ -458,21 +464,21 @@ export default AuthLayout;
   }
 
   .logo-tile {
-    height: 66px;
+    height: 86px;
   }
 
   .logo-tile .logo-img {
-    max-width: 54px;
-    max-height: 54px;
+    max-width: 74px;
+    max-height: 74px;
   }
 
   .logo-tile-wide {
-    height: 48px;
+    height: 74px;
   }
 
   .logo-tile-wide .logo-img {
-    max-width: 190px;
-    max-height: 38px;
+    max-width: 290px;
+    max-height: 58px;
   }
 
   .slider-dots {

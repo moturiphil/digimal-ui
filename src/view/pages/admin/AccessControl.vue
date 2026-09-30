@@ -116,7 +116,7 @@
                             class="acs-perm"
                           >
                             <a-checkbox
-                              :checked="checkedPermIds.includes(p.id)"
+                              :checked="checkedPermIdSet.has(p.id)"
                               @change="togglePermission(p.id, $event)"
                             />
                             <code>{{ p.name }}</code>
@@ -148,7 +148,7 @@
                           class="acs-perm"
                         >
                           <a-checkbox
-                            :checked="checkedPermIds.includes(p.id)"
+                            :checked="checkedPermIdSet.has(p.id)"
                             @change="togglePermission(p.id, $event)"
                           />
                           <code>{{ p.name }}</code>
@@ -345,21 +345,27 @@ const permissionByName = computed(() =>
   }, {})
 );
 const checkedPermIds = ref([]);
+// Set view of the checked ids. The matrix asks "is this permission checked?"
+// for every rendered checkbox on every render; Array.includes() is O(n), so a
+// Set keeps the rendering cheap even with a large permission catalogue.
+const checkedPermIdSet = computed(() => new Set(checkedPermIds.value));
 const permLoading = ref(false);
 const saving = ref(false);
 
 // Decorate NAV_MODULES with resolved permission items — only permissions that
-// actually exist in massnet_permissions are rendered as checkboxes.
+// actually exist in massnet_permissions are rendered as checkboxes. The id
+// lists are precomputed here so the module / page select-all helpers never
+// re-flatten every page on each render.
 const groupedModules = computed(() =>
-  NAV_MODULES.map((mod) => ({
-    ...mod,
-    pages: mod.pages.map((page) => {
+  NAV_MODULES.map((mod) => {
+    const pages = mod.pages.map((page) => {
       const items = (page.permissions || [])
         .map((name) => permissionByName.value[name])
         .filter(Boolean);
       return {
         ...page,
         permissionItems: items,
+        permissionIds: items.map((p) => p.id),
         // Permission names referenced by the navigation registry that have no
         // matching row in `massnet_permissions` yet. Until those rows exist
         // the checkbox has nothing to select — surface them so admins can seed
@@ -369,8 +375,14 @@ const groupedModules = computed(() =>
           (name) => !permissionByName.value[name]
         ),
       };
-    }),
-  }))
+    });
+
+    return {
+      ...mod,
+      pages,
+      permissionIds: pages.flatMap((p) => p.permissionIds),
+    };
+  })
 );
 
 // Permissions that exist in the DB but aren't tied to any registered page.
@@ -379,26 +391,30 @@ const otherPermissions = computed(() =>
 );
 
 // ── Checkbox matrix helpers ─────────────────────────────────────────────────
-const pageIds = (page) => (page.permissionItems || []).map((p) => p.id);
-const moduleIds = (mod) => mod.pages.flatMap((p) => pageIds(p));
+// `permissionIds` are precomputed in groupedModules (see above), and membership
+// is checked through the Set view of checkedPermIds.
+const pageIds = (page) => page.permissionIds || [];
+const moduleIds = (mod) => mod.permissionIds || [];
+const countChecked = (ids) =>
+  ids.filter((id) => checkedPermIdSet.value.has(id)).length;
 
 const pageAllChecked = (page) => {
   const ids = pageIds(page);
-  return ids.length > 0 && ids.every((id) => checkedPermIds.value.includes(id));
+  return ids.length > 0 && countChecked(ids) === ids.length;
 };
 const pageIndeterminate = (page) => {
   const ids = pageIds(page);
-  const count = ids.filter((id) => checkedPermIds.value.includes(id)).length;
+  const count = countChecked(ids);
   return count > 0 && count < ids.length;
 };
 
 const moduleAllChecked = (mod) => {
   const ids = moduleIds(mod);
-  return ids.length > 0 && ids.every((id) => checkedPermIds.value.includes(id));
+  return ids.length > 0 && countChecked(ids) === ids.length;
 };
 const moduleIndeterminate = (mod) => {
   const ids = moduleIds(mod);
-  const count = ids.filter((id) => checkedPermIds.value.includes(id)).length;
+  const count = countChecked(ids);
   return count > 0 && count < ids.length;
 };
 
@@ -408,14 +424,14 @@ const moduleIndeterminate = (mod) => {
 const pageStateLabel = (page) => {
   const ids = pageIds(page);
   if (!ids.length) return "—";
-  const checked = ids.filter((id) => checkedPermIds.value.includes(id)).length;
+  const checked = countChecked(ids);
   return checked >= ids.length ? "Granted" : checked > 0 ? "Partial" : "Denied";
 };
 
 const moduleStateLabel = (mod) => {
   const ids = moduleIds(mod);
   if (!ids.length) return "—";
-  const checked = ids.filter((id) => checkedPermIds.value.includes(id)).length;
+  const checked = countChecked(ids);
   return checked >= ids.length ? "All granted" : checked > 0 ? "Partial" : "None";
 };
 
@@ -563,6 +579,54 @@ const showUsersSkeleton = computed(
 // the per-user editors. Loaded once via dedicated endpoints.
 const levels = ref([]); // [{ id, level_name }]
 const orgUnits = ref([]); // [{ id, name, org_id, parent_id, level_id }]
+// Levels whose org units have already been downloaded. Keeps paging / searching
+// from re-requesting the same slice.
+const loadedOrgLevels = ref(new Set());
+
+// Load org units for the given scope levels only. The location editor only ever
+// shows options for the levels present on the current page of users, so this
+// avoids downloading the whole org_units table (which would include every
+// village in the country).
+const ensureOrgLevels = async (levelIds) => {
+  const missing = Array.from(
+    new Set((levelIds || []).map(Number).filter((l) => l > 0))
+  ).filter((l) => !loadedOrgLevels.value.has(l));
+
+  if (!missing.length) return;
+
+  try {
+    const res = await axios.get("access_locations", {
+      params: { levels: missing.join(",") },
+    });
+    const rows = Array.isArray(res.data?.data) ? res.data.data : [];
+
+    // Merge with what we already have so previously loaded levels survive.
+    const merged = new Map(orgUnits.value.map((u) => [u.id, u]));
+    rows.forEach((u) => merged.set(u.id, u));
+    orgUnits.value = Array.from(merged.values());
+
+    const next = new Set(loadedOrgLevels.value);
+    missing.forEach((l) => next.add(l));
+    loadedOrgLevels.value = next;
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: "Failed to load location options",
+    });
+  }
+};
+
+const fetchAccessLookups = async () => {
+  try {
+    const lv = await axios.get("levels");
+    levels.value = Array.isArray(lv.data?.data) ? lv.data.data : [];
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: "Failed to load level options",
+    });
+  }
+};
 
 const levelOptions = computed(() =>
   (levels.value || []).map((l) => ({ value: l.id, label: l.level_name }))
@@ -586,22 +650,6 @@ const orgUnitsByLevel = computed(() => {
 const locationOptionsFor = (record) => {
   const lvl = Number(record.user_level_id || record.level_id || 0);
   return orgUnitsByLevel.value.get(lvl) || [];
-};
-
-const fetchAccessLookups = async () => {
-  try {
-    const [lv, ou] = await Promise.all([
-      axios.get("levels"),
-      axios.get("access_locations"),
-    ]);
-    levels.value = Array.isArray(lv.data?.data) ? lv.data.data : [];
-    orgUnits.value = Array.isArray(ou.data?.data) ? ou.data.data : [];
-  } catch (error) {
-    notification.error({
-      message: "Error",
-      description: "Failed to load level / location options",
-    });
-  }
 };
 
 const userColumns = [
@@ -645,6 +693,9 @@ const fetchUsers = async () => {
     // Sync the table with the page the server actually served (it clamps to
     // the last page, e.g. after deleting the last row of a page).
     if (Number(pg.current_page)) usersPage.value = Number(pg.current_page);
+    // Only the scope levels actually present on this page need their location
+    // options loaded (avoids downloading the whole org-unit table).
+    ensureOrgLevels(users.value.map((u) => u.user_level_id || u.level_id));
   } catch (error) {
     notification.error({
       message: 'Error',
@@ -745,6 +796,10 @@ const changeUserAccess = async (record, field, value) => {
   if (value === undefined || value === null || value === "") return;
   const key = field === "level_id" ? "user_level_id" : "user_location_id";
   try {
+    // Make sure the (possibly new) level's locations can be picked from.
+    if (field === "level_id") {
+      await ensureOrgLevels([value]);
+    }
     await axios.put(`users/${record.id}/updateAccess`, { [field]: value });
     record[key] = value;
     notification.success({
