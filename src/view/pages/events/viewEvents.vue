@@ -10,6 +10,14 @@
             </h3>
           </div>
           <div class="ph-actions">
+            <router-link
+              v-if="canCreateEvent"
+              to="/events/event-create"
+              class="ev-create-btn"
+            >
+              <sdFeatherIcons type="plus" size="14" />
+              Create Event
+            </router-link>
             <div class="ev-view-toggle" role="group" aria-label="Toggle view">
               <button
                 type="button"
@@ -403,6 +411,13 @@ import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import { confirmErrorMessage } from "../../../services/budgetCapacity";
 import EventClosureModal from "./components/EventClosureModal.vue";
+import { GATE_DEFINITIONS } from "../../../config/navigation-permissions";
+import { satisfiesGate } from "../../../services/user-role";
+
+// Same gate as the sidebar "Create Event" entry (the `create_events` /
+// `event_with_facilitator_list` permission), so the button only appears for
+// users who may actually create events.
+const canCreateEvent = satisfiesGate(GATE_DEFINITIONS.canCreateEvent);
 
 const columns = [
   { title: "Event Name", dataIndex: "name", key: "id" },
@@ -721,6 +736,26 @@ onMounted(() => {
         color: #15693c;
         box-shadow: 0 2px 6px rgba(28, 122, 72, 0.12);
       }
+    }
+  }
+
+  /* Create Event shortcut in the page header — matches the "Create Activity"
+     button on the activities list page (same position, size and green accent). */
+  .ev-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 22px;
+    background: #16a34a;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    &:hover {
+      background: #15803d;
+      color: #fff;
     }
   }
 

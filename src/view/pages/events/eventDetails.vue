@@ -75,6 +75,16 @@
             <sdFeatherIcons type="users" size="14" /> &nbsp; View Trainers
           </sdButton>
           <sdButton
+            v-if="canRegisterParticipants"
+            class="btn-import"
+            type="light"
+            outlined
+            size="extra-small"
+            @click="openRegisterModal"
+          >
+            <sdFeatherIcons type="user-plus" size="14" /> &nbsp; Register Participant
+          </sdButton>
+          <sdButton
             v-if="submitPayrollVisible"
             class="btn-import"
             type="primary"
@@ -416,11 +426,10 @@
                           <div class="ev-validate-bar is-notice">
                             <span class="ev-validate-hint">
                               <sdFeatherIcons type="info" size="14" />
-                              &nbsp; Attendance is confirmed by participants
-                              themselves via their SMS confirmation code —
-                              the host cannot confirm attendance on their
-                              behalf. Use "Resend Confirmation" to re-send a
-                              participant's code if needed.
+                              &nbsp; Attendance is confirmed by the host & 
+                              facilitators via SMS confirmation sent to the 
+                              participants the host cannot confirm attendance 
+                              of the participants without the participants dialing. 
                             </span>
                           </div>
                           <a-table
@@ -863,6 +872,72 @@
         @submitted="onEventSubmitted"
       />
 
+      <!--
+        Register participant modal (host / facilitator).
+
+        The host/facilitator enters the participant's registration code and the
+        API confirms that registration (the backend verifies the caller is the
+        event host or a facilitator). This modal deliberately does NOT close
+        itself: the mask click and the Esc key are disabled, the default
+        OK/Cancel footer is removed, and a successful registration only clears
+        the input — so a batch of participants can be registered in one go. It
+        closes only when the user clicks Close (or the header ✕).
+      -->
+      <a-modal
+        title="Register Participant"
+        :visible="isRegisterModalOpen"
+        :footer="null"
+        :mask-closable="false"
+        :keyboard="false"
+        @cancel="closeRegisterModal"
+        class="title-success"
+        width="480px"
+      >
+        <div class="ev-register-modal">
+          <p class="ev-register-hint">
+            Enter the participant's registration code to confirm their
+            attendance for <b>{{ event_name }}</b
+            >. This window stays open after each registration so you can
+            register several participants in a row — close it yourself when you
+            are done.
+          </p>
+          <a-input
+            v-model:value="registrationCode"
+            placeholder="Registration code"
+            allow-clear
+            :disabled="registering"
+            @pressEnter="confirmRegistration"
+          />
+          <p
+            v-if="registerFeedback"
+            class="ev-register-feedback"
+            :class="`is-${registerFeedbackType}`"
+          >
+            {{ registerFeedback }}
+          </p>
+          <div class="ev-register-actions">
+            <sdButton
+              size="small"
+              type="light"
+              outlined
+              :disabled="registering"
+              @click="closeRegisterModal"
+            >
+              Close
+            </sdButton>
+            <sdButton
+              type="primary"
+              size="small"
+              :disabled="!registrationCode || registering"
+              @click="confirmRegistration"
+            >
+              <sdFeatherIcons type="check" size="13" />&nbsp;
+              {{ registering ? "Registering…" : "Register Participant" }}
+            </sdButton>
+          </div>
+        </div>
+      </a-modal>
+
       <!-- Event trainers modal -->
       <a-modal
         title="Event Trainers"
@@ -1303,6 +1378,15 @@ const submitPayrollVisible = computed(() => {
   return [1, 53, 63, 64, 59, 4].includes(rid);
 });
 
+// Who may register/confirm participants on this event. The backend exposes the
+// authoritative flag (`can_register_participants` = the caller is the event host
+// or one of its facilitators) on the live event payload; fall back to the host
+// check while it loads or when an older payload lacks the flag.
+const canRegisterParticipants = computed(
+  () =>
+    liveEvent.value.can_register_participants === true || isEventHost.value
+);
+
 // Payroll generation only unlocks once the event host has submitted the closed
 // event for payroll. The backend exposes this as `can_generate_payroll`
 // (event closed AND submitted), with `payroll_submitted` as a fallback.
@@ -1377,6 +1461,79 @@ const openTrainersModal = async () => {
 };
 const closeTrainersModal = () => {
   isTrainersModalOpen.value = false;
+};
+
+// ── Register participant (host / facilitator) ──
+// Mirrors the Register modal on the events list page: the host or facilitator
+// enters a participant's registration code and the API confirms that
+// registration. The backend re-checks that the caller is the event host or a
+// facilitator of this event, so the UI is not the security boundary here.
+const isRegisterModalOpen = ref(false);
+const registrationCode = ref("");
+const registering = ref(false);
+const registerFeedback = ref("");
+const registerFeedbackType = ref("info");
+
+const openRegisterModal = () => {
+  registrationCode.value = "";
+  registerFeedback.value = "";
+  isRegisterModalOpen.value = true;
+};
+
+// Manual close only. The modal is opened with `:mask-closable="false"` and
+// `:keyboard="false"` so an accidental click / Esc cannot dismiss it mid-batch.
+const closeRegisterModal = () => {
+  isRegisterModalOpen.value = false;
+};
+
+const confirmRegistration = async () => {
+  const code = String(registrationCode.value || "").trim();
+  if (!code) return;
+
+  registering.value = true;
+  registerFeedback.value = "";
+
+  try {
+    const response = await axios.get(
+      `event/${event_code}/participant/${code}/assign`,
+      { headers: authHeader() }
+    );
+
+    if (response.status === 200) {
+      registerFeedbackType.value = "success";
+      registerFeedback.value =
+        response.data.message || "Participant registered successfully.";
+      notification.success({
+        message: "Participant registered",
+        description: response.data.message,
+      });
+      // Refresh the participant lists so the new confirmation shows up.
+      getEventParticipants();
+    } else if (response.status === 208) {
+      registerFeedbackType.value = "info";
+      registerFeedback.value =
+        response.data.message || "This registration is already confirmed.";
+      notification.info({
+        message: "Info",
+        description: response.data.message,
+      });
+    }
+
+    // Keep the modal open for the next participant; just clear the field.
+    registrationCode.value = "";
+  } catch (error) {
+    registerFeedbackType.value = "error";
+    registerFeedback.value =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Unable to register this participant.";
+    notification.error({
+      message: "Registration failed",
+      description: registerFeedback.value,
+    });
+  } finally {
+    registering.value = false;
+  }
 };
 
 const formState = reactive({
@@ -2629,5 +2786,46 @@ computed(() => {
 .event-detail-page .pill-btn:focus {
   border-color: #9ad8b4 !important;
   color: #15693c !important;
+}
+
+/* ── Register participant modal (host / facilitator) ── */
+.ev-register-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ev-register-modal .ev-register-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4d5661;
+}
+.ev-register-modal .ev-register-feedback {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.ev-register-modal .ev-register-feedback.is-success {
+  background: #f3fcf6;
+  border: 1px solid #cdead9;
+  color: #15693c;
+}
+.ev-register-modal .ev-register-feedback.is-info {
+  background: #f4f8ff;
+  border: 1px solid #cfe0ff;
+  color: #1d4ed8;
+}
+.ev-register-modal .ev-register-feedback.is-error {
+  background: #fff4f4;
+  border: 1px solid #ffd4d4;
+  color: #b42318;
+}
+.ev-register-modal .ev-register-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
 }
 </style>
