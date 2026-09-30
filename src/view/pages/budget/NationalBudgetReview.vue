@@ -350,7 +350,7 @@
             >
               Mark as Reviewed
             </sdButton>
-            <!-- Final national approval — Finance Officer (or super admin) -->
+            <!-- Final national approval — Finance Officer -->
             <sdButton
               v-if="selectedBudget.can_approve && canApprove"
               type="success"
