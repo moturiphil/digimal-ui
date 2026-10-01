@@ -144,7 +144,7 @@
                       size="small"
                       :loading="submitting || creating"
                       :disabled="!sacRows.length && !campaignBudgetId"
-                      @click="submitSacBudget"
+                      @click="openSubmitModal"
                     >
                       {{ campaignBudgetId ? 'Submit to National' : 'Create & Submit to National' }}
                     </sdButton>
@@ -185,6 +185,26 @@
             :maxlength="500"
             placeholder="Why is this budget being voided? (min 10 characters)"
           />
+        </a-modal>
+
+        <a-modal
+          v-model:visible="submitModal.open"
+          title="Submit Special Area Cost budget for review?"
+          :ok-text="submitting ? 'Submitting…' : 'Yes, submit for review'"
+          cancel-text="Cancel"
+          :confirm-loading="submitting"
+          @ok="confirmSubmitSacBudget"
+        >
+          <p>
+            You are about to submit this Special Area Cost budget to the National
+            office. It is pushed straight to National (the county stage is
+            skipped) and will be reviewed by the DNMP&nbsp;Accountant, then
+            approved by the Finance Officer.
+          </p>
+          <p style="margin-bottom: 0">
+            Once submitted the budget can no longer be edited unless it is
+            approved or referred back. Do you want to submit it for review?
+          </p>
         </a-modal>
       </BudgetPageWrapper>
     </Main>
@@ -290,6 +310,10 @@ export default {
     const sacRows = ref([]);
 
     const voidModal = ref({ open: false, reason: '' });
+    // Confirmation before pushing the SAC budget to National. The owner must
+    // explicitly confirm they want to submit it for review (and lose the
+    // ability to edit it until it is approved or referred back).
+    const submitModal = ref({ open: false });
 
     let sacItemsLoaded = false;
     let sacEntriesLoaded = false;
@@ -753,6 +777,21 @@ export default {
       }
     };
 
+    /** Open the confirmation modal before submitting to National. */
+    const openSubmitModal = () => {
+      if (!sacRows.value.length && !campaignBudgetId.value) return;
+      submitModal.value = { open: true };
+    };
+
+    /**
+     * Confirmation handler — runs the real submission and keeps the modal open
+     * (showing its loading state) until the request settles.
+     */
+    const confirmSubmitSacBudget = async () => {
+      await submitSacBudget();
+      submitModal.value = { open: false };
+    };
+
     const voidSacBudget = async () => {
       const reason = String(voidModal.value.reason || '').trim();
       if (reason.length < 10) {
@@ -885,6 +924,7 @@ export default {
       sacEntries,
       sacRows,
       voidModal,
+      submitModal,
       isDraft,
       fmt,
       sacTotal,
@@ -900,6 +940,8 @@ export default {
       openDetail,
       createSacBudget,
       submitSacBudget,
+      openSubmitModal,
+      confirmSubmitSacBudget,
       voidSacBudget,
       onSacSync,
       saveSacCategory,

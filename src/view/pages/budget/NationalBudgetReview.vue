@@ -159,11 +159,29 @@
                   ✦ Special Area Cost
                 </span>
               </div>
+              <!-- The county's SEPARATE Special Area Cost budget: submitted
+                   straight to National (no county approval). -->
+              <div
+                v-if="countySacTileVisible"
+                class="drill-card"
+                :class="{ 'is-empty': !selectedCounty.sac_budget }"
+                @click="openSacBudget(selectedCounty)"
+              >
+                <div class="dc-head">
+                  <span class="dc-title">
+                    <span class="dc-icon">✦</span> County SAC Budget
+                  </span>
+                  <span class="dc-chevron">›</span>
+                </div>
+                <div class="dc-meta">
+                  {{ selectedCounty.sac_budget ? selectedCounty.sac_budget.stage : 'No budget' }}
+                </div>
+              </div>
               <div
                 v-for="sc in filteredSubCounties"
                 :key="sc.id"
                 class="drill-card"
-                :class="{ 'is-empty': !sc.budget }"
+                :class="{ 'is-empty': !sc.budget && !sc.sac_budget }"
                 @click="openSubCountyBudget(sc)"
               >
                 <div class="dc-head">
@@ -356,7 +374,7 @@
               type="success"
               class="nbr-action-btn"
               :loading="approving"
-              @click="approveBudget(selectedBudget)"
+              @click="openApproveModal"
             >
               Approve
             </sdButton>
@@ -413,6 +431,45 @@
             :rows="3"
             placeholder="Optional review notes..."
           />
+        </a-modal>
+
+        <!-- Final National Approval confirmation (Finance Officer).
+             Surfaces the DNMP Accountant's review comments so the approver can
+             see them before signing off — for both standard and SAC budgets. -->
+        <a-modal
+          v-model:visible="approveModal"
+          title="Approve budget at national level?"
+          @ok="confirmApprove"
+          :ok-text="approving ? 'Approving…' : 'Approve budget'"
+          cancel-text="Cancel"
+          :confirm-loading="approving"
+        >
+          <p style="color: #6b7a72; margin-bottom: 12px">
+            You are about to give final national approval for
+            <strong>{{ selectedBudget?.label }}</strong>
+            <span v-if="selectedBudget && selectedBudget.total_budget">
+              (KES {{ fmt(selectedBudget.total_budget) }})
+            </span>. Please review the DNMP Accountant's comments below before
+            approving.
+          </p>
+
+          <div
+            v-if="selectedBudget && selectedBudget.dnmp_review"
+            class="dnmp-review-strip"
+            style="margin-top: 0"
+          >
+            <strong>DNMP Accountant review comments</strong>
+            <span>
+              {{ selectedBudget.dnmp_review.reviewed_by?.name || '—' }}
+              · {{ formatReviewDate(selectedBudget.dnmp_review.reviewed_at) }}
+            </span>
+            <span v-if="selectedBudget.dnmp_review.notes" class="dnmp-notes">
+              “{{ selectedBudget.dnmp_review.notes }}”
+            </span>
+          </div>
+          <p v-else style="color: #6b7a72; margin-bottom: 0">
+            No review comments were recorded by the DNMP Accountant.
+          </p>
         </a-modal>
       </BudgetPageWrapper>
     </Main>
@@ -500,6 +557,11 @@ export default {
     const reviewing = ref(false);
     const reviewNote = ref('');
 
+    /* Final national approval (Finance Officer). A confirmation modal that
+     * surfaces the DNMP Accountant's review comments before signing off —
+     * applies to both the standard and Special Area Cost budgets. */
+    const approveModal = ref(false);
+
     /* ────────── Filters ──────────
      * filterCountyId       – restrict to a single county (also auto-drills
      *                        into level 2 when explicitly picked).
@@ -582,10 +644,14 @@ export default {
       if (filterStage.value) {
         list = list.filter((c) => {
           const cbMatch = c.county_budget && stageMatches(c.county_budget.stage);
+          // The county's own Special Area Cost budget is a separate record.
+          const csacMatch = c.sac_budget && stageMatches(c.sac_budget.stage);
           const scMatch = (c.sub_counties || []).some(
-            (sc) => sc.budget && stageMatches(sc.budget.stage),
+            (sc) =>
+              (sc.budget && stageMatches(sc.budget.stage)) ||
+              (sc.sac_budget && stageMatches(sc.sac_budget.stage)),
           );
-          return cbMatch || scMatch;
+          return cbMatch || csacMatch || scMatch;
         });
       }
 
@@ -600,7 +666,11 @@ export default {
         list = list.filter((sc) => sc.id === filterSubCountyId.value);
       }
       if (filterStage.value) {
-        list = list.filter((sc) => sc.budget && stageMatches(sc.budget.stage));
+        list = list.filter(
+          (sc) =>
+            (sc.budget && stageMatches(sc.budget.stage)) ||
+            (sc.sac_budget && stageMatches(sc.sac_budget.stage)),
+        );
       }
       return list;
     });
@@ -618,10 +688,27 @@ export default {
       return true;
     });
 
+    /* County-level SPECIAL AREA COST tile visibility on level 2. This is a
+     * distinct record from the county standard budget; it is shown whenever a
+     * SAC budget exists for the county (subject to the stage filter). */
+    const countySacTileVisible = computed(() => {
+      if (!selectedCounty.value) return false;
+      if (filterSubCountyId.value) return false;
+      const sac = selectedCounty.value.sac_budget;
+      if (!sac) return false;
+      if (filterStage.value) {
+        return stageMatches(sac.stage);
+      }
+      return true;
+    });
+
     /* Compact count message shown beside the Reset button. */
     const filteredCountResult = computed(() => {
       if (selectedCounty.value) {
-        const n = filteredSubCounties.value.length + (countyBudgetTileVisible.value ? 1 : 0);
+        const n =
+          filteredSubCounties.value.length +
+          (countyBudgetTileVisible.value ? 1 : 0) +
+          (countySacTileVisible.value ? 1 : 0);
         return `${n} budget${n === 1 ? '' : 's'}`;
       }
       const n = filteredCounties.value.length;
@@ -776,6 +863,24 @@ export default {
         approving.value = false;
       }
     };
+
+    /* Open the approval confirmation. Guards against a missing budget id so the
+     * modal never opens in an unusable state. */
+    const openApproveModal = () => {
+      if (!selectedBudget.value || !selectedBudget.value.id) {
+        notification.error({ message: 'Cannot approve: missing budget id.' });
+        return;
+      }
+      approveModal.value = true;
+    };
+
+    /* Confirm handler — runs the actual approval, keeping the modal open (with
+     * its loading state) until the request settles. */
+    const confirmApprove = async () => {
+      await approveBudget(selectedBudget.value);
+      approveModal.value = false;
+    };
+
     const openReferModal = () => {
       referNote.value = '';
       referModal.value = true;
@@ -871,6 +976,9 @@ export default {
       goCountyBudgets,
       approving,
       approveBudget,
+      approveModal,
+      openApproveModal,
+      confirmApprove,
       canReview,
       canApprove,
       openReviewModal,
@@ -893,6 +1001,7 @@ export default {
       filteredCounties,
       filteredSubCounties,
       countyBudgetTileVisible,
+      countySacTileVisible,
       filteredCountResult,
     };
   },
