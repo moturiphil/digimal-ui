@@ -833,15 +833,26 @@ export default {
       // Skeleton on while we figure out which view to render.
       loading.value = true;
       try {
+        // A SAC-mapped profile can hold TWO budgets: the standard campaign
+        // budget and the separate Special Area Cost budget. Ask for the
+        // STANDARD type explicitly — otherwise the list (newest first) can
+        // hand back the SAC budget, which this page would then adopt as its
+        // own (showing the standard budget as submitted / letting actions
+        // target the SAC record).
         const { data } = await axios.get('get_campaign_budgets', {
-          params: { county_profile_id: countyProfileId.value },
+          params: {
+            county_profile_id: countyProfileId.value,
+            budget_type: 'standard',
+          },
         });
         const rows = Array.isArray(data?.data)
           ? data.data
           : Array.isArray(data)
             ? data
             : [];
-        const active = rows.find((b) => b.status !== 'voided');
+        const active = rows.find(
+          (b) => b.status !== 'voided' && (b.budget_type || 'standard') === 'standard',
+        );
         if (active) {
           campaignBudgetId.value = active.id;
           budgetStatus.value = active.status;

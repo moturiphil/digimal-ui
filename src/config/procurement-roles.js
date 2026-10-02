@@ -31,6 +31,19 @@ export const PROCUREMENT_VIEW_PERMISSIONS = Object.freeze([
 ]);
 
 /**
+ * Read access to the cross-vendor LSO/LPO register (`get_vendor_lsos`).
+ *
+ * The Create Event page's LSO/LPO picker is gated on this: it calls
+ * `GET /open_vendor_lsos`, which `routes/api.php` enforces with
+ * `role_permission:get_vendor_lsos`. Showing the section to exactly the users
+ * who may read the register keeps the UI in lockstep with the API — anyone
+ * without the permission would only ever receive an empty (403) list.
+ */
+export const PROCUREMENT_LSO_PERMISSIONS = Object.freeze([
+  "get_vendor_lsos",
+]);
+
+/**
  * Creation / update actions across the vendor aggregate (the vendor itself
  * plus its bank accounts, contacts and LSOs/LPOs). Holding ANY of these lets
  * the user open the create / edit dialogs.

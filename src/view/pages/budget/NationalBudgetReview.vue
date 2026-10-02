@@ -150,13 +150,14 @@
                   <span class="dc-chevron">›</span>
                 </div>
                 <div class="dc-meta">
+                  <span class="dc-meta-label">Standard:</span>
                   {{ selectedCounty.county_budget ? selectedCounty.county_budget.stage : 'No budget' }}
                 </div>
                 <span
                   v-if="selectedCounty.county_budget && selectedCounty.county_budget.special_area_cost"
                   class="dc-flag"
                 >
-                  ✦ Special Area Cost
+                  ✦ Special Area Cost applicable
                 </span>
               </div>
               <!-- The county's SEPARATE Special Area Cost budget: submitted
@@ -189,10 +190,11 @@
                   <span class="dc-chevron">›</span>
                 </div>
                 <div class="dc-meta">
+                  <span class="dc-meta-label">Standard:</span>
                   {{ sc.budget ? sc.budget.stage : 'No budget' }}
                 </div>
                 <span v-if="sc.budget && sc.budget.special_area_cost" class="dc-flag">
-                  ✦ Special Area Cost
+                  ✦ Special Area Cost applicable
                 </span>
 
                 <!-- The SEPARATE Special Area Cost budget: submitted straight
@@ -1157,6 +1159,11 @@ export default {
   .dc-meta {
     font-size: 12px;
     color: #6b7a72;
+  }
+  .dc-meta-label {
+    font-weight: 700;
+    color: #4d8a63;
+    margin-right: 4px;
   }
   .dc-stage,
   .dc-flag {

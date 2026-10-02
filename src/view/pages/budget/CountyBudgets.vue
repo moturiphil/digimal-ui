@@ -51,11 +51,25 @@
                       <span class="dc-chevron">›</span>
                     </div>
                     <div class="dc-meta">
+                      <span class="dc-meta-label">Standard:</span>
                       {{ countyBudget ? countyBudget.stage : 'No budget' }}
                     </div>
                     <span v-if="countyBudget && countyBudget.special_area_cost" class="dc-flag">
-                      ✦ Special Area Cost
+                      ✦ Special Area Cost applicable
                     </span>
+
+                    <!-- SEPARATE Special Area Cost budget: its own stage. It is
+                         NOT part of the standard budget above and never enters
+                         the county approval stage. -->
+                    <div
+                      v-if="countySacBudget"
+                      class="dc-sac-row"
+                      @click.stop="openSacBudget(countySacBudget)"
+                    >
+                      <span class="dc-sac-label">✦ SAC Budget</span>
+                      <a-tag class="dc-sac-stage">{{ countySacBudget.stage }}</a-tag>
+                      <span class="dc-chevron">›</span>
+                    </div>
                   </div>
 
                   <!-- Sub-county tiles -->
@@ -63,7 +77,7 @@
                     v-for="sc in subCounties"
                     :key="sc.id"
                     class="drill-card"
-                    :class="{ 'is-empty': !sc.budget }"
+                    :class="{ 'is-empty': !sc.budget && !sc.sac_budget }"
                     @click="openSubCountyBudget(sc)"
                   >
                     <div class="dc-head">
@@ -71,11 +85,24 @@
                       <span class="dc-chevron">›</span>
                     </div>
                     <div class="dc-meta">
+                      <span class="dc-meta-label">Standard:</span>
                       {{ sc.budget ? sc.budget.stage : 'No budget' }}
                     </div>
                     <span v-if="sc.budget && sc.budget.special_area_cost" class="dc-flag">
-                      ✦ Special Area Cost
+                      ✦ Special Area Cost applicable
                     </span>
+
+                    <!-- SEPARATE Special Area Cost budget: its own stage, never
+                         merged with the standard budget above. -->
+                    <div
+                      v-if="sc.sac_budget"
+                      class="dc-sac-row"
+                      @click.stop="openSacBudget(sc)"
+                    >
+                      <span class="dc-sac-label">✦ SAC Budget</span>
+                      <a-tag class="dc-sac-stage">{{ sc.sac_budget.stage }}</a-tag>
+                      <span class="dc-chevron">›</span>
+                    </div>
                   </div>
 
                   <div
@@ -344,6 +371,9 @@ export default {
 
     const subCounties = ref([]);
     const countyBudget = ref(null);
+    // The county's SEPARATE Special Area Cost budget — its own record, status
+    // and stage, independent of the county standard budget above.
+    const countySacBudget = ref(null);
     const selectedBudget = ref(null);
 
     const loadingSubCounties = ref(false);
@@ -365,8 +395,13 @@ export default {
           params: { county_id: scopedCountyId.value },
         });
         const payload = data && (data.data || data) || {};
+        // The county header is nested under `county`; it carries the county's
+        // STANDARD budget plus its SEPARATE Special Area Cost budget. A flat
+        // `county_budget` fallback is kept for older response shapes.
+        const countyHeader = payload.county || {};
         subCounties.value = payload.sub_counties || [];
-        countyBudget.value = payload.county_budget || null;
+        countyBudget.value = countyHeader.county_budget || payload.county_budget || null;
+        countySacBudget.value = countyHeader.sac_budget || payload.county_sac_budget || null;
       } catch (err) {
         message.error('Failed to load sub-county budgets');
         // eslint-disable-next-line no-console
@@ -411,6 +446,14 @@ export default {
     const openSubCountyBudget = (sc) => {
       if (!sc || !sc.budget || !sc.budget.id) return;
       fetchBudgetDetail(sc.budget.id);
+    };
+    // Open the SEPARATE Special Area Cost budget. The county stage never acts
+    // on it (it is reviewed by National), so the detail pane is informational.
+    // Accepts either a tile holder (with `.sac_budget`) or the budget itself.
+    const openSacBudget = (holder) => {
+      const sac = holder && (holder.sac_budget || holder);
+      if (!sac || !sac.id) return;
+      fetchBudgetDetail(sac.id);
     };
     const goSubCounties = () => {
       selectedBudget.value = null;
@@ -499,6 +542,7 @@ export default {
       if (status === 'draft') return 'info';
       if (status === 'referred') return 'error';
       if (status === 'county_budget') return 'info';
+      if (status === 'special_area') return 'info';
       return 'info';
     };
 
@@ -508,6 +552,7 @@ export default {
       readOnly,
       subCounties,
       countyBudget,
+      countySacBudget,
       selectedBudget,
       loadingSubCounties,
       loadingDetail,
@@ -520,6 +565,7 @@ export default {
       onScopeChange,
       openCountyBudget,
       openSubCountyBudget,
+      openSacBudget,
       goSubCounties,
       approveBudget,
       openReferModal,
@@ -616,6 +662,7 @@ export default {
     .dc-chevron { color: #95a59b; font-size: 18px; }
   }
   .dc-meta { font-size: 12px; color: #6b7a72; }
+  .dc-meta-label { font-weight: 700; color: #4d8a63; margin-right: 4px; }
   .dc-flag {
     display: inline-block;
     margin-top: 6px;
@@ -624,6 +671,33 @@ export default {
     color: #b85c00;
     border-radius: 10px;
     font-size: 11px;
+  }
+  /* The SEPARATE Special Area Cost budget row inside a tile. Kept visually
+     distinct from the standard stage above so the two never read as one. */
+  .dc-sac-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: #fffaf3;
+    border: 1px dashed #f0dcbe;
+    cursor: pointer;
+    &:hover { background: #fdf3e3; }
+  }
+  .dc-sac-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8a4d1f;
+  }
+  .dc-sac-stage {
+    margin: 0;
+    font-size: 10px;
+    border-radius: 10px;
+    background: #f1e3cc;
+    color: #8a5a2b;
+    border: none;
   }
   .dc-stage {
     margin-top: 6px;
