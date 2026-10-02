@@ -952,10 +952,7 @@
         <div class="ev-register-modal">
           <p class="ev-register-hint">
             Enter the participant's registration code to confirm their
-            attendance for <b>{{ event_name }}</b
-            >. This window stays open after each registration so you can
-            register several participants in a row — close it yourself when you
-            are done.
+            attendance for{{ event_name }}
           </p>
           <a-input
             v-model:value="registrationCode"

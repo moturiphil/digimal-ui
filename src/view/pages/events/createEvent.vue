@@ -448,7 +448,8 @@ import { useRouter } from "vue-router";
 import * as Yup from "yup";
 import dayjs from "dayjs";
 import store from "../../../vuex/store";
-import { PROCUREMENT_ROLES } from "@/config/procurement-roles";
+import { PROCUREMENT_LSO_PERMISSIONS } from "@/config/procurement-roles";
+import { canAny, fetchUserData } from "@/services/user-role";
 import { encrypt } from "@/cryptoHelper";
 
 // testing app
@@ -473,6 +474,11 @@ const AddNew = defineComponent({
   components: { RecordFormWrapper, Main, BasicFormWrapper },
 
   data() {
+    // Populate the cached RBAC snapshot (role + permission NAMES) before any
+    // permission-based gate below is derived — `canAny` reads a module-level
+    // ref that is only filled once this runs.
+    fetchUserData();
+
     const { state } = useStore();
 
     const isLoading = computed(() => state.crud.loading);
@@ -714,11 +720,15 @@ const AddNew = defineComponent({
       validate("trainer_id");
     };
 
-    // Procurement: LSO/LPO picker visible to SCMCC + Super Admin
-    const userRoleId = user?.user?.role_id ?? user?.user?.role ?? null;
-    const showProcurementSection = computed(() =>
-      [PROCUREMENT_ROLES.SCMCC, PROCUREMENT_ROLES.CMCC, PROCUREMENT_ROLES.SUPER_ADMIN].includes(Number(userRoleId))
-    );
+    // Procurement: the LSO/LPO picker is shown to whoever may read the
+    // cross-vendor LSO/LPO register. The endpoint this section calls
+    // (`GET /open_vendor_lsos`, routes/api.php) is enforced server-side with
+    // `role_permission:get_vendor_lsos`, so gating on the matching permission
+    // NAME — rather than a numeric role id, which drifts between deployments
+    // (see src/config/procurement-roles.js) — keeps the UI in lockstep with the
+    // API. In practice this yields the same audience as the previous
+    // SCMCC / CMCC / Super Admin role-id check.
+    const showProcurementSection = canAny(PROCUREMENT_LSO_PERMISSIONS);
 
     const openLsos = ref([]);
     const openLsosTotal = ref(0);

@@ -66,12 +66,12 @@ export default {
   letter-spacing: 10px;
   text-transform: uppercase;
   white-space: nowrap;
-  color: rgba(21, 105, 60, 0.1);
+  color: rgba(21, 105, 60, 0.08);
   user-select: none;
 }
 
-/* Keep the watermark legible in dark mode too. */
-.training-watermark.is-dark .training-watermark__text {
-  color: rgba(255, 255, 255, 0.1);
+/* Keep the watermark subtle but legible in dark mode. */
+.theme-dark .training-watermark__text {
+  color: rgba(255, 255, 255, 0.08);
 }
 </style>
