@@ -5,16 +5,16 @@
         <!-- Page heading -->
         <div class="page-heading">
           <div class="ph-left">
-            <h3 class="bp-title">
+            <h3 class="ph-title">
               <span class="ph-icon">✦</span> Special Area Cost Budget
             </h3>
-            <p class="bp-sub">
+            <p class="ph-subtitle">
               A separate budget from the standard campaign budget. It is submitted on its own and
               pushed <strong>directly to National</strong> — the county stage is skipped. The
               National Accountant reviews it, then the Finance Officer approves it.
             </p>
           </div>
-          <div v-if="subCounty.name || subCounty.countyName" class="header-tags">
+          <div v-if="subCounty.name || subCounty.countyName" class="ph-actions header-tags">
             <a-tag v-if="subCounty.countyName" class="scope-tag">{{ subCounty.countyName }}</a-tag>
             <a-tag v-if="subCounty.name" class="scope-tag">{{ subCounty.name }}</a-tag>
             <a-tag class="special-pill">Special Area Cost</a-tag>
@@ -102,19 +102,30 @@
 
                 <!-- Editor (draft, or after the owner clicks the status card) -->
                 <template v-else-if="!showStatusCard">
-                  <!-- Summary -->
-                  <section v-if="selectedActivities.length" class="panel sab-summary">
-                    <div class="sab-summary-row">
-                      <span class="sab-summary-label">Budget categories</span>
-                      <span class="sab-summary-value">{{ selectedActivities.length }}</span>
+                  <!-- Overview — headline total + key facts -->
+                  <section v-if="selectedActivities.length" class="panel sab-overview">
+                    <div class="sab-overview-main">
+                      <span class="sab-overview-eyebrow">Special Area Cost total</span>
+                      <div class="sab-overview-total">
+                        <span class="cur">KES</span> {{ fmt(displayTotal) }}
+                      </div>
+                      <span class="sab-overview-note">
+                        Live total across every category. Save each category to persist it.
+                      </span>
                     </div>
-                    <div class="sab-summary-row">
-                      <span class="sab-summary-label">Special Area Cost total</span>
-                      <span class="sab-summary-value">KES {{ fmt(sacTotal) }}</span>
-                    </div>
-                    <div class="sab-summary-row">
-                      <span class="sab-summary-label">Status</span>
-                      <span class="sab-summary-value">{{ budgetStatus || 'Not created' }}</span>
+                    <div class="sab-overview-stats">
+                      <div class="sab-stat">
+                        <span class="sab-stat-label">Categories</span>
+                        <span class="sab-stat-value">{{ selectedActivities.length }}</span>
+                      </div>
+                      <div class="sab-stat">
+                        <span class="sab-stat-label">Status</span>
+                        <span class="sab-stat-value">{{ statusLabel }}</span>
+                      </div>
+                      <div v-if="budgetFinancialYear" class="sab-stat">
+                        <span class="sab-stat-label">Financial year</span>
+                        <span class="sab-stat-value">{{ budgetFinancialYear }}</span>
+                      </div>
                     </div>
                   </section>
 
@@ -323,6 +334,20 @@ export default {
 
     const isDraft = computed(() => !budgetStatus.value || budgetStatus.value === 'draft');
 
+    /** Human-readable status for the overview card. */
+    const STATUS_LABELS = {
+      draft: 'Draft',
+      submitted: 'Pending DNMP Review',
+      dnmp_reviewed: 'Pending National Approval',
+      approved: 'Approved',
+      rejected: 'Referred back',
+      voided: 'Voided',
+    };
+    const statusLabel = computed(() => {
+      if (!budgetStatus.value) return 'Not created';
+      return STATUS_LABELS[budgetStatus.value] || budgetStatus.value;
+    });
+
     /** Days inherited from the standard budget's category (read-only). */
     const daysOf = (category) => {
       const d = Number(category?.default_days || 0);
@@ -345,6 +370,15 @@ export default {
         },
         0,
       ),
+    );
+
+    // Headline total shown at the top of the page — the sum of the per-category
+    // subtotals reported by the section (the staged rows while editing, the
+    // generated rows once read-only). Falls back to the persisted budget total
+    // only until the section has reported anything, so the figure is never left
+    // blank after a Save or a Create/Generate.
+    const displayTotal = computed(() =>
+      sacRows.value.length ? sacTotal.value : Number(grandTotal.value) || 0,
     );
 
     /** Generated-mode row resolver for the read-only SAC grid. */
@@ -910,6 +944,7 @@ export default {
       subCounty,
       campaignBudgetId,
       budgetStatus,
+      statusLabel,
       budgetFinancialYear,
       budgetSubmittedAt,
       grandTotal,
@@ -928,6 +963,7 @@ export default {
       isDraft,
       fmt,
       sacTotal,
+      displayTotal,
       sacGeneratedRow,
       scopeLoading,
       scope,
@@ -962,26 +998,74 @@ export default {
 }
 .sab-notice {
   background: #fff;
+  border: 1px solid #eef0f9;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 2px 12px rgba(39, 43, 65, 0.06);
 }
-.sab-summary {
+.sab-overview {
   display: flex;
   flex-wrap: wrap;
-  gap: 28px;
-  background: #fff;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  background: linear-gradient(90deg, #f4fbf6 0%, #ffffff 60%);
+  border: 1px solid #d9f0e2;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(28, 122, 72, 0.07);
 }
-.sab-summary-row {
+.sab-overview-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+}
+.sab-overview-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a93a8;
+  font-weight: 700;
+}
+.sab-overview-total {
+  font-size: 30px;
+  font-weight: 800;
+  color: #1f6f43;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.sab-overview-total .cur {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4d8a63;
+  margin-right: 2px;
+}
+.sab-overview-note {
+  font-size: 12px;
+  color: #8a93a8;
+}
+.sab-overview-stats {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+.sab-stat {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding-left: 18px;
+  border-left: 1px solid #eef0f9;
 }
-.sab-summary-label {
+.sab-stat-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #8a93a8;
   font-weight: 600;
 }
-.sab-summary-value {
+.sab-stat-value {
   font-size: 15px;
   font-weight: 700;
   color: #3a3f5e;
@@ -991,10 +1075,18 @@ export default {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  padding: 14px 18px;
   background: #fff;
+  border: 1px solid #eef0f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(39, 43, 65, 0.06);
 }
 .sab-picker {
+  padding: 16px 18px;
   background: #fff;
+  border: 1px solid #eef0f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(39, 43, 65, 0.06);
 }
 .sab-picker-row {
   display: flex;
