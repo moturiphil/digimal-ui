@@ -208,6 +208,9 @@ export default {
         // change after a Save, so the Save button must re-evaluate against the
         // new baseline (otherwise it can stay hidden or stay stuck on).
         this.refreshDirty();
+        // Entries change after every Save — re-report so the parent's headline
+        // total always reflects the freshly persisted rows.
+        this.emitSync();
       },
       deep: true,
     },
@@ -217,18 +220,24 @@ export default {
       handler() {
         this.seedDrafts();
         this.refreshDirty();
+        this.emitSync();
       },
       deep: true,
     },
     drafts: {
       handler() {
         this.refreshDirty();
-        if (this.viewMode === 'profile') {
-          this.$emit('sync', this.snapshot());
-        }
+        this.emitSync();
       },
       deep: true,
     },
+  },
+  mounted() {
+    // Report the initial snapshot so the parent's headline total reflects the
+    // loaded grid immediately. The first seeding happens inside the immediate
+    // `categories` handler, which runs before this component's `drafts` watcher
+    // exists — without this the total would stay at zero until the first edit.
+    this.$nextTick(() => this.emitSync());
   },
 methods: {
     key(catId, type) {
@@ -390,11 +399,30 @@ methods: {
         this.dirty[cat.id] = dirtyNow;
       });
     },
+    // Report the current rows to the parent (grand totals / generate payload).
+    // Emitted in BOTH modes so the parent's headline total is always filled in:
+    // the staged rows while editing, and the persisted generated rows once the
+    // grid turns read-only (after Create / Save / submit).
+    emitSync() {
+      this.$emit('sync', this.snapshot());
+    },
     snapshot() {
-      if (this.viewMode !== 'profile') return [];
       const rows = [];
+      const generated = this.viewMode !== 'profile';
       this.categories.forEach((cat) => {
         this.sacItems.forEach((item) => {
+          if (generated) {
+            const g = this.getGeneratedRow(cat, item) || {};
+            rows.push({
+              budget_category_id: cat.id,
+              special_type: item.type,
+              amount: Number(g.amount) || 0,
+              units: Number(g.units) || 0,
+              number_of_days: Number(g.days) || this.daysOf(cat),
+              comment: g.comment || null,
+            });
+            return;
+          }
           const d = this.drafts[this.key(cat.id, item.type)] || {};
           const units = item.units_mode === 'default'
             ? Number(item.default_units) || 0
@@ -429,6 +457,9 @@ methods: {
           };
         });
         await this.saveEntries(cat.id, rows);
+        // Re-report after a successful Save so the parent headline total always
+        // reflects the persisted rows (even if the drafts did not change value).
+        this.emitSync();
       } catch (err) {
         // The parent surfaces backend errors via a notification; keep the
         // drafts staged so the user can retry after fixing the problem.
