@@ -101,6 +101,7 @@
               <span v-else-if="column.key === 'households'">{{ fmt(record.households) }}</span>
               <span v-else-if="column.key === 'wards'">{{ fmt(record.wards) }}</span>
               <span v-else-if="column.key === 'locations'">{{ fmt(record.locations) }}</span>
+              <span v-else-if="column.key === 'subLocations'">{{ fmt(record.subLocations) }}</span>
               <span v-else-if="column.key === 'villages'">{{ fmt(record.villages) }}</span>
               <span v-else-if="column.key === 'posts'">{{ fmt(record.posts) }}</span>
             </template>
@@ -112,8 +113,9 @@
                   <a-table-summary-cell :index="2" align="right"><strong>{{ fmt(totals.households) }}</strong></a-table-summary-cell>
                   <a-table-summary-cell :index="3" align="right"><strong>{{ fmt(totals.wards) }}</strong></a-table-summary-cell>
                   <a-table-summary-cell :index="4" align="right"><strong>{{ fmt(totals.locations) }}</strong></a-table-summary-cell>
-                  <a-table-summary-cell :index="5" align="right"><strong>{{ fmt(totals.villages) }}</strong></a-table-summary-cell>
-                  <a-table-summary-cell :index="6" align="right"><strong>{{ fmt(totals.posts) }}</strong></a-table-summary-cell>
+                  <a-table-summary-cell :index="5" align="right"><strong>{{ fmt(totals.subLocations) }}</strong></a-table-summary-cell>
+                  <a-table-summary-cell :index="6" align="right"><strong>{{ fmt(totals.villages) }}</strong></a-table-summary-cell>
+                  <a-table-summary-cell :index="7" align="right"><strong>{{ fmt(totals.posts) }}</strong></a-table-summary-cell>
                 </a-table-summary-row>
               </a-table-summary>
             </template>
@@ -149,6 +151,7 @@ const toSubCountyRow = (r) => ({
   households: r.estimated_households || 0,
   wards: r.number_of_wards || 0,
   locations: r.number_of_locations || 0,
+  subLocations: r.number_of_sub_locations || 0,
   villages: r.number_of_villages || 0,
   posts: r.number_of_posts || 0,
 });
@@ -221,10 +224,11 @@ export default {
           households: acc.households + sc.households,
           wards: acc.wards + sc.wards,
           locations: acc.locations + sc.locations,
+          subLocations: acc.subLocations + sc.subLocations,
           villages: acc.villages + sc.villages,
           posts: acc.posts + sc.posts,
         }),
-        { population: 0, households: 0, wards: 0, locations: 0, villages: 0, posts: 0 },
+        { population: 0, households: 0, wards: 0, locations: 0, subLocations: 0, villages: 0, posts: 0 },
       ),
     );
 
@@ -266,16 +270,69 @@ export default {
       { title: 'Households', key: 'households', align: 'right' },
       { title: 'Wards', key: 'wards', align: 'right' },
       { title: 'Locations', key: 'locations', align: 'right' },
+      { title: 'Sub-Locations', key: 'subLocations', align: 'right' },
       { title: 'Villages', key: 'villages', align: 'right' },
       { title: 'Posts', key: 'posts', align: 'right' },
     ];
 
+    /**
+     * "↻ Refresh Profile" — rolls every active sub-county profile's predefined
+     * fields up into this county-level profile (SUM per field) and recomputes
+     * the derived fields. Backend: POST aggregate_county_profile/{id}.
+     *
+     * The backend refuses (409) once the county budget has been generated
+     * (figures are frozen) and (422) when there is no county-level profile /
+     * no active sub-county profiles — both are surfaced as a warning.
+     */
     const refreshProfile = async () => {
+      const profileId = countyRecord.value?.id;
+
+      if (!profileId) {
+        notification.warning({
+          message: 'County profile not available',
+          description:
+            'Could not resolve the county-level profile for this county. Make sure a county profile exists, then retry.',
+        });
+        return;
+      }
+
       refreshing.value = true;
-      await loadProfile();
-      refreshing.value = false;
-      profileStatus.value = 'Profile Saved';
-      notification.success({ message: 'County profile refreshed.' });
+      try {
+        const { data } = await axios.post(`aggregate_county_profile/${profileId}`);
+
+        // Re-read the aggregated profile so every tile/table reflects the
+        // freshly rolled-up figures.
+        await loadProfile();
+        profileStatus.value = 'Profile Saved';
+
+        const count = data?.sub_county_count;
+        notification.success({
+          message: 'County profile refreshed',
+          description:
+            typeof count === 'number'
+              ? `Aggregated ${count} sub-county profile(s) and recomputed the derived fields.`
+              : 'Sub-county figures aggregated and derived fields recomputed.',
+        });
+      } catch (err) {
+        const status = err?.response?.status;
+        const message = err?.response?.data?.message;
+
+        if (status === 409 || status === 422) {
+          // 409 → the county budget has already been generated (frozen).
+          // 422 → not a county-level profile / no active sub-county profiles.
+          notification.warning({
+            message: 'County profile not refreshed',
+            description: message || 'This profile cannot be aggregated right now.',
+          });
+        } else {
+          notification.error({
+            message: 'Failed to refresh county profile',
+            description: message || err?.message || 'Unknown error.',
+          });
+        }
+      } finally {
+        refreshing.value = false;
+      }
     };
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());

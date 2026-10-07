@@ -146,6 +146,10 @@
                     <strong>{{ fmt(selectedBudget.locations) }}</strong>
                   </div>
                   <div class="stat-chip">
+                    <span class="sc-label">Sublocations:</span>
+                    <strong>{{ fmt(selectedBudget.sub_locations) }}</strong>
+                  </div>
+                  <div class="stat-chip">
                     <span class="sc-label">Villages:</span>
                     <strong>{{ fmt(selectedBudget.villages) }}</strong>
                   </div>
@@ -320,6 +324,7 @@ const mapDetail = (d) => {
     households: demo.households || 0,
     wards: demo.wards || 0,
     locations: demo.locations || 0,
+    sub_locations: demo.sub_locations || 0,
     villages: demo.villages || 0,
     posts: demo.posts || 0,
     nets_required: sum.nets_required || 0,
