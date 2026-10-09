@@ -102,6 +102,33 @@
 
         <!-- ════════ LEVEL 1 · County grid ════════ -->
         <template v-if="!selectedCounty">
+          <!-- Where every county & sub-county budget sits right now -->
+          <section v-if="stageSummaryTotal" class="stage-summary">
+            <div class="ss-title">
+              <span class="ss-icon">⌛</span>
+              Budget pipeline — where the county &amp; sub-county budgets are
+            </div>
+            <div class="ss-track">
+              <div
+                v-for="b in stageSummary"
+                :key="b.label"
+                class="ss-bucket"
+                :class="{
+                  'is-mine': myActionStages.includes(b.label),
+                  'is-editable': myEditableStages.includes(b.label),
+                  'is-empty': !b.count,
+                }"
+              >
+                <div class="ss-count">{{ b.count }}</div>
+                <div class="ss-label">{{ b.short }}</div>
+                <div v-if="myActionStages.includes(b.label)" class="ss-you">Awaiting you</div>
+                <div v-else-if="myEditableStages.includes(b.label)" class="ss-you ss-you--editable">
+                  Editable
+                </div>
+              </div>
+            </div>
+          </section>
+
           <a-spin :spinning="loadingCounties">
             <div class="card-grid four-col">
               <div
@@ -117,6 +144,15 @@
                   <span class="dc-chevron">›</span>
                 </div>
                 <div class="dc-meta">{{ (c.sub_counties || []).length }} sub-counties</div>
+                <BudgetStagePipeline
+                  v-if="c.county_budget"
+                  class="dc-pipeline"
+                  compact
+                  :status="c.county_budget.status"
+                  :is-sub-county="false"
+                  :is-special-area="false"
+                  :action-status="myActionStatus(false, false)"
+                />
                 <a-tag v-if="c.stage" class="dc-stage">{{ c.stage }}</a-tag>
               </div>
               <div v-if="!loadingCounties && filteredCounties.length === 0" class="empty-hint">
@@ -153,6 +189,15 @@
                   <span class="dc-meta-label">Standard:</span>
                   {{ selectedCounty.county_budget ? selectedCounty.county_budget.stage : 'No budget' }}
                 </div>
+                <BudgetStagePipeline
+                  v-if="selectedCounty.county_budget"
+                  class="dc-pipeline"
+                  compact
+                  :status="selectedCounty.county_budget.status"
+                  :is-sub-county="false"
+                  :is-special-area="false"
+                  :action-status="myActionStatus(false, false)"
+                />
                 <span
                   v-if="selectedCounty.county_budget && selectedCounty.county_budget.special_area_cost"
                   class="dc-flag"
@@ -177,6 +222,15 @@
                 <div class="dc-meta">
                   {{ selectedCounty.sac_budget ? selectedCounty.sac_budget.stage : 'No budget' }}
                 </div>
+                <BudgetStagePipeline
+                  v-if="selectedCounty.sac_budget"
+                  class="dc-pipeline"
+                  compact
+                  :status="selectedCounty.sac_budget.status"
+                  :is-sub-county="false"
+                  :is-special-area="true"
+                  :action-status="myActionStatus(false, true)"
+                />
               </div>
               <div
                 v-for="sc in filteredSubCounties"
@@ -193,6 +247,15 @@
                   <span class="dc-meta-label">Standard:</span>
                   {{ sc.budget ? sc.budget.stage : 'No budget' }}
                 </div>
+                <BudgetStagePipeline
+                  v-if="sc.budget"
+                  class="dc-pipeline"
+                  compact
+                  :status="sc.budget.status"
+                  :is-sub-county="true"
+                  :is-special-area="false"
+                  :action-status="myActionStatus(true, false)"
+                />
                 <span v-if="sc.budget && sc.budget.special_area_cost" class="dc-flag">
                   ✦ Special Area Cost applicable
                 </span>
@@ -228,7 +291,19 @@
             <span class="lt-icon">▦</span>
             {{ selectedCounty.name }} — {{ selectedBudget.label }}
           </div>
-          <a-tag class="ph-stage-tag">{{ selectedBudget.stage }}</a-tag>
+          <div class="detail-stage-head">
+            <a-tag class="ph-stage-tag">{{ selectedBudget.stage }}</a-tag>
+            <span class="detail-stage-hint">
+              Current stage — the steps to the right are still ahead.
+            </span>
+          </div>
+          <BudgetStagePipeline
+            class="detail-pipeline"
+            :status="selectedBudget.status"
+            :is-sub-county="selectedBudget.is_sub_county"
+            :is-special-area="selectedBudget.is_special_area"
+            :action-status="myActionStatus(selectedBudget.is_sub_county, selectedBudget.is_special_area)"
+          />
 
           <!-- stats row -->
           <div class="stat-row">
@@ -279,6 +354,13 @@
           </div>
 
           <!-- categories with parameters -->
+          <!-- Edit-mode hint (Finance Officer / Program Accountant, pre-approval) -->
+          <div v-if="editing" class="nbr-edit-banner">
+            Editing mode — adjust units, days or overrides per row, then
+            <strong>Save changes</strong>. This budget locks automatically once
+            approved.
+          </div>
+
           <a-collapse
             v-model:activeKey="openCategoryKeys"
             class="category-collapse"
@@ -292,13 +374,23 @@
                 <div class="cat-header">
                   <span class="cat-name">{{ cat.name }}</span>
                   <a-tag v-if="cat.badge" class="cat-badge">{{ cat.badge }}</a-tag>
+                  <!-- Applicable multiplier for this category (profile-derived,
+                       e.g. "× 5 Sub-counties") so the reviewer can see how the
+                       subtotal was scaled. -->
+                  <a-tag
+                    v-if="cat.multiplier_display"
+                    class="cat-multiplier"
+                    :title="`Unit totals are multiplied by ${cat.multiplier_display}`"
+                  >
+                    {{ cat.multiplier_display }}
+                  </a-tag>
                   <span class="cat-total">KES {{ fmt(cat.total) }}</span>
                 </div>
               </template>
 
               <a-table
                 :dataSource="cat.items"
-                :columns="itemColumns"
+                :columns="tableColumns"
                 :pagination="false"
                 size="small"
                 row-key="id"
@@ -308,19 +400,72 @@
                   <span v-if="column.key === 'unit_cost'">
                     {{ fmt(record.unit_cost) }}
                   </span>
-                  <span v-else-if="column.key === 'days'">{{ record.days }}</span>
-                  <span v-else-if="column.key === 'units'">{{ record.units }}</span>
-                  <strong v-else-if="column.key === 'total'" class="cat-item-total">
-                    {{ fmt(record.total) }}
-                  </strong>
+                  <!-- Days — editable for manual rows while in edit mode -->
+                  <template v-else-if="column.key === 'days'">
+                    <a-input-number
+                      v-if="editing && !record.is_auto_calculated && !record.is_special_cost"
+                      v-model:value="record.days"
+                      :min="1"
+                      size="small"
+                      class="nbr-edit-input"
+                    />
+                    <span v-else>{{ record.days }}</span>
+                  </template>
+                  <!-- Units — editable for manual + SAC rows while in edit mode -->
+                  <template v-else-if="column.key === 'units'">
+                    <a-input-number
+                      v-if="editing && !record.is_auto_calculated"
+                      v-model:value="record.units"
+                      :min="0"
+                      :max="record.is_special_cost ? 20 : 100000"
+                      size="small"
+                      class="nbr-edit-input"
+                    />
+                    <span v-else>{{ record.units }}</span>
+                  </template>
+                  <!-- Multiplier applied to this parameter's units. Blank when
+                       the category carries no multiplier (factor of 1). -->
+                  <span v-else-if="column.key === 'multiplier'">
+                    <span v-if="record.multiplier" class="row-multiplier">
+                      × {{ record.multiplier }}
+                    </span>
+                  </span>
+                  <!-- Override — auto-calculated rows only (edit mode column) -->
+                  <template v-else-if="column.key === 'override'">
+                    <a-input-number
+                      v-if="editing && record.is_auto_calculated"
+                      v-model:value="record.override_value"
+                      :min="0"
+                      size="small"
+                      class="nbr-edit-input"
+                      placeholder="Override"
+                    />
+                    <span v-else>
+                      {{ record.override_value == null ? '—' : fmt(record.override_value) }}
+                    </span>
+                  </template>
+                  <template v-else-if="column.key === 'total'">
+                    <strong class="cat-item-total">{{ fmt(record.total) }}</strong>
+                    <a-tag
+                      v-if="editing && isRowDirty(record)"
+                      color="orange"
+                      class="nbr-dirty-tag"
+                    >
+                      edited
+                    </a-tag>
+                  </template>
                 </template>
                 <template #summary>
                   <a-table-summary fixed>
                     <a-table-summary-row>
-                      <a-table-summary-cell :index="0" :col-span="4" align="right">
+                      <a-table-summary-cell
+                        :index="0"
+                        :col-span="showEditColumns ? 6 : 5"
+                        align="right"
+                      >
                         <strong>Subtotal</strong>
                       </a-table-summary-cell>
-                      <a-table-summary-cell :index="4" align="right">
+                      <a-table-summary-cell :index="showEditColumns ? 6 : 5" align="right">
                         <strong>{{ fmt(cat.total) }}</strong>
                       </a-table-summary-cell>
                     </a-table-summary-row>
@@ -360,9 +505,40 @@
             >
               Download PDF
             </sdButton>
+
+            <!-- Pre-approval line-item editing (Finance Officer / Program
+                 Accountant). Hidden once the budget is approved — it is then
+                 locked (selectedBudget.can_edit === false). -->
+            <sdButton
+              v-if="canEditSelected && !editing"
+              type="light"
+              class="nbr-action-btn"
+              @click="beginEdit"
+            >
+              Edit Budget
+            </sdButton>
+            <sdButton
+              v-if="editing"
+              type="primary"
+              class="nbr-action-btn"
+              :loading="savingEdits"
+              :disabled="!dirtyEditCount"
+              @click="saveEdits"
+            >
+              Save changes{{ dirtyEditCount ? ` (${dirtyEditCount})` : '' }}
+            </sdButton>
+            <sdButton
+              v-if="editing"
+              type="light"
+              class="nbr-action-btn"
+              @click="cancelEdit"
+            >
+              Cancel
+            </sdButton>
+
             <!-- DNMP Accountant review step — before the Finance Officer can approve -->
             <sdButton
-              v-if="selectedBudget.can_review && canReview"
+              v-if="!editing && selectedBudget.can_review && canReview"
               type="primary"
               class="nbr-action-btn"
               :loading="reviewing"
@@ -372,7 +548,7 @@
             </sdButton>
             <!-- Final national approval — Finance Officer -->
             <sdButton
-              v-if="selectedBudget.can_approve && canApprove"
+              v-if="!editing && selectedBudget.can_approve && canApprove"
               type="success"
               class="nbr-action-btn"
               :loading="approving"
@@ -381,7 +557,7 @@
               Approve
             </sdButton>
             <sdButton
-              v-if="canReferBack"
+              v-if="!editing && canReferBack"
               type="warning"
               class="nbr-action-btn"
               @click="openReferModal(selectedBudget)"
@@ -485,6 +661,7 @@ import axios from '@/Axiosconfig';
 import { hasRoleByName } from '@/services/user-role';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
+import BudgetStagePipeline from './BudgetStagePipeline.vue';
 
 /* Map detail API response -> shape consumed by the template */
 const mapDetail = (d) => {
@@ -496,6 +673,10 @@ const mapDetail = (d) => {
     id: d.id,
     label: d.label || (d.admin_unit && d.admin_unit.name) || '',
     admin_unit: d.admin_unit || null,
+    // Level + budget type drive the stage pipeline (which steps apply).
+    budget_type: d.budget_type || 'standard',
+    is_sub_county: !!(d.admin_unit && d.admin_unit.type === 'sub_county'),
+    is_special_area: (d.budget_type || 'standard') === 'special_area',
     financial_year: d.financial_year,
     status: d.status,
     stage: d.stage,
@@ -517,21 +698,38 @@ const mapDetail = (d) => {
       code: cat.code,
       name: cat.name,
       badge: cat.badge,
+      multiplier_display: cat.multiplier_display || '',
+      session_multiplier: cat.session_multiplier ?? null,
       total: cat.total_kes || 0,
       items: (cat.parameters || []).map((p) => ({
         id: p.id,
+        // Real budget_line_items.id — required for the pre-approval edits.
+        line_item_id: p.line_item_id ?? null,
         item: p.item,
         unit_cost: p.unit_cost_kes || 0,
         days: p.days || 0,
         units: p.units || 0,
+        // Only surface the multiplier when it actually scales the line (> 1).
+        multiplier:
+          p.session_multiplier && p.session_multiplier > 1
+            ? p.session_multiplier
+            : null,
         total: p.total_kes || 0,
         source: p.source,
         parameter_id: p.parameter_id,
+        // Edit metadata — drives which editor a row shows while the budget
+        // is editable (manual units/days vs. an auto-calculated override).
+        is_auto_calculated: !!p.is_auto_calculated,
+        is_special_cost: !!p.is_special_cost,
+        override_value: p.override_value == null ? null : Number(p.override_value),
       })),
     })),
     can_approve: !!review.can_approve,
     can_review: !!review.can_review,
     can_refer_back: !!review.can_refer_back,
+    // Pre-approval editing window (Finance Officer / Program Accountant).
+    // False once the budget is approved — the row is then read-only.
+    can_edit: !!review.can_edit,
     history: review.history || [],
     dnmp_review: d.dnmp_review || null,
   };
@@ -539,7 +737,7 @@ const mapDetail = (d) => {
 
 export default {
   name: 'NationalBudgetReview',
-  components: { Main, RecordViewWrapper, BudgetPageWrapper },
+  components: { Main, RecordViewWrapper, BudgetPageWrapper, BudgetStagePipeline },
   setup() {
     const counties = ref([]);
     const selectedCounty = ref(null);
@@ -792,6 +990,7 @@ export default {
       { title: 'Unit Cost', key: 'unit_cost', align: 'right', width: 140 },
       { title: 'Days', key: 'days', align: 'right', width: 100 },
       { title: 'Units', key: 'units', align: 'right', width: 100 },
+      { title: 'Multiplier', key: 'multiplier', align: 'right', width: 120 },
       { title: 'Total (KES)', key: 'total', align: 'right', width: 160 },
     ];
 
@@ -935,6 +1134,208 @@ export default {
         referring.value = false;
       }
     };
+    /* ────────── Pre-approval line-item editing ──────────
+     * The Finance Officer / Program Accountant may correct county & sub-county
+     * budget figures at any stage BEFORE final approval. Once approved the
+     * backend returns can_edit=false and the table stays read-only. Edits are
+     * saved per row via update_budget_line_item. */
+    const canEditBudget = computed(() =>
+      hasRoleByName(['Super Admin', 'Finance Officer', 'Program Accountant']).value,
+    );
+    const canEditSelected = computed(() =>
+      !!(selectedBudget.value && selectedBudget.value.can_edit && canEditBudget.value),
+    );
+
+    const editing = ref(false);
+    const savingEdits = ref(false);
+    // Snapshot of editable values when edit mode opens, so we can detect
+    // changed rows and restore them on cancel.
+    const editSnapshot = ref({});
+
+    const editableItems = computed(() => {
+      const b = selectedBudget.value;
+      if (!b) return [];
+      return (b.categories || []).flatMap((cat) => cat.items || []);
+    });
+
+    const beginEdit = () => {
+      const snap = {};
+      editableItems.value.forEach((it) => {
+        snap[it.line_item_id] = {
+          units: it.units,
+          days: it.days,
+          override_value: it.override_value,
+        };
+      });
+      editSnapshot.value = snap;
+      editing.value = true;
+    };
+
+    const cancelEdit = () => {
+      editableItems.value.forEach((it) => {
+        const s = editSnapshot.value[it.line_item_id];
+        if (!s) return;
+        it.units = s.units;
+        it.days = s.days;
+        it.override_value = s.override_value;
+      });
+      editing.value = false;
+    };
+
+    // The payload each row type accepts (mirrors BudgetLineItemController):
+    //   SAC rows    → unit_count
+    //   auto rows   → override_value
+    //   manual rows → unit_count + number_of_days
+    const rowPayload = (it) => {
+      if (it.is_special_cost) return { unit_count: it.units };
+      if (it.is_auto_calculated) return { override_value: it.override_value };
+      return { unit_count: it.units, number_of_days: it.days };
+    };
+
+    const norm = (v) => (v == null || v === '' ? null : Number(v));
+
+    const isRowDirty = (it) => {
+      const s = editSnapshot.value[it.line_item_id];
+      if (!s) return false;
+      if (it.is_auto_calculated) return norm(it.override_value) !== norm(s.override_value);
+      if (it.is_special_cost) return norm(it.units) !== norm(s.units);
+      return norm(it.units) !== norm(s.units) || norm(it.days) !== norm(s.days);
+    };
+
+    const dirtyEditCount = computed(() => editableItems.value.filter(isRowDirty).length);
+
+    const saveEdits = async () => {
+      const b = selectedBudget.value;
+      const rid = b && b.id;
+      if (!rid) return;
+
+      const dirty = editableItems.value.filter(isRowDirty);
+      if (!dirty.length) {
+        editing.value = false;
+        return;
+      }
+
+      savingEdits.value = true;
+      try {
+        for (const it of dirty) {
+          if (!it.line_item_id) continue;
+          // eslint-disable-next-line no-await-in-loop
+          await axios.put(`update_budget_line_item/${rid}/${it.line_item_id}`, rowPayload(it));
+        }
+        notification.success({
+          message: `Saved ${dirty.length} edit${dirty.length === 1 ? '' : 's'}.`,
+        });
+        editing.value = false;
+        // Reload so totals & category subtotals reflect the recalculated figures.
+        await fetchBudgetDetail(rid);
+        await fetchCounties();
+      } catch (err) {
+        notification.error({
+          message: 'Failed to save edits',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        savingEdits.value = false;
+      }
+    };
+
+    /* Columns: add the Override column only while editing so the read-only
+     * review view keeps its original six-column layout. */
+    const showEditColumns = computed(() => editing.value && canEditSelected.value);
+    const tableColumns = computed(() => {
+      const cols = [...itemColumns];
+      if (showEditColumns.value) {
+        cols.splice(cols.length - 1, 0, {
+          title: 'Override',
+          key: 'override',
+          align: 'right',
+          width: 140,
+        });
+      }
+      return cols;
+    });
+
+    /* ────────── Stage pipeline (where each budget sits) ──────────
+     * Reviewers need the whole pre-approval journey at a glance, not just the
+     * budgets already sitting on their desk. */
+
+    /**
+     * The status at which the ACTING user reviews / approves, per budget type.
+     * Drives the accented "YOU" step in BudgetStagePipeline.
+     *   • Finance Officer / Super Admin → dnmp_reviewed (final approval)
+     *   • Accountant / Super Admin      → submitted (county + SAC) or
+     *                                     county_approved (sub-county)
+     *   • Program Accountant            → null (edits any pre-approval stage)
+     */
+    const myActionStatus = (isSubCounty, isSpecialArea) => {
+      if (canApprove.value) return 'dnmp_reviewed';
+      if (canReview.value) {
+        return (!isSpecialArea && isSubCounty) ? 'county_approved' : 'submitted';
+      }
+      return null;
+    };
+
+    // Ordered review-pipeline buckets, keyed by the backend's stage label so
+    // every budget lands in exactly one bucket regardless of level / SAC type.
+    const STAGE_BUCKETS = [
+      { label: 'Preparatory Stage',         short: 'Preparatory' },
+      { label: 'County Review',             short: 'County Review' },
+      { label: 'County Approved',           short: 'County Approved' },
+      { label: 'Pending DNMP Review',       short: 'DNMP Review' },
+      { label: 'Pending National Approval', short: 'National Approval' },
+      { label: 'National Approved',         short: 'Approved' },
+    ];
+
+    /** Counts of every budget at each stage, across all counties. */
+    const stageSummary = computed(() => {
+      const counts = {};
+      STAGE_BUCKETS.forEach((b) => { counts[b.label] = 0; });
+
+      const bump = (b) => {
+        if (b && b.stage && counts[b.stage] !== undefined) counts[b.stage] += 1;
+      };
+
+      counties.value.forEach((c) => {
+        bump(c.county_budget);
+        bump(c.sac_budget);
+        (c.sub_counties || []).forEach((sc) => {
+          bump(sc.budget);
+          bump(sc.sac_budget);
+        });
+      });
+
+      return STAGE_BUCKETS.map((b) => ({ ...b, count: counts[b.label] }));
+    });
+
+    const stageSummaryTotal = computed(() =>
+      stageSummary.value.reduce((a, b) => a + b.count, 0),
+    );
+
+    /**
+     * Stage labels where the acting role must act next — highlighted in the
+     * summary strip so a reviewer can see what is queued for them.
+     */
+    const myActionStages = computed(() => {
+      if (canApprove.value) return ['Pending National Approval'];
+      if (canReview.value) return ['County Approved', 'Pending DNMP Review'];
+      return [];
+    });
+
+    /**
+     * The Program Accountant neither reviews nor approves — the whole
+     * pre-approval window is editable for them. Surfaced separately so it can
+     * be styled distinctly from the review/approve "awaiting you" stages.
+     */
+    const myEditableStages = computed(() => {
+      if (canApprove.value || canReview.value) return [];
+      if (canEditBudget.value) {
+        return STAGE_BUCKETS
+          .map((b) => b.label)
+          .filter((label) => label !== 'National Approved');
+      }
+      return [];
+    });
+
     const downloadBudgetPDF = () =>
       notification.info({ message: 'PDF download started (demo).' });
 
@@ -970,6 +1371,22 @@ export default {
       reviewing,
       reviewNote,
       itemColumns,
+      tableColumns,
+      showEditColumns,
+      canEditSelected,
+      editing,
+      savingEdits,
+      dirtyEditCount,
+      isRowDirty,
+      beginEdit,
+      cancelEdit,
+      saveEdits,
+      /* stage pipeline */
+      myActionStatus,
+      stageSummary,
+      stageSummaryTotal,
+      myActionStages,
+      myEditableStages,
       openCounty,
       openCountyBudget,
       openSubCountyBudget,
@@ -1323,6 +1740,15 @@ export default {
       border-radius: 10px;
       padding: 1px 8px;
     }
+    .cat-multiplier {
+      background: #fff4e5;
+      color: #b45309;
+      border: 1px solid #fcd9a8;
+      font-size: 10px;
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-weight: 600;
+    }
     .cat-total {
       font-size: 13px;
       font-weight: 700;
@@ -1352,6 +1778,21 @@ export default {
     .ant-table-cell { border-bottom: none; }
   }
   .cat-item-total { color: #15693c; font-weight: 700; }
+  .row-multiplier { color: #b45309; font-weight: 600; }
+  /* Pre-approval inline editors (Finance Officer / Program Accountant) */
+  .nbr-edit-input { width: 92px; }
+  .nbr-dirty-tag { margin-left: 6px; font-size: 10px; line-height: 16px; }
+}
+
+/* Pre-approval edit-mode hint */
+.nbr-edit-banner {
+  margin: 12px 0 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fff8e6;
+  border: 1px solid #f0d48a;
+  color: #8a6100;
+  font-size: 12px;
 }
 
 .grand-total-bar {
@@ -1482,5 +1923,88 @@ export default {
   background: #f1e3cc;
   color: #8a5a2b;
   border: none;
+}
+/* ───────── Stage pipeline visuals ───────── */
+
+/* At-a-glance bucket strip (Level 1) */
+.stage-summary {
+  background: #fff;
+  border: 1px solid #e6efe9;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 10px rgba(21, 105, 60, 0.05);
+}
+.ss-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2f3a35;
+  margin-bottom: 12px;
+}
+.ss-icon { color: #15693c; }
+.ss-track { display: flex; gap: 8px; overflow-x: auto; }
+.ss-bucket {
+  flex: 1 1 0;
+  min-width: 120px;
+  border: 1px solid #e9edf2;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fafbfc;
+}
+.ss-bucket.is-empty { opacity: 0.5; }
+.ss-bucket.is-mine {
+  border-color: #2C99FF;
+  background: #f2f9ff;
+  box-shadow: 0 0 0 3px rgba(44, 153, 255, 0.1);
+}
+.ss-bucket.is-editable {
+  border-color: #f0bb5a;
+  background: #fffaf0;
+}
+.ss-you--editable { color: #8a6100; background: #fdf1d6; }
+.ss-count { font-size: 22px; font-weight: 800; color: #272B41; line-height: 1; }
+.ss-bucket.is-mine .ss-count { color: #2C99FF; }
+.ss-label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9299b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.ss-bucket.is-mine .ss-label { color: #2C99FF; }
+.ss-you {
+  margin-top: 6px;
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #2C99FF;
+  background: #eaf5ff;
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+/* Pipeline inside a grid tile */
+.dc-pipeline {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #eef1f5;
+}
+
+/* Detail-level pipeline */
+.detail-stage-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.detail-stage-hint { font-size: 11px; color: #9299b8; }
+.detail-pipeline {
+  background: #fff;
+  border: 1px solid #e6efe9;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 12px 0 18px;
+  box-shadow: 0 2px 10px rgba(21, 105, 60, 0.05);
 }
 </style>
