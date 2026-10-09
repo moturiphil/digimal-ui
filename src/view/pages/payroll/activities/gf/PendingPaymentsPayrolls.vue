@@ -73,6 +73,14 @@
                                     >Pay Activity</sdButton
                                   >
                                   &nbsp;&nbsp;
+                                  <sdButton
+                                    type="primary"
+                                    size="extra-small"
+                                    :disabled="syncing"
+                                    @click="handleSync(record.id)"
+                                    >Sync to ERP</sdButton
+                                  >
+                                  &nbsp;&nbsp;
                                   <a-modal
                                     title="Payment OTP"
                                     :visible="isModalOpen"
@@ -201,6 +209,11 @@ const columns = [
     key: "id",
   },
   {
+    title: "ERP Sync",
+    dataIndex: "sync_status",
+    key: "id",
+  },
+  {
     title: "",
     dataIndex: "",
     fixed: "right",
@@ -223,6 +236,7 @@ const isPaying = computed(() => state.isPaying);
 const isDisabled = ref(true);
 const countdown = ref(60);
 const balance = ref(0);
+const syncing = ref(false);
 
 onMounted(() => {
   isLoading.value = true;
@@ -251,6 +265,16 @@ const fetchPayrolls = () => {
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
         item.approval_status =
           item.approval_status === 1 ? "Approved" : "Not Approved";
+
+        const total = item.total_participants || 0;
+        const synced = item.synced_participants || 0;
+        const failed = item.failed_sync_participants || 0;
+        item.sync_status =
+          failed > 0
+            ? `${synced}/${total} synced, ${failed} failed`
+            : synced > 0
+            ? `${synced}/${total} synced`
+            : "Not Synced";
       });
     })
     .catch((error) => {
@@ -415,6 +439,39 @@ const handleOk = async (id, inputValue) => {
 
 const handleCancel = () => {
   isModalOpen.value = false;
+};
+
+// Push an approved activity payroll to the external ERP
+const handleSync = async (id) => {
+  syncing.value = true;
+  try {
+    const response = await axios.post(
+      `${process.env.VUE_APP_BASE_URL}/activity_payroll_sync`,
+      { payroll_id: id },
+      { headers: authHeader() }
+    );
+
+    if (response.data.success === true) {
+      notification.success({
+        message: "Success!",
+        description: response.data.message,
+      });
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      notification.error({
+        message: "Sync Failed",
+        description: response.data.message,
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error!",
+      description:
+        error?.response?.data?.message || "Failed to sync payroll to the ERP",
+    });
+  } finally {
+    syncing.value = false;
+  }
 };
 
 const startCountdown = () => {
