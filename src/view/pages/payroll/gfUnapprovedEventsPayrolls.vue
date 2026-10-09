@@ -37,6 +37,17 @@
                             :columns="columns"
                             :pagination="false"
                           >
+                            <template #syncBadge="{ record }">
+                              <span v-if="record.sync_status === 1" class="badge-green"
+                                >Synced</span
+                              >
+                              <span
+                                v-else-if="record.sync_status === 2"
+                                class="badge-orange"
+                                >Partial / Failed</span
+                              >
+                              <span v-else class="badge-grey">Not Synced</span>
+                            </template>
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
@@ -67,7 +78,7 @@
                                   <sdButton
                                     type="success"
                                     size="extra-small"
-                                    @click="handleApproval(record.id)"
+                                    @click="handleApproval(record)"
                                     >Approve</sdButton
                                   >
                                   &nbsp;&nbsp;
@@ -130,16 +141,23 @@
         </a-row>
       </SearchResultWrapper>
     </Main>
+    <PayrollErpSyncModal
+      v-model:visible="syncModalVisible"
+      :payroll-id="syncPayrollId"
+      payroll-type="event"
+      @synced="onSynced"
+    />
   </div>
 </template>
 
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "../style";
-import { onMounted, ref, watchEffect } from "vue";
+import { onMounted, ref, watch, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { notification } from "ant-design-vue";
+import PayrollErpSyncModal from "../../../components/payroll/PayrollErpSyncModal.vue";
 
 const columns = [
   {
@@ -173,6 +191,12 @@ const columns = [
     key: "id",
   },
   {
+    title: "ERP Sync",
+    dataIndex: "sync_status",
+    key: "syncBadge",
+    slots: { customRender: "syncBadge" },
+  },
+  {
     title: "",
     dataIndex: "",
     fixed: "right",
@@ -190,6 +214,8 @@ const activeClass = ref("all");
 const searchItem = ref("");
 const voidPayroll = ref(null);
 const openVoidModal = ref(false);
+const syncModalVisible = ref(false);
+const syncPayrollId = ref(null);
 
 onMounted(() => {
   isLoading.value = true;
@@ -264,10 +290,21 @@ watchEffect(async () => {
   }
 });
 
-const handleApproval = (id) => {
+// Refresh the list (and sync badges) once the sync modal closes.
+watch(syncModalVisible, (isVisible) => {
+  if (!isVisible) {
+    fetchPayrolls();
+  }
+});
+
+const onSynced = () => {
+  fetchPayrolls();
+};
+
+const handleApproval = (record) => {
   try {
     fetch(
-      `${process.env.VUE_APP_BASE_URL}/event_payroll_approval?payroll_id=${id}`,
+      `${process.env.VUE_APP_BASE_URL}/event_payroll_approval?payroll_id=${record.id}`,
       {
         method: "POST",
         headers: {
@@ -284,7 +321,9 @@ const handleApproval = (id) => {
             message: "Success!",
             description: data.message,
           });
-          setTimeout(() => {}, 2000);
+          // Open the payroll summary + ERP sync modal.
+          syncPayrollId.value = record.id;
+          syncModalVisible.value = true;
         } else {
           notification.error({
             message: "Error!",
@@ -347,6 +386,20 @@ const handleVoidCancel = () => {
 <style>
 .badge-green {
   background-color: #1ec997;
+  font-size: 12px;
+}
+.badge-orange {
+  background-color: #faad14;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.badge-grey {
+  background-color: #bfbfbf;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
   font-size: 12px;
 }
 </style>

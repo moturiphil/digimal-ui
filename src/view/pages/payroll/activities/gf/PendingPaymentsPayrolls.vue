@@ -38,6 +38,17 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
+                            <template #syncBadge="{ record }">
+                              <span v-if="record.sync_status === 1" class="badge-green"
+                                >Synced</span
+                              >
+                              <span
+                                v-else-if="record.sync_status === 2"
+                                class="badge-orange"
+                                >Partial / Failed</span
+                              >
+                              <span v-else class="badge-grey">Not Synced</span>
+                            </template>
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
@@ -211,7 +222,8 @@ const columns = [
   {
     title: "ERP Sync",
     dataIndex: "sync_status",
-    key: "id",
+    key: "syncBadge",
+    slots: { customRender: "syncBadge" },
   },
   {
     title: "",
@@ -265,16 +277,6 @@ const fetchPayrolls = () => {
         item.payment_status = item.payment_status === 1 ? "Paid" : "Not Paid";
         item.approval_status =
           item.approval_status === 1 ? "Approved" : "Not Approved";
-
-        const total = item.total_participants || 0;
-        const synced = item.synced_participants || 0;
-        const failed = item.failed_sync_participants || 0;
-        item.sync_status =
-          failed > 0
-            ? `${synced}/${total} synced, ${failed} failed`
-            : synced > 0
-            ? `${synced}/${total} synced`
-            : "Not Synced";
       });
     })
     .catch((error) => {
@@ -525,6 +527,20 @@ const fetchBalance = () => {
 <style>
 .badge-green {
   background-color: #1ec997;
+  font-size: 12px;
+}
+.badge-orange {
+  background-color: #faad14;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.badge-grey {
+  background-color: #bfbfbf;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
   font-size: 12px;
 }
 </style>
