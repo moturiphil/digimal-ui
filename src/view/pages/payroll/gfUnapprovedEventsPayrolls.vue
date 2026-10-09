@@ -145,6 +145,7 @@
       v-model:visible="syncModalVisible"
       :payroll-id="syncPayrollId"
       payroll-type="event"
+      primary-label="Sync & Approve"
       @synced="onSynced"
     />
   </div>
@@ -297,43 +298,47 @@ watch(syncModalVisible, (isVisible) => {
   }
 });
 
-const onSynced = () => {
-  fetchPayrolls();
+// "Approve" opens the summary + ERP sync modal. The payroll is only approved
+// once the ERP sync has completed (sync first, then approve).
+const handleApproval = (record) => {
+  syncPayrollId.value = record.id;
+  syncModalVisible.value = true;
 };
 
-const handleApproval = (record) => {
-  try {
-    fetch(
-      `${process.env.VUE_APP_BASE_URL}/event_payroll_approval?payroll_id=${record.id}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...authHeader(),
-        },
+const approvePayroll = () => {
+  return fetch(
+    `${process.env.VUE_APP_BASE_URL}/event_payroll_approval?payroll_id=${syncPayrollId.value}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+    }
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success === true) {
+        notification.success({
+          message: "Success!",
+          description: data.message,
+        });
+      } else {
+        notification.error({
+          message: "Error!",
+          description: data.message,
+        });
       }
-    )
-      .then((response) => response.json()) // Parse response JSON
-      .then((data) => {
-        console.log(data); // Check what data you receive
-        if (data.success === true) {
-          notification.success({
-            message: "Success!",
-            description: data.message,
-          });
-          // Open the payroll summary + ERP sync modal.
-          syncPayrollId.value = record.id;
-          syncModalVisible.value = true;
-        } else {
-          notification.error({
-            message: "Error!",
-            description: data.message,
-          });
-        }
-      });
-  } catch (error) {
-    console.log(error);
-  }
+    })
+    .catch((error) => {
+      notification.error({ message: "Error!", description: error.message });
+    });
+};
+
+// The ERP sync has completed — approve the payroll and close the modal.
+const onSynced = async () => {
+  await approvePayroll();
+  syncModalVisible.value = false;
 };
 
 const showVoidModal = (record) => {

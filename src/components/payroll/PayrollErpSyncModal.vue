@@ -69,7 +69,7 @@
           :disabled="running || summary.participants === 0"
           @click="startSync"
         >
-          {{ running ? "Syncing…" : hasRun ? "Sync again" : "Sync to ERP" }}
+          {{ running ? "Syncing…" : hasRun ? "Sync again" : primaryLabel }}
         </sdButton>
         <sdButton type="default" @click="close">Close</sdButton>
       </div>
@@ -88,6 +88,7 @@ const props = defineProps({
   visible: { type: Boolean, default: false },
   payrollId: { type: [Number, String], default: null },
   payrollType: { type: String, default: "event" },
+  primaryLabel: { type: String, default: "Sync to ERP" },
 });
 
 const emit = defineEmits(["update:visible", "synced"]);
@@ -252,7 +253,7 @@ watch(
   () => progress.value.status,
   (status) => {
     if (status === "completed") {
-      emit("synced");
+      emit("synced", { ...progress.value });
       notification.success({
         message: "Sync complete",
         description: `${progress.value.synced} synced, ${progress.value.failed} failed`,
