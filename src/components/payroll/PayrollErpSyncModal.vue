@@ -108,6 +108,10 @@
           </span>
         </div>
         <p class="erp-error" v-if="progress.error">{{ progress.error }}</p>
+        <details class="erp-log-wrap" v-if="progress.response_log">
+          <summary>ERP response (diagnostics)</summary>
+          <pre class="erp-log">{{ progress.response_log }}</pre>
+        </details>
       </div>
 
       <div class="erp-sync-actions">
@@ -493,6 +497,22 @@ watch(
   font-size: 12px;
   margin: 8px 0 0;
   word-break: break-word;
+}
+.erp-log-wrap {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #595959;
+}
+.erp-log {
+  max-height: 180px;
+  overflow: auto;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 6px 0 0;
 }
 .erp-badge {
   display: inline-block;
