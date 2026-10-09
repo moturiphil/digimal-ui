@@ -79,8 +79,15 @@
             <span class="erp-participant-name">{{ p.name }}</span>
             <span class="erp-participant-id">{{ p.id_number }}</span>
             <span class="erp-participant-amount">{{ money(p.amount) }}</span>
-            <span class="erp-badge badge-green" v-if="p.sync_status === 1">Synced</span>
-            <span class="erp-badge badge-red" v-else-if="p.sync_status === 2">Failed</span>
+            <span
+              class="erp-badge badge-green"
+              v-if="p.sync_status === 1"
+              :title="p.transaction_code || ''"
+              >Synced</span
+            >
+            <span class="erp-badge badge-red" v-else-if="p.sync_status === 2" :title="p.error || ''"
+              >Failed</span
+            >
             <span class="erp-badge badge-grey" v-else>Not synced</span>
           </div>
         </div>
