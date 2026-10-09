@@ -47,6 +47,45 @@
         <div><span>Lunch</span><b>{{ money(breakdownTotals.lunch_amount) }}</b></div>
       </div>
 
+      <div class="erp-participants">
+        <div class="erp-participants-head">
+          <h4 class="erp-section-title">Participant sync checklist</h4>
+          <span
+            class="erp-badge badge-orange"
+            v-if="summary.synced_participants > 0 && !summary.all_synced"
+          >
+            Partial sync ({{ summary.synced_participants }}/{{ summary.participants }})
+          </span>
+          <span
+            class="erp-badge badge-green"
+            v-else-if="summary.all_synced && summary.participants > 0"
+          >
+            Fully synced
+          </span>
+        </div>
+
+        <p class="erp-participants-hint">
+          Tick the participants that have not synced yet and submit them, or use
+          “Sync to ERP” to push every un-synced record.
+        </p>
+
+        <div class="erp-participants-list">
+          <div class="erp-participant-row" v-for="p in participants" :key="p.id">
+            <a-checkbox
+              :checked="p.sync_status === 1 || selectedIds.includes(p.id)"
+              :disabled="p.sync_status === 1 || running"
+              @change="toggleSelect(p)"
+            />
+            <span class="erp-participant-name">{{ p.name }}</span>
+            <span class="erp-participant-id">{{ p.id_number }}</span>
+            <span class="erp-participant-amount">{{ money(p.amount) }}</span>
+            <span class="erp-badge badge-green" v-if="p.sync_status === 1">Synced</span>
+            <span class="erp-badge badge-red" v-else-if="p.sync_status === 2">Failed</span>
+            <span class="erp-badge badge-grey" v-else>Not synced</span>
+          </div>
+        </div>
+      </div>
+
       <div class="erp-progress" v-if="showProgress">
         <a-progress :percent="progress.percentage" :status="progressStatus" />
         <div class="erp-progress-meta">
@@ -61,15 +100,19 @@
             Processed {{ progress.processed }} / {{ progress.total }}
           </span>
         </div>
+        <p class="erp-error" v-if="progress.error">{{ progress.error }}</p>
       </div>
 
       <div class="erp-sync-actions">
         <sdButton
           type="primary"
-          :disabled="running || summary.participants === 0"
+          :disabled="running || unsyncedCount === 0"
           @click="startSync"
         >
-          {{ running ? "Syncing…" : hasRun ? "Sync again" : primaryLabel }}
+          {{ running ? "Syncing…" : syncLabel }}
+        </sdButton>
+        <sdButton v-if="summary.all_synced" type="success" @click="approve">
+          Approve payroll
         </sdButton>
         <sdButton type="default" @click="close">Close</sdButton>
       </div>
@@ -91,12 +134,14 @@ const props = defineProps({
   primaryLabel: { type: String, default: "Sync to ERP" },
 });
 
-const emit = defineEmits(["update:visible", "synced"]);
+const emit = defineEmits(["update:visible", "synced", "approve"]);
 
 const base = process.env.VUE_APP_BASE_URL;
 const loading = ref(false);
 const summary = ref(null);
 const running = ref(false);
+const participants = ref([]);
+const selectedIds = ref([]);
 const progress = ref({
   status: "not_started",
   total: 0,
@@ -128,8 +173,14 @@ const showProgress = computed(() =>
   ["queued", "processing", "completed", "failed"].includes(progress.value.status)
 );
 
-const hasRun = computed(() =>
-  ["completed", "failed"].includes(progress.value.status)
+const unsyncedCount = computed(
+  () => participants.value.filter((p) => p.sync_status !== 1).length
+);
+
+const syncLabel = computed(() =>
+  selectedIds.value.length
+    ? `Sync ${selectedIds.value.length} selected`
+    : "Sync to ERP"
 );
 
 const progressStatus = computed(() => {
@@ -209,10 +260,17 @@ const fetchSummary = async () => {
 
 const startSync = async () => {
   if (!props.payrollId) return;
+
+  const selected = selectedIds.value.length
+    ? selectedIds.value
+    : participants.value
+        .filter((p) => p.sync_status !== 1)
+        .map((p) => p.id);
+
   try {
     const res = await axios.post(
       endpoint("sync"),
-      { payroll_id: props.payrollId },
+      { payroll_id: props.payrollId, payroll_list_ids: selected },
       { headers: authHeader() }
     );
     if (res.data.success) {
@@ -220,6 +278,7 @@ const startSync = async () => {
         message: "Sync queued",
         description: "Your payroll is being pushed to the ERP.",
       });
+      selectedIds.value = [];
       progress.value = {
         status: "queued",
         total: res.data.total || 0,
@@ -244,6 +303,41 @@ const startSync = async () => {
   }
 };
 
+const fetchParticipants = async () => {
+  if (!props.payrollId) return;
+  try {
+    const res = await axios.get(
+      `${endpoint("sync_participants")}?payroll_id=${props.payrollId}`,
+      { headers: authHeader() }
+    );
+    if (res.data.success) {
+      participants.value = res.data.data.participants || [];
+      // Drop any selection that is now synced.
+      selectedIds.value = selectedIds.value.filter((id) =>
+        participants.value.some((p) => p.id === id && p.sync_status !== 1)
+      );
+    }
+  } catch (error) {
+    // non-blocking
+  }
+};
+
+const toggleSelect = (participant) => {
+  if (participant.sync_status === 1 || running.value) return;
+  selectedIds.value = selectedIds.value.includes(participant.id)
+    ? selectedIds.value.filter((id) => id !== participant.id)
+    : [...selectedIds.value, participant.id];
+};
+
+const refresh = async () => {
+  await fetchSummary();
+  await fetchParticipants();
+};
+
+const approve = () => {
+  emit("approve");
+};
+
 const close = () => {
   stopPolling();
   emit("update:visible", false);
@@ -251,9 +345,14 @@ const close = () => {
 
 watch(
   () => progress.value.status,
-  (status) => {
+  async (status) => {
     if (status === "completed") {
-      emit("synced", { ...progress.value });
+      selectedIds.value = [];
+      await refresh();
+      emit("synced", {
+        ...progress.value,
+        all_synced: summary.value?.all_synced === true,
+      });
       notification.success({
         message: "Sync complete",
         description: `${progress.value.synced} synced, ${progress.value.failed} failed`,
@@ -272,6 +371,7 @@ watch(
   (isVisible) => {
     if (isVisible) {
       fetchSummary();
+      fetchParticipants();
     } else {
       stopPolling();
     }
@@ -312,6 +412,48 @@ watch(
 .erp-section-title {
   margin: 8px 0 10px;
 }
+.erp-participants {
+  margin-bottom: 18px;
+}
+.erp-participants-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.erp-participants-hint {
+  color: #8c8c8c;
+  font-size: 12px;
+  margin: 4px 0 10px;
+}
+.erp-participants-list {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+.erp-participant-row {
+  display: grid;
+  grid-template-columns: 28px 2fr 1.2fr 1fr 90px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.erp-participant-row:last-child {
+  border-bottom: none;
+}
+.erp-participant-name {
+  font-weight: 500;
+  color: #272b41;
+}
+.erp-participant-id,
+.erp-participant-amount {
+  color: #595959;
+  font-size: 13px;
+}
+.badge-orange {
+  background: #faad14;
+}
 .erp-breakdown {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -338,6 +480,12 @@ watch(
 .erp-processed {
   color: #8c8c8c;
   font-size: 13px;
+}
+.erp-error {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin: 8px 0 0;
+  word-break: break-word;
 }
 .erp-badge {
   display: inline-block;

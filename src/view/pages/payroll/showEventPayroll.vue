@@ -457,7 +457,7 @@ const handleApproval = () => {
         } else {
           notification.error({
             message: "Error",
-            description: "Payroll Approved Failed",
+            description: data.message || "Payroll Approved Failed",
           });
         }
       });

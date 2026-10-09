@@ -145,8 +145,8 @@
       v-model:visible="syncModalVisible"
       :payroll-id="syncPayrollId"
       payroll-type="event"
-      primary-label="Sync & Approve"
       @synced="onSynced"
+      @approve="onApprove"
     />
   </div>
 </template>
@@ -335,8 +335,20 @@ const approvePayroll = () => {
     });
 };
 
-// The ERP sync has completed — approve the payroll and close the modal.
-const onSynced = async () => {
+// The ERP sync finished — refresh so the sync badges/status update.
+const onSynced = (progress) => {
+  fetchPayrolls();
+  if (progress && progress.all_synced === false) {
+    notification.warning({
+      message: "Partial sync",
+      description:
+        "Some records are not synced yet. Sync the remaining records before approving.",
+    });
+  }
+};
+
+// All records are synced — record the approval and close the modal.
+const onApprove = async () => {
   await approvePayroll();
   syncModalVisible.value = false;
 };
