@@ -52,6 +52,16 @@
       &nbsp;&nbsp;
       <sdButton
         size="extra-small"
+        type="primary"
+        v-if="approved_status == 'Approved'"
+        :disabled="syncing"
+        @click="handleSync()"
+      >
+        {{ syncing ? "Syncing..." : "Sync to ERP" }} &nbsp; &nbsp;
+      </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        size="extra-small"
         type="warning"
         v-if="validate_status == 'Not Validated'"
       >
@@ -344,8 +354,10 @@ const transport_api_url = `${process.env.VUE_APP_BASE_URL}/add_additional_transp
 const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id=${query.id}`;
 const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
 const approve_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_approval`;
+const sync_payroll_url = `${process.env.VUE_APP_BASE_URL}/event_payroll_sync`;
 const isModalOpen = ref(false);
 const isPayModalOpen = ref(false);
+const syncing = ref(false);
 const records = ref("");
 const router = useRouter();
 const isDisabled = ref(true);
@@ -454,6 +466,44 @@ const handleApproval = () => {
   }
 };
 
+
+// Push an approved payroll to the external ERP
+const handleSync = () => {
+  syncing.value = true;
+  try {
+    fetch(sync_payroll_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeader(),
+      },
+      body: JSON.stringify({
+        payroll_id: Number(query.id),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success === true) {
+          notification.success({
+            message: "Success",
+            description: data.message,
+          });
+        } else {
+          notification.error({
+            message: "Sync Failed",
+            description: data.message,
+          });
+        }
+      });
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description: error.message,
+    });
+  } finally {
+    syncing.value = false;
+  }
+};
 
 const handleOk = async (id, inputValue) => {
   store.commit("setIsPaying", true);
