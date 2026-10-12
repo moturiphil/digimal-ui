@@ -324,12 +324,24 @@
               <strong>{{ fmt(selectedBudget.locations) }}</strong>
             </div>
             <div class="stat-chip">
+              <span class="sc-label">Sublocations:</span>
+              <strong>{{ fmt(selectedBudget.sub_locations) }}</strong>
+            </div>
+            <div class="stat-chip">
               <span class="sc-label">Villages:</span>
               <strong>{{ fmt(selectedBudget.villages) }}</strong>
             </div>
             <div class="stat-chip">
               <span class="sc-label">Posts:</span>
               <strong>{{ fmt(selectedBudget.posts) }}</strong>
+            </div>
+            <div class="stat-chip">
+              <span class="sc-label">HCW Class size:</span>
+              <strong>{{ fmt(selectedBudget.class_size_hw) }}</strong>
+            </div>
+            <div class="stat-chip">
+              <span class="sc-label">CHP/VE Class size:</span>
+              <strong>{{ fmt(selectedBudget.class_size_chv) }}</strong>
             </div>
           </div>
 
@@ -687,8 +699,11 @@ const mapDetail = (d) => {
     households: demo.households || 0,
     wards: demo.wards || 0,
     locations: demo.locations || 0,
+    sub_locations: demo.sub_locations || 0,
     villages: demo.villages || 0,
     posts: demo.posts || 0,
+    class_size_hw: demo.class_size_hw || 0,
+    class_size_chv: demo.class_size_chv || 0,
     nets_required: sum.nets_required || 0,
     nets_per_hh: sum.nets_per_household || 0,
     cost_per_net: sum.cost_per_net_kes || 0,
