@@ -133,7 +133,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, defineProps, defineEmits } from "vue";
 import axios from "@/Axiosconfig";
 import { notification } from "ant-design-vue";
 import authHeader from "../../services/auth-header";
