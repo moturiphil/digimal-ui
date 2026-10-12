@@ -193,6 +193,15 @@
                       <div class="cat-header">
                         <span class="cat-name">{{ cat.name }}</span>
                         <a-tag v-if="cat.badge" class="cat-badge">{{ cat.badge }}</a-tag>
+                        <!-- Applicable multiplier for this category
+                             (profile-derived, e.g. "× 5 Sub-counties"). -->
+                        <a-tag
+                          v-if="cat.multiplier_display"
+                          class="cat-multiplier"
+                          :title="`Unit totals are multiplied by ${cat.multiplier_display}`"
+                        >
+                          {{ cat.multiplier_display }}
+                        </a-tag>
                         <span class="cat-total">KES {{ fmt(cat.total) }}</span>
                       </div>
                     </template>
@@ -211,6 +220,13 @@
                         </span>
                         <span v-else-if="column.key === 'days'">{{ record.days }}</span>
                         <span v-else-if="column.key === 'units'">{{ record.units }}</span>
+                        <!-- Multiplier applied to this parameter's units.
+                             Blank when the category carries no multiplier. -->
+                        <span v-else-if="column.key === 'multiplier'">
+                          <span v-if="record.multiplier" class="row-multiplier">
+                            × {{ record.multiplier }}
+                          </span>
+                        </span>
                         <strong v-else-if="column.key === 'total'" class="cat-item-total">
                           {{ fmt(record.total) }}
                         </strong>
@@ -218,10 +234,10 @@
                       <template #summary>
                         <a-table-summary fixed>
                           <a-table-summary-row>
-                            <a-table-summary-cell :index="0" :col-span="4" align="right">
+                            <a-table-summary-cell :index="0" :col-span="5" align="right">
                               <strong>Subtotal</strong>
                             </a-table-summary-cell>
-                            <a-table-summary-cell :index="4" align="right">
+                            <a-table-summary-cell :index="5" align="right">
                               <strong>{{ fmt(cat.total) }}</strong>
                             </a-table-summary-cell>
                           </a-table-summary-row>
@@ -336,6 +352,8 @@ const mapDetail = (d) => {
       code: cat.code,
       name: cat.name,
       badge: cat.badge,
+      multiplier_display: cat.multiplier_display || '',
+      session_multiplier: cat.session_multiplier ?? null,
       total: cat.total_kes || 0,
       items: (cat.parameters || []).map((p) => ({
         id: p.id,
@@ -343,6 +361,11 @@ const mapDetail = (d) => {
         unit_cost: p.unit_cost_kes || 0,
         days: p.days || 0,
         units: p.units || 0,
+        // Only surface the multiplier when it actually scales the line (> 1).
+        multiplier:
+          p.session_multiplier && p.session_multiplier > 1
+            ? p.session_multiplier
+            : null,
         total: p.total_kes || 0,
         source: p.source,
         parameter_id: p.parameter_id,
@@ -470,6 +493,7 @@ export default {
       { title: 'Unit Cost', key: 'unit_cost', align: 'right', width: 140 },
       { title: 'Days', key: 'days', align: 'right', width: 100 },
       { title: 'Units', key: 'units', align: 'right', width: 100 },
+      { title: 'Multiplier', key: 'multiplier', align: 'right', width: 120 },
       { title: 'Total (KES)', key: 'total', align: 'right', width: 160 },
     ];
 
@@ -801,6 +825,15 @@ export default {
     gap: 10px;
     .cat-name { font-weight: 600; color: #15693c; }
     .cat-badge { background: #e9f6ee; color: #15693c; border: none; }
+    .cat-multiplier {
+      background: #fff4e5;
+      color: #b45309;
+      border: 1px solid #fcd9a8;
+      font-size: 10px;
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-weight: 600;
+    }
     .cat-total {
       margin-left: auto;
       font-weight: 700;
@@ -812,6 +845,7 @@ export default {
 .category-table {
   :deep(.ant-table) { font-size: 12px; }
   :deep(.cat-item-total) { color: #15693c; }
+  :deep(.row-multiplier) { color: #b45309; font-weight: 600; }
 }
 
 .grand-total-bar {

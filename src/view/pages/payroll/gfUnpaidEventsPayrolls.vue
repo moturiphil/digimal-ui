@@ -38,6 +38,17 @@
                             :dataSource="dataSource"
                             :columns="columns"
                           >
+                            <template #syncBadge="{ record }">
+                              <span v-if="record.sync_status === 1" class="badge-green"
+                                >Synced</span
+                              >
+                              <span
+                                v-else-if="record.sync_status === 2"
+                                class="badge-orange"
+                                >Partial / Failed</span
+                              >
+                              <span v-else class="badge-grey">Not Synced</span>
+                            </template>
                             <template #payroll="{ record }">
                               <td :style="{ 'margin-left': '3px' }">
                                 <div class="table-actions">
@@ -70,6 +81,14 @@
                                     size="extra-small"
                                     @click="handlePay(record.id)"
                                     >Pay Event</sdButton
+                                  >
+                                  &nbsp;&nbsp;
+                                  <sdButton
+                                    type="primary"
+                                    size="extra-small"
+                                    :disabled="syncing"
+                                    @click="handleSync(record.id)"
+                                    >Sync to ERP</sdButton
                                   >
                                   &nbsp;&nbsp;
                                   <a-modal
@@ -200,6 +219,12 @@ const columns = [
     key: "id",
   },
   {
+    title: "ERP Sync",
+    dataIndex: "sync_status",
+    key: "syncBadge",
+    slots: { customRender: "syncBadge" },
+  },
+  {
     title: "",
     dataIndex: "",
     fixed: "right",
@@ -222,6 +247,7 @@ const isPaying = computed(() => state.isPaying);
 const balance = ref(0);
 const isDisabled = ref(true);
 const countdown = ref(60);
+const syncing = ref(false);
 
 onMounted(() => {
   isLoading.value = true;
@@ -416,6 +442,39 @@ const handleCancel = () => {
   isModalOpen.value = false;
 };
 
+// Push an approved payroll to the external ERP
+const handleSync = async (id) => {
+  syncing.value = true;
+  try {
+    const response = await axios.post(
+      `${process.env.VUE_APP_BASE_URL}/event_payroll_sync`,
+      { payroll_id: id },
+      { headers: authHeader() }
+    );
+
+    if (response.data.success === true) {
+      notification.success({
+        message: "Success!",
+        description: response.data.message,
+      });
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      notification.error({
+        message: "Sync Failed",
+        description: response.data.message,
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error!",
+      description:
+        error?.response?.data?.message || "Failed to sync payroll to the ERP",
+    });
+  } finally {
+    syncing.value = false;
+  }
+};
+
 const startCountdown = () => {
   console.log("starting countdown");
   let timerId;
@@ -469,6 +528,20 @@ const fetchBalance = () => {
 <style>
 .badge-green {
   background-color: #1ec997;
+  font-size: 12px;
+}
+.badge-orange {
+  background-color: #faad14;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.badge-grey {
+  background-color: #bfbfbf;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
   font-size: 12px;
 }
 </style>
