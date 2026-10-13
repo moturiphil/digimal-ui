@@ -564,7 +564,10 @@
               class="ch-table"
             >
               <template #bodyCell="{ column, record }">
-                <span v-if="column.key === 'item'">{{ record.item_label }}</span>
+                <span v-if="column.key === 'category'" class="ch-category">
+                  {{ record.category_label || '—' }}
+                </span>
+                <span v-else-if="column.key === 'item'">{{ record.item_label }}</span>
                 <span v-else-if="column.key === 'field'">{{ record.field_label }}</span>
                 <span v-else-if="column.key === 'change'">
                   <span class="ch-orig">{{ record.original_value ?? '—' }}</span>
@@ -769,6 +772,19 @@ const reviewerName = (user) => {
   return name || user.email || null;
 };
 
+/* Render an audited figure without noise: whole numbers stay whole (no
+ * decimals), other numbers are shown with up to two decimals (trailing zeros
+ * trimmed). Non-numeric / empty values pass through unchanged.
+ * The audit trail stores canonical 6-dp strings (e.g. "6.000000"), so this
+ * is what turns unit counts back into "6". */
+const formatAuditValue = (v) => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return String(v);
+  if (Number.isInteger(n)) return String(n);
+  return String(parseFloat(n.toFixed(2)));
+};
+
 /* Map detail API response -> shape consumed by the template */
 const mapDetail = (d) => {
   if (!d) return null;
@@ -849,10 +865,16 @@ const mapDetail = (d) => {
     // Immutable reviewer-change audit trail (list of individual changes).
     line_item_changes: (d.line_item_changes || []).map((c) => ({
       id: c.id,
+      // The budget category the edited line belongs to.
+      category_label:
+        c.line_item && c.line_item.budget_category
+          ? c.line_item.budget_category.name
+          : '—',
       item_label: c.line_item ? c.line_item.label : `Line #${c.budget_line_item_id}`,
       field_label: CHANGE_FIELD_LABELS[c.field] || c.field,
-      original_value: c.original_value,
-      updated_value: c.updated_value,
+      // Whole numbers rendered without decimals (e.g. 6.000000 → "6").
+      original_value: formatAuditValue(c.original_value),
+      updated_value: formatAuditValue(c.updated_value),
       reviewer_name: reviewerName(c.reviewer),
       reviewer_role:
         c.reviewer_role || (c.reviewer && c.reviewer.role ? c.reviewer.role.name : null),
@@ -1124,6 +1146,7 @@ export default {
 
     /* Columns for the reviewer change-history table. */
     const changeColumns = [
+      { title: 'Budget Category', key: 'category', width: 180 },
       { title: 'Budget Item', key: 'item' },
       { title: 'Field', key: 'field', width: 110 },
       { title: 'Change', key: 'change', width: 180 },
@@ -1401,19 +1424,11 @@ export default {
       const dirty = (cat.items || []).filter(isRowDirty);
       if (!dirty.length) return;
 
-      // Only rows mapped to a category_parameter can be written back to the
-      // shared profile layer (special-cost rows have no such mapping).
-      const savable = dirty.filter((it) => it.line_item_id && it.category_parameter_id);
-      const unmappable = dirty.filter((it) => !it.line_item_id || !it.category_parameter_id);
-      if (unmappable.length) {
-        notification.error({
-          message: 'Some rows cannot be saved',
-          description:
-            `${unmappable.map((it) => it.item).join(', ')} ${unmappable.length === 1 ? 'is' : 'are'} `
-            + 'not linked to a profile parameter and cannot be saved here.',
-        });
-        return;
-      }
+      // Every edited line is saveable: the backend writes mapped rows to the
+      // shared profile layer AND all rows directly on the line item; rows with
+      // no category_parameter mapping (Special Area Cost / legacy) are saved
+      // straight on the line item.
+      const savable = dirty.filter((it) => it.line_item_id);
 
       // Mandatory comment: a reviewer cannot save a changed figure without one.
       const missing = savable.filter((it) => !rowComment(it).trim());
@@ -1431,7 +1446,10 @@ export default {
           category_id: cat.id,
           parameters: savable.map((it) => ({
             line_item_id: it.line_item_id,
-            category_parameter_id: it.category_parameter_id,
+            // null for unmapped rows (Special Area Cost / legacy) — the
+            // backend resolves the mapping server-side and falls back to a
+            // direct line-item write when there is none.
+            category_parameter_id: it.category_parameter_id ?? null,
             total_units: Number(it.units) || 0,
             comment: rowComment(it).trim(),
           })),
@@ -2076,6 +2094,7 @@ export default {
   .ch-upd { color: #15693c; font-weight: 700; }
   .ch-arrow { color: #8a9990; }
   .ch-role { color: #6b7a72; font-size: 11px; }
+  .ch-category { color: #15693c; font-weight: 600; font-size: 12px; }
 }
 
 /* Per-category session multiplier bar (preview) */
