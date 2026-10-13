@@ -13,10 +13,6 @@
             <h3 class="ph-title">
               <span class="ph-icon">▦</span> Budget Review &amp; Approval
             </h3>
-            <p class="ph-subtitle">
-              Review county and sub-county budgets, mark them as reviewed by
-              the DNMP Accountant, then approve at national level.
-            </p>
           </div>
           <div class="ph-actions">
             <a-breadcrumb separator=">" class="review-crumbs">
@@ -293,9 +289,6 @@
           </div>
           <div class="detail-stage-head">
             <a-tag class="ph-stage-tag">{{ selectedBudget.stage }}</a-tag>
-            <span class="detail-stage-hint">
-              Current stage — the steps to the right are still ahead.
-            </span>
           </div>
           <BudgetStagePipeline
             class="detail-pipeline"
@@ -368,9 +361,12 @@
           <!-- categories with parameters -->
           <!-- Edit-mode hint (Finance Officer / Program Accountant, pre-approval) -->
           <div v-if="editing" class="nbr-edit-banner">
-            Editing mode — adjust units, days or overrides per row, then
-            <strong>Save changes</strong>. This budget locks automatically once
-            approved.
+            Editing mode — adjust <strong>units</strong> per row, then use the
+            <strong>Save</strong> button under each category. A
+            <strong>comment is required</strong> for every figure you change;
+            each edit is recorded in the audit trail. When you have finished all
+            categories, press <strong>Recalculate totals</strong> to regenerate
+            the budget. This budget locks automatically once approved.
           </div>
 
           <a-collapse
@@ -412,21 +408,12 @@
                   <span v-if="column.key === 'unit_cost'">
                     {{ fmt(record.unit_cost) }}
                   </span>
-                  <!-- Days — editable for manual rows while in edit mode -->
-                  <template v-else-if="column.key === 'days'">
-                    <a-input-number
-                      v-if="editing && !record.is_auto_calculated && !record.is_special_cost"
-                      v-model:value="record.days"
-                      :min="1"
-                      size="small"
-                      class="nbr-edit-input"
-                    />
-                    <span v-else>{{ record.days }}</span>
-                  </template>
-                  <!-- Units — editable for manual + SAC rows while in edit mode -->
+                  <!-- Days — always read-only for the reviewer -->
+                  <span v-else-if="column.key === 'days'">{{ record.days }}</span>
+                  <!-- Units — the ONLY editable field for the reviewer -->
                   <template v-else-if="column.key === 'units'">
                     <a-input-number
-                      v-if="editing && !record.is_auto_calculated"
+                      v-if="editing"
                       v-model:value="record.units"
                       :min="0"
                       :max="record.is_special_cost ? 20 : 100000"
@@ -442,19 +429,18 @@
                       × {{ record.multiplier }}
                     </span>
                   </span>
-                  <!-- Override — auto-calculated rows only (edit mode column) -->
-                  <template v-else-if="column.key === 'override'">
-                    <a-input-number
-                      v-if="editing && record.is_auto_calculated"
-                      v-model:value="record.override_value"
-                      :min="0"
+                  <!-- Reviewer comment — MANDATORY for any row whose figure is
+                       changed (enforced again on the server). -->
+                  <template v-else-if="column.key === 'comment'">
+                    <a-input
+                      v-if="editing && isRowDirty(record)"
+                      :value="rowComment(record)"
                       size="small"
                       class="nbr-edit-input"
-                      placeholder="Override"
+                      placeholder="Reason for change (required)"
+                      @update:value="(v) => setRowComment(record, v)"
                     />
-                    <span v-else>
-                      {{ record.override_value == null ? '—' : fmt(record.override_value) }}
-                    </span>
+                    <span v-else-if="editing" class="nbr-comment-hint">—</span>
                   </template>
                   <template v-else-if="column.key === 'total'">
                     <strong class="cat-item-total">{{ fmt(record.total) }}</strong>
@@ -472,18 +458,64 @@
                     <a-table-summary-row>
                       <a-table-summary-cell
                         :index="0"
-                        :col-span="showEditColumns ? 6 : 5"
+                        :col-span="summaryColSpan"
                         align="right"
                       >
                         <strong>Subtotal</strong>
                       </a-table-summary-cell>
-                      <a-table-summary-cell :index="showEditColumns ? 6 : 5" align="right">
+                      <a-table-summary-cell :index="summaryColSpan" align="right">
                         <strong>{{ fmt(cat.total) }}</strong>
                       </a-table-summary-cell>
                     </a-table-summary-row>
                   </a-table-summary>
                 </template>
               </a-table>
+
+              <!-- Session multiplier (preview) + per-category SAVE.
+                   Mirrors the county / sub-county budgeting grid: apply the
+                   multiplier to preview the scaled subtotal, then Save to
+                   persist the units and recalculate. -->
+              <div
+                v-if="editing && hasSessionMultiplier(cat)"
+                class="act-multiplier"
+              >
+                <div class="mp-left">
+                  <span class="mp-title">Session Multiplier</span>
+                  <span class="mp-badge">{{ cat.multiplier_display }}</span>
+                </div>
+                <div class="mp-mid">
+                  <template v-if="cat.multiplierApplied">
+                    Subtotal: <strong>KES {{ fmt(categorySubtotal(cat)) }}</strong>
+                    <span class="mp-arrow">→</span>
+                    Total: <strong class="mp-total">KES {{ fmt(categoryTotal(cat)) }}</strong>
+                  </template>
+                  <span v-else class="mp-hint">
+                    Line totals are subtotals. Apply the session multiplier to
+                    preview the budget total.
+                  </span>
+                </div>
+                <div class="mp-right">
+                  <sdButton
+                    size="small"
+                    :class="['pill-btn', 'mp-btn', { applied: cat.multiplierApplied }]"
+                    @click="applyMultiplier(cat)"
+                  >
+                    {{ cat.multiplierApplied ? '✓ Multiplier Applied' : 'Apply Multiplier' }}
+                  </sdButton>
+                </div>
+              </div>
+
+              <div v-if="editing" class="act-foot">
+                <sdButton
+                  size="small"
+                  :class="['pill-btn', 'save-btn', { 'is-dirty': isCategoryDirty(cat) }]"
+                  :disabled="!isCategoryDirty(cat)"
+                  :loading="savingCategoryId === cat.id"
+                  @click="saveCategory(cat)"
+                >
+                  Save
+                </sdButton>
+              </div>
             </a-collapse-panel>
           </a-collapse>
 
@@ -508,6 +540,49 @@
             </span>
           </div>
 
+          <!-- Reviewer change history (audit trail). Visible to reviewers,
+               approvers and the post-review sign-off roles (DNMP Program Head /
+               GF Manager). Read-only — records are never edited or deleted. -->
+          <div v-if="canViewChanges" class="change-history">
+            <div class="ch-head">
+              <strong>Reviewer change history</strong>
+              <span class="ch-count">
+                {{ changeHistory.length }}
+                {{ changeHistory.length === 1 ? 'change' : 'changes' }}
+              </span>
+            </div>
+            <p v-if="!changeHistory.length" class="ch-empty">
+              No reviewer changes recorded for this budget.
+            </p>
+            <a-table
+              v-else
+              :dataSource="changeHistory"
+              :columns="changeColumns"
+              :pagination="false"
+              size="small"
+              row-key="id"
+              class="ch-table"
+            >
+              <template #bodyCell="{ column, record }">
+                <span v-if="column.key === 'item'">{{ record.item_label }}</span>
+                <span v-else-if="column.key === 'field'">{{ record.field_label }}</span>
+                <span v-else-if="column.key === 'change'">
+                  <span class="ch-orig">{{ record.original_value ?? '—' }}</span>
+                  <span class="ch-arrow"> → </span>
+                  <span class="ch-upd">{{ record.updated_value ?? '—' }}</span>
+                </span>
+                <span v-else-if="column.key === 'reviewer'">
+                  {{ record.reviewer_name || '—' }}
+                  <span v-if="record.reviewer_role" class="ch-role">
+                    ({{ record.reviewer_role }})
+                  </span>
+                </span>
+                <span v-else-if="column.key === 'comment'">{{ record.comment || '—' }}</span>
+                <span v-else>{{ formatReviewDate(record.at) }}</span>
+              </template>
+            </a-table>
+          </div>
+
           <!-- actions -->
           <div class="detail-actions">
             <sdButton
@@ -518,9 +593,11 @@
               Download PDF
             </sdButton>
 
-            <!-- Pre-approval line-item editing (Finance Officer / Program
-                 Accountant). Hidden once the budget is approved — it is then
-                 locked (selectedBudget.can_edit === false). -->
+            <!-- Pre-approval UNIT editing (Accountant / Finance Officer /
+                 Program Accountant). Hidden once the budget is approved — it is
+                 then locked (selectedBudget.can_edit === false). Units are
+                 saved per category with the Save button under each category;
+                 this global action regenerates the budget to the actual total. -->
             <sdButton
               v-if="canEditSelected && !editing"
               type="light"
@@ -533,11 +610,10 @@
               v-if="editing"
               type="primary"
               class="nbr-action-btn"
-              :loading="savingEdits"
-              :disabled="!dirtyEditCount"
-              @click="saveEdits"
+              :loading="recalculating"
+              @click="recalculateTotals"
             >
-              Save changes{{ dirtyEditCount ? ` (${dirtyEditCount})` : '' }}
+              Recalculate totals
             </sdButton>
             <sdButton
               v-if="editing"
@@ -675,6 +751,24 @@ import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import BudgetStagePipeline from './BudgetStagePipeline.vue';
 
+/* Human labels for the audited figure columns. */
+const CHANGE_FIELD_LABELS = {
+  unit_cost: 'Unit cost',
+  number_of_days: 'Days',
+  unit_count: 'Units',
+  override_value: 'Override',
+};
+
+/* Full name of the reviewer attached to an audit row. */
+const reviewerName = (user) => {
+  if (!user) return null;
+  const name = [user.first_name, user.middle_name, user.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  return name || user.email || null;
+};
+
 /* Map detail API response -> shape consumed by the template */
 const mapDetail = (d) => {
   if (!d) return null;
@@ -715,11 +809,16 @@ const mapDetail = (d) => {
       badge: cat.badge,
       multiplier_display: cat.multiplier_display || '',
       session_multiplier: cat.session_multiplier ?? null,
+      // Preview toggle — mirrors the county / sub-county session multiplier.
+      multiplierApplied: false,
       total: cat.total_kes || 0,
       items: (cat.parameters || []).map((p) => ({
         id: p.id,
         // Real budget_line_items.id — required for the pre-approval edits.
         line_item_id: p.line_item_id ?? null,
+        // category_parameters.id — lets a saved unit edit be written back to
+        // the shared profile layer (category_parameter_profiles).
+        category_parameter_id: p.category_parameter_id ?? null,
         item: p.item,
         unit_cost: p.unit_cost_kes || 0,
         days: p.days || 0,
@@ -747,6 +846,20 @@ const mapDetail = (d) => {
     can_edit: !!review.can_edit,
     history: review.history || [],
     dnmp_review: d.dnmp_review || null,
+    // Immutable reviewer-change audit trail (list of individual changes).
+    line_item_changes: (d.line_item_changes || []).map((c) => ({
+      id: c.id,
+      item_label: c.line_item ? c.line_item.label : `Line #${c.budget_line_item_id}`,
+      field_label: CHANGE_FIELD_LABELS[c.field] || c.field,
+      original_value: c.original_value,
+      updated_value: c.updated_value,
+      reviewer_name: reviewerName(c.reviewer),
+      reviewer_role:
+        c.reviewer_role || (c.reviewer && c.reviewer.role ? c.reviewer.role.name : null),
+      comment: c.comment,
+      at: c.created_at,
+    })),
+    can_view_changes: !!d.can_view_changes,
   };
 };
 
@@ -1009,6 +1122,16 @@ export default {
       { title: 'Total (KES)', key: 'total', align: 'right', width: 160 },
     ];
 
+    /* Columns for the reviewer change-history table. */
+    const changeColumns = [
+      { title: 'Budget Item', key: 'item' },
+      { title: 'Field', key: 'field', width: 110 },
+      { title: 'Change', key: 'change', width: 180 },
+      { title: 'Reviewer', key: 'reviewer', width: 200 },
+      { title: 'Comment', key: 'comment' },
+      { title: 'When', key: 'at', width: 160 },
+    ];
+
     /* actions -------------------------------------------- */
     /* Button visibility is gated by the EXACT business roles (mirrors the
      * strict backend gate in CampaignBudgetController):
@@ -1150,22 +1273,38 @@ export default {
       }
     };
     /* ────────── Pre-approval line-item editing ──────────
-     * The Finance Officer / Program Accountant may correct county & sub-county
-     * budget figures at any stage BEFORE final approval. Once approved the
-     * backend returns can_edit=false and the table stays read-only. Edits are
-     * saved per row via update_budget_line_item. */
+     * The DNMP Accountant, Finance Officer and Program Accountant (plus Super
+     * Admin) may correct county & sub-county budget figures at any stage BEFORE
+     * final approval. Once approved the backend returns can_edit=false and the
+     * table stays read-only. Edits are saved per row via update_budget_line_item,
+     * and the backend requires a comment for every changed figure. */
     const canEditBudget = computed(() =>
-      hasRoleByName(['Super Admin', 'Finance Officer', 'Program Accountant']).value,
+      hasRoleByName(['Super Admin', 'Accountant', 'Finance Officer', 'Program Accountant']).value,
+    );
+
+    /* Roles allowed to see the reviewer-change audit history (approver
+     * visibility): the post-review sign-off roles plus the editors. */
+    const canViewChanges = computed(() =>
+      hasRoleByName([
+        'Super Admin',
+        'Accountant',
+        'Finance Officer',
+        'Program Accountant',
+        'DNMP Program Head',
+        'Program head',
+        'DNMP GF Manager',
+      ]).value,
     );
     const canEditSelected = computed(() =>
       !!(selectedBudget.value && selectedBudget.value.can_edit && canEditBudget.value),
     );
 
     const editing = ref(false);
-    const savingEdits = ref(false);
     // Snapshot of editable values when edit mode opens, so we can detect
     // changed rows and restore them on cancel.
     const editSnapshot = ref({});
+    // Per-row mandatory reviewer comment, keyed by line_item_id.
+    const editComments = ref({});
 
     const editableItems = computed(() => {
       const b = selectedBudget.value;
@@ -1173,16 +1312,21 @@ export default {
       return (b.categories || []).flatMap((cat) => cat.items || []);
     });
 
+    /* Reviewer change history for the open budget (from the audit trail). */
+    const changeHistory = computed(() =>
+      (selectedBudget.value && selectedBudget.value.line_item_changes) || [],
+    );
+
     const beginEdit = () => {
       const snap = {};
       editableItems.value.forEach((it) => {
-        snap[it.line_item_id] = {
-          units: it.units,
-          days: it.days,
-          override_value: it.override_value,
-        };
+        snap[it.line_item_id] = { units: it.units };
       });
       editSnapshot.value = snap;
+      editComments.value = {};
+      (selectedBudget.value?.categories || []).forEach((cat) => {
+        cat.multiplierApplied = false;
+      });
       editing.value = true;
     };
 
@@ -1191,84 +1335,171 @@ export default {
         const s = editSnapshot.value[it.line_item_id];
         if (!s) return;
         it.units = s.units;
-        it.days = s.days;
-        it.override_value = s.override_value;
+      });
+      (selectedBudget.value?.categories || []).forEach((cat) => {
+        cat.multiplierApplied = false;
       });
       editing.value = false;
+      editComments.value = {};
     };
 
-    // The payload each row type accepts (mirrors BudgetLineItemController):
-    //   SAC rows    → unit_count
-    //   auto rows   → override_value
-    //   manual rows → unit_count + number_of_days
-    const rowPayload = (it) => {
-      if (it.is_special_cost) return { unit_count: it.units };
-      if (it.is_auto_calculated) return { override_value: it.override_value };
-      return { unit_count: it.units, number_of_days: it.days };
+    /** Per-row comment binding (v-model target for the comment column). */
+    const rowComment = (it) => editComments.value[it.line_item_id] || '';
+    const setRowComment = (it, value) => {
+      editComments.value = { ...editComments.value, [it.line_item_id]: value };
     };
 
     const norm = (v) => (v == null || v === '' ? null : Number(v));
 
+    // The reviewer edits UNITS ONLY — never days, the override or the subtotal.
     const isRowDirty = (it) => {
       const s = editSnapshot.value[it.line_item_id];
       if (!s) return false;
-      if (it.is_auto_calculated) return norm(it.override_value) !== norm(s.override_value);
-      if (it.is_special_cost) return norm(it.units) !== norm(s.units);
-      return norm(it.units) !== norm(s.units) || norm(it.days) !== norm(s.days);
+      return norm(it.units) !== norm(s.units);
     };
 
     const dirtyEditCount = computed(() => editableItems.value.filter(isRowDirty).length);
 
-    const saveEdits = async () => {
+    /* ── Session multiplier (preview) ────────────────────────────────────
+     * Mirrors the county / sub-county grid: the multiplier itself is read from
+     * the profile at generation time; the toggle only previews the scaled
+     * subtotal before the reviewer regenerates the budget. */
+    const hasSessionMultiplier = (cat) => (Number(cat?.session_multiplier) || 1) > 1;
+
+    /* Base subtotal for a category: Σ unit_cost × days × units (no multiplier). */
+    const categorySubtotal = (cat) =>
+      (cat.items || []).reduce(
+        (s, i) =>
+          s + (Number(i.unit_cost) || 0) * (Number(i.days) || 1) * (Number(i.units) || 0),
+        0,
+      );
+
+    /* Category total shown in the multiplier bar (subtotal × multiplier when on). */
+    const categoryTotal = (cat) => {
+      const m = cat.multiplierApplied ? Number(cat.session_multiplier) || 1 : 1;
+      return categorySubtotal(cat) * m;
+    };
+
+    const applyMultiplier = (cat) => {
+      cat.multiplierApplied = !cat.multiplierApplied;
+    };
+
+    /** True when any row in the category has an unsaved unit change. */
+    const isCategoryDirty = (cat) => (cat.items || []).some(isRowDirty);
+
+    /* Per-category SAVE — persists this category's unit edits (audited, with a
+     * mandatory comment), writes them to the shared profile layer and
+     * regenerates the category so its subtotal + the grand total recompute.
+     * Mirrors the county / sub-county grid's per-category Save. */
+    const savingCategoryId = ref(null);
+
+    const saveCategory = async (cat) => {
       const b = selectedBudget.value;
       const rid = b && b.id;
-      if (!rid) return;
+      if (!rid || !cat) return;
 
-      const dirty = editableItems.value.filter(isRowDirty);
-      if (!dirty.length) {
-        editing.value = false;
+      const dirty = (cat.items || []).filter(isRowDirty);
+      if (!dirty.length) return;
+
+      // Only rows mapped to a category_parameter can be written back to the
+      // shared profile layer (special-cost rows have no such mapping).
+      const savable = dirty.filter((it) => it.line_item_id && it.category_parameter_id);
+      const unmappable = dirty.filter((it) => !it.line_item_id || !it.category_parameter_id);
+      if (unmappable.length) {
+        notification.error({
+          message: 'Some rows cannot be saved',
+          description:
+            `${unmappable.map((it) => it.item).join(', ')} ${unmappable.length === 1 ? 'is' : 'are'} `
+            + 'not linked to a profile parameter and cannot be saved here.',
+        });
         return;
       }
 
-      savingEdits.value = true;
-      try {
-        for (const it of dirty) {
-          if (!it.line_item_id) continue;
-          // eslint-disable-next-line no-await-in-loop
-          await axios.put(`update_budget_line_item/${rid}/${it.line_item_id}`, rowPayload(it));
-        }
-        notification.success({
-          message: `Saved ${dirty.length} edit${dirty.length === 1 ? '' : 's'}.`,
+      // Mandatory comment: a reviewer cannot save a changed figure without one.
+      const missing = savable.filter((it) => !rowComment(it).trim());
+      if (missing.length) {
+        notification.error({
+          message: 'A comment is required for every changed figure.',
+          description: `Add a comment for: ${missing.map((it) => it.item).join(', ')}.`,
         });
-        editing.value = false;
-        // Reload so totals & category subtotals reflect the recalculated figures.
+        return;
+      }
+
+      savingCategoryId.value = cat.id;
+      try {
+        await axios.post(`save_reviewer_category_units/${rid}`, {
+          category_id: cat.id,
+          parameters: savable.map((it) => ({
+            line_item_id: it.line_item_id,
+            category_parameter_id: it.category_parameter_id,
+            total_units: Number(it.units) || 0,
+            comment: rowComment(it).trim(),
+          })),
+        });
+        notification.success({
+          message: `${cat.name} saved`,
+          description: 'Units saved and subtotal recalculated.',
+        });
+        // Refresh so the recalculated subtotal + grand total are shown.
         await fetchBudgetDetail(rid);
         await fetchCounties();
       } catch (err) {
         notification.error({
-          message: 'Failed to save edits',
+          message: `Failed to save ${cat.name}`,
           description: err?.response?.data?.message || err.message,
         });
       } finally {
-        savingEdits.value = false;
+        savingCategoryId.value = null;
       }
     };
 
-    /* Columns: add the Override column only while editing so the read-only
-     * review view keeps its original six-column layout. */
+    /* Global RECALCULATE TOTALS — regenerates the whole budget from the saved
+     * profile units so the reviewer sees the actual grand total. This replaces
+     * the old blanket "Save changes" action. */
+    const recalculating = ref(false);
+
+    const recalculateTotals = async () => {
+      const b = selectedBudget.value;
+      const rid = b && b.id;
+      if (!rid) return;
+
+      recalculating.value = true;
+      try {
+        await axios.post(`recalculate_budget_line_items/${rid}`);
+        notification.success({ message: 'Totals recalculated.' });
+        editing.value = false;
+        editComments.value = {};
+        await fetchBudgetDetail(rid);
+        await fetchCounties();
+      } catch (err) {
+        notification.error({
+          message: 'Failed to recalculate totals',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        recalculating.value = false;
+      }
+    };
+
+    /* Columns: add the mandatory reviewer-comment column only while editing so
+     * the read-only review view keeps its original six-column layout. The
+     * reviewer edits UNITS ONLY — there is no Override column any more. */
     const showEditColumns = computed(() => editing.value && canEditSelected.value);
     const tableColumns = computed(() => {
       const cols = [...itemColumns];
       if (showEditColumns.value) {
+        // Mandatory reviewer comment column (one per changed figure).
         cols.splice(cols.length - 1, 0, {
-          title: 'Override',
-          key: 'override',
-          align: 'right',
-          width: 140,
+          title: 'Reviewer comment',
+          key: 'comment',
+          width: 220,
         });
       }
       return cols;
     });
+
+    // Summary row col-span must track the dynamic column count.
+    const summaryColSpan = computed(() => tableColumns.value.length - 1);
 
     /* ────────── Stage pipeline (where each budget sits) ──────────
      * Reviewers need the whole pre-approval journey at a glance, not just the
@@ -1386,16 +1617,30 @@ export default {
       reviewing,
       reviewNote,
       itemColumns,
+      changeColumns,
       tableColumns,
       showEditColumns,
+      summaryColSpan,
       canEditSelected,
+      canViewChanges,
+      changeHistory,
       editing,
-      savingEdits,
       dirtyEditCount,
       isRowDirty,
+      rowComment,
+      setRowComment,
       beginEdit,
       cancelEdit,
-      saveEdits,
+      /* units-only editing: per-category save + multiplier + global recalc */
+      savingCategoryId,
+      saveCategory,
+      isCategoryDirty,
+      hasSessionMultiplier,
+      categorySubtotal,
+      categoryTotal,
+      applyMultiplier,
+      recalculating,
+      recalculateTotals,
       /* stage pipeline */
       myActionStatus,
       stageSummary,
@@ -1797,6 +2042,94 @@ export default {
   /* Pre-approval inline editors (Finance Officer / Program Accountant) */
   .nbr-edit-input { width: 92px; }
   .nbr-dirty-tag { margin-left: 6px; font-size: 10px; line-height: 16px; }
+}
+
+/* Reviewer comment column hint (rows with no change) */
+.nbr-comment-hint { color: #b7c2bb; }
+
+/* Reviewer change-history (audit trail) panel */
+.change-history {
+  margin-top: 14px;
+  border: 1px solid #d6e5db;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fbfefc;
+
+  .ch-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    strong { color: #15693c; font-size: 13px; }
+  }
+  .ch-count {
+    font-size: 11px;
+    color: #6b7a72;
+    background: #eef7f1;
+    border-radius: 10px;
+    padding: 1px 8px;
+  }
+  .ch-empty { color: #8a9990; font-size: 12px; margin: 0; }
+  .ch-table { margin-top: 4px; }
+  .ch-orig { color: #b45309; text-decoration: line-through; }
+  .ch-upd { color: #15693c; font-weight: 700; }
+  .ch-arrow { color: #8a9990; }
+  .ch-role { color: #6b7a72; font-size: 11px; }
+}
+
+/* Per-category session multiplier bar (preview) */
+.act-multiplier {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 8px 2px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f6f9ff;
+  border: 1px solid #d6e0f5;
+
+  .mp-left { display: flex; align-items: center; gap: 6px; }
+  .mp-title { color: #3b4a6b; font-size: 12px; font-weight: 600; }
+  .mp-badge {
+    font-size: 11px;
+    color: #3b4a6b;
+    background: #e6edfb;
+    border-radius: 10px;
+    padding: 1px 8px;
+  }
+  .mp-mid { flex: 1 1 260px; font-size: 12px; color: #6b7a72; }
+  .mp-arrow { margin: 0 6px; color: #8a9990; }
+  .mp-total { color: #15693c; }
+  .mp-hint { color: #8a9990; }
+  .mp-right { margin-left: auto; }
+}
+
+/* Per-category footer holding the Save button */
+.act-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Shared pill button styling for the multiplier + save controls */
+.pill-btn {
+  border-radius: 16px !important;
+  border: 1px solid #cfd8d2 !important;
+  height: 28px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+.mp-btn.applied {
+  background: #eafaf0 !important;
+  border-color: #9ad8b4 !important;
+  color: #15693c !important;
+}
+.save-btn.is-dirty {
+  background: #15693c !important;
+  border-color: #15693c !important;
+  color: #fff !important;
 }
 
 /* Pre-approval edit-mode hint */
