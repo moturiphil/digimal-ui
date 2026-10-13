@@ -23,12 +23,36 @@ import axios from '@/Axiosconfig';
  *   locked          true = the amount is fixed and cannot be edited
  *   units_mode      'default' | 'dynamic'
  *   default_units   unit count used when units_mode = 'default'
+ *   min_units       lower bound for officer-entered units (dynamic)
+ *   max_units       upper bound for officer-entered units (dynamic)
  */
+
+/**
+ * Fallback units bounds, used only when an item carries none (i.e. before the
+ * catalogue has been migrated / seeded). Mirrors
+ * App\Models\SpecialAreaCostItem::DEFAULT_MIN_UNITS / DEFAULT_MAX_UNITS.
+ */
+export const SAC_DEFAULT_MIN_UNITS = 0;
+export const SAC_DEFAULT_MAX_UNITS = 20;
+
+/**
+ * Lower / upper bounds for a SAC item's officer-entered units.
+ *
+ * Both are configured per Cost Item in the admin UI (Special Area Costs →
+ * Cost Items) and served on the item as `min_units` / `max_units`. When absent
+ * (legacy / offline fallback) they default to 0 and 20.
+ */
+export const sacMinUnits = (item) =>
+  Number(item?.min_units ?? SAC_DEFAULT_MIN_UNITS);
+
+export const sacMaxUnits = (item) =>
+  Number(item?.max_units ?? SAC_DEFAULT_MAX_UNITS);
+
 export const SAC_ITEMS = [
-  { type: 'enhanced_transport', label: 'Enhanced Transport', default_amount: null, max_amount: 10000, locked: false, units_mode: 'dynamic', default_units: 0, sort_order: 1 },
-  { type: 'security', label: 'Security', default_amount: 2500, max_amount: 10000, locked: true, units_mode: 'dynamic', default_units: 0, sort_order: 2 },
-  { type: 'dsa', label: 'DSA', default_amount: 14000, max_amount: 15000, locked: true, units_mode: 'dynamic', default_units: 0, sort_order: 3 },
-  { type: 'boat_hire', label: 'Boat', default_amount: null, max_amount: 10000, locked: false, units_mode: 'dynamic', default_units: 0, sort_order: 4 },
+  { type: 'enhanced_transport', label: 'Enhanced Transport', default_amount: null, max_amount: 10000, locked: false, units_mode: 'dynamic', default_units: 0, min_units: 0, max_units: 100, sort_order: 1 },
+  { type: 'security', label: 'Security', default_amount: 2500, max_amount: 10000, locked: true, units_mode: 'dynamic', default_units: 0, min_units: 0, max_units: 20, sort_order: 2 },
+  { type: 'dsa', label: 'DSA', default_amount: 14000, max_amount: 15000, locked: true, units_mode: 'dynamic', default_units: 0, min_units: 0, max_units: 20, sort_order: 3 },
+  { type: 'boat_hire', label: 'Boat', default_amount: null, max_amount: 10000, locked: false, units_mode: 'dynamic', default_units: 0, min_units: 0, max_units: 20, sort_order: 4 },
 ];
 
 /** Maps a special_type enum value → display label (built-in fallback only). */
@@ -59,6 +83,9 @@ export const normalizeSacItem = (row) => {
     is_amount_fixed: isFixed,
     units_mode: unitsMode,
     default_units: Number(row?.default_units || 0),
+    // Officer-entered units bounds, configured per Cost Item.
+    min_units: Number(row?.min_units ?? SAC_DEFAULT_MIN_UNITS),
+    max_units: Number(row?.max_units ?? SAC_DEFAULT_MAX_UNITS),
     sort_order: Number(row?.sort_order || 0),
     is_active: row?.is_active === undefined ? true : Boolean(row.is_active),
   };

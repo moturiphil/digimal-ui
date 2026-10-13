@@ -72,8 +72,8 @@
               <a-input-number
                 v-if="editable && !record.units_locked"
                 v-model:value="record._d.units"
-                :min="0"
-                :max="20"
+                :min="sacMinUnits(record)"
+                :max="sacMaxUnits(record)"
                 :precision="0"
                 size="small"
                 class="sac-units-input"
@@ -116,7 +116,7 @@
   </section>
 </template>
 <script>
-import { SAC_ITEMS } from '@/services/specialAreaCosts';
+import { SAC_ITEMS, sacMinUnits, sacMaxUnits } from '@/services/specialAreaCosts';
 
 /*
  * Special Area Cost section shown on the County / Sub-County budgeting pages.
@@ -240,6 +240,9 @@ export default {
     this.$nextTick(() => this.emitSync());
   },
 methods: {
+    // Officer-entered units bounds, configured per Cost Item.
+    sacMinUnits,
+    sacMaxUnits,
     key(catId, type) {
       return `${catId}:${type}`;
     },
