@@ -218,6 +218,9 @@
                         ? `Default · ${record.default_units} unit${record.default_units === 1 ? '' : 's'}`
                         : 'Dynamic' }}
                     </a-tag>
+                    <div v-if="record.units_mode === 'dynamic'" class="sac-max-hint">
+                      limit {{ record.min_units ?? 0 }}–{{ record.max_units ?? 20 }}
+                    </div>
                   </span>
                   <span v-else-if="column.key === 'status'">
                     <a-tag :class="record.is_active ? 'sac-on-tag' : 'sac-removed-tag'">
@@ -396,6 +399,28 @@
             class="sac-modal-input sac-modal-units"
             placeholder="Number of units"
           />
+
+          <!-- Officer-entered units bounds (dynamic mode only). -->
+          <div v-if="itemModal.form.units_mode === 'dynamic'" class="sac-limits-row">
+            <a-input-number
+              v-model:value="itemModal.form.min_units"
+              :min="0"
+              :precision="0"
+              class="sac-modal-units"
+              placeholder="Lower limit"
+            />
+            <span class="sac-limits-sep">to</span>
+            <a-input-number
+              v-model:value="itemModal.form.max_units"
+              :min="0"
+              :precision="0"
+              class="sac-modal-units"
+              placeholder="Upper limit"
+            />
+          </div>
+          <p v-if="itemModal.form.units_mode === 'dynamic'" class="sac-hint">
+            Lowest and highest number of units an officer may enter for this item.
+          </p>
         </a-form-item>
 
         <a-form-item label="Display order">
@@ -601,6 +626,9 @@ const filteredCounties = computed(() => {
       is_amount_fixed: false,
       units_mode: 'dynamic',
       default_units: 0,
+      // Officer-entered units bounds (dynamic items).
+      min_units: 0,
+      max_units: 20,
       sort_order: 0,
     });
 
@@ -663,6 +691,8 @@ const filteredCounties = computed(() => {
             is_amount_fixed: !!record.locked,
             units_mode: record.units_mode,
             default_units: record.default_units,
+            min_units: record.min_units ?? 0,
+            max_units: record.max_units ?? 20,
             sort_order: record.sort_order,
           }
         : emptyItemForm();
@@ -685,6 +715,17 @@ const filteredCounties = computed(() => {
         return;
       }
 
+      const minUnits = Number(f.min_units) || 0;
+      const maxUnits =
+        f.max_units === '' || f.max_units === null ? 20 : Number(f.max_units);
+
+      if (unitsMode === 'dynamic' && maxUnits < minUnits) {
+        notification.warning({
+          message: 'The upper units limit cannot be lower than the lower limit.',
+        });
+        return;
+      }
+
       const payload = {
         label: String(f.label).trim(),
         default_amount:
@@ -696,6 +737,9 @@ const filteredCounties = computed(() => {
         is_amount_fixed: isFixed,
         units_mode: unitsMode,
         default_units: unitsMode === 'default' ? Number(f.default_units) || 0 : 0,
+        // Officer-entered units bounds — configurable per Cost Item.
+        min_units: minUnits,
+        max_units: maxUnits,
         sort_order: Number(f.sort_order) || 0,
       };
 
@@ -1161,6 +1205,16 @@ const filteredCounties = computed(() => {
   margin: 4px 0 0;
   font-size: 11px;
   color: #9aa4b8;
+}
+.sac-limits-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.sac-limits-sep {
+  color: #8a93a8;
+  font-size: 12px;
 }
 .sac-modal-input {
   width: 100%;

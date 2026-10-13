@@ -109,6 +109,7 @@
                 v-for="b in stageSummary"
                 :key="b.label"
                 class="ss-bucket"
+                :title="b.hint"
                 :class="{
                   'is-mine': myActionStages.includes(b.label),
                   'is-editable': myEditableStages.includes(b.label),
@@ -121,6 +122,9 @@
                 <div v-else-if="myEditableStages.includes(b.label)" class="ss-you ss-you--editable">
                   Editable
                 </div>
+                <!-- Plain-language detail so the reviewer knows exactly what
+                     each pipeline stage means (what is waiting and on whom). -->
+                <div class="ss-desc">{{ b.hint }}</div>
               </div>
             </div>
           </section>
@@ -415,8 +419,8 @@
                     <a-input-number
                       v-if="editing"
                       v-model:value="record.units"
-                      :min="0"
-                      :max="record.is_special_cost ? 20 : 100000"
+                      :min="record.is_special_cost ? (record.min_units ?? 0) : 0"
+                      :max="record.is_special_cost ? (record.max_units ?? sacMaxUnits(record)) : 100000"
                       size="small"
                       class="nbr-edit-input"
                     />
@@ -750,6 +754,7 @@ import { computed, onMounted, ref } from 'vue';
 import { notification, message } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { hasRoleByName } from '@/services/user-role';
+import { sacMaxUnits } from '@/services/specialAreaCosts';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import BudgetStagePipeline from './BudgetStagePipeline.vue';
@@ -851,6 +856,10 @@ const mapDetail = (d) => {
         // is editable (manual units/days vs. an auto-calculated override).
         is_auto_calculated: !!p.is_auto_calculated,
         is_special_cost: !!p.is_special_cost,
+        // SAC item code + per-item units bounds — drive the editor's min/max.
+        special_type: p.special_type || null,
+        min_units: p.min_units == null ? null : Number(p.min_units),
+        max_units: p.max_units == null ? null : Number(p.max_units),
         override_value: p.override_value == null ? null : Number(p.override_value),
       })),
     })),
@@ -1083,6 +1092,14 @@ export default {
     /* fetch one budget detail ---------------------------- */
     const fetchBudgetDetail = async (budgetId) => {
       if (!budgetId) return;
+      // Opening ANY budget detail leaves edit mode. Without this, a reviewer
+      // who clicked "Edit Budget" on one budget would carry `editing = true`
+      // into the next one, hiding the review / approve / refer actions (all
+      // gated by `!editing`) — so they appear to have "disappeared" with no
+      // way back except Cancel/Recalculate on that first budget.
+      editing.value = false;
+      editSnapshot.value = {};
+      editComments.value = {};
       loadingDetail.value = true;
       try {
         const { data } = await axios.get('get_national_budget_review_detail', {
@@ -1541,13 +1558,47 @@ export default {
 
     // Ordered review-pipeline buckets, keyed by the backend's stage label so
     // every budget lands in exactly one bucket regardless of level / SAC type.
+    //
+    // Each bucket carries a `hint` — the plain-language meaning of the stage,
+    // shown on hover and as a caption under the label. The two stages that are
+    // easiest to misread are spelled out in full:
+    //   • "County Approved"  → the sub-county budget is done with the county and
+    //                          is now queued for the DNMP (national) review.
+    //   • "DNMP Review"      → waiting on the DNMP Accountant; it gathers a
+    //                          submitted county budget, a County-Approved
+    //                          sub-county budget, and a submitted Special Area
+    //                          Cost budget.
     const STAGE_BUCKETS = [
-      { label: 'Preparatory Stage',         short: 'Preparatory' },
-      { label: 'County Review',             short: 'County Review' },
-      { label: 'County Approved',           short: 'County Approved' },
-      { label: 'Pending DNMP Review',       short: 'DNMP Review' },
-      { label: 'Pending National Approval', short: 'National Approval' },
-      { label: 'National Approved',         short: 'Approved' },
+      {
+        label: 'Preparatory Stage',
+        short: 'Preparatory',
+        hint: 'Draft — the county or sub-county is still preparing this budget and has not submitted it yet.',
+      },
+      {
+        label: 'County Review',
+        short: 'County Review',
+        hint: 'Sub-county budget submitted — awaiting the county officer’s approval.',
+      },
+      {
+        label: 'County Approved',
+        short: 'County Approved',
+        hint: 'County has approved this sub-county budget. It is now queued for the DNMP (national) review before final approval.',
+      },
+      {
+        label: 'Pending DNMP Review',
+        short: 'DNMP Review',
+        hint: 'Awaiting the DNMP Accountant: a submitted county budget, a County-Approved sub-county budget, or a submitted Special Area Cost budget.',
+      },
+      {
+        label: 'Pending National Approval',
+        short: 'National Approval',
+        hint: 'Reviewed by the DNMP Accountant — awaiting final approval by the Finance Officer.',
+      },
+      {
+        label: 'National Approved',
+        short: 'Approved',
+        hint: 'Fully approved at national level. The budget is locked and can no longer be edited.',
+      },
     ];
 
     /** Counts of every budget at each stage, across all counties. */
@@ -1686,6 +1737,8 @@ export default {
       downloadBudgetPDF,
       fmt,
       formatReviewDate,
+      // SAC per-item units ceiling (Enhanced Transport = 100, else 20).
+      sacMaxUnits,
       /* filters */
       filterCountyId,
       filterSubCountyId,
@@ -2315,7 +2368,7 @@ export default {
 .ss-track { display: flex; gap: 8px; overflow-x: auto; }
 .ss-bucket {
   flex: 1 1 0;
-  min-width: 120px;
+  min-width: 160px;
   border: 1px solid #e9edf2;
   border-radius: 10px;
   padding: 10px 12px;
@@ -2355,6 +2408,18 @@ export default {
   border-radius: 6px;
   padding: 1px 6px;
 }
+
+/* Plain-language meaning of each pipeline stage. */
+.ss-desc {
+  margin-top: 6px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  font-weight: 500;
+  color: #6b7a86;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ss-bucket.is-mine .ss-desc { color: #2C7BE5; }
 
 /* Pipeline inside a grid tile */
 .dc-pipeline {
