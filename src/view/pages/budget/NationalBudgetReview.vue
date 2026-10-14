@@ -1220,13 +1220,24 @@ export default {
     /* actions -------------------------------------------- */
     /* Button visibility is gated by the EXACT business roles (mirrors the
      * strict backend gate in CampaignBudgetController):
-     *   • Accountant (DNMP) or Super Admin        → Mark as Reviewed
-     *   • Finance Officer (DNMP) or Super Admin   → Approve
+     *   • Accountant (DNMP) or Super Admin         → Mark as Reviewed
+     *   • Program Head | GF Manager (DNMP GF Manager) |
+     *     Vector Control (Vector Unit Head) | Super Admin  → Approve
+     * The national REVIEWERS (Finance Officer / Program Accountant / DNMP
+     * Accountant) may review/edit but can NOT approve.
      * The budget state (server-side can_review / can_approve) must also
      * allow it — e.g. Super Admin sees both buttons, but only when the
      * budget is actually at the right stage. */
     const canReview  = computed(() => hasRoleByName(['Super Admin', 'Accountant']).value);
-    const canApprove = computed(() => hasRoleByName(['Super Admin', 'Finance Officer']).value);
+    const canApprove = computed(() =>
+      hasRoleByName([
+        'Super Admin',
+        'Program head',
+        'DNMP Program Head',
+        'DNMP GF Manager',
+        'Vector Unit Head',
+      ]).value,
+    );
 
     const approving = ref(false);
     const openReviewModal = () => {
@@ -1310,16 +1321,25 @@ export default {
       referModal.value = true;
     };
     /* Locally-derived eligibility. The backend strictly restricts national-stage
-     * referrals to the DNMP roles (Accountant | Finance Officer) plus Super
-     * Admin, so the button only renders for those exact roles. The budget
-     * must also be in a referrable state (sub-county submitted, county
-     * submitted/county-approved, or already DNMP-reviewed awaiting approval);
-     * if the BE explicitly says false we still respect that. */
+     * referrals to the national chain (Accountant | Finance Officer |
+     * Program Head | GF Manager | Vector Control) plus Super Admin, so the
+     * button only renders for those exact roles. The budget must also be in a
+     * referrable state (sub-county submitted, county submitted/county-approved,
+     * or already DNMP-reviewed awaiting approval); if the BE explicitly says
+     * false we still respect that. */
     const canReferBack = computed(() => {
       const b = selectedBudget.value;
       if (!b) return false;
       if (b.can_refer_back === false) return false;
-      if (!hasRoleByName(['Super Admin', 'Accountant', 'Finance Officer']).value) return false;
+      if (!hasRoleByName([
+        'Super Admin',
+        'Accountant',
+        'Finance Officer',
+        'Program head',
+        'DNMP Program Head',
+        'DNMP GF Manager',
+        'Vector Unit Head',
+      ]).value) return false;
       return ['submitted', 'county_approved', 'dnmp_reviewed'].includes(b.status);
     });
     const handleRefer = async () => {
@@ -1379,6 +1399,9 @@ export default {
         'Super Admin',
         'Accountant',
         'Finance Officer',
+        // Vector Unit Head approves after the reviewers, so it must be able
+        // to read the reviewer change history ("update log") before signing off.
+        'Vector Unit Head',
         'Program Accountant',
         'DNMP Program Head',
         'Program head',
