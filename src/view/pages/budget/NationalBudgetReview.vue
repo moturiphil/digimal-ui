@@ -98,11 +98,21 @@
 
         <!-- ════════ LEVEL 1 · County grid ════════ -->
         <template v-if="!selectedCounty">
-          <!-- Where every county & sub-county budget sits right now -->
+          <!-- Where every county & sub-county budget sits right now.
+               The pipeline is ordered 1→6 and each stage splits the count into
+               STANDARD vs SAC budgets, so it is obvious which type is where. -->
           <section v-if="stageSummaryTotal" class="stage-summary">
             <div class="ss-title">
               <span class="ss-icon">⌛</span>
-              Budget pipeline — where the county &amp; sub-county budgets are
+              <span class="ss-heading">Budget pipeline — where the county &amp; sub-county budgets are</span>
+              <span class="ss-legend">
+                <span class="ss-key ss-key--std">
+                  <i class="ss-dot"></i>Standard <b>{{ stageSummaryByType.standard }}</b>
+                </span>
+                <span class="ss-key ss-key--sac">
+                  <i class="ss-dot"></i>SAC <b>{{ stageSummaryByType.sac }}</b>
+                </span>
+              </span>
             </div>
             <div class="ss-track">
               <div
@@ -116,15 +126,26 @@
                   'is-empty': !b.count,
                 }"
               >
-                <div class="ss-count">{{ b.count }}</div>
-                <div class="ss-label">{{ b.short }}</div>
+                <div class="ss-step">
+                  <span class="ss-step-no">{{ b.order }}</span>
+                  <span class="ss-step-name">{{ b.short }}</span>
+                </div>
+                <div class="ss-split">
+                  <span class="ss-type ss-type--std">
+                    <i class="ss-dot"></i>Standard
+                    <b>{{ b.standard }}</b>
+                  </span>
+                  <!-- SAC only where a SAC budget can actually be: it skips the
+                       county tier, so stages ②/③ stay Standard-only. -->
+                  <span v-if="b.showSac" class="ss-type ss-type--sac">
+                    <i class="ss-dot"></i>SAC
+                    <b>{{ b.sac }}</b>
+                  </span>
+                </div>
                 <div v-if="myActionStages.includes(b.label)" class="ss-you">Awaiting you</div>
                 <div v-else-if="myEditableStages.includes(b.label)" class="ss-you ss-you--editable">
                   Editable
                 </div>
-                <!-- Plain-language detail so the reviewer knows exactly what
-                     each pipeline stage means (what is waiting and on whom). -->
-                <div class="ss-desc">{{ b.hint }}</div>
               </div>
             </div>
           </section>
@@ -395,6 +416,16 @@
                     :title="`Unit totals are multiplied by ${cat.multiplier_display}`"
                   >
                     {{ cat.multiplier_display }}
+                  </a-tag>
+                  <!-- Drift: the county profile now holds a different multiplier
+                       than the one this budget was costed with. Recalculating
+                       re-applies the current profile value. -->
+                  <a-tag
+                    v-if="isSuperAdmin && cat.multiplier_mismatch"
+                    class="cat-drift"
+                    :title="`The county profile now says ×${cat.profile_multiplier}. This budget was costed at ${cat.multiplier_display} — recalculate to apply the current profile.`"
+                  >
+                    ⚠ profile ×{{ cat.profile_multiplier }}
                   </a-tag>
                   <span class="cat-total">KES {{ fmt(cat.total) }}</span>
                 </div>
@@ -830,6 +861,11 @@ const mapDetail = (d) => {
       badge: cat.badge,
       multiplier_display: cat.multiplier_display || '',
       session_multiplier: cat.session_multiplier ?? null,
+      // Drift: the current county_profile multiplier vs. the value this budget
+      // was actually costed with (the profile is the source of truth going
+      // forward; a mismatch means a recalculation would change the totals).
+      profile_multiplier: cat.profile_multiplier ?? null,
+      multiplier_mismatch: !!cat.multiplier_mismatch,
       // Preview toggle — mirrors the county / sub-county session multiplier.
       multiplierApplied: false,
       total: cat.total_kes || 0,
@@ -1092,14 +1128,12 @@ export default {
     /* fetch one budget detail ---------------------------- */
     const fetchBudgetDetail = async (budgetId) => {
       if (!budgetId) return;
-      // Opening ANY budget detail leaves edit mode. Without this, a reviewer
-      // who clicked "Edit Budget" on one budget would carry `editing = true`
-      // into the next one, hiding the review / approve / refer actions (all
-      // gated by `!editing`) — so they appear to have "disappeared" with no
-      // way back except Cancel/Recalculate on that first budget.
-      editing.value = false;
-      editSnapshot.value = {};
-      editComments.value = {};
+      // NB: this deliberately does NOT touch edit mode. It is called both when
+      // opening a (different) budget AND to refresh the SAME budget after a
+      // per-category Save — the latter must keep edit mode so the reviewer can
+      // move straight on to the next category. Opening a different budget
+      // resets edit mode via resetEditState() in the navigation helpers below.
+      const isSameBudget = !!selectedBudget.value && selectedBudget.value.id === budgetId;
       loadingDetail.value = true;
       try {
         const { data } = await axios.get('get_national_budget_review_detail', {
@@ -1107,9 +1141,14 @@ export default {
         });
         const mapped = mapDetail(data);
         selectedBudget.value = mapped;
-        openCategoryKeys.value = mapped && mapped.categories.length
-          ? [mapped.categories[0].id]
-          : [];
+        // Keep the currently-expanded categories when merely refreshing the same
+        // budget (e.g. after a per-category Save) so the reviewer's place isn't
+        // lost; only a freshly-opened budget starts on its first category.
+        if (!isSameBudget) {
+          openCategoryKeys.value = mapped && mapped.categories.length
+            ? [mapped.categories[0].id]
+            : [];
+        }
       } catch (err) {
         message.error('Failed to load budget detail');
         // eslint-disable-next-line no-console
@@ -1121,16 +1160,19 @@ export default {
 
     /* navigation ----------------------------------------- */
     const openCounty = (c) => {
+      resetEditState();
       selectedCounty.value = c;
       selectedBudget.value = null;
     };
     const openCountyBudget = () => {
       const cb = selectedCounty.value && selectedCounty.value.county_budget;
       if (!cb || !cb.id) return;
+      resetEditState();
       fetchBudgetDetail(cb.id);
     };
     const openSubCountyBudget = (sc) => {
       if (!sc || !sc.budget || !sc.budget.id) return;
+      resetEditState();
       fetchBudgetDetail(sc.budget.id);
     };
     // The Special Area Cost budget is its own record — open it independently
@@ -1138,9 +1180,11 @@ export default {
     const openSacBudget = (sc) => {
       const sac = sc && sc.sac_budget;
       if (!sac || !sac.id) return;
+      resetEditState();
       fetchBudgetDetail(sac.id);
     };
     const goCounties = () => {
+      resetEditState();
       selectedCounty.value = null;
       selectedBudget.value = null;
       // Clearing the drill-in also clears the sub-county filter — its
@@ -1148,6 +1192,7 @@ export default {
       filterSubCountyId.value = null;
     };
     const goCountyBudgets = () => {
+      resetEditState();
       selectedBudget.value = null;
     };
 
@@ -1322,6 +1367,11 @@ export default {
       hasRoleByName(['Super Admin', 'Accountant', 'Finance Officer', 'Program Accountant']).value,
     );
 
+    /* The profile-multiplier drift indicator is a Super-Admin-only diagnostic —
+     * it is a configuration/consistency check, not part of the normal review
+     * workflow, so it is hidden from the review / approval roles. */
+    const isSuperAdmin = computed(() => hasRoleByName(['Super Admin']).value);
+
     /* Roles allowed to see the reviewer-change audit history (approver
      * visibility): the post-review sign-off roles plus the editors. */
     const canViewChanges = computed(() =>
@@ -1357,7 +1407,25 @@ export default {
       (selectedBudget.value && selectedBudget.value.line_item_changes) || [],
     );
 
-    const beginEdit = () => {
+    /* ── Edit-mode lifecycle ──────────────────────────────────────────────
+     * Edit mode spans the WHOLE budget so the reviewer can save several
+     * categories in one pass. It is only left on Cancel, after the global
+     * Recalculate, or when navigating away to another budget. */
+
+    /** Leave edit mode and drop the scratch state. */
+    const resetEditState = () => {
+      editing.value = false;
+      editSnapshot.value = {};
+      editComments.value = {};
+    };
+
+    /**
+     * (Re)seed the edit baseline from the CURRENT items — they are then treated
+     * as "saved" (not dirty) while edit mode stays ON. Called when edit mode
+     * opens and after each per-category Save so the reviewer can carry straight
+     * on to the next category without clicking "Edit Budget" again.
+     */
+    const seedEditBaseline = () => {
       const snap = {};
       editableItems.value.forEach((it) => {
         snap[it.line_item_id] = { units: it.units };
@@ -1367,6 +1435,10 @@ export default {
       (selectedBudget.value?.categories || []).forEach((cat) => {
         cat.multiplierApplied = false;
       });
+    };
+
+    const beginEdit = () => {
+      seedEditBaseline();
       editing.value = true;
     };
 
@@ -1379,8 +1451,7 @@ export default {
       (selectedBudget.value?.categories || []).forEach((cat) => {
         cat.multiplierApplied = false;
       });
-      editing.value = false;
-      editComments.value = {};
+      resetEditState();
     };
 
     /** Per-row comment binding (v-model target for the comment column). */
@@ -1475,8 +1546,11 @@ export default {
           message: `${cat.name} saved`,
           description: 'Units saved and subtotal recalculated.',
         });
-        // Refresh so the recalculated subtotal + grand total are shown.
+        // Refresh so the recalculated subtotal + grand total are shown, then
+        // re-seed the baseline so edit mode STAYS ON and the reviewer can go
+        // straight to the next category — no second "Edit Budget" click.
         await fetchBudgetDetail(rid);
+        if (editing.value) seedEditBaseline();
         await fetchCounties();
       } catch (err) {
         notification.error({
@@ -1502,8 +1576,7 @@ export default {
       try {
         await axios.post(`recalculate_budget_line_items/${rid}`);
         notification.success({ message: 'Totals recalculated.' });
-        editing.value = false;
-        editComments.value = {};
+        resetEditState();
         await fetchBudgetDetail(rid);
         await fetchCounties();
       } catch (err) {
@@ -1559,72 +1632,98 @@ export default {
     // Ordered review-pipeline buckets, keyed by the backend's stage label so
     // every budget lands in exactly one bucket regardless of level / SAC type.
     //
-    // Each bucket carries a `hint` — the plain-language meaning of the stage,
-    // shown on hover and as a caption under the label. The two stages that are
-    // easiest to misread are spelled out in full:
-    //   • "County Approved"  → the sub-county budget is done with the county and
-    //                          is now queued for the DNMP (national) review.
-    //   • "DNMP Review"      → waiting on the DNMP Accountant; it gathers a
-    //                          submitted county budget, a County-Approved
-    //                          sub-county budget, and a submitted Special Area
-    //                          Cost budget.
+    // `showSac` marks the stages a Special Area Cost budget can actually reach.
+    // SAC budgets skip the county tier entirely (they go straight to National),
+    // so the County Review / County Approved stages are STANDARD-only and must
+    // not show a SAC column.
+    //
+    // Each bucket also carries a `hint` — the plain-language meaning of the
+    // stage, surfaced on hover only (no wording is rendered on the cards).
     const STAGE_BUCKETS = [
       {
         label: 'Preparatory Stage',
         short: 'Preparatory',
+        showSac: true,
         hint: 'Draft — the county or sub-county is still preparing this budget and has not submitted it yet.',
       },
       {
         label: 'County Review',
         short: 'County Review',
+        showSac: false, // SAC budgets never enter the county tier
         hint: 'Sub-county budget submitted — awaiting the county officer’s approval.',
       },
       {
         label: 'County Approved',
         short: 'County Approved',
+        showSac: false, // SAC budgets never enter the county tier
         hint: 'County has approved this sub-county budget. It is now queued for the DNMP (national) review before final approval.',
       },
       {
         label: 'Pending DNMP Review',
         short: 'DNMP Review',
+        showSac: true,
         hint: 'Awaiting the DNMP Accountant: a submitted county budget, a County-Approved sub-county budget, or a submitted Special Area Cost budget.',
       },
       {
         label: 'Pending National Approval',
         short: 'National Approval',
+        showSac: true,
         hint: 'Reviewed by the DNMP Accountant — awaiting final approval by the Finance Officer.',
       },
       {
         label: 'National Approved',
         short: 'Approved',
+        showSac: true,
         hint: 'Fully approved at national level. The budget is locked and can no longer be edited.',
       },
     ];
 
-    /** Counts of every budget at each stage, across all counties. */
+    /**
+     * Counts of every budget at each stage, across all counties, split by
+     * budget type. The counts payload keeps the two types in separate fields —
+     * `county_budget` / `sub_counties[].budget` are STANDARD budgets and
+     * `sac_budget` / `sub_counties[].sac_budget` are SAC budgets — so each
+     * stage can state exactly how many of each sit there.
+     */
     const stageSummary = computed(() => {
-      const counts = {};
-      STAGE_BUCKETS.forEach((b) => { counts[b.label] = 0; });
+      const rows = {};
+      STAGE_BUCKETS.forEach((b) => { rows[b.label] = { standard: 0, sac: 0 }; });
 
-      const bump = (b) => {
-        if (b && b.stage && counts[b.stage] !== undefined) counts[b.stage] += 1;
+      const bump = (b, kind) => {
+        if (!b || !b.stage || rows[b.stage] === undefined) return;
+        rows[b.stage][kind] += 1;
       };
 
       counties.value.forEach((c) => {
-        bump(c.county_budget);
-        bump(c.sac_budget);
+        bump(c.county_budget, 'standard');
+        bump(c.sac_budget, 'sac');
         (c.sub_counties || []).forEach((sc) => {
-          bump(sc.budget);
-          bump(sc.sac_budget);
+          bump(sc.budget, 'standard');
+          bump(sc.sac_budget, 'sac');
         });
       });
 
-      return STAGE_BUCKETS.map((b) => ({ ...b, count: counts[b.label] }));
+      return STAGE_BUCKETS.map((b, i) => {
+        const r = rows[b.label];
+        return {
+          ...b,
+          order: i + 1,               // 1→6 so the stage order is unambiguous
+          standard: r.standard,
+          sac: r.sac,
+          count: r.standard + r.sac,
+        };
+      });
     });
 
     const stageSummaryTotal = computed(() =>
       stageSummary.value.reduce((a, b) => a + b.count, 0),
     );
+
+    /** Pipeline totals per budget type — the header legend. */
+    const stageSummaryByType = computed(() => ({
+      standard: stageSummary.value.reduce((a, b) => a + b.standard, 0),
+      sac: stageSummary.value.reduce((a, b) => a + b.sac, 0),
+    }));
 
     /**
      * Stage labels where the acting role must act next — highlighted in the
@@ -1692,6 +1791,7 @@ export default {
       summaryColSpan,
       canEditSelected,
       canViewChanges,
+      isSuperAdmin,
       changeHistory,
       editing,
       dirtyEditCount,
@@ -1714,6 +1814,7 @@ export default {
       myActionStatus,
       stageSummary,
       stageSummaryTotal,
+      stageSummaryByType,
       myActionStages,
       myEditableStages,
       openCounty,
@@ -2080,6 +2181,15 @@ export default {
       padding: 1px 8px;
       font-weight: 600;
     }
+    .cat-drift {
+      background: #fdecea;
+      color: #c0392b;
+      border: 1px solid #f6c7c0;
+      font-size: 10px;
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-weight: 600;
+    }
     .cat-total {
       font-size: 13px;
       font-weight: 700;
@@ -2385,17 +2495,49 @@ export default {
   background: #fffaf0;
 }
 .ss-you--editable { color: #8a6100; background: #fdf1d6; }
-.ss-count { font-size: 22px; font-weight: 800; color: #272B41; line-height: 1; }
-.ss-bucket.is-mine .ss-count { color: #2C99FF; }
-.ss-label {
-  margin-top: 6px;
+.ss-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
-  font-weight: 600;
-  color: #9299b8;
+  font-weight: 700;
+  color: #2f3a35;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-.ss-bucket.is-mine .ss-label { color: #2C99FF; }
+.ss-bucket.is-mine .ss-step { color: #2C99FF; }
+.ss-step-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: #6b7a86;
+  font-size: 10px;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+.ss-bucket.is-mine .ss-step-no { background: #eaf5ff; color: #2C99FF; }
+
+/* Per-stage split: how many STANDARD vs SAC budgets sit in this stage. */
+.ss-split {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 8px;
+}
+.ss-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #6b7a86;
+  white-space: nowrap;
+}
+.ss-type b { color: #272B41; font-weight: 800; font-size: 13px; }
+.ss-bucket.is-empty .ss-type b { color: #b6bdc7; }
 .ss-you {
   margin-top: 6px;
   display: inline-block;
@@ -2409,17 +2551,41 @@ export default {
   padding: 1px 6px;
 }
 
-/* Plain-language meaning of each pipeline stage. */
-.ss-desc {
-  margin-top: 6px;
-  font-size: 10.5px;
-  line-height: 1.35;
-  font-weight: 500;
-  color: #6b7a86;
-  text-transform: none;
-  letter-spacing: 0;
+/* Header legend — pipeline totals per budget type. */
+.ss-heading { flex: 1 1 auto; }
+.ss-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
-.ss-bucket.is-mine .ss-desc { color: #2C7BE5; }
+.ss-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7a86;
+  background: #f6f8fa;
+  border: 1px solid #e9edf2;
+  border-radius: 12px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.ss-key b { color: #272B41; font-weight: 800; }
+
+/* Type colour dot — green = Standard, brown = SAC (matches the SAC cards). */
+.ss-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+.ss-key--std .ss-dot,
+.ss-type--std .ss-dot { background: #15693c; }
+.ss-key--sac .ss-dot,
+.ss-type--sac .ss-dot { background: #8a4d1f; }
 
 /* Pipeline inside a grid tile */
 .dc-pipeline {
