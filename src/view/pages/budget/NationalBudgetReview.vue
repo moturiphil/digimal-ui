@@ -662,7 +662,8 @@
               Cancel
             </sdButton>
 
-            <!-- DNMP Accountant review step — before the Finance Officer can approve -->
+            <!-- National reviewer review step (DNMP Accountant / Finance
+                 Officer / Program Accountant) — before final national approval -->
             <sdButton
               v-if="!editing && selectedBudget.can_review && canReview"
               type="primary"
@@ -1220,7 +1221,8 @@ export default {
     /* actions -------------------------------------------- */
     /* Button visibility is gated by the EXACT business roles (mirrors the
      * strict backend gate in CampaignBudgetController):
-     *   • Accountant (DNMP) or Super Admin         → Mark as Reviewed
+     *   • Accountant (DNMP) | Finance Officer | Program Accountant
+     *     | Super Admin                              → Mark as Reviewed
      *   • Program Head | GF Manager (DNMP GF Manager) |
      *     Vector Control (Vector Unit Head) | Super Admin  → Approve
      * The national REVIEWERS (Finance Officer / Program Accountant / DNMP
@@ -1228,7 +1230,14 @@ export default {
      * The budget state (server-side can_review / can_approve) must also
      * allow it — e.g. Super Admin sees both buttons, but only when the
      * budget is actually at the right stage. */
-    const canReview  = computed(() => hasRoleByName(['Super Admin', 'Accountant']).value);
+    const canReview  = computed(() =>
+      hasRoleByName([
+        'Super Admin',
+        'Accountant',
+        'Finance Officer',
+        'Program Accountant',
+      ]).value,
+    );
     const canApprove = computed(() =>
       hasRoleByName([
         'Super Admin',
