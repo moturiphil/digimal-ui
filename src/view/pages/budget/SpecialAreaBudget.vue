@@ -83,6 +83,7 @@
                   :referrer="referredBy"
                   :referred-at="referredAt"
                   :message="referralMessage"
+                  :referred-to="referralLevel"
                 />
 
                 <!-- Owner status card (once the SAC budget has left draft) -->
@@ -313,6 +314,9 @@ export default {
     const referredAt = ref(null);
     const referralMessage = ref('');
     const referredBy = ref(null);
+    /* Destination level of the referral (sub_county | county | dnmp_review |
+     * approver) — shown in the referral banner. */
+    const referralLevel = ref(null);
 
     // Categories + SAC catalogue + staged entries.
     const activityCatalog = ref([]);
@@ -564,6 +568,7 @@ export default {
         isReferred.value = !!active.is_referred;
         referredAt.value = active.referred_at || null;
         referralMessage.value = active.referral_message || '';
+        referralLevel.value = active.referred_to_level || null;
         referredBy.value =
           active.referred_by && typeof active.referred_by === 'object'
             ? active.referred_by
@@ -596,6 +601,7 @@ export default {
         isReferred.value = false;
         referredAt.value = null;
         referralMessage.value = '';
+        referralLevel.value = null;
         referredBy.value = null;
 
         await Promise.all([loadSacItems(), loadActivities()]);
@@ -953,6 +959,7 @@ export default {
       isReferred,
       referredAt,
       referralMessage,
+      referralLevel,
       referredBy,
       selectedActivities,
       sacItems,

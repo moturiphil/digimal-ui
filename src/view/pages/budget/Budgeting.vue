@@ -42,6 +42,7 @@
           :referrer="referredBy"
           :referred-at="referredAt"
           :message="referralMessage"
+          :referred-to="referralLevel"
         />
 
         <!-- Summary bar -->
@@ -530,6 +531,9 @@ export default {
     const referredAt = ref(null);
     const referralMessage = ref('');
     const referredBy = ref(null);
+    /* Destination level of the referral (sub_county | county | dnmp_review |
+     * approver) — shown in the referral banner. */
+    const referralLevel = ref(null);
 
     // ── Special Area Cost state ─────────────────────────────────────────
     // The SAC section is driven by a single flag on the sub-county profile
@@ -814,6 +818,7 @@ export default {
       isReferred.value = false;
       referredAt.value = null;
       referralMessage.value = '';
+      referralLevel.value = null;
       referredBy.value = null;
 
       if (!countyProfileId.value) return;
@@ -861,6 +866,9 @@ export default {
           isReferred.value = !!active.is_referred;
           referredAt.value = active.referred_at || null;
           referralMessage.value = active.referral_message || '';
+          // Level the budget was referred back to (sub_county | county |
+          // dnmp_review | approver); null for legacy owner-level referrals.
+          referralLevel.value = active.referred_to_level || null;
           referredBy.value = null;
 
           // `create_campaign_budget` generates the line items in the same
@@ -951,6 +959,7 @@ export default {
             if (rb && typeof rb === 'object') referredBy.value = rb;
             if (b.referred_at && !referredAt.value) referredAt.value = b.referred_at;
             if (b.referral_message && !referralMessage.value) referralMessage.value = b.referral_message;
+            if (b.referred_to_level && !referralLevel.value) referralLevel.value = b.referred_to_level;
           } catch (e) {
             // Non-fatal — banner still renders with whatever fields we have.
           }
@@ -1170,6 +1179,7 @@ export default {
           isReferred.value = !!existing.is_referred;
           referredAt.value = existing.referred_at || null;
           referralMessage.value = existing.referral_message || '';
+          referralLevel.value = existing.referred_to_level || null;
           referredBy.value = null;
           generated.value = {
             total: Number(existing.grand_total) || 0,
@@ -1216,6 +1226,7 @@ export default {
         isReferred.value = false;
         referredAt.value = null;
         referralMessage.value = '';
+        referralLevel.value = null;
         referredBy.value = null;
         // Surface the status card immediately so the user lands on the
         // “County Review” view post-submit.
@@ -1457,6 +1468,7 @@ export default {
       isReferred,
       referredAt,
       referralMessage,
+      referralLevel,
       referredBy,
       openBudgetDetail,
       hasSessionMultiplier,
