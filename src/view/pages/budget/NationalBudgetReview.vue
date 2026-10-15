@@ -115,38 +115,84 @@
               </span>
             </div>
             <div class="ss-track">
-              <div
+              <!-- Hovering a stage lists the counties / sub-counties whose
+                   budgets currently sit in that stage (standard + SAC), so a
+                   reviewer can see exactly what is queued where. -->
+              <a-tooltip
                 v-for="b in stageSummary"
                 :key="b.label"
-                class="ss-bucket"
-                :title="b.hint"
-                :class="{
-                  'is-mine': myActionStages.includes(b.label),
-                  'is-editable': myEditableStages.includes(b.label),
-                  'is-empty': !b.count,
-                }"
+                placement="top"
               >
-                <div class="ss-step">
-                  <span class="ss-step-no">{{ b.order }}</span>
-                  <span class="ss-step-name">{{ b.short }}</span>
+                <template #title>
+                  <div style="max-width: 360px">
+                    <div style="font-weight: 600; margin-bottom: 4px">{{ b.hint }}</div>
+                    <div v-if="!b.entries.length" style="opacity: 0.75">
+                      No budget is currently in this stage.
+                    </div>
+                    <template v-if="b.standardItems.length">
+                      <div
+                        style="
+                          margin-top: 6px;
+                          font-size: 11px;
+                          font-weight: 700;
+                          letter-spacing: 0.4px;
+                          opacity: 0.85;
+                        "
+                      >
+                        STANDARD BUDGETS ({{ b.standard }})
+                      </div>
+                      <ul style="margin: 2px 0 0; padding-left: 16px">
+                        <li v-for="name in b.standardItems" :key="name">{{ name }}</li>
+                      </ul>
+                    </template>
+                    <template v-if="b.sacItems.length">
+                      <div
+                        style="
+                          margin-top: 6px;
+                          font-size: 11px;
+                          font-weight: 700;
+                          letter-spacing: 0.4px;
+                          opacity: 0.85;
+                        "
+                      >
+                        SPECIAL AREA COST BUDGETS ({{ b.sac }})
+                      </div>
+                      <ul style="margin: 2px 0 0; padding-left: 16px">
+                        <li v-for="name in b.sacItems" :key="name">{{ name }}</li>
+                      </ul>
+                    </template>
+                  </div>
+                </template>
+                <div
+                  class="ss-bucket"
+                  :class="{
+                    'is-mine': myActionStages.includes(b.label),
+                    'is-editable': myEditableStages.includes(b.label),
+                    'is-empty': !b.count,
+                  }"
+                >
+                  <div class="ss-step">
+                    <span class="ss-step-no">{{ b.order }}</span>
+                    <span class="ss-step-name">{{ b.short }}</span>
+                  </div>
+                  <div class="ss-split">
+                    <span class="ss-type ss-type--std">
+                      <i class="ss-dot"></i>Standard
+                      <b>{{ b.standard }}</b>
+                    </span>
+                    <!-- SAC only where a SAC budget can actually be: it skips the
+                         county tier, so stages ②/③ stay Standard-only. -->
+                    <span v-if="b.showSac" class="ss-type ss-type--sac">
+                      <i class="ss-dot"></i>SAC
+                      <b>{{ b.sac }}</b>
+                    </span>
+                  </div>
+                  <div v-if="myActionStages.includes(b.label)" class="ss-you">Awaiting you</div>
+                  <div v-else-if="myEditableStages.includes(b.label)" class="ss-you ss-you--editable">
+                    Editable
+                  </div>
                 </div>
-                <div class="ss-split">
-                  <span class="ss-type ss-type--std">
-                    <i class="ss-dot"></i>Standard
-                    <b>{{ b.standard }}</b>
-                  </span>
-                  <!-- SAC only where a SAC budget can actually be: it skips the
-                       county tier, so stages ②/③ stay Standard-only. -->
-                  <span v-if="b.showSac" class="ss-type ss-type--sac">
-                    <i class="ss-dot"></i>SAC
-                    <b>{{ b.sac }}</b>
-                  </span>
-                </div>
-                <div v-if="myActionStages.includes(b.label)" class="ss-you">Awaiting you</div>
-                <div v-else-if="myEditableStages.includes(b.label)" class="ss-you ss-you--editable">
-                  Editable
-                </div>
-              </div>
+              </a-tooltip>
             </div>
           </section>
 
@@ -701,7 +747,11 @@
           </div>
         </template>
 
-        <!-- Refer Back Modal -->
+        <!-- Refer Back Modal — the reviewer chooses WHICH LEVEL the budget is
+             sent back to (owner, county, national DNMP review, national
+             approvers) as well as why. An approved budget may only be pulled
+             back by the Super Admin or a national approver; everyone else sees
+             the Refer Back button only while the budget is still in the chain. -->
         <a-modal
           v-model:visible="referModal"
           title="Refer Budget Back"
@@ -710,13 +760,34 @@
           :confirm-loading="referring"
         >
           <p style="color: #6b7a72; margin-bottom: 12px">
-            Provide detailed feedback for revision and resubmission.
+            Choose the level to refer this budget back to, then explain what needs to be corrected.
           </p>
-          <a-textarea
-            v-model:value="referNote"
-            :rows="4"
-            placeholder="Explain what needs to be corrected..."
-          />
+
+          <div style="margin-bottom: 14px">
+            <label style="display: block; font-weight: 600; color: #2b3245; margin-bottom: 6px">
+              Refer back to <span style="color: #f5222d">*</span>
+            </label>
+            <a-select
+              v-model:value="referTarget"
+              style="width: 100%"
+              placeholder="Select the level to refer this budget back to"
+              :options="referTargetOptions"
+            />
+            <p v-if="referTargetHint" style="margin: 6px 0 0; font-size: 12px; color: #8b8fa3">
+              {{ referTargetHint }}
+            </p>
+          </div>
+
+          <div>
+            <label style="display: block; font-weight: 600; color: #2b3245; margin-bottom: 6px">
+              Feedback / reason <span style="color: #f5222d">*</span>
+            </label>
+            <a-textarea
+              v-model:value="referNote"
+              :rows="4"
+              placeholder="Explain what needs to be corrected..."
+            />
+          </div>
         </a-modal>
 
         <!-- DNMP Accountant Review Modal -->
@@ -822,6 +893,47 @@ const formatAuditValue = (v) => {
   return String(parseFloat(n.toFixed(2)));
 };
 
+/* ────────── Refer-back destinations ──────────
+ * A referral no longer always sends the budget to the owner: the reviewer
+ * chooses the level of the chain the budget returns to. These labels mirror the
+ * backend constants in CampaignBudgetController (REFERRAL_LEVEL_*), which stay
+ * authoritative — the detail payload returns `review.referral_targets`, and this
+ * list supplies the labels / descriptions and the local fallback used when the
+ * API omits them. */
+const REFERRAL_TARGETS = [
+  {
+    value: 'sub_county',
+    label: 'Sub-County level',
+    hint: 'The sub-county owner revises the budget and resubmits it through the full chain (County → National DNMP review → Approver).',
+  },
+  {
+    value: 'county',
+    label: 'County level',
+    hint: 'The county officer re-reviews the sub-county submission. On a county-level budget this sends it back to the county user for revision.',
+  },
+  {
+    value: 'dnmp_review',
+    label: 'National DNMP Review level',
+    hint: 'The DNMP reviewers must review the budget again before it can be approved (their sign-off is withdrawn).',
+  },
+  {
+    value: 'approver',
+    label: 'National Approver level',
+    hint: 'The national approvers must sign the budget off again (the final approval is withdrawn).',
+  },
+];
+
+/* Local fallback mirroring CampaignBudgetController::referralLevelsFor():
+ * the owning unit is always available, the county stage only exists for
+ * standard sub-county budgets, and the two national stages always apply. */
+const defaultReferralTargets = (b) => {
+  const isSubCounty = !!(b && b.is_sub_county);
+  const levels = [isSubCounty ? 'sub_county' : 'county'];
+  if (isSubCounty && !(b && b.is_special_area)) levels.push('county');
+  levels.push('dnmp_review', 'approver');
+  return levels;
+};
+
 /* Map detail API response -> shape consumed by the template */
 const mapDetail = (d) => {
   if (!d) return null;
@@ -839,6 +951,9 @@ const mapDetail = (d) => {
     financial_year: d.financial_year,
     status: d.status,
     stage: d.stage,
+    // Where this budget was last referred back to (sub_county | county |
+    // dnmp_review | approver) — null when it has never been referred.
+    referral_level: (d.referral && d.referral.referred_to_level) || null,
     flags: d.flags,
     submitted_at: d.submitted_at,
     submitted_by: d.submitted_by,
@@ -903,6 +1018,9 @@ const mapDetail = (d) => {
     can_approve: !!review.can_approve,
     can_review: !!review.can_review,
     can_refer_back: !!review.can_refer_back,
+    // Levels this budget may be referred back TO — the backend-authoritative
+    // list that drives the Refer Back modal's destination selector.
+    referral_targets: review.referral_targets || [],
     // Pre-approval editing window (Finance Officer / Program Accountant).
     // False once the budget is approved — the row is then read-only.
     can_edit: !!review.can_edit,
@@ -947,6 +1065,10 @@ export default {
     const referModal = ref(false);
     const referring = ref(false);
     const referNote = ref('');
+    /* Destination level selected in the Refer Back modal
+     * (sub_county | county | dnmp_review | approver). Always chosen explicitly —
+     * the modal does not open with a preselected destination. */
+    const referTarget = ref(null);
 
     /* DNMP Accountant review (before Finance Officer approval) */
     const reviewModal = ref(false);
@@ -1325,30 +1447,75 @@ export default {
       approveModal.value = false;
     };
 
+    /* Roles allowed to refer a budget back WHILE it is still in the chain
+     * (submitted / county approved / awaiting national approval). Mirrors the
+     * backend gate: the county stage, the national reviewers and the national
+     * approvers, plus the Super Admin override. */
+    const IN_CHAIN_REFERRAL_ROLES = [
+      'Super Admin',
+      'Accountant',
+      'Finance Officer',
+      'Program Accountant',
+      'Program head',
+      'DNMP Program Head',
+      'DNMP GF Manager',
+      'Vector Unit Head',
+    ];
+    /* Roles allowed to pull an ALREADY APPROVED budget back into the chain:
+     * the Super Admin (full override) and the national APPROVERS who signed the
+     * budget off. The national reviewers can never disturb an approved budget.
+     * To restrict post-approval referral to the Super Admin alone, drop the
+     * four approver roles below (and the `isDnmpApprover()` clause in
+     * CampaignBudgetController::reject). */
+    const POST_APPROVAL_REFERRAL_ROLES = [
+      'Super Admin',
+      'Program head',
+      'DNMP Program Head',
+      'DNMP GF Manager',
+      'Vector Unit Head',
+    ];
+
     const openReferModal = () => {
       referNote.value = '';
+      // Force an explicit destination choice — never refer back silently.
+      referTarget.value = null;
       referModal.value = true;
     };
-    /* Locally-derived eligibility. The backend strictly restricts national-stage
-     * referrals to the national chain (Accountant | Finance Officer |
-     * Program Head | GF Manager | Vector Control) plus Super Admin, so the
-     * button only renders for those exact roles. The budget must also be in a
-     * referrable state (sub-county submitted, county submitted/county-approved,
-     * or already DNMP-reviewed awaiting approval); if the BE explicitly says
-     * false we still respect that. */
+
+    /* Destination options for the Refer Back modal: the backend's
+     * `review.referral_targets` when present (authoritative), else the local
+     * mirror of CampaignBudgetController::referralLevelsFor(). */
+    const referTargetOptions = computed(() => {
+      const b = selectedBudget.value;
+      if (!b) return [];
+      const allowed = b.referral_targets && b.referral_targets.length
+        ? b.referral_targets
+        : defaultReferralTargets(b);
+      return REFERRAL_TARGETS
+        .filter((t) => allowed.includes(t.value))
+        .map((t) => ({ value: t.value, label: t.label }));
+    });
+
+    /* Explanation of the selected destination, shown under the selector. */
+    const referTargetHint = computed(() => {
+      const hit = REFERRAL_TARGETS.find((t) => t.value === referTarget.value);
+      return hit ? hit.hint : '';
+    });
+
+    /* Locally-derived eligibility. The backend strictly restricts referrals:
+     *   • in-chain stages  → county reviewers / national chain / Super Admin
+     *   • approved         → Super Admin or a national APPROVER only
+     * and it reports the verdict in `can_refer_back`, which is honoured first. */
     const canReferBack = computed(() => {
       const b = selectedBudget.value;
       if (!b) return false;
+      // The BE explicitly says false → respect it (e.g. a national reviewer
+      // looking at an approved budget).
       if (b.can_refer_back === false) return false;
-      if (!hasRoleByName([
-        'Super Admin',
-        'Accountant',
-        'Finance Officer',
-        'Program head',
-        'DNMP Program Head',
-        'DNMP GF Manager',
-        'Vector Unit Head',
-      ]).value) return false;
+      if (b.status === 'approved') {
+        return hasRoleByName(POST_APPROVAL_REFERRAL_ROLES).value;
+      }
+      if (!hasRoleByName(IN_CHAIN_REFERRAL_ROLES).value) return false;
       return ['submitted', 'county_approved', 'dnmp_reviewed'].includes(b.status);
     });
     const handleRefer = async () => {
@@ -1359,23 +1526,34 @@ export default {
         });
         return;
       }
+      if (!referTarget.value) {
+        notification.warning({
+          message: 'Choose the level to refer this budget back to.',
+        });
+        return;
+      }
       if (!selectedBudget.value || !selectedBudget.value.id) {
         referModal.value = false;
         return;
       }
+      const level = referTarget.value;
+      const target = REFERRAL_TARGETS.find((t) => t.value === level);
+      const budgetId = selectedBudget.value.id;
       referring.value = true;
       try {
-        await axios.post(`reject_campaign_budget/${selectedBudget.value.id}`, {
+        await axios.post(`reject_campaign_budget/${budgetId}`, {
           rejection_note: note,
+          // The backend rewinds the budget to the chosen level (e.g. `county`
+          // re-opens the county review; `approver` withdraws the approval).
+          referral_level: level,
         });
-        // submitted, county_approved and dnmp_reviewed now revert to draft so
-        // the owning sub-county / county user can edit and resubmit.
-        selectedBudget.value.status = 'draft';
-        selectedBudget.value.can_approve = false;
-        selectedBudget.value.can_review = false;
-        selectedBudget.value.can_refer_back = false;
-        notification.success({ message: 'Budget referred back for revision.' });
+        notification.success({
+          message: `Budget referred back to the ${target ? target.label : level}.`,
+        });
         referModal.value = false;
+        // Re-read the budget so the pipeline, stage labels and action buttons
+        // reflect where it now sits, then refresh the stage summary strip.
+        await fetchBudgetDetail(budgetId);
         await fetchCounties();
       } catch (err) {
         notification.error({
@@ -1716,22 +1894,34 @@ export default {
      * `county_budget` / `sub_counties[].budget` are STANDARD budgets and
      * `sac_budget` / `sub_counties[].sac_budget` are SAC budgets — so each
      * stage can state exactly how many of each sit there.
+     *
+     * Each bucket also collects the NAMES of the budgets sitting in it
+     * (`standardItems` / `sacItems`) so hovering the stage can list exactly
+     * which counties and sub-counties are queued there.
      */
     const stageSummary = computed(() => {
       const rows = {};
-      STAGE_BUCKETS.forEach((b) => { rows[b.label] = { standard: 0, sac: 0 }; });
+      STAGE_BUCKETS.forEach((b) => {
+        rows[b.label] = { standard: 0, sac: 0, standardItems: [], sacItems: [] };
+      });
 
-      const bump = (b, kind) => {
-        if (!b || !b.stage || rows[b.stage] === undefined) return;
+      // `name` identifies the budget owner; `kind` picks the type column.
+      const bump = (b, kind, name) => {
+        if (!b || !b.stage || rows[b.stage] === undefined || !name) return;
         rows[b.stage][kind] += 1;
+        if (kind === 'sac') {
+          rows[b.stage].sacItems.push(name);
+        } else {
+          rows[b.stage].standardItems.push(name);
+        }
       };
 
       counties.value.forEach((c) => {
-        bump(c.county_budget, 'standard');
-        bump(c.sac_budget, 'sac');
+        bump(c.county_budget, 'standard', `${c.name} — County budget`);
+        bump(c.sac_budget, 'sac', `${c.name} — County SAC budget`);
         (c.sub_counties || []).forEach((sc) => {
-          bump(sc.budget, 'standard');
-          bump(sc.sac_budget, 'sac');
+          bump(sc.budget, 'standard', `${sc.name} — Sub-county budget`);
+          bump(sc.sac_budget, 'sac', `${sc.name} — Sub-county SAC budget`);
         });
       });
 
@@ -1743,6 +1933,10 @@ export default {
           standard: r.standard,
           sac: r.sac,
           count: r.standard + r.sac,
+          // Owner names queued in this stage — listed on hover.
+          standardItems: r.standardItems.sort(),
+          sacItems: r.sacItems.sort(),
+          entries: r.standardItems.concat(r.sacItems),
         };
       });
     });
@@ -1813,6 +2007,10 @@ export default {
       referModal,
       referring,
       referNote,
+      /* refer-back destination (level) selector */
+      referTarget,
+      referTargetOptions,
+      referTargetHint,
       reviewModal,
       reviewing,
       reviewNote,
