@@ -360,6 +360,21 @@
           </div>
           <div class="detail-stage-head">
             <a-tag class="ph-stage-tag">{{ selectedBudget.stage }}</a-tag>
+            <!-- Maintenance action: re-run recompute_county_profile_budgets/{id}
+                 for this budget's county profile (refreshes the profile's
+                 computed fields, every standard line item's session multiplier
+                 and the budget grand total). Works for both county-level and
+                 sub-county-level budgets. Hidden while editing so unsaved unit
+                 edits are not clobbered by the refresh. -->
+            <sdButton
+              v-if="canRecomputeProfile && selectedBudget.county_profile_id && !editing"
+              type="light"
+              class="nbr-action-btn"
+              :loading="recomputing"
+              @click="recomputeProfileBudgets"
+            >
+              ↻ Recompute Budget
+            </sdButton>
           </div>
           <BudgetStagePipeline
             class="detail-pipeline"
@@ -856,7 +871,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { notification, message } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
-import { hasRoleByName } from '@/services/user-role';
+import { hasRoleByName, hasPermission } from '@/services/user-role';
 import { sacMaxUnits } from '@/services/specialAreaCosts';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
@@ -944,6 +959,9 @@ const mapDetail = (d) => {
     id: d.id,
     label: d.label || (d.admin_unit && d.admin_unit.name) || '',
     admin_unit: d.admin_unit || null,
+    // county_profiles.id this budget was generated from — required by the
+    // "Recompute Budget" action (POST recompute_county_profile_budgets/{id}).
+    county_profile_id: d.county_profile_id ?? null,
     // Level + budget type drive the stage pipeline (which steps apply).
     budget_type: d.budget_type || 'standard',
     is_sub_county: !!(d.admin_unit && d.admin_unit.type === 'sub_county'),
@@ -1799,6 +1817,70 @@ export default {
       }
     };
 
+    /* ───────── Recompute from the county profile ─────────
+     * "↻ Recompute Budget" — for use after the underlying county_profiles row
+     * was edited directly in the database. Re-runs
+     *   POST recompute_county_profile_budgets/{county_profile_id}
+     * which (1) recomputes the profile's auto-calculated fields (+ its category
+     * parameter profiles) and (2) re-resolves every standard line item's
+     * session multiplier from the profile, recalculating its total and the
+     * budget grand total. Unlike `recalculate_budget_line_items`, which works
+     * from the (possibly stale) profile snapshot, this refreshes the profile
+     * itself first.
+     *
+     * Available for BOTH county-level and sub-county-level budgets — the
+     * endpoint resolves the correct profile for whichever budget is open.
+     * Gated by the `recompute_county_profile_budgets` permission (the backend
+     * route carries the same `role_permission` middleware and is the final
+     * authority).
+     */
+    const recomputing = ref(false);
+    const canRecomputeProfile = hasPermission('recompute_county_profile_budgets');
+
+    const recomputeProfileBudgets = async () => {
+      const b = selectedBudget.value;
+      const budgetId = b && b.id;
+      const profileId = b && b.county_profile_id;
+
+      if (!profileId) {
+        notification.warning({
+          message: 'County profile not available',
+          description:
+            'Could not resolve the county profile this budget was generated from, so it cannot be recomputed.',
+        });
+        return;
+      }
+
+      recomputing.value = true;
+      try {
+        const { data } = await axios.post(
+          `recompute_county_profile_budgets/${profileId}`,
+        );
+
+        // Re-read the budget so the refreshed multipliers / line totals and
+        // grand total are shown, then refresh the grid (per-budget totals).
+        if (budgetId) await fetchBudgetDetail(budgetId);
+        await fetchCounties();
+
+        const updated = data && data.line_items_updated;
+        notification.success({
+          message: 'Budget recomputed',
+          description:
+            (data && data.message) ||
+            (typeof updated === 'number'
+              ? `Profile recomputed; ${updated} line item(s) updated.`
+              : 'Profile recomputed and line items refreshed.'),
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Failed to recompute budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        recomputing.value = false;
+      }
+    };
+
     /* Columns: add the mandatory reviewer-comment column only while editing so
      * the read-only review view keeps its original six-column layout. The
      * reviewer edits UNITS ONLY — there is no Override column any more. */
@@ -2040,6 +2122,10 @@ export default {
       applyMultiplier,
       recalculating,
       recalculateTotals,
+      /* recompute from the county profile (refreshes profile + line items) */
+      recomputing,
+      canRecomputeProfile,
+      recomputeProfileBudgets,
       /* stage pipeline */
       myActionStatus,
       stageSummary,
@@ -2308,6 +2394,20 @@ export default {
   border: 1px solid #9ad8b4;
   font-size: 12px;
   font-weight: 600;
+}
+
+/* Detail header row: the stage tag on the left, the maintenance actions
+   (e.g. "Recompute Budget") pinned to the right of the page. */
+.detail-stage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  /* The ROW now owns the bottom spacing (the tag used to). Drop the tag's own
+     margin so both items are vertically centred beside each other. */
+  .ph-stage-tag { margin-bottom: 0; }
 }
 
 /* ───────── Level 3 stats ───────── */
