@@ -363,11 +363,12 @@
             <!-- Maintenance action: re-run recompute_county_profile_budgets/{id}
                  for this budget's county profile (refreshes the profile's
                  computed fields, every standard line item's session multiplier
-                 and the budget grand total). Works for both county-level and
-                 sub-county-level budgets. Hidden while editing so unsaved unit
-                 edits are not clobbered by the refresh. -->
+                 and the budget grand total). Shown for every county AND
+                 sub-county budget sitting at the DNMP Review level — i.e. the
+                 budgets queued for the DNMP Accountant (`can_review`). Hidden
+                 while editing so unsaved unit edits are not clobbered. -->
             <sdButton
-              v-if="canRecomputeProfile && selectedBudget.county_profile_id && !editing"
+              v-if="canRecomputeSelected"
               type="light"
               class="nbr-action-btn"
               :loading="recomputing"
@@ -1837,6 +1838,29 @@ export default {
     const recomputing = ref(false);
     const canRecomputeProfile = hasPermission('recompute_county_profile_budgets');
 
+    /* "DNMP Review level" — the budget is queued for the DNMP Accountant's
+     * review. The backend resolves this from the budget status and returns it
+     * as `can_review`, and it covers BOTH tiers:
+     *   • county-level budget  at `submitted`        → Pending DNMP Review
+     *   • sub-county budget    at `county_approved`  → awaiting DNMP review
+     *   • Special Area Cost    at `submitted`        → Pending DNMP Review
+     * (see CampaignBudgetController::statusToStageLabel() / $canReview).
+     * The button is therefore shown for every county and sub-county budget
+     * sitting at that level, and hidden everywhere else. */
+    const isDnmpReviewStage = computed(
+      () => !!(selectedBudget.value && selectedBudget.value.can_review),
+    );
+
+    const canRecomputeSelected = computed(() => {
+      const b = selectedBudget.value;
+      return (
+        canRecomputeProfile.value &&
+        isDnmpReviewStage.value &&
+        !!(b && b.county_profile_id) &&
+        !editing.value
+      );
+    });
+
     const recomputeProfileBudgets = async () => {
       const b = selectedBudget.value;
       const budgetId = b && b.id;
@@ -2124,7 +2148,7 @@ export default {
       recalculateTotals,
       /* recompute from the county profile (refreshes profile + line items) */
       recomputing,
-      canRecomputeProfile,
+      canRecomputeSelected,
       recomputeProfileBudgets,
       /* stage pipeline */
       myActionStatus,
