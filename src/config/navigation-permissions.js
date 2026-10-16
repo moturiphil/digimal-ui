@@ -387,6 +387,7 @@ export const NAV_MODULES = Object.freeze([
     label: "Distribution & Posts",
     pages: compact([
       { label: "Nets Distribution", path: "/nets/distributions", permissions: ["households", "web_household_create"] },
+      { label: "Warehouses", path: "/nets/warehouses", permissions: ["drop_off_points_list"] },
       { label: "List Drop-off", path: "/nets/distribution-points", permissions: ["drop_off_points_list", "drop_off_receipts"] },
       { label: "Distribution Post", path: "/nets/distribution-post", permissions: ["posts_data", "post_order_summary"] },
       { label: "Inventory", path: "/nets/distribution-point-nets", permissions: ["post_daily_balance", "get_post_nets_distribution_summary"] },

@@ -303,6 +303,15 @@
         </router-link>
       </a-menu-item>
       </a-sub-menu>
+      <a-sub-menu key="warehouses" v-if="canViewDropOffPoint">
+        <template v-slot:title>
+          <sdFeatherIcons type="package" /><span>Warehouses</span>
+        </template>
+        <a-menu-item key="widgetListWarehouses">
+          <router-link to="/nets/warehouses"> List Warehouses </router-link>
+        </a-menu-item>
+      </a-sub-menu>
+
       <a-sub-menu
         key="drop-off-point"
         v-if="canCreateDropOffPoint || canViewDropOffPoint"
