@@ -144,6 +144,15 @@ export default [
           ),
       },
       {
+        name: "warehouses",
+        path: "warehouses",
+        component: () =>
+          import(
+            /* webpackChunkName: "Warehouses" */ "../view/pages/net-distribution/Warehouses.vue"
+          ),
+      },
+
+      {
         name: "drop-off",
         path: "drop-off",
         component: () =>
