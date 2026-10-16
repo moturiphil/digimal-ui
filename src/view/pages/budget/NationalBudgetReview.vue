@@ -351,15 +351,26 @@
 
         <!-- ════════ LEVEL 3 · Single budget detail ════════ -->
         <template v-else>
-          <div class="level-title">
+          <div class="level-title" :class="{ 'is-sac': selectedBudget.is_special_area }">
             <sdButton size="small" class="back-btn" @click="goCountyBudgets">
               ← Back to {{ selectedCounty.name }}
             </sdButton>
-            <span class="lt-icon">▦</span>
+            <span class="lt-icon">{{ selectedBudget.is_special_area ? '✦' : '▦' }}</span>
             {{ selectedCounty.name }} — {{ selectedBudget.label }}
+            <!-- Keeps the SAC identity on the detail view: a reviewer must be
+                 able to tell this apart from the unit's standard budget. -->
+            <a-tag v-if="selectedBudget.is_special_area" class="sac-identity-tag">
+              Special Area Cost Budget
+            </a-tag>
           </div>
-          <div class="detail-stage-head">
+          <div
+            class="detail-stage-head"
+            :class="{ 'is-sac': selectedBudget.is_special_area }"
+          >
             <a-tag class="ph-stage-tag">{{ selectedBudget.stage }}</a-tag>
+            <span v-if="selectedBudget.is_special_area" class="detail-stage-hint">
+              Special Area Cost — pushed straight to National, the county stage does not apply.
+            </span>
             <!-- Maintenance action: re-run recompute_county_profile_budgets/{id}
                  for this budget's county profile (refreshes the profile's
                  computed fields, every standard line item's session multiplier
@@ -386,7 +397,7 @@
           />
 
           <!-- stats row -->
-          <div class="stat-row">
+          <div class="stat-row" :class="{ 'is-sac': selectedBudget.is_special_area }">
             <div class="stat-chip">
               <span class="sc-label">Population:</span>
               <strong>{{ fmt(selectedBudget.population) }}</strong>
@@ -426,7 +437,7 @@
           </div>
 
           <!-- summary tiles -->
-          <div class="summary-row">
+          <div class="summary-row" :class="{ 'is-sac': selectedBudget.is_special_area }">
             <div class="summary-tile">
               <div class="st-label">Nets Required</div>
               <div class="st-value">{{ fmt(selectedBudget.nets_required) }}</div>
@@ -458,7 +469,7 @@
 
           <a-collapse
             v-model:activeKey="openCategoryKeys"
-            class="category-collapse"
+            :class="['category-collapse', { 'is-sac': selectedBudget.is_special_area }]"
             expand-icon-position="start"
           >
             <a-collapse-panel
@@ -502,8 +513,30 @@
                 class="category-table"
               >
                 <template #bodyCell="{ column, record }">
-                  <span v-if="column.key === 'unit_cost'">
+                  <!-- Budget item. A SAC row is tagged only when the budget
+                       mixes standard and SAC rows — a pure SAC budget is
+                       themed throughout, so a tag on every row is noise. -->
+                  <span v-if="column.key === 'item'">
+                    {{ record.item }}
+                    <a-tag
+                      v-if="record.is_special_cost && !selectedBudget.is_special_area"
+                      class="sac-row-tag"
+                    >
+                      ✦ SAC
+                    </a-tag>
+                  </span>
+                  <span v-else-if="column.key === 'unit_cost'">
                     {{ fmt(record.unit_cost) }}
+                  </span>
+                  <!-- The officer's own SAC note (read-only). Shown so the
+                       reviewer / approver can see the justification behind the
+                       units; a reviewer's own comment is separate and lives in
+                       the change history below. -->
+                  <span v-else-if="column.key === 'sac_note'">
+                    <span v-if="record.special_area_comment" class="sac-note">
+                      {{ record.special_area_comment }}
+                    </span>
+                    <span v-else class="sac-note-empty">—</span>
                   </span>
                   <!-- Days — always read-only for the reviewer -->
                   <span v-else-if="column.key === 'days'">{{ record.days }}</span>
@@ -617,7 +650,7 @@
           </a-collapse>
 
           <!-- grand total -->
-          <div class="grand-total-bar">
+          <div class="grand-total-bar" :class="{ 'is-sac': selectedBudget.is_special_area }">
             <span>GRAND TOTAL</span>
             <strong>KES {{ fmt(selectedBudget.total_budget) }}</strong>
           </div>
@@ -1031,6 +1064,10 @@ const mapDetail = (d) => {
         special_type: p.special_type || null,
         min_units: p.min_units == null ? null : Number(p.min_units),
         max_units: p.max_units == null ? null : Number(p.max_units),
+        // The officer's own note on this SAC row (entered on the Special Area
+        // Cost budgeting page). Read-only here: it justifies the units and is
+        // NOT the reviewer's comment.
+        special_area_comment: p.special_area_comment || '',
         override_value: p.override_value == null ? null : Number(p.override_value),
       })),
     })),
@@ -1909,8 +1946,31 @@ export default {
      * the read-only review view keeps its original six-column layout. The
      * reviewer edits UNITS ONLY — there is no Override column any more. */
     const showEditColumns = computed(() => editing.value && canEditSelected.value);
+
+    /* The officer's own note on a Special Area Cost row — the comment the
+     * county / sub-county team typed against the SAC parameter. It is only
+     * ever written on SAC rows, so the column is shown for a SAC budget and
+     * whenever a note actually exists (a standard budget for a SAC-mapped unit
+     * can still carry SAC line items). Reviewers and approvers need it to see
+     * WHY the units are what they are before they sign the budget off. */
+    const hasOfficerNotes = computed(() => {
+      const cats = selectedBudget.value?.categories || [];
+      return cats.some((c) => (c.items || []).some((i) => i.special_area_comment));
+    });
+    const showOfficerNotes = computed(
+      () => !!selectedBudget.value?.is_special_area || hasOfficerNotes.value,
+    );
+
     const tableColumns = computed(() => {
       const cols = [...itemColumns];
+      if (showOfficerNotes.value) {
+        // Read-only: the officer's own SAC note (never edited from here).
+        cols.splice(cols.length - 1, 0, {
+          title: "Officer's SAC note",
+          key: 'sac_note',
+          width: 220,
+        });
+      }
       if (showEditColumns.value) {
         // Mandatory reviewer comment column (one per changed figure).
         cols.splice(cols.length - 1, 0, {
@@ -2124,6 +2184,7 @@ export default {
       changeColumns,
       tableColumns,
       showEditColumns,
+      showOfficerNotes,
       summaryColSpan,
       canEditSelected,
       canViewChanges,
@@ -2577,6 +2638,19 @@ export default {
   /* Pre-approval inline editors (Finance Officer / Program Accountant) */
   .nbr-edit-input { width: 92px; }
   .nbr-dirty-tag { margin-left: 6px; font-size: 10px; line-height: 16px; }
+  /* Officer's own SAC note — read-only, amber to match the SAC theme. */
+  .sac-note { color: #5a3d23; font-size: 12px; }
+  .sac-note-empty { color: #c3b39e; }
+  .sac-row-tag {
+    margin-left: 6px;
+    background: #fdf3e3;
+    color: #8a4d1f;
+    border: 1px solid #eeddc2;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+  }
 }
 
 /* Reviewer comment column hint (rows with no change) */
@@ -2958,5 +3032,81 @@ export default {
   padding: 14px 18px;
   margin: 12px 0 18px;
   box-shadow: 0 2px 10px rgba(21, 105, 60, 0.05);
+}
+
+/* ───────── Special Area Cost budget — retained SAC theme ─────────
+   A SAC budget is its own record: it carries ONLY Special Area Cost rows and
+   is pushed straight to National (no county stage). The detail view keeps the
+   amber / brown SAC palette used on the SAC budgeting page (see
+   SpecialAreaCostsSection) so a reviewer can tell at a glance which of a
+   unit's two budgets they are signing off. */
+.sac-identity-tag {
+  margin-left: auto;
+  background: #fdf3e3;
+  color: #8a4d1f;
+  border: 1px solid #eeddc2;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 10px;
+}
+
+.level-title.is-sac {
+  color: #8a4d1f;
+  .lt-icon { color: #b9853c; }
+  .back-btn {
+    border-color: #eeddc2;
+    color: #8a4d1f;
+    &:hover,
+    &:focus {
+      background: #fffaf3;
+      border-color: #d9b98a;
+      color: #8a4d1f;
+    }
+  }
+}
+
+.detail-stage-head.is-sac {
+  .ph-stage-tag {
+    background: #fdf3e3;
+    color: #8a4d1f;
+    border-color: #eeddc2;
+  }
+  .detail-stage-hint { color: #9a7b47; }
+}
+
+/* Level-3 stat chips + summary tiles */
+.stat-row.is-sac .stat-chip {
+  background: #fffaf3;
+  border-color: #f0e0c8;
+  color: #7a5b39;
+  .sc-label { color: #9a7b47; }
+  strong { color: #8a4d1f; }
+}
+.summary-row.is-sac .summary-tile {
+  border-color: #f0e0c8;
+  .st-label { color: #9a7b47; }
+  .st-value { color: #8a4d1f; }
+  &.accent {
+    background: linear-gradient(90deg, #fff7ec 0%, #fffdf9 45%, #fff7ec 100%);
+    border-color: #eeddc2;
+  }
+}
+
+/* Category panels */
+.category-collapse.is-sac {
+  :deep(.ant-collapse-item) { border-color: #f0e0c8 !important; }
+  :deep(.ant-collapse-header) { background: #fdf7ee; }
+  :deep(.ant-collapse-content) { border-top-color: #f5e8d6; }
+  .cat-header {
+    .cat-name { color: #8a4d1f; }
+    .cat-badge { background: #fdf3e3; color: #8a4d1f; }
+    .cat-total { color: #8a4d1f; }
+  }
+}
+
+/* Grand-total bar — the SAC variant of the green bar */
+.grand-total-bar.is-sac {
+  background: linear-gradient(90deg, #8a4d1f 0%, #a96428 100%);
 }
 </style>
