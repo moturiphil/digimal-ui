@@ -209,9 +209,7 @@
         >
           <p>
             You are about to submit this Special Area Cost budget to the National
-            office. It is pushed straight to National (the county stage is
-            skipped) and will be reviewed by the DNMP&nbsp;Accountant, then
-            approved by the Finance Officer.
+            office. It  will be reviewed by the DNMP&nbsp;Accountant.
           </p>
           <p style="margin-bottom: 0">
             Once submitted the budget can no longer be edited unless it is

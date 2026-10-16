@@ -449,8 +449,10 @@ export default {
         });
         const mapped = mapDetail(data);
         selectedBudget.value = mapped;
-        openCategoryKeys.value =
-          mapped && mapped.categories.length ? [mapped.categories[0].id] : [];
+        // Start fully COLLAPSED — every category closed. The reviewer sees the
+        // whole category list first and opens only the category they want to
+        // work on, instead of landing on the first one expanded.
+        openCategoryKeys.value = [];
       } catch (err) {
         message.error('Failed to load budget detail');
         // eslint-disable-next-line no-console

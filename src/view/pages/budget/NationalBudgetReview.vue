@@ -1322,11 +1322,11 @@ export default {
         selectedBudget.value = mapped;
         // Keep the currently-expanded categories when merely refreshing the same
         // budget (e.g. after a per-category Save) so the reviewer's place isn't
-        // lost; only a freshly-opened budget starts on its first category.
+        // lost. A freshly-opened budget starts fully COLLAPSED — every category
+        // closed — so the reviewer sees the whole category list first and opens
+        // only the category they actually want to work on.
         if (!isSameBudget) {
-          openCategoryKeys.value = mapped && mapped.categories.length
-            ? [mapped.categories[0].id]
-            : [];
+          openCategoryKeys.value = [];
         }
       } catch (err) {
         message.error('Failed to load budget detail');
