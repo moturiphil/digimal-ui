@@ -43,6 +43,18 @@
           :referred-to="referralLevel"
         />
 
+        <!-- National review feedback: what the reviewers changed on this budget
+             during the DNMP Review stage — the comments, who made them, their
+             roles and the timestamps — plus who approved it at national level.
+             Renders only once the budget has actually been reviewed / approved,
+             and only for the unit that owns the budget. -->
+        <BudgetReviewFeedback
+          v-if="!showStatusCard"
+          :budget-id="campaignBudgetId"
+          :status="budgetStatus"
+          :can-view="canViewReviewFeedback"
+        />
+
         <!-- Summary bar -->
         <div class="bp-summary" v-if="!showStatusCard && !loading && selectedActivities.length">
           <div class="bp-totals">
@@ -314,7 +326,9 @@ import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import CountyAccessGate from './CountyAccessGate.vue';
 import BudgetStatusCard from './BudgetStatusCard.vue';
 import BudgetReferralBanner from './BudgetReferralBanner.vue';
+import BudgetReviewFeedback from './BudgetReviewFeedback.vue';
 import { fetchSacItems, fallbackSacItems } from '@/services/specialAreaCosts';
+import { hasPermission } from '@/services/user-role';
 
 /* Human-readable label for a special_type enum value — mirrors the
  * backend's CampaignBudgetController::humanizeSpecialType(). */
@@ -438,6 +452,7 @@ export default {
     CountyAccessGate,
     BudgetStatusCard,
     BudgetReferralBanner,
+    BudgetReviewFeedback,
   },
   setup() {
     // Level 1 (National / Super Admin) users get a read-only view across
@@ -451,6 +466,12 @@ export default {
       }
     })();
     const readOnly = ref(Number(currentUser?.user?.level_id) === 1);
+
+    // Owner-facing national review feedback (the DNMP Review changes with their
+    // comments / reviewer / role / timestamp, plus the national approval
+    // sign-off). Permission-gated, and the API additionally scopes the payload
+    // to this user's own unit, so the panel also stays hidden without the grant.
+    const canViewReviewFeedback = hasPermission('get_budget_review_feedback');
 
     const county = ref({ name: '', subCounties: 9 });
     const stage = ref('Preparatory Stage');
@@ -1463,6 +1484,7 @@ export default {
       referralMessage,
       referralLevel,
       referredBy,
+      canViewReviewFeedback,
       openBudgetDetail,
       hasSessionMultiplier,
       activitySubtotal,
