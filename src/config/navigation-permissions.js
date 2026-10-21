@@ -164,6 +164,16 @@ export const GATE_DEFINITIONS = Object.freeze({
     permissions: ["get_vendors", "get_vendor"],
     roles: ["Super Admin", "Procurement Officer", "SCMCC", "CMCC", "Accountant", "Finance Officer"],
   },
+  // Financial Analysis — read-only sub-module of the Budget module (approved
+  // budgets rolled up by county → component and split by cost group, plus the
+  // financial indicators). Evaluated permission-first: the backend
+  // BudgetRolePermissionSeeder grants `get_budget_financial_analysis` to the
+  // national budget audience (reviewers, approvers) and Super Admin, so the
+  // audience can be widened from the Access Control page.
+  canViewFinancialAnalysis: {
+    permissions: ["get_budget_financial_analysis"],
+    roles: ["Super Admin", "Accountant", "Finance Officer", "Program Accountant", "Program head", "DNMP GF Manager", "Vector Unit Head"],
+  },
 });
 
 
@@ -214,6 +224,9 @@ export const NAV_MODULES = Object.freeze([
       // whoever may create a campaign budget; the page itself checks that the
       // unit is SAC-mapped.
       { label: "Special Area Budget", path: "/budget/special-area-budget", permissions: ["create_campaign_budget", "submit_campaign_budget", "get_campaign_budgets"] },
+      // Read-only financial analysis of the approved budgets (indicators + the
+      // approved budget analysis split county → component → cost group).
+      { label: "Financial Analysis", path: "/budget/financial-analysis", permissions: ["get_budget_financial_analysis"] },
     ]),
   },
   {

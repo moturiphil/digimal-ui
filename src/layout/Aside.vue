@@ -65,6 +65,11 @@
             County & S.County Budget Review
           </router-link>
         </a-menu-item>
+        <a-menu-item key="budgetFinancialAnalysis" v-if="canViewFinancialAnalysis">
+          <router-link to="/budget/financial-analysis">
+            Financial Analysis
+          </router-link>
+        </a-menu-item>
         <a-menu-item
           key="budgetCountyDashboard"
           v-if="isCountyLevel || isLevelOne"
@@ -655,6 +660,11 @@ export default defineComponent({
     const canViewProcurement = satisfiesGate(
       GATE_DEFINITIONS.canViewProcurement
     );
+    // Budget → Financial Analysis sub-module (read-only). Permission-first, so
+    // Access Control decides who sees it.
+    const canViewFinancialAnalysis = satisfiesGate(
+      GATE_DEFINITIONS.canViewFinancialAnalysis
+    );
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -755,6 +765,7 @@ export default defineComponent({
       isCommunityHealthWorker,
       canAccessBudgeting,
       canViewProcurement,
+      canViewFinancialAnalysis,
       canViewCampaign,
       canCreateEvent,
       canViewEvent,

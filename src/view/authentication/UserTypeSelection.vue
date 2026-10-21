@@ -95,23 +95,24 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AuthWrapper } from "./style";
-import axios from "axios";
 import { notification } from "ant-design-vue";
+import { fetchAppEnvironment } from "../../services/app-environment";
 
 export default {
   name: "UserTypeSelection",
   components: { AuthWrapper },
   setup() {
     const router = useRouter();
-    const env = ref("");
     const hoveredCard = ref(null);
-    
-    const envClass = computed(() => {
-      if (!env.value) return '';
-      if (env.value.toLowerCase().includes('pilot')) return 'pilot-badge';
-      if (env.value.toLowerCase().includes('training')) return 'training-badge';
-      return 'color-success';
-    });
+
+    // Environment descriptor for the current instance. The badge label and its
+    // colour class come from the APP_STATE map in
+    // services/app-environment.js (staging, development, training, ...).
+    const appEnv = ref(null);
+    const env = computed(() => (appEnv.value ? appEnv.value.label : ""));
+    const envClass = computed(() =>
+      appEnv.value ? appEnv.value.badgeClass : ""
+    );
 
     const handleCampaignUserLogin = () => {
       router.push("/auth/campaign-login");
@@ -122,23 +123,19 @@ export default {
     };
 
     const get_env = async () => {
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/app_env`)
-        .then((response) => {
-          if (response.data == "training") {
-            env.value = "Training Platform";
-          } else if (response.data == "maintenance") {
-            router.push("/maintenance");
-          } else if (response.data == "pilot") {
-            env.value = "Pilot Environment";
-          }
-        })
-        .catch((error) => {
-          notification.error({
-            message: `Error!`,
-            description: `${error}`,
-          });
+      try {
+        const appEnvironment = await fetchAppEnvironment();
+        if (appEnvironment.maintenance) {
+          router.push("/maintenance");
+          return;
+        }
+        appEnv.value = appEnvironment;
+      } catch (error) {
+        notification.error({
+          message: `Error!`,
+          description: `${error}`,
         });
+      }
     };
 
     onMounted(() => {
@@ -393,6 +390,28 @@ export default {
   background: linear-gradient(90deg, #f6ffed 0%, #eafff0 100%);
   color: #237804;
   border: 1px solid #b7eb8f;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.staging-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #e6f4ff 0%, #d6eaff 100%);
+  color: #0958d9;
+  border: 1px solid #91caff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.development-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #f9f0ff 0%, #f0e6ff 100%);
+  color: #531dab;
+  border: 1px solid #d3adf7;
   padding: 10px 20px;
   border-radius: 12px;
   font-weight: 600;
