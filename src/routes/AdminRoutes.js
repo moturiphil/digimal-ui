@@ -260,6 +260,15 @@ const routes = [
         component: () => import("@/view/pages/budget/BudgetSummary.vue"),
       },
       {
+        // Financial Analysis sub-module — read-only. Gated by
+        // `get_budget_financial_analysis` through the sidebar / Access Control
+        // rather than a hard role list, so the audience can be managed there.
+        path: "/budget/financial-analysis",
+        name: "budget-financial-analysis",
+        component: () => import("@/view/pages/budget/FinancialAnalysis.vue"),
+        meta: { auth: true },
+      },
+      {
         path: "/budget/parameters",
         name: "budget-parameters",
         component: () => import("@/view/pages/budget/BudgetParameters.vue"),
