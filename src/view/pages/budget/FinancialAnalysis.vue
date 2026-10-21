@@ -117,7 +117,7 @@
               and its sub-counties. Each county line carries the county's
               rolled-up total, so the visible county lines always add up to the
               Grand Total, and
-              <strong>Approved Amounts = Allowances + Fuel + Procurements + Other</strong>.
+              <strong>Approved Amounts = Allowances + Fuel + Procurements</strong>.
             </div>
           </section>
 
@@ -174,15 +174,14 @@ import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
 
 /**
- * The money columns of one analysis row, in the order they are rendered.
- * Kept in one place so the table, the Excel export and the PDF can never drift
- * apart. `approved_total` is the sum of the other four, so the page reconciles.
+ * Pick the money columns of one API row, defaulting anything missing to 0.
+ *
+ * `keys` is the page's money-key list, built from the cost groups the API
+ * reports (`cost_groups`) rather than hard-coded here — there are only three
+ * (Allowances, Fuel, Procurements), so the table never grows an "other" column.
  */
-const MONEY_KEYS = ['approved_total', 'allowances', 'fuel', 'procurements', 'other'];
-
-/** Pick the money columns of one API row, defaulting anything missing to 0. */
-function pickAmounts(row) {
-  return MONEY_KEYS.reduce((amounts, key) => {
+function pickAmounts(row, keys) {
+  return keys.reduce((amounts, key) => {
     amounts[key] = Number((row && row[key]) || 0);
     return amounts;
   }, {});
@@ -246,6 +245,14 @@ export default {
     );
 
     const costGroups = computed(() => (analysis.value && analysis.value.cost_groups) || []);
+
+    // The money columns: the approved total plus one per cost group the API
+    // reports. Driven by the API so the table can never show a group the
+    // backend does not report — there is no fourth "other" column.
+    const moneyKeys = computed(() => [
+      'approved_total',
+      ...costGroups.value.map((group) => group.key),
+    ]);
     const fundingAllocations = computed(
       () => (analysis.value && analysis.value.funding_allocations) || [],
     );
@@ -280,13 +287,13 @@ export default {
             key: `${county.county_id}-own`,
             kind: 'own',
             name: (county.own && county.own.name) || county.county_name,
-            ...pickAmounts(county.own),
+            ...pickAmounts(county.own, moneyKeys.value),
           },
           ...components.map((component, index) => ({
             key: `${county.county_id}-c${index}`,
             kind: 'component',
             name: component.name,
-            ...pickAmounts(component),
+            ...pickAmounts(component, moneyKeys.value),
           })),
         ];
 
@@ -296,7 +303,7 @@ export default {
           county_name: county.county_name,
           // The collapsed line is the county total, so what is visible always
           // adds up to the Grand Total below.
-          ...pickAmounts(county.totals),
+          ...pickAmounts(county.totals, moneyKeys.value),
           sub_county_count: county.components_count === undefined
             ? components.length
             : county.components_count,
@@ -309,7 +316,7 @@ export default {
           key: 'grand-total',
           kind: 'grand',
           county_name: 'Grand Total',
-          ...pickAmounts(analysisData.value && analysisData.value.grand_total),
+          ...pickAmounts(analysisData.value && analysisData.value.grand_total, moneyKeys.value),
         });
       }
 
@@ -329,25 +336,30 @@ export default {
       return `${count} sub-count${count === 1 ? 'y' : 'ies'}`;
     };
 
-    const columns = [
+    /** A right-aligned `Title (KES)` column for one money key. */
+    const moneyColumn = (title, key) => ({
+      title: `${title} (KES)`,
+      dataIndex: key,
+      key,
+      align: 'right',
+    });
+
+    // Columns are derived from the API's cost groups — Allowances, Fuel and
+    // Procurements — so the table always matches what the backend reports.
+    const columns = computed(() => [
       // The tree's "+" / "−" toggle renders at the start of this first column.
       { title: 'County', dataIndex: 'county_name', key: 'county_name', width: 190 },
       { title: 'Components', dataIndex: 'name', key: 'name' },
-      { title: 'Approved Amounts (KES)', dataIndex: 'approved_total', key: 'approved_total', align: 'right' },
-      { title: 'Allowances (KES)', dataIndex: 'allowances', key: 'allowances', align: 'right' },
-      { title: 'Fuel (KES)', dataIndex: 'fuel', key: 'fuel', align: 'right' },
-      { title: 'Procurements (KES)', dataIndex: 'procurements', key: 'procurements', align: 'right' },
-      { title: 'Other (KES)', dataIndex: 'other', key: 'other', align: 'right' },
-    ];
+      moneyColumn('Approved Amounts', 'approved_total'),
+      ...costGroups.value.map((group) => moneyColumn(group.label, group.key)),
+    ]);
 
     // Rendered only once the API starts returning funding sources.
-    const fundingColumns = [
+    const fundingColumns = computed(() => [
       { title: 'Funding Source', dataIndex: 'source', key: 'source' },
-      { title: 'Approved Amounts (KES)', dataIndex: 'approved_total', key: 'approved_total', align: 'right' },
-      { title: 'Allowances (KES)', dataIndex: 'allowances', key: 'allowances', align: 'right' },
-      { title: 'Fuel (KES)', dataIndex: 'fuel', key: 'fuel', align: 'right' },
-      { title: 'Procurements (KES)', dataIndex: 'procurements', key: 'procurements', align: 'right' },
-    ];
+      moneyColumn('Approved Amounts', 'approved_total'),
+      ...costGroups.value.map((group) => moneyColumn(group.label, group.key)),
+    ]);
 
     const rowClass = (record) => `row-${record.kind}`;
 
@@ -361,11 +373,12 @@ export default {
     // lines are usable in a spreadsheet — every row carries its county, the
     // county line carries the county total and its components follow it.
     const exportExcel = () => {
-      const header = ['County', 'Components', ...columns.slice(2).map((column) => column.title)];
+      const keys = moneyKeys.value;
+      const header = ['County', 'Components', ...columns.value.slice(2).map((column) => column.title)];
       const body = [];
 
       tableRows.value.forEach((row) => {
-        const amounts = MONEY_KEYS.map((key) => Number(row[key] || 0));
+        const amounts = keys.map((key) => Number(row[key] || 0));
 
         if (row.kind === 'grand') {
           body.push([row.county_name, '', ...amounts]);
@@ -380,7 +393,7 @@ export default {
           body.push([
             row.county_name,
             child.name,
-            ...MONEY_KEYS.map((key) => Number(child[key] || 0)),
+            ...keys.map((key) => Number(child[key] || 0)),
           ]);
         });
       });
@@ -427,7 +440,7 @@ export default {
       rowClass,
       money,
       cellMoney,
-      moneyKeys: MONEY_KEYS,
+      moneyKeys,
       exportExcel,
       exportPdf,
     };

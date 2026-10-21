@@ -167,9 +167,12 @@ export const GATE_DEFINITIONS = Object.freeze({
   // Financial Analysis — read-only sub-module of the Budget module (approved
   // budgets rolled up by county → component and split by cost group, plus the
   // financial indicators). Evaluated permission-first: the backend
-  // BudgetRolePermissionSeeder grants `get_budget_financial_analysis` to the
-  // national budget audience (reviewers, approvers) and Super Admin, so the
-  // audience can be widened from the Access Control page.
+  // BudgetRolePermissionSeeder grants `get_budget_financial_analysis` to EVERY
+  // National (level 1) role, so the page is visible to the whole national
+  // audience. The `roles` list below is only the legacy name fallback kept for
+  // the original budget reviewers / approvers — the grant (not this list) is
+  // what exposes the page to the other national roles, so Access Control stays
+  // authoritative.
   canViewFinancialAnalysis: {
     permissions: ["get_budget_financial_analysis"],
     roles: ["Super Admin", "Accountant", "Finance Officer", "Program Accountant", "Program head", "DNMP GF Manager", "Vector Unit Head"],
