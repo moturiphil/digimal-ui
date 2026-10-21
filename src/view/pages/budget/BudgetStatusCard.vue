@@ -25,6 +25,10 @@
     <div v-if="isReferred" class="bsc-hint">
       Click to open the budget and view the reviewer's feedback.
     </div>
+    <div v-else-if="hasNationalReview" class="bsc-hint">
+      Changed at national review — click to see the comments, who made them and
+      who approved the budget.
+    </div>
     <div v-else class="bsc-hint">
       Click to view the budget details.
     </div>
@@ -95,6 +99,14 @@ export default {
         'national-review': 'geekblue',
         'draft': 'default',
       }[this.kind] || 'default';
+    },
+    /**
+     * True once the budget has been through the national chain, so the owner can
+     * expect review feedback on the detail view: the DNMP reviewer's comments
+     * (who made them, their role and when) and the national approval sign-off.
+     */
+    hasNationalReview() {
+      return this.status === 'dnmp_reviewed' || this.status === 'approved';
     },
     formattedTotal() {
       const n = Number(this.grandTotal);
