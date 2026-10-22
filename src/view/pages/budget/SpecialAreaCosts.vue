@@ -10,10 +10,11 @@
             </h3>
             <p class="ph-subtitle">
               Mark which counties and sub-counties are Special Area Cost areas, and manage the
-              Special Area Cost items (DSA, Boat, Enhanced Transport…) shown under every budget
-              category. Each unit has a single switch — when on, the unit's budget shows a Special
-              Area Cost section after the standard budget categories, and its totals roll into the
-              budget grand total.
+              Special Area Cost items (DSA, Boat, Enhanced Transport…) together with the budget
+              categories they are entered under. Each unit has a single switch — when on, the unit
+              gets its own <strong>separate</strong> Special Area Cost budget, submitted directly
+              to National. Its categories, items and totals are kept apart from the standard
+              campaign budget.
             </p>
 
           </div>
@@ -254,8 +255,9 @@
                 <h4> Special Area Cost budget categories</h4>
                 <span class="sac-section-note">
                   Select the budget categories Special Area Cost applies to. Only the selected
-                  categories show the Special Area Cost rows on the budgeting grid. Newly created
-                  categories are selected by default.
+                  categories appear in the Special Area Cost budget workspace, so the SAC view
+                  lists SAC-applicable categories only. Newly created categories are selected by
+                  default.
                 </span>
               </div>
               <div class="sac-actions-row">

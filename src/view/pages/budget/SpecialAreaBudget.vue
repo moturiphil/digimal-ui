@@ -258,7 +258,8 @@ import { fetchSacItems, fallbackSacItems } from '@/services/specialAreaCosts';
  * Endpoints used:
  *   GET  get_special_area_budget_scope                (role + locale)
  *   GET  get_campaign_budgets?county_profile_id=&budget_type=special_area
- *   GET  get_budget_categories?scope=sub_county
+ *   GET  get_budget_categories?county_profile_id=   (SAC-applicable only:
+ *        the backend resolves the tier scope from the profile itself)
  *   GET  get_special_area_cost_entries?county_profile_id=
  *   GET  get_special_area_cost_items
  *   PUT  save_special_area_cost_entries
@@ -424,12 +425,20 @@ export default {
         }));
 
     const loadActivities = async () => {
+      // Scope the request to THIS profile. The backend derives the tier scope
+      // from the profile itself (county profile → county categories,
+      // sub-county profile → sub-county categories), so the SAC workspace no
+      // longer hard-codes `scope=sub_county` — which used to show sub-county
+      // categories on a county (CMCC) SAC budget. Passing `county_profile_id`
+      // is also what makes the Super Admin locale override load the *picked*
+      // locale's categories instead of the signed-in admin's own profile.
       const { data } = await axios.get('get_budget_categories', {
-        params: { scope: 'sub_county' },
+        params: { county_profile_id: countyProfileId.value },
       });
-      // Only categories selected for Special Area Cost (managed by the
+      // Only categories flagged for Special Area Cost (managed by the
       // National Accountant / Super Admin on the Special Area Cost →
-      // Budget Categories tab) render SAC rows here.
+      // Budget Categories tab) render in this workspace, so the SAC view
+      // lists SAC-applicable categories only — never the full standard set.
       //
       // The API returns the raw tinyint (0 / 1), so comparing against `false`
       // never matched and deselected categories slipped through. Treat

@@ -119,14 +119,18 @@
 import { SAC_ITEMS, sacMinUnits, sacMaxUnits } from '@/services/specialAreaCosts';
 
 /*
- * Special Area Cost section shown on the County / Sub-County budgeting pages.
+ * Special Area Cost section — the line-item grid of the SEPARATE Special Area
+ * Cost budget (SpecialAreaBudget.vue). It is no longer embedded in the
+ * standard County / Sub-County budgeting pages: those pages carry only a
+ * notice linking here, because SAC amounts live in their own budget record.
  *
- * - Rendered only when the unit's profile has is_special_area_cost = true.
- * - Repeats the standard budget category list; each category is an
- *   expandable / collapsible panel listing the SAC line items from the
- *   admin-managed catalogue (DSA, Boat, Enhanced Transport, Security, …)
- *   passed in via the `items` prop. Falls back to the built-in SAC_ITEMS
- *   when the parent has not loaded the catalogue.
+ * - Every category passed in via the `categories` prop is a SAC-applicable
+ *   category (budget_categories.allows_special_costs = true) resolved for the
+ *   unit's own tier, so the grid lists SAC categories only — never the full
+ *   standard category list. Each is an expandable / collapsible panel listing
+ *   the SAC line items from the admin-managed catalogue (DSA, Boat, Enhanced
+ *   Transport, Security, …) passed in via the `items` prop. Falls back to the
+ *   built-in SAC_ITEMS when the parent has not loaded the catalogue.
  * - Per item: a fixed (locked) amount cannot be edited; an item whose
  *   `units_mode` is 'default' shows its configured unit count read-only,
  *   while a 'dynamic' item lets the officer enter units per row.
