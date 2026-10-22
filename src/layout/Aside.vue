@@ -70,6 +70,19 @@
             Financial Analysis
           </router-link>
         </a-menu-item>
+        <!-- National budget: the same Budget module flow as County /
+             Sub-County budgeting, with its own approval chain
+             (Vector Unit Head / GF Manager approve, AIE Holder acknowledges). -->
+        <a-menu-item key="budgetNationalBudgeting" v-if="canViewNationalBudget">
+          <router-link to="/budget/national-budgeting">
+            National Budgeting
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="budgetNationalAcknowledgement" v-if="canViewNationalBudget">
+          <router-link to="/budget/national-acknowledgement">
+            National Budget Acknowledgement
+          </router-link>
+        </a-menu-item>
         <a-menu-item
           key="budgetCountyDashboard"
           v-if="isCountyLevel || isLevelOne"
@@ -665,6 +678,12 @@ export default defineComponent({
     const canViewFinancialAnalysis = satisfiesGate(
       GATE_DEFINITIONS.canViewFinancialAnalysis
     );
+    // Budget → National budget workspace + AIE Holder acknowledgement.
+    // Permission-first (the generators hold create_campaign_budget; the AIE
+    // Holder holds approve_campaign_budget).
+    const canViewNationalBudget = satisfiesGate(
+      GATE_DEFINITIONS.canViewNationalBudget
+    );
 
     onMounted(() => {
       const user = JSON.parse(sessionStorage.getItem("user"));
@@ -766,6 +785,7 @@ export default defineComponent({
       canAccessBudgeting,
       canViewProcurement,
       canViewFinancialAnalysis,
+      canViewNationalBudget,
       canViewCampaign,
       canCreateEvent,
       canViewEvent,

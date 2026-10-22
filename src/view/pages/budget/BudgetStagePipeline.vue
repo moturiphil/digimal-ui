@@ -38,6 +38,7 @@
  *
  *   Sub-county standard:  Preparatory → County Review → County Approved → National Approval → Approved
  *   County standard:      Preparatory → DNMP Review   → National Approval → Approved
+ *   National:             Preparatory → Submitted → Approved (Vector Unit Head / GF Manager) → Acknowledged (AIE Holder)
  *   Special Area Cost:    Preparatory → DNMP Review   → National Approval → Approved
  *
  * The `actionStatus` prop marks the step at which the acting role reviews or
@@ -62,6 +63,18 @@ const COUNTY_STEPS = [
   { status: 'approved',      label: 'Approved',          icon: '★' },
 ];
 
+/**
+ * The NATIONAL budget has its own chain — it never enters the DNMP review
+ * stage. The generators submit it, the Vector Unit Head / GF Manager approve
+ * it, and the AIE Holder reviews & acknowledges it.
+ */
+const NATIONAL_STEPS = [
+  { status: 'draft',             label: 'Preparatory',        icon: '✎' },
+  { status: 'submitted',         label: 'Submitted',          icon: '◔' },
+  { status: 'national_approved', label: 'Approved (VUH / GF)', icon: '◑' },
+  { status: 'approved',          label: 'Acknowledged (AIE)', icon: '★' },
+];
+
 export default {
   name: 'BudgetStagePipeline',
   props: {
@@ -71,6 +84,8 @@ export default {
     isSubCounty: { type: Boolean, default: true },
     /** True for a Special Area Cost budget (it skips the county stage). */
     isSpecialArea: { type: Boolean, default: false },
+    /** True for the NATIONAL budget (its own chain). */
+    isNational: { type: Boolean, default: false },
     /** Status at which the acting role reviews/approves — accented when set. */
     actionStatus: { type: String, default: null },
     /** Smaller variant for grid tiles. */
@@ -82,6 +97,7 @@ export default {
     },
     /** SAC budgets never enter the county stage, so they use the county pipeline. */
     steps() {
+      if (this.isNational) return NATIONAL_STEPS;
       return !this.isSpecialArea && this.isSubCounty ? SUB_COUNTY_STEPS : COUNTY_STEPS;
     },
     /** Index of the step matching the current status (-1 when unknown). */

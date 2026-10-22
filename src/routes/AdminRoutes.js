@@ -269,6 +269,24 @@ const routes = [
         meta: { auth: true },
       },
       {
+        // NATIONAL budget workspace — the same generate → edit Units & No. of
+        // Days → submit flow as County / Sub-County budgeting, for the national
+        // profile. Level 1 (National) users only; the API additionally pins the
+        // generate / submit / approve steps to the exact business roles.
+        path: "/budget/national-budgeting",
+        name: "budget-national-budgeting",
+        component: () => import("@/view/pages/budget/NationalBudgeting.vue"),
+        meta: { auth: true, allowedLevels: [1] },
+      },
+      {
+        // AIE Holder — review & acknowledge the national budget against the
+        // combined National / County / Sub-County budget summaries.
+        path: "/budget/national-acknowledgement",
+        name: "budget-national-acknowledgement",
+        component: () => import("@/view/pages/budget/NationalBudgetAcknowledgement.vue"),
+        meta: { auth: true, allowedLevels: [1] },
+      },
+      {
         path: "/budget/parameters",
         name: "budget-parameters",
         component: () => import("@/view/pages/budget/BudgetParameters.vue"),
