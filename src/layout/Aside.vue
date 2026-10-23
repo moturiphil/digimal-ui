@@ -55,17 +55,20 @@
         <template v-slot:title>
           <sdFeatherIcons type="bar-chart-2" /><span>Budgeting</span>
         </template>
-        <a-menu-item key="budgetNationalDashboard" v-if="isLevelOne">
+        <a-menu-item key="budgetNationalDashboard" v-if="canViewNationalTier">
           <router-link to="/budget/national-dashboard">
             National Dashboard
           </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetNationalReview" v-if="isLevelOne">
+        <a-menu-item key="budgetNationalReview" v-if="canViewNationalTier">
           <router-link to="/budget/national-review">
             County & S.County Budget Review
           </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetFinancialAnalysis" v-if="canViewFinancialAnalysis">
+        <a-menu-item
+          key="budgetFinancialAnalysis"
+          v-if="canViewFinancialAnalysis && canViewNationalTier"
+        >
           <router-link to="/budget/financial-analysis">
             Financial Analysis
           </router-link>
@@ -73,12 +76,18 @@
         <!-- National budget: the same Budget module flow as County /
              Sub-County budgeting, with its own approval chain
              (Vector Unit Head / GF Manager approve, AIE Holder acknowledges). -->
-        <a-menu-item key="budgetNationalBudgeting" v-if="canViewNationalBudget">
+        <a-menu-item
+          key="budgetNationalBudgeting"
+          v-if="canViewNationalBudget && canViewNationalTier"
+        >
           <router-link to="/budget/national-budgeting">
             National Budgeting
           </router-link>
         </a-menu-item>
-        <a-menu-item key="budgetNationalAcknowledgement" v-if="canViewNationalBudget">
+        <a-menu-item
+          key="budgetNationalAcknowledgement"
+          v-if="canViewNationalBudget && canViewNationalTier"
+        >
           <router-link to="/budget/national-acknowledgement">
             National Budget Acknowledgement
           </router-link>
@@ -709,6 +718,23 @@ export default defineComponent({
       return level_id.value === 3;
     });
 
+    /**
+     * NATIONAL tier of the Budget module — level 1 (National) only.
+     *
+     * Every national budget sub-module (National Dashboard, County & S.County
+     * Budget Review, Financial Analysis, National Budgeting and the National
+     * Budget Acknowledgement) belongs to the national scope. County (2) and
+     * Sub-County (3) users run their own chains (County / SubCounty Budgeting),
+     * so each national sub-menu item is ANDed with this flag: a permission that
+     * a county-tier role also holds for its own chain (e.g.
+     * `create_campaign_budget`, `county_approve_campaign_budget`) can never
+     * surface a national entry for them.
+     *
+     * Mirrors `meta.allowedLevels` (NATIONAL_BUDGET_LEVELS) on the national
+     * budget routes, so a hand-typed URL lands on /403.
+     */
+    const canViewNationalTier = computed(() => isLevelOne.value);
+
     // Oversight users (National / County / Sub-County) for the distribution dashboard.
     const isOversightUser = computed(() => {
       return [1, 2, 3].includes(level_id.value);
@@ -774,6 +800,7 @@ export default defineComponent({
       current,
       role_id,
       isLevelOne,
+      canViewNationalTier,
       isCountyLevel,
       isSubCountyLevel,
       isOversightUser,

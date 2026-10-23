@@ -2,6 +2,7 @@ import Apps from "./Applications";
 import {
   HH_CHANGE_OVERVIEW_LEVELS,
   HH_CHANGE_REVIEW_LEVELS,
+  NATIONAL_BUDGET_LEVELS,
   SCHMT_ORG_TYPE_ID,
 } from "@/config/navigation-permissions";
 
@@ -211,14 +212,19 @@ const routes = [
         component: () => import("@/view/pages/campaigns/viewCampaigns.vue"),
       },
       {
+        // NATIONAL tier (level 1) only — county (2) and sub-county (3) users
+        // are bounced to /403 by the router guard. Mirrors the sidebar gate.
         path: "/budget/national-dashboard",
         name: "budget-national-dashboard",
         component: () => import("@/view/pages/budget/NationalDashboard.vue"),
+        meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
       },
       {
+        // Reviews EVERY county / sub-county budget nationally — level 1 only.
         path: "/budget/national-review",
         name: "budget-national-review",
         component: () => import("@/view/pages/budget/NationalBudgetReview.vue"),
+        meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
       },
       {
         path: "/budget/county-dashboard",
@@ -263,10 +269,12 @@ const routes = [
         // Financial Analysis sub-module — read-only. Gated by
         // `get_budget_financial_analysis` through the sidebar / Access Control
         // rather than a hard role list, so the audience can be managed there.
+        // The payload covers EVERY county, so it is additionally pinned to the
+        // NATIONAL tier (level 1) — county / sub-county users never reach it.
         path: "/budget/financial-analysis",
         name: "budget-financial-analysis",
         component: () => import("@/view/pages/budget/FinancialAnalysis.vue"),
-        meta: { auth: true },
+        meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
       },
       {
         // NATIONAL budget workspace — the same generate → edit Units & No. of
@@ -276,7 +284,7 @@ const routes = [
         path: "/budget/national-budgeting",
         name: "budget-national-budgeting",
         component: () => import("@/view/pages/budget/NationalBudgeting.vue"),
-        meta: { auth: true, allowedLevels: [1] },
+        meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
       },
       {
         // AIE Holder — review & acknowledge the national budget against the
@@ -284,7 +292,7 @@ const routes = [
         path: "/budget/national-acknowledgement",
         name: "budget-national-acknowledgement",
         component: () => import("@/view/pages/budget/NationalBudgetAcknowledgement.vue"),
-        meta: { auth: true, allowedLevels: [1] },
+        meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
       },
       {
         path: "/budget/parameters",

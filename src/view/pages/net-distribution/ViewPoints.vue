@@ -78,6 +78,11 @@
                   :dataSource="dataSource"
                   :columns="columns"
                 >
+                  <template #type="{ text }">
+                    <span :class="text ? 'badge-blue' : 'badge-green'">
+                      {{ text ? "Virtual" : "Physical" }}
+                    </span>
+                  </template>
                   <template #point="{ record }">
                     <td>
                       <div class="table-actions">
@@ -234,6 +239,12 @@ const columns = [
     title: "Dropoff Code",
     dataIndex: "drop_off_code",
     key: "id",
+  },
+  {
+    title: "Type",
+    dataIndex: "is_virtual",
+    key: "type",
+    slots: { customRender: "type" },
   },
   {
     title: "Drop off Manager",
