@@ -42,7 +42,7 @@
 
     <!-- Unauthorized: full-page modal -->
     <a-modal
-      :open="showAccessModal"
+      :visible="showAccessModal"
       :closable="false"
       :mask-closable="false"
       :keyboard="false"

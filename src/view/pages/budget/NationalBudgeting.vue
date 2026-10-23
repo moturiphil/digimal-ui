@@ -213,6 +213,26 @@
                     {{ c.unsetCount }} not set
                   </a-tag>
                   <a-tag v-if="c.dirty" class="dirty-tag">Unsaved</a-tag>
+                  <!-- The category's multiplier, straight from the Budget
+                       Categories configuration. Flagged when the generated
+                       rows have not been re-priced with it yet. -->
+                  <a-tag
+                    v-if="c.multiplierDisplay"
+                    class="multiplier-tag"
+                    :class="{ 'is-pending': c.multiplierPending }"
+                    :title="c.multiplierPending
+                      ? 'The rows in this category were generated before this multiplier was set, so the totals below do not include it yet — use ↻ Refresh from categories.'
+                      : 'Every line in this category is multiplied by this value.'"
+                  >
+                    {{ c.multiplierDisplay }}
+                  </a-tag>
+                  <a-tag
+                    v-if="c.multiplierPending"
+                    class="multiplier-pending-tag"
+                    title="Use ↻ Refresh from categories to apply it."
+                  >
+                    not applied yet
+                  </a-tag>
                 </div>
                 <div class="act-total">KES {{ fmtMoney(c.total) }}</div>
               </div>
@@ -241,7 +261,6 @@
                       :min="1"
                       size="small"
                       class="units-input"
-                      @change="markDirty(record)"
                     />
                     <span v-else>{{ record._days }}</span>
                   </span>
@@ -252,9 +271,14 @@
                       :min="0"
                       size="small"
                       class="units-input"
-                      @change="markDirty(record)"
                     />
                     <span v-else>{{ fmt(record._units) }}</span>
+                  </span>
+                  <span v-else-if="column.key === 'multiplier'" class="multiplier-cell">
+                    <span v-if="record._multiplier > 1" class="multiplier-on">
+                      × {{ record._multiplier }}
+                    </span>
+                    <span v-else class="multiplier-off">—</span>
                   </span>
                   <span v-else-if="column.key === 'total'" class="total-cell">{{ fmtMoney(rowTotal(record)) }}</span>
                 </template>
@@ -264,7 +288,6 @@
                 <sdButton
                   size="small"
                   :class="['pill-btn', 'save-btn', { 'is-dirty': c.dirty }]"
-                  :disabled="!c.dirty"
                   :loading="savingCategoryId === c.id"
                   @click="promptSave(c)"
                 >
@@ -303,6 +326,17 @@
             </div>
 
             <sdButton
+              v-if="canEdit"
+              size="small"
+              class="pill-btn sync-btn"
+              :loading="syncing"
+              title="Bring this budget in line with the Budget Categories configuration: adds rows for newly created categories / linked parameters, and re-applies changed category multipliers. Entered Units and No. of Days are left untouched."
+              @click="syncCategories"
+            >
+              ↻ Refresh from categories
+            </sdButton>
+
+            <sdButton
               v-if="canEdit && budgetStatus === 'draft'"
               type="primary"
               class="pill-btn submit-btn"
@@ -316,7 +350,7 @@
 
           <!-- Comment modal (mandatory on a figure change) -->
           <a-modal
-            v-model:open="commentModal"
+            v-model:visible="commentModal"
             :title="`Comment required — ${pendingCategory ? pendingCategory.name : ''}`"
             ok-text="Save changes"
             :confirm-loading="savingCategoryId !== null"
@@ -426,6 +460,8 @@ export default {
   setup() {
     const loading = ref(false);
     const working = ref(false);
+    // ADDITIVE "Sync categories" action in flight.
+    const syncing = ref(false);
 
     const profileError = ref(null);
     const countyProfileId = ref(null);
@@ -481,6 +517,7 @@ export default {
       { title: 'Unit Cost', key: 'unit_cost', align: 'right', width: 120 },
       { title: 'No. of Days', key: 'days', align: 'right', width: 130 },
       { title: 'Units', key: 'units', align: 'right', width: 130 },
+      { title: 'Multiplier', key: 'multiplier', align: 'right', width: 110 },
       { title: 'Total (KES)', key: 'total', align: 'right', width: 150 },
     ];
 
@@ -524,14 +561,41 @@ export default {
       });
     };
 
+    /**
+     * A line's cost. Mirrors BudgetCalculationService / BudgetLineItem:
+     *   unit_cost × number_of_days × unit_count × session_multiplier
+     *
+     * The multiplier comes from the category (an explicit value set on the
+     * Budget Categories page, or a county-profile column) and is stored on each
+     * line at generation time — so it must be included here or the grid would
+     * disagree with the persisted total.
+     */
     const rowTotal = (row) =>
-      (Number(row.unit_cost) || 0) * (Number(row._days) || 0) * (Number(row._units) || 0);
+      (Number(row.unit_cost) || 0)
+      * (Number(row._days) || 0)
+      * (Number(row._units) || 0)
+      * (Number(row._multiplier) || 1);
 
     const grandTotal = computed(() =>
       lineItems.value.reduce((sum, row) => sum + rowTotal(row), 0),
     );
 
-    const dirtyCount = computed(() => lineItems.value.filter((r) => r._dirty).length);
+    /**
+     * True when either editable figure differs from the value the row was loaded
+     * — or last saved — with.
+     *
+     * Dirtiness is DERIVED, not tracked with a change event, and that matters:
+     * `a-input-number` only emits `change` on blur / Enter. A flag set there left
+     * the Save button disabled while the input still had focus, so clicking Save
+     * did nothing, the input never blurred, the flag never flipped, and the edit
+     * could never be persisted. Comparing against the baseline updates on every
+     * keystroke instead.
+     */
+    const isRowDirty = (row) =>
+      Number(row._days) !== Number(row._originalDays)
+      || Number(row._units) !== Number(row._originalUnits);
+
+    const dirtyCount = computed(() => lineItems.value.filter(isRowDirty).length);
 
     /** Total lines, and how many of them carry a unit count. */
     const lineCount = computed(() => lineItems.value.length);
@@ -596,14 +660,33 @@ export default {
 
       return [...map.values()]
         .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-        .map((c, i) => ({
-          ...c,
-          order: i + 1,
-          expanded: expandedIds.value.includes(c.id),
-          dirty: c.items.some((r) => r._dirty),
-          unsetCount: c.items.filter((r) => !r._units).length,
-          total: c.items.reduce((sum, r) => sum + rowTotal(r), 0),
-        }));
+        .map((c, i) => {
+          // Multiplier state for the header: what the Budget Categories page
+          // says (configured) vs what the generated rows actually carry
+          // (applied). A mismatch means the rows were generated before the
+          // multiplier was set, so the totals below do not include it yet.
+          const first = c.items[0] || {};
+          const configured = Number(first.category_multiplier_value) || null;
+          const label = first.category_multiplier_label
+            || first.category_budget_multiplier
+            || '';
+          const applied = c.items.length
+            ? Math.max(...c.items.map((r) => Number(r._multiplier) || 1))
+            : 1;
+
+          return {
+            ...c,
+            order: i + 1,
+            expanded: expandedIds.value.includes(c.id),
+            dirty: c.items.some(isRowDirty),
+            unsetCount: c.items.filter((r) => !r._units).length,
+            total: c.items.reduce((sum, r) => sum + rowTotal(r), 0),
+            multiplierDisplay: configured
+              ? `× ${configured}${label ? ` ${label}` : ''}`
+              : null,
+            multiplierPending: !!configured && configured !== applied,
+          };
+        });
     });
 
     /** Stage 1 / 2 / 3 buckets, each with its own subtotal. */
@@ -744,11 +827,25 @@ export default {
             unit_cost: Number(li.unit_cost) || 0,
             _days: Number(li.number_of_days) || 1,
             _units: Number(li.unit_count) || 0,
+            // Category multiplier resolved at generation time (1 = none). Kept
+            // so rowTotal() matches the persisted total_cost.
+            _multiplier: Number(li.session_multiplier) || 1,
+            // Category multiplier CONFIG (what /budget/categories says) — shown
+            // in the category header and compared with the applied _multiplier
+            // so a "not applied yet" state is visible instead of silent.
+            category_multiplier_value: Number(cat.multiplier_value) || null,
+            category_multiplier_label: cat.profile_field_label || '',
+            category_budget_multiplier: cat.budget_multiplier || '',
             _originalDays: Number(li.number_of_days) || 1,
             _originalUnits: Number(li.unit_count) || 0,
-            _dirty: false,
           };
         });
+
+    /**
+     * Budget ids already brought in line with the category configuration, so the
+     * automatic pass below runs at most once per budget per page load.
+     */
+    const configSynced = new Set();
 
     const loadLineItems = async (type, budgetId) => {
       try {
@@ -759,6 +856,48 @@ export default {
         };
       } catch (err) {
         lineItemsByType.value = { ...lineItemsByType.value, [type]: [] };
+        return;
+      }
+
+      // While the budget is still a DRAFT the category configuration is the
+      // source of truth, so bring the rows in line automatically: newly created
+      // categories / linked parameters are added, and a changed category
+      // multiplier is re-applied. Non-destructive — entered Units, No. of Days
+      // and reviewer overrides are untouched — and a no-op when nothing changed.
+      //
+      // Deliberately limited to drafts: once the budget is submitted, the
+      // multiplier-drift flag has to keep its meaning for the reviewers, so
+      // re-pricing there stays a deliberate "↻ Refresh from categories" action.
+      const status = (budgets.value[type] && budgets.value[type].status) || null;
+      if (!canEdit.value || status !== 'draft') return;
+      if (configSynced.has(budgetId)) return;
+
+      configSynced.add(budgetId);
+
+      try {
+        const { data } = await axios.post(`sync_campaign_budget_line_items/${budgetId}`);
+
+        const changed = Number(data?.created || 0) + Number(data?.multipliers_applied || 0);
+        if (!changed) return;
+
+        const { data: refreshed } = await axios.get(`get_budget_line_items/${budgetId}`);
+        lineItemsByType.value = {
+          ...lineItemsByType.value,
+          [type]: toRows(normalizeLineItems(refreshed)),
+        };
+
+        if (budgets.value[type]) {
+          budgets.value = {
+            ...budgets.value,
+            [type]: {
+              ...budgets.value[type],
+              grand_total: data?.grand_total ?? budgets.value[type].grand_total,
+            },
+          };
+        }
+      } catch (err) {
+        // Non-fatal — the grid renders whatever is stored, and the manual
+        // "↻ Refresh from categories" action is still there.
       }
     };
 
@@ -877,21 +1016,77 @@ export default {
       }
     };
 
+    /**
+     * Bring the budget in line with the current Budget Categories configuration:
+     *
+     *   • adds the line items a newly created category (or a newly linked
+     *     parameter) is missing — the grid renders GENERATED rows, so without
+     *     this the category never appears;
+     *   • re-applies a category's multiplier when it has changed (an explicit
+     *     value set on the Budget Categories page, or a county-profile column) —
+     *     the multiplier is snapshotted onto each row at generation time.
+     *
+     * Nothing an officer typed is rewritten: Units, No. of Days and any reviewer
+     * override survive.
+     */
+    const syncCategories = async () => {
+      if (!budget.value) return;
+
+      const type = activeType.value;
+      const budgetId = budget.value.id;
+
+      syncing.value = true;
+      try {
+        const { data } = await axios.post(`sync_campaign_budget_line_items/${budgetId}`);
+
+        // Reload the grid and keep the header total in step with the server.
+        await loadLineItems(type, budgetId);
+
+        if (budgets.value[type]) {
+          budgets.value = {
+            ...budgets.value,
+            [type]: {
+              ...budgets.value[type],
+              grand_total: data?.grand_total ?? budgets.value[type].grand_total,
+            },
+          };
+        }
+
+        notification.success({
+          message: 'Categories synced',
+          description:
+            data?.message
+            || 'The budget now covers every category and parameter configured for its scope.',
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Could not sync the categories',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        syncing.value = false;
+      }
+    };
+
     /** Switching tabs closes any open detail view for the other budget. */
     watch(activeType, () => {
       expandedIds.value = [];
     });
 
-    /** A row is dirty when either editable figure moved. */
-    const markDirty = (row) => {
-      row._dirty = Number(row._days) !== Number(row._originalDays)
-        || Number(row._units) !== Number(row._originalUnits);
-    };
-
     /** Collect the changed lines of a category and ask for the comment. */
     const promptSave = (category) => {
-      const changed = category.items.filter((r) => r._dirty);
-      if (!changed.length) return;
+      const changed = category.items.filter(isRowDirty);
+
+      if (!changed.length) {
+        // Reachable when the button is clicked without a pending edit — the
+        // button is intentionally never disabled, so a click always reaches here
+        // (and blurs the focused input, committing whatever was typed).
+        notification.info({
+          message: 'Nothing to save',
+          description: 'No figure in this category has changed.',
+        });
+        return;
+      }
 
       pendingCategory.value = category;
       pendingChanges.value = changed.map((r) => ({
@@ -933,9 +1128,10 @@ export default {
             comment,
           });
 
+          // Moving the baseline is what clears the row's "Unsaved" state —
+          // dirtiness is derived from it (see isRowDirty()).
           row._originalUnits = Number(row._units);
           row._originalDays = Number(row._days);
-          row._dirty = false;
         }
 
         commentModal.value = false;
@@ -984,7 +1180,10 @@ export default {
       canViewReviewFeedback, canEdit, itemColumns, stageLabel, actionStatus,
       submittedAt, budgetFinancialYear, fmt, fmtMoney, rowTotal, grandTotal, dirtyCount,
       categories, stages, filteredStages, toggleCategory, expandAll, collapseAll,
-      bootstrap, generate, openDetail, markDirty, promptSave, confirmSave, submit,
+      bootstrap, generate, openDetail, promptSave, confirmSave, submit,
+      // ADDITIVE "Sync categories" — pulls in newly configured categories /
+      // parameters without rewriting the figures already entered.
+      syncing, syncCategories,
       // Two separate national budget records (main national + Baringo).
       activeType, hasAnyBudget, isBaringo, showWorkspace, typeOptions,
       lineCount, filledCount, zeroUnitCount, rowClass, revealUnset,
@@ -1323,6 +1522,34 @@ export default {
       line-height: 18px;
       font-weight: 700;
     }
+    /* Category multiplier (from the Budget Categories configuration). */
+    .multiplier-tag {
+      margin: 0;
+      background: #eaf5ee;
+      color: #1f6f43;
+      border: 1px solid #c6e6d3;
+      border-radius: 10px;
+      padding: 0 8px;
+      font-size: 10px;
+      line-height: 18px;
+      font-weight: 700;
+      &.is-pending {
+        background: #fff1f0;
+        color: #c0392b;
+        border-color: #f5c2bd;
+      }
+    }
+    .multiplier-pending-tag {
+      margin: 0;
+      background: #fff1f0;
+      color: #c0392b;
+      border: 1px solid #f5c2bd;
+      border-radius: 10px;
+      padding: 0 8px;
+      font-size: 10px;
+      line-height: 18px;
+      font-weight: 700;
+    }
   }
   .act-total {
     font-size: 13px;
@@ -1424,6 +1651,11 @@ export default {
     }
     .money-cell { color: #4d5661; }
     .total-cell { font-weight: 700; color: #15693c; }
+    /* Category multiplier resolved at generation time (× N, or — when 1). */
+    .multiplier-cell {
+      .multiplier-on { font-weight: 600; color: #1f6f43; }
+      .multiplier-off { color: #b9c2c9; }
+    }
   }
 
   /* ── Helpers ────────────────────────────────────────────────────────── */
