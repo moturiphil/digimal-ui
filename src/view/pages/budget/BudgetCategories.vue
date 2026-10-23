@@ -420,36 +420,128 @@
       </div>
     </a-modal>
 
-    <!-- Delete Parameter Confirmation Modal -->
+    <!-- Remove Parameter From Category Modal -->
+    <!--
+      A parameter that is already budgeted cannot simply be unlinked: the budgets
+      that generated it would keep rows pointing at a category ↔ parameter
+      mapping that no longer exists. So removal is a two-step operation —
+
+        1. the line items this parameter generated are deleted from the budgets
+           the administrator ticks here, and those budgets' totals are re-synced;
+        2. the mapping itself is deleted.
+
+      The impact list below (get_category_parameter_impact) is what makes step 1
+      possible: it shows every budget that has budgeted for this parameter, with
+      the amount at stake, so nothing is removed blind.
+    -->
     <a-modal
       v-model:visible="deleteModalVisible"
-      title="Remove Parameter"
-      ok-text="Delete"
+      title="Remove Parameter From Category"
+      width="720px"
+      ok-text="Remove Parameter"
       cancel-text="Cancel"
-      :ok-button-props="{ danger: true }"
+      :ok-button-props="{ danger: true, disabled: impactLoading || !!impactError }"
       :confirm-loading="!!deletingId"
       :closable="!deletingId"
       :mask-closable="!deletingId"
       @ok="confirmDeleteCategoryParameter"
       @cancel="closeDeleteModal"
     >
-      <p style="margin-bottom: 8px;">
-        Are you sure you want to remove this parameter from the category?
-      </p>
-      <div
-        v-if="deleteTarget.parameter"
-        style="background:#f7f9fa;border:1px solid #eef0f2;border-radius:6px;padding:10px 12px;"
-      >
-        <div style="font-weight:600;color:#1f2437;">
-          {{ deleteTarget.parameter.parameter_label || deleteTarget.parameter.parameter_key }}
+      <div v-if="deleteTarget.parameter" class="bp-impact-head">
+        <div class="bp-impact-head-main">
+          <strong>
+            {{ deleteTarget.parameter.parameter_label || deleteTarget.parameter.parameter_key }}
+          </strong>
+          <a-tag class="bp-key-tag">{{ deleteTarget.parameter.parameter_key }}</a-tag>
         </div>
-        <div v-if="deleteTarget.category" style="font-size:12px;color:#7a8a82;margin-top:2px;">
-          From category: <strong>{{ deleteTarget.category.category_name }}</strong>
+        <div v-if="deleteTarget.category" class="bp-impact-head-sub">
+          <span>
+            From category <strong>{{ deleteTarget.category.category_name }}</strong>
+          </span>
+          <a-tag
+            v-if="deleteTarget.category.category_scope"
+            :color="scopeColor(deleteTarget.category.category_scope)"
+            class="ba-tag"
+          >
+            {{ scopeLabel(deleteTarget.category.category_scope) }}
+          </a-tag>
         </div>
       </div>
-      <p style="margin-top:12px;color:#c0392b;font-size:12px;">
-        This action cannot be undone.
-      </p>
+
+      <div v-if="impactLoading" class="bp-impact-loading">
+        <a-spin size="small" />
+        <span>Checking which budgets have budgeted for this parameter...</span>
+      </div>
+
+      <a-alert
+        v-else-if="impactError"
+        type="error"
+        show-icon
+        :message="impactError"
+      />
+
+      <a-alert
+        v-else-if="!impactBudgets.length"
+        type="info"
+        show-icon
+        message="No budget has budgeted for this parameter yet."
+        description="Removing it only unlinks it from the category — there is nothing to clean up."
+      />
+
+      <template v-else>
+        <a-alert
+          type="warning"
+          show-icon
+          class="bp-impact-alert"
+          :message="`${impactBudgets.length} budget(s) have budgeted for this parameter`"
+          :description="`Totalling KES ${money(impact.total_amount)}. Tick the budgets to remove it from — their line items for this parameter are deleted and their totals re-synced — then it is unlinked from the category.`"
+        />
+
+        <div class="bp-impact-toolbar">
+          <a-checkbox
+            :checked="allRemovableSelected"
+            :indeterminate="someRemovableSelected"
+            :disabled="!removableBudgetIds.length"
+            @change="toggleAllBudgets"
+          >
+            Select all removable budgets
+          </a-checkbox>
+          <span class="bp-impact-count">
+            {{ selectedBudgetIds.length }} of {{ removableBudgetIds.length }} selected
+          </span>
+        </div>
+
+        <a-checkbox-group v-model:value="selectedBudgetIds" class="bp-impact-list">
+          <div
+            v-for="b in impactBudgets"
+            :key="b.campaign_budget_id"
+            class="bp-impact-row"
+            :class="{ 'is-locked': b.locked }"
+          >
+            <a-checkbox :value="b.campaign_budget_id" :disabled="b.locked" />
+            <span class="bp-impact-name">
+              {{ b.name }}
+              <a-tag v-if="b.level" class="bp-key-tag">{{ scopeLabel(b.level) }}</a-tag>
+            </span>
+            <a-tag :color="budgetStatusColor(b.status)" class="ba-tag">
+              {{ formatLabel(b.status) }}
+            </a-tag>
+            <span class="bp-impact-lines">{{ b.line_count }} line(s)</span>
+            <strong class="bp-money">KES {{ money(b.total) }}</strong>
+            <a-tag v-if="b.locked" color="default" class="bp-key-tag">Locked</a-tag>
+          </div>
+        </a-checkbox-group>
+
+        <p v-if="impact.locked_budgets" class="bp-form-hint">
+          Approved / voided budgets are listed for reference but never rewritten —
+          they are historical records, so their rows stay.
+        </p>
+
+        <p v-if="!selectedBudgetIds.length" class="bp-form-hint is-warn">
+          No budget ticked — the parameter is only unlinked. Its line items stay in
+          the budgets above.
+        </p>
+      </template>
     </a-modal>
   </RecordViewWrapper>
 </template>
@@ -543,48 +635,115 @@ export default {
       { title: '', key: 'actions', width: 60, align: 'center' },
     ];
 
+    // ── Remove-parameter modal (impact list + two-step delink) ────────────
+    // Removing a parameter from a category has to clear the line items it has
+    // already generated, otherwise those budgets keep rows pointing at a
+    // category ↔ parameter mapping that no longer exists. The impact endpoint
+    // lists the budgets that have budgeted for it; the administrator then ticks
+    // which ones to clear before the mapping itself is deleted.
     const deletingId = ref(null);
     const deleteModalVisible = ref(false);
     const deleteTarget = ref({ category: null, parameter: null });
+    const impactLoading = ref(false);
+    const impactError = ref('');
+    // get_category_parameter_impact payload: { budgets, total_amount, locked_budgets }
+    const impact = ref({ budgets: [], total_amount: 0, locked_budgets: 0 });
+    const selectedBudgetIds = ref([]);
 
-    const openDeleteModal = (categoryRecord, parameter) => {
+    const impactBudgets = computed(() => impact.value.budgets || []);
+
+    // Approved / voided budgets are reported but can never be rewritten, so they
+    // are excluded from "select all" and their checkboxes stay disabled.
+    const removableBudgetIds = computed(() =>
+      impactBudgets.value.filter(b => !b.locked).map(b => b.campaign_budget_id),
+    );
+
+    const allRemovableSelected = computed(() =>
+      removableBudgetIds.value.length > 0
+      && removableBudgetIds.value.every(id => selectedBudgetIds.value.includes(id)),
+    );
+
+    const someRemovableSelected = computed(() =>
+      selectedBudgetIds.value.length > 0 && !allRemovableSelected.value,
+    );
+
+    const toggleAllBudgets = (e) => {
+      selectedBudgetIds.value = e.target.checked ? [...removableBudgetIds.value] : [];
+    };
+
+    const openDeleteModal = async (categoryRecord, parameter) => {
       deleteTarget.value = { category: categoryRecord, parameter };
       deleteModalVisible.value = true;
+
+      impact.value = { budgets: [], total_amount: 0, locked_budgets: 0 };
+      selectedBudgetIds.value = [];
+      impactError.value = '';
+
+      if (!parameter || !parameter.id) return;
+
+      impactLoading.value = true;
+      try {
+        const { data } = await axios.get(`get_category_parameter_impact/${parameter.id}`);
+        impact.value = data || {};
+        // Every removable budget starts ticked: clearing the parameter everywhere
+        // is the common case, and unticking one is a single click.
+        selectedBudgetIds.value = [...removableBudgetIds.value];
+      } catch (error) {
+        impactError.value = error?.response?.data?.message
+          || 'Unable to check which budgets use this parameter.';
+      } finally {
+        impactLoading.value = false;
+      }
     };
 
     const closeDeleteModal = () => {
       if (deletingId.value) return;
       deleteModalVisible.value = false;
       deleteTarget.value = { category: null, parameter: null };
+      impact.value = { budgets: [], total_amount: 0, locked_budgets: 0 };
+      selectedBudgetIds.value = [];
+      impactError.value = '';
     };
 
+    /**
+     * Two-step removal: the backend deletes the selected budgets' line items for
+     * this parameter FIRST, then deletes the mapping itself — so no budget is
+     * left holding rows whose mapping has gone.
+     */
     const confirmDeleteCategoryParameter = async () => {
       const { category, parameter } = deleteTarget.value;
       if (!parameter || !parameter.id) return;
-      await deleteCategoryParameter(category, parameter);
-      deleteModalVisible.value = false;
-      deleteTarget.value = { category: null, parameter: null };
-    };
 
-    const deleteCategoryParameter = async (categoryRecord, parameter) => {
-      if (!parameter || !parameter.id) return;
       deletingId.value = parameter.id;
       try {
-        await axios.delete(`delete_category_parameter/${parameter.id}`);
-        // remove locally and update total
-        const idx = categoryRecord.parameters.findIndex(p => p.id === parameter.id);
+        const { data } = await axios.post(`delink_category_parameter/${parameter.id}`, {
+          budget_ids: selectedBudgetIds.value,
+        });
+
+        // Unlink locally so the table updates without a refetch.
+        const idx = category.parameters.findIndex(p => p.id === parameter.id);
         if (idx !== -1) {
-          categoryRecord.parameters.splice(idx, 1);
-          categoryRecord.total_cost = categoryRecord.parameters
+          category.parameters.splice(idx, 1);
+          category.total_cost = category.parameters
             .reduce((sum, p) => sum + Number(p.unit_cost || 0), 0);
         }
+
         notification.success({
           message: 'Parameter removed',
-          description: `"${parameter.parameter_label || parameter.parameter_key}" was removed from the category.`,
+          description: data?.message
+            || `"${parameter.parameter_label || parameter.parameter_key}" was removed from the category.`,
         });
+
+        // Close only on success: a failure keeps the dialog (and the tick list)
+        // on screen so the removal can be retried as-is.
+        deleteModalVisible.value = false;
+        deleteTarget.value = { category: null, parameter: null };
+        impact.value = { budgets: [], total_amount: 0, locked_budgets: 0 };
+        selectedBudgetIds.value = [];
+        impactError.value = '';
       } catch (error) {
         notification.error({
-          message: 'Unable to delete parameter',
+          message: 'Unable to remove parameter',
           description: error?.response?.data?.message || 'Please try again.',
         });
       } finally {
@@ -599,6 +758,21 @@ export default {
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ');
     };
+
+    const money = (value) => Number(value || 0).toLocaleString();
+
+    // campaign_budgets.status → antd tag colour, so the impact list reads the
+    // same way as the status badges on the budgeting pages.
+    const BUDGET_STATUS_COLORS = {
+      draft: 'default',
+      submitted: 'blue',
+      county_approved: 'cyan',
+      dnmp_reviewed: 'purple',
+      national_approved: 'geekblue',
+      approved: 'green',
+      voided: 'red',
+    };
+    const budgetStatusColor = (status) => BUDGET_STATUS_COLORS[status] || 'default';
 
     const typeColorMap = {
       event: 'volcano',
@@ -1151,12 +1325,23 @@ export default {
       closeLinkModal,
       submitLinkParameters,
       deletingId,
-      deleteCategoryParameter,
       deleteModalVisible,
       deleteTarget,
       openDeleteModal,
       closeDeleteModal,
       confirmDeleteCategoryParameter,
+      // remove-parameter impact list
+      impactLoading,
+      impactError,
+      impact,
+      impactBudgets,
+      selectedBudgetIds,
+      removableBudgetIds,
+      allRemovableSelected,
+      someRemovableSelected,
+      toggleAllBudgets,
+      budgetStatusColor,
+      money,
     };
   },
 };
@@ -1207,6 +1392,98 @@ export default {
   font-size: 11.5px;
   line-height: 1.45;
   color: #868eae;
+}
+.bp-form-hint.is-warn {
+  color: #d46b08;
+}
+
+/* Remove-parameter modal — header + "which budgets use this" impact list */
+.bp-impact-head {
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: #f7f9fa;
+  border: 1px solid #eef0f2;
+  border-radius: 6px;
+}
+.bp-impact-head-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1f2437;
+}
+.bp-impact-head-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #7a8a82;
+}
+.bp-impact-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0;
+  font-size: 13px;
+  color: #7a8a82;
+}
+.bp-impact-alert {
+  margin-bottom: 12px;
+}
+.bp-impact-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.bp-impact-count {
+  font-size: 12px;
+  color: #8a93a8;
+}
+.bp-impact-list {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.bp-impact-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.bp-impact-row + .bp-impact-row {
+  border-top: 1px solid #f5f6f8;
+}
+.bp-impact-row:hover {
+  background: #fafbfc;
+}
+/* An approved / voided budget: reported for context, never rewritten. */
+.bp-impact-row.is-locked {
+  background: #fafafa;
+  color: #8a93a8;
+}
+.bp-impact-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  color: #1f2437;
+}
+.bp-impact-row.is-locked .bp-impact-name {
+  color: #8a93a8;
+}
+.bp-impact-lines {
+  font-size: 12px;
+  color: #8a93a8;
+  white-space: nowrap;
 }
 
 /* Edit-category affordance + modal banner */
