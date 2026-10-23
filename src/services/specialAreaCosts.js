@@ -125,3 +125,58 @@ export const fetchSacItems = async ({ includeInactive = false } = {}) => {
 
 /** The built-in fallback list, cloned so callers never mutate the constant. */
 export const fallbackSacItems = () => SAC_ITEMS.map((i) => ({ ...i }));
+
+/**
+ * ── Per-category item assignment ────────────────────────────────────────────
+ *
+ * The catalogue above is global. An ASSIGNMENT narrows which of its items a
+ * single budget category offers in the SAC grid — e.g. DSA + Enhanced Transport
+ * for a stakeholder meeting, Boat + Security for a distribution activity.
+ *
+ * A category with NO assignment keeps the historical behaviour (every active
+ * item applies), so an install that never configures an assignment is
+ * unaffected. `assignments` below is the whole map in one request, keyed by
+ * category id.
+ */
+
+/** Every category's assignment: `{ [categoryId]: number[] }`. */
+export const fetchSacItemAssignments = async () => {
+  try {
+    const { data } = await axios.get('get_special_area_cost_item_assignments');
+    const payload = data?.data || data || {};
+    const map = payload.assignments || {};
+
+    return Object.entries(map).reduce((acc, [categoryId, ids]) => {
+      acc[Number(categoryId)] = (Array.isArray(ids) ? ids : []).map(Number);
+      return acc;
+    }, {});
+  } catch (err) {
+    // Treat a failed lookup as "nothing configured" — the grid then falls back
+    // to the full catalogue, which is the safe, historical behaviour.
+    return {};
+  }
+};
+
+/** The catalogue with an `assigned` flag, for one category's picker. */
+export const fetchCategorySacItems = async (categoryId) => {
+  const { data } = await axios.get(`get_category_special_area_costs/${categoryId}`);
+  const payload = data?.data || data || {};
+
+  return {
+    items: (Array.isArray(payload.items) ? payload.items : []).map((row) => ({
+      ...normalizeSacItem(row),
+      assigned: Boolean(row.assigned),
+    })),
+    assignedIds: (Array.isArray(payload.assigned_ids) ? payload.assigned_ids : []).map(Number),
+    hasAssignment: Boolean(payload.has_assignment),
+  };
+};
+
+/** Replace a category's assignment. An empty list clears it (all items apply). */
+export const syncCategorySacItems = async (categoryId, itemIds) => {
+  const { data } = await axios.post(`sync_category_special_area_costs/${categoryId}`, {
+    item_ids: itemIds,
+  });
+
+  return data;
+};

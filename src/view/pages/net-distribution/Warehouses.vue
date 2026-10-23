@@ -68,6 +68,11 @@
                   <template #order_status="{ text }">
                     <span :class="statusBadgeClass(text)">{{ text }}</span>
                   </template>
+                  <template #stock_status="{ text }">
+                    <span :class="stockStatusBadgeClass(text)">{{
+                      stockStatusLabel(text)
+                    }}</span>
+                  </template>
                 </a-table>
                 <a-empty
                   v-if="!dataSource.length"
@@ -143,6 +148,12 @@ const columns = [
     key: "order_status",
     slots: { customRender: "order_status" },
   },
+  {
+    title: "Stock Status",
+    dataIndex: "stock_status",
+    key: "stock_status",
+    slots: { customRender: "stock_status" },
+  },
 ];
 
 const isLoading = ref(true);
@@ -179,6 +190,17 @@ const statusBadgeClass = (text) => {
       return "badge-default";
   }
 };
+
+// Nets the warehouse currently holds for the operating campaign. The API sends
+// `stock_status` (0 when the warehouse has no balance row for the campaign).
+const stockStatusLabel = (quantity) => {
+  const qty = Number(quantity) || 0;
+  return qty > 0 ? `${qty} nets` : "Out of Stock";
+};
+
+const stockStatusBadgeClass = (quantity) =>
+  Number(quantity) > 0 ? "badge-green" : "badge-red";
+
 // The list requires an operating campaign (or an explicit campaign_id) and the
 // API paginates 100 rows per page.
 const buildParams = () => {

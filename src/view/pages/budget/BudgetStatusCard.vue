@@ -73,12 +73,13 @@ export default {
       if (this.isReferred) return 'Referred';
 
       // The NATIONAL budget has its own wording — it never enters the DNMP
-      // review stage: the Vector Unit Head / GF Manager approve it and the AIE
-      // Holder acknowledges it.
+      // review stage: the Vector Unit Head / DNMP Program Officer prepare it,
+      // the Accountant / Program Accountant / Finance Officer review it, and
+      // the AIE Holder acknowledges it.
       if (this.isNational) {
         if (this.status === 'approved') return 'Acknowledged by AIE Holder';
-        if (this.status === 'national_approved') return 'Approved (Vector Unit Head / GF Manager)';
-        if (this.status === 'submitted') return 'Submitted — pending approval';
+        if (this.status === 'national_approved') return 'Reviewed (Accountant / Program Accountant / Finance Officer)';
+        if (this.status === 'submitted') return 'Submitted — pending review';
         if (this.status === 'draft') return 'Draft';
         if (this.status === 'voided') return 'Voided';
         return this.status;

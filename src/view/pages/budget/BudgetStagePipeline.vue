@@ -65,14 +65,15 @@ const COUNTY_STEPS = [
 
 /**
  * The NATIONAL budget has its own chain — it never enters the DNMP review
- * stage. The generators submit it, the Vector Unit Head / GF Manager approve
- * it, and the AIE Holder reviews & acknowledges it.
+ * stage. The Vector Unit Head / DNMP Program Officer prepare and submit it, the
+ * DNMP Accountant / Program Accountant / Finance Officer review it, and the AIE
+ * Holder reviews & acknowledges it.
  */
 const NATIONAL_STEPS = [
-  { status: 'draft',             label: 'Preparatory',        icon: '✎' },
-  { status: 'submitted',         label: 'Submitted',          icon: '◔' },
-  { status: 'national_approved', label: 'Approved (VUH / GF)', icon: '◑' },
-  { status: 'approved',          label: 'Acknowledged (AIE)', icon: '★' },
+  { status: 'draft',             label: 'Preparatory',         icon: '✎' },
+  { status: 'submitted',         label: 'Submitted',           icon: '◔' },
+  { status: 'national_approved', label: 'Reviewed (Acct / FO)', icon: '◑' },
+  { status: 'approved',          label: 'Acknowledged (AIE)',  icon: '★' },
 ];
 
 export default {

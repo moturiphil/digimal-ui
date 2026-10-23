@@ -178,8 +178,8 @@ export const GATE_DEFINITIONS = Object.freeze({
     roles: ["Super Admin", "Accountant", "Finance Officer", "Program Accountant", "Program head", "DNMP GF Manager", "Vector Unit Head"],
   },
   // National budget workspace + AIE Holder acknowledgement. Evaluated
-  // permission-first: the generators hold `create_campaign_budget`, the
-  // approvers `county_approve_campaign_budget`, and the AIE Holder
+  // permission-first: the PREPARERS hold `create_campaign_budget`, the
+  // REVIEWERS `county_approve_campaign_budget`, and the AIE Holder
   // `approve_campaign_budget` — so Access Control decides the audience.
   // Mirrors BudgetEditAccessService::NATIONAL_*_ROLES.
   canViewNationalBudget: {
@@ -190,15 +190,19 @@ export const GATE_DEFINITIONS = Object.freeze({
       "approve_campaign_budget",
     ],
     // Legacy name fallback — the documented national chain:
-    //   generate + submit : Accountant | Program Accountant | Finance Officer
-    //   approve           : Vector Unit Head | DNMP GF Manager
-    //   review + ack.     : AIE Holder
+    //   prepare (draft → submitted)             : Vector Unit Head |
+    //                                             Program officer - DNMP
+    //   review  (submitted → national_approved) : Accountant |
+    //                                             Program Accountant |
+    //                                             Finance Officer
+    //   acknowledge (→ approved)                : AIE Holder
     roles: [
       "Super Admin",
+      "Vector Unit Head",
+      "Program officer - DNMP",
       "Accountant",
       "Program Accountant",
       "Finance Officer",
-      "Vector Unit Head",
       "DNMP GF Manager",
       "AIE Holder",
     ],
@@ -257,8 +261,8 @@ export const NAV_MODULES = Object.freeze([
       // approved budget analysis split county → component → cost group).
       { label: "Financial Analysis", path: "/budget/financial-analysis", permissions: ["get_budget_financial_analysis"] },
       // The NATIONAL budget workspace — same Budget module flow as County /
-      // Sub-County budgeting. Generators: DNMP Accountant, Program Accountant,
-      // Finance Officer. Approvers: Vector Unit Head, GF Manager.
+      // Sub-County budgeting. Preparers: Vector Unit Head, DNMP Program
+      // Officer. Reviewers: Accountant, Program Accountant, Finance Officer.
       { label: "National Budgeting", path: "/budget/national-budgeting", permissions: ["create_campaign_budget", "submit_campaign_budget", "county_approve_campaign_budget"] },
       // AIE Holder — review & acknowledge the national budget against the
       // combined National / County / Sub-County budget summaries.

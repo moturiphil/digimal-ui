@@ -138,6 +138,7 @@
                     :read-only="!isDraft"
                     :entries="sacEntries"
                     :items="sacItems"
+                    :assignments="sacAssignments"
                     :get-generated-row="sacGeneratedRow"
                     :save-entries="saveSacCategory"
                     :fmt="fmt"
@@ -230,7 +231,11 @@ import { RecordViewWrapper, BudgetPageWrapper } from './style';
 import BudgetStatusCard from './BudgetStatusCard.vue';
 import BudgetReferralBanner from './BudgetReferralBanner.vue';
 import SpecialAreaCostsSection from './SpecialAreaCostsSection.vue';
-import { fetchSacItems, fallbackSacItems } from '@/services/specialAreaCosts';
+import {
+  fetchSacItems,
+  fetchSacItemAssignments,
+  fallbackSacItems,
+} from '@/services/specialAreaCosts';
 
 /*
  * Special Area Cost (SAC) budget — the SEPARATE budget for a SAC-mapped
@@ -320,6 +325,9 @@ export default {
     // Categories + SAC catalogue + staged entries.
     const activityCatalog = ref([]);
     const sacItems = ref(fallbackSacItems());
+    // Per-category SAC item assignment (`{ [categoryId]: itemId[] }`). A
+    // category missing from it offers the whole catalogue (historical default).
+    const sacAssignments = ref({});
     const sacEntries = ref([]);
     const sacRows = ref([]);
 
@@ -461,8 +469,12 @@ export default {
     const loadSacItems = async () => {
       if (sacItemsLoaded) return;
       sacItemsLoaded = true;
-      const items = await fetchSacItems();
+      const [items, assignments] = await Promise.all([
+        fetchSacItems(),
+        fetchSacItemAssignments(),
+      ]);
       if (items.length) sacItems.value = items;
+      sacAssignments.value = assignments;
     };
 
     const loadSacEntries = async () => {
@@ -970,6 +982,7 @@ export default {
       referredBy,
       selectedActivities,
       sacItems,
+      sacAssignments,
       sacEntries,
       sacRows,
       voidModal,
