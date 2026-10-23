@@ -45,6 +45,32 @@ export const HH_CHANGE_OVERVIEW_LEVELS = Object.freeze([1, 2, 3]);
 export const HH_CHANGE_REVIEW_LEVELS = Object.freeze([3]);
 export const SCHMT_ORG_TYPE_ID = 10;
 
+/**
+ * National scope — levels table: 1 = National, 2 = County, 3 = Sub-County.
+ *
+ * The whole NATIONAL tier of the Budget module is LEVEL 1 ONLY:
+ *
+ *   • National Dashboard              /budget/national-dashboard
+ *   • County & S.County Budget Review /budget/national-review
+ *   • Financial Analysis              /budget/financial-analysis
+ *   • National Budgeting              /budget/national-budgeting
+ *   • National Budget Acknowledgement /budget/national-acknowledgement
+ *
+ * County (2) and Sub-County (3) users run their OWN chains (County Budgeting /
+ * SubCounty Budgeting) and have no business in the national one, so those
+ * entries are never rendered for them (Aside.vue `canViewNationalTier`) and
+ * every national route carries `meta.allowedLevels: NATIONAL_BUDGET_LEVELS` —
+ * a hand-typed URL lands on /403 instead of a national page.
+ *
+ * This is a LEVEL gate, not a permission gate, on purpose: the national
+ * budget permissions (`create_campaign_budget`, `county_approve_campaign_budget`,
+ * `approve_campaign_budget`) are ALSO held by county-tier roles for their own
+ * chains, so a permission-only gate would leak the national menus to them.
+ * Mirrors the API-side business-role gates in CampaignBudgetController /
+ * BudgetEditAccessService.
+ */
+export const NATIONAL_BUDGET_LEVELS = Object.freeze([1]);
+
 const NATIONAL_MANAGEMENT = Object.freeze(["Super Admin","AIE Holder","Program head","Program officer - DNMP","Accountant","Finance Officer","Vector Unit Head","Program officer - MOH","MOH leadership","KEMSA","Program officer - TNT","Afya Ugavi","Kinga Malaria","LFA","Technical Support","Program Accountant","Development Agency","HealthIT Leadership","Procurement Officer"]);
 
 const COUNTY_MANAGEMENT = Object.freeze(["County Admin","County Commissioner","CMCC","CHRIO","CDH","CHMT Leadership","County Health Team"]);
@@ -173,6 +199,10 @@ export const GATE_DEFINITIONS = Object.freeze({
   // the original budget reviewers / approvers — the grant (not this list) is
   // what exposes the page to the other national roles, so Access Control stays
   // authoritative.
+  //
+  // The menu additionally requires the NATIONAL tier (`canViewNationalTier`,
+  // level 1 only): the payload covers EVERY county, so county / sub-county
+  // users are excluded even if the permission is granted to their role.
   canViewFinancialAnalysis: {
     permissions: ["get_budget_financial_analysis"],
     roles: ["Super Admin", "Accountant", "Finance Officer", "Program Accountant", "Program head", "DNMP GF Manager", "Vector Unit Head"],
@@ -182,6 +212,11 @@ export const GATE_DEFINITIONS = Object.freeze({
   // REVIEWERS `county_approve_campaign_budget`, and the AIE Holder
   // `approve_campaign_budget` — so Access Control decides the audience.
   // Mirrors BudgetEditAccessService::NATIONAL_*_ROLES.
+  //
+  // NB county-tier roles hold the same permission names for their own county /
+  // sub-county chains, so this gate alone would leak the national menus to
+  // them. The sidebar therefore ANDs it with the NATIONAL tier
+  // (`canViewNationalTier`, level 1 only — see NATIONAL_BUDGET_LEVELS).
   canViewNationalBudget: {
     permissions: [
       "create_campaign_budget",
@@ -244,6 +279,8 @@ export const NAV_MODULES = Object.freeze([
     key: "budgeting",
     label: "Budgeting",
     pages: compact([
+      // NATIONAL tier (level 1) only — hidden from county / sub-county users
+      // and additionally guarded by the route meta. See NATIONAL_BUDGET_LEVELS.
       { label: "National Dashboard", path: "/budget/national-dashboard", permissions: ["get_budget"] },
       { label: "County Budgeting", path: "/budget/county-budgeting", permissions: ["get_budget"] },
       { label: "SubCounty Budgeting", path: "/budget/budgeting", permissions: ["get_budget"] },
@@ -259,13 +296,20 @@ export const NAV_MODULES = Object.freeze([
       { label: "Special Area Budget", path: "/budget/special-area-budget", permissions: ["create_campaign_budget", "submit_campaign_budget", "get_campaign_budgets"] },
       // Read-only financial analysis of the approved budgets (indicators + the
       // approved budget analysis split county → component → cost group).
+      // NATIONAL tier (level 1) only — the figures are nationwide (national
+      // approval rate, all counties), so county / sub-county users never see
+      // the entry. See NATIONAL_BUDGET_LEVELS.
       { label: "Financial Analysis", path: "/budget/financial-analysis", permissions: ["get_budget_financial_analysis"] },
       // The NATIONAL budget workspace — same Budget module flow as County /
       // Sub-County budgeting. Preparers: Vector Unit Head, DNMP Program
       // Officer. Reviewers: Accountant, Program Accountant, Finance Officer.
+      // NATIONAL tier (level 1) only: county / sub-county users hold these
+      // permission names for their own chains, so the sidebar level-gates the
+      // entry (Aside.vue canViewNationalTier) and the route carries
+      // meta.allowedLevels. See NATIONAL_BUDGET_LEVELS.
       { label: "National Budgeting", path: "/budget/national-budgeting", permissions: ["create_campaign_budget", "submit_campaign_budget", "county_approve_campaign_budget"] },
       // AIE Holder — review & acknowledge the national budget against the
-      // combined National / County / Sub-County budget summaries.
+      // combined National / County / Sub-County budget summaries. Level 1 only.
       { label: "National Budget Acknowledgement", path: "/budget/national-acknowledgement", permissions: ["approve_campaign_budget"] },
     ]),
   },

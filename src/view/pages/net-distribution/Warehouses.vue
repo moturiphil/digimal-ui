@@ -73,6 +73,9 @@
                       stockStatusLabel(text)
                     }}</span>
                   </template>
+                  <template #is_virtual="{ text }">
+                    <span :class="typeBadgeClass(text)">{{ typeLabel(text) }}</span>
+                  </template>
                 </a-table>
                 <a-empty
                   v-if="!dataSource.length"
@@ -126,6 +129,12 @@ const columns = [
     title: "Warehouse Code",
     dataIndex: "drop_off_code",
     key: "id",
+  },
+  {
+    title: "Type",
+    dataIndex: "is_virtual",
+    key: "is_virtual",
+    slots: { customRender: "is_virtual" },
   },
   {
     title: "Warehouse Manager",
@@ -200,6 +209,14 @@ const stockStatusLabel = (quantity) => {
 
 const stockStatusBadgeClass = (quantity) =>
   Number(quantity) > 0 ? "badge-green" : "badge-red";
+
+// A drop-off / warehouse is either a physical location or a virtual one (the
+// KEMSA virtual warehouses). `is_virtual` rides along in the same list payload
+// as `is_warehouse`, so both lists can label every row.
+const typeLabel = (isVirtual) => (isVirtual ? "Virtual" : "Physical");
+
+const typeBadgeClass = (isVirtual) =>
+  isVirtual ? "badge-blue" : "badge-green";
 
 // The list requires an operating campaign (or an explicit campaign_id) and the
 // API paginates 100 rows per page.
