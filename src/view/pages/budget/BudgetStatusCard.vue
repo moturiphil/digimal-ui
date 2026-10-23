@@ -51,6 +51,8 @@ export default {
     isReferred: { type: Boolean, default: false },
     /** True when this is a sub-county budget; false for county-level */
     isSubCounty: { type: Boolean, default: false },
+    /** True for the NATIONAL budget (its own approval chain). */
+    isNational: { type: Boolean, default: false },
     financialYear: { type: [String, Number], default: null },
     grandTotal: { type: [String, Number], default: null },
     submittedAt: { type: String, default: null },
@@ -69,6 +71,19 @@ export default {
      */
     label() {
       if (this.isReferred) return 'Referred';
+
+      // The NATIONAL budget has its own wording — it never enters the DNMP
+      // review stage: the Vector Unit Head / GF Manager approve it and the AIE
+      // Holder acknowledges it.
+      if (this.isNational) {
+        if (this.status === 'approved') return 'Acknowledged by AIE Holder';
+        if (this.status === 'national_approved') return 'Approved (Vector Unit Head / GF Manager)';
+        if (this.status === 'submitted') return 'Submitted — pending approval';
+        if (this.status === 'draft') return 'Draft';
+        if (this.status === 'voided') return 'Voided';
+        return this.status;
+      }
+
       if (this.status === 'approved') return 'National Approved';
       if (this.status === 'dnmp_reviewed') return 'National Review';
       if (this.status === 'county_approved') return 'County Approved';
@@ -83,6 +98,7 @@ export default {
     kind() {
       if (this.isReferred) return 'referred';
       if (this.status === 'approved') return 'national-approved';
+      if (this.isNational && this.status === 'national_approved') return 'national-approved';
       if (this.status === 'dnmp_reviewed') return 'national-review';
       if (this.status === 'county_approved') return 'county-approved';
       if (this.status === 'submitted') {
@@ -106,6 +122,10 @@ export default {
      * (who made them, their role and when) and the national approval sign-off.
      */
     hasNationalReview() {
+      if (this.isNational) {
+        return this.status === 'national_approved' || this.status === 'approved';
+      }
+
       return this.status === 'dnmp_reviewed' || this.status === 'approved';
     },
     formattedTotal() {
