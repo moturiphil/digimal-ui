@@ -148,6 +148,81 @@
             </div>
           </div>
         </sdCards>
+
+        <!-- ── Special Area Cost parameters ──────────────────────────────────
+             SAC items live in their OWN catalogue (`special_area_cost_items`),
+             not in `budget_parameters` — which is why they never appeared in the
+             table above. They are listed here so the whole parameter picture sits
+             on one page; editing them, and assigning them to the budget
+             categories marked "Applies Special Area Cost", happens on the
+             Special Area Cost page. -->
+        <sdCards headless class="bp-table-shell bp-sac-shell">
+          <div class="bp-sac-head">
+            <div>
+              <h4 class="bp-sac-title">Special Area Cost parameters</h4>
+              <p class="bp-sac-sub">
+                DSA, Boat, Enhanced Transport, Security… — the Special Area Cost
+                catalogue. An item applies only to the budget categories marked
+                <strong>Applies Special Area Cost</strong>; assign it per category
+                on <em>Special Area Cost → Budget Categories</em>.
+              </p>
+            </div>
+            <sdButton size="small" :disabled="sacLoading" @click="fetchSacParameters">
+              Refresh
+            </sdButton>
+          </div>
+
+          <TableWrapper class="table-data-view table-responsive bp-table-view">
+            <a-table
+              :dataSource="sacItems"
+              :columns="sacColumns"
+              :pagination="{ pageSize: 8 }"
+              :loading="sacLoading"
+              row-key="id"
+            >
+              <template #bodyCell="{ column, record }">
+                <a-tag v-if="column.key === 'code'" class="bp-key-tag">
+                  {{ record.code || '—' }}
+                </a-tag>
+                <span v-else-if="column.key === 'amount'" class="bp-money">
+                  <template v-if="record.default_amount === null">
+                    Officer-entered
+                  </template>
+                  <template v-else>
+                    KES {{ Number(record.default_amount).toLocaleString() }}
+                  </template>
+                  <a-tag v-if="record.locked" class="bp-sac-tag">Fixed</a-tag>
+                </span>
+                <span v-else-if="column.key === 'max_amount'" class="bp-money">
+                  KES {{ Number(record.max_amount || 0).toLocaleString() }}
+                </span>
+                <span v-else-if="column.key === 'units'">
+                  {{ record.units_mode === 'default'
+                    ? `${record.default_units} unit(s) — fixed`
+                    : `${record.min_units}–${record.max_units} entered per budget` }}
+                </span>
+                <span v-else-if="column.key === 'categories'">
+                  <a-tag
+                    v-for="name in sacCategoriesFor(record.id)"
+                    :key="name"
+                    class="bp-sac-tag"
+                  >
+                    {{ name }}
+                  </a-tag>
+                  <span v-if="!sacCategoriesFor(record.id).length" class="bp-sac-none">
+                    All Special Area Cost categories
+                  </span>
+                </span>
+                <StatusBadge
+                  v-else-if="column.key === 'is_active'"
+                  :status="record.is_active ? 'approved' : 'pending'"
+                >
+                  {{ record.is_active ? 'Active' : 'Inactive' }}
+                </StatusBadge>
+              </template>
+            </a-table>
+          </TableWrapper>
+        </sdCards>
       </BudgetPageWrapper>
     </Main>
 
@@ -325,6 +400,7 @@ import { notification, Modal } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { Main, TableWrapper } from '../../styled';
 import { RecordViewWrapper, ActionBar, BudgetPageWrapper, StatusBadge } from './style';
+import { fetchSacItems, fetchSacItemAssignments } from '@/services/specialAreaCosts';
 
 export default {
   name: 'BudgetParameters',
@@ -336,6 +412,19 @@ export default {
     const submitting = ref(false);
     const deletingId = ref(null);
     const assumptions = ref([]);
+
+    // ── Special Area Cost catalogue (read-only) ───────────────────────────
+    // These are NOT budget_parameters rows: SAC items live in their own
+    // `special_area_cost_items` catalogue, served by get_special_area_cost_items
+    // — which is why they never appeared in the table above. Listed here so the
+    // whole parameter picture sits on one page; they are edited, and assigned to
+    // categories, on the Special Area Cost page.
+    const sacItems = ref([]);
+    const sacLoading = ref(false);
+    // categoryId → itemIds (get_special_area_cost_item_assignments).
+    const sacAssignments = ref({});
+    // categoryId → category name, for the "Applies to" column.
+    const sacCategoryNames = ref({});
     const showModal = ref(false);
     const isEditMode = ref(false);
     const editingId = ref(null);
@@ -823,8 +912,70 @@ export default {
       });
     };
 
+    // Columns for the Special Area Cost catalogue table.
+    const sacColumns = [
+      { title: 'Label', dataIndex: 'label', key: 'label', ellipsis: true },
+      { title: 'Code', dataIndex: 'code', key: 'code', width: 180 },
+      { title: 'Amount (KES)', key: 'amount', width: 170, align: 'right' },
+      { title: 'Max amount (KES)', key: 'max_amount', width: 160, align: 'right' },
+      { title: 'Units', key: 'units', width: 210 },
+      { title: 'Applies to', key: 'categories' },
+      { title: 'Status', key: 'is_active', width: 110 },
+    ];
+
+    /**
+     * The categories an item is assigned to, resolved from the assignment map
+     * (`{ categoryId: [itemId] }`) — the inverse of how it is stored. An item
+     * assigned to NOTHING applies to every Special Area Cost category.
+     */
+    const sacCategoriesFor = (itemId) => {
+      const id = Number(itemId);
+
+      return Object.entries(sacAssignments.value)
+        .filter(([, ids]) => Array.isArray(ids) && ids.map(Number).includes(id))
+        .map(([categoryId]) => sacCategoryNames.value[Number(categoryId)] || `Category #${categoryId}`);
+    };
+
+    /**
+     * The SAC catalogue + where each item is assigned.
+     *
+     * Inactive items are included so an administrator can see — and understand —
+     * an item that was removed but is still referenced by historical budgets.
+     */
+    const fetchSacParameters = async () => {
+      sacLoading.value = true;
+      try {
+        const [catalogue, assignments] = await Promise.all([
+          fetchSacItems({ includeInactive: true }),
+          fetchSacItemAssignments(),
+        ]);
+
+        sacItems.value = catalogue;
+        sacAssignments.value = assignments;
+
+        // Category names for the "Applies to" column — one small call; the
+        // endpoint is authenticated-only reference data.
+        const { data } = await axios.get('get_special_area_cost_categories');
+        const payload = data?.data || data || {};
+        const rows = Array.isArray(payload.categories) ? payload.categories : [];
+
+        sacCategoryNames.value = rows.reduce((acc, category) => {
+          acc[Number(category.id)] = category.name;
+          return acc;
+        }, {});
+      } catch (err) {
+        notification.error({
+          message: 'Unable to load the Special Area Cost parameters',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        sacLoading.value = false;
+      }
+    };
+
     onMounted(() => {
       fetchBudgetParameters();
+      fetchSacParameters();
     });
 
     return {
@@ -837,6 +988,12 @@ export default {
       columns,
       filteredAssumptions,
       fetchBudgetParameters,
+      // Special Area Cost catalogue (read-only view of special_area_cost_items)
+      sacItems,
+      sacLoading,
+      sacColumns,
+      fetchSacParameters,
+      sacCategoriesFor,
       showModal,
       isEditMode,
       formData,
@@ -866,6 +1023,40 @@ export default {
 </script>
 
 <style scoped>
+/* ── Special Area Cost catalogue (read-only section) ────────────────────── */
+.bp-sac-shell {
+  margin-top: 18px;
+}
+.bp-sac-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.bp-sac-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2437;
+}
+.bp-sac-sub {
+  margin: 0;
+  max-width: 760px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #7a8a82;
+}
+.bp-sac-tag {
+  font-size: 11.5px;
+  margin: 0 4px 2px 0;
+}
+.bp-sac-none {
+  font-size: 12px;
+  color: #8a93a8;
+  font-style: italic;
+}
+
 /* ── Percentage parameter ──────────────────────────────────────────────── */
 .bp-pct-cell {
   display: inline-flex;

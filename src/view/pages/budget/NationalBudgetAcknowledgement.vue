@@ -6,10 +6,10 @@
           <div>
             <h3 class="bp-title">National Budget — Review &amp; Acknowledgement</h3>
             <p class="bp-sub">
-              The Vector Unit Head / GF Manager have approved the national
-              budget. Review it together with the combined National, County and
-              Sub-County budget summaries, then acknowledge it to close the
-              chain.
+              The DNMP Accountant, the Program Accountant or the Finance Officer
+              have reviewed and approved the national budget. Review it together
+              with the combined National, County and Sub-County budget summaries,
+              then acknowledge it to close the chain.
             </p>
           </div>
           <span class="header-tags">
@@ -55,8 +55,9 @@
             </div>
 
             <p v-if="!isAwaitingAcknowledgement && !isAcknowledged" class="ack-note">
-              The national budget must be approved by the Vector Unit Head or the
-              GF Manager before it can be acknowledged.
+              The national budget must first be reviewed by the DNMP Accountant,
+              the Program Accountant or the Finance Officer before it can be
+              acknowledged.
             </p>
 
             <!-- Who signed off so far -->
@@ -124,8 +125,9 @@
 /**
  * AIE Holder — National Budget REVIEW & ACKNOWLEDGEMENT.
  *
- * The final step of the national chain. The Vector Unit Head / GF Manager have
- * already approved the national budget (`national_approved`); the AIE Holder
+ * The final step of the national chain. The DNMP Accountant, the Program
+ * Accountant or the Finance Officer have already reviewed and approved the
+ * national budget (`national_approved`); the AIE Holder
  * reviews it together with the COMBINED National + County + Sub-County budget
  * summaries and acknowledges it, which closes the budget to `approved`.
  *
@@ -171,8 +173,8 @@ export default {
     const stageLabel = computed(() => {
       const map = {
         draft: 'Preparatory Stage',
-        submitted: 'Pending Vector Unit Head / GF Manager Approval',
-        national_approved: 'Approved (Vector Unit Head / GF Manager)',
+        submitted: 'Pending Review (Accountant / Program Accountant / Finance Officer)',
+        national_approved: 'Reviewed (Accountant / Program Accountant / Finance Officer)',
         approved: 'Acknowledged by AIE Holder',
       };
       return map[nationalBudget.value && nationalBudget.value.status] || 'National Budget';

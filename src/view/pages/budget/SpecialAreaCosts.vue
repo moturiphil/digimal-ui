@@ -322,6 +322,20 @@
                   >
                     Applies Special Area Cost
                   </a-checkbox>
+                  <!-- WHICH catalogue items this category offers. Only
+                       meaningful once the category applies SAC; an empty
+                       assignment keeps the whole catalogue. -->
+                  <sdButton
+                    size="small"
+                    class="pill-btn sac-assign-btn"
+                    :disabled="!row.allows_special_costs"
+                    :title="row.allows_special_costs
+                      ? 'Choose which Special Area Cost items this category offers'
+                      : 'Enable Special Area Cost for this category first'"
+                    @click="openItemAssignment(row)"
+                  >
+                    Items…
+                  </sdButton>
                 </div>
               </div>
             </sdCards>
@@ -436,6 +450,57 @@
       </a-form>
     </a-modal>
 
+    <!-- Which SAC items a category offers (per-category assignment) -->
+    <a-modal
+      v-model:visible="assignmentModal.open"
+      :title="`Special Area Cost items — ${assignmentModal.category ? assignmentModal.category.name : ''}`"
+      ok-text="Save assignment"
+      :confirm-loading="assignmentModal.saving"
+      width="620px"
+      @ok="saveItemAssignment"
+    >
+      <div v-if="assignmentModal.loading" class="sac-loading">
+        <a-spin />
+      </div>
+      <template v-else>
+        <p class="sac-hint">
+          Tick the items the Special Area Cost grid should offer under this
+          category. Leave everything unticked to offer the <strong>whole</strong>
+          catalogue — the default, and what every category does today.
+        </p>
+
+        <a-checkbox-group v-model:value="assignmentModal.selected" class="sac-assign-list">
+          <div
+            v-for="item in assignmentModal.items"
+            :key="item.id"
+            class="sac-assign-row"
+          >
+            <a-checkbox :value="item.id">
+              <span class="sac-assign-name">{{ item.label }}</span>
+              <span class="sac-assign-meta">
+                {{ item.units_mode === 'default'
+                  ? `${item.default_units} unit(s) — fixed`
+                  : 'units entered per budget' }}
+              </span>
+            </a-checkbox>
+          </div>
+        </a-checkbox-group>
+
+        <div class="sac-assign-footer">
+          <span>
+            <strong>{{ assignmentModal.selected.length }}</strong>
+            of {{ assignmentModal.items.length }} item(s) selected
+          </span>
+          <a
+            v-if="assignmentModal.selected.length"
+            @click="assignmentModal.selected = []"
+          >
+            Clear all
+          </a>
+        </div>
+      </template>
+    </a-modal>
+
   </RecordViewWrapper>
 </template>
 <script>
@@ -444,7 +509,11 @@ import { notification } from 'ant-design-vue';
 import axios from '@/Axiosconfig';
 import { Main } from '../../styled';
 import { RecordViewWrapper, BudgetPageWrapper } from './style';
-import { normalizeSacItem } from '@/services/specialAreaCosts';
+import {
+  normalizeSacItem,
+  fetchCategorySacItems,
+  syncCategorySacItems,
+} from '@/services/specialAreaCosts';
 
 /*
  * Special Area Cost — admin configuration page.
@@ -940,6 +1009,61 @@ const filteredCounties = computed(() => {
       if (tab === 'categories' && !categories.value.length) fetchCategories();
     });
 
+    // ── Per-category SAC item assignment ──────────────────────────────────
+    // The catalogue is global; an assignment narrows which of its items this
+    // category offers in the SAC grid. Leaving everything unticked keeps the
+    // whole catalogue (the historical behaviour).
+    const assignmentModal = reactive({
+      open: false,
+      loading: false,
+      saving: false,
+      category: null,
+      items: [],
+      selected: [],
+    });
+
+    const openItemAssignment = async (row) => {
+      assignmentModal.category = row;
+      assignmentModal.items = [];
+      assignmentModal.selected = [];
+      assignmentModal.open = true;
+      assignmentModal.loading = true;
+      try {
+        const { items: catalogue, assignedIds } = await fetchCategorySacItems(row.id);
+        assignmentModal.items = catalogue;
+        assignmentModal.selected = [...assignedIds];
+      } catch (err) {
+        notification.error({
+          message: 'Failed to load the Special Area Cost items',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        assignmentModal.loading = false;
+      }
+    };
+
+    const saveItemAssignment = async () => {
+      const category = assignmentModal.category;
+      if (!category) return;
+      assignmentModal.saving = true;
+      try {
+        const { data } = await syncCategorySacItems(category.id, assignmentModal.selected);
+        notification.success({
+          message: 'Assignment saved',
+          description: data?.message
+            || `${assignmentModal.selected.length} item(s) assigned to ${category.name}.`,
+        });
+        assignmentModal.open = false;
+      } catch (err) {
+        notification.error({
+          message: 'Failed to save the assignment',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        assignmentModal.saving = false;
+      }
+    };
+
     // Load the county list on page mount (the default tab).
     onMounted(() => {
       fetchCounties();
@@ -983,6 +1107,10 @@ const filteredCounties = computed(() => {
       scopeLabel,
       fetchCategories,
       toggleCategory,
+      // Per-category SAC item assignment (which catalogue items a category offers)
+      assignmentModal,
+      openItemAssignment,
+      saveItemAssignment,
     };
   },
 };
@@ -993,6 +1121,43 @@ const filteredCounties = computed(() => {
 }
 .sac-tabs {
   margin-bottom: 14px;
+}
+
+/* Per-category SAC item assignment: the "Items…" action + its picker modal */
+.sac-assign-btn {
+  margin-left: 10px;
+}
+.sac-assign-list {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #eef0f5;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+.sac-assign-row + .sac-assign-row {
+  border-top: 1px solid #f5f6f8;
+}
+.sac-assign-row {
+  padding: 6px 0;
+}
+.sac-assign-name {
+  font-weight: 600;
+  color: #1f2437;
+}
+.sac-assign-meta {
+  margin-left: 8px;
+  font-size: 11.5px;
+  color: #8a93a8;
+}
+.sac-assign-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #7a8a82;
 }
 .sac-pane {
   display: flex;

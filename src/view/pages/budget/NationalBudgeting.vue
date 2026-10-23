@@ -314,10 +314,10 @@
             <div class="ar-status">
               <a-tag v-if="!canEdit" color="purple">View only</a-tag>
               <a-tag v-else-if="budgetStatus === 'submitted'" color="blue">
-                Submitted — awaiting Vector Unit Head / GF Manager approval
+                Submitted — awaiting review by the Accountant / Program Accountant / Finance Officer
               </a-tag>
               <a-tag v-else-if="budgetStatus === 'national_approved'" color="geekblue">
-                Approved — awaiting AIE Holder acknowledgement
+                Reviewed — awaiting AIE Holder acknowledgement
               </a-tag>
               <span v-else class="ar-hint">
                 Changing a figure requires a comment — it is recorded in the
@@ -345,6 +345,22 @@
               @click="submit"
             >
               Submit for Approval
+            </sdButton>
+
+            <!-- REVIEW — the DNMP Accountant / Program Accountant / Finance
+                 Officer sign the submitted budget off (submitted →
+                 national_approved). The AIE Holder acknowledges it afterwards,
+                 on the National Budget Acknowledgement page. -->
+            <sdButton
+              v-if="canReviewBudget"
+              type="success"
+              class="pill-btn review-btn"
+              :disabled="dirtyCount > 0"
+              :loading="reviewing"
+              title="Sign this national budget off. It then goes to the AIE Holder for acknowledgement."
+              @click="reviewBudget"
+            >
+              Mark as Reviewed
             </sdButton>
           </section>
 
@@ -392,9 +408,10 @@
  * parameters mapped to it — but grouped into STAGE 1, 2 and 3, because the
  * national categories are stage-scoped activities and events.
  *
- * Approval chain (unchanged):
- *   draft → submitted (DNMP Accountant | Program Accountant | Finance Officer)
- *         → national_approved (Vector Unit Head | GF Manager)
+ * Approval chain:
+ *   draft → submitted (PREPARERS: Vector Unit Head | DNMP Program Officer)
+ *         → national_approved (REVIEWERS: DNMP Accountant | Program Accountant |
+ *                              Finance Officer)
  *         → approved (AIE Holder review & acknowledgement)
  *
  * `get_budget_line_items/{id}` returns the rows GROUPED BY CATEGORY:
@@ -415,8 +432,23 @@ import BudgetStagePipeline from './BudgetStagePipeline.vue';
 import BudgetReviewFeedback from './BudgetReviewFeedback.vue';
 import { hasPermission, hasRoleByName } from '@/services/user-role';
 
-/** Roles that may generate / edit / submit the national budget. */
+/**
+ * Roles that may PREPARE the national budget — create it, generate the rows,
+ * edit Units / No. of Days and submit it. The Accountant / Program Accountant /
+ * Finance Officer REVIEW it afterwards, so they are deliberately not here.
+ */
 const GENERATOR_ROLES = [
+  'Vector Unit Head',
+  'Program officer - DNMP',
+  'Super Admin',
+];
+
+/**
+ * Roles that may REVIEW the submitted national budget — correct figures while
+ * it is `submitted` or `national_approved`. Mirrors
+ * BudgetEditAccessService::EDITOR_ROLES.
+ */
+const REVIEWER_ROLES = [
   'Accountant',
   'Program Accountant',
   'Finance Officer',
@@ -505,11 +537,24 @@ export default {
     const canViewReviewFeedback = hasPermission('get_budget_review_feedback');
 
     const isGenerator = hasRoleByName(GENERATOR_ROLES);
+    const isReviewer = hasRoleByName(REVIEWER_ROLES);
 
-    /** Editing is gated server-side too (BudgetEditAccessService). */
-    const canEdit = computed(
-      () => isGenerator.value
-        && ['draft', 'submitted', 'national_approved'].includes(budgetStatus.value),
+    /**
+     * Editing is gated server-side too (BudgetEditAccessService): the PREPARERS
+     * own the draft, the REVIEWERS own the submitted window.
+     */
+    const canEdit = computed(() => {
+      if (budgetStatus.value === 'draft') return isGenerator.value;
+      if (['submitted', 'national_approved'].includes(budgetStatus.value)) return isReviewer.value;
+      return false;
+    });
+
+    /**
+     * The REVIEW action (`submitted` → `national_approved`) is offered to the
+     * reviewers only, and only while the budget is actually awaiting review.
+     */
+    const canReviewBudget = computed(
+      () => isReviewer.value && budgetStatus.value === 'submitted',
     );
 
     const itemColumns = [
@@ -524,8 +569,8 @@ export default {
     const stageLabel = computed(() => {
       const map = {
         draft: 'Preparatory Stage',
-        submitted: 'Pending Vector Unit Head / GF Manager Approval',
-        national_approved: 'Approved (Vector Unit Head / GF Manager)',
+        submitted: 'Pending Review (Accountant / Program Accountant / Finance Officer)',
+        national_approved: 'Reviewed (Accountant / Program Accountant / Finance Officer)',
         approved: 'Acknowledged by AIE Holder',
         voided: 'Voided',
       };
@@ -1152,6 +1197,8 @@ export default {
       }
     };
 
+    const reviewing = ref(false);
+
     const submit = async () => {
       working.value = true;
       try {
@@ -1159,7 +1206,7 @@ export default {
         await loadBudget();
         notification.success({
           message: 'National budget submitted',
-          description: 'It is now awaiting approval by the Vector Unit Head or the GF Manager.',
+          description: 'It is now awaiting review by the DNMP Accountant, the Program Accountant or the Finance Officer.',
         });
       } catch (err) {
         notification.error({
@@ -1168,6 +1215,33 @@ export default {
         });
       } finally {
         working.value = false;
+      }
+    };
+
+    /**
+     * REVIEW — `submitted` → `national_approved`.
+     *
+     * Uses county_approve_campaign_budget, which the backend routes to the
+     * national REVIEWERS (DNMP Accountant / Program Accountant / Finance
+     * Officer) for a national budget — see
+     * CampaignBudgetController::countyApprove().
+     */
+    const reviewBudget = async () => {
+      reviewing.value = true;
+      try {
+        await axios.post(`county_approve_campaign_budget/${budget.value.id}`);
+        await loadBudget();
+        notification.success({
+          message: 'National budget reviewed',
+          description: 'It is now awaiting review and acknowledgement by the AIE Holder.',
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Could not review the national budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        reviewing.value = false;
       }
     };
 
@@ -1181,6 +1255,9 @@ export default {
       submittedAt, budgetFinancialYear, fmt, fmtMoney, rowTotal, grandTotal, dirtyCount,
       categories, stages, filteredStages, toggleCategory, expandAll, collapseAll,
       bootstrap, generate, openDetail, promptSave, confirmSave, submit,
+      // REVIEW — submitted → national_approved (the Accountant / Program
+      // Accountant / Finance Officer sign the national budget off).
+      reviewing, reviewBudget, canReviewBudget,
       // ADDITIVE "Sync categories" — pulls in newly configured categories /
       // parameters without rewriting the figures already entered.
       syncing, syncCategories,

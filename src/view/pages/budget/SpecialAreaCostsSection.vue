@@ -157,6 +157,11 @@ export default {
     // the built-in SAC_ITEMS when the parent has not loaded it (or the
     // request failed), so the grid always renders.
     items: { type: Array, default: () => [] },
+    // Per-category item assignment: `{ [categoryId]: itemId[] }`
+    // (get_special_area_cost_item_assignments). A category that is missing from
+    // the map — or maps to an empty list — renders the WHOLE catalogue, which is
+    // the historical behaviour for an install that never configured one.
+    assignments: { type: Object, default: () => ({}) },
     // Generated-mode row resolver: (category, item) => {amount, units, comment, total}
     getGeneratedRow: { type: Function, default: () => ({}) },
     // Per-category persistence: (categoryId, rows) => Promise
@@ -228,6 +233,17 @@ export default {
       },
       deep: true,
     },
+    assignments: {
+      // The per-category assignment is loaded alongside the catalogue, and an
+      // admin can change it while a budget is open — re-seed so the grid
+      // immediately reflects which items each category offers.
+      handler() {
+        this.seedDrafts();
+        this.refreshDirty();
+        this.emitSync();
+      },
+      deep: true,
+    },
     drafts: {
       handler() {
         this.refreshDirty();
@@ -264,7 +280,7 @@ methods: {
     // never clobbered when entries load asynchronously or refresh after Save.
     seedDrafts() {
       this.categories.forEach((cat) => {
-        this.sacItems.forEach((item) => {
+        this.itemsFor(cat).forEach((item) => {
           const k = this.key(cat.id, item.type);
           const entry = this.entryFor(cat.id, item.type);
           // Default-units items are system-driven: the unit count always comes
@@ -299,6 +315,26 @@ methods: {
           }
         });
       });
+    },
+    /**
+     * The catalogue items this category offers.
+     *
+     * A category with an assignment renders only the items on it; a category
+     * with NO assignment (the common, unconfigured case) renders the whole
+     * catalogue. The built-in fallback list carries no ids, so it is always
+     * rendered whole rather than as an empty grid.
+     */
+    itemsFor(cat) {
+      const assigned = cat && this.assignments ? this.assignments[cat.id] : null;
+
+      if (!Array.isArray(assigned) || !assigned.length) return this.sacItems;
+      if (this.sacItems.some((item) => item.id === null || item.id === undefined)) {
+        return this.sacItems;
+      }
+
+      const allowed = new Set(assigned.map(Number));
+
+      return this.sacItems.filter((item) => allowed.has(Number(item.id)));
     },
     entryFor(catId, type) {
       return this.entries.find(
@@ -344,7 +380,7 @@ methods: {
       };
     },
     rowsFor(cat) {
-      return this.sacItems.map((item) => {
+      return this.itemsFor(cat).map((item) => {
         const k = this.key(cat.id, item.type);
         // Safety net: guarantee a draft exists before an input binds to
         // `record._d.*`. Binding to an undefined draft throws during render,
@@ -363,7 +399,7 @@ methods: {
       });
     },
     catTotal(cat) {
-      return this.sacItems.reduce(
+      return this.itemsFor(cat).reduce(
         (sum, item) => sum + this.rowTotal(this.rowFor(cat, item)),
         0,
       );
@@ -387,7 +423,7 @@ methods: {
     },
     refreshDirty() {
       this.categories.forEach((cat) => {
-        const dirtyNow = this.sacItems.some((item) => {
+        const dirtyNow = this.itemsFor(cat).some((item) => {
           const d = this.drafts[this.key(cat.id, item.type)];
           if (!d) return false;
           const entry = this.entryFor(cat.id, item.type);
@@ -417,7 +453,7 @@ methods: {
       const rows = [];
       const generated = this.viewMode !== 'profile';
       this.categories.forEach((cat) => {
-        this.sacItems.forEach((item) => {
+        this.itemsFor(cat).forEach((item) => {
           if (generated) {
             const g = this.getGeneratedRow(cat, item) || {};
             rows.push({
@@ -450,7 +486,7 @@ methods: {
       if (!this.saveEntries) return;
       this.savingCat = cat.id;
       try {
-        const rows = this.sacItems.map((item) => {
+        const rows = this.itemsFor(cat).map((item) => {
           const d = this.drafts[this.key(cat.id, item.type)] || {};
           const units = item.units_mode === 'default'
             ? Number(item.default_units) || 0
