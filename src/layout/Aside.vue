@@ -75,21 +75,13 @@
         </a-menu-item>
         <!-- National budget: the same Budget module flow as County /
              Sub-County budgeting, with its own approval chain
-             (Vector Unit Head / GF Manager approve, AIE Holder acknowledges). -->
+             (Vector Unit Head / GF Manager approve). -->
         <a-menu-item
           key="budgetNationalBudgeting"
           v-if="canViewNationalBudget && canViewNationalTier"
         >
           <router-link to="/budget/national-budgeting">
             National Budgeting
-          </router-link>
-        </a-menu-item>
-        <a-menu-item
-          key="budgetNationalAcknowledgement"
-          v-if="canViewNationalBudget && canViewNationalTier"
-        >
-          <router-link to="/budget/national-acknowledgement">
-            National Budget Acknowledgement
           </router-link>
         </a-menu-item>
         <a-menu-item

@@ -287,14 +287,6 @@ const routes = [
         meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
       },
       {
-        // AIE Holder — review & acknowledge the national budget against the
-        // combined National / County / Sub-County budget summaries.
-        path: "/budget/national-acknowledgement",
-        name: "budget-national-acknowledgement",
-        component: () => import("@/view/pages/budget/NationalBudgetAcknowledgement.vue"),
-        meta: { auth: true, allowedLevels: NATIONAL_BUDGET_LEVELS },
-      },
-      {
         path: "/budget/parameters",
         name: "budget-parameters",
         component: () => import("@/view/pages/budget/BudgetParameters.vue"),
