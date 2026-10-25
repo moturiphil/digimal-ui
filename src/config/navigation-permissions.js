@@ -54,7 +54,6 @@ export const SCHMT_ORG_TYPE_ID = 10;
  *   • County & S.County Budget Review /budget/national-review
  *   • Financial Analysis              /budget/financial-analysis
  *   • National Budgeting              /budget/national-budgeting
- *   • National Budget Acknowledgement /budget/national-acknowledgement
  *
  * County (2) and Sub-County (3) users run their OWN chains (County Budgeting /
  * SubCounty Budgeting) and have no business in the national one, so those
@@ -207,7 +206,7 @@ export const GATE_DEFINITIONS = Object.freeze({
     permissions: ["get_budget_financial_analysis"],
     roles: ["Super Admin", "Accountant", "Finance Officer", "Program Accountant", "Program head", "DNMP GF Manager", "Vector Unit Head"],
   },
-  // National budget workspace + AIE Holder acknowledgement. Evaluated
+  // National budget workspace. Evaluated
   // permission-first: the PREPARERS hold `create_campaign_budget`, the
   // REVIEWERS `county_approve_campaign_budget`, and the AIE Holder
   // `approve_campaign_budget` — so Access Control decides the audience.
@@ -308,9 +307,6 @@ export const NAV_MODULES = Object.freeze([
       // entry (Aside.vue canViewNationalTier) and the route carries
       // meta.allowedLevels. See NATIONAL_BUDGET_LEVELS.
       { label: "National Budgeting", path: "/budget/national-budgeting", permissions: ["create_campaign_budget", "submit_campaign_budget", "county_approve_campaign_budget"] },
-      // AIE Holder — review & acknowledge the national budget against the
-      // combined National / County / Sub-County budget summaries. Level 1 only.
-      { label: "National Budget Acknowledgement", path: "/budget/national-acknowledgement", permissions: ["approve_campaign_budget"] },
     ]),
   },
   {
