@@ -208,8 +208,9 @@ export const GATE_DEFINITIONS = Object.freeze({
   },
   // National budget workspace. Evaluated
   // permission-first: the PREPARERS hold `create_campaign_budget`, the
-  // REVIEWERS `county_approve_campaign_budget`, and the AIE Holder
-  // `approve_campaign_budget` — so Access Control decides the audience.
+  // REVIEWERS `county_approve_campaign_budget`, and the APPROVERS (Finance
+  // Officer / GF Manager / AIE Holder) `approve_campaign_budget` — so Access
+  // Control decides the audience.
   // Mirrors BudgetEditAccessService::NATIONAL_*_ROLES.
   //
   // NB county-tier roles hold the same permission names for their own county /

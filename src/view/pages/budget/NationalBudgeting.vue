@@ -5,18 +5,50 @@
         <!-- Header -->
         <header class="bp-head">
           <div class="bh-left">
-            <h3 class="bp-title">
-              {{ isBaringo ? 'Baringo National Oversight Budget' : 'National Budget' }}
-            </h3>
+            <h3 class="bp-title">National Budget</h3>
+            <p class="bp-sub">
+              One national budget prepared as two records — the national oversight
+              budget and the separate Baringo budget — reviewed and approved
+              <strong>together</strong>: prepared by the Vector Unit Head / DNMP
+              Program Officer · reviewed by the DNMP Accountant / Program
+              Accountant · approved by the Finance Officer / GF Manager / AIE Holder.
+            </p>
           </div>
           <span class="header-tags">
             <a-tag v-if="budgetFinancialYear" class="fy-tag">FY {{ budgetFinancialYear }}</a-tag>
-            <a-tag class="stage-tag">{{ stageLabel }}</a-tag>
+            <a-tag class="stage-tag">{{ combinedStageLabel }}</a-tag>
           </span>
         </header>
 
+        <!-- ── Budget at a glance ──────────────────────────────────────────
+             The national records added together, the county rollup they
+             complement, and the combined picture. -->
+        <section v-if="hasAnyBudget" class="glance-row">
+          <div class="glance-tile">
+            <span class="glance-label">National total</span>
+            <strong class="glance-value">KES {{ fmtMoney(nationalTotal) }}</strong>
+            <span class="glance-sub">
+              {{ nationalRecords.length }} national record{{ nationalRecords.length === 1 ? '' : 's' }}
+              — National + Baringo added together
+            </span>
+          </div>
+          <div class="glance-tile">
+            <span class="glance-label">County total</span>
+            <strong class="glance-value">
+              {{ countyTotal === null ? '—' : `KES ${fmtMoney(countyTotal)}` }}
+            </strong>
+            <span class="glance-sub">{{ countyTotalLabel }}</span>
+          </div>
+          <div class="glance-tile is-total">
+            <span class="glance-label">Combined total</span>
+            <strong class="glance-value">KES {{ fmtMoney(combinedTotal) }}</strong>
+            <span class="glance-sub">National + county budgets</span>
+          </div>
+        </section>
+
         <!-- Two SEPARATE national budget records (national + Baringo). Each
-             shows its own status and total, so the two never blur together. -->
+             shows its own status and total; the review and approval actions
+             below cover both together. -->
         <nav v-if="hasAnyBudget" class="type-switch" aria-label="National budget selector">
           <button
             v-for="opt in typeOptions"
@@ -30,9 +62,63 @@
               <span class="ts-label">{{ opt.label }}</span>
               <span v-if="opt.exists" :class="['ts-status', opt.status]" />
             </span>
+            <span class="ts-caption">{{ opt.caption }}</span>
             <span class="ts-meta">{{ opt.meta }}</span>
           </button>
         </nav>
+
+        <!-- ── Combined review / approval ──────────────────────────────────
+             The reviewer signs BOTH records off in one action and the approver
+             closes BOTH in one action — the national budget moves through the
+             chain as a single entity. -->
+        <section v-if="hasAnyBudget" class="combined-actions">
+          <div class="ca-copy">
+            <div class="ca-title">{{ combinedHeadline }}</div>
+            <div class="ca-note">
+              Review and approval cover the national budget as one — the National
+              and Baringo records always move together.
+            </div>
+            <div class="ca-records">
+              <span
+                v-for="rec in nationalRecords"
+                :key="rec.id"
+                :class="['ca-chip', rec.status]"
+              >
+                <i class="dot" />
+                {{ recordLabel(rec.budget_type) }} — {{ statusShort(rec.status) }}
+                <span class="ca-chip-amount">KES {{ fmtMoney(rec.grand_total || 0) }}</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="ca-actions">
+            <span v-if="dirtyCount > 0" class="ca-warn">
+              {{ dirtyCount }} unsaved change{{ dirtyCount === 1 ? '' : 's' }} on this record — save before reviewing.
+            </span>
+            <sdButton
+              v-if="canReviewBudget"
+              type="success"
+              class="pill-btn review-btn"
+              :disabled="reviewing || dirtyCount > 0"
+              :loading="reviewing"
+              :title="`Sign the ${reviewTargetsLabel} record(s) off. They then go to the Finance Officer, the GF Manager or the AIE Holder for approval.`"
+              @click="reviewBudget"
+            >
+              Mark {{ reviewTargetsLabel }} as Reviewed
+            </sdButton>
+            <sdButton
+              v-if="canApproveBudget"
+              type="primary"
+              class="pill-btn approve-btn"
+              :disabled="approving"
+              :loading="approving"
+              :title="`Give the ${approveTargetsLabel} record(s) final approval. This closes the national chain.`"
+              @click="approveBudget"
+            >
+              Approve National Budget
+            </sdButton>
+          </div>
+        </section>
 
         <!-- No national profile -->
         <section v-if="profileError" class="panel center muted bp-error">
@@ -117,7 +203,7 @@
           <div v-if="showWorkspace" class="bp-summary">
             <div class="bp-totals">
               <div>
-                <span class="lbl">Grand total</span>
+                <span class="lbl">Grand total ({{ isBaringo ? 'Baringo' : 'National' }})</span>
                 <strong class="money">KES {{ fmtMoney(grandTotal) }}</strong>
               </div>
               <div>
@@ -304,18 +390,18 @@
             <sdButton size="small" class="pill-btn" @click="revealUnset">Review</sdButton>
           </section>
 
-          <!-- Actions -->
+          <!-- Actions — per-record preparation actions only. The REVIEW and
+               APPROVE steps are combined at the top of the page and cover both
+               records together. -->
           <section v-if="budget && !showStatusCard" class="panel action-row">
             <div class="ar-status">
-              <a-tag v-if="canReviewBudget" color="blue">
-                {{ budgetStatus === 'draft'
-                  ? 'Draft — mark as reviewed to send it to the AIE Holder for approval'
-                  : 'Submitted — awaiting review by the Accountant / Program Accountant / Finance Officer' }}
+              <a-tag v-if="!canEdit" color="purple">View only</a-tag>
+              <a-tag v-else-if="budgetStatus === 'submitted'" color="blue">
+                Submitted — awaiting review
               </a-tag>
               <a-tag v-else-if="budgetStatus === 'national_approved'" color="geekblue">
-                Reviewed — awaiting AIE Holder acknowledgement
+                Reviewed — awaiting approval
               </a-tag>
-              <a-tag v-else-if="!canEdit" color="purple">View only</a-tag>
             </div>
 
             <sdButton
@@ -338,35 +424,6 @@
               @click="submit"
             >
               Submit for Approval
-            </sdButton>
-
-            <!-- REVIEW — the DNMP Accountant / Program Accountant / Finance
-                 Officer sign the budget off (draft | submitted →
-                 national_approved). The AIE Holder acknowledges it afterwards,
-                 with the Acknowledge action below. -->
-            <sdButton
-              v-if="canReviewBudget"
-              type="success"
-              class="pill-btn review-btn"
-              :disabled="dirtyCount > 0"
-              :loading="reviewing"
-              title="Sign this national budget off. It then goes to the AIE Holder for acknowledgement."
-              @click="reviewBudget"
-            >
-              Mark as Reviewed
-            </sdButton>
-
-            <!-- ACKNOWLEDGE — the AIE Holder's final step. It closes the
-                 national chain (`national_approved` → `approved`). -->
-            <sdButton
-              v-if="canAcknowledgeBudget"
-              type="primary"
-              class="pill-btn approve-btn"
-              :loading="acknowledging"
-              title="Acknowledge the reviewed national budget. This closes the national chain."
-              @click="acknowledgeBudget"
-            >
-              Acknowledge National Budget
             </sdButton>
           </section>
 
@@ -450,11 +507,11 @@ const GENERATOR_ROLES = [
 ];
 
 /**
- * Roles that may REVIEW the submitted national budget — correct figures while
- * it is `submitted` or `national_approved`. Mirrors
- * BudgetEditAccessService::EDITOR_ROLES.
+ * Roles that may EDIT the national budget while it is in its pre-approval
+ * window (`submitted` / `national_approved`) — correct figures before it is
+ * signed off. Mirrors BudgetEditAccessService::EDITOR_ROLES.
  */
-const REVIEWER_ROLES = [
+const EDITOR_ROLES = [
   'Accountant',
   'Program Accountant',
   'Finance Officer',
@@ -462,11 +519,24 @@ const REVIEWER_ROLES = [
 ];
 
 /**
- * Roles that may ACKNOWLEDGE the reviewed national budget — the final step of
- * the national chain (`national_approved` → `approved`). Mirrors
- * BudgetEditAccessService::NATIONAL_ACKNOWLEDGER_ROLES.
+ * Roles that may REVIEW the national budget — sign it off and send it to the
+ * approvers (`submitted` → `national_approved`). Mirrors
+ * BudgetEditAccessService::NATIONAL_REVIEWER_ROLES.
  */
-const ACKNOWLEDGER_ROLES = [
+const REVIEWER_ROLES = [
+  'Accountant',
+  'Program Accountant',
+  'Super Admin',
+];
+
+/**
+ * Roles that may APPROVE the reviewed national budget — the final step of the
+ * national chain (`national_approved` → `approved`). Mirrors
+ * BudgetEditAccessService::NATIONAL_APPROVER_ROLES.
+ */
+const APPROVER_ROLES = [
+  'Finance Officer',
+  'DNMP GF Manager',
   'AIE Holder',
   'Super Admin',
 ];
@@ -482,10 +552,16 @@ const STAGE_LABELS = {
 const STATUS_SHORT = {
   draft: 'Draft',
   submitted: 'Submitted',
-  national_approved: 'Approved',
-  approved: 'Acknowledged',
+  national_approved: 'Reviewed',
+  approved: 'Approved',
   voided: 'Voided',
 };
+
+/** "National" / "Baringo" for a record's budget_type. */
+const recordLabel = (type) => (type === TYPE_BARINGO ? 'Baringo' : 'National');
+
+/** Short status wording for a raw status string. */
+const statusShort = (status) => STATUS_SHORT[status] || status;
 
 /**
  * The two SEPARATE national budget records (campaign_budgets.budget_type):
@@ -529,6 +605,101 @@ export default {
     const lineItems = computed(() => lineItemsByType.value[activeType.value] || []);
     const hasAnyBudget = computed(() => NATIONAL_TYPES.some((t) => !!budgets.value[t]));
 
+    /** The national budget records that exist (non-voided), in display order. */
+    const nationalRecords = computed(() =>
+      NATIONAL_TYPES
+        .map((t) => budgets.value[t])
+        .filter((b) => !!b && b.status !== 'voided'),
+    );
+
+    /** Records still awaiting the reviewers' sign-off (draft or submitted). */
+    const reviewTargets = computed(() =>
+      nationalRecords.value.filter((b) => ['draft', 'submitted'].includes(b.status)),
+    );
+
+    /** Records awaiting the approvers' final approval. */
+    const approveTargets = computed(() =>
+      nationalRecords.value.filter((b) => b.status === 'national_approved'),
+    );
+
+    /** "National" / "National + Baringo" — what the combined actions cover. */
+    const reviewTargetsLabel = computed(() =>
+      reviewTargets.value.map((b) => recordLabel(b.budget_type)).join(' + '),
+    );
+    const approveTargetsLabel = computed(() =>
+      approveTargets.value.map((b) => recordLabel(b.budget_type)).join(' + '),
+    );
+
+    /** The national total — both records added together. */
+    const nationalTotal = computed(() =>
+      nationalRecords.value.reduce((sum, b) => sum + (Number(b.grand_total) || 0), 0),
+    );
+
+    // County-side rollup (county + sub-county budgets), read once from the
+    // national dashboard. Null while unavailable — a role without the dashboard
+    // permission simply sees the national side of the strip.
+    const countyTotal = ref(null);
+    const countyMeta = ref(null);
+
+    const combinedTotal = computed(() =>
+      countyTotal.value === null ? nationalTotal.value : nationalTotal.value + countyTotal.value,
+    );
+
+    const countyTotalLabel = computed(() => {
+      if (countyTotal.value === null) return 'County rollup unavailable for your role';
+      return countyMeta.value || 'County + sub-county budgets';
+    });
+
+    /**
+     * Read the county-side total (and the scope counts) for the "at a glance"
+     * strip. Read-only and non-fatal: the page keeps working when the caller
+     * cannot read the national dashboard.
+     */
+    const loadCountyTotals = async () => {
+      try {
+        const { data } = await axios.get('get_national_budget_dashboard');
+        const body = data?.data || data || {};
+        const split = body.budget_split || {};
+        const status = body.submission_status || {};
+
+        countyTotal.value = Number(split.grand_total_kes) || 0;
+        countyMeta.value = status.counties
+          ? `${status.counties} counties · ${status.sub_counties || 0} sub-counties`
+          : null;
+      } catch (err) {
+        countyTotal.value = null;
+        countyMeta.value = null;
+      }
+    };
+
+    /** The combined next-step headline for the action panel. */
+    const combinedHeadline = computed(() => {
+      if (!nationalRecords.value.length) return 'No national budget generated yet.';
+
+      if (nationalRecords.value.every((b) => b.status === 'approved')) {
+        return 'Approved — the national budget chain is complete.';
+      }
+      if (reviewTargets.value.length) {
+        return 'Awaiting review by the DNMP Accountant or the Program Accountant.';
+      }
+      if (approveTargets.value.length) {
+        return 'Reviewed — awaiting final approval by the Finance Officer, the GF Manager or the AIE Holder.';
+      }
+
+      return 'In progress — one record is further along than the other.';
+    });
+
+    /** The combined stage word shown in the header tag. */
+    const combinedStageLabel = computed(() => {
+      if (!nationalRecords.value.length) return 'Not generated';
+
+      if (nationalRecords.value.every((b) => b.status === 'approved')) return 'Approved';
+      if (reviewTargets.value.length) return 'Pending review';
+      if (approveTargets.value.length) return 'Reviewed — pending approval';
+
+      return 'In progress';
+    });
+
     /** The status card is shown once a budget leaves draft, until opened. */
     const showStatusCard = computed(
       () => !!budget.value
@@ -553,36 +724,40 @@ export default {
     const canViewReviewFeedback = hasPermission('get_budget_review_feedback');
 
     const isGenerator = hasRoleByName(GENERATOR_ROLES);
+    const isEditor = hasRoleByName(EDITOR_ROLES);
     const isReviewer = hasRoleByName(REVIEWER_ROLES);
-    const isAcknowledger = hasRoleByName(ACKNOWLEDGER_ROLES);
+    const isApprover = hasRoleByName(APPROVER_ROLES);
 
     /**
      * Editing is gated server-side too (BudgetEditAccessService): the PREPARERS
-     * own the draft, the REVIEWERS own the submitted window.
+     * own the draft, the EDITORS own the pre-approval window.
      */
     const canEdit = computed(() => {
       if (budgetStatus.value === 'draft') return isGenerator.value;
-      if (['submitted', 'national_approved'].includes(budgetStatus.value)) return isReviewer.value;
+      if (['submitted', 'national_approved'].includes(budgetStatus.value)) return isEditor.value;
       return false;
     });
 
     /**
      * The REVIEW action (→ `national_approved`) is offered to the reviewers
-     * only. It is available on a SUBMITTED budget, and on a DRAFT as well:
-     * the reviewers are the ones who hand the national budget to the AIE
-     * Holder, so a draft must not dead-end for them while it waits for the
-     * preparers' separate submit step.
+     * only, and covers EVERY record still awaiting review — the National and
+     * Baringo budgets are signed off as one. A draft is reviewable too, so a
+     * record never dead-ends while it waits for the preparers' submit step.
      */
     const canReviewBudget = computed(
-      () => isReviewer.value && ['draft', 'submitted'].includes(budgetStatus.value),
+      () => isReviewer.value && reviewTargets.value.length > 0,
     );
 
     /**
-     * The ACKNOWLEDGEMENT (`national_approved` → `approved`) is the AIE
-     * Holder's final step — it closes the national chain.
+     * The APPROVAL (`national_approved` → `approved`) is the final step of the
+     * national chain — the Finance Officer, the GF Manager or the AIE Holder
+     * close it. Offered once EVERY record has been reviewed, and it covers all
+     * of them together.
      */
-    const canAcknowledgeBudget = computed(
-      () => isAcknowledger.value && budgetStatus.value === 'national_approved',
+    const canApproveBudget = computed(
+      () => isApprover.value
+        && approveTargets.value.length > 0
+        && nationalRecords.value.every((b) => ['national_approved', 'approved'].includes(b.status)),
     );
 
     const itemColumns = [
@@ -594,22 +769,20 @@ export default {
       { title: 'Total (KES)', key: 'total', align: 'right', width: 150 },
     ];
 
-    const stageLabel = computed(() => {
-      const map = {
-        draft: 'Preparatory Stage',
-        submitted: 'Pending Review (Accountant / Program Accountant / Finance Officer)',
-        national_approved: 'Reviewed (Accountant / Program Accountant / Finance Officer)',
-        approved: 'Acknowledged by AIE Holder',
-        voided: 'Voided',
-      };
-      return map[budgetStatus.value] || 'National Budget';
-    });
-
-    /** The stage at which the acting role acts — accented in the pipeline. */
+    /**
+     * The stage at which the acting role acts ON THE RECORD IN VIEW — accented
+     * in the pipeline. The combined review / approval actions above cover both
+     * records; this marks the step of the record on screen.
+     */
     const actionStatus = computed(() => {
-      if (!canEdit.value) return null;
-      if (budgetStatus.value === 'submitted') return 'submitted';
-      if (budgetStatus.value === 'national_approved') return 'national_approved';
+      // The REVIEWERS act on a submitted record (a draft is the preparers'
+      // step); the APPROVERS act on the reviewed one.
+      if (isReviewer.value && ['draft', 'submitted'].includes(budgetStatus.value)) {
+        return budgetStatus.value === 'draft' ? null : 'submitted';
+      }
+      if (isApprover.value && budgetStatus.value === 'national_approved') {
+        return 'national_approved';
+      }
       return null;
     });
 
@@ -696,11 +869,12 @@ export default {
 
         return {
           value: type,
-          label: type === TYPE_BARINGO ? 'Baringo' : 'National',
+          label: recordLabel(type),
+          caption: type === TYPE_BARINGO ? 'Baringo oversight budget' : 'National oversight budget',
           exists,
           status: exists ? b.status : null,
           meta: exists
-            ? `${STATUS_SHORT[b.status] || b.status} · KES ${fmtMoney(b.grand_total || 0)}`
+            ? `${statusShort(b.status)} · KES ${fmtMoney(b.grand_total || 0)}`
             : 'Not generated yet',
         };
       }),
@@ -1012,6 +1186,7 @@ export default {
         await loadProfile();
         if (countyProfileId.value) {
           await loadBudget();
+          loadCountyTotals();
         }
       } catch (err) {
         // Surface the failure inline — a silent failure used to leave the page
@@ -1234,7 +1409,7 @@ export default {
         await loadBudget();
         notification.success({
           message: 'National budget submitted',
-          description: 'It is now awaiting review by the DNMP Accountant, the Program Accountant or the Finance Officer.',
+          description: 'It is now awaiting review by the DNMP Accountant or the Program Accountant.',
         });
       } catch (err) {
         notification.error({
@@ -1247,61 +1422,92 @@ export default {
     };
 
     /**
-     * REVIEW — `draft` | `submitted` → `national_approved`.
+     * REVIEW — every record still awaiting review → `national_approved`.
      *
-     * Uses county_approve_campaign_budget, which the backend routes to the
-     * national REVIEWERS (DNMP Accountant / Program Accountant / Finance
-     * Officer) for a national budget — see
+     * ONE action for the whole national budget: each record in
+     * `reviewTargets` (National and Baringo) is signed off via
+     * county_approve_campaign_budget, which the backend routes to the national
+     * REVIEWERS (DNMP Accountant / Program Accountant) — see
      * CampaignBudgetController::countyApprove(). A draft is reviewed straight
-     * from the grid, so the reviewers are never blocked on the preparers'
-     * separate submit step.
+     * from the grid, so a record never blocks on the preparers' submit step.
      */
     const reviewBudget = async () => {
+      const targets = reviewTargets.value;
+      if (!targets.length) return;
+
       reviewing.value = true;
-      try {
-        await axios.post(`county_approve_campaign_budget/${budget.value.id}`);
-        await loadBudget();
-        notification.success({
-          message: 'National budget reviewed',
-          description: 'It is now awaiting review and acknowledgement by the AIE Holder.',
-        });
-      } catch (err) {
-        notification.error({
-          message: 'Could not review the national budget',
-          description: err?.response?.data?.message || err.message,
-        });
-      } finally {
-        reviewing.value = false;
+      const failed = [];
+
+      for (const record of targets) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await axios.post(`county_approve_campaign_budget/${record.id}`);
+        } catch (err) {
+          failed.push(`${recordLabel(record.budget_type)}: ${err?.response?.data?.message || err.message}`);
+        }
       }
+
+      await loadBudget();
+      reviewing.value = false;
+
+      if (failed.length) {
+        notification.error({
+          message: 'Could not review every record',
+          description: failed.join(' · '),
+        });
+        return;
+      }
+
+      notification.success({
+        message: 'National budget reviewed',
+        description: 'It is now awaiting final approval by the Finance Officer, the GF Manager or the AIE Holder.',
+      });
     };
 
-    const acknowledging = ref(false);
+    const approving = ref(false);
 
     /**
-     * ACKNOWLEDGE — `national_approved` → `approved`.
+     * APPROVE — every reviewed record → `approved`.
      *
-     * The AIE Holder's final step: it closes the national chain. Uses
-     * approve_campaign_budget, which the backend pins to the AIE Holder
-     * (DNMP Head) plus the Super Admin override — see
-     * CampaignBudgetController::approve().
+     * ONE action for the whole national budget: each record in
+     * `approveTargets` is given final approval via approve_campaign_budget,
+     * which the backend pins to the national APPROVERS — the Finance Officer,
+     * the GF Manager and the AIE Holder (DNMP Head), plus the Super Admin
+     * override — see CampaignBudgetController::approve(). This closes the
+     * national chain for both records at once.
      */
-    const acknowledgeBudget = async () => {
-      acknowledging.value = true;
-      try {
-        await axios.post(`approve_campaign_budget/${budget.value.id}`);
-        await loadBudget();
-        notification.success({
-          message: 'National budget acknowledged',
-          description: 'The national budget chain is now complete.',
-        });
-      } catch (err) {
-        notification.error({
-          message: 'Could not acknowledge the national budget',
-          description: err?.response?.data?.message || err.message,
-        });
-      } finally {
-        acknowledging.value = false;
+    const approveBudget = async () => {
+      const targets = approveTargets.value;
+      if (!targets.length) return;
+
+      approving.value = true;
+      const failed = [];
+
+      for (const record of targets) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await axios.post(`approve_campaign_budget/${record.id}`);
+        } catch (err) {
+          failed.push(`${recordLabel(record.budget_type)}: ${err?.response?.data?.message || err.message}`);
+        }
       }
+
+      await loadBudget();
+      loadCountyTotals();
+      approving.value = false;
+
+      if (failed.length) {
+        notification.error({
+          message: 'Could not approve every record',
+          description: failed.join(' · '),
+        });
+        return;
+      }
+
+      notification.success({
+        message: 'National budget approved',
+        description: 'The national budget chain is now complete.',
+      });
     };
 
     onMounted(bootstrap);
@@ -1310,16 +1516,16 @@ export default {
       loading, working, profileError, countyProfileId, budget, budgetStatus,
       lineItems, searchTerm, showStatusCard, savingCategoryId, commentModal,
       pendingCategory, pendingChanges, pendingComment, canGenerate,
-      canViewReviewFeedback, canEdit, itemColumns, stageLabel, actionStatus,
+      canViewReviewFeedback, canEdit, itemColumns, actionStatus,
       submittedAt, budgetFinancialYear, fmt, fmtMoney, rowTotal, grandTotal, dirtyCount,
       categories, stages, filteredStages, toggleCategory, expandAll, collapseAll,
       bootstrap, generate, openDetail, promptSave, confirmSave, submit,
-      // REVIEW — draft | submitted → national_approved (the Accountant /
-      // Program Accountant / Finance Officer sign the national budget off).
+      // REVIEW — ONE action covering every record still awaiting review
+      // (National + Baringo) → national_approved.
       reviewing, reviewBudget, canReviewBudget,
-      // ACKNOWLEDGE — national_approved → approved (the AIE Holder closes
-      // the national chain).
-      acknowledging, acknowledgeBudget, canAcknowledgeBudget,
+      // APPROVE — ONE action covering every reviewed record → approved
+      // (Finance Officer / GF Manager / AIE Holder).
+      approving, approveBudget, canApproveBudget,
       // ADDITIVE "Sync categories" — pulls in newly configured categories /
       // parameters without rewriting the figures already entered.
       syncing, syncCategories,
@@ -1327,6 +1533,12 @@ export default {
       activeType, hasAnyBudget, isBaringo, showWorkspace, typeOptions,
       lineCount, filledCount, zeroUnitCount, rowClass, revealUnset,
       TYPE_STANDARD, TYPE_BARINGO,
+      // Combined view: both records, the national / county totals and the
+      // combined status wording.
+      nationalRecords, recordLabel, statusShort,
+      reviewTargetsLabel, approveTargetsLabel,
+      nationalTotal, countyTotal, countyTotalLabel, combinedTotal,
+      combinedHeadline, combinedStageLabel,
     };
   },
 };
@@ -1447,6 +1659,140 @@ export default {
     font-size: 11px;
     color: #8a9399;
     white-space: nowrap;
+  }
+  .ts-caption {
+    font-size: 10px;
+    color: #9aa6ad;
+    margin-top: 1px;
+  }
+
+  /* ── Budget at a glance ───────────────────────────────────────────────
+     National total, county total and the combined picture, so the reviewer
+     and approver see what they are signing off before they act. */
+  .glance-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  .glance-tile {
+    background: #fff;
+    border: 1px solid #d9f0e2;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+
+    .glance-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #4d8a63;
+      margin-bottom: 4px;
+    }
+    .glance-value {
+      display: block;
+      font-size: 17px;
+      font-weight: 800;
+      color: #15693c;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .glance-sub {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #7a8a82;
+      line-height: 1.35;
+    }
+    &.is-total {
+      background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+      border-color: #9ad8b4;
+    }
+  }
+
+  /* ── Combined review / approval ───────────────────────────────────────
+     ONE action for the whole national budget: the National and Baringo
+     records are signed off / approved together. */
+  .combined-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+    border: 1px solid #d9f0e2;
+    border-radius: 10px;
+
+    .ca-copy {
+      flex: 1 1 320px;
+      min-width: 240px;
+    }
+    .ca-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2f6746;
+      margin-bottom: 4px;
+    }
+    .ca-note {
+      font-size: 11px;
+      color: #7a8a82;
+      line-height: 1.45;
+    }
+    .ca-records {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .ca-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #d9f0e2;
+      font-size: 11px;
+      font-weight: 600;
+      color: #2f6746;
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #c3cbd1;
+      }
+      &.draft .dot { background: #f0a13a; }
+      &.submitted .dot { background: #2f6dcf; }
+      &.national_approved .dot { background: #17a673; }
+      &.approved .dot { background: #15693c; }
+
+      .ca-chip-amount {
+        font-weight: 700;
+        color: #15693c;
+      }
+    }
+    .ca-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ca-warn {
+      font-size: 11px;
+      font-weight: 600;
+      color: #d48806;
+      max-width: 220px;
+      line-height: 1.35;
+    }
   }
 
   /* ── Summary bar ────────────────────────────────────────────────────── */
