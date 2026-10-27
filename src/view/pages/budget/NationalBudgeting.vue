@@ -20,29 +20,16 @@
           </span>
         </header>
 
-        <!-- ── Budget at a glance ──────────────────────────────────────────
-             The national records added together, the county rollup they
-             complement, and the combined picture. -->
+        <!-- ── National budgeting total ────────────────────────────────────
+             The national budget is budgeted as two records — National and
+             Baringo — so the page's total is the two added together. The
+             county / sub-county budgets are NOT part of national budgeting
+             and are reported on their own pages. -->
         <section v-if="hasAnyBudget" class="glance-row">
-          <div class="glance-tile">
-            <span class="glance-label">National total</span>
-            <strong class="glance-value">KES {{ fmtMoney(nationalTotal) }}</strong>
-            <span class="glance-sub">
-              {{ nationalRecords.length }} national record{{ nationalRecords.length === 1 ? '' : 's' }}
-              — National + Baringo added together
-            </span>
-          </div>
-          <div class="glance-tile">
-            <span class="glance-label">County total</span>
-            <strong class="glance-value">
-              {{ countyTotal === null ? '—' : `KES ${fmtMoney(countyTotal)}` }}
-            </strong>
-            <span class="glance-sub">{{ countyTotalLabel }}</span>
-          </div>
           <div class="glance-tile is-total">
-            <span class="glance-label">Combined total</span>
-            <strong class="glance-value">KES {{ fmtMoney(combinedTotal) }}</strong>
-            <span class="glance-sub">National + county budgets</span>
+            <span class="glance-label">National budgeting total</span>
+            <strong class="glance-value">KES {{ fmtMoney(nationalTotal) }}</strong>
+            <span class="glance-sub">{{ nationalBreakdownLabel }}</span>
           </div>
         </section>
 
@@ -635,42 +622,16 @@ export default {
       nationalRecords.value.reduce((sum, b) => sum + (Number(b.grand_total) || 0), 0),
     );
 
-    // County-side rollup (county + sub-county budgets), read once from the
-    // national dashboard. Null while unavailable — a role without the dashboard
-    // permission simply sees the national side of the strip.
-    const countyTotal = ref(null);
-    const countyMeta = ref(null);
-
-    const combinedTotal = computed(() =>
-      countyTotal.value === null ? nationalTotal.value : nationalTotal.value + countyTotal.value,
-    );
-
-    const countyTotalLabel = computed(() => {
-      if (countyTotal.value === null) return 'County rollup unavailable for your role';
-      return countyMeta.value || 'County + sub-county budgets';
-    });
-
     /**
-     * Read the county-side total (and the scope counts) for the "at a glance"
-     * strip. Read-only and non-fatal: the page keeps working when the caller
-     * cannot read the national dashboard.
+     * "National KES 102,133,528.00 + Baringo KES 3,809,888.00" — the two
+     * records the total is made of, in display order. The county / sub-county
+     * budgets are NOT part of national budgeting, so they never appear here.
      */
-    const loadCountyTotals = async () => {
-      try {
-        const { data } = await axios.get('get_national_budget_dashboard');
-        const body = data?.data || data || {};
-        const split = body.budget_split || {};
-        const status = body.submission_status || {};
-
-        countyTotal.value = Number(split.grand_total_kes) || 0;
-        countyMeta.value = status.counties
-          ? `${status.counties} counties · ${status.sub_counties || 0} sub-counties`
-          : null;
-      } catch (err) {
-        countyTotal.value = null;
-        countyMeta.value = null;
-      }
-    };
+    const nationalBreakdownLabel = computed(() =>
+      nationalRecords.value
+        .map((b) => `${recordLabel(b.budget_type)} KES ${fmtMoney(b.grand_total || 0)}`)
+        .join(' + '),
+    );
 
     /** The combined next-step headline for the action panel. */
     const combinedHeadline = computed(() => {
@@ -1186,7 +1147,6 @@ export default {
         await loadProfile();
         if (countyProfileId.value) {
           await loadBudget();
-          loadCountyTotals();
         }
       } catch (err) {
         // Surface the failure inline — a silent failure used to leave the page
@@ -1493,7 +1453,6 @@ export default {
       }
 
       await loadBudget();
-      loadCountyTotals();
       approving.value = false;
 
       if (failed.length) {
@@ -1537,7 +1496,7 @@ export default {
       // combined status wording.
       nationalRecords, recordLabel, statusShort,
       reviewTargetsLabel, approveTargetsLabel,
-      nationalTotal, countyTotal, countyTotalLabel, combinedTotal,
+      nationalTotal, nationalBreakdownLabel,
       combinedHeadline, combinedStageLabel,
     };
   },
@@ -1666,18 +1625,14 @@ export default {
     margin-top: 1px;
   }
 
-  /* ── Budget at a glance ───────────────────────────────────────────────
-     National total, county total and the combined picture, so the reviewer
-     and approver see what they are signing off before they act. */
+  /* ── National budgeting total ─────────────────────────────────────────
+     ONE card: the national budget is budgeted as two records (National and
+     Baringo) and the page's total is the two added together. */
   .glance-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
     margin-bottom: 14px;
-
-    @media (max-width: 992px) {
-      grid-template-columns: 1fr;
-    }
   }
   .glance-tile {
     background: #fff;
