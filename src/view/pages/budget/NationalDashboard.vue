@@ -10,12 +10,83 @@
             <h3 class="ph-title">
               <span class="ph-icon">▦</span> National Budget Dashboard
             </h3>
-            <p class="ph-subtitle">Overview of all county and sub-county budget submissions</p>
+            <p class="ph-subtitle">Budget totals and submission status — national, county and sub-county</p>
           </div>
           <div class="ph-actions">
             <a-tag color="green">FY {{ fiscalYear }}</a-tag>
           </div>
         </div>
+
+        <!-- ───────── Budget Overview — total, then National → County → Sub-County ─────────
+             The money picture, total first: every level added up, then the
+             national, county and sub-county budgets that make it up. -->
+        <a-row :gutter="[16, 16]" class="insight-row">
+          <a-col :xs="24" :lg="14">
+            <section class="panel full-height">
+              <div class="panel-title">▦ Budget Overview</div>
+
+              <!-- Headline: every level added up. -->
+              <div class="bo-total">
+                <div class="bo-total-copy">
+                  <span class="bo-total-label">Total — all levels</span>
+                  <span class="bo-total-sub">National + county + sub-county budgets</span>
+                </div>
+                <strong class="bo-total-value">KES {{ fmtMoney(split.total) }}</strong>
+              </div>
+
+              <!-- The breakdown, national first, each row a share of the total. -->
+              <div v-for="lv in levels" :key="lv.key" class="bo-level">
+                <div class="split-row">
+                  <div class="split-label">
+                    <i class="bo-dot" :class="lv.key"></i>{{ lv.label }}
+                    <span class="bo-meta">{{ lv.meta }}</span>
+                  </div>
+                  <div class="split-value">
+                    KES {{ fmtMoney(lv.amount) }}
+                    <span class="split-percent">({{ lv.pct.toFixed(1) }}%)</span>
+                  </div>
+                </div>
+                <a-progress
+                  :percent="lv.pct"
+                  :show-info="false"
+                  :stroke-color="lv.color"
+                  trail-color="#e1efe6"
+                  :stroke-width="6"
+                />
+              </div>
+            </section>
+          </a-col>
+
+          <a-col :xs="24" :lg="10">
+            <section class="panel full-height">
+              <div class="panel-title">⌂ Household Coverage</div>
+              <div class="list-row">
+                <span class="list-label">Total Households</span>
+                <span class="list-value">{{ fmt(coverage.households) }}</span>
+              </div>
+              <div class="list-row">
+                <span class="list-label">Nets to Distribute</span>
+                <span class="list-value">{{ fmt(coverage.nets) }}</span>
+              </div>
+              <div class="list-row">
+                <span class="list-label">Avg Nets per Household</span>
+                <span class="list-value">{{ coverage.netsPerHousehold.toFixed(2) }}</span>
+              </div>
+              <div class="coverage-bar">
+                <a-progress
+                  :percent="coverage.coveragePct"
+                  :show-info="false"
+                  stroke-color="#0f9d58"
+                  trail-color="#e1efe6"
+                  :stroke-width="10"
+                />
+                <div class="coverage-caption">
+                  Coverage: <strong>{{ coverage.coveragePct.toFixed(1) }}%</strong>
+                </div>
+              </div>
+            </section>
+          </a-col>
+        </a-row>
 
         <!-- ───────── Submission Status ───────── -->
         <section class="panel">
@@ -153,77 +224,6 @@
           </div>
         </section>
 
-        <!-- ───────── Two-column insight row ───────── -->
-        <a-row :gutter="[16, 16]" class="insight-row">
-          <a-col :xs="24" :lg="12">
-            <section class="panel full-height">
-              <div class="panel-title">⏱ County vs Sub-County Budget Split</div>
-              <div class="split-row">
-                <div class="split-label">Sub-County Budgets</div>
-                <div class="split-value">
-                  KES {{ fmt(split.subCounty) }}
-                  <span class="split-percent">({{ split.subCountyPct.toFixed(1) }}%)</span>
-                </div>
-              </div>
-              <a-progress
-                :percent="split.subCountyPct"
-                :show-info="false"
-                stroke-color="#20C997"
-                trail-color="#e1efe6"
-                :stroke-width="6"
-              />
-              <div class="split-row">
-                <div class="split-label">County Budgets</div>
-                <div class="split-value">
-                  KES {{ fmt(split.county) }}
-                  <span class="split-percent">({{ split.countyPct.toFixed(1) }}%)</span>
-                </div>
-              </div>
-              <a-progress
-                :percent="split.countyPct"
-                :show-info="false"
-                stroke-color="#0f9d58"
-                trail-color="#e1efe6"
-                :stroke-width="6"
-              />
-              <div class="grand-total">
-                <span>Grand Total</span>
-                <strong>KES {{ fmt(split.total) }}</strong>
-              </div>
-            </section>
-          </a-col>
-
-          <a-col :xs="24" :lg="12">
-            <section class="panel full-height">
-              <div class="panel-title">⌂ Household Coverage</div>
-              <div class="list-row">
-                <span class="list-label">Total Households</span>
-                <span class="list-value">{{ fmt(coverage.households) }}</span>
-              </div>
-              <div class="list-row">
-                <span class="list-label">Nets to Distribute</span>
-                <span class="list-value">{{ fmt(coverage.nets) }}</span>
-              </div>
-              <div class="list-row">
-                <span class="list-label">Avg Nets per Household</span>
-                <span class="list-value">{{ coverage.netsPerHousehold.toFixed(2) }}</span>
-              </div>
-              <div class="coverage-bar">
-                <a-progress
-                  :percent="coverage.coveragePct"
-                  :show-info="false"
-                  stroke-color="#0f9d58"
-                  trail-color="#e1efe6"
-                  :stroke-width="10"
-                />
-                <div class="coverage-caption">
-                  Coverage: <strong>{{ coverage.coveragePct.toFixed(1) }}%</strong>
-                </div>
-              </div>
-            </section>
-          </a-col>
-        </a-row>
-
         <!-- ───────── Top 5 Counties tables ───────── -->
         <a-row :gutter="[16, 16]" class="insight-row">
           <a-col :xs="24" :lg="12">
@@ -299,6 +299,11 @@ export default {
     const countyList = ref([]);
     const dashboard = ref(null);
 
+    // Every non-voided NATIONAL budget — the main national budget and the
+    // separate Baringo oversight budget. Kept apart from the dashboard payload
+    // so BOTH count towards the national total (see nationalSplit).
+    const nationalBudgets = ref([]);
+
     const fetchDashboard = async () => {
       loading.value = true;
       try {
@@ -316,7 +321,37 @@ export default {
       }
     };
 
-    onMounted(fetchDashboard);
+    /**
+     * The national side of the budget picture.
+     *
+     * `get_national_budget_dashboard` reports ONE `national_budget` record, but
+     * the national profile carries two separate budgets — the main national
+     * budget and the Baringo oversight budget — and that record is simply the
+     * most recently created of the two. Listing them here is what lets the
+     * "National Budget" row show the total for ALL national budgets instead of
+     * one arbitrary sibling. Voided budgets are not real budgets, so they are
+     * left out (mirrors the National Budgeting page).
+     */
+    const fetchNationalBudgets = async () => {
+      try {
+        const { data } = await axios.get('get_campaign_budgets', {
+          params: { level: 'national' },
+        });
+
+        const rows = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+
+        nationalBudgets.value = rows.filter((b) => b.status !== 'voided');
+      } catch (err) {
+        // Non-fatal — nationalSplit falls back to the dashboard payload's own
+        // record, so a caller who cannot list budgets still sees a figure.
+        nationalBudgets.value = [];
+      }
+    };
+
+    onMounted(() => {
+      fetchNationalBudgets();
+      fetchDashboard();
+    });
 
     const submission = computed(() => {
       const s = (dashboard.value && dashboard.value.submission_status) || {};
@@ -376,18 +411,103 @@ export default {
       };
     });
 
-    const split = computed(() => {
-      const b = (dashboard.value && dashboard.value.budget_split) || {};
-      const sub = b.sub_county || {};
-      const co = b.county || {};
+    /** Short status wording — mirrors the budgeting pages' own status labels. */
+    const STATUS_SHORT = {
+      draft: 'Draft',
+      submitted: 'Submitted',
+      national_approved: 'Approved',
+      approved: 'Acknowledged',
+      voided: 'Voided',
+    };
+
+    /**
+     * The national side of the split, plus the one-line meta shown beside it.
+     *
+     * The API's single `national_budget` record is only a FALLBACK: it is
+     * whichever national-profile budget was created last — the Baringo record
+     * as often as the main one — and the dashboard must never present one of
+     * the two siblings as the whole national figure.
+     */
+    const nationalSplit = computed(() => {
+      const listed = nationalBudgets.value;
+      const fallback = (dashboard.value && dashboard.value.national_budget) || null;
+      const rows = listed.length ? listed : (fallback ? [fallback] : []);
+
+      const statuses = [
+        ...new Set(rows.map((b) => STATUS_SHORT[b.status] || b.status).filter(Boolean)),
+      ];
+
       return {
-        subCounty: sub.total_kes || 0,
-        county: co.total_kes || 0,
-        total: b.grand_total_kes || 0,
-        subCountyPct: sub.percentage || 0,
-        countyPct: co.percentage || 0,
+        total: rows.reduce((sum, b) => sum + (Number(b.grand_total) || 0), 0),
+        meta: !rows.length
+          ? 'Not generated yet'
+          : `${rows.length} budget${rows.length === 1 ? '' : 's'}`
+            + (statuses.length === 1 ? ` · ${statuses[0]}` : ''),
       };
     });
+
+    /**
+     * The budget picture, total first:
+     *
+     *   total (all levels) → national → county → sub-county
+     *
+     * The shares are worked out here rather than read from
+     * `budget_split.percentage`, because those two percentages are relative to
+     * the county + sub-county subtotal only — they would not add up to the
+     * total this panel headlines.
+     */
+    const split = computed(() => {
+      const b = (dashboard.value && dashboard.value.budget_split) || {};
+      const county = Number((b.county || {}).total_kes) || 0;
+      const subCounty = Number((b.sub_county || {}).total_kes) || 0;
+      const national = nationalSplit.value.total;
+
+      const total = national + county + subCounty;
+      const share = (v) => (total > 0 ? (v / total) * 100 : 0);
+
+      return {
+        national,
+        county,
+        subCounty,
+        total: total || Number(b.grand_total_kes) || 0,
+        nationalPct: share(national),
+        countyPct: share(county),
+        subCountyPct: share(subCounty),
+      };
+    });
+
+    /**
+     * The three levels of the breakdown, in the order the panel reads them:
+     * national first, then the county and sub-county budgets underneath.
+     */
+    const levels = computed(() => [
+      {
+        key: 'national',
+        label: 'National Budget',
+        color: '#15693c',
+        amount: split.value.national,
+        pct: split.value.nationalPct,
+        meta: nationalSplit.value.meta,
+      },
+      {
+        key: 'county',
+        label: 'County Budgets',
+        color: '#0f9d58',
+        amount: split.value.county,
+        pct: split.value.countyPct,
+        meta: `${fmt(submission.value.counties)} ${
+          submission.value.counties === 1 ? 'county' : 'counties'
+        }`,
+      },
+      {
+        key: 'subcounty',
+        label: 'Sub-County Budgets',
+        color: '#20c997',
+        amount: split.value.subCounty,
+        pct: split.value.subCountyPct,
+        meta: `${fmt(submission.value.subCounties)} sub-counties`,
+      },
+    ]);
 
     const coverage = computed(() => {
       const c = (dashboard.value && dashboard.value.household_coverage) || {};
@@ -422,6 +542,16 @@ export default {
 
     const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
+    /**
+     * Money with a fixed two decimals so the figures line up — the plain `fmt()`
+     * drops trailing zeros, which reads untidily in a financial total
+     * (961,075.8 next to 256,286.88). Matches the budgeting pages' `fmtMoney`.
+     */
+    const fmtMoney = (v) => (Number(v) || 0).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
     return {
       loading,
       fiscalYear,
@@ -429,11 +559,13 @@ export default {
       program,
       ratios,
       split,
+      levels,
       coverage,
       topColumns,
       topLowest,
       topHighest,
       fmt,
+      fmtMoney,
     };
   },
 };
@@ -568,20 +700,6 @@ export default {
       }
     }
   }
-  .grand-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid #d9f0e2;
-    font-size: 13px;
-    color: #15693c;
-    strong {
-      font-size: 14px;
-      font-weight: 800;
-    }
-  }
   .list-row {
     display: flex;
     justify-content: space-between;
@@ -633,6 +751,67 @@ export default {
     }
     .ant-table-placeholder {
       color: #9ab5a4;
+    }
+  }
+
+  /* ── Budget Overview — the total, then National → County → Sub-County ────
+     Reads top-down: the total for every level, then the national, county and
+     sub-county budgets it is made of, each with its share of that total. */
+  .bo-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    background: #fff;
+    border: 1px solid #d9f0e2;
+    border-radius: 8px;
+
+    .bo-total-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #4d8a63;
+    }
+    .bo-total-sub {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      color: #7a8a82;
+    }
+    .bo-total-value {
+      font-size: 17px;
+      font-weight: 800;
+      color: #15693c;
+      white-space: nowrap;
+    }
+  }
+
+  .bo-level {
+    & + .bo-level { margin-top: 10px; }
+    /* The row's own top margin is the spacing above it — the level gap is
+       handled by the sibling rule above so the bars stay evenly spaced. */
+    .split-row { margin-top: 0; }
+
+    /* Small colour key tying each row to its bar. */
+    .bo-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      background: #9ab5a4;
+      &.national { background: #15693c; }
+      &.county { background: #0f9d58; }
+      &.subcounty { background: #20c997; }
+    }
+    .bo-meta {
+      margin-left: 6px;
+      font-size: 11px;
+      color: #8fa79a;
     }
   }
 
