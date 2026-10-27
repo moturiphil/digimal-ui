@@ -122,11 +122,16 @@
           </section>
 
           <!-- ───────── Category Key ───────── -->
+          <!-- Each entry carries the amount booked against that cost group
+               across the current scope, so the key doubles as the three-way
+               split of the Grand Total: Approved Amounts = Allowances + Fuel
+               + Procurements. -->
           <section class="panel">
             <div class="panel-title">Category Key</div>
             <div class="key-grid">
               <div v-for="group in costGroups" :key="group.key" class="key-item">
                 <div class="key-label">{{ group.label }}</div>
+                <div class="key-value">KES {{ money(group.amount) }}</div>
                 <div class="key-desc">{{ group.description }}</div>
               </div>
             </div>
@@ -617,6 +622,15 @@ export default {
       font-weight: 700;
       color: #15693c;
       margin-bottom: 4px;
+    }
+    /* The amount booked against this cost group — the key's value column,
+       so the three groups visibly add up to the Grand Total. */
+    .key-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #15693c;
+      margin-bottom: 4px;
+      word-break: break-word;
     }
     .key-desc {
       font-size: 11px;

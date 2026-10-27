@@ -8,11 +8,6 @@
             <h3 class="bp-title">
               {{ isBaringo ? 'Baringo National Oversight Budget' : 'National Budget' }}
             </h3>
-            <p class="bp-sub">
-              {{ isBaringo
-                ? 'The Baringo oversight team — 2 county coordinators, 2 sub-county coordinators, 1 accountant and 4 drivers across 28 days (10 + 10 + 8).'
-                : 'National oversight for every county except Baringo. Expand a category to set the Units and No. of Days, then submit for approval.' }}
-            </p>
           </div>
           <span class="header-tags">
             <a-tag v-if="budgetFinancialYear" class="fy-tag">FY {{ budgetFinancialYear }}</a-tag>
@@ -312,17 +307,15 @@
           <!-- Actions -->
           <section v-if="budget && !showStatusCard" class="panel action-row">
             <div class="ar-status">
-              <a-tag v-if="!canEdit" color="purple">View only</a-tag>
-              <a-tag v-else-if="budgetStatus === 'submitted'" color="blue">
-                Submitted — awaiting review by the Accountant / Program Accountant / Finance Officer
+              <a-tag v-if="canReviewBudget" color="blue">
+                {{ budgetStatus === 'draft'
+                  ? 'Draft — mark as reviewed to send it to the AIE Holder for approval'
+                  : 'Submitted — awaiting review by the Accountant / Program Accountant / Finance Officer' }}
               </a-tag>
               <a-tag v-else-if="budgetStatus === 'national_approved'" color="geekblue">
                 Reviewed — awaiting AIE Holder acknowledgement
               </a-tag>
-              <span v-else class="ar-hint">
-                Changing a figure requires a comment — it is recorded in the
-                immutable audit trail with your name, role and the time.
-              </span>
+              <a-tag v-else-if="!canEdit" color="purple">View only</a-tag>
             </div>
 
             <sdButton
@@ -348,9 +341,9 @@
             </sdButton>
 
             <!-- REVIEW — the DNMP Accountant / Program Accountant / Finance
-                 Officer sign the submitted budget off (submitted →
+                 Officer sign the budget off (draft | submitted →
                  national_approved). The AIE Holder acknowledges it afterwards,
-                 on the National Budget Acknowledgement page. -->
+                 with the Acknowledge action below. -->
             <sdButton
               v-if="canReviewBudget"
               type="success"
@@ -361,6 +354,19 @@
               @click="reviewBudget"
             >
               Mark as Reviewed
+            </sdButton>
+
+            <!-- ACKNOWLEDGE — the AIE Holder's final step. It closes the
+                 national chain (`national_approved` → `approved`). -->
+            <sdButton
+              v-if="canAcknowledgeBudget"
+              type="primary"
+              class="pill-btn approve-btn"
+              :loading="acknowledging"
+              title="Acknowledge the reviewed national budget. This closes the national chain."
+              @click="acknowledgeBudget"
+            >
+              Acknowledge National Budget
             </sdButton>
           </section>
 
@@ -455,6 +461,16 @@ const REVIEWER_ROLES = [
   'Super Admin',
 ];
 
+/**
+ * Roles that may ACKNOWLEDGE the reviewed national budget — the final step of
+ * the national chain (`national_approved` → `approved`). Mirrors
+ * BudgetEditAccessService::NATIONAL_ACKNOWLEDGER_ROLES.
+ */
+const ACKNOWLEDGER_ROLES = [
+  'AIE Holder',
+  'Super Admin',
+];
+
 /** Stage labels — mirror CampaignBudgetController::totalsByStage(). */
 const STAGE_LABELS = {
   '1': 'Stage 1',
@@ -538,6 +554,7 @@ export default {
 
     const isGenerator = hasRoleByName(GENERATOR_ROLES);
     const isReviewer = hasRoleByName(REVIEWER_ROLES);
+    const isAcknowledger = hasRoleByName(ACKNOWLEDGER_ROLES);
 
     /**
      * Editing is gated server-side too (BudgetEditAccessService): the PREPARERS
@@ -550,11 +567,22 @@ export default {
     });
 
     /**
-     * The REVIEW action (`submitted` → `national_approved`) is offered to the
-     * reviewers only, and only while the budget is actually awaiting review.
+     * The REVIEW action (→ `national_approved`) is offered to the reviewers
+     * only. It is available on a SUBMITTED budget, and on a DRAFT as well:
+     * the reviewers are the ones who hand the national budget to the AIE
+     * Holder, so a draft must not dead-end for them while it waits for the
+     * preparers' separate submit step.
      */
     const canReviewBudget = computed(
-      () => isReviewer.value && budgetStatus.value === 'submitted',
+      () => isReviewer.value && ['draft', 'submitted'].includes(budgetStatus.value),
+    );
+
+    /**
+     * The ACKNOWLEDGEMENT (`national_approved` → `approved`) is the AIE
+     * Holder's final step — it closes the national chain.
+     */
+    const canAcknowledgeBudget = computed(
+      () => isAcknowledger.value && budgetStatus.value === 'national_approved',
     );
 
     const itemColumns = [
@@ -1219,12 +1247,14 @@ export default {
     };
 
     /**
-     * REVIEW — `submitted` → `national_approved`.
+     * REVIEW — `draft` | `submitted` → `national_approved`.
      *
      * Uses county_approve_campaign_budget, which the backend routes to the
      * national REVIEWERS (DNMP Accountant / Program Accountant / Finance
      * Officer) for a national budget — see
-     * CampaignBudgetController::countyApprove().
+     * CampaignBudgetController::countyApprove(). A draft is reviewed straight
+     * from the grid, so the reviewers are never blocked on the preparers'
+     * separate submit step.
      */
     const reviewBudget = async () => {
       reviewing.value = true;
@@ -1245,6 +1275,35 @@ export default {
       }
     };
 
+    const acknowledging = ref(false);
+
+    /**
+     * ACKNOWLEDGE — `national_approved` → `approved`.
+     *
+     * The AIE Holder's final step: it closes the national chain. Uses
+     * approve_campaign_budget, which the backend pins to the AIE Holder
+     * (DNMP Head) plus the Super Admin override — see
+     * CampaignBudgetController::approve().
+     */
+    const acknowledgeBudget = async () => {
+      acknowledging.value = true;
+      try {
+        await axios.post(`approve_campaign_budget/${budget.value.id}`);
+        await loadBudget();
+        notification.success({
+          message: 'National budget acknowledged',
+          description: 'The national budget chain is now complete.',
+        });
+      } catch (err) {
+        notification.error({
+          message: 'Could not acknowledge the national budget',
+          description: err?.response?.data?.message || err.message,
+        });
+      } finally {
+        acknowledging.value = false;
+      }
+    };
+
     onMounted(bootstrap);
 
     return {
@@ -1255,9 +1314,12 @@ export default {
       submittedAt, budgetFinancialYear, fmt, fmtMoney, rowTotal, grandTotal, dirtyCount,
       categories, stages, filteredStages, toggleCategory, expandAll, collapseAll,
       bootstrap, generate, openDetail, promptSave, confirmSave, submit,
-      // REVIEW — submitted → national_approved (the Accountant / Program
-      // Accountant / Finance Officer sign the national budget off).
+      // REVIEW — draft | submitted → national_approved (the Accountant /
+      // Program Accountant / Finance Officer sign the national budget off).
       reviewing, reviewBudget, canReviewBudget,
+      // ACKNOWLEDGE — national_approved → approved (the AIE Holder closes
+      // the national chain).
+      acknowledging, acknowledgeBudget, canAcknowledgeBudget,
       // ADDITIVE "Sync categories" — pulls in newly configured categories /
       // parameters without rewriting the figures already entered.
       syncing, syncCategories,
