@@ -38,7 +38,7 @@
  *
  *   Sub-county standard:  Preparatory → County Review → County Approved → National Approval → Approved
  *   County standard:      Preparatory → DNMP Review   → National Approval → Approved
- *   National:             Preparatory → Submitted → Approved (Vector Unit Head / GF Manager) → Acknowledged (AIE Holder)
+ *   National:             Preparatory → Submitted → Reviewed (Acct / PA) → Approved (FO / GF Manager / AIE Holder)
  *   Special Area Cost:    Preparatory → DNMP Review   → National Approval → Approved
  *
  * The `actionStatus` prop marks the step at which the acting role reviews or
@@ -66,14 +66,14 @@ const COUNTY_STEPS = [
 /**
  * The NATIONAL budget has its own chain — it never enters the DNMP review
  * stage. The Vector Unit Head / DNMP Program Officer prepare and submit it, the
- * DNMP Accountant / Program Accountant / Finance Officer review it, and the AIE
- * Holder reviews & acknowledges it.
+ * DNMP Accountant / Program Accountant review it, and the Finance Officer /
+ * GF Manager / AIE Holder give it final approval.
  */
 const NATIONAL_STEPS = [
   { status: 'draft',             label: 'Preparatory',         icon: '✎' },
   { status: 'submitted',         label: 'Submitted',           icon: '◔' },
-  { status: 'national_approved', label: 'Reviewed (Acct / FO)', icon: '◑' },
-  { status: 'approved',          label: 'Acknowledged (AIE)',  icon: '★' },
+  { status: 'national_approved', label: 'Reviewed (Acct / PA)', icon: '◑' },
+  { status: 'approved',          label: 'Approved',            icon: '★' },
 ];
 
 export default {

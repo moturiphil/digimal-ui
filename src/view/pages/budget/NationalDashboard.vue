@@ -415,8 +415,8 @@ export default {
     const STATUS_SHORT = {
       draft: 'Draft',
       submitted: 'Submitted',
-      national_approved: 'Approved',
-      approved: 'Acknowledged',
+      national_approved: 'Reviewed',
+      approved: 'Approved',
       voided: 'Voided',
     };
 
