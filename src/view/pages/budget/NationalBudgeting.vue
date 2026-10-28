@@ -82,6 +82,19 @@
             <span v-if="dirtyCount > 0" class="ca-warn">
               {{ dirtyCount }} unsaved change{{ dirtyCount === 1 ? '' : 's' }} on this record — save before reviewing.
             </span>
+            <!-- Excel download — APPROVED budgets only, so the file is always a
+                 signed-off record of what was budgeted. One sheet per level /
+                 budget type. -->
+            <sdButton
+              v-if="canExport && approvedRecords.length"
+              type="light"
+              class="pill-btn"
+              :loading="exporting"
+              title="Download the national workbook (approved budgets only): National, National-Baringo, County, County SAC, SubCounty and SubCounty SAC — each on its own sheet with every category, parameter, the budgeted figures and the multiplier applied."
+              @click="downloadWorkbook"
+            >
+              Download Excel
+            </sdButton>
             <sdButton
               v-if="canReviewBudget"
               type="success"
@@ -604,6 +617,11 @@ export default {
       nationalRecords.value.filter((b) => ['draft', 'submitted'].includes(b.status)),
     );
 
+    /** The national records carrying the FINAL approval — the exportable ones. */
+    const approvedRecords = computed(() =>
+      nationalRecords.value.filter((b) => b.status === 'approved'),
+    );
+
     /** Records awaiting the approvers' final approval. */
     const approveTargets = computed(() =>
       nationalRecords.value.filter((b) => b.status === 'national_approved'),
@@ -683,6 +701,9 @@ export default {
 
     const canGenerate = hasPermission('create_campaign_budget');
     const canViewReviewFeedback = hasPermission('get_budget_review_feedback');
+    // Excel download of the national workbook — granted to the national
+    // preparers / reviewers / approvers and the Super Admin.
+    const canExport = hasPermission('export_campaign_budget');
 
     const isGenerator = hasRoleByName(GENERATOR_ROLES);
     const isEditor = hasRoleByName(EDITOR_ROLES);
@@ -1225,6 +1246,39 @@ export default {
     };
 
     /**
+     * Download the NATIONAL workbook (`export_national_budget`): the National
+     * and National-Baringo records plus every county / sub-county budget —
+     * standard and Special Area Cost — one sheet per level / budget type.
+     * APPROVED budgets only, so the file is a signed-off record of what was
+     * budgeted. Every row carries the category, the parameter, the figures
+     * budgeted (unit cost · days · units), the multiplier applied and the total.
+     */
+    const exporting = ref(false);
+
+    const downloadWorkbook = async () => {
+      exporting.value = true;
+      try {
+        const response = await axios.get('export_national_budget', { responseType: 'blob' });
+        const year = budgetFinancialYear.value || new Date().getFullYear();
+
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(new Blob([response.data]));
+        link.setAttribute('download', `National Budget ${year}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+      } catch (err) {
+        notification.error({
+          message: 'Export failed',
+          description: 'Could not download the national budget Excel. Please try again.',
+        });
+      } finally {
+        exporting.value = false;
+      }
+    };
+
+    /**
      * Bring the budget in line with the current Budget Categories configuration:
      *
      *   • adds the line items a newly created category (or a newly linked
@@ -1498,6 +1552,9 @@ export default {
       reviewTargetsLabel, approveTargetsLabel,
       nationalTotal, nationalBreakdownLabel,
       combinedHeadline, combinedStageLabel,
+      // Excel download of the national workbook — approved budgets only,
+      // one sheet per level / type.
+      canExport, exporting, downloadWorkbook, approvedRecords,
     };
   },
 };

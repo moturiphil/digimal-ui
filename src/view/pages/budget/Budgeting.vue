@@ -68,6 +68,20 @@
             <a-input v-model:value="searchTerm" size="small" placeholder="Search…" allow-clear class="bp-search" />
             <sdButton size="small" class="pill-btn" @click="expandAll">Expand</sdButton>
             <sdButton size="small" class="pill-btn" @click="collapseAll">Collapse</sdButton>
+            <!-- Excel download (APPROVED budgets only) — every category,
+                 parameter, the figures budgeted and the multiplier applied.
+                 When this sub-county is SAC-mapped its separate Special Area
+                 Cost budget ships on a second sheet of the same workbook. -->
+            <sdButton
+              v-if="canExport && campaignBudgetId && budgetStatus === 'approved'"
+              size="small"
+              class="pill-btn"
+              :loading="exporting"
+              title="Download this sub-county's approved budget as Excel: every category, parameter, the figures budgeted and the multiplier applied — the Special Area Cost budget on its own sheet when applicable."
+              @click="downloadWorkbook"
+            >
+              Download Excel
+            </sdButton>
           </div>
         </div>
 
@@ -494,6 +508,9 @@ export default {
     // sign-off). Permission-gated, and the API additionally scopes the payload
     // to this user's own unit, so the panel also stays hidden without the grant.
     const canViewReviewFeedback = hasPermission('get_budget_review_feedback');
+
+    // Excel download of this unit's budget workbook (standard + SAC sheet).
+    const canExport = hasPermission('export_campaign_budget');
 
     const subCounty = ref(resolveSubCounty());
     const stage = ref('Preparatory Stage');
@@ -1310,6 +1327,41 @@ export default {
       }
     };
 
+    // ── Excel download ───────────────────────────────────────────────────────
+    // `export_campaign_budget/{id}` returns the workbook for this unit: the
+    // APPROVED budget on sheet 1 and — when the sub-county is SAC-mapped and
+    // its SAC budget is approved too — that separate Special Area Cost budget
+    // on a second sheet of the same file. The button above only appears once
+    // the budget is approved; the API refuses anything else with a 422.
+    const exporting = ref(false);
+
+    const downloadWorkbook = async () => {
+      if (!campaignBudgetId.value) return;
+
+      exporting.value = true;
+      try {
+        const response = await axios.get(
+          `export_campaign_budget/${campaignBudgetId.value}`,
+          { responseType: 'blob' },
+        );
+
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(new Blob([response.data]));
+        link.setAttribute('download', `${subCounty.value.name || 'Sub-County'} Budget.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+      } catch (err) {
+        notification.error({
+          message: 'Export failed',
+          description: 'Could not download the budget Excel. Please try again.',
+        });
+      } finally {
+        exporting.value = false;
+      }
+    };
+
     return {
       subCounty,
       stage,
@@ -1369,6 +1421,10 @@ export default {
       sacTypeLabel,
       isSpecialAreaApplicable,
       sacItems,
+      // Excel download of this unit's workbook (standard + SAC sheets).
+      canExport,
+      exporting,
+      downloadWorkbook,
     };
   },
 };
