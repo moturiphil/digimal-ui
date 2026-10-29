@@ -134,6 +134,42 @@ export const GATE_DEFINITIONS = Object.freeze({
     ],
     roles: ["Community Health Assistant"],
   },
+  /**
+   * Household transfers (CHA flow, inside HouseHolds Validation).
+   *
+   * The CHA searches for a household, moves it to a village inside their own
+   * sub-location and assigns it to a post mapped to that sub-location
+   * (routes/api.php → HOUSEHOLD TRANSFER). Approval is a separate gate: an
+   * SCMCC/Super Admin decides with approve_household_transfer /
+   * reject_household_transfer.
+   */
+  canTransferHouseholds: {
+    permissions: [
+      "search_household_for_transfer",
+      "initiate_household_transfer",
+      "list_household_transfers",
+    ],
+    roles: ["Community Health Assistant"],
+  },
+  /**
+   * Seeing the Transfers entry at all: either raise them (CHA) or decide them
+   * (SCMCC / Super Admin). The actions inside are gated separately by
+   * canTransferHouseholds (search + initiate) and canApproveHouseholdTransfers.
+   */
+  canAccessHouseholdTransfers: {
+    permissions: [
+      "search_household_for_transfer",
+      "initiate_household_transfer",
+      "list_household_transfers",
+      "approve_household_transfer",
+      "reject_household_transfer",
+    ],
+    roles: ["Community Health Assistant", "SCMCC", "Super Admin"],
+  },
+  canApproveHouseholdTransfers: {
+    permissions: ["approve_household_transfer", "reject_household_transfer"],
+    roles: ["SCMCC", "Super Admin"],
+  },
   canViewNetsDistributed: { permissions: ["net_distribution_by_post"], roles: NETS_MANAGEMENT },
   canCreateDropOffPoint: { permissions: ["create_drop_off_point"], roles: DROPOFF_CREATE },
   canViewDropOffPoint: { permissions: ["drop_off_points_list", "drop_off_receipts"], roles: DROPOFF_VIEW },
@@ -431,6 +467,18 @@ export const NAV_MODULES = Object.freeze([
         label: "Households Validation",
         path: "/household/validation/dashboard",
         permissions: ["household-validation", "household_validation"],
+      },
+      // Household transfers — a tab of the validation page where the CHA
+      // searches a household, moves it to a village inside their sub-location
+      // and assigns it to a post. Same permission names as the API routes.
+      {
+        label: "Household Transfers",
+        path: "/household/validation/transfers",
+        permissions: [
+          "search_household_for_transfer",
+          "initiate_household_transfer",
+          "list_household_transfers",
+        ],
       },
       // CHA (role 77) submissions — the sidebar "My Change Requests" item is
       // gated by GATE_DEFINITIONS.canSubmitHHChanges, so list the same route

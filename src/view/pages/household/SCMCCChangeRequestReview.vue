@@ -9,8 +9,8 @@
               <span class="ph-icon">▤</span> Household Change Requests
             </h3>
             <p class="ph-subtitle">
-              Review change requests submitted by Community Health Assistants in
-              your sub-county and approve or reject each one.
+              Review change requests and household transfers submitted in your
+              sub-county and approve or reject each one.
             </p>
           </div>
           <div class="ph-actions">
@@ -82,13 +82,28 @@
           <section class="panel">
             <div class="panel-title">All Pending Requests</div>
 
+            <a-alert
+              v-if="loadWarning"
+              class="transfer-load-alert"
+              type="warning"
+              show-icon
+              :message="loadWarning"
+            />
+            <a-alert
+              v-else-if="hiddenScopeNotice"
+              class="transfer-load-alert"
+              type="info"
+              show-icon
+              :message="hiddenScopeNotice"
+            />
+
             <!-- Desktop / tablet: table -->
             <a-table
               :columns="columns"
               :data-source="filteredRequests"
               :loading="loading"
               :pagination="{ pageSize: 12, showSizeChanger: false }"
-              row-key="id"
+              :row-key="rowKey"
               :row-class-name="highlightRowClass"
               class="requests-table desktop-only"
               :scroll="{ x: 1080 }"
@@ -103,8 +118,17 @@
 
                 <template v-else-if="column.key === 'household'">
                   <div class="hh-cell">
-                    <strong>{{ householdHead(record) }}</strong>
-                    <span class="muted">
+                    <strong v-if="isHeadChangeRecord(record)">
+                      {{ headChangeRequestedName(record) || householdHead(record) }}
+                    </strong>
+                    <strong v-else>{{ householdHead(record) }}</strong>
+                    <span v-if="isTransferRecord(record)" class="muted">
+                      Move to {{ transferVillageLabel(record) }} · {{ transferPostLabel(record) }}
+                    </span>
+                    <span v-else-if="isHeadChangeRecord(record)" class="muted">
+                      New ID {{ record.id_no || '—' }} · {{ record.phone_no || '—' }} · {{ headChangePostLabel(record) }}
+                    </span>
+                    <span v-else class="muted">
                       ID {{ maskId(record.household && record.household.id_no) || '—' }}
                       · {{ maskPhone(record.household && record.household.phone_no) || '—' }}
                     </span>
@@ -114,7 +138,9 @@
                 <template v-else-if="column.key === 'initiator'">
                   <div class="hh-cell">
                     <strong>{{ chaName(record) }}</strong>
-                    <span class="muted">CHA · {{ chaSubLocation(record) }}</span>
+                    <span class="muted">
+                      {{ isTransferRecord(record) ? 'Transfer request' : isHeadChangeRecord(record) ? 'Head change' : 'CHA' }} · {{ chaSubLocation(record) }}
+                    </span>
                   </div>
                 </template>
 
@@ -135,9 +161,9 @@
             <div class="mobile-only request-cards">
               <div
                 v-for="req in filteredRequests"
-                :key="'m-' + req.id"
-                :class="['req-card', { highlighted: String(req.id) === String(highlightId) }]"
-                :ref="(el) => registerCardRef(req.id, el)"
+                :key="'m-' + rowKey(req)"
+                :class="['req-card', { highlighted: !isTransferRecord(req) && String(req.id) === String(highlightId) }]"
+                :ref="(el) => registerCardRef(rowKey(req), el)"
                 @click="openDetail(req)"
               >
                 <div class="rc-head">
@@ -146,16 +172,31 @@
                   </a-tag>
                   <span class="rc-time">{{ relativeTime(req.created_at) }}</span>
                 </div>
-                <div class="rc-name">{{ householdHead(req) }}</div>
+                <div class="rc-name">
+                  {{ isHeadChangeRecord(req) ? (headChangeRequestedName(req) || householdHead(req)) : householdHead(req) }}
+                </div>
                 <div class="rc-meta">
-                  <span>ID {{ maskId(req.household && req.household.id_no) || '—' }}</span>
-                  <span>{{ maskPhone(req.household && req.household.phone_no) || '—' }}</span>
-                  <span v-if="householdVillage(req)">Village: {{ householdVillage(req) }}</span>
+                  <template v-if="isTransferRecord(req)">
+                    <span>Household #{{ req.household_id }}</span>
+                    <span>To: {{ transferVillageLabel(req) }}</span>
+                    <span>Post: {{ transferPostLabel(req) }}</span>
+                  </template>
+                  <template v-else-if="isHeadChangeRecord(req)">
+                    <span>Head: {{ householdHead(req) }}</span>
+                    <span>New ID {{ req.id_no || '—' }}</span>
+                    <span>{{ req.phone_no || '—' }}</span>
+                    <span>{{ headChangePostLabel(req) }}</span>
+                  </template>
+                  <template v-else>
+                    <span>ID {{ maskId(req.household && req.household.id_no) || '—' }}</span>
+                    <span>{{ maskPhone(req.household && req.household.phone_no) || '—' }}</span>
+                    <span v-if="householdVillage(req)">Village: {{ householdVillage(req) }}</span>
+                  </template>
                 </div>
                 <div class="rc-footer">
                   <span class="rc-by">
                     By <strong>{{ chaName(req) }}</strong>
-                    · CHA · {{ chaSubLocation(req) }}
+                    · {{ isTransferRecord(req) ? 'Transfer request' : isHeadChangeRecord(req) ? 'Head change' : 'CHA' }} · {{ chaSubLocation(req) }}
                   </span>
                   <a-button size="small" type="primary" ghost @click.stop="openDetail(req)">
                     <template #icon><EyeOutlined /></template>
@@ -173,7 +214,11 @@
         <!-- Detail drawer -->
         <a-drawer
           v-model:visible="detailOpen"
-          title="Change request details"
+          :title="detailRequest && isTransferRecord(detailRequest)
+            ? 'Household transfer details'
+            : detailRequest && isHeadChangeRecord(detailRequest)
+              ? 'Head change details'
+              : 'Change request details'"
           width="540"
           :body-style="{ paddingBottom: '80px' }"
         >
@@ -187,6 +232,67 @@
                 <span class="muted">#{{ detailRequest.id }}</span>
               </p>
               <p class="muted">Submitted {{ formatDate(detailRequest.created_at) }}</p>
+              <p v-if="isTransferRecord(detailRequest)" class="muted">
+                Household #{{ detailRequest.household_id }}
+              </p>
+            </div>
+
+            <div v-if="isTransferRecord(detailRequest)" class="detail-section">
+              <h4>Household transfer</h4>
+              <div class="hh-snapshot">
+                <div class="snap-row">
+                  <span class="snap-label">To village</span>
+                  <span class="snap-value">{{ transferVillageLabel(detailRequest) }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">To post</span>
+                  <span class="snap-value">{{ transferPostLabel(detailRequest) }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">Reason</span>
+                  <span class="snap-value">{{ detailRequest.transfer_reason || '—' }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">Status</span>
+                  <span class="snap-value">{{ detailRequest.approval_status || 'pending' }}</span>
+                </div>
+              </div>
+              <p v-if="isOwnTransfer(detailRequest)" class="muted transfer-self-note">
+                You raised this transfer — another SCMCC reviewer must approve or reject it.
+              </p>
+            </div>
+
+            <div v-if="isHeadChangeRecord(detailRequest)" class="detail-section">
+              <h4>Head change</h4>
+              <div class="hh-snapshot">
+                <div class="snap-row">
+                  <span class="snap-label">Current head</span>
+                  <span class="snap-value">{{ householdHead(detailRequest) }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">New head</span>
+                  <span class="snap-value">{{ headChangeRequestedName(detailRequest) || '—' }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">New national ID</span>
+                  <span class="snap-value">{{ detailRequest.id_no || '—' }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">New phone</span>
+                  <span class="snap-value">{{ detailRequest.phone_no || '—' }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">Post of collection</span>
+                  <span class="snap-value">{{ headChangePostLabel(detailRequest) }}</span>
+                </div>
+                <div class="snap-row">
+                  <span class="snap-label">Reason</span>
+                  <span class="snap-value">{{ (detailRequest.reason && detailRequest.reason.name) || '—' }}</span>
+                </div>
+              </div>
+              <p v-if="isOwnRecord(detailRequest)" class="muted transfer-self-note">
+                You raised this head change — another SCMCC reviewer must approve or reject it.
+              </p>
             </div>
 
             <div v-if="detailRequest.household || detailRequest.create_payload" class="detail-section">
@@ -221,7 +327,10 @@
               </div>
             </div>
 
-            <div class="detail-section">
+            <div
+              v-if="!isTransferRecord(detailRequest) && !isHeadChangeRecord(detailRequest)"
+              class="detail-section"
+            >
               <h4>Before vs After</h4>
               <div v-if="detailDiffs.length" class="diff-grid">
                 <div class="diff-col before-col">
@@ -259,7 +368,7 @@
             </div>
 
             <div class="detail-section">
-              <h4>Submitted by (CHA)</h4>
+              <h4>{{ isTransferRecord(detailRequest) || isHeadChangeRecord(detailRequest) ? 'Raised by' : 'Submitted by (CHA)' }}</h4>
               <div class="hh-snapshot">
                 <div class="snap-row">
                   <span class="snap-label">Name</span>
@@ -306,6 +415,9 @@
           </div>
 
           <template #footer>
+            <div v-if="isOwnRecord(detailRequest)" class="muted transfer-self-note">
+              You raised this request — another SCMCC reviewer must decide it.
+            </div>
             <a-space style="float: right">
               <a-button @click="detailOpen = false">Close</a-button>
               <a-button
@@ -318,8 +430,8 @@
               <a-button
                 type="primary"
                 @click="approve(detailRequest)"
-                :loading="actingId === (detailRequest && detailRequest.id) && actingType === 'approve'"
-                :disabled="!detailRequest"
+                :loading="actingId === (detailRequest && detailRequest.uid) && actingType === 'approve'"
+                :disabled="!detailRequest || isOwnRecord(detailRequest)"
               >
                 Approve
               </a-button>
@@ -330,19 +442,17 @@
         <!-- Reject modal -->
         <a-modal
           v-model:visible="rejectOpen"
-          title="Reject change request"
+          :title="rejectModalTitle"
           :confirm-loading="actingType === 'reject'"
           @ok="confirmReject"
           ok-text="Reject request"
           ok-type="danger"
         >
-          <p class="muted">
-            Provide a short reason — it will be sent to the CHA so they understand
-            why the request was rejected.
-          </p>
+          <p class="muted">{{ rejectModalHint }}</p>
           <a-textarea
             v-model:value="rejectReason"
             :rows="4"
+            :maxlength="rejectMaxLength"
             placeholder="e.g. Phone number doesn't match household head"
           />
         </a-modal>
@@ -419,14 +529,21 @@ const actionColor = (type) =>
 const householdHead = (req) => {
   const h = req.household;
   if (!h) {
-    return req.create_payload
-      ? [
+    if (req.create_payload) {
+      return (
+        [
           req.create_payload.first_name,
           req.create_payload.middle_name,
           req.create_payload.last_name,
         ]
           .filter(Boolean)
-          .join(" ")
+          .join(" ") || "—"
+      );
+    }
+    // A transfer row carries only the household id until it is enriched, so a
+    // stable placeholder is shown instead of an empty cell.
+    return req.kind === "transfer" && req.household_id
+      ? `Household #${req.household_id}`
       : "—";
   }
   return (
@@ -529,6 +646,7 @@ const filteredRequests = computed(() => {
       const id = String(
         (r.household && r.household.id_no) ||
           (r.create_payload && r.create_payload.id_no) ||
+          (r.kind === "transfer" ? r.household_id : "") ||
           ""
       ).toLowerCase();
       const phone = String(
@@ -668,16 +786,359 @@ const detailDiffs = computed(() => {
   return out;
 });
 
+// ── Household transfers (transfer-in) ────────────────────────────────────────
+// Transfers are NOT change requests: they live in `household_location_history`
+// and are approved/rejected through the dedicated transfer endpoints. Pending
+// transfers are therefore fetched separately and merged into this review list
+// under the `transfer_in` action type, so an SCMCC reviewer decides both in one
+// place. The transfer list returns the history row only (ids, no names), so the
+// destination village/post labels are resolved through the same lookups the CHA
+// transfer screen uses (`administrative_unit`, `village_hh`, `sublocation_posts`).
+const sessionUser = ref(
+  (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  })()
+);
+
+const transfersError = ref("");
+const transferOutOfScope = ref(0);
+
+// administrative_units.id → { id, village_id, name } for a destination village.
+const transferVillagesById = ref({});
+// sub-location id → [village rows], so each sub-location is fetched once.
+const transferVillagesBySublocation = ref({});
+// administrative_units.id → [{ value, label }] posts of that village.
+const transferPostsByVillageId = ref({});
+// `${administrative_units.id}:${post_id}` → post label for the list/drawer.
+const transferPostNames = ref({});
+
+const transferCurrentUserId = computed(() => Number(sessionUser.value?.user?.id || 0));
+
+const isTransferRecord = (record) => Boolean(record) && record.kind === "transfer";
+
+// The API refuses a self-approval (403), so the UI marks transfers the reviewer
+// raised themselves instead of offering buttons that would fail.
+const isOwnTransfer = (record) =>
+  isTransferRecord(record) &&
+  transferCurrentUserId.value > 0 &&
+  Number(record.transferred_by) === transferCurrentUserId.value;
+
+// ── Head-change requests ("switch HH head") ──────────────────────────────────
+// The workflow has its own table + approve/reject endpoints, so those rows are
+// fetched separately and merged in under the `head_change` action type.
+const headChangesError = ref("");
+const headChangesOutOfScope = ref(0);
+
+const isHeadChangeRecord = (record) => Boolean(record) && record.kind === "head_change";
+
+// Both endpoints refuse a self-approval, so the UI flags the reviewer's own
+// rows instead of offering buttons that would fail with a 403.
+const isOwnRecord = (record) =>
+  isOwnTransfer(record) ||
+  (isHeadChangeRecord(record) &&
+    transferCurrentUserId.value > 0 &&
+    Number(record.requested_by) === transferCurrentUserId.value);
+
+const headChangeRequestedName = (record) =>
+  [record?.first_name, record?.middle_name, record?.last_name]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+
+// A NULL post_id on the request means "keep the household's current post".
+const headChangePostLabel = (record) => {
+  if (!record || !record.post_id) return "Keep current post";
+  const post = record.post || {};
+  return post.name || `Post #${record.post_id}`;
+};
+
+// Head-change rows carry the household, whose `hh_subcounty_id` equals the
+// reviewer's own sub-county (same rule the transfer queue uses). Not scoped
+// server-side, so it is applied here. National scope (id 1) sees all.
+const headChangeInReviewerScope = (row) => {
+  const u = (sessionUser.value && sessionUser.value.user) || sessionUser.value || {};
+  const scopeId = Number(u.location_id || (u.location && u.location.id) || 0);
+  if (!scopeId || scopeId === 1) return true;
+  if (Number(u.level_id) === 1) return true;
+  return Number((row && row.household && row.household.hh_subcounty_id) || 0) === scopeId;
+};
+
+// One notice for both queues: load failures first, then rows hidden by scope.
+const loadWarning = computed(() =>
+  [transfersError.value, headChangesError.value].filter(Boolean).join(" ")
+);
+
+const hiddenScopeNotice = computed(() => {
+  const parts = [];
+  if (transferOutOfScope.value) parts.push(`${transferOutOfScope.value} household transfer(s)`);
+  if (headChangesOutOfScope.value) parts.push(`${headChangesOutOfScope.value} head change request(s)`);
+  return parts.length
+    ? `${parts.join(" and ")} fall outside your sub-county and are hidden.`
+    : "";
+});
+
+/**
+ * Pending head-change requests mapped into the row shape this page renders.
+ */
+const fetchPendingHeadChanges = async () => {
+  headChangesError.value = "";
+  headChangesOutOfScope.value = 0;
+  try {
+    const { data } = await axios.get("household-head-changes?status=pending");
+    const allRows = Array.isArray(data?.data) ? data.data : [];
+    const rows = allRows.filter(headChangeInReviewerScope);
+    headChangesOutOfScope.value = allRows.length - rows.length;
+
+    return rows.map((row) => ({
+      ...row,
+      uid: `head_change:${row.id}`,
+      kind: "head_change",
+      action_type: "head_change",
+      initiator: row.requester || row.initiator || null,
+      new_id_no: row.id_no,
+      new_phone_no: row.phone_no,
+      new_post_id: row.post_id,
+    }));
+  } catch (error) {
+    const status = Number(error?.response?.status) || 0;
+    headChangesError.value =
+      status === 403
+        ? "Pending head change requests could not be loaded — you do not have permission to review them."
+        : "Pending head change requests could not be loaded. Refresh to try again.";
+    return [];
+  }
+};
+
+// Transfers are scoped by sub-county: the history row carries the destination
+// sub-county, which equals the reviewer's own sub-county (the CHA may only move
+// a household inside their area of coverage). The transfer endpoint has no
+// server-side scoping, so it is applied here. National scope (id 1) sees all.
+const transferInReviewerScope = (row) => {
+  const u = (sessionUser.value && sessionUser.value.user) || sessionUser.value || {};
+  const scopeId = Number(u.location_id || (u.location && u.location.id) || 0);
+  if (!scopeId || scopeId === 1) return true;
+  if (Number(u.level_id) === 1) return true;
+  return Number(row && row.hh_subcounty_id) === scopeId;
+};
+
+const rowKey = (record) => (record && record.uid) || String((record && record.id) || "");
+
+const transferVillageRow = (villageId) =>
+  transferVillagesById.value[Number(villageId) || 0] || null;
+
+const transferVillageLabel = (record) => {
+  const id = Number(record && record.location_id) || 0;
+  if (!id) return "—";
+  return transferVillageRow(id)?.name || `Village #${id}`;
+};
+
+const transferPostLabel = (record) => {
+  const villageId = Number(record && record.location_id) || 0;
+  const postId = Number(record && record.post_id) || 0;
+  if (!postId) return "—";
+  const known = transferPostNames.value[`${villageId}:${postId}`];
+  if (known) return known;
+  const found = (transferPostsByVillageId.value[villageId] || []).find(
+    (option) => option.value === postId
+  );
+  return found ? found.label : `Post #${postId}`;
+};
+
+/**
+ * Villages of one sub-location (`administrative_units` rows). The endpoint
+ * paginates at 50 rows, so walk the pages (capped) and cache each row by its
+ * administrative_units.id — the id a transfer's `location_id` stores.
+ */
+const ensureTransferSublocationVillages = async (sublocationId) => {
+  const id = Number(sublocationId) || 0;
+  if (!id) return [];
+  if (transferVillagesBySublocation.value[id]) return transferVillagesBySublocation.value[id];
+
+  const collected = [];
+  let page = 1;
+  let lastPage = 1;
+  try {
+    do {
+      const { data } = await axios.get(`administrative_unit?sublocation_id=${id}&page=${page}`);
+      (data?.data || []).forEach((row) => {
+        const villageId = Number(row.id) || 0;
+        if (!villageId) return;
+        const village = {
+          id: villageId,
+          // `village_id` is the org_units id the posts endpoint resolves with.
+          village_id: Number(row.village_id) || 0,
+          name: row.village || row.name || `Village #${villageId}`,
+        };
+        collected.push(village);
+        transferVillagesById.value = { ...transferVillagesById.value, [villageId]: village };
+      });
+      lastPage = Number(data?.pagination?.total_pages) || 1;
+      page += 1;
+    } while (page <= lastPage && page <= 5);
+
+    transferVillagesBySublocation.value = {
+      ...transferVillagesBySublocation.value,
+      [id]: collected,
+    };
+  } catch {
+    return collected;
+  }
+
+  return collected;
+};
+
+/** Village name for an admin-unit id the sub-location lookup did not cover. */
+const fetchTransferVillageName = async (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return null;
+  const known = transferVillageRow(id);
+  if (known?.name) return known.name;
+
+  try {
+    const { data } = await axios.get(`village_hh?village_id=${id}&per_page=1`);
+    const name = data?.village?.name || null;
+    if (name) {
+      transferVillagesById.value = {
+        ...transferVillagesById.value,
+        [id]: { id, village_id: 0, name },
+      };
+    }
+    return name;
+  } catch {
+    return null;
+  }
+};
+
+/** Posts mapped to the village's sub-location (`sublocation_posts`). */
+const ensureTransferPosts = async (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return [];
+  if (transferPostsByVillageId.value[id] !== undefined) return transferPostsByVillageId.value[id];
+
+  const village = transferVillageRow(id);
+  if (!village?.village_id) {
+    transferPostsByVillageId.value = { ...transferPostsByVillageId.value, [id]: [] };
+    return [];
+  }
+
+  try {
+    const { data } = await axios.get(`sublocation_posts?village_id=${Number(village.village_id)}`);
+    const options = (data?.data || []).map((post) => ({
+      value: Number(post.id),
+      label: post.name || post.post || `Post #${post.id}`,
+    }));
+    transferPostsByVillageId.value = { ...transferPostsByVillageId.value, [id]: options };
+    return options;
+  } catch {
+    transferPostsByVillageId.value = { ...transferPostsByVillageId.value, [id]: [] };
+    return [];
+  }
+};
+
+/** Resolve the village + post names a page of transfer rows shows. */
+const prefetchTransferLabels = async (rows) => {
+  const sublocationIds = [
+    ...new Set(rows.map((row) => Number(row.hh_sublocation_id) || 0).filter(Boolean)),
+  ];
+  await Promise.all(sublocationIds.map((id) => ensureTransferSublocationVillages(id)));
+
+  const unresolvedVillageIds = [
+    ...new Set(rows.map((row) => Number(row.location_id) || 0).filter(Boolean)),
+  ].filter((id) => !transferVillageRow(id));
+  await Promise.all(unresolvedVillageIds.map((id) => fetchTransferVillageName(id)));
+
+  const pairs = rows
+    .map((row) => ({
+      villageId: Number(row.location_id) || 0,
+      postId: Number(row.post_id) || 0,
+    }))
+    .filter(
+      ({ villageId, postId }) =>
+        villageId && postId && transferPostNames.value[`${villageId}:${postId}`] === undefined
+    );
+
+  await Promise.all(
+    pairs.map(async ({ villageId, postId }) => {
+      const options = await ensureTransferPosts(villageId);
+      const found = options.find((option) => option.value === postId);
+      transferPostNames.value = {
+        ...transferPostNames.value,
+        [`${villageId}:${postId}`]: found ? found.label : `Post #${postId}`,
+      };
+    })
+  );
+};
+
+/**
+ * Pending transfers mapped into the row shape this page renders. The endpoint
+ * caps a page at 25 rows and returns the newest first, so the first page holds
+ * every pending transfer in practice. Rows outside the reviewer's sub-county are
+ * dropped here (the endpoint is not scoped) and counted for the notice.
+ */
+const fetchPendingTransfers = async () => {
+  transfersError.value = "";
+  transferOutOfScope.value = 0;
+  try {
+    const { data } = await axios.get("transfers?approval_status=pending");
+    const allRows = Array.isArray(data?.data) ? data.data : [];
+    const rows = allRows.filter(transferInReviewerScope);
+    transferOutOfScope.value = allRows.length - rows.length;
+
+    await prefetchTransferLabels(rows);
+
+    return rows.map((row) => ({
+      ...row,
+      uid: `transfer:${row.id}`,
+      kind: "transfer",
+      action_type: "transfer_in",
+      created_at: row.created_at || row.transfer_datetime,
+      new_location_id: row.location_id,
+      new_post_id: row.post_id,
+    }));
+  } catch (error) {
+    const status = Number(error?.response?.status) || 0;
+    transfersError.value =
+      status === 403
+        ? "Pending household transfers could not be loaded — you do not have permission to review them."
+        : "Pending household transfers could not be loaded. Refresh to try again.";
+    return [];
+  }
+};
+
 const fetchRequests = async () => {
   loading.value = true;
   try {
     const params = {};
     if (activeFilter.value !== "all") params.action_type = activeFilter.value;
-    const res = await axios.get("hh_change_requests/pending", { params });
+
+    // Transfers and head changes live in their own tables (and have their own
+    // approve/reject endpoints), so they are fetched in parallel and merged
+    // into the same review list under `transfer_in` / `head_change`.
+    const [res, transferRows, headChangeRows] = await Promise.all([
+      axios.get("hh_change_requests/pending", { params }),
+      fetchPendingTransfers(),
+      fetchPendingHeadChanges(),
+    ]);
+
     const payload = res.data && res.data.data;
-    requests.value = Array.isArray(payload)
+    const changeRequests = Array.isArray(payload)
       ? payload
       : (payload && payload.data) || [];
+
+    requests.value = [
+      ...changeRequests.map((row) => ({
+        ...row,
+        uid: row.uid || `cr:${row.id}`,
+        kind: row.kind || "change_request",
+      })),
+      ...transferRows,
+      ...headChangeRows,
+    ];
+
     const totals = res.data && res.data.totals;
     decisionTotals.value = {
       accepted: Number(totals && totals.accepted) || 0,
@@ -702,7 +1163,7 @@ const openDetail = (record) => {
 const currentDetailIndex = computed(() => {
   if (!detailRequest.value) return -1;
   return filteredRequests.value.findIndex(
-    (r) => String(r.id) === String(detailRequest.value.id)
+    (r) => r.uid === detailRequest.value.uid
   );
 });
 const hasPrevRequest = computed(() => currentDetailIndex.value > 0);
@@ -722,22 +1183,50 @@ const gotoNext = () => {
 
 const approve = (record) => {
   if (!record) return;
+  if (isOwnRecord(record)) {
+    message.warning(
+      "You cannot approve a request you raised — another SCMCC reviewer must decide it."
+    );
+    return;
+  }
+  const transfer = isTransferRecord(record);
+  const headChange = isHeadChangeRecord(record);
   Modal.confirm({
-    title: "Approve this change request?",
-    content: `This will apply the ${actionLabel(
-      record.action_type
-    ).toLowerCase()} to the household immediately and notify the CHA.`,
+    title: transfer
+      ? "Approve this household transfer?"
+      : headChange
+        ? "Approve this head change?"
+        : "Approve this change request?",
+    content: transfer
+      ? "This moves the household to the selected village and post immediately and notifies the requester."
+      : headChange
+        ? "This applies the requested head details — and the post of collection when one was switched — immediately and notifies the requester."
+        : `This will apply the ${actionLabel(
+            record.action_type
+          ).toLowerCase()} to the household immediately and notify the CHA.`,
     okText: "Approve",
     okType: "primary",
     cancelText: "Cancel",
     async onOk() {
-      actingId.value = record.id;
+      actingId.value = record.uid;
       actingType.value = "approve";
       try {
-        await axios.post(`hh_change_request/${record.id}/approve`);
-        message.success("Request approved.");
-        requests.value = requests.value.filter((r) => r.id !== record.id);
-        if (detailRequest.value && detailRequest.value.id === record.id) {
+        await axios.post(
+          transfer
+            ? `transfers/${record.id}/approve`
+            : headChange
+              ? `household-head-changes/${record.id}/approve`
+              : `hh_change_request/${record.id}/approve`
+        );
+        message.success(
+          transfer
+            ? "Transfer approved."
+            : headChange
+              ? "Head change approved."
+              : "Request approved."
+        );
+        requests.value = requests.value.filter((r) => r.uid !== record.uid);
+        if (detailRequest.value && detailRequest.value.uid === record.uid) {
           detailOpen.value = false;
         }
       } catch (err) {
@@ -756,6 +1245,29 @@ const approve = (record) => {
   });
 };
 
+// Reject modal copy and reason limit depend on which queue the row came from.
+const rejectMaxLength = computed(() => {
+  if (isTransferRecord(rejectTarget.value)) return 255; // stored on the history row
+  if (isHeadChangeRecord(rejectTarget.value)) return 1000; // stored as the review comment
+  return 500; // change request rejection reason
+});
+
+const rejectModalTitle = computed(() =>
+  isTransferRecord(rejectTarget.value)
+    ? "Reject household transfer"
+    : isHeadChangeRecord(rejectTarget.value)
+      ? "Reject head change"
+      : "Reject change request"
+);
+
+const rejectModalHint = computed(() =>
+  isTransferRecord(rejectTarget.value)
+    ? "Provide a short reason — it is stored on the transfer so the requester understands why it was rejected."
+    : isHeadChangeRecord(rejectTarget.value)
+      ? "Provide a short reason — it is sent back to the requester with the rejection."
+      : "Provide a short reason — it will be sent to the CHA so they understand why the request was rejected."
+);
+
 const openReject = (record) => {
   if (!record) return;
   rejectTarget.value = record;
@@ -769,16 +1281,36 @@ const confirmReject = async () => {
     return;
   }
   const record = rejectTarget.value;
-  actingId.value = record.id;
+  const transfer = isTransferRecord(record);
+  const headChange = isHeadChangeRecord(record);
+  actingId.value = record.uid;
   actingType.value = "reject";
   try {
-    await axios.post(`hh_change_request/${record.id}/reject`, {
-      rejection_reason: rejectReason.value.trim(),
-    });
-    message.success("Request rejected.");
-    requests.value = requests.value.filter((r) => r.id !== record.id);
+    if (transfer) {
+      // The transfer endpoint stores the reason on the history row (max 255).
+      await axios.post(`transfers/${record.id}/reject`, {
+        transfer_reason: rejectReason.value.trim().slice(0, 255),
+      });
+    } else if (headChange) {
+      // A head-change rejection always carries a comment.
+      await axios.post(`household-head-changes/${record.id}/reject`, {
+        comment: rejectReason.value.trim(),
+      });
+    } else {
+      await axios.post(`hh_change_request/${record.id}/reject`, {
+        rejection_reason: rejectReason.value.trim(),
+      });
+    }
+    message.success(
+      transfer
+        ? "Transfer rejected."
+        : headChange
+          ? "Head change rejected."
+          : "Request rejected."
+    );
+    requests.value = requests.value.filter((r) => r.uid !== record.uid);
     rejectOpen.value = false;
-    if (detailRequest.value && detailRequest.value.id === record.id) {
+    if (detailRequest.value && detailRequest.value.uid === record.uid) {
       detailOpen.value = false;
     }
   } catch (err) {
@@ -799,17 +1331,23 @@ onMounted(fetchRequests);
 const applyHighlight = async () => {
   const id = highlightId.value;
   if (!id) return;
-  let match = requests.value.find((r) => String(r.id) === String(id));
+  // Change-request notifications carry the change request id; prefer that row
+  // when a transfer happens to share the same numeric id.
+  const findByHighlight = () =>
+    requests.value.find((r) => !isTransferRecord(r) && String(r.id) === String(id)) ||
+    requests.value.find((r) => String(r.id) === String(id));
+  let match = findByHighlight();
   // If the highlighted request isn't in our cached list (e.g. brand-new
   // submission while the user was on a different page), refresh once before
   // giving up.
   if (!match) {
     await fetchRequests();
-    match = requests.value.find((r) => String(r.id) === String(id));
+    match = findByHighlight();
     if (!match) return;
   }
   await nextTick();
-  const el = cardRefs[id] || document.querySelector(`[data-row-key="${id}"]`);
+  const el =
+    cardRefs[match.uid] || document.querySelector(`[data-row-key="${match.uid}"]`);
   if (el && typeof el.scrollIntoView === "function") {
     el.scrollIntoView({ behavior: "smooth", block: "center" });
   }
@@ -844,7 +1382,9 @@ watch(requests, () => {
 });
 
 const highlightRowClass = (record) =>
-  String(record.id) === String(highlightId.value) ? "highlighted-row" : "";
+  !isTransferRecord(record) && String(record.id) === String(highlightId.value)
+    ? "highlighted-row"
+    : "";
 </script>
 
 <style lang="less" scoped>
@@ -897,6 +1437,10 @@ const highlightRowClass = (record) =>
     padding: 16px 20px 18px;
     margin-bottom: 14px;
     box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+  }
+  /* Notice shown when the transfer queue could not be loaded / is scoped out. */
+  .transfer-load-alert {
+    margin-bottom: 10px;
   }
   .panel-title {
     font-size: 13px;
@@ -1452,6 +1996,14 @@ const highlightRowClass = (record) =>
       font-weight: 600;
     }
   }
+}
+
+/* Self-raised transfers — the API refuses a self-approval, so say so up front. */
+.ant-drawer .transfer-self-note,
+.ant-drawer .detail .transfer-self-note {
+  color: #b06a2c;
+  font-size: 12px;
+  margin: 0 0 8px 0;
 }
 
 /* Mobile responsive drawer */
