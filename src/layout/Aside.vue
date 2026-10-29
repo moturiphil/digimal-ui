@@ -265,6 +265,11 @@
               Households
             </router-link>
           </a-menu-item>
+          <a-menu-item key="widgetHouseholdValidationTransfers" v-if="canTransferHouseholds">
+            <router-link to="/household/validation/transfers">
+              Transfers
+            </router-link>
+          </a-menu-item>
           <a-menu-item key="widgetMyHHChangeRequests" v-if="canSubmitHHChanges">
             <router-link to="/household/my-change-requests">
               My Change Requests
@@ -644,6 +649,10 @@ export default defineComponent({
     const canValidateHH = satisfiesGate(GATE_DEFINITIONS.canValidateHH);
     const canReviewHHChanges = satisfiesGate(GATE_DEFINITIONS.canReviewHHChanges);
     const canSubmitHHChanges = satisfiesGate(GATE_DEFINITIONS.canSubmitHHChanges);
+    // Household transfers live as a tab of the validation page: the CHA raises
+    // them, the SCMCC / Super Admin approve or reject them. Either audience may
+    // open the tab, so the entry is gated by the combined access gate.
+    const canTransferHouseholds = satisfiesGate(GATE_DEFINITIONS.canAccessHouseholdTransfers);
     const canViewNetsDistributed = satisfiesGate(GATE_DEFINITIONS.canViewNetsDistributed);
     const canCreateDropOffPoint = satisfiesGate(GATE_DEFINITIONS.canCreateDropOffPoint);
     const canViewDropOffPoint = satisfiesGate(GATE_DEFINITIONS.canViewDropOffPoint);
@@ -816,6 +825,7 @@ export default defineComponent({
       canValidateHH,
       canReviewHHChanges,
       canSubmitHHChanges,
+      canTransferHouseholds,
       canViewNetsDistributed,
       canCreateDropOffPoint,
       canViewDropOffPoint,

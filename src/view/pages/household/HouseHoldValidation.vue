@@ -9,7 +9,7 @@
       </div>
       <nav class="ph-actions" aria-label="CHA workflow sections">
         <router-link
-          v-for="item in navItems"
+          v-for="item in visibleNavItems"
           :key="item.key"
           :to="item.path"
           class="nav-item"
@@ -293,6 +293,169 @@
         </div>
       </section>
 
+      <section v-else-if="currentSection === 'transfers'" class="transfers-page">
+        <div class="transfers-head">
+          <div>
+            <h2>Household transfers</h2>
+            <p>
+              Move a household to another village in your sub-location and assign it to a
+              post inside that sub-location. The request goes to the SCMCC for approval and
+              the household keeps its current location until it is approved.
+            </p>
+          </div>
+          <a-button size="small" :loading="transfersLoading" @click="fetchTransfers(1)">
+            Refresh
+          </a-button>
+        </div>
+
+        <!-- Step 1 — find the household to move (raise side only) -->
+        <div v-if="canTransferHouseholds" class="panel panel-full">
+          <div class="table-title">1. Find the household</div>
+          <div class="transfer-search-row">
+            <a-input
+              v-model:value="transferSearch.idNo"
+              placeholder="Household head ID number (e.g. 23980654)"
+              allow-clear
+              style="max-width: 340px"
+              @press-enter="searchTransferHousehold"
+            />
+            <a-button type="primary" :loading="transferSearch.loading" @click="searchTransferHousehold">
+              Search
+            </a-button>
+          </div>
+          <p class="transfer-hint">
+            Only verified, active households can be transferred. Search with the ID number
+            used when the household was registered.
+          </p>
+
+          <a-alert
+            v-if="transferSearch.error"
+            class="transfer-alert"
+            type="warning"
+            show-icon
+            :message="transferSearch.error"
+          />
+
+          <div v-if="transferSearch.result" class="transfer-household">
+            <div class="transfer-facts">
+              <div class="transfer-fact">
+                <span class="label">Household head</span>
+                <span class="value">{{ householdFullName(transferSearch.result) || "—" }}</span>
+              </div>
+              <div class="transfer-fact">
+                <span class="label">ID number</span>
+                <span class="value">{{ transferSearch.result.id_no || "—" }}</span>
+              </div>
+              <div class="transfer-fact">
+                <span class="label">Phone</span>
+                <span class="value">{{ maskPhone(transferSearch.result.phone_no) }}</span>
+              </div>
+              <div class="transfer-fact">
+                <span class="label">Household size</span>
+                <span class="value">{{ transferSearch.result.hh_size || "—" }}</span>
+              </div>
+              <div class="transfer-fact">
+                <span class="label">Current village</span>
+                <span class="value">{{ transferSearch.result.village_name || "Not set" }}</span>
+              </div>
+              <div class="transfer-fact">
+                <span class="label">Sub-location</span>
+                <span class="value">{{ transferSearch.result.sublocation_name || "Not set" }}</span>
+              </div>
+            </div>
+
+            <div class="transfer-household-actions">
+              <a-button
+                type="primary"
+                :disabled="!transferSearch.result.can_transfer || transferSearch.pending"
+                @click="openTransferModal"
+              >
+                Transfer household
+              </a-button>
+              <a-tag v-if="transferSearch.pending" color="blue">Transfer pending approval</a-tag>
+              <span
+                v-if="!transferSearch.result.can_transfer && transferSearch.result.cannot_transfer_reason"
+                class="transfer-hint"
+              >
+                {{ transferSearch.result.cannot_transfer_reason }}
+              </span>
+              <span
+                v-else-if="transferSearch.result.destination_count"
+                class="transfer-hint"
+              >
+                {{ transferSearch.result.destination_count }} village(s) in this sub-location
+                available as the destination.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 — the requests raised (or awaiting approval) -->
+        <div class="panel panel-full">
+          <div class="transfer-list-head">
+            <div class="table-title">2. Transfer requests</div>
+            <a-select
+              v-if="canApproveTransfers"
+              v-model:value="transferStatusFilter"
+              size="small"
+              style="width: 150px"
+              :options="transferStatusOptions"
+              @change="fetchTransfers(1)"
+            />
+          </div>
+          <a-alert
+            v-if="transfersError"
+            class="transfer-alert"
+            type="warning"
+            show-icon
+            :message="transfersError"
+          />
+          <a-table
+            :columns="transferColumns"
+            :data-source="transfers"
+            :loading="transfersLoading"
+            :pagination="false"
+            row-key="id"
+            size="small"
+          >
+            <template #transferHousehold="{ record }">
+              <div class="transfer-cell-strong">{{ transferHouseholdLabel(record) }}</div>
+              <div class="transfer-cell-sub">Household #{{ record.household_id }}</div>
+            </template>
+            <template #transferVillage="{ record }">{{ transferVillageLabel(record) }}</template>
+            <template #transferPost="{ record }">{{ transferPostLabel(record) }}</template>
+            <template #transferReason="{ record }">{{ transferReasonValue(record.transfer_reason) }}</template>
+            <template #transferRequested="{ record }">
+              {{ formatTransferDate(record.transfer_datetime) }}
+            </template>
+            <template #transferStatus="{ record }">
+              <a-tag :color="transferStatusColor(record)">{{ record.approval_status }}</a-tag>
+            </template>
+            <template #transferAction="{ record }">
+              <template v-if="record.approval_status === 'pending' && canApproveTransfers">
+                <!-- The API refuses self-approval, so say so instead of failing. -->
+                <span v-if="isOwnTransfer(record)" class="transfer-cell-sub">Raised by you</span>
+                <a-space v-else>
+                  <a @click="approveTransfer(record)">Approve</a>
+                  <a class="transfer-danger" @click="rejectTransfer(record)">Reject</a>
+                </a-space>
+              </template>
+              <span v-else>—</span>
+            </template>
+          </a-table>
+
+          <div class="village-pagination-wrap">
+            <a-pagination
+              :current="transfersPagination.current"
+              :page-size="transfersPagination.pageSize"
+              :total="transfersPagination.total"
+              :show-total="(total) => `${total} request(s)`"
+              @change="fetchTransfers"
+            />
+          </div>
+        </div>
+      </section>
+
       <section v-else class="table-page">
         <h2>{{ sectionTitle }}</h2>
         <a-table
@@ -502,6 +665,14 @@
             >
               <template #icon><EditOutlined /></template>
               Request change
+            </a-button>
+            <a-button
+              size="large"
+              :disabled="isActiveVillageSubmitted"
+              @click="toggleSwitchHeadPanel"
+            >
+              <template #icon><SwapOutlined /></template>
+              Switch HH head
             </a-button>
             <a-button
               type="primary"
@@ -715,6 +886,121 @@
             </a-button>
           </footer>
         </section>
+
+        <!-- Switch HH head: head details are mandatory, the post of collection is optional -->
+        <section v-if="showSwitchHeadPanel" class="form-panel switch-head">
+          <header class="panel-head">
+            <div class="panel-title">
+              <span class="panel-icon"><SwapOutlined /></span>
+              <div>
+                <h4>Switch household head</h4>
+                <p class="panel-sub">
+                  Update the head's names, national ID and phone number. Keep the
+                  household on its current post of collection or switch it to a
+                  different post. SCMCC reviews the request before it is applied.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="panel-close" @click="closeSwitchHeadPanel" aria-label="Close switch head form">
+              <CloseOutlined />
+            </button>
+          </header>
+
+          <div class="panel-body">
+            <div class="field-grid two-col">
+              <div class="field">
+                <label class="field-label">First name <span class="req">*</span></label>
+                <a-input v-model:value="switchHeadForm.first_name" placeholder="Head's first name" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label class="field-label">Middle name <span class="hint">(optional)</span></label>
+                <a-input v-model:value="switchHeadForm.middle_name" placeholder="Head's middle name" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="field-grid two-col">
+              <div class="field">
+                <label class="field-label">Last name <span class="req">*</span></label>
+                <a-input v-model:value="switchHeadForm.last_name" placeholder="Head's last name" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label class="field-label">National ID number <span class="req">*</span></label>
+                <a-input v-model:value="switchHeadForm.id_no" placeholder="Full national ID of the head" autocomplete="off" />
+                <p v-if="activeHousehold && activeHousehold.id_no" class="hint">
+                  Currently on record: {{ activeHousehold.id_no }}
+                </p>
+              </div>
+            </div>
+
+            <div class="field-grid two-col">
+              <div class="field">
+                <label class="field-label">Phone number <span class="req">*</span></label>
+                <a-input
+                  v-model:value="switchHeadForm.phone_no"
+                  placeholder="e.g. 0712 345 678"
+                  :maxlength="10"
+                  autocomplete="off"
+                />
+                <p v-if="switchPhoneFormatError" class="hint field-error">{{ switchPhoneFormatError }}</p>
+                <p v-else-if="activeHousehold && activeHousehold.phone_no" class="hint">
+                  Currently on record: {{ activeHousehold.phone_no }}
+                </p>
+              </div>
+              <div class="field">
+                <label class="field-label">Confirm phone number <span class="req">*</span></label>
+                <a-input
+                  v-model:value="switchHeadForm.phone_no_confirm"
+                  placeholder="Re-enter the phone number"
+                  :maxlength="10"
+                  autocomplete="off"
+                  @paste.prevent
+                />
+                <p v-if="switchPhoneMismatchError" class="hint field-error">{{ switchPhoneMismatchError }}</p>
+              </div>
+            </div>
+
+            <div class="field-grid">
+              <div class="field">
+                <label class="field-label">Post of collection <span class="req">*</span></label>
+                <a-radio-group v-model:value="switchHeadForm.post_mode" button-style="solid">
+                  <a-radio-button value="keep">Keep current post</a-radio-button>
+                  <a-radio-button value="change">Switch to another post</a-radio-button>
+                </a-radio-group>
+                <p v-if="switchHeadForm.post_mode === 'keep'" class="hint">
+                  The household stays on its current post{{ currentPostLabel ? `: ${currentPostLabel}` : '' }}.
+                </p>
+                <a-select
+                  v-else
+                  v-model:value="switchHeadForm.post_id"
+                  show-search
+                  :filter-option="filterPostOption"
+                  :options="switchPostOptions"
+                  :loading="switchPostsLoading"
+                  :not-found-content="switchPostsLoading ? undefined : 'No posts are mapped to this village'"
+                  placeholder="Pick the new post of collection"
+                  style="width: 100%"
+                />
+                <p v-if="switchHeadForm.post_mode === 'change' && !switchHeadForm.post_id" class="hint">
+                  Pick the post the household will collect from.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <footer class="panel-footer">
+            <a-button @click="closeSwitchHeadPanel">Cancel</a-button>
+            <a-button
+              type="primary"
+              class="panel-cta switch-head-cta"
+              :disabled="!canSubmitSwitchHead"
+              :loading="switchHeadSubmitting"
+              @click="submitSwitchHead"
+            >
+              <template #icon><SwapOutlined /></template>
+              Submit switch request
+            </a-button>
+          </footer>
+        </section>
       </div>
     </a-modal>
 
@@ -758,15 +1044,83 @@
         <a-form-item label="Notes"><a-input v-model:value="createForm.notes" /></a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- Household transfer: destination village + post inside the CHA's sub-location -->
+    <a-modal
+      v-model:visible="transferModal.open"
+      :width="640"
+      :centered="true"
+      :confirm-loading="transferModal.saving"
+      :ok-button-props="{ disabled: !canSubmitTransfer }"
+      ok-text="Transfer"
+      cancel-text="Cancel"
+      title="Transfer household"
+      @ok="submitTransfer"
+    >
+      <div v-if="transferModal.household" class="transfer-modal">
+        <div class="transfer-facts">
+          <div class="transfer-fact">
+            <span class="label">Household head</span>
+            <span class="value">{{ householdFullName(transferModal.household) || "—" }}</span>
+          </div>
+          <div class="transfer-fact">
+            <span class="label">ID number</span>
+            <span class="value">{{ transferModal.household.id_no || "—" }}</span>
+          </div>
+          <div class="transfer-fact">
+            <span class="label">Current village</span>
+            <span class="value">{{ transferModal.household.village_name || "Not set" }}</span>
+          </div>
+        </div>
+
+        <a-form layout="vertical" class="transfer-form">
+          <a-form-item label="Destination village (inside your sub-location)" required>
+            <a-select
+              v-model:value="transferModal.villageId"
+              show-search
+              :filter-option="filterVillageOption"
+              :options="transferModal.villageOptions"
+              :loading="transferModal.villagesLoading"
+              :not-found-content="transferModal.villagesLoading ? undefined : 'No villages found for this sub-location'"
+              placeholder="Select a village"
+              @change="onTransferVillageChange"
+            />
+          </a-form-item>
+
+          <a-form-item label="Post (mapped to the same sub-location)" required>
+            <a-select
+              v-model:value="transferModal.postId"
+              show-search
+              :filter-option="filterVillageOption"
+              :options="transferModal.postOptions"
+              :loading="transferModal.postsLoading"
+              :disabled="!transferModal.villageId"
+              :not-found-content="transferModal.postsLoading ? undefined : 'No posts are mapped to this sub-location'"
+              placeholder="Select the post the household will be assigned to"
+            />
+          </a-form-item>
+
+          <a-form-item label="Reason" required>
+            <a-textarea
+              v-model:value="transferModal.reason"
+              :rows="3"
+              :maxlength="255"
+              show-count
+              placeholder="Why is the household being moved? e.g. it was registered under the wrong village"
+            />
+          </a-form-item>
+        </a-form>
+      </div>
+    </a-modal>
       </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import {
   LeftOutlined,
   RightOutlined,
@@ -781,10 +1135,13 @@ import {
   CheckCircleFilled,
   ClockCircleOutlined,
   CloseOutlined,
+  SwapOutlined,
 } from "@ant-design/icons-vue";
 import axios from "@/Axiosconfig";
 import { Main } from "../../styled";
 import { RecordViewWrapper, BudgetPageWrapper } from "../budget/style";
+import { GATE_DEFINITIONS } from "@/config/navigation-permissions";
+import { satisfiesGate } from "@/services/user-role";
 
 const rt = useRouter();
 const route = useRoute();
@@ -793,7 +1150,24 @@ const user = ref(JSON.parse(sessionStorage.getItem("user") || "null"));
 const navItems = [
   { key: "dashboard", label: "Dashboard", path: "/household/validation/dashboard" },
   { key: "households", label: "Households", path: "/household/validation/households" },
+  { key: "transfers", label: "Transfers", path: "/household/validation/transfers" },
 ];
+
+// ── Household transfers (CHA flow) ───────────────────────────────────────────
+// The CHA searches a household, moves it to a village inside their sub-location
+// and assigns it to a post mapped to that sub-location; the SCMCC / Super Admin
+// approves or rejects the request. `satisfiesGate` is permission-first (the
+// same `role_permission` names the API routes enforce), so the tab, the
+// approve/reject actions and the backend always agree on who may act.
+const canTransferHouseholds = satisfiesGate(GATE_DEFINITIONS.canTransferHouseholds);
+const canApproveTransfers = satisfiesGate(GATE_DEFINITIONS.canApproveHouseholdTransfers);
+// Either audience may open the tab: the CHA raises transfers, the SCMCC /
+// Super Admin decide them (the actions inside are gated individually).
+const canAccessTransferTab = satisfiesGate(GATE_DEFINITIONS.canAccessHouseholdTransfers);
+
+const visibleNavItems = computed(() =>
+  navItems.filter((item) => item.key !== "transfers" || canAccessTransferTab.value)
+);
 
 // Households per village are paginated server-side. Keep the page size small
 // (10) so each request returns a tiny payload even when villages contain
@@ -936,6 +1310,185 @@ const resetChangeForm = () => {
     new_hh_size: null,
     notes: "",
   };
+};
+
+// ── Switch HH head ───────────────────────────────────────────────────────────
+// A different workflow from the head-change request above: the CHA updates the
+// head's own details (names + national ID + phone are mandatory) and either
+// keeps the household on its current post of collection or switches it to
+// another post. Submits to `households/{id}/switch-head`; the SCMCC reviews it
+// through the head-change approve/reject flow before anything is applied.
+const showSwitchHeadPanel = ref(false);
+const switchHeadSubmitting = ref(false);
+const switchPostsLoading = ref(false);
+const switchPostOptions = ref([]);
+
+const switchHeadForm = ref({
+  first_name: "",
+  middle_name: "",
+  last_name: "",
+  id_no: "",
+  phone_no: "",
+  phone_no_confirm: "",
+  post_mode: "keep", // 'keep' = retain the current post, 'change' = pick another
+  post_id: null,
+});
+
+const normalizedSwitchPhone = computed(() =>
+  String(switchHeadForm.value.phone_no || "").replace(/\s+/g, "")
+);
+const normalizedSwitchPhoneConfirm = computed(() =>
+  String(switchHeadForm.value.phone_no_confirm || "").replace(/\s+/g, "")
+);
+
+const switchPhoneFormatError = computed(() => {
+  const value = normalizedSwitchPhone.value;
+  if (!value) return "";
+  if (!/^\d+$/.test(value)) return "Phone number must contain digits only.";
+  if (value.length !== 10) return "Phone number must be exactly 10 digits.";
+  if (!KE_MOBILE_REGEX.test(value)) {
+    return "Enter a valid Kenyan mobile number (Safaricom, Airtel or Telkom).";
+  }
+  return "";
+});
+
+const switchPhoneMismatchError = computed(() => {
+  if (!normalizedSwitchPhoneConfirm.value) return "";
+  return normalizedSwitchPhone.value === normalizedSwitchPhoneConfirm.value
+    ? ""
+    : "Phone numbers do not match. Please re-enter.";
+});
+
+const canSubmitSwitchHead = computed(() => {
+  const f = switchHeadForm.value;
+  return (
+    !!String(f.first_name || "").trim() &&
+    !!String(f.last_name || "").trim() &&
+    !!String(f.id_no || "").trim() &&
+    KE_MOBILE_REGEX.test(normalizedSwitchPhone.value) &&
+    normalizedSwitchPhone.value === normalizedSwitchPhoneConfirm.value &&
+    (f.post_mode === "keep" || !!f.post_id)
+  );
+});
+
+// `format()` hands the modal the post's NAME (not its id), so it can only be
+// shown as context — "keep" simply omits post_id from the request.
+const currentPostLabel = computed(() => {
+  const name = activeHousehold.value?.post_id;
+  return typeof name === "string" && name.trim() ? name.trim() : "";
+});
+
+/** Posts of the household's village — the same sub-location mapping the transfer form uses. */
+const loadSwitchPostOptions = async () => {
+  switchPostsLoading.value = true;
+  try {
+    switchPostOptions.value = await ensureTransferPosts(activeVillageId.value);
+  } finally {
+    switchPostsLoading.value = false;
+  }
+};
+
+const filterPostOption = (input, option) => {
+  const label = (option?.label || "").toString().toLowerCase();
+  return label.includes(String(input).toLowerCase());
+};
+
+const resetSwitchHeadForm = () => {
+  switchHeadForm.value = {
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    id_no: "",
+    phone_no: "",
+    phone_no_confirm: "",
+    post_mode: "keep",
+    post_id: null,
+  };
+};
+
+const closeSwitchHeadPanel = () => {
+  showSwitchHeadPanel.value = false;
+  resetSwitchHeadForm();
+};
+
+const openSwitchHeadPanel = async () => {
+  const hh = activeHousehold.value;
+  if (!hh) return;
+
+  showMutePanel.value = false;
+  showChangePanel.value = false;
+  showSwitchHeadPanel.value = true;
+
+  // Names come from the row (stored with trailing spaces) — they are the only
+  // fields the list payload returns unmasked. The ID and phone are masked
+  // there, so the CHA keys them in (the masked values are shown as hints) and
+  // the post options are loaded lazily.
+  resetSwitchHeadForm();
+  switchHeadForm.value.first_name = String(hh.first_name || "").trim();
+  switchHeadForm.value.middle_name = String(hh.middle_name || "").trim();
+  switchHeadForm.value.last_name = String(hh.last_name || "").trim();
+
+  await loadSwitchPostOptions();
+};
+
+const toggleSwitchHeadPanel = () => {
+  if (showSwitchHeadPanel.value) {
+    closeSwitchHeadPanel();
+    return;
+  }
+  openSwitchHeadPanel();
+};
+
+const submitSwitchHead = async () => {
+  const hh = activeHousehold.value;
+  if (!hh) return;
+  if (!canSubmitSwitchHead.value) {
+    notification.warning({
+      message: "Missing required fields",
+      description:
+        "The head's first & last name, national ID and a confirmed phone number are required. Pick a post if you are switching it.",
+    });
+    return;
+  }
+
+  const f = switchHeadForm.value;
+  switchHeadSubmitting.value = true;
+  try {
+    await axios.post(`households/${hh.id}/switch-head`, {
+      first_name: String(f.first_name).trim(),
+      middle_name: String(f.middle_name || "").trim() || null,
+      last_name: String(f.last_name).trim(),
+      id_no: String(f.id_no).trim(),
+      phone_no: normalizedSwitchPhone.value,
+      // Omitted entirely when the household keeps its current post.
+      post_id: f.post_mode === "change" ? Number(f.post_id) : null,
+    });
+
+    notification.success({
+      message: "Switch request submitted",
+      description:
+        "SCMCC reviews the request before the household's head details are updated.",
+    });
+
+    closeSwitchHeadPanel();
+    bumpActiveVillageSummary("reviewed");
+    advanceToNextHousehold();
+    fetchVillages(villagesPaginationMeta.value.current || 1).catch(() => {});
+    fetchHistory().catch(() => {});
+  } catch (error) {
+    const fieldError = error?.response?.data?.errors
+      ? Object.values(error.response.data.errors)[0]?.[0]
+      : null;
+    notification.error({
+      message: "Failed to submit switch request",
+      description:
+        fieldError ||
+        error?.response?.data?.message ||
+        "Please check your input and try again.",
+    });
+  } finally {
+    switchHeadSubmitting.value = false;
+  }
 };
 
 const createModalOpen = ref(false);
@@ -1358,6 +1911,630 @@ const fetchVillages = async (page = 1) => {
     createForm.value.location_id = villages.value[0].id;
   }
 };
+
+// ── Household transfers (CHA) ────────────────────────────────────────────────
+// Step 1: search a verified household (by the household head's ID number).
+// Step 2: pick a destination village inside the household's sub-location — the
+//         CHA only validates one sub-location, so this is their sub-location.
+// Step 3: pick one of the posts mapped to that village's sub-location
+//         (post_sublocation_mapping, via sublocation_posts) and give a reason.
+// The request stays pending until an approver accepts it; the household keeps
+// its current location until then.
+const TRANSFERS_PAGE_SIZE = 10;
+
+const transferSearch = reactive({ idNo: "", loading: false, error: "", result: null, pending: false });
+
+const transferModal = reactive({
+  open: false,
+  saving: false,
+  household: null,
+  villagesLoading: false,
+  postsLoading: false,
+  villageOptions: [],
+  postOptions: [],
+  villageId: null,
+  postId: null,
+  reason: "",
+});
+
+const transfers = ref([]);
+const transfersLoading = ref(false);
+const transfersError = ref("");
+const transfersPagination = reactive({ current: 1, pageSize: TRANSFERS_PAGE_SIZE, total: 0 });
+
+// Approvers work the pending queue (the history holds 800k+ legacy rows), so
+// their default filter is "pending"; a CHA always sees their own requests only.
+const transferStatusFilter = ref(canApproveTransfers.value ? "pending" : "");
+const transferStatusOptions = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+  { value: "", label: "All" },
+];
+
+// Village rows keyed by `administrative_units.id` — the id households (and the
+// transfer history rows) store as `location_id`. Each row also carries
+// `village_id`, the `org_units` id the posts endpoint resolves villages with.
+// Plus the posts mapped to each village's sub-location and the resolved post
+// names, so the list and the modal never request the same thing twice.
+const transferVillagesById = ref({});
+const transferPostsByVillageId = ref({});
+const transferPostNames = ref({});
+// Names resolved for villages that are NOT in the caller's own scoped list
+// (e.g. a household whose current village sits outside their area), keyed by
+// administrative_units.id.
+const transferVillageNamesById = ref({});
+
+const transferCurrentUserId = computed(() => Number(user.value?.user?.id || 0));
+
+// The API refuses to approve a transfer raised by the same user, so the queue
+// shows "Raised by you" instead of buttons that would fail with a 403.
+const isOwnTransfer = (record) =>
+  transferCurrentUserId.value > 0 &&
+  Number(record?.transferred_by) === transferCurrentUserId.value;
+
+// Household names seen while searching / raising transfers, so the queue can
+// show a name instead of a bare id (the list endpoint returns ids only).
+const transferHouseholdLabels = ref({});
+
+const householdFullName = (row) =>
+  [row?.first_name, row?.middle_name, row?.last_name]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+
+const rememberTransferHousehold = (household) => {
+  const id = Number(household?.id) || 0;
+  if (!id) return;
+  const label = householdFullName(household);
+  if (!label) return;
+  transferHouseholdLabels.value = { ...transferHouseholdLabels.value, [id]: label };
+};
+
+const transferHouseholdLabel = (record) => {
+  const id = Number(record?.household_id) || 0;
+  return transferHouseholdLabels.value[id] || (id ? `Household #${id}` : "—");
+};
+
+const transferColumns = [
+  { title: "Household", key: "household", slots: { customRender: "transferHousehold" } },
+  { title: "To village", key: "village", slots: { customRender: "transferVillage" } },
+  { title: "Post", key: "post", slots: { customRender: "transferPost" } },
+  { title: "Reason", key: "reason", slots: { customRender: "transferReason" } },
+  { title: "Requested", key: "requested", slots: { customRender: "transferRequested" } },
+  { title: "Status", key: "status", slots: { customRender: "transferStatus" } },
+  { title: "Action", key: "action", slots: { customRender: "transferAction" } },
+];
+
+const transferStatusColor = (record) => {
+  if (record?.approval_status === "approved") return "green";
+  if (record?.approval_status === "rejected") return "red";
+  return "blue";
+};
+
+const transferReasonValue = (value) =>
+  value && String(value).trim() ? String(value).trim() : "—";
+
+const formatTransferDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(String(value).replace(" ", "T"));
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+};
+
+/**
+ * The caller's destination villages. `villages/list` is already scoped to the
+ * user's own sub-location by the backend (and carries both ids), so it is the
+ * one source of truth for "a village within my sub-location".
+ */
+const ensureTransferVillages = async () => {
+  if (Object.keys(transferVillagesById.value).length) return transferVillagesById.value;
+
+  try {
+    const scopeId = Number(activeScopeLocationId.value) || 0;
+    const rows = {};
+    let page = 1;
+    let lastPage = 1;
+
+    // `villages/list` is already scoped to the caller's own sub-location by the
+    // backend (it matches the user's location against every ancestor column),
+    // 200 per page — walk the pages so nothing is truncated.
+    do {
+      const { data } = await axios.get(
+        `villages/list?page=${page}&per_page=200${scopeId ? `&location_id=${scopeId}` : ""}`
+      );
+
+      (data?.data || []).forEach((village) => {
+        const id = Number(village.id) || 0;
+        if (id) rows[id] = village;
+      });
+
+      lastPage = Number(data?.pagination?.total_pages) || 1;
+      page += 1;
+    } while (page <= lastPage && page <= 5);
+
+    transferVillagesById.value = { ...transferVillagesById.value, ...rows };
+  } catch (error) {
+    // Keep the cache empty; labels fall back to the raw ids.
+  }
+
+  return transferVillagesById.value;
+};
+
+const transferVillageRow = (villageId) => transferVillagesById.value[Number(villageId) || 0] || null;
+
+// Destination villages of the sub-location currently being transferred into,
+// cached so searching a household and then opening the modal costs one request.
+const transferDestinationCache = reactive({ sublocationId: null, rows: [] });
+
+/**
+ * Villages that sit in one sub-location (`administrative_unit?sublocation_id=`).
+ * Each row carries `id` — the `administrative_units.id` a household's
+ * `location_id` stores — and `village_id`, the `org_units` id the posts
+ * endpoint resolves villages with.
+ */
+const fetchTransferSublocationVillages = async (sublocationId) => {
+  const id = Number(sublocationId) || 0;
+  if (!id) return [];
+
+  const collected = [];
+  let page = 1;
+  let lastPage = 1;
+
+  try {
+    // The endpoint paginates 50 per page — walk the pages (cap at 5 = 250).
+    do {
+      const { data } = await axios.get(`administrative_unit?sublocation_id=${id}&page=${page}`);
+
+      (data?.data || []).forEach((row) => {
+        const villageId = Number(row.id) || 0;
+        if (!villageId) return;
+
+        const village = {
+          id: villageId,
+          village_id: Number(row.village_id) || 0,
+          name: row.village || row.name || `Village #${villageId}`,
+          sublocation: row.sublocation || null,
+          sublocation_id: id,
+        };
+
+        collected.push(village);
+        transferVillagesById.value = { ...transferVillagesById.value, [villageId]: village };
+      });
+
+      lastPage = Number(data?.pagination?.total_pages) || 1;
+      page += 1;
+    } while (page <= lastPage && page <= 5);
+  } catch (error) {
+    return collected;
+  }
+
+  return collected;
+};
+
+/**
+ * A household may be transferred when it sits inside the caller's own area of
+ * coverage. The caller's org unit is compared against every ancestor recorded on
+ * the household (county → sub-location), mirroring how `villages/list` scopes a
+ * user: a CHA whose location is a sub-county matches `hh_subcounty_id`, one
+ * bound to a sub-location matches `hh_sublocation_id`.
+ */
+const householdInTransferScope = (household) => {
+  const scopeId = Number(activeScopeLocationId.value) || 0;
+  if (!scopeId) return true;
+
+  return [
+    household?.location_id,
+    household?.hh_sublocation_id,
+    household?.hh_location_id,
+    household?.hh_ward_id,
+    household?.hh_subcounty_id,
+    household?.hh_county_id,
+  ].some((carriedId) => Number(carriedId) === scopeId);
+};
+
+const transferVillageLabel = (record) => {
+  const id = Number(record?.location_id) || 0;
+  if (!id) return "—";
+  const village = transferVillageRow(id);
+  return village ? village.name : transferVillageNamesById.value[id] || `Village #${id}`;
+};
+
+/**
+ * Village name for an `administrative_units.id` that is not in the scoped list —
+ * `village_hh` resolves a village by exactly that id, so the household card and
+ * the queue can still show a name instead of "Village #1234".
+ */
+const fetchTransferVillageName = async (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return null;
+  if (transferVillageRow(id)?.name) return transferVillageRow(id).name;
+  if (transferVillageNamesById.value[id]) return transferVillageNamesById.value[id];
+
+  try {
+    const { data } = await axios.get(`village_hh?village_id=${id}&per_page=1`);
+    const name = data?.village?.name || null;
+
+    if (name) {
+      transferVillageNamesById.value = { ...transferVillageNamesById.value, [id]: name };
+    }
+
+    return name;
+  } catch (error) {
+    return null;
+  }
+};
+
+/** Posts mapped to the village's sub-location (`sublocation_posts`). */
+const ensureTransferPosts = async (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return [];
+  if (transferPostsByVillageId.value[id] !== undefined) return transferPostsByVillageId.value[id];
+
+  let village = transferVillageRow(id);
+
+  if (!village) {
+    // Not cached yet (e.g. a queue row) — resolve it from the scoped list.
+    await ensureTransferVillages();
+    village = transferVillageRow(id);
+  }
+
+  if (!village?.village_id) {
+    transferPostsByVillageId.value = { ...transferPostsByVillageId.value, [id]: [] };
+    return [];
+  }
+
+  try {
+    // The endpoint resolves the village through org_units, so it needs the
+    // village's `village_id` (org_units id) — not administrative_units.id.
+    const { data } = await axios.get(`sublocation_posts?village_id=${Number(village.village_id)}`);
+    const options = (data?.data || []).map((post) => ({
+      value: Number(post.id),
+      label: post.name || post.post || `Post #${post.id}`,
+    }));
+
+    transferPostsByVillageId.value = { ...transferPostsByVillageId.value, [id]: options };
+    return options;
+  } catch (error) {
+    transferPostsByVillageId.value = { ...transferPostsByVillageId.value, [id]: [] };
+    return [];
+  }
+};
+
+const transferPostLabel = (record) => {
+  const villageId = Number(record?.location_id) || 0;
+  const postId = Number(record?.post_id) || 0;
+  if (!postId) return "—";
+  return transferPostNames.value[`${villageId}:${postId}`] || `Post #${postId}`;
+};
+
+/** Resolve the village + post names a page of transfer rows shows. */
+const prefetchTransferLabels = async (rows) => {
+  await ensureTransferVillages();
+
+  // Queue rows can point at villages outside the caller's scoped list.
+  const unresolvedVillageIds = [...new Set(rows.map((row) => Number(row.location_id) || 0))].filter(
+    (id) => id && !transferVillageRow(id) && !transferVillageNamesById.value[id]
+  );
+
+  await Promise.all(unresolvedVillageIds.map((id) => fetchTransferVillageName(id)));
+
+  const pairs = rows
+    .map((row) => ({ villageId: Number(row.location_id) || 0, postId: Number(row.post_id) || 0 }))
+    .filter(
+      ({ villageId, postId }) =>
+        villageId && postId && transferPostNames.value[`${villageId}:${postId}`] === undefined
+    );
+
+  await Promise.all(
+    pairs.map(async ({ villageId, postId }) => {
+      const options = await ensureTransferPosts(villageId);
+      const found = options.find((option) => option.value === postId);
+      transferPostNames.value = {
+        ...transferPostNames.value,
+        [`${villageId}:${postId}`]: found ? found.label : `Post #${postId}`,
+      };
+    })
+  );
+};
+
+/** The caller's transfer requests (the whole queue for an approver). */
+const fetchTransfers = async (page = 1) => {
+  transfersLoading.value = true;
+  transfersError.value = "";
+  try {
+    const status = String(transferStatusFilter.value || "").trim();
+    const { data } = await axios.get(
+      `transfers?page=${page}&per_page=${TRANSFERS_PAGE_SIZE}${
+        status ? `&approval_status=${encodeURIComponent(status)}` : ""
+      }`
+    );
+    const pageRows = data?.data || [];
+    // The list endpoint has no "mine" filter: a CHA only acts on the requests
+    // they raised, while approvers review every pending request of the campaign.
+    const rows = canApproveTransfers.value
+      ? pageRows
+      : pageRows.filter((row) => Number(row.transferred_by) === transferCurrentUserId.value);
+
+    transfers.value = rows;
+    transfersPagination.current = Number(data?.current_page) || page;
+    transfersPagination.pageSize = Number(data?.per_page) || TRANSFERS_PAGE_SIZE;
+    transfersPagination.total = canApproveTransfers.value
+      ? Number(data?.total) || rows.length
+      : rows.length;
+
+    await prefetchTransferLabels(rows);
+  } catch (error) {
+    transfers.value = [];
+    transfersPagination.total = 0;
+
+    const status = Number(error?.response?.status) || 0;
+    if (status === 403) {
+      transfersError.value = "You do not have permission to view household transfers.";
+    } else if (status >= 500) {
+      transfersError.value =
+        "The transfer list could not be loaded. New transfers can still be raised below — refresh in a moment.";
+    } else {
+      transfersError.value =
+        error?.response?.data?.message || "Could not load the transfer list.";
+    }
+  } finally {
+    transfersLoading.value = false;
+  }
+};
+
+/** Step 1 — find the household to move (verified + active only). */
+const searchTransferHousehold = async () => {
+  const idNo = String(transferSearch.idNo || "").trim();
+  transferSearch.error = "";
+  transferSearch.result = null;
+  transferSearch.pending = false;
+
+  if (!idNo) {
+    transferSearch.error = "Enter the household head's ID number.";
+    return;
+  }
+
+  transferSearch.loading = true;
+  try {
+    const { data } = await axios.get(`transfers/search-household?id_no=${encodeURIComponent(idNo)}`);
+    const household = data?.data || null;
+
+    if (!household) {
+      transferSearch.error = "No verified, active household found with that ID number.";
+      return;
+    }
+
+    // The household must sit inside the caller's own area of coverage. A CHA's
+    // `location_id` is usually the sub-county, so the match is against ANY
+    // ancestor the household records (sub-county, ward, location, sub-location).
+    if (!householdInTransferScope(household)) {
+      transferSearch.error =
+        "This household is outside your area of coverage, so it cannot be transferred from here.";
+      return;
+    }
+
+    const householdSubLocationId = Number(household.hh_sublocation_id) || 0;
+
+    transferSearch.result = {
+      ...household,
+      village_name: household.location_id ? `Village #${household.location_id}` : null,
+      sublocation_name: null,
+      destination_count: 0,
+      can_transfer: householdSubLocationId > 0,
+      cannot_transfer_reason: householdSubLocationId
+        ? ""
+        : "This household has no sub-location recorded, so the villages to move it to cannot be resolved.",
+    };
+    rememberTransferHousehold(household);
+
+    // Resolve the current village name, then load the destination villages of
+    // the household's sub-location (the transfer modal reuses that response).
+    const scopedVillages = await ensureTransferVillages();
+    const currentVillage = scopedVillages[Number(household.location_id)];
+
+    if (currentVillage) {
+      transferSearch.result.village_name = currentVillage.name;
+    } else if (household.location_id) {
+      // The household's village can sit outside the caller's scoped list.
+      const resolvedName = await fetchTransferVillageName(household.location_id);
+      if (resolvedName) transferSearch.result.village_name = resolvedName;
+    }
+
+    if (householdSubLocationId) {
+      const destinations = await loadTransferDestinationVillages(household);
+
+      transferSearch.result.sublocation_name =
+        destinations.find((village) => village.sublocation)?.sublocation || null;
+
+      transferSearch.result.destination_count = destinations.filter(
+        (village) => Number(village.id) > 0 && Number(village.id) !== Number(household.location_id)
+      ).length;
+
+      if (!transferSearch.result.destination_count) {
+        transferSearch.result.can_transfer = false;
+        transferSearch.result.cannot_transfer_reason =
+          "No other village was found in this household's sub-location, so there is nowhere to transfer it to.";
+      }
+    }
+  } catch (error) {
+    transferSearch.error = error?.response?.data?.message || "Could not search for that household.";
+  } finally {
+    transferSearch.loading = false;
+  }
+};
+
+/**
+ * Step 2 — the village picker. Destination villages are the villages of the
+ * household's sub-location (which is the CHA's area of coverage), i.e. exactly
+ * "a village within their sub-location". Returns the rows so callers can tell
+ * whether the sub-location even has somewhere to move to.
+ */
+const loadTransferDestinationVillages = async (household = null) => {
+  const target = household || transferModal.household;
+  const sublocationId = Number(target?.hh_sublocation_id) || 0;
+  const currentVillageId = Number(target?.location_id) || 0;
+
+  transferModal.villagesLoading = true;
+  try {
+    let rows = [];
+
+    if (sublocationId) {
+      rows =
+        transferDestinationCache.sublocationId === sublocationId
+          ? transferDestinationCache.rows
+          : await fetchTransferSublocationVillages(sublocationId);
+
+      transferDestinationCache.sublocationId = sublocationId;
+      transferDestinationCache.rows = rows;
+    } else {
+      // No sub-location recorded on the household: fall back to every village
+      // the caller may see (`villages/list` is scoped to their own location).
+      rows = Object.values(await ensureTransferVillages());
+    }
+
+    transferModal.villageOptions = rows
+      .filter((village) => Number(village.id) > 0 && Number(village.id) !== currentVillageId)
+      .map((village) => ({
+        // administrative_units.id — the id a household's `location_id` stores.
+        value: Number(village.id),
+        label: village.name || `Village #${village.id}`,
+      }));
+
+    return rows;
+  } catch (error) {
+    transferModal.villageOptions = [];
+    return [];
+  } finally {
+    transferModal.villagesLoading = false;
+  }
+};
+
+/** Step 3 — the post picker: posts mapped to the village's sub-location. */
+const onTransferVillageChange = async (villageId) => {
+  transferModal.postId = null;
+  transferModal.postOptions = [];
+  const id = Number(villageId) || 0;
+  if (!id) return;
+
+  transferModal.postsLoading = true;
+  try {
+    transferModal.postOptions = await ensureTransferPosts(id);
+  } finally {
+    transferModal.postsLoading = false;
+  }
+};
+
+const canSubmitTransfer = computed(
+  () =>
+    Boolean(transferModal.household) &&
+    Boolean(transferModal.villageId) &&
+    Boolean(transferModal.postId) &&
+    String(transferModal.reason || "").trim().length > 0
+);
+
+const openTransferModal = async () => {
+  const household = transferSearch.result;
+  if (!household || !household.can_transfer) return;
+
+  transferModal.household = household;
+  transferModal.open = true;
+  transferModal.saving = false;
+  transferModal.villageId = null;
+  transferModal.postId = null;
+  transferModal.postOptions = [];
+  transferModal.reason = "";
+
+  await loadTransferDestinationVillages();
+};
+
+const submitTransfer = async () => {
+  const household = transferModal.household;
+  if (!household || !canSubmitTransfer.value) {
+    notification.warning({
+      message: "Incomplete transfer",
+      description: "Pick the destination village and post, and give a reason.",
+    });
+    return;
+  }
+
+  transferModal.saving = true;
+  try {
+    await axios.post("transfers", {
+      household_id: Number(household.id),
+      // Destination village as administrative_units.id — the id a household's
+      // `location_id` (and this history table) stores.
+      location_id: Number(transferModal.villageId),
+      post_id: Number(transferModal.postId),
+      transfer_reason: String(transferModal.reason).trim(),
+      // The destination is inside the same sub-location as the household (the
+      // picker only offers those villages), so the household's recorded chain
+      // stays valid for the new record and is sent as-is.
+      hh_county_id: household.hh_county_id ?? null,
+      hh_subcounty_id: household.hh_subcounty_id ?? null,
+      hh_ward_id: household.hh_ward_id ?? null,
+      hh_location_id: household.hh_location_id ?? null,
+      hh_sublocation_id: household.hh_sublocation_id ?? null,
+    });
+
+    transferModal.open = false;
+    transferSearch.pending = true;
+
+    notification.success({
+      message: "Transfer request submitted",
+      description:
+        "It stays pending until the SCMCC approves it — the household keeps its current location until then.",
+    });
+
+    await fetchTransfers(1);
+  } catch (error) {
+    notification.error({
+      message: "Transfer failed",
+      description: error?.response?.data?.message || "Could not submit the transfer.",
+    });
+  } finally {
+    transferModal.saving = false;
+  }
+};
+
+/** Approve / reject — only rendered for holders of the approval permissions. */
+const decideTransfer = (record, decision) => {
+  const approving = decision === "approve";
+
+  Modal.confirm({
+    title: approving ? "Approve transfer" : "Reject transfer",
+    content: approving
+      ? `Move the household to ${transferVillageLabel(record)} and assign it to the selected post?`
+      : `Reject the transfer to ${transferVillageLabel(record)}? The household keeps its current location.`,
+    okText: approving ? "Approve" : "Reject",
+    okButtonProps: { danger: !approving },
+    async onOk() {
+      try {
+        await axios.post(`transfers/${record.id}/${decision}`);
+        notification.success({ message: approving ? "Transfer approved" : "Transfer rejected" });
+        await fetchTransfers(transfersPagination.current);
+      } catch (error) {
+        notification.error({
+          message: approving ? "Approval failed" : "Rejection failed",
+          description: error?.response?.data?.message || "Please try again.",
+        });
+      }
+    },
+  });
+};
+
+const approveTransfer = (record) => decideTransfer(record, "approve");
+const rejectTransfer = (record) => decideTransfer(record, "reject");
+
+// Load the queue the first time the tab is opened (or on a direct visit).
+watch(
+  () => currentSection.value,
+  (section) => {
+    if (section === "transfers" && canAccessTransferTab.value) {
+      fetchTransfers(1).catch(() => {});
+    }
+  },
+  { immediate: true }
+);
 
 const fetchCounties = async () => {
   try {
@@ -1827,16 +3004,18 @@ const confirmHousehold = async () => {
 const toggleMutePanel = () => {
   showMutePanel.value = !showMutePanel.value;
   showChangePanel.value = false;
+  showSwitchHeadPanel.value = false;
 };
 
 const toggleChangePanel = () => {
   showChangePanel.value = !showChangePanel.value;
   showMutePanel.value = false;
+  showSwitchHeadPanel.value = false;
 };
 
 // Advance the modal to the next household in the current village list
-// without unmounting it. Used after Confirm / Mute / Request change so the
-// CHA can keep reviewing without re-opening the modal each time.
+// without unmounting it. Used after Confirm / Mute / Request change / Switch
+// head so the CHA can keep reviewing without re-opening the modal each time.
 const advanceToNextHousehold = () => {
   const list = activeHouseholds.value;
   if (!list.length) return;
@@ -1847,6 +3026,7 @@ const advanceToNextHousehold = () => {
       : null;
   showMutePanel.value = false;
   showChangePanel.value = false;
+  showSwitchHeadPanel.value = false;
   if (nextHouseholdId) {
     activeHouseholdId.value = nextHouseholdId;
   } else {
@@ -3760,6 +4940,35 @@ const handleModalKeydown = (event) => {
     box-shadow: 0 8px 20px rgba(192, 57, 43, 0.32);
   }
 
+  /* Switch HH head — blue accents so the workflow reads as an edit of the
+     household's own details (neither a mute nor a generic change request). */
+  .form-panel.switch-head .field .ant-input,
+  .form-panel.switch-head .field .ant-select-selector {
+    border-color: #c9ddf2 !important;
+  }
+  .form-panel.switch-head .field .ant-input:focus,
+  .form-panel.switch-head .field .ant-input-focused,
+  .form-panel.switch-head .field .ant-select-focused .ant-select-selector {
+    border-color: #1d5f9c !important;
+    box-shadow: 0 0 0 2px rgba(29, 95, 156, 0.15) !important;
+  }
+  .form-panel.switch-head .panel-footer {
+    background: rgba(246, 250, 255, 0.7);
+    border-top-color: #e1ecf8;
+  }
+  .form-panel .panel-cta.switch-head-cta {
+    background: #1d5f9c;
+    border-color: #1d5f9c;
+    box-shadow: 0 6px 16px rgba(29, 95, 156, 0.22);
+  }
+  .form-panel .panel-cta.switch-head-cta:hover:not(:disabled),
+  .form-panel .panel-cta.switch-head-cta:focus:not(:disabled) {
+    background: #17507f;
+    border-color: #17507f;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(29, 95, 156, 0.3);
+  }
+
   // Legacy inline-form kept for any remaining callers; rendered as a simple stack.
   .inline-form {
     display: grid;
@@ -3825,5 +5034,154 @@ const handleModalKeydown = (event) => {
     .who .name { font-size: 19px; }
     .stat-value { font-size: 32px; }
   }
+}
+
+// ── Household transfers (CHA → village/post inside their sub-location) ──
+.transfer-cta.ant-btn {
+  border-radius: 10px;
+}
+
+.transfers-panel {
+  margin: 0 28px 28px;
+  padding: 18px 20px;
+  border: 1px solid #dce8e1;
+  border-radius: 16px;
+  background: #ffffff;
+
+  .transfers-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+
+    h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #15693c;
+    }
+
+    .transfers-sub {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #6b7a70;
+    }
+  }
+
+  .transfers-table { margin-top: 8px; }
+}
+
+.transfer-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f4f9f6;
+  border: 1px solid #dce8e1;
+
+  .transfer-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #6b7a70;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1d2b22;
+    }
+  }
+}
+
+.transfer-form {
+  .ant-form-item { margin-bottom: 14px; }
+}
+
+// Transfers tab: header, search row, result card and table cells.
+.transfers-page {
+  .transfers-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+
+    h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1d2b22;
+    }
+
+    p {
+      margin: 0;
+      max-width: 780px;
+      font-size: 13px;
+      color: #6b7a70;
+    }
+  }
+
+  .transfer-search-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .transfer-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: #6b7a70;
+  }
+
+  .transfer-alert { margin-top: 12px; }
+
+  .transfer-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .transfer-household {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #dce8e1;
+    border-radius: 12px;
+    background: #fbfdfc;
+
+    .transfer-facts { margin-bottom: 12px; }
+  }
+
+  .transfer-household-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .transfer-cell-strong {
+    font-weight: 600;
+    color: #1d2b22;
+  }
+
+  .transfer-cell-sub {
+    font-size: 12px;
+    color: #6b7a70;
+  }
+
+  .transfer-danger { color: #b42318; }
 }
 </style>

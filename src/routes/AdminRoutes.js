@@ -796,6 +796,18 @@ const routes = [
     props: { section: "households" },
     meta: { householdRestricted: true },
   },
+  // Household transfers (CHA): search a household, transfer it to a village in
+  // the CHA's sub-location and assign it to a post inside that sub-location.
+  {
+    path: "/household/validation/transfers",
+    name: "hh-validation-transfers",
+    component: () =>
+      import(
+        /* webpackChunkName: "Search" */ "@/view/pages/household/HouseHoldValidation.vue"
+      ),
+    props: { section: "transfers" },
+    meta: { householdRestricted: true },
+  },
   {
     path: "/household/validation/feedback",
     name: "hh-validation-feedback",
