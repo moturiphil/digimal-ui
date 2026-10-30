@@ -211,6 +211,74 @@ const routes = [
         name: "view-campaigns",
         component: () => import("@/view/pages/campaigns/viewCampaigns.vue"),
       },
+      // ── M&E (campaign supervision checklists) ────────────────────────────
+      {
+        path: "/me/stages",
+        name: "me-stages",
+        component: () => import("@/view/pages/me/StagesPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_compliance_view"] },
+      },
+      {
+        path: "/me/checklists",
+        name: "me-checklists",
+        component: () => import("@/view/pages/me/ChecklistsPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_compliance_view"] },
+      },
+      {
+        path: "/me/checklists/:id",
+        name: "me-checklist-detail",
+        props: true,
+        component: () => import("@/view/pages/me/ChecklistDetailPage.vue"),
+        meta: {
+          auth: true,
+          allowedPermissions: [
+            "me_compliance_view",
+            "me_checklist_manage",
+            "me_checklist_sections_questions",
+            "me_checklist_submit",
+          ],
+        },
+      },
+      {
+        path: "/me/checklists/:id/respond",
+        name: "me-checklist-respond",
+        props: true,
+        component: () => import("@/view/pages/me/ChecklistRespondPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_checklist_submit"] },
+      },
+      {
+        path: "/me/my-checklists",
+        name: "me-my-checklists",
+        component: () => import("@/view/pages/me/MyChecklistsPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_checklist_submit"] },
+      },
+      {
+        path: "/me/submissions",
+        name: "me-submissions",
+        component: () => import("@/view/pages/me/SubmissionsPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_compliance_view"] },
+      },
+      {
+        path: "/me/my-submissions",
+        name: "me-my-submissions",
+        props: { scope: "mine" },
+        component: () => import("@/view/pages/me/SubmissionsPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_checklist_submit"] },
+      },
+      {
+        path: "/me/submissions/:ref",
+        name: "me-submission-detail",
+        // `ref` is a reserved prop name in Vue, so map it to `submissionRef`.
+        props: (route) => ({ submissionRef: route.params.ref }),
+        component: () => import("@/view/pages/me/SubmissionDetailPage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_compliance_view"] },
+      },
+      {
+        path: "/me/compliance",
+        name: "me-compliance",
+        component: () => import("@/view/pages/me/CompliancePage.vue"),
+        meta: { auth: true, allowedPermissions: ["me_compliance_view"] },
+      },
       {
         // NATIONAL tier (level 1) only — county (2) and sub-county (3) users
         // are bounced to /403 by the router guard. Mirrors the sidebar gate.

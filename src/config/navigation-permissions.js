@@ -278,6 +278,29 @@ export const GATE_DEFINITIONS = Object.freeze({
       "AIE Holder",
     ],
   },
+  // ── M&E campaign supervision checklists ──────────────────────────────────
+  // Permission names mirror the backend `role_permission:` middleware on the
+  // me/* routes (see DigiMalBackend/routes/api.php).
+  canViewMeCompliance: {
+    permissions: ["me_compliance_view"],
+    roles: ["Super Admin"],
+  },
+  canManageMeChecklists: {
+    permissions: ["me_checklist_manage"],
+    roles: ["Super Admin"],
+  },
+  canSubmitMeChecklists: {
+    permissions: ["me_checklist_submit"],
+    roles: ["Super Admin"],
+  },
+  canCompleteMeStages: {
+    permissions: ["me_stage_complete"],
+    roles: ["Super Admin"],
+  },
+  canViewMeChecklistStructure: {
+    permissions: ["me_checklist_sections_questions"],
+    roles: ["Super Admin"],
+  },
 });
 
 
@@ -309,6 +332,18 @@ export const NAV_MODULES = Object.freeze([
     pages: compact([
       { label: "Create Campaign", path: "/campaigns/create-campaign", permissions: ["create_campaign"] },
       { label: "List Campaigns", path: "/campaigns/view-campaign", permissions: ["campaigns_list"] },
+    ]),
+  },
+  {
+    key: "me",
+    label: "M&E",
+    pages: compact([
+      { label: "Stages", path: "/me/stages", permissions: ["me_compliance_view"] },
+      { label: "Checklists", path: "/me/checklists", permissions: ["me_compliance_view"] },
+      { label: "My Checklists", path: "/me/my-checklists", permissions: ["me_checklist_submit"] },
+      { label: "Submissions", path: "/me/submissions", permissions: ["me_compliance_view"] },
+      { label: "My Submissions", path: "/me/my-submissions", permissions: ["me_checklist_submit"] },
+      { label: "Compliance", path: "/me/compliance", permissions: ["me_compliance_view"] },
     ]),
   },
   {
