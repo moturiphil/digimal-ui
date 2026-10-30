@@ -51,6 +51,29 @@
           </router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-sub-menu key="me" v-if="canAccessMe">
+        <template v-slot:title>
+          <sdFeatherIcons type="clipboard" /><span>M&amp;E</span>
+        </template>
+        <a-menu-item key="meStages" v-if="canViewMeCompliance">
+          <router-link to="/me/stages">Stages</router-link>
+        </a-menu-item>
+        <a-menu-item key="meChecklists" v-if="canViewMeCompliance">
+          <router-link to="/me/checklists">Checklists</router-link>
+        </a-menu-item>
+        <a-menu-item key="meMyChecklists" v-if="canSubmitMeChecklists">
+          <router-link to="/me/my-checklists">My Checklists</router-link>
+        </a-menu-item>
+        <a-menu-item key="meSubmissions" v-if="canViewMeCompliance">
+          <router-link to="/me/submissions">Submissions</router-link>
+        </a-menu-item>
+        <a-menu-item key="meMySubmissions" v-if="canSubmitMeChecklists">
+          <router-link to="/me/my-submissions">My Submissions</router-link>
+        </a-menu-item>
+        <a-menu-item key="meCompliance" v-if="canViewMeCompliance">
+          <router-link to="/me/compliance">Compliance</router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-sub-menu key="budgeting" v-if="canAccessBudgeting">
         <template v-slot:title>
           <sdFeatherIcons type="bar-chart-2" /><span>Budgeting</span>
@@ -635,6 +658,18 @@ export default defineComponent({
     // the central registry so the Access Control page can manage it.
     const canCreateCampaign = satisfiesGate(GATE_DEFINITIONS.canCreateCampaign);
     const canViewCampaign = satisfiesGate(GATE_DEFINITIONS.canViewCampaign);
+    // M&E (campaign supervision checklists)
+    const canViewMeCompliance = satisfiesGate(GATE_DEFINITIONS.canViewMeCompliance);
+    const canManageMeChecklists = satisfiesGate(GATE_DEFINITIONS.canManageMeChecklists);
+    const canSubmitMeChecklists = satisfiesGate(GATE_DEFINITIONS.canSubmitMeChecklists);
+    const canCompleteMeStages = satisfiesGate(GATE_DEFINITIONS.canCompleteMeStages);
+    const canAccessMe = computed(
+      () =>
+        canViewMeCompliance.value ||
+        canManageMeChecklists.value ||
+        canSubmitMeChecklists.value ||
+        canCompleteMeStages.value
+    );
     const canCreateEvent = satisfiesGate(GATE_DEFINITIONS.canCreateEvent);
     const canViewEvent = satisfiesGate(GATE_DEFINITIONS.canViewEvent);
     const canCreateActivity = satisfiesGate(GATE_DEFINITIONS.canCreateActivity);
@@ -815,6 +850,11 @@ export default defineComponent({
       canViewFinancialAnalysis,
       canViewNationalBudget,
       canViewCampaign,
+      canAccessMe,
+      canViewMeCompliance,
+      canManageMeChecklists,
+      canSubmitMeChecklists,
+      canCompleteMeStages,
       canCreateEvent,
       canViewEvent,
       canCreateActivity,

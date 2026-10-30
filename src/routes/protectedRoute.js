@@ -72,6 +72,22 @@ router.beforeEach((to, from, next) => {
     .map((r) => r.meta?.allowedRoles)
     .filter(Boolean)
     .pop();
+  // Permission-name gate (ANY-of), mirroring the backend `role_permission:`
+  // middleware. Only routes that set meta.allowedPermissions are affected.
+  const userPermissionNames = new Set(
+    [
+      ...(((profile.role && profile.role.permissions) || []).map(
+        (permission) => (permission && permission.name) || permission
+      )),
+      ...((profile.permissions || []).map(
+        (permission) => (permission && permission.name) || permission
+      )),
+    ].filter(Boolean)
+  );
+  const allowedPermissions = to.matched
+    .map((r) => r.meta?.allowedPermissions)
+    .filter(Boolean)
+    .pop();
   const allowedOrgTypes = to.matched
     .map((r) => r.meta?.allowedOrgTypes)
     .filter(Boolean)
@@ -100,6 +116,16 @@ router.beforeEach((to, from, next) => {
     if (
       allowedRoles &&
       !allowedRoles.some((r) => r === userRoleId || r === userRoleName)
+    ) {
+      resetInactivityTimer();
+      next({ path: "/403" });
+      return;
+    }
+
+    // Permission gate: a hand-typed URL lands on /403 instead of an empty page.
+    if (
+      allowedPermissions &&
+      !allowedPermissions.some((permission) => userPermissionNames.has(permission))
     ) {
       resetInactivityTimer();
       next({ path: "/403" });
