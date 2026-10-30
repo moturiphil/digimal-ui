@@ -83,6 +83,7 @@
                         show-search
                         option-filter-prop="label"
                         v-model:value="formState.name"
+                        @change="onEventTypeChange"
                         @blur="validate('name')"
                         @keypress="validate('name')"
                       >
@@ -828,6 +829,25 @@ const AddNew = defineComponent({
       }
     };
 
+    // Event types carry their template's default fuel requirement (`has_fuel`).
+    // Mirror it onto the Fuel checkbox when the type changes so procurement
+    // users see from the start that fuel documents (fuel receipt + work
+    // ticket) will be required at closure. The checkbox can still be
+    // unticked before saving when the event will not use fuel.
+    const onEventTypeChange = (eventListId) => {
+      if (!showProcurementSection.value) return;
+      const list = Array.isArray(this.events_list) ? this.events_list : [];
+      const selected = list.find(
+        (event) => String(event.id) === String(eventListId)
+      );
+      if (
+        selected &&
+        Object.prototype.hasOwnProperty.call(selected, "has_fuel")
+      ) {
+        formState.requires_fuel = !!Number(selected.has_fuel);
+      }
+    };
+
     // ── Schedule: start date + computed end date ──
     // The event's end date is derived from the start date plus the number of
     // days (e.g. a 3-day event starting 2026-09-04 ends 2026-09-06). This is
@@ -1111,6 +1131,7 @@ const AddNew = defineComponent({
       venueAutoCompleteOptions,
       filterVenueOption,
       onLsoChange,
+      onEventTypeChange,
       isExpiredLso,
       disabledStartDate,
       onStartDateChange,

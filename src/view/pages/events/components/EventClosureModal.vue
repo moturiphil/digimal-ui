@@ -133,14 +133,15 @@
           </a-form>
         </section>
 
-        <!-- Fuel receipts per vehicle -->
+        <!-- Fuel receipts + work tickets per vehicle -->
         <section v-if="status.requires_fuel" class="ec-section">
           <h4 class="ec-section-title">
-            <sdFeatherIcons type="truck" size="14" /> Vehicle Fuel Receipts
+            <sdFeatherIcons type="truck" size="14" /> Vehicle Fuel Receipts &amp; Work Tickets
           </h4>
           <p class="ec-hint">
-            Add each vehicle's license plate, fuel amount and the fuel
-            receipt/work ticket.
+            Add each vehicle's license plate, fuel amount, the fuel receipt
+            (ETR) and the work ticket. Both documents are required for every
+            vehicle before the event can be closed.
           </p>
 
           <!-- Existing vehicles -->
@@ -149,27 +150,35 @@
               v-for="v in vehicles"
               :key="v.id"
               class="ec-vehicle"
-              :class="{ 'is-missing': !vehicleHasReceipt(v) }"
+              :class="{ 'is-missing': !vehicleHasReceipt(v) || !vehicleHasWorkTicket(v) }"
             >
               <div class="ec-vehicle-head">
                 <span class="ec-plate">{{ v.license_plate_number }}</span>
-                <span
-                  class="ec-chip"
-                  :class="vehicleHasReceipt(v) ? 'ok' : 'pending'"
-                >
-                  {{ vehicleHasReceipt(v) ? "Receipt uploaded" : "Receipt missing" }}
+                <span class="ec-chips">
+                  <span
+                    class="ec-chip"
+                    :class="vehicleHasReceipt(v) ? 'ok' : 'pending'"
+                  >
+                    {{ vehicleHasReceipt(v) ? "Fuel receipt ✓" : "Fuel receipt missing" }}
+                  </span>
+                  <span
+                    class="ec-chip"
+                    :class="vehicleHasWorkTicket(v) ? 'ok' : 'pending'"
+                  >
+                    {{ vehicleHasWorkTicket(v) ? "Work ticket ✓" : "Work ticket missing" }}
+                  </span>
                 </span>
               </div>
             </li>
           </ul>
 
-          <!-- Add a fuel receipt -->
+          <!-- Add a fuel receipt + work ticket -->
           <a-form layout="vertical" class="ec-fuel-form">
             <div class="ec-fuel-grid">
               <a-form-item label="License plate">
                 <a-input
                   v-model:value="fuelForm.license_plate_number"
-                  placeholder="e.g. KDA 123A"
+                  placeholder="e.g. KDA 123A / GKA 543S / 019 CG 234A"
                 />
               </a-form-item>
               <a-form-item label="Fuel amount (KES)">
@@ -182,13 +191,26 @@
                 />
               </a-form-item>
             </div>
-            <a-form-item label="Receipt document">
+            <a-form-item label="Fuel receipt (ETR) document">
               <a-upload
                 :file-list="fuelFileList"
                 :before-upload="onPickFuelFile"
                 :max-count="1"
                 accept=".pdf,.jpg,.jpeg,.png"
                 @remove="clearFuelFile"
+              >
+                <sdButton size="small" type="light" outlined>
+                  <sdFeatherIcons type="upload" size="13" />&nbsp; Choose file
+                </sdButton>
+              </a-upload>
+            </a-form-item>
+            <a-form-item label="Work ticket document">
+              <a-upload
+                :file-list="fuelWorkTicketList"
+                :before-upload="onPickFuelWorkTicket"
+                :max-count="1"
+                accept=".pdf,.jpg,.jpeg,.png"
+                @remove="clearFuelWorkTicket"
               >
                 <sdButton size="small" type="light" outlined>
                   <sdFeatherIcons type="upload" size="13" />&nbsp; Choose file
@@ -202,7 +224,7 @@
                 :disabled="!canUploadFuel || saving"
                 @click="uploadFuelReceipt"
               >
-                Add receipt
+                Add receipt &amp; work ticket
               </sdButton>
             </div>
           </a-form>
@@ -260,8 +282,9 @@ const lsoLoading = ref(false);
 const lsoForm = reactive({ vendor_lso_id: null });
 const venueForm = reactive({ invoice_amount: null, file: null });
 const venueFileList = ref([]);
-const fuelForm = reactive({ license_plate_number: "", fuel_amount: null, file: null });
+const fuelForm = reactive({ license_plate_number: "", fuel_amount: null, file: null, work_ticket: null });
 const fuelFileList = ref([]);
+const fuelWorkTicketList = ref([]);
 
 const vehicles = computed(() => status.vehicles || []);
 const requiresUploads = computed(() => !!status.requires_uploads);
@@ -285,6 +308,7 @@ const canClose = computed(() => {
 const canUploadFuel = computed(
   () =>
     !!fuelForm.file &&
+    !!fuelForm.work_ticket &&
     fuelForm.fuel_amount != null &&
     String(fuelForm.license_plate_number || "").trim().length >= 3
 );
@@ -344,6 +368,9 @@ const fetchOpenLsos = async () => {
 const vehicleHasReceipt = (v) =>
   Array.isArray(v.fuel_receipts) && v.fuel_receipts.length > 0;
 
+const vehicleHasWorkTicket = (v) =>
+  Array.isArray(v.work_tickets) && v.work_tickets.length > 0;
+
 const fileGuard = (file) => {
   const okType = [
     "application/pdf",
@@ -391,9 +418,29 @@ const clearFuelFile = () => {
   fuelFileList.value = [];
 };
 
+const onPickFuelWorkTicket = (file) => {
+  if (!fileGuard(file)) return false;
+  fuelForm.work_ticket = file;
+  fuelWorkTicketList.value = [{ uid: file.uid, name: file.name, status: "done" }];
+  return false;
+};
+const clearFuelWorkTicket = () => {
+  fuelForm.work_ticket = null;
+  fuelWorkTicketList.value = [];
+};
+
 const postUpload = async (formData) => {
   return axios.post(
     `create_vendor_upload/event/${props.event.id}`,
+    formData
+  );
+};
+
+// Fuel documents (fuel receipts + work tickets) live in the dedicated
+// fuel_records table — they are no longer vendor uploads.
+const postFuelRecords = async (formData) => {
+  return axios.post(
+    `create_fuel_records/event/${props.event.id}`,
     formData
   );
 };
@@ -436,17 +483,26 @@ const uploadVenueInvoice = async () => {
 const uploadFuelReceipt = async () => {
   saving.value = true;
   try {
+    // Batch format so the backend stores the fuel receipt and the work
+    // ticket for this vehicle in a single transaction — both documents are
+    // mandatory for every vehicle on a fuel event.
     const fd = new FormData();
-    fd.append("upload_type", "fuel_receipt");
-    fd.append("license_plate_number", String(fuelForm.license_plate_number).trim());
-    fd.append("fuel_amount", fuelForm.fuel_amount);
-    fd.append("file", fuelForm.file);
-    const res = await postUpload(fd);
+    fd.append(
+      "receipts[0][license_plate_number]",
+      String(fuelForm.license_plate_number).trim()
+    );
+    fd.append("receipts[0][fuel_amount]", fuelForm.fuel_amount);
+    fd.append("receipts[0][file]", fuelForm.file);
+    fd.append("receipts[0][work_ticket]", fuelForm.work_ticket);
+    const res = await postFuelRecords(fd);
     applyStatus(res.data?.data?.status || {});
     clearFuelFile();
+    clearFuelWorkTicket();
     fuelForm.license_plate_number = "";
     fuelForm.fuel_amount = null;
-    notification.success({ message: "Fuel receipt added" });
+    notification.success({
+      message: "Fuel receipt and work ticket added",
+    });
   } catch (e) {
     notifyUploadError(e);
   } finally {
@@ -610,6 +666,14 @@ const onCancel = () => {
   .ec-plate {
     font-weight: 700;
     color: #2f3a35;
+  }
+
+  .ec-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .ec-chip {
