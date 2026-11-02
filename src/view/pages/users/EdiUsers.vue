@@ -1,342 +1,331 @@
 <template>
-  <a-form :model="formState" autocomplete="off" @finish="handleSubmit">
-    <a-row :gutter="24">
-      <a-col :span="12">
-        <a-form-item
-          label="First Name"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-input
-            v-model:value="formState.first_name"
-            placeholder="First Name"
-          ></a-input>
-        </a-form-item>
-      </a-col>
-      <a-col :span="12">
-        <a-form-item
-          label="Last Name"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-input
-            v-model:value="formState.last_name"
-            placeholder="Last Name"
-          ></a-input>
-        </a-form-item>
-      </a-col>
-      <a-col :span="12">
-        <a-form-item
-          label="Middle Name"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-input
-            v-model:value="formState.middle_name"
-            placeholder="Middle Name"
-          ></a-input>
-        </a-form-item>
-      </a-col>
-      <a-col :span="12">
-        <a-form-item
-          label="ID No"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-input
-            v-model:value="formState.id_no"
-            placeholder="Id No"
-          ></a-input>
-        </a-form-item>
-      </a-col>
-    </a-row>
-    <a-row :gutter="24">
-      <a-col :span="12">
-        <a-form-item
-          label="Location"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-input
-            v-model:value="formState.location_id"
-            placeholder="Location"
-            :disabled="true"
-          ></a-input>
-        </a-form-item>
-      </a-col>
-      <a-col :span="12">
-        <a-form-item
-          label="Organisation"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <!-- <a-input
-            v-model:value="formState.org_types_id"
-            placeholder="Organisation"
-            :disabled="true"
-          ></a-input> -->
-          <a-select
-            v-model:value="formState.org_types_id"
-            v-if="!loading"
-            placeholder="Select Organization"
-            show-search
-            option-filter-prop="label"
-            v-on:change="getRoles($event)"
-          >
-            <a-select-option
-              v-for="organization in organizations"
-              :key="organization.id"
-              :value="organization.id"
-              :label="`${organization.name} `"
-            >
-              {{ organization.name }} -
-              {{ organization.description }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-      </a-col>
-    </a-row>
-    <a-row :gutter="24">
-      <a-col :span="12">
-        <a-form-item
-          label="Phone"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-input
-            v-model:value="formState.phone_no"
-            placeholder="Phone"
-            :disabled="allowedRole"
-          ></a-input>
-        </a-form-item>
-      </a-col>
-      <a-col :span="12">
-        <a-form-item
-          label="Role"
-          :label-col="{ span: 8 }"
-          :wrapper-col="{ span: 16 }"
-        >
-          <a-select
-            v-model:value="formState.role_id"
-            v-if="!loading"
-            placeholder="Select Role"
-            show-search
-            option-filter-prop="label"
-          >
-            <a-select-option
-              v-for="role in roles"
-              :key="role.id"
-              :value="role.id"
-              :label="`${role.name}`"
-            >
-              {{ role.name }}
-            </a-select-option>
-          </a-select>
-        </a-form-item>
-      </a-col>
-    </a-row>
-    <a-form-item :wrapper-col="{ offset: 4, span: 16 }">
-      <a-button
-        style="background: rgb(61, 166, 92); color: aliceblue"
-        html-type="submit"
-        @click="editUser"
-        >Submit</a-button
+  <a-form class="ue-form" layout="vertical" autocomplete="off" @finish="submit">
+    <div class="ue-grid">
+      <a-form-item
+        label="First name"
+        required
+        :validate-status="errors.first_name ? 'error' : ''"
+        :help="errors.first_name"
       >
-    </a-form-item>
+        <a-input v-model:value="formState.first_name" placeholder="First name" />
+      </a-form-item>
+
+      <a-form-item label="Middle name">
+        <a-input v-model:value="formState.middle_name" placeholder="Middle name (optional)" />
+      </a-form-item>
+
+      <a-form-item
+        label="Last name"
+        required
+        :validate-status="errors.last_name ? 'error' : ''"
+        :help="errors.last_name"
+      >
+        <a-input v-model:value="formState.last_name" placeholder="Last name" />
+      </a-form-item>
+
+      <a-form-item
+        label="ID number"
+        :validate-status="errors.id_no ? 'error' : ''"
+        :help="errors.id_no"
+      >
+        <a-input
+          v-model:value="formState.id_no"
+          :placeholder="`Current: ${formFields.current_id_no || '—'}`"
+          maxlength="8"
+        />
+        <template #extra>Leave blank to keep the current ID number.</template>
+      </a-form-item>
+
+      <a-form-item label="Phone number">
+        <a-input v-model:value="formState.phone_no" disabled />
+        <template #extra>Phone numbers are managed separately.</template>
+      </a-form-item>
+
+      <a-form-item label="Location">
+        <a-input v-model:value="formState.location_id" disabled />
+      </a-form-item>
+
+      <a-form-item
+        label="Organisation"
+        required
+        :validate-status="errors.org_types_id ? 'error' : ''"
+        :help="errors.org_types_id"
+      >
+        <a-select
+          v-model:value="formState.org_types_id"
+          show-search
+          option-filter-prop="label"
+          placeholder="Select organisation"
+          :loading="loadingOrganizations"
+          :options="organizationOptions"
+          @change="onOrganizationChange"
+        />
+      </a-form-item>
+
+      <a-form-item
+        label="Role"
+        required
+        :validate-status="errors.role_id ? 'error' : ''"
+        :help="errors.role_id"
+      >
+        <a-select
+          v-model:value="formState.role_id"
+          show-search
+          option-filter-prop="label"
+          placeholder="Select role"
+          :loading="loadingRoles"
+          :options="roleOptions"
+        />
+      </a-form-item>
+    </div>
+
+    <div class="ue-note">
+      <sdFeatherIcons type="info" size="13" />
+      <span>
+        Changes take effect immediately. Only users below national level can be
+        edited from this page.
+      </span>
+    </div>
+
+    <footer class="ue-foot">
+      <sdButton size="small" class="pill-btn" @click="$emit('close-editmodal', false)">
+        Cancel
+      </sdButton>
+      <sdButton
+        size="small"
+        class="pill-btn is-primary"
+        html-type="submit"
+        :loading="saving"
+        @click="submit"
+      >
+        Save changes
+      </sdButton>
+    </footer>
   </a-form>
 </template>
+
 <script setup>
-import { onMounted, defineProps, reactive, ref, defineEmits } from "vue";
-import { notification } from "ant-design-vue";
-import axios from "@/Axiosconfig";
-import authHeader from "../../../services/auth-header";
-const emit = defineEmits(["close-editmodal"]);
-const allowedRole = ref(true);
-const alloweRoleids = ref(["3", "7", "56", "53", "37", "36", "15", "16"]);
+import { computed, defineEmits, defineProps, onMounted, reactive, ref } from 'vue';
+import { notification } from 'ant-design-vue';
+import axios from '@/Axiosconfig';
+
 const props = defineProps({
-  formFields: Object,
-});
-const formState = reactive(props.formFields);
-
-const organizations = ref("");
-const roles = ref("");
-
-onMounted(() => {
-  const user = JSON.parse(sessionStorage.getItem("user"));
-  console.log(user.user.role_id);
-  if (user != null) {
-    allowedRole.value = alloweRoleids.value.includes(
-      user.user.role_id.toString()
-    )
-      ? false
-      : true;
-  }
+  formFields: { type: Object, required: true },
 });
 
-const getRoles = async (org_id) => {
-  console.log(org_id);
-  const response = await fetch(
-    `${process.env.VUE_APP_BASE_URL}/get_roles_given_the_org?organization_id=${org_id}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-    }
-  );
-  const data = await response.json();
-  console.log(data.data);
-  if (data.data == undefined) {
-    notification.info({
-      message: `Info!`,
-      description: `Not allowed to list roles with the organization`,
-    });
-  }
-  roles.value = data.data;
-};
+const emit = defineEmits(['close-editmodal', 'saved']);
 
-getRoles();
+const formState = reactive({
+  first_name: props.formFields.first_name || '',
+  middle_name: props.formFields.middle_name || '',
+  last_name: props.formFields.last_name || '',
+  location_id: props.formFields.location_id || '',
+  org_types_id: props.formFields.org_types_id ?? null,
+  role_id: props.formFields.role_id ?? null,
+  id_no: '',
+  phone_no: props.formFields.phone_no || '',
+});
+
+const errors = reactive({});
+const organizations = ref([]);
+const roles = ref([]);
+const loadingOrganizations = ref(false);
+const loadingRoles = ref(false);
+const saving = ref(false);
+
+const organizationOptions = computed(() =>
+  organizations.value.map((org) => ({
+    value: org.id,
+    label: org.description ? `${org.name} — ${org.description}` : org.name,
+  })),
+);
+
+const roleOptions = computed(() =>
+  roles.value.map((role) => ({ value: role.id, label: role.name })),
+);
+
+const errorMessage = (error, fallback) =>
+  error?.response?.data?.message || error?.message || fallback;
 
 const fetchOrganizations = async () => {
-  const response = await fetch(
-    `${process.env.VUE_APP_BASE_URL}/update_user_organizations`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeader(),
-      },
-    }
-  );
-  const data = await response.json();
-  organizations.value = data.data;
-  console.log(data.data);
-};
-
-fetchOrganizations();
-
-const editUser = async () => {
-  const data = {
-    id: formState.id,
-    first_name: formState.first_name,
-    middle_name: formState.middle_name,
-    last_name: formState.last_name,
-    location_id: formState.location_id,
-    org_types_id: formState.org_types_id,
-    role_id: formState.role_id,
-    id_no: formState.id_no,
-    phone_no: formState.phone_no,
-  };
-  await axios
-    .post(`update_user_details/${formState.id}/`, data)
-    .then(async (response) => {
-      notification.success({
-        message: `Success!`,
-        description: `${response.data.message}`,
-      });
-      await axios
-        .post(`update_user_id_no/${formState.id}/${props.formFields.id_no}/`, {
-          id: formState.id,
-          id_no: formState.id_no,
-        })
-        .then((res) => {
-          emit("close-editmodal", false);
-          notification.success({
-            message: `Success!`,
-            description: `${res.data.message}`,
-          });
-        })
-        .catch((error) => {
-          // Handle inner axios call error here
-          console.error("Inner Axios Error:", error);
-          notification.error({
-            message: `User Update Error!`,
-            description:
-              error.response.data.message ||
-              "An error occurred while updating user ID. Please try again later.",
-          });
-        });
-    })
-    .catch((error) => {
-      // Handle outer axios call error here
-      console.error("Outer Axios Error:", error);
-      if (error.response && error.response.status === 400) {
-        notification.error({
-          message: `User Update Error!`,
-          description:
-            error.response.data.message ||
-            "Contact the administrator for national user update.",
-        });
-      } else {
-        console.log(error);
-        notification.error({
-          message: `User Update Error!`,
-          description:
-            "An error occurred while updating user details. Please try again later.",
-        });
-      }
+  loadingOrganizations.value = true;
+  try {
+    const { data } = await axios.get('update_user_organizations');
+    organizations.value = data?.data || [];
+  } catch (error) {
+    notification.error({
+      message: 'Unable to load organisations',
+      description: errorMessage(error, 'Please try again.'),
     });
+  } finally {
+    loadingOrganizations.value = false;
+  }
 };
+
+const fetchRoles = async (organizationId) => {
+  if (!organizationId) {
+    roles.value = [];
+    return;
+  }
+
+  loadingRoles.value = true;
+  try {
+    const { data } = await axios.get('get_roles_given_the_org', {
+      params: { organization_id: organizationId },
+    });
+    roles.value = data?.data || [];
+  } catch (error) {
+    roles.value = [];
+    notification.error({
+      message: 'Unable to load roles',
+      description: errorMessage(error, 'Please try again.'),
+    });
+  } finally {
+    loadingRoles.value = false;
+  }
+};
+
+const onOrganizationChange = (organizationId) => {
+  formState.role_id = null;
+  delete errors.org_types_id;
+  delete errors.role_id;
+  fetchRoles(organizationId);
+};
+
+const validate = () => {
+  Object.keys(errors).forEach((key) => delete errors[key]);
+
+  if (!formState.first_name?.trim()) errors.first_name = 'First name is required.';
+  if (!formState.last_name?.trim()) errors.last_name = 'Last name is required.';
+  if (!formState.org_types_id) errors.org_types_id = 'Organisation is required.';
+  if (!formState.role_id) errors.role_id = 'Role is required.';
+
+  if (formState.id_no && !/^\d{6,8}$/.test(formState.id_no)) {
+    errors.id_no = 'ID number must be 6 to 8 digits.';
+  }
+
+  return Object.keys(errors).length === 0;
+};
+
+const submit = async () => {
+  if (saving.value || !validate()) return;
+
+  saving.value = true;
+  try {
+    const { data } = await axios.post(`update_user_details/${props.formFields.id}/`, {
+      first_name: formState.first_name.trim(),
+      middle_name: formState.middle_name?.trim() || null,
+      last_name: formState.last_name.trim(),
+      org_types_id: formState.org_types_id,
+      role_id: formState.role_id,
+    });
+
+    // The ID number lives in the masterlist and has its own endpoint. Only
+    // call it when the user actually typed a new value.
+    if (formState.id_no) {
+      await axios.post(
+        `update_user_id_no/${props.formFields.id}/${formState.id_no}/`,
+        { id: props.formFields.id, id_no: formState.id_no },
+      );
+    }
+
+    notification.success({
+      message: 'Success',
+      description: data?.message || 'User details updated successfully.',
+    });
+
+    emit('saved');
+    emit('close-editmodal', false);
+  } catch (error) {
+    notification.error({
+      message: 'User update failed',
+      description: errorMessage(error, 'Please try again.'),
+    });
+  } finally {
+    saving.value = false;
+  }
+};
+
+onMounted(async () => {
+  await fetchOrganizations();
+  if (formState.org_types_id) await fetchRoles(formState.org_types_id);
+});
 </script>
 
-<style>
-/* You can style the toggle switch as needed */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
+<style lang="less" scoped>
+.ue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
 }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.ue-form :deep(.ant-form-item-label > label) {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4d5661;
 }
 
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
+.ue-form :deep(.ant-input),
+.ue-form :deep(.ant-select-selector) {
+  border-radius: 8px !important;
 }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
+.ue-form :deep(.ant-form-item-extra) {
+  font-size: 11px;
+  color: #8a90a6;
+  margin-top: 3px;
 }
 
-input:checked + .slider {
-  background-color: #1ec997;
+.ue-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #f3fcf6;
+  border: 1px solid #d9f0e2;
+  color: #2f6746;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #1ec997;
+.ue-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed #e1efe6;
 }
 
-input:checked + .slider:before {
-  transform: translateX(20px);
+/* The modal is rendered by the parent page; define the shared button look
+   here too so the form's footer is styled when the form is used standalone. */
+.pill-btn {
+  border-radius: 999px !important;
+  font-weight: 600;
+  min-width: 110px;
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  &:hover, &:focus {
+    border-color: #9ad8b4 !important;
+    color: #15693c !important;
+  }
+  &.is-primary {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+    color: #fff !important;
+    &:hover, &:focus {
+      background: #15803d !important;
+      border-color: #15803d !important;
+    }
+  }
 }
 
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
+@media (max-width: 640px) {
+  .ue-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
