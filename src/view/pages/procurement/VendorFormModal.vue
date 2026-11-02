@@ -139,10 +139,11 @@
                   :help="errors.category"
                 >
                   <a-select v-model:value="form.category" placeholder="Select category">
-                    <a-select-option value="public">Public Institute</a-select-option>
-                    <a-select-option value="fbo">Faith-Based Organization (FBO)</a-select-option>
-                    <a-select-option value="cbo">Community-Based Organization (CBO)</a-select-option>
-                    <a-select-option value="ngo">Non-Governmental Organization (NGO)</a-select-option>
+                    <a-select-option
+                      v-for="option in directCategoryOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >{{ option.label }}</a-select-option>
                   </a-select>
                 </a-form-item>
               </a-col>
@@ -573,7 +574,7 @@
               <a-form-item
                 label="Scanned LSO/LPO document (PDF/JPG/PNG)"
                 :validate-status="errors['lsos.0.file'] ? 'error' : ''"
-                :help="errors['lsos.0.file']"
+                :help="errors['lsos.0.file'] || LSO_FILE_HINT"
               >
                 <a-upload
                   :file-list="lsoFileList"
@@ -643,7 +644,7 @@
           </div>
           <div class="vcm-field">
             <span class="vcm-label">Category</span>
-            <span class="vcm-value">{{ form.category === 'private' ? 'Private' : 'Public' }}</span>
+            <span class="vcm-value">{{ vendorCategoryLabel(form.category) }}</span>
           </div>
           <div class="vcm-field">
             <span class="vcm-label">KRA PIN</span>
@@ -722,6 +723,16 @@ import { useStore } from 'vuex';
 import { notification } from 'ant-design-vue';
 import dayjs from 'dayjs';
 import vendorService from '@/services/procurement/vendor.service';
+import {
+  DIRECT_VENDOR_CATEGORY_OPTIONS,
+  vendorCategoryLabel,
+} from '@/config/vendor-categories';
+import {
+  LSO_FILE_HINT,
+  LSO_MAX_FILE_BYTES,
+  LSO_MAX_FILE_MB,
+  PROCUREMENT_DOCUMENT_MIME_TYPES,
+} from '@/config/procurement';
 
 const KRA_REGEX = /^[A-Z]\d{9}[A-Z]$/i;
 
@@ -1066,14 +1077,14 @@ export default {
     };
 
     const onPickLsoFile = (file) => {
-      const okType = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'].includes(file.type);
-      const okSize = file.size <= 10 * 1024 * 1024;
+      const okType = PROCUREMENT_DOCUMENT_MIME_TYPES.includes(file.type);
+      const okSize = file.size <= LSO_MAX_FILE_BYTES;
       if (!okType) {
         notification.error({ message: 'Invalid file type', description: 'PDF, JPG, JPEG or PNG only.' });
         return false;
       }
       if (!okSize) {
-        notification.error({ message: 'File too large', description: 'Max size 10MB.' });
+        notification.error({ message: 'File too large', description: `Max size ${LSO_MAX_FILE_MB}MB.` });
         return false;
       }
       form.lso.file = file;
@@ -1395,6 +1406,9 @@ export default {
       taxCertFileList,
       lsoFileList,
       includeLsoDetails,
+      directCategoryOptions: DIRECT_VENDOR_CATEGORY_OPTIONS,
+      vendorCategoryLabel,
+      LSO_FILE_HINT,
       banks,
       bankNameOptions,
       counties,

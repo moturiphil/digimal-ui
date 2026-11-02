@@ -26,8 +26,8 @@
                     {{ vendor.is_active ? 'Active' : 'Inactive' }}
                   </span>
                   <span v-if="taxCertExpired" class="v-chip warn">Tax cert expired</span>
-                  <span class="v-cat" :class="vendor.category === 'private' ? 'private' : 'public'">
-                    {{ vendor.category === 'private' ? 'Private' : 'Public' }}
+                  <span class="v-cat" :class="vendor.category || 'public'">
+                    {{ vendorCategoryShortLabel(vendor.category) }}
                   </span>
                 </p>
               </div>
@@ -71,7 +71,7 @@
                     </div>
                     <div class="info-row">
                       <span class="info-label">Category</span>
-                      <span class="info-value">{{ (vendor.category || '—').toUpperCase() }}</span>
+                      <span class="info-value">{{ vendorCategoryLabel(vendor.category) }}</span>
                     </div>
                     <div class="info-row">
                       <span class="info-label">Physical Address</span>
@@ -187,6 +187,10 @@ import ContactsTab from './ContactsTab.vue';
 import LsosTab from './LsosTab.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { RecordViewWrapper, ProcurementPageWrapper } from './style';
+import {
+  vendorCategoryLabel,
+  vendorCategoryShortLabel,
+} from '@/config/vendor-categories';
 
 const store = useStore();
 const route = useRoute();
@@ -281,6 +285,21 @@ const onToggle = async () => {
     background: #e8effb;
     color: #335ec7;
     border: 1px solid #c7d8f3;
+  }
+  &.fbo {
+    background: #f3ebff;
+    color: #6f3fcc;
+    border: 1px solid #d8c5f5;
+  }
+  &.cbo {
+    background: #fff6e5;
+    color: #a86400;
+    border: 1px solid #f1d59b;
+  }
+  &.ngo {
+    background: #fdecf3;
+    color: #a83262;
+    border: 1px solid #f4c7d9;
   }
 }
 </style>

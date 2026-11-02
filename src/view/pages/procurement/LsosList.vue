@@ -239,7 +239,7 @@
                     <div class="vendor-option-name">{{ v.name }}</div>
                     <div class="vendor-option-meta">
                       <span class="vendor-tag" :class="`vt-${v.category}`">
-                        {{ v.category === 'private' ? 'Private' : 'Public' }}
+                        {{ vendorCategoryShortLabel(v.category) }}
                       </span>
                       <span v-if="v.kra_pin">KRA · {{ v.kra_pin }}</span>
                     </div>
@@ -372,7 +372,9 @@
                     <sdFeatherIcons type="upload-cloud" size="22" />
                   </div>
                   <div class="lso-dropzone-title">Drag &amp; drop or click to upload</div>
-                  <div class="lso-dropzone-sub">PDF, JPG or PNG &middot; up to 10 MB</div>
+                  <div class="lso-dropzone-sub">
+                    PDF, JPG or PNG &middot; up to {{ LSO_MAX_FILE_MB }} MB
+                  </div>
                 </div>
                 <div v-else class="lso-file-card" @click.stop>
                   <div class="lso-file-icon">
@@ -526,7 +528,9 @@
                   <sdFeatherIcons type="upload-cloud" size="22" />
                 </div>
                 <div class="lso-dropzone-title">Drop a new document or click to replace</div>
-                <div class="lso-dropzone-sub">PDF, JPG or PNG &middot; up to 10 MB</div>
+                <div class="lso-dropzone-sub">
+                  PDF, JPG or PNG &middot; up to {{ LSO_MAX_FILE_MB }} MB
+                </div>
               </div>
               <div v-else class="lso-file-card" @click.stop>
                 <div class="lso-file-icon">
@@ -564,6 +568,12 @@ import lsoService from '@/services/procurement/vendor-lso.service';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { RecordViewWrapper } from '../events/style';
 import { BudgetPageWrapper } from '../budget/style';
+import {
+  LSO_MAX_FILE_BYTES,
+  LSO_MAX_FILE_MB,
+  PROCUREMENT_DOCUMENT_MIME_TYPES,
+} from '@/config/procurement';
+import { vendorCategoryShortLabel } from '@/config/vendor-categories';
 
 const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
@@ -732,14 +742,14 @@ export default {
     };
 
     const onPickFile = (file) => {
-      const okType = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'].includes(file.type);
-      const okSize = file.size <= 10 * 1024 * 1024;
+      const okType = PROCUREMENT_DOCUMENT_MIME_TYPES.includes(file.type);
+      const okSize = file.size <= LSO_MAX_FILE_BYTES;
       if (!okType) {
         notification.error({ message: 'Invalid file type', description: 'PDF, JPG, JPEG or PNG only.' });
         return false;
       }
       if (!okSize) {
-        notification.error({ message: 'File too large', description: 'Max size 10MB.' });
+        notification.error({ message: 'File too large', description: `Max size ${LSO_MAX_FILE_MB}MB.` });
         return false;
       }
       form.file = file;
@@ -836,14 +846,14 @@ export default {
     };
 
     const onPickEditFile = (file) => {
-      const okType = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'].includes(file.type);
-      const okSize = file.size <= 10 * 1024 * 1024;
+      const okType = PROCUREMENT_DOCUMENT_MIME_TYPES.includes(file.type);
+      const okSize = file.size <= LSO_MAX_FILE_BYTES;
       if (!okType) {
         notification.error({ message: 'Invalid file type', description: 'PDF, JPG, JPEG or PNG only.' });
         return false;
       }
       if (!okSize) {
-        notification.error({ message: 'File too large', description: 'Max size 10MB.' });
+        notification.error({ message: 'File too large', description: `Max size ${LSO_MAX_FILE_MB}MB.` });
         return false;
       }
       editForm.file = file;
@@ -940,6 +950,8 @@ export default {
 
     return {
       ...permissions,
+      LSO_MAX_FILE_MB,
+      vendorCategoryShortLabel,
       filters,
       lsos,
       vendors,
@@ -1435,6 +1447,18 @@ export default {
 .vendor-tag.vt-public {
   background: #e8effb;
   color: #335ec7;
+}
+.vendor-tag.vt-fbo {
+  background: #f3ebff;
+  color: #6f3fcc;
+}
+.vendor-tag.vt-cbo {
+  background: #fff6e5;
+  color: #a86400;
+}
+.vendor-tag.vt-ngo {
+  background: #fdecf3;
+  color: #a83262;
 }
 
 /* Dropzone */

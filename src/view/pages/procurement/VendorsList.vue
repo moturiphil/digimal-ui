@@ -76,8 +76,11 @@
             allow-clear
             @change="onFilterChange"
           >
-            <a-select-option value="private">Private</a-select-option>
-            <a-select-option value="public">Public</a-select-option>
+            <a-select-option
+              v-for="option in vendorCategoryOptions"
+              :key="option.value"
+              :value="option.value"
+            >{{ option.label }}</a-select-option>
           </a-select>
           <a-select
             v-model:value="filters.county_id"
@@ -180,9 +183,9 @@
             <template v-else-if="column.key === 'category'">
               <span
                 class="v-chip"
-                :class="record.category === 'public' ? 'purple' : ''"
+                :class="vendorCategoryChipClass(record.category)"
               >
-                {{ (record.category || '—').toUpperCase() }}
+                {{ vendorCategoryShortLabel(record.category).toUpperCase() }}
               </span>
             </template>
 
@@ -264,8 +267,8 @@
                 >{{ record.name }}</router-link>
                 <span
                   class="vd-card-code"
-                  :class="record.category === 'public' ? 'public' : ''"
-                >{{ (record.category || '—').toUpperCase() }}</span>
+                  :class="record.category"
+                >{{ vendorCategoryShortLabel(record.category).toUpperCase() }}</span>
               </div>
               <div class="vd-card-meta">
                 <div>
@@ -377,6 +380,11 @@ import VendorFormModal from './VendorFormModal.vue';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { RecordViewWrapper } from '../events/style';
 import { BudgetPageWrapper } from '../budget/style';
+import {
+  VENDOR_CATEGORY_OPTIONS,
+  vendorCategoryChipClass,
+  vendorCategoryShortLabel,
+} from '@/config/vendor-categories';
 
 const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString());
 
@@ -528,6 +536,9 @@ export default {
 
     return {
       ...permissions,
+      vendorCategoryOptions: VENDOR_CATEGORY_OPTIONS,
+      vendorCategoryChipClass,
+      vendorCategoryShortLabel,
       filters,
       vendors,
       counties,
@@ -867,6 +878,9 @@ export default {
   line-height: 18px;
   &.green { background: #eafff5; color: #15693c; border-color: #c9e6d3; }
   &.purple { background: #f3ebff; color: #6f3fcc; border-color: #d8c5f5; }
+  &.teal { background: #e6f7f4; color: #11705f; border-color: #bfe7df; }
+  &.amber { background: #fff6e5; color: #a86400; border-color: #f1d59b; }
+  &.rose { background: #fdecf3; color: #a83262; border-color: #f4c7d9; }
   &.warn { background: #fff4e0; color: #b35a00; border-color: #f3c97c; }
   &.muted { background: #f0f2f5; color: #7a8a82; border-color: #e1e6ec; }
 }
@@ -946,6 +960,21 @@ export default {
     background: #e8effb;
     color: #335ec7;
     border: 1px solid #c7d8f3;
+  }
+  &.fbo {
+    background: #f3ebff;
+    color: #6f3fcc;
+    border: 1px solid #d8c5f5;
+  }
+  &.cbo {
+    background: #fff6e5;
+    color: #a86400;
+    border: 1px solid #f1d59b;
+  }
+  &.ngo {
+    background: #fdecf3;
+    color: #a83262;
+    border: 1px solid #f4c7d9;
   }
 }
 .vd-card-meta {

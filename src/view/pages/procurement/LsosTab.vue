@@ -232,7 +232,9 @@
             <div class="lm-section">
               <h4 class="lm-section-title">
                 <span class="lm-dot info"></span> Document
-                <span class="lm-section-tag">PDF / JPG / PNG · max 10 MB</span>
+                <span class="lm-section-tag">
+                  PDF / JPG / PNG · max {{ LSO_MAX_FILE_MB }} MB
+                </span>
               </h4>
               <a-form-item
                 :validate-status="errors.file ? 'error' : ''"
@@ -307,6 +309,11 @@ import dayjs from 'dayjs';
 import lsoService from '@/services/procurement/vendor-lso.service';
 import { useProcurementPermissions } from '@/services/procurement/usePermissions';
 import { ProcurementPageWrapper } from './style';
+import {
+  LSO_MAX_FILE_BYTES,
+  LSO_MAX_FILE_MB,
+  PROCUREMENT_DOCUMENT_MIME_TYPES,
+} from '@/config/procurement';
 
 const blankForm = () => ({
   service_type_id: null,
@@ -388,14 +395,14 @@ export default {
     const closeModal = () => { modalOpen.value = false; reset(); };
 
     const onPickFile = (file) => {
-      const okType = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'].includes(file.type);
-      const okSize = file.size <= 10 * 1024 * 1024;
+      const okType = PROCUREMENT_DOCUMENT_MIME_TYPES.includes(file.type);
+      const okSize = file.size <= LSO_MAX_FILE_BYTES;
       if (!okType) {
         notification.error({ message: 'Invalid file type', description: 'PDF, JPG, JPEG or PNG only.' });
         return false;
       }
       if (!okSize) {
-        notification.error({ message: 'File too large', description: 'Max size 10MB.' });
+        notification.error({ message: 'File too large', description: `Max size ${LSO_MAX_FILE_MB}MB.` });
         return false;
       }
       form.file = file;
@@ -517,6 +524,7 @@ export default {
       ...permissions,
       serviceTypeFilter,
       expiredFilter,
+      LSO_MAX_FILE_MB,
       modalOpen,
       editing,
       form,

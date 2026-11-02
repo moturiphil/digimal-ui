@@ -88,7 +88,7 @@
                 </div>
                 <div class="info-row">
                   <span class="info-label">Category</span>
-                  <span class="info-value">{{ (vendor?.category || '—').toUpperCase() }}</span>
+                  <span class="info-value">{{ vendorCategoryLabel(vendor?.category) }}</span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">KRA PIN</span>
@@ -205,6 +205,7 @@ import { Main } from '../../styled';
 import vendorService from '@/services/procurement/vendor.service';
 import lsoService from '@/services/procurement/vendor-lso.service';
 import { ProcurementPageWrapper } from './style';
+import { vendorCategoryLabel } from '@/config/vendor-categories';
 
 export default {
   name: 'LsoDetail',
@@ -361,6 +362,7 @@ export default {
       vendor,
       loading,
       vendorLoading,
+      vendorCategoryLabel,
       isExpired,
       primaryContact,
       primaryBank,
