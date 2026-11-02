@@ -139,6 +139,20 @@
               </div>
             </a-spin>
           </a-tab-pane>
+
+          <a-tab-pane key="training">
+            <template #tab>
+              <span class="tab-label">
+                <sdFeatherIcons type="book-open" size="13" />
+                Training Materials
+                <span v-if="trainingCount !== null" class="tab-count">{{ trainingCount }}</span>
+              </span>
+            </template>
+            <TrainingMaterialsTab
+              v-if="activeTab === 'training'"
+              @loaded="trainingCount = $event"
+            />
+          </a-tab-pane>
         </a-tabs>
       </div>
     </Main>
@@ -150,6 +164,7 @@ import { computed, onMounted, ref } from 'vue';
 import axios from 'axios';
 import { Main, TableWrapper } from '../../styled';
 import authHeader from '../../../services/auth-header';
+import TrainingMaterialsTab from './TrainingMaterialsTab.vue';
 
 const columns = [
   { title: 'Event Name', dataIndex: 'event_name', key: 'event_name' },
@@ -173,6 +188,7 @@ const activity_dataSource = ref([]);
 const isLoadingEvents = ref(false);
 const isLoadingActivities = ref(false);
 const activeTab = ref('events');
+const trainingCount = ref(null);
 
 const userData = (() => {
   try {
