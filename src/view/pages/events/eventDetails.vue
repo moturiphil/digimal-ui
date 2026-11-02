@@ -84,6 +84,21 @@
           >
             <sdFeatherIcons type="user-plus" size="14" /> &nbsp; Register Participant
           </sdButton>
+          <!--
+            Stakeholder events (event names are copied from `events_lists`, so
+            "Stakeholder" identifies the event type) get a shortcut to the
+            stakeholder registration form, carrying this event's name/code.
+          -->
+          <sdButton
+            v-if="isStakeholderEvent"
+            class="btn-import"
+            type="success"
+            outlined
+            size="extra-small"
+            @click="goToAddStakeholder"
+          >
+            <sdFeatherIcons type="user-check" size="14" /> &nbsp; Add Stakeholder
+          </sdButton>
           <sdButton
             v-if="submitPayrollVisible"
             class="btn-import"
@@ -1470,6 +1485,25 @@ const isSuperAdmin = computed(() => {
 const canResendConfirmation = computed(
   () => canRegisterParticipants.value || isSuperAdmin.value
 );
+
+// ── Add Stakeholder (stakeholder events only) ──
+// `event_name` is copied from `events_lists` when an event is created
+// (EventsController::create), so the "Stakeholder" event types are identified
+// by their name. The live event payload wins once it has loaded. Non-stakeholder
+// events never see the shortcut.
+const isStakeholderEvent = computed(() =>
+  /stakeholder/i.test(String(liveEvent.value?.name || event_name || ""))
+);
+
+const goToAddStakeholder = () => {
+  router.push({
+    path: "/events/add-stakeholder",
+    query: {
+      event: event_name,
+      event_code: event_code,
+    },
+  });
+};
 
 // Payroll generation only unlocks once the event host has submitted the closed
 // event for payroll. The backend exposes this as `can_generate_payroll`
