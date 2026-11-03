@@ -1,726 +1,1245 @@
 <template>
   <RecordViewWrapper>
-    <sdPageHeader title="Registered Users">
-      <template #buttons>
-        <div class="search-box">
-          <a-input
-            style="
-              border: 1px solid #151414;
-              padding: 8px;
-              border-radius: 5px;
-              align-items: center;
-              justify-items: center;
-            "
-            v-model:value="searchItem"
-            type="text"
-            name="dataSource"
-            placeholder="Search by name"
-          />
-        </div>
-      </template>
-    </sdPageHeader>
     <Main>
-      <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/events/add-stakeholder"> Add Stakeholder</router-link>
-      </sdButton>
-      &nbsp;&nbsp;
-
-      <sdButton class="btn-import" type="success" size="small">
-        <router-link to="/users/add-chp-ve"> Add CHP & VE</router-link>
-      </sdButton>
-      <br />
-      <br />
-      <a-row :gutter="16" class="search-row"> </a-row>
-      <a-row :gutter="15">
-        <a-col class="w-100" :md="24">
-          <sdCards headless>
-            <div v-if="isLoading" class="spin">
-              <a-spin />
+      <BudgetPageWrapper class="minimal-dashboard users-page">
+        <!-- Page heading -->
+        <header class="page-heading">
+          <div class="ph-left">
+            <h3 class="ph-title">
+              <span class="ph-icon">👥</span> Registered Users
+            </h3>
+            <p class="ph-subtitle">
+              View and update user profiles, roles and locations across national,
+              county and sub-county levels.
+            </p>
+          </div>
+          <div class="ph-actions">
+            <div class="us-view-toggle" role="group" aria-label="Toggle view">
+              <button
+                type="button"
+                class="us-toggle-btn"
+                :class="{ active: viewMode === 'cards' }"
+                @click="viewMode = 'cards'"
+              >
+                <sdFeatherIcons type="grid" size="14" />
+                <span>Cards</span>
+              </button>
+              <button
+                type="button"
+                class="us-toggle-btn"
+                :class="{ active: viewMode === 'table' }"
+                @click="viewMode = 'table'"
+              >
+                <sdFeatherIcons type="list" size="14" />
+                <span>Table</span>
+              </button>
             </div>
 
-            <div v-else>
-              <TableWrapper class="table-data-view table-responsive">
-                <a-row class="" :gutter="5">
-                  <a-space>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-if="filterAccessList.includes('country')"
-                        v-model:value="country"
-                        show-search
-                        placeholder="Select Country"
-                        style="width: 100%"
-                        :options="countries"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'country')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-if="filterAccessList.includes('county')"
-                        v-model:value="county"
-                        show-search
-                        placeholder="Select County"
-                        style="width: 100%"
-                        :options="counties"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'county')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-if="filterAccessList.includes('subcounty')"
-                        v-model:value="subcounty"
-                        show-search
-                        placeholder="Select Sub County"
-                        style="width: 100%"
-                        :options="subcounties"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'subcounty')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-if="filterAccessList.includes('ward')"
-                        v-model:value="ward"
-                        show-search
-                        placeholder="Select Ward"
-                        style="width: 100%"
-                        :options="wards"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'ward')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-if="filterAccessList.includes('location')"
-                        v-model:value="location"
-                        show-search
-                        placeholder="Select Location"
-                        style="width: 100%"
-                        :options="locations"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'location')"
-                      ></a-select>
-                    </a-col>
-                    <a-col :xxl="24" :xl="24" :md="24" :sm="24">
-                      <a-select
-                        v-if="filterAccessList.includes('sublocation')"
-                        v-model:value="sublocation"
-                        show-search
-                        placeholder="Select Sub Location"
-                        style="width: 100%"
-                        :options="sublocations"
-                        :filter-option="filterOption"
-                        @change="handleChange($event, 'sublocation')"
-                      ></a-select>
-                    </a-col>
-                  </a-space>
-                </a-row>
-                <a-divider></a-divider>
-                <a-table
-                  :pagination="false"
-                  :dataSource="dataSource"
-                  :columns="columns"
-                  @change="handleTableChange"
-                >
-                  <template #idno="{ record }">
-                    <div>
-                      {{
-                        `${record.id_no.substring(0, 1)}${"*".repeat(
-                          record.id_no.length - 2
-                        )}${record.id_no.substring(record.id_no.length - 1)}`
-                      }}
+            <sdButton size="small" class="pill-btn" :disabled="isLoading" @click="refresh">
+              <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
+            </sdButton>
+
+            <router-link to="/events/add-stakeholder" class="us-create-btn">
+              <sdFeatherIcons type="user-plus" size="14" /> Add Stakeholder
+            </router-link>
+            <router-link to="/users/add-chp-ve" class="us-create-btn secondary">
+              <sdFeatherIcons type="users" size="14" /> Add CHP &amp; VE
+            </router-link>
+          </div>
+        </header>
+
+        <!-- Summary cards -->
+        <div class="sum-row">
+          <div class="sum-card">
+            <span class="sum-label">Total Users</span>
+            <span class="sum-value">{{ fmt(total) }}</span>
+          </div>
+          <div class="sum-card">
+            <span class="sum-label">On This Page</span>
+            <span class="sum-value">{{ fmt(dataSource.length) }}</span>
+          </div>
+          <div class="sum-card">
+            <span class="sum-label">National</span>
+            <span class="sum-value national">{{ fmt(nationalCount) }}</span>
+          </div>
+          <div class="sum-card">
+            <span class="sum-label">County</span>
+            <span class="sum-value county">{{ fmt(countyCount) }}</span>
+          </div>
+          <div class="sum-card">
+            <span class="sum-label">Sub-County &amp; Below</span>
+            <span class="sum-value subcounty">{{ fmt(subCountyCount) }}</span>
+          </div>
+        </div>
+
+        <!-- Filter panel -->
+        <section class="panel filter-panel">
+          <div class="filter-grid">
+            <a-select
+              v-if="filterAccessList.includes('country')"
+              v-model:value="country"
+              show-search
+              allow-clear
+              placeholder="Country"
+              :options="countries"
+              :filter-option="filterOption"
+              @change="(value) => handleFilterChange(value, 'country')"
+            />
+            <a-select
+              v-if="filterAccessList.includes('county')"
+              v-model:value="county"
+              show-search
+              allow-clear
+              placeholder="County"
+              :options="counties"
+              :filter-option="filterOption"
+              @change="(value) => handleFilterChange(value, 'county')"
+            />
+            <a-select
+              v-if="filterAccessList.includes('subcounty')"
+              v-model:value="subcounty"
+              show-search
+              allow-clear
+              placeholder="Sub-County"
+              :options="subcounties"
+              :filter-option="filterOption"
+              @change="(value) => handleFilterChange(value, 'subcounty')"
+            />
+            <a-select
+              v-if="filterAccessList.includes('ward')"
+              v-model:value="ward"
+              show-search
+              allow-clear
+              placeholder="Ward"
+              :options="wards"
+              :filter-option="filterOption"
+              @change="(value) => handleFilterChange(value, 'ward')"
+            />
+            <a-select
+              v-if="filterAccessList.includes('location')"
+              v-model:value="location"
+              show-search
+              allow-clear
+              placeholder="Location"
+              :options="locations"
+              :filter-option="filterOption"
+              @change="(value) => handleFilterChange(value, 'location')"
+            />
+            <a-select
+              v-if="filterAccessList.includes('sublocation')"
+              v-model:value="sublocation"
+              show-search
+              allow-clear
+              placeholder="Sub-Location"
+              :options="sublocations"
+              :filter-option="filterOption"
+              @change="(value) => handleFilterChange(value, 'sublocation')"
+            />
+          </div>
+
+          <div class="us-search">
+            <span class="search-icon">
+              <sdFeatherIcons type="search" size="14" />
+            </span>
+            <a-input
+              v-model:value="searchItem"
+              type="text"
+              name="q"
+              placeholder="Search by name, ID number or phone…"
+              allow-clear
+              @change="onSearchChange"
+              @pressEnter="onSearchNow"
+            />
+          </div>
+        </section>
+
+        <!-- Users table / cards -->
+        <section class="panel users-panel">
+          <div v-if="isLoading && !dataSource.length" class="us-loading"><a-spin /></div>
+
+          <template v-else>
+            <TableWrapper
+              v-if="viewMode === 'table'"
+              class="table-data-view table-responsive us-table-shell"
+            >
+              <a-table
+                :pagination="false"
+                :data-source="dataSource"
+                :columns="columns"
+                row-key="id"
+                :loading="isLoading"
+                :scroll="{ x: 1180 }"
+              >
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.key === 'user'">
+                    <div class="us-user-cell">
+                      <span class="us-avatar">{{ initials(record) }}</span>
+                      <div class="us-user-text">
+                        <span class="us-user-name">{{ fullName(record) }}</span>
+                        <span class="us-user-meta">ID · {{ record.id_no || '—' }}</span>
+                      </div>
                     </div>
                   </template>
-                  <template #action="{ record }" v-if="allowedRole">
-                    <span>
-                      <a @click="edit(record)"
-                        >Edit &nbsp;<EditOutlined
-                          style="color: rgb(14, 176, 14)"
-                        />
-                      </a>
-                      <span> | </span>
-                      <a @click="toggleUser(record)"
-                        >Toggle &nbsp;
-                        <PoweroffOutlined style="color: rgb(231, 99, 43)"
-                      /></a>
+
+                  <template v-else-if="column.key === 'contact'">
+                    <div class="us-contact">
+                      <span class="us-contact-main">{{ record.phone_no || '—' }}</span>
+                      <span v-if="record.email" class="us-contact-sub">{{ record.email }}</span>
+                    </div>
+                  </template>
+
+                  <template v-else-if="column.key === 'level'">
+                    <span class="us-chip" :class="levelTone(record)">
+                      {{ record.level_id || '—' }}
                     </span>
                   </template>
-                </a-table>
-                <a-pagination
-                  :current="currentPage"
-                  :total="total"
-                  :pageSize="pageSize"
-                  :showSizeChanger="true"
-                  :pagination="true"
-                  @change="onPageChange($event)"
-                />
-              </TableWrapper>
-              <div class="modal">
-                <a-modal
-                  :visible="userEditModalopen"
-                  title="Edit User"
-                  width="1000px"
-                  @cancel="handleEditUserCancel(false)"
-                >
-                  <template #footer></template>
-                  <UserEditForm
-                    :formFields="userEditFieds"
-                    v-on:close-editmodal="handleEditUserCancel(false)"
-                  />
-                </a-modal>
+
+                  <template v-else-if="column.key === 'location'">
+                    <span class="us-location">{{ record.location_id || '—' }}</span>
+                  </template>
+
+                  <template v-else-if="column.key === 'org'">
+                    <span class="us-location">{{ record.org_types_id || '—' }}</span>
+                  </template>
+
+                  <template v-else-if="column.key === 'role'">
+                    <span class="us-role">{{ record.role_id || '—' }}</span>
+                  </template>
+
+                  <template v-else-if="column.key === 'status'">
+                    <span class="v-status" :class="record.status ? 'active' : 'inactive'">
+                      <span class="dot"></span>{{ record.status ? 'Active' : 'Inactive' }}
+                    </span>
+                  </template>
+
+                  <template v-else-if="column.key === 'actions'">
+                    <div class="us-actions">
+                      <a-tooltip v-if="canEditRecord(record)" title="Edit user">
+                        <span class="action-icon" @click="edit(record)">
+                          <sdFeatherIcons type="edit-2" size="13" />
+                        </span>
+                      </a-tooltip>
+                      <a-tooltip
+                        v-if="canToggleRecord(record)"
+                        :title="record.status ? 'Deactivate' : 'Activate'"
+                      >
+                        <span
+                          class="action-icon"
+                          :class="record.status ? 'danger' : 'success'"
+                          @click="toggleUser(record)"
+                        >
+                          <sdFeatherIcons
+                            :type="record.status ? 'pause-circle' : 'play-circle'"
+                            size="13"
+                          />
+                        </span>
+                      </a-tooltip>
+                      <span
+                        v-if="!canEditRecord(record) && !canToggleRecord(record)"
+                        class="us-no-action"
+                      >—</span>
+                    </div>
+                  </template>
+                </template>
+                <template #emptyText>
+                  <div class="us-empty">
+                    <div class="us-empty-icon">👥</div>
+                    <div class="us-empty-title">No users found</div>
+                    <div class="us-empty-desc">
+                      Try a different search term or clear the location filters.
+                    </div>
+                  </div>
+                </template>
+              </a-table>
+            </TableWrapper>
+
+            <div v-else class="us-card-list">
+              <div v-if="!dataSource.length" class="us-empty">
+                <div class="us-empty-icon">👥</div>
+                <div class="us-empty-title">No users found</div>
+                <div class="us-empty-desc">
+                  Try a different search term or clear the location filters.
+                </div>
+              </div>
+
+              <article v-for="record in dataSource" :key="record.id" class="us-card">
+                <div class="us-card-head">
+                  <div class="us-user-cell">
+                    <span class="us-avatar">{{ initials(record) }}</span>
+                    <div class="us-user-text">
+                      <span class="us-user-name">{{ fullName(record) }}</span>
+                      <span class="us-user-meta">ID · {{ record.id_no || '—' }}</span>
+                    </div>
+                  </div>
+                  <span class="us-chip" :class="levelTone(record)">
+                    {{ record.level_id || '—' }}
+                  </span>
+                </div>
+
+                <div class="us-card-meta">
+                  <div>
+                    <span class="lbl">Role</span>
+                    <span class="val">{{ record.role_id || '—' }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Organisation</span>
+                    <span class="val">{{ record.org_types_id || '—' }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Location</span>
+                    <span class="val">{{ record.location_id || '—' }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Phone</span>
+                    <span class="val">{{ record.phone_no || '—' }}</span>
+                  </div>
+                </div>
+
+                <div class="us-card-foot">
+                  <span class="v-status" :class="record.status ? 'active' : 'inactive'">
+                    <span class="dot"></span>{{ record.status ? 'Active' : 'Inactive' }}
+                  </span>
+                  <div class="us-actions">
+                    <sdButton
+                      v-if="canEditRecord(record)"
+                      size="extra-small"
+                      type="light"
+                      outlined
+                      class="us-action-btn"
+                      @click="edit(record)"
+                    >
+                      <sdFeatherIcons type="edit-2" size="12" /> Edit
+                    </sdButton>
+                    <sdButton
+                      v-if="canToggleRecord(record)"
+                      size="extra-small"
+                      type="light"
+                      outlined
+                      class="us-action-btn"
+                      @click="toggleUser(record)"
+                    >
+                      <sdFeatherIcons
+                        :type="record.status ? 'pause-circle' : 'play-circle'"
+                        size="12"
+                      />
+                      {{ record.status ? 'Deactivate' : 'Activate' }}
+                    </sdButton>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="us-pagination">
+              <a-pagination
+                :current="currentPage"
+                :total="total"
+                :page-size="pageSize"
+                :show-size-changer="true"
+                :page-size-options="['20', '50', '100']"
+                :show-total="(count) => `${fmt(count)} users`"
+                @change="onPageChange"
+                @showSizeChange="onPageSizeChange"
+              />
+            </div>
+          </template>
+        </section>
+      </BudgetPageWrapper>
+
+      <!-- Edit modal -->
+      <a-modal
+        :visible="userEditModalOpen"
+        :footer="null"
+        :closable="false"
+        :mask-closable="false"
+        :destroy-on-close="true"
+        width="760px"
+        wrap-class-name="user-edit-modal-wrap"
+        @cancel="closeEditModal"
+      >
+        <div class="um-shell">
+          <header class="um-head">
+            <div class="um-head-left">
+              <span class="um-icon"><sdFeatherIcons type="edit-3" size="16" /></span>
+              <div>
+                <h3 class="um-title">Edit User</h3>
+                <p class="um-sub">
+                  {{ editingUserName || 'Update the user profile below.' }}
+                </p>
               </div>
             </div>
-          </sdCards>
-        </a-col>
-      </a-row>
-      <a-col :xs="24">
-        <DragAndDropTable />
-      </a-col>
+            <button type="button" class="um-close" @click="closeEditModal">
+              <sdFeatherIcons type="x" size="15" />
+            </button>
+          </header>
+
+          <div class="um-body">
+            <UserEditForm
+              :key="userEditFields.id"
+              :form-fields="userEditFields"
+              @close-editmodal="closeEditModal"
+              @saved="onUserSaved"
+            />
+          </div>
+        </div>
+      </a-modal>
     </Main>
   </RecordViewWrapper>
 </template>
+
 <script setup>
-import { RecordViewWrapper } from "../style";
-import { Main } from "../../styled";
-import { onMounted, ref, watch, reactive } from "vue";
-import { notification } from "ant-design-vue";
-import { PoweroffOutlined, EditOutlined } from "@ant-design/icons-vue";
-import UserEditForm from "./EdiUsers.vue";
-import authHeader from "../../../services/auth-header";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { notification } from 'ant-design-vue';
+import axios from '@/Axiosconfig';
+import { Main, TableWrapper } from '../../styled';
+import { RecordViewWrapper } from '../style';
+import { BudgetPageWrapper } from '../budget/style';
+import UserEditForm from './EdiUsers.vue';
+import { fetchUserData, hasPermission, refreshUserData } from '@/services/user-role';
 
 const columns = [
-  {
-    title: "First Name",
-    dataIndex: "first_name",
-    key: "id",
-  },
-  {
-    title: "Middle Name",
-    dataIndex: "middle_name",
-    key: "id",
-  },
-  {
-    title: "Last Name",
-    dataIndex: "last_name",
-    key: "id",
-  },
-  {
-    title: "Level",
-    dataIndex: "level_id",
-    key: "id",
-  },
-  {
-    title: "Location",
-    dataIndex: "location_id",
-    key: "id",
-  },
-  {
-    title: "Organization",
-    dataIndex: "org_types_id",
-    key: "id",
-  },
-  {
-    title: "Role",
-    dataIndex: "role_id",
-    key: "id",
-  },
-  {
-    title: "Phone Number",
-    dataIndex: "phone_no",
-    key: "id",
-  },
-  {
-    title: "",
-    dataIndex: "",
-    key: "users",
-    slots: { customRender: "users" },
-  },
-  {
-    title: "Action",
-    key: "action",
-    slots: { customRender: "action" },
-  },
+  { title: 'User', key: 'user', width: 250 },
+  { title: 'Contact', key: 'contact', width: 190 },
+  { title: 'Level', key: 'level', width: 120 },
+  { title: 'Location', key: 'location', width: 180 },
+  { title: 'Organisation', key: 'org', width: 180 },
+  { title: 'Role', key: 'role', width: 190 },
+  { title: 'Status', key: 'status', width: 105 },
+  { title: 'Actions', key: 'actions', width: 100, align: 'right' },
 ];
-const userEditFieds = reactive({
-  id: 1,
-  first_name: "",
-  middle_name: "",
-  last_name: "",
-  location_id: "",
-  org_types_id: "HealthIT",
-  role_id: "",
-  id_no: "",
-  phone_no: "+254743793901",
-});
-import axios from "@/Axiosconfig";
-const currentPage = ref(1);
-const userEditModalopen = ref(false);
-const allowedRole = ref(true);
-const alloweRoleids = ref(["3", "7", "56", "53", "37", "15", "16"]);
 
-const pageSize = ref(100);
-const total = ref(0);
+// Roles that could edit users before national access was broadened. Kept so
+// the county / sub-county editors keep their existing action buttons.
+const LEGACY_EDITOR_ROLES = ['3', '7', '15', '16', '37', '53', '56'];
 
-const isLoading = ref(true);
+const canUpdateDetails = hasPermission('update_user_details');
+const canToggleStatus = hasPermission('deactive_activate_users');
+
+const profile = ref({});
+const currentLevelId = computed(() => Number(profile.value?.level?.id || 0));
+const isNational = computed(() => currentLevelId.value === 1);
+const currentRoleId = computed(() => String(profile.value?.role_id || ''));
+
+const canEditRecord = (record) => {
+  if (!canUpdateDetails.value) return false;
+  // National accounts are protected by the API — never offer the action.
+  if (Number(record.user_level_id) === 1) return false;
+  return isNational.value || LEGACY_EDITOR_ROLES.includes(currentRoleId.value);
+};
+
+const canToggleRecord = (record) => {
+  if (!canToggleStatus.value) return false;
+  if (Number(record.user_level_id) === 1) return false;
+  return isNational.value || LEGACY_EDITOR_ROLES.includes(currentRoleId.value);
+};
+
+const fmt = (value) => (value == null ? '0' : Number(value).toLocaleString());
+const fullName = (record) =>
+  [record.first_name, record.middle_name, record.last_name].filter(Boolean).join(' ') || '—';
+const initials = (record) =>
+  `${(record.first_name || ' ')[0]}${(record.last_name || ' ')[0]}`.trim().toUpperCase() || '?';
+
+const levelTone = (record) => {
+  const level = Number(record.user_level_id);
+  if (level === 1) return 'national';
+  if (level === 2) return 'county';
+  if (level === 3) return 'subcounty';
+  return 'local';
+};
+
+// ── List state ─────────────────────────────────────────────────────────────
 const dataSource = ref([]);
-const searchItem = ref("");
-const access_level = ref({});
-const filterAccessList = ref([]);
-const countries = ref([
-  { value: { id: 1, org_id: "HfVjCurKxh2" }, label: "Kenya" },
-]);
-const counties = ref(null);
-const subcounties = ref(null);
-const wards = ref(null);
-const locations = ref(null);
-const sublocations = ref(null);
-const country = ref("Select Country");
-const county = ref("Select County");
-const sublocation = ref("Select Sublocation");
-const subcounty = ref("Select Subcounty");
-const location = ref("Select Location");
-const ward = ref("Select Ward");
-const org_ids = ref([]);
-
-
-onMounted(async () => {
-  isLoading.value = true;
-  if (sessionStorage.getItem("user") != null) {
-    access_level.value = JSON.parse(sessionStorage.getItem("user")).user;
-    allowedRole.value = alloweRoleids.value.includes(
-      access_level.value.role_id.toString()
-    )
-      ? true
-      : false;
-    updateFilters();
-    // console.log(JSON.stringify(access_level.value.location));
-  }
-});
-
-const onPageChange = async (page) => {
-  currentPage.value = page;
-  // console.log(newPage);
-  fetchUsers();
-};
-//modal functions
-const handleEditUserCancel = (value) => {
-  console.log(value);
-  userEditModalopen.value = value;
-};
-const edit = (record) => {
-  userEditModalopen.value = true;
-  userEditFieds.id = record.id;
-  userEditFieds.first_name = record.first_name;
-  userEditFieds.middle_name = record.middle_name;
-  userEditFieds.last_name = record.last_name;
-  userEditFieds.org_types_id = record.org_types_id;
-  userEditFieds.location_id = record.location_id;
-  userEditFieds.role_id = record.role_id;
-  (userEditFieds.id_no = record.id_no),
-    (userEditFieds.phone_no = record.phone_no);
-};
-
-const toggleUser = (record) => {
-  axios
-    .post(`${process.env.VUE_APP_BASE_URL}/users/${record.id}/toggleStatus`, {
-      headers: authHeader(),
-    })
-    .then((response) => {
-      console.log(response);
-      if (response.status == 200) {
-        notification.success({
-          message: "Success",
-          description: response.data.message,
-        });
-      } else {
-        notification.success({
-          message: "info",
-          description: response.data.message,
-        });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-};
-const updateFilters = () => {
-
-  if (access_level.value.level.id == 1) {
-    filterAccessList.value = [
-      "country",
-      "county",
-      "subcounty",
-      "ward",
-      "location",
-      "sublocation",
-      "village",
-    ];
-    countries.value = [
-      {
-        value: access_level.value.location.org_id,
-        label: access_level.value.location.name,
-      },
-    ];
-    org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
-    ];
-    fetchCounties();
-  } else if (access_level.value.level.id == 2) {
-    filterAccessList.value = [
-      "county",
-      "subcounty",
-      "ward",
-      "location",
-      "sublocation",
-      "village",
-    ];
-    counties.value = [
-      {
-        value: access_level.value.location.org_id,
-        label: access_level.value.location.name,
-      },
-    ];
-    org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
-    ];
-  } else if (access_level.value.level.id == 3) {
-    filterAccessList.value = [
-      "subcounty",
-      "ward",
-      "location",
-      "sublocation",
-      "village",
-    ];
-    subcounties.value = [
-      {
-        value: access_level.value.location.org_id,
-        label: access_level.value.location.name,
-      },
-    ];
-    org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
-    ];
-  } else if (access_level.value.level.id == 4) {
-    filterAccessList.value = ["ward", "location", "sublocation", "village"];
-    wards.value = [
-      {
-        value: access_level.value.location.org_id,
-        label: access_level.value.location.name,
-      },
-    ];
-    org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
-    ];
-  } else if (access_level.value.level.id == 5) {
-    filterAccessList.value = ["location", "sublocation", "village"];
-    locations.value = [
-      {
-        value: access_level.value.location.org_id,
-        label: access_level.value.location.name,
-      },
-    ];
-    org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
-    ];
-  } else if (access_level.value.level.id == 6) {
-    filterAccessList.value = ["sublocation", "village"];
-    sublocations.value = [
-      {
-        value: access_level.value.location.org_id,
-        label: access_level.value.location.name,
-      },
-    ];
-    org_ids.value = [
-      {
-        id: access_level.value.location.id,
-        org_id: access_level.value.location.org_id,
-      },
-    ];
-  }
-  fetchUsers();
-};
-const handleChange = async (org_id, org_level) => {
-  //fetch child data
-  let org = org_ids.value.filter((x) => x.org_id === org_id).map((e) => e.id);
-  // console.log(org)
-  let parent_id = org[0] || 9;
-  // console.log(parent_id)
-  // console.log(org_level)
-  fetchChildData(parent_id, org_id, org_level);
-};
-const fetchChildData = async (location_id, org_id, org_level) => {
-  currentPage.value = 1;
-  let fetchUrl = `get_sub_counties_list`;
-  let masterListUrl = `users?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`;
-  if (org_level == "country") {
-    //get counties
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
-    //clear fields
-    county.value = "Select County";
-    subcounty.value = "Select SubCounty";
-    ward.value = " Select Ward";
-    location.value = "Select Location";
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "county") {
-    //get subcounties
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
-    //clear fields
-    subcounty.value = "Select SubCounty";
-    ward.value = " Select Ward";
-    location.value = "Select Location";
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "subcounty") {
-    //get wards
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
-    //clear fields
-    ward.value = " Select Ward";
-    location.value = "Select Location";
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "ward") {
-    //get locatios
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
-    //clear fields
-    location.value = "Select Location";
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "location") {
-    //get sub locatios
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
-    //clear fields
-    sublocation.value = "Select Sub Location";
-  } else if (org_level == "sublocation") {
-    //get sublocations stats
-    fetchUrl += `?parent_id=${org_id}`;
-    masterListUrl += `&location=${location_id}`;
-    //clear fields
-    sublocation.value = "Select Sub Location";
-    //village.value="Select Post"
-  } else if (org_level == "village") {
-    masterListUrl += `&location=${location_id}`;
-  }
-  await axios
-    .get(`${fetchUrl}`)
-    .then((response) => {
-      let data = response.data.message;
-      if (org_level == "country") {
-        //get counties
-        counties.value = data.map((x) => ({
-          value: x.org_id,
-          label: x.name,
-        }));
-        org_ids.value = data.map((x) => ({ org_id: x.org_id, id: x.id }));
-        counties.value.splice(0, 1);
-      } else if (org_level == "county") {
-        //get subcounties
-        subcounties.value = data.map((x) => ({
-          value: x.org_id,
-          label: x.name,
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map((x) => ({ org_id: x.org_id, id: x.id }))
-            .filter(
-              (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
-            ),
-        ];
-      } else if (org_level == "subcounty") {
-        //get wards
-        wards.value = data.map((x) => ({
-          value: x.org_id,
-          label: x.name,
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map((x) => ({ org_id: x.org_id, id: x.id }))
-            .filter(
-              (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
-            ),
-        ];
-      } else if (org_level == "ward") {
-        //get locations
-        locations.value = data.map((x) => ({
-          value: x.org_id,
-          label: x.name,
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data.map((x) => ({ org_id: x.org_id, id: x.id })),
-        ];
-      } else if (org_level == "location") {
-        //get sublocations
-        sublocations.value = data.map((x) => ({
-          value: x.org_id,
-          label: x.name,
-        }));
-        org_ids.value = [
-          ...org_ids.value,
-          ...data
-            .map((x) => ({ org_id: x.org_id, id: x.id }))
-            .filter(
-              (newItem) =>
-                !org_ids.value.some(
-                  (existingItem) => existingItem.id === newItem.id
-                )
-            ),
-        ];
-      }
-    })
-    .then(async () => {
-      await axios.get(`${masterListUrl}`).then((response) => {
-        // console.log(response.data)
-        let data = response.data;
-        const updatedData = data.data.map((record) => {
-          let fullName = `${record.first_name} ${record.middle_name} ${record.last_name}`;
-          let status = record.status == 1 ? "validated" : "Not Validated";
-          return {
-            ...record,
-            fullName,
-            status,
-          };
-        });
-        dataSource.value = updatedData;
-      });
-    })
-    .catch((error) => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
-    });
-};
-const fetchCounties = async () => {
-  axios
-    .get("counties/")
-    .then((response) => {
-      counties.value = response.data.map((x) => ({
-        value: x.org_id,
-        label: x.name,
-      }));
-    })
-    .catch((error) => {
-      notification.error({
-        message: `Error!`,
-        description: `${error}`,
-      });
-    });
-};
-const filterOption = (input, option) => {
-  return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-};
-
-const fetchUsers = async () => {
-  isLoading.value = true
-  try {
-    // Assuming you have an initial page number
-    const response = await axios.get(
-      `users?page=${currentPage.value}&per_page=${pageSize.value}&query=${searchItem.value}`
-    );
-    const data = await response.data;
-    total.value = parseInt(data.pagination.total);
-    dataSource.value = data.data;
-  } catch (error) {
-    console.error(error);
-  } finally{ 
-    isLoading.value = false
-  }
-};
-
-// search users
-watch(
-  () => searchItem.value,
-  (newValue) => {
-    searchItem.value = newValue;
-    fetchUsers();
-  }
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(20);
+const isLoading = ref(true);
+const searchItem = ref('');
+const viewMode = ref(
+  typeof window !== 'undefined' && window.innerWidth <= 991 ? 'cards' : 'table',
 );
 
+const nationalCount = computed(
+  () => dataSource.value.filter((record) => Number(record.user_level_id) === 1).length,
+);
+const countyCount = computed(
+  () => dataSource.value.filter((record) => Number(record.user_level_id) === 2).length,
+);
+const subCountyCount = computed(
+  () => dataSource.value.filter((record) => Number(record.user_level_id) >= 3).length,
+);
+
+// ── Location filters ───────────────────────────────────────────────────────
+const filterLevels = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation'];
+const country = ref(null);
+const county = ref(null);
+const subcounty = ref(null);
+const ward = ref(null);
+const location = ref(null);
+const sublocation = ref(null);
+const filterRefs = { country, county, subcounty, ward, location, sublocation };
+
+const filterAccessList = ref([]);
+const orgIndex = ref([]);
+const countries = ref([]);
+const counties = ref([]);
+const subcounties = ref([]);
+const wards = ref([]);
+const locations = ref([]);
+const sublocations = ref([]);
+
+const filterOption = (input, option) =>
+  String(option?.label || '').toLowerCase().includes(String(input || '').toLowerCase());
+
+const registerOrgIds = (items) => {
+  const map = new Map(orgIndex.value.map((entry) => [entry.org_id, entry]));
+  items.forEach((item) => {
+    if (item.id) map.set(item.value, { id: item.id, org_id: item.value });
+  });
+  orgIndex.value = Array.from(map.values());
+};
+
+const toOptions = (items) =>
+  (items || []).map((item) => ({ value: item.org_id, label: item.name, id: item.id }));
+
+// Deepest selected org unit → the numeric location_id the users endpoint
+// expects. Passing `location` (the old code) was ignored by the API.
+const selectedLocationId = computed(() => {
+  for (let i = filterLevels.length - 1; i >= 0; i -= 1) {
+    const value = filterRefs[filterLevels[i]].value;
+    if (!value) continue;
+    const entry = orgIndex.value.find((option) => option.org_id === value);
+    if (entry?.id) return entry.id;
+  }
+  return null;
+});
+
+const resetBelow = (level) => {
+  const index = filterLevels.indexOf(level);
+  filterLevels.slice(index + 1).forEach((key) => {
+    filterRefs[key].value = null;
+  });
+};
+
+const notifyError = (message, error) => {
+  notification.error({
+    message,
+    description: error?.response?.data?.message || 'Please try again.',
+  });
+};
+
+const fetchCounties = async () => {
+  try {
+    // `get_counties` is the ungated org-unit feed (the older `counties`
+    // endpoint is behind a `counties_list` permission that is not seeded, so
+    // it returned 403 for every role).
+    const { data } = await axios.get('get_counties');
+    const list = Array.isArray(data) ? data : (data?.data || data?.message || []);
+    counties.value = toOptions(list);
+    registerOrgIds(counties.value);
+  } catch (error) {
+    notifyError('Unable to load counties', error);
+  }
+};
+
+const loadChildren = async (orgId, level) => {
+  try {
+    const { data } = await axios.get('get_sub_counties_list', {
+      params: { parent_id: orgId },
+    });
+    const children = toOptions(data?.message);
+    registerOrgIds(children);
+
+    if (level === 'country') counties.value = children;
+    else if (level === 'county') subcounties.value = children;
+    else if (level === 'subcounty') wards.value = children;
+    else if (level === 'ward') locations.value = children;
+    else if (level === 'location') sublocations.value = children;
+  } catch (error) {
+    notifyError('Unable to load locations', error);
+  }
+};
+
+const handleFilterChange = async (value, level) => {
+  resetBelow(level);
+  currentPage.value = 1;
+
+  if (!value) {
+    fetchUsers();
+    return;
+  }
+
+  await loadChildren(value, level);
+  fetchUsers();
+};
+
+const updateFilters = () => {
+  const levelId = currentLevelId.value;
+  const home = profile.value?.location || {};
+  const homeOption = { value: home.org_id, label: home.name };
+
+  if (home.id && home.org_id) {
+    orgIndex.value = [{ id: home.id, org_id: home.org_id }];
+  }
+
+  if (levelId === 1) {
+    filterAccessList.value = [...filterLevels];
+    countries.value = [{ ...homeOption, label: home.name || 'Kenya', id: home.id }];
+    fetchCounties();
+  } else if (levelId === 2) {
+    filterAccessList.value = ['county', 'subcounty', 'ward', 'location', 'sublocation'];
+    counties.value = [homeOption];
+  } else if (levelId === 3) {
+    filterAccessList.value = ['subcounty', 'ward', 'location', 'sublocation'];
+    subcounties.value = [homeOption];
+  } else if (levelId === 4) {
+    filterAccessList.value = ['ward', 'location', 'sublocation'];
+    wards.value = [homeOption];
+  } else if (levelId === 5) {
+    filterAccessList.value = ['location', 'sublocation'];
+    locations.value = [homeOption];
+  } else if (levelId === 6) {
+    filterAccessList.value = ['sublocation'];
+    sublocations.value = [homeOption];
+  } else {
+    filterAccessList.value = [];
+  }
+
+  fetchUsers();
+};
+
+// ── Data fetching ──────────────────────────────────────────────────────────
+const fetchUsers = async () => {
+  isLoading.value = true;
+  try {
+    const params = {
+      page: currentPage.value,
+      per_page: pageSize.value,
+    };
+
+    if (searchItem.value.trim().length > 2) {
+      params.query = searchItem.value.trim();
+    }
+    if (selectedLocationId.value) {
+      params.location_id = selectedLocationId.value;
+    }
+
+    const { data } = await axios.get('users', { params });
+    total.value = Number(data?.pagination?.total || 0);
+    dataSource.value = (data?.data || []).map((record) => ({
+      ...record,
+      fullName: fullName(record),
+    }));
+  } catch (error) {
+    notifyError('Unable to load users', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const refresh = () => {
+  currentPage.value = 1;
+  fetchUsers();
+};
+
+const onPageChange = (page) => {
+  currentPage.value = page;
+  fetchUsers();
+};
+
+const onPageSizeChange = (_page, size) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  fetchUsers();
+};
+
+// Debounce the search so typing doesn't fire a request per keystroke.
+let searchTimer = null;
+const onSearchChange = () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1;
+    fetchUsers();
+  }, 350);
+};
+const onSearchNow = () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  currentPage.value = 1;
+  fetchUsers();
+};
+
+onBeforeUnmount(() => {
+  if (searchTimer) clearTimeout(searchTimer);
+});
+
+// ── Edit modal ─────────────────────────────────────────────────────────────
+const userEditModalOpen = ref(false);
+const editingUser = ref(null);
+const editingUserName = computed(() =>
+  editingUser.value ? fullName(editingUser.value) : '',
+);
+
+const userEditFields = reactive({
+  id: null,
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  location_id: '',
+  org_types_id: null,
+  role_id: null,
+  id_no: '',
+  phone_no: '',
+  current_id_no: '',
+});
+
+const edit = (record) => {
+  editingUser.value = record;
+  Object.assign(userEditFields, {
+    id: record.id,
+    first_name: record.first_name || '',
+    middle_name: record.middle_name || '',
+    last_name: record.last_name || '',
+    location_id: record.location_id || '',
+    org_types_id: record.user_org_type_id ?? null,
+    role_id: record.user_role_id ?? null,
+    id_no: '',
+    phone_no: record.phone_no || '',
+    current_id_no: record.id_no || '',
+  });
+  userEditModalOpen.value = true;
+};
+
+const closeEditModal = () => {
+  userEditModalOpen.value = false;
+};
+
+const onUserSaved = () => {
+  userEditModalOpen.value = false;
+  fetchUsers();
+};
+
+// ── Status toggle ──────────────────────────────────────────────────────────
+const toggleUser = async (record) => {
+  try {
+    const { data } = await axios.post(`users/${record.id}/toggleStatus`);
+    notification.success({
+      message: 'Success',
+      description: data?.message || 'User status updated.',
+    });
+    fetchUsers();
+  } catch (error) {
+    notifyError('Unable to update user status', error);
+  }
+};
+
+onMounted(async () => {
+  // Pull the freshest permission set so a national role that was just granted
+  // update_user_details sees the Edit action without having to log out/in.
+  const refreshed = await refreshUserData();
+  if (!refreshed) await fetchUserData();
+
+  try {
+    const stored = JSON.parse(sessionStorage.getItem('user') || '{}');
+    profile.value = stored.user || {};
+  } catch (error) {
+    profile.value = {};
+  }
+
+  updateFilters();
+});
 </script>
 
-<style>
-/* You can style the toggle switch as needed */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
+<style lang="less" scoped>
+/* ── Summary cards ─────────────────────────────────────────────────────── */
+.sum-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.sum-card {
+  background: linear-gradient(135deg, #f3fcf6 0%, #f9fffb 55%, #f4fcf6 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: box-shadow 0.15s, transform 0.15s;
+  &:hover {
+    box-shadow: 0 6px 14px rgba(28, 122, 72, 0.1);
+    transform: translateY(-1px);
+  }
+}
+.sum-label {
+  font-size: 11px;
+  color: #7a8a82;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.sum-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #15693c;
+  line-height: 1.1;
+  &.national { color: #6f3fcc; }
+  &.county { color: #2c99ff; }
+  &.subcounty { color: #0f9d58; }
 }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+/* ── Header actions ────────────────────────────────────────────────────── */
+.us-view-toggle {
+  display: inline-flex;
+  background: #f0f7f3;
+  border: 1px solid #d9f0e2;
+  border-radius: 22px;
+  padding: 3px;
+  gap: 2px;
 }
-
-.slider {
-  position: absolute;
+.us-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #5f7268;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 18px;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  &.active {
+    background: #fff;
+    color: #15693c;
+    box-shadow: 0 2px 6px rgba(28, 122, 72, 0.12);
+  }
+}
+.us-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 22px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  &:hover {
+    background: #15803d;
+    color: #fff;
+  }
+  &.secondary {
+    background: #fff;
+    color: #15693c;
+    border: 1px solid #9ad8b4;
+    &:hover {
+      background: #f3fcf6;
+      color: #15693c;
+    }
+  }
+}
+.pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  height: 40px;
+  &:hover, &:focus {
+    border-color: #9ad8b4 !important;
+    color: #15693c !important;
+  }
+  &.is-primary {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+    color: #fff !important;
+    &:hover, &:focus {
+      background: #15803d !important;
+      border-color: #15803d !important;
+    }
+  }
 }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
+/* ── Panels / filters ──────────────────────────────────────────────────── */
+.panel {
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
+  overflow: hidden;
+}
+.filter-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+}
+.filter-grid {
+  flex: 1 1 0;
+  min-width: 240px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  :deep(.ant-select) { width: 100%; }
+}
+.us-search {
+  position: relative;
+  flex: 0 0 auto;
+  margin-left: auto;
+  .search-icon {
+    position: absolute;
+    z-index: 2;
+    margin: 12px 0 0 13px;
+    color: #8a90a6;
+    pointer-events: none;
+  }
+  :deep(.ant-input-affix-wrapper),
+  :deep(.ant-input) {
+    display: flex;
+    align-items: center;
+    border-radius: 22px;
+    border: 1px solid #d9f0e2;
+    background: #f7fdf9;
+    padding: 0 16px 0 36px;
+    height: 40px;
+    width: 300px;
+    max-width: 100%;
+  }
+}
+.users-panel { padding: 10px; }
+.us-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
 }
 
-input:checked + .slider {
-  background-color: #1ec997;
+/* ── Table ─────────────────────────────────────────────────────────────── */
+.us-table-shell {
+  :deep(.ant-table) {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+  :deep(.ant-table-thead > tr > th) {
+    background: #f4fbf6;
+    color: #2f6746;
+    font-weight: 700;
+    border-bottom: 1px solid #e1efe6;
+    white-space: nowrap;
+  }
+  :deep(.ant-table-tbody > tr > td) {
+    border-bottom: 1px solid #f0f7f3;
+    padding: 10px 14px;
+    vertical-align: middle;
+  }
+  :deep(.ant-table-tbody > tr:hover > td) {
+    background: #f5fbf7;
+  }
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #1ec997;
+.us-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
-
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
+.us-avatar {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
+  background: #eafff5;
+  color: #15693c;
+  border: 1px solid #c9e6d3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.us-user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.us-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2437;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.us-user-meta {
+  font-size: 11px;
+  color: #8a90a6;
+}
+
+.us-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.us-contact-main {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2f3a35;
+}
+.us-contact-sub {
+  font-size: 11px;
+  color: #8a90a6;
+  word-break: break-all;
+}
+
+.us-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  &.national { background: #f3ebff; color: #6f3fcc; border-color: #d8c5f5; }
+  &.county { background: #e8effb; color: #335ec7; border-color: #c7d8f3; }
+  &.subcounty { background: #eafff5; color: #15693c; border-color: #c9e6d3; }
+  &.local { background: #f0f2f5; color: #5a6470; border-color: #e1e6ec; }
+}
+
+.us-location {
+  font-size: 12.5px;
+  color: #2f3a35;
+}
+.us-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2f6746;
+}
+
+.v-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #b8c2c8;
+  }
+  &.active {
+    color: #15693c;
+    .dot { background: #20c997; box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.15); }
+  }
+  &.inactive {
+    color: #c43d3d;
+    .dot { background: #f05a5a; }
+  }
+}
+
+.us-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.action-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #5a6470;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: #f0f7f2; color: #15693c; }
+  &.danger:hover { background: #fff1f1; color: #c43d3d; }
+  &.success:hover { background: #eafff5; color: #15693c; }
+}
+.us-no-action { color: #b8c2c8; }
+
+/* ── Cards view ────────────────────────────────────────────────────────── */
+.us-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 2px;
+}
+.us-card {
+  background: #fff;
+  border: 1px solid #e1efe6;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+}
+.us-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.us-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 12px;
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #7a8a82;
+    font-weight: 600;
+  }
+  .val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2f3a35;
+    word-break: break-word;
+  }
+}
+.us-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed #e1efe6;
+}
+.us-action-btn {
+  border-radius: 999px !important;
+  font-weight: 600;
+}
+
+.us-empty {
+  text-align: center;
+  padding: 44px 16px;
+  color: #9aa6ad;
+}
+.us-empty-icon {
+  font-size: 40px;
+  opacity: 0.4;
+  margin-bottom: 8px;
+}
+.us-empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4d5661;
+  margin-bottom: 4px;
+}
+.us-empty-desc {
+  font-size: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.us-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 8px 6px;
+}
+
+/* ── Edit modal ────────────────────────────────────────────────────────── */
+.um-shell {
+  display: flex;
+  flex-direction: column;
+}
+.um-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border-bottom: 1px solid #d9f0e2;
+}
+.um-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.um-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eafff5;
+  color: #15693c;
+  border: 1px solid #c9e6d3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.um-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2437;
+}
+.um-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #8a90a6;
+}
+.um-close {
+  border: 0;
+  background: transparent;
+  color: #7a8a82;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  line-height: 1;
+  &:hover { background: #eef6f1; color: #15693c; }
+}
+.um-body {
+  padding: 18px 22px 22px;
+}
+
+@media (max-width: 1200px) {
+  .sum-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 991px) {
+  .sum-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ph-actions { width: 100%; }
+  .us-search { width: 100%; margin-left: 0; }
+  .us-search :deep(.ant-input),
+  .us-search :deep(.ant-input-affix-wrapper) { width: 100%; }
+  .us-pagination { justify-content: center; }
+}
+@media (max-width: 575px) {
+  .sum-row { grid-template-columns: 1fr; }
+  .filter-grid { grid-template-columns: 1fr; }
+  .us-view-toggle { width: 100%; justify-content: center; }
+  .us-card-meta { grid-template-columns: 1fr; }
+  .us-card-foot { flex-direction: column; align-items: stretch; }
+  .us-actions { justify-content: flex-start; }
+}
+</style>
+
+<style lang="less">
+.user-edit-modal-wrap .ant-modal-content {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
+}
+.user-edit-modal-wrap .ant-modal-body {
+  padding: 0;
 }
 </style>
