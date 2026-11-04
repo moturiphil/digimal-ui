@@ -529,13 +529,24 @@
                     <span class="val">{{ masterlistRecord.location_code || "—" }}</span>
                   </div>
                   <div>
-                    <span class="lbl">Job group</span>
-                    <span class="val">{{ masterlistRecord.job_group || "—" }}</span>
-                  </div>
-                  <div>
                     <span class="lbl">Status</span>
                     <span class="v-status" :class="masterlistStatusTone">
                       <span class="dot"></span>{{ masterlistStatusLabel }}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="lbl">Sync status</span>
+                    <span
+                      class="v-status"
+                      :class="masterlistRecord.sync_status ? 'active' : 'unknown'"
+                      :title="
+                        masterlistRecord.sync_status
+                          ? 'Synced to the training platform'
+                          : 'Not yet synced to the training platform'
+                      "
+                    >
+                      <span class="dot"></span>
+                      {{ masterlistRecord.sync_status ? "Synced" : "Not synced" }}
                     </span>
                   </div>
                 </div>
