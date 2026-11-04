@@ -529,16 +529,6 @@
                     <span class="val">{{ masterlistRecord.location_code || "—" }}</span>
                   </div>
                   <div>
-                    <span class="lbl">Status</span>
-                    <span
-                      class="v-status"
-                      :class="masterlistStatusTone"
-                      :title="masterlistStatusTitle"
-                    >
-                      <span class="dot"></span>{{ masterlistStatusLabel }}
-                    </span>
-                  </div>
-                  <div>
                     <span class="lbl">Sync status</span>
                     <span
                       class="v-status"
@@ -1070,41 +1060,6 @@ const masterlistInitials = computed(() => {
   return `${first}${last}`.trim().toUpperCase() || '?';
 });
 
-// The master-list `status` column is a legacy import flag (always 0), so the
-// modal reports the registered ACCOUNT state instead:
-//   flag missing    → "Unknown"        (older backend, no has_account field)
-//   no account      → "Not registered"
-//   account status  → "Active" / "Inactive"
-const masterlistStatusLabel = computed(() => {
-  const record = masterlistRecord.value;
-  if (!record) return '—';
-  if (record.hasAccount === null) return 'Unknown';
-  if (record.hasAccount === false) return 'Not registered';
-  return record.userStatus ? 'Active' : 'Inactive';
-});
-
-const masterlistStatusTone = computed(() => {
-  const record = masterlistRecord.value;
-  if (!record) return 'unknown';
-  if (record.hasAccount !== true) return 'unknown';
-  return record.userStatus ? 'active' : 'inactive';
-});
-
-// Explains the badge on hover — makes "Not registered" self-explanatory.
-const masterlistStatusTitle = computed(() => {
-  const record = masterlistRecord.value;
-  if (!record) return '';
-  if (record.hasAccount === null) {
-    return 'The server did not report the account state for this record.';
-  }
-  if (record.hasAccount === false) {
-    return 'No account in the users table matches this ID number or phone number.';
-  }
-  return record.userStatus
-    ? 'Matched account in the users table is active.'
-    : 'Matched account in the users table is deactivated.';
-});
-
 const resetMasterlistSearch = () => {
   masterlistQuery.value = '';
   masterlistRecord.value = null;
@@ -1145,12 +1100,6 @@ const searchMasterlist = async () => {
             // rows carry a stale location code) but flagged for verification.
             withinScope: data.within_scope !== false,
             scopeMessage: data.scope_message || '',
-            // Account state — the master-list `status` flag is a legacy import
-            // value that is always 0, so the modal reports the real account.
-            // `null` means the API did not report the flag (older backend):
-            // show "Unknown" instead of wrongly claiming "Not registered".
-            hasAccount: data.has_account === undefined ? null : data.has_account === true,
-            userStatus: data.user_status === true,
           }
         : null;
     masterlistSearched.value = true;
