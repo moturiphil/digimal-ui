@@ -485,6 +485,14 @@
                   </span>
                 </div>
 
+                <a-alert
+                  v-if="masterlistRecord.scopeMessage"
+                  class="mc-scope-alert"
+                  type="warning"
+                  show-icon
+                  :message="masterlistRecord.scopeMessage"
+                />
+
                 <div class="mc-grid">
                   <div>
                     <span class="lbl">Phone</span>
@@ -505,6 +513,16 @@
                   <div>
                     <span class="lbl">Role</span>
                     <span class="val">{{ masterlistRecord.role || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Location</span>
+                    <span class="val">
+                      {{
+                        masterlistRecord.location_name ||
+                        masterlistRecord.location_code ||
+                        "—"
+                      }}
+                    </span>
                   </div>
                   <div>
                     <span class="lbl">Location code</span>
@@ -1073,7 +1091,15 @@ const searchMasterlist = async () => {
 
     masterlistRecord.value =
       data?.found && data?.data
-        ? { ...data.data, matchedBy: data.matched_by || 'id_no' }
+        ? {
+            ...data.data,
+            matchedBy: data.matched_by || 'id_no',
+            // The API reports whether the record sits inside the operator's own
+            // county. Records from elsewhere are still returned (most legacy
+            // rows carry a stale location code) but flagged for verification.
+            withinScope: data.within_scope !== false,
+            scopeMessage: data.scope_message || '',
+          }
         : null;
     masterlistSearched.value = true;
   } catch (error) {
@@ -1755,6 +1781,14 @@ onMounted(async () => {
   border: 1px solid transparent;
   &.user { background: #eef7ff; color: #1d6fb8; border-color: #cde5fa; }
   &.stakeholder { background: #fff6e6; color: #a4620a; border-color: #f6dfb8; }
+}
+.mc-scope-alert {
+  margin-top: 14px;
+  border-radius: 10px;
+  :deep(.ant-alert-message) {
+    font-size: 12px;
+    line-height: 1.5;
+  }
 }
 .mc-grid {
   display: grid;
