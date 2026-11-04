@@ -39,8 +39,12 @@
               <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
             </sdButton>
 
-            <router-link to="/events/add-stakeholder" class="us-create-btn">
-              <sdFeatherIcons type="user-plus" size="14" /> Add Stakeholder
+            <sdButton size="small" class="pill-btn" @click="openMasterlistModal">
+              <sdFeatherIcons type="clipboard" size="13" /> Check Masterlist
+            </sdButton>
+
+            <router-link to="/users/add-user" class="us-create-btn">
+              <sdFeatherIcons type="user-plus" size="14" /> Add User
             </router-link>
             <router-link to="/users/add-chp-ve" class="us-create-btn secondary">
               <sdFeatherIcons type="users" size="14" /> Add CHP &amp; VE
@@ -52,23 +56,28 @@
         <div class="sum-row">
           <div class="sum-card">
             <span class="sum-label">Total Users</span>
-            <span class="sum-value">{{ fmt(total) }}</span>
+            <span class="sum-value">{{ fmt(summary.total) }}</span>
+            <span class="sum-hint">All users in scope</span>
           </div>
           <div class="sum-card">
             <span class="sum-label">On This Page</span>
             <span class="sum-value">{{ fmt(dataSource.length) }}</span>
+            <span class="sum-hint">Current page only</span>
           </div>
           <div class="sum-card">
             <span class="sum-label">National</span>
-            <span class="sum-value national">{{ fmt(nationalCount) }}</span>
+            <span class="sum-value national">{{ fmt(summary.national) }}</span>
+            <span class="sum-hint">All national users</span>
           </div>
           <div class="sum-card">
             <span class="sum-label">County</span>
-            <span class="sum-value county">{{ fmt(countyCount) }}</span>
+            <span class="sum-value county">{{ fmt(summary.county) }}</span>
+            <span class="sum-hint">All county users</span>
           </div>
           <div class="sum-card">
             <span class="sum-label">Sub-County &amp; Below</span>
-            <span class="sum-value subcounty">{{ fmt(subCountyCount) }}</span>
+            <span class="sum-value subcounty">{{ fmt(summary.sub_county) }}</span>
+            <span class="sum-hint">All sub-county users</span>
           </div>
         </div>
 
@@ -382,6 +391,144 @@
           </div>
         </div>
       </a-modal>
+
+      <!-- Check masterlist modal -->
+      <a-modal
+        :visible="masterlistModalOpen"
+        :footer="null"
+        :closable="false"
+        :destroy-on-close="true"
+        width="640px"
+        wrap-class-name="masterlist-check-modal-wrap"
+        @cancel="closeMasterlistModal"
+      >
+        <div class="mc-shell">
+          <header class="mc-head">
+            <div class="mc-head-left">
+              <span class="mc-icon">
+                <sdFeatherIcons type="clipboard" size="16" />
+              </span>
+              <div>
+                <h3 class="mc-title">Check Masterlist</h3>
+                <p class="mc-sub">
+                  Search the master list by exact ID number or phone number.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="mc-close" @click="closeMasterlistModal">
+              <sdFeatherIcons type="x" size="15" />
+            </button>
+          </header>
+
+          <div class="mc-body">
+            <form class="mc-search" @submit.prevent="searchMasterlist">
+              <a-input
+                v-model:value="masterlistQuery"
+                placeholder="00123456, 0745450770, 745450770 or +254745450770"
+                allow-clear
+                @pressEnter="searchMasterlist"
+              >
+                <template #prefix>
+                  <sdFeatherIcons type="search" size="13" />
+                </template>
+              </a-input>
+              <sdButton
+                type="success"
+                htmlType="submit"
+                :loading="masterlistLoading"
+                :disabled="!masterlistQuery.trim()"
+                class="mc-btn"
+              >
+                Search
+              </sdButton>
+            </form>
+            <p class="mc-hint">
+              Phone numbers can be entered as 0745…, 745…, 254745… or
+              +254745…. Only an exact ID number or phone number match is
+              returned.
+            </p>
+
+            <div v-if="masterlistLoading" class="mc-loading"><a-spin /></div>
+
+            <template v-else-if="masterlistSearched">
+              <div v-if="masterlistRecord" class="mc-result">
+                <div class="mc-result-head">
+                  <span class="mc-avatar">{{ masterlistInitials }}</span>
+                  <div class="mc-result-name">
+                    <div class="mc-name">{{ masterlistRecord.full_name }}</div>
+                    <div class="mc-meta">ID · {{ masterlistRecord.id_no }}</div>
+                  </div>
+                  <span
+                    class="mc-badge"
+                    :class="masterlistRecord.is_stakeholder ? 'stakeholder' : 'user'"
+                  >
+                    {{ masterlistRecord.is_stakeholder ? "Stakeholder" : "User" }}
+                  </span>
+                </div>
+
+                <div class="mc-grid">
+                  <div>
+                    <span class="lbl">Phone</span>
+                    <span class="val">{{ masterlistRecord.phone_no || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Gender</span>
+                    <span class="val">{{ masterlistRecord.gender || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Level</span>
+                    <span class="val">{{ masterlistRecord.level || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Organisation</span>
+                    <span class="val">{{ masterlistRecord.organization || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Role</span>
+                    <span class="val">{{ masterlistRecord.role || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Location code</span>
+                    <span class="val">{{ masterlistRecord.location_code || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Job group</span>
+                    <span class="val">{{ masterlistRecord.job_group || "—" }}</span>
+                  </div>
+                  <div>
+                    <span class="lbl">Status</span>
+                    <span
+                      class="v-status"
+                      :class="masterlistRecord.status ? 'active' : 'inactive'"
+                    >
+                      <span class="dot"></span>
+                      {{ masterlistRecord.status ? "Active" : "Inactive" }}
+                    </span>
+                  </div>
+                </div>
+
+                <p class="mc-matched">
+                  Matched by
+                  {{
+                    masterlistRecord.matchedBy === "phone_no"
+                      ? "phone number"
+                      : "ID number"
+                  }}.
+                </p>
+              </div>
+
+              <div v-else class="mc-empty">
+                <div class="mc-empty-icon">🔍</div>
+                <div class="mc-empty-title">No matching record</div>
+                <div class="mc-empty-desc">
+                  No master-list record matches this ID number or phone number
+                  exactly.
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </a-modal>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -457,15 +604,39 @@ const viewMode = ref(
   typeof window !== 'undefined' && window.innerWidth <= 991 ? 'cards' : 'table',
 );
 
-const nationalCount = computed(
-  () => dataSource.value.filter((record) => Number(record.user_level_id) === 1).length,
-);
-const countyCount = computed(
-  () => dataSource.value.filter((record) => Number(record.user_level_id) === 2).length,
-);
-const subCountyCount = computed(
-  () => dataSource.value.filter((record) => Number(record.user_level_id) >= 3).length,
-);
+// Summary cards. These come from the API `summary` block, which counts every
+// National / County / Sub-County user in scope (search + location filters) —
+// not just the rows on the current page.
+const summary = reactive({
+  total: 0,
+  national: 0,
+  county: 0,
+  sub_county: 0,
+});
+
+const applySummary = (payload, fallbackTotal = 0) => {
+  if (payload) {
+    summary.total = Number(payload.total || 0);
+    summary.national = Number(payload.national || 0);
+    summary.county = Number(payload.county || 0);
+    summary.sub_county = Number(payload.sub_county || 0);
+    return;
+  }
+
+  // Older API responses carry no summary — fall back to the current page so
+  // the cards still render something sensible.
+  summary.total = Number(fallbackTotal || 0);
+  summary.national = 0;
+  summary.county = 0;
+  summary.sub_county = 0;
+
+  dataSource.value.forEach((record) => {
+    const level = Number(record.user_level_id);
+    if (level === 1) summary.national += 1;
+    else if (level === 2) summary.county += 1;
+    else if (level >= 3) summary.sub_county += 1;
+  });
+};
 
 // ── Location filters ───────────────────────────────────────────────────────
 const filterLevels = ['country', 'county', 'subcounty', 'ward', 'location', 'sublocation'];
@@ -628,6 +799,7 @@ const fetchUsers = async () => {
       ...record,
       fullName: fullName(record),
     }));
+    applySummary(data?.summary, total.value);
   } catch (error) {
     notifyError('Unable to load users', error);
   } finally {
@@ -730,6 +902,63 @@ const toggleUser = async (record) => {
   }
 };
 
+// ── Check masterlist modal ────────────────────────────────────────────────
+// Looks up one master-list record by an exact ID number or phone number. The
+// API accepts every common phone notation (0745…, 745…, 254745…, +254745…).
+const masterlistModalOpen = ref(false);
+const masterlistQuery = ref('');
+const masterlistLoading = ref(false);
+const masterlistSearched = ref(false);
+const masterlistRecord = ref(null);
+
+const masterlistInitials = computed(() => {
+  const first = (masterlistRecord.value?.first_name || ' ')[0];
+  const last = (masterlistRecord.value?.last_name || ' ')[0];
+  return `${first}${last}`.trim().toUpperCase() || '?';
+});
+
+const resetMasterlistSearch = () => {
+  masterlistQuery.value = '';
+  masterlistRecord.value = null;
+  masterlistSearched.value = false;
+  masterlistLoading.value = false;
+};
+
+const openMasterlistModal = () => {
+  resetMasterlistSearch();
+  masterlistModalOpen.value = true;
+};
+
+const closeMasterlistModal = () => {
+  masterlistModalOpen.value = false;
+  resetMasterlistSearch();
+};
+
+const searchMasterlist = async () => {
+  const identifier = masterlistQuery.value.trim();
+  if (!identifier || masterlistLoading.value) return;
+
+  masterlistLoading.value = true;
+  masterlistSearched.value = false;
+  masterlistRecord.value = null;
+
+  try {
+    const { data } = await axios.get('masterlist/check', {
+      params: { identifier },
+    });
+
+    masterlistRecord.value =
+      data?.found && data?.data
+        ? { ...data.data, matchedBy: data.matched_by || 'id_no' }
+        : null;
+    masterlistSearched.value = true;
+  } catch (error) {
+    notifyError('Unable to check the masterlist', error);
+  } finally {
+    masterlistLoading.value = false;
+  }
+};
+
 onMounted(async () => {
   // Pull the freshest permission set so a national role that was just granted
   // update_user_details sees the Edit action without having to log out/in.
@@ -784,6 +1013,12 @@ onMounted(async () => {
   &.national { color: #6f3fcc; }
   &.county { color: #2c99ff; }
   &.subcounty { color: #0f9d58; }
+}
+.sum-hint {
+  font-size: 10px;
+  font-weight: 500;
+  color: #9aa6ad;
+  letter-spacing: 0.2px;
 }
 
 /* ── Header actions ────────────────────────────────────────────────────── */
@@ -1155,6 +1390,191 @@ onMounted(async () => {
   padding: 14px 8px 6px;
 }
 
+/* ── Check masterlist modal ────────────────────────────────────────────── */
+.mc-shell {
+  display: flex;
+  flex-direction: column;
+}
+.mc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border-bottom: 1px solid #d9f0e2;
+}
+.mc-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.mc-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eafff5;
+  color: #15693c;
+  border: 1px solid #c9e6d3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mc-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2437;
+}
+.mc-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #8a90a6;
+}
+.mc-close {
+  border: 0;
+  background: transparent;
+  color: #7a8a82;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  line-height: 1;
+  &:hover { background: #eef6f1; color: #15693c; }
+}
+.mc-body {
+  padding: 18px 22px 22px;
+}
+.mc-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mc-btn {
+  border-radius: 999px !important;
+  font-weight: 600;
+  padding: 0 20px !important;
+  height: 34px !important;
+  flex-shrink: 0;
+}
+.mc-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.5;
+}
+.mc-loading {
+  display: flex;
+  justify-content: center;
+  padding: 26px 0;
+}
+.mc-result {
+  margin-top: 16px;
+  border: 1px solid #d9f0e2;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fffb 0%, #ffffff 60%);
+  padding: 16px;
+}
+.mc-result-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #d9f0e2;
+}
+.mc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #eafff5;
+  border: 1px solid #c9e6d3;
+  color: #15693c;
+  font-weight: 800;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mc-result-name {
+  min-width: 0;
+  flex: 1;
+}
+.mc-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2437;
+  line-height: 1.2;
+}
+.mc-meta {
+  font-size: 11px;
+  color: #8a90a6;
+  margin-top: 2px;
+}
+.mc-badge {
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  &.user { background: #eef7ff; color: #1d6fb8; border-color: #cde5fa; }
+  &.stakeholder { background: #fff6e6; color: #a4620a; border-color: #f6dfb8; }
+}
+.mc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+  margin-top: 14px;
+  .lbl {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #7a8a82;
+    font-weight: 600;
+  }
+  .val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2f3a35;
+    word-break: break-word;
+  }
+}
+.mc-matched {
+  margin: 14px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+}
+.mc-empty {
+  margin-top: 16px;
+  text-align: center;
+  padding: 30px 12px;
+  border: 1px dashed #e1efe6;
+  border-radius: 12px;
+  background: #fbfefc;
+}
+.mc-empty-icon {
+  font-size: 30px;
+  opacity: 0.5;
+  margin-bottom: 6px;
+}
+.mc-empty-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4d5661;
+  margin-bottom: 3px;
+}
+.mc-empty-desc {
+  font-size: 12px;
+  color: #9aa6ad;
+  max-width: 320px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
 /* ── Edit modal ────────────────────────────────────────────────────────── */
 .um-shell {
   display: flex;
@@ -1240,6 +1660,14 @@ onMounted(async () => {
   box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
 }
 .user-edit-modal-wrap .ant-modal-body {
+  padding: 0;
+}
+.masterlist-check-modal-wrap .ant-modal-content {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
+}
+.masterlist-check-modal-wrap .ant-modal-body {
   padding: 0;
 }
 </style>

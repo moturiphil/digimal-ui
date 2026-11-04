@@ -513,6 +513,13 @@ const normalizeListResponse = (payload) => {
   return [];
 };
 
+// Stakeholders may only be linked to a County (level 2) or Sub-County
+// (level 3) organisation — National organisations are filtered out here and
+// by the API (?exclude_national=1) so only County / Sub-County roles load.
+const STAKEHOLDER_ORG_LEVELS = [2, 3];
+const isCountyOrSubCountyOrg = (org) =>
+  STAKEHOLDER_ORG_LEVELS.includes(Number(org?.level_id));
+
 const clearErrors = () => {
   Object.keys(errors).forEach((field) => {
     errors[field] = "";
@@ -566,7 +573,7 @@ const applyApiErrors = (payload) => {
 const fetchOrganizations = async () => {
   loadingOrganizations.value = true;
   try {
-    const response = await fetch(`${API_URL}/organizations`, {
+    const response = await fetch(`${API_URL}/organizations?exclude_national=1`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -574,7 +581,10 @@ const fetchOrganizations = async () => {
       },
     });
     const payload = await response.json().catch(() => ({}));
-    organizations.value = normalizeListResponse(payload);
+    // Belt and braces: drop any National entry that still slips through.
+    organizations.value = normalizeListResponse(payload).filter(
+      isCountyOrSubCountyOrg
+    );
   } catch (error) {
     organizations.value = [];
     notification.error({

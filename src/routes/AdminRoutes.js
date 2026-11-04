@@ -410,6 +410,13 @@ const routes = [
         component: () => import("@/view/pages/users/addCHPVE.vue"),
       },
       {
+        // Add User: mirrors the Add Stakeholder form/workflow and creates a
+        // portal user under a County / Sub-County organisation.
+        path: "/users/add-user",
+        name: "users-add-user",
+        component: () => import("@/view/pages/users/addUser.vue"),
+      },
+      {
         path: "/users/cha",
         name: "view-cha",
         component: () => import("@/view/pages/users/registeredCHA.vue"),
