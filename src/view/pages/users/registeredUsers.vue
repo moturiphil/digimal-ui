@@ -243,8 +243,17 @@
                           />
                         </span>
                       </a-tooltip>
+                      <a-tooltip v-if="canTransferRecord(record)" title="Transfer user">
+                        <span class="action-icon transfer" @click="openTransferModal(record)">
+                          <sdFeatherIcons type="move" size="13" />
+                        </span>
+                      </a-tooltip>
                       <span
-                        v-if="!canEditRecord(record) && !canToggleRecord(record)"
+                        v-if="
+                          !canEditRecord(record) &&
+                          !canToggleRecord(record) &&
+                          !canTransferRecord(record)
+                        "
                         class="us-no-action"
                       >—</span>
                     </div>
@@ -332,6 +341,16 @@
                         size="12"
                       />
                       {{ record.status ? 'Deactivate' : 'Activate' }}
+                    </sdButton>
+                    <sdButton
+                      v-if="canTransferRecord(record)"
+                      size="extra-small"
+                      type="light"
+                      outlined
+                      class="us-action-btn"
+                      @click="openTransferModal(record)"
+                    >
+                      <sdFeatherIcons type="move" size="12" /> Transfer
                     </sdButton>
                   </div>
                 </div>
@@ -466,6 +485,14 @@
                   </span>
                 </div>
 
+                <a-alert
+                  v-if="masterlistRecord.scopeMessage"
+                  class="mc-scope-alert"
+                  type="warning"
+                  show-icon
+                  :message="masterlistRecord.scopeMessage"
+                />
+
                 <div class="mc-grid">
                   <div>
                     <span class="lbl">Phone</span>
@@ -488,21 +515,32 @@
                     <span class="val">{{ masterlistRecord.role || "—" }}</span>
                   </div>
                   <div>
+                    <span class="lbl">Location</span>
+                    <span class="val">
+                      {{
+                        masterlistRecord.location_name ||
+                        masterlistRecord.location_code ||
+                        "—"
+                      }}
+                    </span>
+                  </div>
+                  <div>
                     <span class="lbl">Location code</span>
                     <span class="val">{{ masterlistRecord.location_code || "—" }}</span>
                   </div>
                   <div>
-                    <span class="lbl">Job group</span>
-                    <span class="val">{{ masterlistRecord.job_group || "—" }}</span>
-                  </div>
-                  <div>
-                    <span class="lbl">Status</span>
+                    <span class="lbl">Sync status</span>
                     <span
                       class="v-status"
-                      :class="masterlistRecord.status ? 'active' : 'inactive'"
+                      :class="masterlistRecord.sync_status ? 'active' : 'unknown'"
+                      :title="
+                        masterlistRecord.sync_status
+                          ? 'Synced to the training platform'
+                          : 'Not yet synced to the training platform'
+                      "
                     >
                       <span class="dot"></span>
-                      {{ masterlistRecord.status ? "Active" : "Inactive" }}
+                      {{ masterlistRecord.sync_status ? "Synced" : "Not synced" }}
                     </span>
                   </div>
                 </div>
@@ -529,6 +567,93 @@
           </div>
         </div>
       </a-modal>
+      <!-- Transfer user modal -->
+      <a-modal
+        :visible="transferModalOpen"
+        :footer="null"
+        :closable="false"
+        :mask-closable="false"
+        :destroy-on-close="true"
+        width="640px"
+        wrap-class-name="user-transfer-modal-wrap"
+        @cancel="closeTransferModal"
+      >
+        <div class="tu-shell">
+          <header class="tu-head">
+            <div class="tu-head-left">
+              <span class="tu-icon"><sdFeatherIcons type="move" size="16" /></span>
+              <div>
+                <h3 class="tu-title">Transfer User</h3>
+                <p class="tu-sub">
+                  Move this user to another location inside your county.
+                </p>
+              </div>
+            </div>
+            <button type="button" class="tu-close" @click="closeTransferModal">
+              <sdFeatherIcons type="x" size="15" />
+            </button>
+          </header>
+
+          <div class="tu-body">
+            <div v-if="transferUser" class="tu-user">
+              <span class="tu-avatar">{{ transferInitials }}</span>
+              <div class="tu-user-text">
+                <span class="tu-user-name">{{ fullName(transferUser) }}</span>
+                <span class="tu-user-meta">
+                  ID · {{ transferUser.id_no || "—" }} · Phone ·
+                  {{ transferUser.phone_no || "—" }}
+                </span>
+              </div>
+            </div>
+
+            <div class="tu-field">
+              <span class="tu-label">Move to</span>
+              <a-select
+                v-model:value="transferLocationId"
+                show-search
+                allow-clear
+                :filter-option="false"
+                :options="transferLocationOptions"
+                :loading="transferLocationsLoading"
+                :not-found-content="transferLocationsLoading ? 'Searching…' : null"
+                placeholder="Search a sub-county, ward or location…"
+                @search="onTransferLocationSearch"
+                @change="onTransferLocationChange"
+              />
+              <p class="tu-hint">
+                Type at least 2 characters (e.g. “South Mugirango”). Each match
+                shows its level in brackets — e.g. South Mugirango (Location).
+                Only units inside your county are offered.
+              </p>
+            </div>
+
+            <div class="tu-current">
+              <div>
+                <span class="lbl">Current location</span>
+                <span class="val">{{ transferUser?.location_id || "—" }}</span>
+              </div>
+              <div>
+                <span class="lbl">Current level</span>
+                <span class="val">{{ transferUser?.level_id || "—" }}</span>
+              </div>
+            </div>
+
+            <footer class="tu-foot">
+              <sdButton size="small" class="pill-btn" @click="closeTransferModal">
+                Cancel
+              </sdButton>
+              <sdButton
+                type="success"
+                :loading="transferSaving"
+                :disabled="!transferLocationId || transferSaving"
+                @click="confirmTransfer"
+              >
+                <sdFeatherIcons type="check" size="13" /> Confirm transfer
+              </sdButton>
+            </footer>
+          </div>
+        </div>
+      </a-modal>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -551,7 +676,7 @@ const columns = [
   { title: 'Organisation', key: 'org', width: 180 },
   { title: 'Role', key: 'role', width: 190 },
   { title: 'Status', key: 'status', width: 105 },
-  { title: 'Actions', key: 'actions', width: 100, align: 'right' },
+  { title: 'Actions', key: 'actions', width: 130, align: 'right' },
 ];
 
 // Roles that could edit users before national access was broadened. Kept so
@@ -577,6 +702,23 @@ const canToggleRecord = (record) => {
   if (!canToggleStatus.value) return false;
   if (Number(record.user_level_id) === 1) return false;
   return isNational.value || LEGACY_EDITOR_ROLES.includes(currentRoleId.value);
+};
+
+// "Transfer user" — the CMCC (and any role granted `transfer_users`) moves a
+// user between the organisation units of their OWN county. The API scopes the
+// location feed to the caller's branch and re-derives the user's level from the
+// destination unit, so the UI only has to hide what the API protects anyway.
+const canTransferUsers = hasPermission('transfer_users');
+
+const canTransferRecord = (record) => {
+  if (!canTransferUsers.value) return false;
+  // National-level accounts are protected by the API — never offer the action.
+  if (Number(record.user_level_id) === 1) return false;
+  // Never offer to move your own account out of your own scope.
+  if (profile.value?.id != null && Number(record.id) === Number(profile.value.id)) {
+    return false;
+  }
+  return true;
 };
 
 const fmt = (value) => (value == null ? '0' : Number(value).toLocaleString());
@@ -840,6 +982,7 @@ const onSearchNow = () => {
 
 onBeforeUnmount(() => {
   if (searchTimer) clearTimeout(searchTimer);
+  if (transferSearchTimer) clearTimeout(transferSearchTimer);
 });
 
 // ── Edit modal ─────────────────────────────────────────────────────────────
@@ -949,13 +1092,129 @@ const searchMasterlist = async () => {
 
     masterlistRecord.value =
       data?.found && data?.data
-        ? { ...data.data, matchedBy: data.matched_by || 'id_no' }
+        ? {
+            ...data.data,
+            matchedBy: data.matched_by || 'id_no',
+            // The API reports whether the record sits inside the operator's own
+            // county. Records from elsewhere are still returned (most legacy
+            // rows carry a stale location code) but flagged for verification.
+            withinScope: data.within_scope !== false,
+            scopeMessage: data.scope_message || '',
+          }
         : null;
     masterlistSearched.value = true;
   } catch (error) {
     notifyError('Unable to check the masterlist', error);
   } finally {
     masterlistLoading.value = false;
+  }
+};
+
+// ── Transfer user modal ───────────────────────────────────────────────────
+// The location list is fetched from the API (never built client-side) so it is
+// always scoped to the caller's own county and every option arrives already
+// labelled "South Mugirango (Location)". Search is debounced and server-side —
+// a county branch holds thousands of sub-locations.
+const transferModalOpen = ref(false);
+const transferUser = ref(null);
+const transferLocationId = ref(undefined);
+const transferSelectedLocation = ref(null);
+const transferLocationOptions = ref([]);
+const transferLocationsLoading = ref(false);
+const transferSaving = ref(false);
+let transferSearchTimer = null;
+
+const transferInitials = computed(() => {
+  const record = transferUser.value || {};
+  const first = (record.first_name || ' ')[0];
+  const last = (record.last_name || ' ')[0];
+  return `${first}${last}`.trim().toUpperCase() || '?';
+});
+
+const fetchTransferLocations = async (term) => {
+  transferLocationsLoading.value = true;
+  try {
+    const { data } = await axios.get('users/transfer_locations', {
+      params: {
+        query: term && term.length >= 2 ? term : undefined,
+        limit: 50,
+      },
+    });
+
+    const list = Array.isArray(data?.data) ? data.data : [];
+    const options = list.map((item) => ({ value: item.id, label: item.label }));
+
+    // Keep the current selection visible after a new search so the field never
+    // falls back to showing the raw id.
+    const selected = transferSelectedLocation.value;
+    if (selected && !options.some((option) => option.value === selected.value)) {
+      options.unshift(selected);
+    }
+
+    transferLocationOptions.value = options;
+  } catch (error) {
+    notifyError('Unable to load transfer locations', error);
+  } finally {
+    transferLocationsLoading.value = false;
+  }
+};
+
+const onTransferLocationSearch = (value) => {
+  const term = String(value || '').trim();
+  if (transferSearchTimer) clearTimeout(transferSearchTimer);
+  transferSearchTimer = setTimeout(() => fetchTransferLocations(term), 300);
+};
+
+const onTransferLocationChange = (value) => {
+  transferSelectedLocation.value =
+    transferLocationOptions.value.find((option) => option.value === value) || null;
+};
+
+const resetTransferState = () => {
+  if (transferSearchTimer) clearTimeout(transferSearchTimer);
+  transferSearchTimer = null;
+  transferUser.value = null;
+  transferLocationId.value = undefined;
+  transferSelectedLocation.value = null;
+  transferLocationOptions.value = [];
+  transferLocationsLoading.value = false;
+  transferSaving.value = false;
+};
+
+const openTransferModal = (record) => {
+  resetTransferState();
+  transferUser.value = record;
+  transferModalOpen.value = true;
+  // Prime the dropdown with the first page of in-scope units.
+  fetchTransferLocations('');
+};
+
+const closeTransferModal = () => {
+  transferModalOpen.value = false;
+  resetTransferState();
+};
+
+const confirmTransfer = async () => {
+  const record = transferUser.value;
+  if (!record || !transferLocationId.value || transferSaving.value) return;
+
+  transferSaving.value = true;
+  try {
+    const { data } = await axios.post(`users/${record.id}/transfer`, {
+      location_id: transferLocationId.value,
+    });
+
+    notification.success({
+      message: 'Transfer complete',
+      description: data?.message || 'The user has been transferred.',
+    });
+
+    closeTransferModal();
+    fetchUsers();
+  } catch (error) {
+    notifyError('Unable to transfer the user', error);
+  } finally {
+    transferSaving.value = false;
   }
 };
 
@@ -1279,6 +1538,10 @@ onMounted(async () => {
     color: #c43d3d;
     .dot { background: #f05a5a; }
   }
+  &.unknown {
+    color: #7a8a82;
+    .dot { background: #b8c2c8; box-shadow: 0 0 0 3px rgba(184, 194, 200, 0.18); }
+  }
 }
 
 .us-actions {
@@ -1300,6 +1563,7 @@ onMounted(async () => {
   &:hover { background: #f0f7f2; color: #15693c; }
   &.danger:hover { background: #fff1f1; color: #c43d3d; }
   &.success:hover { background: #eafff5; color: #15693c; }
+  &.transfer:hover { background: #eef7ff; color: #1d6fb8; }
 }
 .us-no-action { color: #b8c2c8; }
 
@@ -1523,6 +1787,14 @@ onMounted(async () => {
   &.user { background: #eef7ff; color: #1d6fb8; border-color: #cde5fa; }
   &.stakeholder { background: #fff6e6; color: #a4620a; border-color: #f6dfb8; }
 }
+.mc-scope-alert {
+  margin-top: 14px;
+  border-radius: 10px;
+  :deep(.ant-alert-message) {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
 .mc-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1573,6 +1845,153 @@ onMounted(async () => {
   max-width: 320px;
   margin: 0 auto;
   line-height: 1.5;
+}
+
+/* ── Transfer user modal ───────────────────────────────────────────────── */
+.tu-shell {
+  display: flex;
+  flex-direction: column;
+}
+.tu-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  background: linear-gradient(90deg, #f3f6fc 0%, #f9fbff 45%, #f4f7fd 100%);
+  border-bottom: 1px solid #dbe6f5;
+}
+.tu-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.tu-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eef7ff;
+  color: #1d6fb8;
+  border: 1px solid #cde5fa;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tu-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2437;
+}
+.tu-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #8a90a6;
+}
+.tu-close {
+  border: 0;
+  background: transparent;
+  color: #7a8a82;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  line-height: 1;
+  &:hover { background: #eef4fb; color: #1d6fb8; }
+}
+.tu-body {
+  padding: 18px 22px 22px;
+}
+.tu-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #dbe6f5;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 60%);
+}
+.tu-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #eef7ff;
+  border: 1px solid #cde5fa;
+  color: #1d6fb8;
+  font-weight: 800;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tu-user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tu-user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2437;
+}
+.tu-user-meta {
+  font-size: 11px;
+  color: #8a90a6;
+}
+.tu-field {
+  margin-top: 16px;
+  :deep(.ant-select) { width: 100%; }
+}
+.tu-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #7a8a82;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.tu-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.5;
+}
+.tu-current {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px dashed #dbe6f5;
+  border-radius: 12px;
+  background: #fbfdff;
+  .lbl {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #7a8a82;
+    font-weight: 600;
+  }
+  .val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2f3a35;
+    word-break: break-word;
+  }
+}
+.tu-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
 }
 
 /* ── Edit modal ────────────────────────────────────────────────────────── */
@@ -1668,6 +2087,14 @@ onMounted(async () => {
   box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
 }
 .masterlist-check-modal-wrap .ant-modal-body {
+  padding: 0;
+}
+.user-transfer-modal-wrap .ant-modal-content {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
+}
+.user-transfer-modal-wrap .ant-modal-body {
   padding: 0;
 }
 </style>
