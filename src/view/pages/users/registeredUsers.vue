@@ -534,12 +534,8 @@
                   </div>
                   <div>
                     <span class="lbl">Status</span>
-                    <span
-                      class="v-status"
-                      :class="masterlistRecord.status ? 'active' : 'inactive'"
-                    >
-                      <span class="dot"></span>
-                      {{ masterlistRecord.status ? "Active" : "Inactive" }}
+                    <span class="v-status" :class="masterlistStatusTone">
+                      <span class="dot"></span>{{ masterlistStatusLabel }}
                     </span>
                   </div>
                 </div>
@@ -1059,6 +1055,24 @@ const masterlistInitials = computed(() => {
   return `${first}${last}`.trim().toUpperCase() || '?';
 });
 
+// The master-list `status` column is a legacy import flag (always 0), so the
+// modal reports the registered ACCOUNT state instead:
+//   no account      → "Not registered"
+//   account status  → "Active" / "Inactive"
+const masterlistStatusLabel = computed(() => {
+  const record = masterlistRecord.value;
+  if (!record) return '—';
+  if (!record.hasAccount) return 'Not registered';
+  return record.userStatus ? 'Active' : 'Inactive';
+});
+
+const masterlistStatusTone = computed(() => {
+  const record = masterlistRecord.value;
+  if (!record) return 'unknown';
+  if (!record.hasAccount) return 'unknown';
+  return record.userStatus ? 'active' : 'inactive';
+});
+
 const resetMasterlistSearch = () => {
   masterlistQuery.value = '';
   masterlistRecord.value = null;
@@ -1099,6 +1113,10 @@ const searchMasterlist = async () => {
             // rows carry a stale location code) but flagged for verification.
             withinScope: data.within_scope !== false,
             scopeMessage: data.scope_message || '',
+            // Account state — the master-list `status` flag is a legacy import
+            // value that is always 0, so the modal reports the real account.
+            hasAccount: data.has_account === true,
+            userStatus: data.user_status === true,
           }
         : null;
     masterlistSearched.value = true;
@@ -1536,6 +1554,10 @@ onMounted(async () => {
   &.inactive {
     color: #c43d3d;
     .dot { background: #f05a5a; }
+  }
+  &.unknown {
+    color: #7a8a82;
+    .dot { background: #b8c2c8; box-shadow: 0 0 0 3px rgba(184, 194, 200, 0.18); }
   }
 }
 
