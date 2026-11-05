@@ -298,9 +298,11 @@
           <div>
             <h2>Household transfers</h2>
             <p>
-              Move a household to another village in your sub-location and assign it to a
-              post inside that sub-location. The request goes to the SCMCC for approval and
-              the household keeps its current location until it is approved.
+              Move a household to another village in its sub-location and assign it to a post
+              inside that sub-location. Any verified household registered in the system can be
+              requested — it does not have to sit inside your own area of coverage. The request
+              goes to the SCMCC for approval and the household keeps its current location until
+              it is approved.
             </p>
           </div>
           <a-button size="small" :loading="transfersLoading" @click="fetchTransfers(1)">
@@ -325,7 +327,8 @@
           </div>
           <p class="transfer-hint">
             Only verified, active households can be transferred. Search with the ID number
-            used when the household was registered.
+            used when the household was registered — a household outside your own area of
+            coverage can still be requested.
           </p>
 
           <a-alert
@@ -1913,9 +1916,11 @@ const fetchVillages = async (page = 1) => {
 };
 
 // ── Household transfers (CHA) ────────────────────────────────────────────────
-// Step 1: search a verified household (by the household head's ID number).
-// Step 2: pick a destination village inside the household's sub-location — the
-//         CHA only validates one sub-location, so this is their sub-location.
+// Step 1: search a verified household (by the household head's ID number). The
+//         lookup is not limited to the caller's area of coverage: a CHA may
+//         request a transfer for any household registered in the system.
+// Step 2: pick a destination village inside the household's sub-location, so
+//         the move always stays within the sub-location it already belongs to.
 // Step 3: pick one of the posts mapped to that village's sub-location
 //         (post_sublocation_mapping, via sublocation_posts) and give a reason.
 // The request stays pending until an approver accepts it; the household keeps
@@ -2111,27 +2116,6 @@ const fetchTransferSublocationVillages = async (sublocationId) => {
   return collected;
 };
 
-/**
- * A household may be transferred when it sits inside the caller's own area of
- * coverage. The caller's org unit is compared against every ancestor recorded on
- * the household (county → sub-location), mirroring how `villages/list` scopes a
- * user: a CHA whose location is a sub-county matches `hh_subcounty_id`, one
- * bound to a sub-location matches `hh_sublocation_id`.
- */
-const householdInTransferScope = (household) => {
-  const scopeId = Number(activeScopeLocationId.value) || 0;
-  if (!scopeId) return true;
-
-  return [
-    household?.location_id,
-    household?.hh_sublocation_id,
-    household?.hh_location_id,
-    household?.hh_ward_id,
-    household?.hh_subcounty_id,
-    household?.hh_county_id,
-  ].some((carriedId) => Number(carriedId) === scopeId);
-};
-
 const transferVillageLabel = (record) => {
   const id = Number(record?.location_id) || 0;
   if (!id) return "—";
@@ -2217,6 +2201,25 @@ const prefetchTransferLabels = async (rows) => {
   );
 
   await Promise.all(unresolvedVillageIds.map((id) => fetchTransferVillageName(id)));
+
+  // A row whose destination village is outside the caller's scoped list (e.g. a
+  // transfer raised for a household in another area of coverage) has no
+  // `village_id` on file, and `ensureTransferPosts` needs it. Its destination
+  // sub-location (`hh_sublocation_id`) lists every village with both ids, so load
+  // those before resolving posts — otherwise the label is cached as an empty list.
+  const outOfScopeSublocationIds = [
+    ...new Set(
+      rows
+        .filter((row) => unresolvedVillageIds.includes(Number(row.location_id) || 0))
+        .map((row) => Number(row.hh_sublocation_id) || 0)
+    ),
+  ].filter(Boolean);
+
+  await Promise.all(
+    outOfScopeSublocationIds.map((sublocationId) =>
+      fetchTransferSublocationVillages(sublocationId)
+    )
+  );
 
   const pairs = rows
     .map((row) => ({ villageId: Number(row.location_id) || 0, postId: Number(row.post_id) || 0 }))
@@ -2304,15 +2307,9 @@ const searchTransferHousehold = async () => {
       return;
     }
 
-    // The household must sit inside the caller's own area of coverage. A CHA's
-    // `location_id` is usually the sub-county, so the match is against ANY
-    // ancestor the household records (sub-county, ward, location, sub-location).
-    if (!householdInTransferScope(household)) {
-      transferSearch.error =
-        "This household is outside your area of coverage, so it cannot be transferred from here.";
-      return;
-    }
-
+    // The lookup is intentionally NOT limited to the caller's area of coverage:
+    // a CHA may request a transfer for any verified household in the system.
+    // The destination always stays inside the household's own sub-location.
     const householdSubLocationId = Number(household.hh_sublocation_id) || 0;
 
     transferSearch.result = {
@@ -2365,9 +2362,10 @@ const searchTransferHousehold = async () => {
 
 /**
  * Step 2 — the village picker. Destination villages are the villages of the
- * household's sub-location (which is the CHA's area of coverage), i.e. exactly
- * "a village within their sub-location". Returns the rows so callers can tell
- * whether the sub-location even has somewhere to move to.
+ * household's own sub-location, so the move always stays within the sub-location
+ * the household already belongs to (any CHA may raise the transfer, not only one
+ * whose area of coverage contains the household). Returns the rows so callers
+ * can tell whether the sub-location even has somewhere to move to.
  */
 const loadTransferDestinationVillages = async (household = null) => {
   const target = household || transferModal.household;

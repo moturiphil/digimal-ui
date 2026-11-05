@@ -9,7 +9,7 @@
           <h2 class="stakeholder-pageheader-title">Add User</h2>
           <p class="stakeholder-pageheader-sub">
             Register a County or Sub-County user and confirm their phone number
-            with a one-time code before the account is created.
+            with a one-time code before the record is added to the master list.
           </p>
         </div>
       </div>
@@ -848,9 +848,9 @@ const createUser = async () => {
     });
 
     notification.success({
-      message: "User Created",
+      message: "User Registered",
       description:
-        data?.message || "The user account was created successfully.",
+        data?.message || "The user was added to the master list successfully.",
       duration: 5.5,
     });
 
