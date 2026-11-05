@@ -15,8 +15,11 @@
             <div class="bp-head-main">
               <h3 class="bp-title">{{ lso.lso_number || 'Local Service Order' }}</h3>
               <div class="bp-meta">
-                <span class="v-chip" :class="isExpired ? 'warn' : 'green'">
-                  {{ isExpired ? 'Expired' : 'Active' }}
+                <span
+                  class="v-chip"
+                  :class="isDelinked ? 'purple' : (isExpired ? 'warn' : 'green')"
+                >
+                  {{ isDelinked ? 'Delinked' : (isExpired ? 'Expired' : 'Active') }}
                 </span>
                 <span v-if="lso.service_type?.name" class="bp-sub">
                   {{ lso.service_type.name }}
@@ -232,6 +235,8 @@ export default {
       () => lso.value?.expiry_date &&
         dayjs(lso.value.expiry_date).isBefore(dayjs(), 'day'),
     );
+    // Delinked LSOs stay visible for history but can no longer be used.
+    const isDelinked = computed(() => !!lso.value?.is_delinked);
     const primaryContact = computed(() => {
       const list = vendor.value?.contacts || vendor.value?.active_contacts || [];
       return list.find((c) => c.is_primary) || list[0] || null;
@@ -364,6 +369,7 @@ export default {
       vendorLoading,
       vendorCategoryLabel,
       isExpired,
+      isDelinked,
       primaryContact,
       primaryBank,
       previewOpen,

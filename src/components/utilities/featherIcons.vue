@@ -20,25 +20,30 @@ export default defineComponent({
   setup(props) {
     const { size, color, fill, type, stroke, classes } = toRefs(props);
 
-    let activity = ref(
-      icons[type.value].toSvg({
-        "stroke-width": stroke.value,
-        width: size.value,
-        height: size.value,
-        color: color.value,
-        fill: fill.value,
-        class: classes.value,
-      })
-    );
+    // Guard against icon names that are not part of the installed
+    // `feather-icons` release (e.g. `unlink`). Falling back to a known icon
+    // keeps the whole page from crashing at render time.
+    const resolveIcon = (name) => icons[name] || icons["alert-circle"] || null;
+
+    const renderIcon = () => {
+      const icon = resolveIcon(type.value);
+
+      return icon
+        ? icon.toSvg({
+            "stroke-width": stroke.value,
+            width: size.value,
+            height: size.value,
+            color: color.value,
+            fill: fill.value,
+            class: classes.value,
+          })
+        : "";
+    };
+
+    let activity = ref(renderIcon());
 
     watchEffect(() => {
-      activity.value = icons[type.value].toSvg({
-        "stroke-width": stroke.value,
-        width: size.value,
-        height: size.value,
-        color: color.value,
-        fill: fill.value,
-      });
+      activity.value = renderIcon();
     });
 
     return {

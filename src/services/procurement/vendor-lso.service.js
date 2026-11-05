@@ -28,6 +28,15 @@ class VendorLsoService {
     return axios.get('get_all_vendor_lsos', { params });
   }
 
+  /**
+   * Open (active, non-expired, non-delinked) LSOs across vendors. Used for
+   * the "replacement LSO" picker when delinking an order that covers closed
+   * events.
+   */
+  open(params = {}) {
+    return axios.get('open_vendor_lsos', { params });
+  }
+
   show(vendorId, lsoId) {
     return axios.get(`get_vendor_lso/${vendorId}/${lsoId}`);
   }
@@ -49,6 +58,34 @@ class VendorLsoService {
 
   destroy(vendorId, lsoId) {
     return axios.delete(`delete_vendor_lso/${vendorId}/${lsoId}`);
+  }
+
+  /**
+   * What a delink would affect. When `requires_replacement` is true the LSO
+   * is attached to closed event(s) and a replacement must be supplied in the
+   * same delink request.
+   */
+  delinkImpact(vendorId, lsoId) {
+    return axios.get(`get_vendor_lso_delink_impact/${vendorId}/${lsoId}`);
+  }
+
+  /**
+   * Detach the LSO/LPO from the vendor without deleting it. The record stays
+   * on the vendor profile with a "Delinked" status for audit purposes but can
+   * no longer be linked to an event.
+   *
+   * `replacement_vendor_lso_id` is required when the LSO covers closed
+   * events; those events are re-linked to the replacement atomically.
+   */
+  delink(vendorId, lsoId, payload = {}) {
+    return axios.patch(`delink_vendor_lso/${vendorId}/${lsoId}`, payload);
+  }
+
+  /**
+   * Re-attach a previously delinked LSO/LPO to the vendor.
+   */
+  relink(vendorId, lsoId) {
+    return axios.patch(`relink_vendor_lso/${vendorId}/${lsoId}`);
   }
 
   /**

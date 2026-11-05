@@ -37,6 +37,32 @@
         </a-alert>
 
         <a-alert
+          v-else-if="requiresUploads && !status.complete"
+          type="warning"
+          show-icon
+          class="ec-blockers"
+        >
+          <template #message>Action required before closing</template>
+          <template #description>
+            <ul class="ec-blocker-list">
+              <li v-if="status.lso_delinked">
+                The LSO/LPO previously linked to this event has been delinked
+                from its vendor. Link another LSO/LPO below.
+              </li>
+              <li v-else-if="status.requires_lso && !status.has_lso">
+                Link the LSO/LPO covering the paid venue.
+              </li>
+              <li v-for="t in status.missing_types" :key="t">
+                Upload the missing {{ String(t).replace(/_/g, ' ') }}.
+              </li>
+              <li v-if="status.requires_fuel && !fuelComplete">
+                Add a fuel receipt and work ticket for every vehicle.
+              </li>
+            </ul>
+          </template>
+        </a-alert>
+
+        <a-alert
           v-else-if="requiresUploads"
           type="success"
           show-icon
@@ -52,12 +78,17 @@
           message="This event has no procurement documents to upload. You can close it directly."
         />
 
-        <!-- LSO link (when paid venue required but no LSO linked) -->
-        <section v-if="status.requires_lso && !status.has_lso" class="ec-section">
+        <!-- LSO link (paid venue without an LSO, or the linked LSO was delinked) -->
+        <section v-if="needsLsoLink" class="ec-section" :class="{ 'is-delinked': status.lso_delinked }">
           <h4 class="ec-section-title">
             <sdFeatherIcons type="file-text" size="14" /> Link LSO / LPO
           </h4>
-          <p class="ec-hint">
+          <p v-if="status.lso_delinked" class="ec-hint is-warn">
+            <sdFeatherIcons type="alert-triangle" size="12" />
+            The LSO/LPO previously linked to this event was delinked from its
+            vendor. Link another LSO/LPO before closing.
+          </p>
+          <p v-else class="ec-hint">
             A paid venue was flagged for this event. Link the covering LSO/LPO.
           </p>
           <div class="ec-row">
@@ -269,7 +300,11 @@ const status = reactive({
   requires_uploads: false,
   requires_lso: false,
   has_lso: false,
+  // True when the LSO/LPO currently attached to the event was delinked from
+  // its vendor. The host must pick a replacement LSO/LPO before closing.
+  lso_delinked: false,
   requires_fuel: false,
+  fuel: null,
   missing_types: [],
   complete: false,
   uploads: [],
@@ -288,6 +323,17 @@ const fuelWorkTicketList = ref([]);
 
 const vehicles = computed(() => status.vehicles || []);
 const requiresUploads = computed(() => !!status.requires_uploads);
+
+/**
+ * The LSO/LPO picker is shown whenever a paid venue needs an LSO and none is
+ * linked — including the case where the previously-linked LSO was delinked
+ * from its vendor (delinked orders are rejected by the backend).
+ */
+const needsLsoLink = computed(
+  () => (status.requires_lso && !status.has_lso) || status.lso_delinked
+);
+
+const fuelComplete = computed(() => status.fuel?.complete !== false);
 
 const needsVenueInvoice = computed(() =>
   (status.missing_types || []).includes("venue_invoice") ||
@@ -317,10 +363,10 @@ watch(
   () => props.visible,
   (open) => {
     if (open && props.event) {
+      // Reset any stale LSO state from a previous open.
+      lsoForm.vendor_lso_id = null;
+      openLsos.value = [];
       fetchStatus();
-      if (props.event.requires_paid_venue && !props.event.vendor_lso_id) {
-        fetchOpenLsos();
-      }
     }
   }
 );
@@ -346,11 +392,19 @@ const applyStatus = (data) => {
   status.requires_uploads = !!data.requires_uploads;
   status.requires_lso = !!data.requires_lso;
   status.has_lso = !!data.has_lso;
+  status.lso_delinked = !!data.lso_delinked;
   status.requires_fuel = !!data.requires_fuel;
+  status.fuel = data.fuel || null;
   status.missing_types = data.missing_types || [];
   status.complete = !!data.complete;
   status.uploads = data.uploads || [];
   status.vehicles = data.vehicles || [];
+
+  // Load the replacement-LSO options as soon as we know the host must pick
+  // one (paid venue with no LSO, or the previous LSO was delinked).
+  if (needsLsoLink.value && !openLsos.value.length) {
+    fetchOpenLsos();
+  }
 };
 
 const fetchOpenLsos = async () => {
@@ -601,6 +655,25 @@ const onCancel = () => {
     padding: 14px 16px;
     margin-bottom: 14px;
     background: #fbfdfc;
+
+    /* The linked LSO was delinked from its vendor — highlight the section
+       so the host notices they must pick a replacement. */
+    &.is-delinked {
+      border-color: #d8c5f5;
+      background: #fcfaff;
+      .ec-section-title { color: #6f3fcc; }
+    }
+  }
+
+  .ec-hint.is-warn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #8a5b00;
+    background: #fff8eb;
+    border: 1px solid #f3c97c;
+    border-radius: 6px;
+    padding: 6px 10px;
   }
 
   .ec-section-title {
