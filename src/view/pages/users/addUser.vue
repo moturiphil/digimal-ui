@@ -545,9 +545,15 @@ const applyApiErrors = (payload) => {
   });
 };
 
+// `otp` is declared in `otpSchema`, not in `userSchema` (the code is only
+// required once one has been sent), so validate each field against the schema
+// that actually owns it. Calling `validateAt()` with a path a schema does not
+// define makes Yup throw an internal "schema does not contain the path" error.
+const schemaForField = (field) => (field === "otp" ? otpSchema : userSchema);
+
 const validate = async (field) => {
   try {
-    await userSchema.validateAt(field, formState);
+    await schemaForField(field).validateAt(field, formState);
     errors[field] = "";
   } catch (err) {
     // `subcounty` has no Yup rule beyond being optional — it is required only
@@ -556,6 +562,9 @@ const validate = async (field) => {
       errors.subcounty = "";
       return;
     }
+    // Only real validation messages belong in the form. Yup's internal errors
+    // (unknown path, unresolved schema) are not user-facing.
+    if (!(err instanceof Yup.ValidationError)) return;
     errors[err.path || field] = err.message;
   }
 };
