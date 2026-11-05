@@ -914,9 +914,11 @@ const fetchPendingHeadChanges = async () => {
 };
 
 // Transfers are scoped by sub-county: the history row carries the destination
-// sub-county, which equals the reviewer's own sub-county (the CHA may only move
-// a household inside their area of coverage). The transfer endpoint has no
-// server-side scoping, so it is applied here. National scope (id 1) sees all.
+// sub-county, and a transfer always keeps the household inside the sub-location
+// it already belongs to, so the destination sub-county is the reviewer's own.
+// (Any CHA may raise the request, including one whose area of coverage does not
+// contain the household.) The transfer endpoint has no server-side scoping, so
+// it is applied here. National scope (id 1) sees all.
 const transferInReviewerScope = (row) => {
   const u = (sessionUser.value && sessionUser.value.user) || sessionUser.value || {};
   const scopeId = Number(u.location_id || (u.location && u.location.id) || 0);
