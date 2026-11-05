@@ -29,6 +29,12 @@
                   <span class="v-cat" :class="vendor.category || 'public'">
                     {{ vendorCategoryShortLabel(vendor.category) }}
                   </span>
+                  <span v-if="vendor.method_of_procurement" class="v-chip">
+                    {{ methodLabel }}
+                  </span>
+                  <span v-if="vendor.erp_id" class="v-chip muted">
+                    ERP: {{ vendor.erp_id }}
+                  </span>
                 </p>
               </div>
               <div class="ph-actions">
@@ -57,6 +63,33 @@
               </sdButton>
             </div>
           </header>
+
+          <!-- Summary strip (same visual language as the Vendors list) -->
+          <div class="sum-row">
+            <div class="sum-card">
+              <span class="sum-label">Status</span>
+              <span class="sum-value" :class="vendor.is_active ? 'active' : 'muted'">
+                {{ vendor.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <div class="sum-card">
+              <span class="sum-label">Bank Accounts</span>
+              <span class="sum-value">{{ bankAccountsCount }}</span>
+            </div>
+            <div class="sum-card">
+              <span class="sum-label">Contacts</span>
+              <span class="sum-value">{{ contactsCount }}</span>
+            </div>
+            <div class="sum-card">
+              <span class="sum-label">LSOs</span>
+              <span class="sum-value" :class="{ warn: delinkedLsosCount }">
+                {{ totalLsosCount }}
+              </span>
+              <span v-if="delinkedLsosCount" class="sum-note">
+                {{ delinkedLsosCount }} delinked
+              </span>
+            </div>
+          </div>
 
           <!-- Tabs -->
           <section class="panel">
@@ -89,6 +122,14 @@
                         {{ subCounty?.name || subCounty?.sub_county_name || '—' }}
                       </span>
                     </div>
+                    <div class="info-row">
+                      <span class="info-label">Procurement</span>
+                      <span class="info-value">{{ methodLabel }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">ERP ID</span>
+                      <span class="info-value">{{ vendor.erp_id || '—' }}</span>
+                    </div>
                   </div>
                   <div>
                     <h4 class="panel-title">Tax Compliance</h4>
@@ -116,6 +157,14 @@
                           {{ vendor.is_active ? 'Active' : 'Inactive' }}
                         </span>
                       </span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Primary Bank</span>
+                      <span class="info-value">{{ primaryBankLabel }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Primary Contact</span>
+                      <span class="info-value">{{ primaryContactLabel }}</span>
                     </div>
                   </div>
                 </div>
@@ -226,6 +275,35 @@ const taxCertExpiryLabel = computed(() => {
 const bankAccountsCount = computed(() => bankAccounts.value.length);
 const contactsCount = computed(() => contacts.value.length);
 const totalLsosCount = computed(() => lsos.value.length);
+const delinkedLsosCount = computed(
+  () => lsos.value.filter((l) => l.is_delinked).length,
+);
+
+const methodLabel = computed(() => {
+  const method = vendor.value?.method_of_procurement;
+  if (method === 'direct') return 'Direct procurement';
+  if (method === 'rfq') return 'RFQ';
+  return '—';
+});
+
+const primaryBankLabel = computed(() => {
+  const account = bankAccounts.value.find((a) => a.is_primary);
+  if (!account) return '—';
+
+  const bank = account.bank?.bank_name || account.bank?.name || 'Bank';
+  const digits = account.account_number || '';
+  const masked = digits.length > 4 ? `••••${digits.slice(-4)}` : digits;
+
+  return masked ? `${bank} · ${masked}` : bank;
+});
+
+const primaryContactLabel = computed(() => {
+  const contact = contacts.value.find((c) => c.is_primary);
+  if (!contact) return '—';
+
+  const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
+  return contact.phone_number ? `${name} · ${contact.phone_number}` : name;
+});
 
 const fetchVendor = () =>
   store.dispatch('procurement/fetchVendor', vendorId.value);
@@ -252,6 +330,60 @@ const onToggle = async () => {
 .bp-min {
   padding-top: 24px;
 }
+
+/* Summary strip — mirrors the Vendors list cards */
+.sum-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 14px;
+}
+.sum-card {
+  background: linear-gradient(135deg, #f3fcf6 0%, #f9fffb 55%, #f4fcf6 100%);
+  border: 1px solid #d9f0e2;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 6px 14px rgba(28, 122, 72, 0.1);
+    transform: translateY(-1px);
+  }
+}
+.sum-label {
+  font-size: 10px;
+  color: #7a8a82;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.sum-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #15693c;
+  line-height: 1.15;
+
+  &.active { color: #20c997; }
+  &.muted { color: #8a9399; }
+  &.warn { color: #b35a00; }
+}
+.sum-note {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6f3fcc;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+@media (max-width: 768px) {
+  .sum-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .sum-row { grid-template-columns: 1fr; }
+}
+
 .vendor-tabs {
   :deep(.ant-tabs-tab) {
     white-space: nowrap;

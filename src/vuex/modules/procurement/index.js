@@ -167,6 +167,16 @@ const mutations = {
     if (idx === -1) state.vendors.unshift(vendor);
     else state.vendors.splice(idx, 1, vendor);
   },
+  /**
+   * Merge a partial update (e.g. `{ is_active }` from the toggle endpoint)
+   * into the matching row without replacing the whole record.
+   */
+  patchVendor(state, { id, patch }) {
+    const idx = state.vendors.findIndex((v) => v.id === id);
+    if (idx !== -1) {
+      state.vendors.splice(idx, 1, { ...state.vendors[idx], ...patch });
+    }
+  },
 };
 
 const actions = {
@@ -263,11 +273,15 @@ const actions = {
   async toggleVendorStatus({ commit }, id) {
     try {
       const response = await vendorService.toggleStatus(id);
-      const vendor = unwrap(response);
-      commit('upsertVendor', vendor);
-      commit('patchCurrentVendor', vendor);
-      notification.success({ message: `Vendor ${vendor?.is_active ? 'activated' : 'deactivated'}` });
-      return vendor;
+      // The endpoint only returns `{ is_active }`; merge it into the existing
+      // row instead of replacing the record with a partial object.
+      const data = unwrap(response) || {};
+      const patch = { is_active: !!data.is_active };
+
+      commit('patchVendor', { id, patch });
+      commit('patchCurrentVendor', patch);
+      notification.success({ message: `Vendor ${patch.is_active ? 'activated' : 'deactivated'}` });
+      return patch;
     } catch (err) {
       notification.error({ message: 'Unable to toggle status', description: errMessage(err) });
       throw err;
@@ -445,6 +459,42 @@ const actions = {
       notification.success({ message: 'LSO removed' });
     } catch (err) {
       notification.error({ message: 'Unable to remove LSO', description: errMessage(err) });
+      throw err;
+    }
+  },
+
+  /**
+   * Detach an LSO from the vendor. The record is kept (status: Delinked) so
+   * the vendor's history stays intact.
+   *
+   * When the LSO covers closed event(s) the backend requires a replacement
+   * LSO to be supplied in the same request (`replacementVendorLsoId`).
+   */
+  async delinkLso({ commit }, { vendorId, id, replacementVendorLsoId = null }) {
+    try {
+      const response = await lsoService.delink(vendorId, id, {
+        replacement_vendor_lso_id: replacementVendorLsoId,
+      });
+      commit('upsertLso', unwrap(response));
+      notification.success({
+        message: 'LSO delinked',
+        description: replacementVendorLsoId
+          ? 'The closed event(s) were re-linked to the replacement LSO/LPO.'
+          : 'The LSO/LPO stays on this vendor marked as Delinked.',
+      });
+    } catch (err) {
+      notification.error({ message: 'Unable to delink LSO', description: errMessage(err) });
+      throw err;
+    }
+  },
+
+  async relinkLso({ commit }, { vendorId, id }) {
+    try {
+      const response = await lsoService.relink(vendorId, id);
+      commit('upsertLso', unwrap(response));
+      notification.success({ message: 'LSO re-linked to vendor' });
+    } catch (err) {
+      notification.error({ message: 'Unable to re-link LSO', description: errMessage(err) });
       throw err;
     }
   },

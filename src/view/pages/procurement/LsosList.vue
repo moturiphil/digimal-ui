@@ -62,6 +62,7 @@
           >
             <a-select-option value="active">Active</a-select-option>
             <a-select-option value="expired">Expired</a-select-option>
+            <a-select-option value="delinked">Delinked</a-select-option>
           </a-select>
           <sdButton
             size="small"
@@ -140,14 +141,14 @@
             </template>
 
             <template v-else-if="column.key === 'expiry_date'">
-              <span :class="isExpired(record) ? 'danger' : ''">
+              <span :class="isExpired(record) && !isDelinked(record) ? 'danger' : ''">
                 {{ formatDate(record.expiry_date) }}
               </span>
             </template>
 
             <template v-else-if="column.key === 'status'">
-              <span class="v-chip" :class="isExpired(record) ? 'warn' : 'green'">
-                {{ isExpired(record) ? 'Expired' : 'Active' }}
+              <span class="v-chip" :class="statusChipClass(record)">
+                {{ statusLabel(record) }}
               </span>
             </template>
 
@@ -632,6 +633,20 @@ export default {
     const isExpired = (l) =>
       l.expiry_date && dayjs(l.expiry_date).isBefore(dayjs(), 'day');
 
+    const isDelinked = (l) => !!l?.is_delinked;
+
+    // Delinked takes precedence over expired — the order can no longer be used.
+    const statusOf = (l) => {
+      if (isDelinked(l)) return 'delinked';
+      return isExpired(l) ? 'expired' : 'active';
+    };
+
+    const statusLabel = (l) =>
+      ({ delinked: 'Delinked', expired: 'Expired', active: 'Active' }[statusOf(l)]);
+
+    const statusChipClass = (l) =>
+      ({ delinked: 'purple', expired: 'warn', active: 'green' }[statusOf(l)]);
+
     const hasActiveFilters = computed(() =>
       Boolean(
         filters.search ||
@@ -969,6 +984,9 @@ export default {
       fmt,
       formatDate,
       isExpired,
+      isDelinked,
+      statusLabel,
+      statusChipClass,
       refresh,
       onFilterChange,
       onSearchInputChange,

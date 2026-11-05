@@ -23,16 +23,17 @@
           >{{ t.name || t.service_type_name }}</a-select-option>
         </a-select>
         <a-select
-          v-model:value="expiredFilter"
-          placeholder="Expiry"
+          v-model:value="statusFilter"
+          placeholder="Status"
           allow-clear
           size="small"
           class="bp-select"
-          style="width: 130px"
+          style="width: 140px"
           @change="onFilterChange"
         >
-          <a-select-option :value="false">Active</a-select-option>
-          <a-select-option :value="true">Expired</a-select-option>
+          <a-select-option value="active">Active</a-select-option>
+          <a-select-option value="expired">Expired</a-select-option>
+          <a-select-option value="delinked">Delinked</a-select-option>
         </a-select>
         <sdButton
           v-if="canManageVendors"
@@ -66,12 +67,12 @@
         v-for="lso in filteredLsos"
         :key="lso.id"
         class="lso-row"
-        :class="{ 'is-expired': isExpired(lso) }"
+        :class="{ 'is-expired': isExpired(lso) && !isDelinked(lso), 'is-delinked': isDelinked(lso) }"
       >
-        <div class="lso-number" :class="{ 'is-expired': isExpired(lso) }">
+        <div class="lso-number" :class="{ 'is-expired': isExpired(lso) && !isDelinked(lso) }">
           {{ lso.lso_number }}
-          <span class="lso-status">
-            {{ isExpired(lso) ? 'Expired' : 'Active' }}
+          <span class="lso-status" :class="`status-${lsoStatus(lso)}`">
+            {{ lsoStatusLabel(lso) }}
           </span>
         </div>
         <div class="lso-service">
@@ -85,7 +86,7 @@
           <div class="ld-row">
             <span class="ld-label">Expires</span>
             <span class="ld-value">{{ lso.expiry_date || '—' }}</span>
-            <span v-if="isExpired(lso)" class="expired-pill">!</span>
+            <span v-if="isExpired(lso) && !isDelinked(lso)" class="expired-pill">!</span>
           </div>
         </div>
         <div class="lso-actions">
@@ -104,6 +105,22 @@
               <sdFeatherIcons type="edit-2" size="13" />
             </span>
           </a-tooltip>
+          <a-tooltip
+            v-if="canManageVendors && !isDelinked(lso)"
+            title="Delink from vendor"
+          >
+            <span class="action-icon warn" @click="openDelink(lso)">
+              <sdFeatherIcons type="slash" size="13" />
+            </span>
+          </a-tooltip>
+          <a-tooltip
+            v-if="canManageVendors && isDelinked(lso)"
+            title="Re-link to vendor"
+          >
+            <span class="action-icon success" @click="onRelink(lso)">
+              <sdFeatherIcons type="link-2" size="13" />
+            </span>
+          </a-tooltip>
           <a-popconfirm
             v-if="canManageVendors"
             title="Delete this LSO?"
@@ -116,6 +133,13 @@
               </span>
             </a-tooltip>
           </a-popconfirm>
+        </div>
+        <div v-if="isDelinked(lso)" class="lso-notes-line is-delinked-note">
+          <sdFeatherIcons type="slash" size="12" />
+          <span>
+            This LSO/LPO is delinked from the vendor. Any event that was using
+            it must be linked to another LSO/LPO before it can be closed.
+          </span>
         </div>
         <div v-if="lso.notes" class="lso-notes-line">
           <strong>Notes:</strong> {{ lso.notes }}
@@ -276,6 +300,136 @@
       </div>
     </a-modal>
 
+    <!-- Delink LSO/LPO (asks for a replacement when closed events are attached) -->
+    <a-modal
+      :visible="delinkOpen"
+      :title="null"
+      :footer="null"
+      :closable="false"
+      :mask-closable="false"
+      width="600px"
+      wrap-class-name="lso-modal-wrap"
+      @cancel="closeDelink"
+      @update:visible="(v) => (delinkOpen = v)"
+    >
+      <div class="lm-shell">
+        <header class="lm-head">
+          <div class="lm-head-left">
+            <span class="lm-icon">
+              <sdFeatherIcons type="slash" size="18" />
+            </span>
+            <div>
+              <h3 class="lm-title">Delink LSO/LPO</h3>
+              <p class="lm-sub">
+                The order stays on this vendor for audit purposes, but it can
+                no longer be linked to events.
+              </p>
+            </div>
+          </div>
+          <button class="lm-close" type="button" @click="closeDelink">
+            <sdFeatherIcons type="x" size="16" />
+          </button>
+        </header>
+
+        <div class="lm-body">
+          <a-spin :spinning="delinkLoading">
+            <p class="dm-text">
+              You are about to delink
+              <strong>{{ delinkTarget?.lso_number || 'this LSO/LPO' }}</strong>
+              from <strong>{{ vendorName || 'this vendor' }}</strong>.
+            </p>
+
+            <a-alert
+              v-if="delinkImpact.requires_replacement"
+              type="warning"
+              show-icon
+              class="dm-alert"
+            >
+              <template #message>Replacement LSO/LPO required</template>
+              <template #description>
+                <p class="dm-alert-text">
+                  This LSO/LPO covers
+                  {{ delinkImpact.closed_events.length }}
+                  closed event{{ delinkImpact.closed_events.length === 1 ? '' : 's' }}.
+                  Closed events must keep a valid LSO/LPO for payroll, so choose
+                  the replacement now — it will be linked to the event(s) in
+                  this same step.
+                </p>
+                <ul class="dm-events">
+                  <li v-for="affected in delinkImpact.closed_events" :key="affected.id">
+                    <strong>{{ affected.name }}</strong>
+                    <span v-if="affected.start_date"> · started {{ affected.start_date }}</span>
+                  </li>
+                </ul>
+              </template>
+            </a-alert>
+
+            <a-alert
+              v-if="delinkError"
+              type="error"
+              show-icon
+              class="dm-alert"
+              :message="delinkError"
+            />
+
+            <a-form
+              v-if="delinkImpact.requires_replacement"
+              layout="vertical"
+              class="lm-form dm-form"
+            >
+              <a-form-item label="Replacement LSO/LPO">
+                <a-select
+                  v-model:value="delinkReplacementId"
+                  placeholder="Select a replacement LSO/LPO"
+                  show-search
+                  option-filter-prop="label"
+                  :loading="delinkOptionsLoading"
+                  :filter-option="optionFilter"
+                >
+                  <a-select-option
+                    v-for="option in delinkReplacementOptions"
+                    :key="option.id"
+                    :value="option.id"
+                    :label="lsoOptionLabel(option)"
+                  >
+                    {{ lsoOptionLabel(option) }}
+                  </a-select-option>
+                </a-select>
+                <p
+                  v-if="!delinkOptionsLoading && !delinkReplacementOptions.length"
+                  class="dm-empty"
+                >
+                  No open LSO/LPO is available to replace this one. Upload or
+                  re-link another LSO/LPO first.
+                </p>
+              </a-form-item>
+            </a-form>
+          </a-spin>
+        </div>
+
+        <footer class="lm-foot">
+          <span class="lm-foot-hint">
+            <sdFeatherIcons type="info" size="12" />
+            Delinked orders are excluded from every open-LSO picker.
+          </span>
+          <div class="lm-foot-actions">
+            <sdButton size="small" class="pill-btn" @click="closeDelink">
+              Cancel
+            </sdButton>
+            <sdButton
+              size="small"
+              type="danger"
+              :loading="delinkSubmitting"
+              :disabled="delinkLoading || (delinkImpact.requires_replacement && !delinkReplacementId)"
+              @click="confirmDelink"
+            >
+              {{ delinkImpact.requires_replacement ? 'Replace & Delink' : 'Delink' }}
+            </sdButton>
+          </div>
+        </footer>
+      </div>
+    </a-modal>
+
     <!-- Preview Drawer -->
     <a-drawer
       :open="previewOpen"
@@ -333,7 +487,8 @@ export default {
     const permissions = useProcurementPermissions();
 
     const serviceTypeFilter = ref(null);
-    const expiredFilter = ref(null);
+    // 'active' | 'expired' | 'delinked'
+    const statusFilter = ref(null);
 
     const modalOpen = ref(false);
     const editing = ref(null);
@@ -347,17 +502,47 @@ export default {
     const previewUrl = ref(null);
     const previewMime = ref(null);
 
+    // ── Delink flow ─────────────────────────────────────────────────────────
+    const delinkOpen = ref(false);
+    const delinkTarget = ref(null);
+    const delinkLoading = ref(false);
+    const delinkOptionsLoading = ref(false);
+    const delinkSubmitting = ref(false);
+    const delinkImpact = reactive({ requires_replacement: false, closed_events: [] });
+    const delinkReplacementId = ref(null);
+    const delinkReplacementOptions = ref([]);
+    const delinkError = ref('');
+
     const lsos = computed(() => store.state.procurement.lsos);
     const serviceTypes = computed(() => store.state.procurement.serviceTypes);
+    const vendorName = computed(
+      () => store.state.procurement.currentVendor?.name || '',
+    );
 
     const isExpired = (lso) =>
       lso.expiry_date && dayjs(lso.expiry_date).isBefore(dayjs(), 'day');
 
+    const isDelinked = (lso) => !!lso?.is_delinked;
+
+    /**
+     * Delinked takes precedence: those orders cannot be used at all, even if
+     * their expiry date is still in the future.
+     */
+    const lsoStatus = (lso) => {
+      if (isDelinked(lso)) return 'delinked';
+      return isExpired(lso) ? 'expired' : 'active';
+    };
+
+    const lsoStatusLabel = (lso) => {
+      const status = lsoStatus(lso);
+      if (status === 'delinked') return 'Delinked';
+      return status === 'expired' ? 'Expired' : 'Active';
+    };
+
     const filteredLsos = computed(() => {
       return lsos.value.filter((l) => {
         if (serviceTypeFilter.value && l.service_type_id !== serviceTypeFilter.value) return false;
-        if (expiredFilter.value === true && !isExpired(l)) return false;
-        if (expiredFilter.value === false && isExpired(l)) return false;
+        if (statusFilter.value && lsoStatus(l) !== statusFilter.value) return false;
         return true;
       });
     });
@@ -471,6 +656,130 @@ export default {
         id: record.id,
       });
 
+    // ── Delink: check impact, then (when required) replace closed-event LSOs ──
+    const resetDelink = () => {
+      delinkTarget.value = null;
+      delinkReplacementId.value = null;
+      delinkReplacementOptions.value = [];
+      delinkImpact.requires_replacement = false;
+      delinkImpact.closed_events = [];
+      delinkError.value = '';
+      delinkLoading.value = false;
+      delinkOptionsLoading.value = false;
+    };
+
+    const optionFilter = (input, option) => {
+      const text = (
+        option?.label
+        || option?.children?.[0]?.children
+        || option?.children
+        || ''
+      ).toString().toLowerCase();
+
+      return text.includes((input || '').toLowerCase());
+    };
+
+    const lsoOptionLabel = (record) => {
+      const number = record?.lso_number || `LSO #${record?.id}`;
+      const vendor = record?.vendor?.name ? ` — ${record.vendor.name}` : '';
+      const expiry = record?.expiry_date
+        ? ` (expires ${dayjs(record.expiry_date).format('DD MMM YYYY')})`
+        : '';
+
+      return `${number}${vendor}${expiry}`;
+    };
+
+    const fetchDelinkReplacementOptions = async () => {
+      delinkOptionsLoading.value = true;
+
+      try {
+        const res = await lsoService.open();
+        const list = res.data?.data || [];
+        delinkReplacementOptions.value = list.filter(
+          (option) => option.id !== delinkTarget.value?.id,
+        );
+      } catch (e) {
+        delinkReplacementOptions.value = [];
+        delinkError.value = 'Unable to load replacement LSO/LPO options.';
+      } finally {
+        delinkOptionsLoading.value = false;
+      }
+    };
+
+    const openDelink = async (record) => {
+      resetDelink();
+      delinkTarget.value = record;
+      delinkOpen.value = true;
+      delinkLoading.value = true;
+
+      try {
+        const res = await lsoService.delinkImpact(props.vendorId, record.id);
+        const data = res.data?.data || {};
+
+        delinkImpact.requires_replacement = !!data.requires_replacement;
+        delinkImpact.closed_events = data.closed_events || [];
+
+        if (delinkImpact.requires_replacement) {
+          await fetchDelinkReplacementOptions();
+        }
+      } catch (e) {
+        delinkError.value =
+          e?.response?.data?.message
+          || 'Unable to check the events linked to this LSO/LPO.';
+      } finally {
+        delinkLoading.value = false;
+      }
+    };
+
+    const closeDelink = () => {
+      delinkOpen.value = false;
+      resetDelink();
+    };
+
+    const confirmDelink = async () => {
+      if (!delinkTarget.value) return;
+
+      if (delinkImpact.requires_replacement && !delinkReplacementId.value) {
+        delinkError.value = 'Select a replacement LSO/LPO before delinking.';
+        return;
+      }
+
+      delinkSubmitting.value = true;
+      delinkError.value = '';
+
+      try {
+        await store.dispatch('procurement/delinkLso', {
+          vendorId: props.vendorId,
+          id: delinkTarget.value.id,
+          replacementVendorLsoId: delinkReplacementId.value || null,
+        });
+        closeDelink();
+      } catch (e) {
+        const data = e?.response?.data;
+
+        // A stale impact check may miss a closed event; the backend responds
+        // with the closed-event list so we can prompt for a replacement.
+        if (data?.requires_replacement) {
+          delinkImpact.requires_replacement = true;
+          delinkImpact.closed_events = data.closed_events || [];
+
+          if (!delinkReplacementOptions.value.length) {
+            await fetchDelinkReplacementOptions();
+          }
+        }
+
+        delinkError.value = data?.message || 'Unable to delink this LSO/LPO.';
+      } finally {
+        delinkSubmitting.value = false;
+      }
+    };
+
+    const onRelink = (record) =>
+      store.dispatch('procurement/relinkLso', {
+        vendorId: props.vendorId,
+        id: record.id,
+      });
+
     let lastBlobUrl = null;
     const preview = async (lso) => {
       previewOpen.value = true;
@@ -523,7 +832,7 @@ export default {
     return {
       ...permissions,
       serviceTypeFilter,
-      expiredFilter,
+      statusFilter,
       LSO_MAX_FILE_MB,
       modalOpen,
       editing,
@@ -535,10 +844,29 @@ export default {
       previewLoading,
       previewUrl,
       previewMime,
+      // delink flow
+      delinkOpen,
+      delinkTarget,
+      delinkLoading,
+      delinkOptionsLoading,
+      delinkSubmitting,
+      delinkImpact,
+      delinkReplacementId,
+      delinkReplacementOptions,
+      delinkError,
+      vendorName,
+      optionFilter,
+      lsoOptionLabel,
+      openDelink,
+      closeDelink,
+      confirmDelink,
       lsos,
       serviceTypes,
       filteredLsos,
       isExpired,
+      isDelinked,
+      lsoStatus,
+      lsoStatusLabel,
       onFilterChange,
       openCreate,
       openEdit,
@@ -547,6 +875,7 @@ export default {
       clearFile,
       onSubmit,
       onDelete,
+      onRelink,
       preview,
       closePreview,
       download,
@@ -581,6 +910,88 @@ export default {
     align-items: center;
     flex-wrap: wrap;
   }
+}
+
+/* Action icons — warn state for the "delink" affordance */
+.action-icon.warn:hover {
+  background: #f6f1ff;
+  color: #6f3fcc;
+}
+
+/*
+ * Delinked LSO rows: kept on the vendor for audit/history, muted purple so
+ * they are visually distinct from both active (white/green) and expired
+ * (red) orders.
+ */
+.lso-row.is-delinked {
+  border-color: #e3d7f5;
+  background: #fcfaff;
+  .lso-number { color: #6f3fcc; }
+  .lso-service { color: #6f3fcc; }
+}
+.lso-row .lso-number .lso-status {
+  &.status-delinked {
+    background: #f3ebff;
+    color: #6f3fcc;
+    border: 1px solid #d8c5f5;
+  }
+  &.status-expired {
+    background: #fff1f1;
+    color: #c43d3d;
+    border: 1px solid #ffd1d1;
+  }
+  &.status-active {
+    background: #eafff5;
+    color: #15693c;
+    border: 1px solid #c9e6d3;
+  }
+}
+.lso-notes-line.is-delinked-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f6f1ff;
+  color: #6f3fcc;
+  border: 1px dashed #d8c5f5;
+}
+
+/* Delink modal */
+.dm-text {
+  font-size: 13px;
+  color: #2f3742;
+  margin: 0 0 12px;
+  line-height: 1.55;
+}
+.dm-alert {
+  margin-bottom: 14px;
+}
+.dm-alert-text {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dm-events {
+  margin: 0;
+  padding-left: 18px;
+  max-height: 140px;
+  overflow-y: auto;
+  li {
+    font-size: 12px;
+    margin-bottom: 2px;
+    color: #4d5661;
+  }
+}
+.dm-form {
+  margin-top: 4px;
+}
+.dm-empty {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #8a5b00;
+  background: #fff8eb;
+  border: 1px solid #f3c97c;
+  border-radius: 6px;
+  padding: 6px 10px;
 }
 
 /* LSO upload modal */

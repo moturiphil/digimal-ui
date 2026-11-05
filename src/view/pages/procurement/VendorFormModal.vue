@@ -891,16 +891,20 @@ export default {
         : [blankBankAccount(true)];
       syncBankKeys();
       const cts = v.contacts || v.active_contacts || [];
-      form.contacts = cts.map((c) => ({
-        id: c.id,
-        first_name: c.first_name || '',
-        middle_name: c.middle_name || '',
-        last_name: c.last_name || '',
-        phone_number: c.phone_number || '',
-        email: c.email || '',
-        is_primary: !!c.is_primary,
-        is_active: c.is_active !== false,
-      }));
+      // Every vendor must keep at least one contact, so seed a blank primary
+      // row for legacy vendors that were created without one.
+      form.contacts = cts.length
+        ? cts.map((c) => ({
+            id: c.id,
+            first_name: c.first_name || '',
+            middle_name: c.middle_name || '',
+            last_name: c.last_name || '',
+            phone_number: c.phone_number || '',
+            email: c.email || '',
+            is_primary: !!c.is_primary,
+            is_active: c.is_active !== false,
+          }))
+        : [blankContact(true)];
       // ensure subcounties cached
       if (form.county_id) {
         store.dispatch('procurement/fetchSubcounties', { countyId: form.county_id });
@@ -1177,9 +1181,21 @@ export default {
         if (!form.kra_pin?.trim()) errors.kra_pin = 'KRA PIN required for private vendors';
         else if (!KRA_REGEX.test(form.kra_pin.trim())) errors.kra_pin = 'Invalid KRA PIN format';
 
-        if (!form.tax_compliance_expiry_date) {
+        // On edit, an existing (possibly already expired) certificate date may
+        // be kept unchanged — otherwise vendors with an expired certificate
+        // could never update their bank/contact details.
+        const originalExpiry = props.vendor?.tax_compliance_expiry_date
+          ? dayjs(props.vendor.tax_compliance_expiry_date).format('YYYY-MM-DD')
+          : null;
+        const chosenExpiry = form.tax_compliance_expiry_date
+          ? dayjs(form.tax_compliance_expiry_date).format('YYYY-MM-DD')
+          : null;
+        const keepingExistingExpiry =
+          isEdit.value && originalExpiry && chosenExpiry === originalExpiry;
+
+        if (!chosenExpiry) {
           errors.tax_compliance_expiry_date = 'Expiry date required';
-        } else if (dayjs(form.tax_compliance_expiry_date).isBefore(dayjs().endOf('day'))) {
+        } else if (!keepingExistingExpiry && dayjs(chosenExpiry).isBefore(dayjs().endOf('day'))) {
           errors.tax_compliance_expiry_date = 'Must be after today';
         }
 
@@ -1196,7 +1212,10 @@ export default {
 
       form.bank_accounts.forEach((a, i) => {
         const e = {};
-        if (!a.bank_key) e.bank_key = 'Required';
+        // `bank_key` is only the UI grouping key for the Bank Name select; the
+        // persisted value is `bank_id`. An existing row whose bank_id is set
+        // is valid even if the banks lookup has not populated bank_key yet.
+        if (!a.bank_key && !a.bank_id) e.bank_key = 'Required';
         if (!a.bank_id) e.bank_id = 'Required';
         if (!a.account_number?.trim()) e.account_number = 'Required';
         else if (!/^\d+$/.test(a.account_number.trim())) e.account_number = 'Digits only';
@@ -1378,7 +1397,28 @@ export default {
         if (fieldErrors && typeof fieldErrors === 'object') {
           Object.entries(fieldErrors).forEach(([key, msgs]) => {
             const msg = Array.isArray(msgs) ? msgs[0] : String(msgs);
-            errors[key] = msg;
+
+            // Map nested validation errors back to their row-level error
+            // objects so they show inline next to the bank/contact inputs.
+            const bankMatch = key.match(/^bank_accounts\.(\d+)\.(.+)$/);
+            const contactMatch = key.match(/^contacts\.(\d+)\.(.+)$/);
+
+            if (bankMatch) {
+              const idx = Number(bankMatch[1]);
+              bankErrors.value[idx] = {
+                ...(bankErrors.value[idx] || {}),
+                [bankMatch[2]]: msg,
+              };
+            } else if (contactMatch) {
+              const idx = Number(contactMatch[1]);
+              contactErrors.value[idx] = {
+                ...(contactErrors.value[idx] || {}),
+                [contactMatch[2]]: msg,
+              };
+            } else {
+              errors[key] = msg;
+            }
+
             descriptionLines.push(msg);
           });
         }
