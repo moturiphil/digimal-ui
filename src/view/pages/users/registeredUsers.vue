@@ -584,9 +584,7 @@
               <span class="tu-icon"><sdFeatherIcons type="move" size="16" /></span>
               <div>
                 <h3 class="tu-title">Transfer User</h3>
-                <p class="tu-sub">
-                  Move this user to another location inside your county.
-                </p>
+                <p class="tu-sub">{{ transferScopeHint }}</p>
               </div>
             </div>
             <button type="button" class="tu-close" @click="closeTransferModal">
@@ -615,15 +613,29 @@
                 :filter-option="false"
                 :options="transferLocationOptions"
                 :loading="transferLocationsLoading"
-                :not-found-content="transferLocationsLoading ? 'Searching…' : null"
-                placeholder="Search a sub-county, ward or location…"
+                :not-found-content="transferLocationNotFound"
+                :placeholder="transferLocationPlaceholder"
                 @search="onTransferLocationSearch"
                 @change="onTransferLocationChange"
               />
+              <p class="tu-hint">{{ transferLocationHint }}</p>
+            </div>
+
+            <div v-if="transferRequiresRole" class="tu-field">
+              <span class="tu-label">New role</span>
+              <a-select
+                v-model:value="transferRoleId"
+                show-search
+                allow-clear
+                :options="transferRoleOptions"
+                :loading="transferRolesLoading"
+                :not-found-content="transferRolesLoading ? 'Loading roles…' : null"
+                placeholder="Select the role for the new level"
+              />
               <p class="tu-hint">
-                Type at least 2 characters (e.g. “South Mugirango”). Each match
-                shows its level in brackets — e.g. South Mugirango (Location).
-                Only units inside your county are offered.
+                This move changes the user’s level ({{ transferCurrentLevelName }} →
+                {{ transferDestinationLevelName }}). Select the role they will hold at
+                the new level.
               </p>
             </div>
 
@@ -636,6 +648,10 @@
                 <span class="lbl">Current level</span>
                 <span class="val">{{ transferUser?.level_id || "—" }}</span>
               </div>
+              <div>
+                <span class="lbl">Current role</span>
+                <span class="val">{{ transferUser?.role_id || "—" }}</span>
+              </div>
             </div>
 
             <footer class="tu-foot">
@@ -645,7 +661,11 @@
               <sdButton
                 type="success"
                 :loading="transferSaving"
-                :disabled="!transferLocationId || transferSaving"
+                :disabled="
+                  !transferLocationId ||
+                  (transferRequiresRole && !transferRoleId) ||
+                  transferSaving
+                "
                 @click="confirmTransfer"
               >
                 <sdFeatherIcons type="check" size="13" /> Confirm transfer
@@ -704,10 +724,11 @@ const canToggleRecord = (record) => {
   return isNational.value || LEGACY_EDITOR_ROLES.includes(currentRoleId.value);
 };
 
-// "Transfer user" — the CMCC (and any role granted `transfer_users`) moves a
-// user between the organisation units of their OWN county. The API scopes the
-// location feed to the caller's branch and re-derives the user's level from the
-// destination unit, so the UI only has to hide what the API protects anyway.
+// "Transfer user" — the caller's tier decides the scope (national programme
+// officers: county ↔ sub-county; CMCC / CHRIO: their own county ↔ its
+// sub-counties; SCMCC / SCHRIO: inside their own sub-county). The API scopes
+// every feed and re-derives the user's level from the destination unit, so the
+// UI only has to hide what the API protects anyway.
 const canTransferUsers = hasPermission('transfer_users');
 
 const canTransferRecord = (record) => {
@@ -1111,18 +1132,97 @@ const searchMasterlist = async () => {
 };
 
 // ── Transfer user modal ───────────────────────────────────────────────────
-// The location list is fetched from the API (never built client-side) so it is
-// always scoped to the caller's own county and every option arrives already
-// labelled "South Mugirango (Location)". Search is debounced and server-side —
-// a county branch holds thousands of sub-locations.
+// Both feeds come from the API (never built client-side): the location list is
+// scoped to the caller's branch AND tier, and the role list is limited to the
+// destination level. Search is debounced and server-side — a national / county
+// branch holds thousands of units.
 const transferModalOpen = ref(false);
 const transferUser = ref(null);
 const transferLocationId = ref(undefined);
 const transferSelectedLocation = ref(null);
 const transferLocationOptions = ref([]);
 const transferLocationsLoading = ref(false);
+const transferLocationSearchTerm = ref('');
+const transferRoleId = ref(undefined);
+const transferRoleOptions = ref([]);
+const transferRolesLoading = ref(false);
 const transferSaving = ref(false);
 let transferSearchTimer = null;
+
+// The user row carries the numeric level in `user_level_id`; `level_id` is the
+// display NAME. Destination options carry the numeric level from the API.
+const transferCurrentLevelId = computed(() =>
+  Number(transferUser.value?.user_level_id ?? 0),
+);
+const transferDestinationLevelId = computed(() =>
+  Number(transferSelectedLocation.value?.level_id ?? 0),
+);
+
+// County ↔ sub-county moves must also pick the role the user will hold at the
+// new level. (Ward / location / sub-location units have no role catalogue, so
+// the current role is kept there.) A row with no recorded level still asks:
+// the API derives the change from the stored user.
+const transferRequiresRole = computed(
+  () =>
+    [2, 3].includes(transferDestinationLevelId.value) &&
+    transferDestinationLevelId.value !== transferCurrentLevelId.value,
+);
+
+const transferCurrentLevelName = computed(
+  () => transferUser.value?.level_id || `Level ${transferCurrentLevelId.value || '—'}`,
+);
+const transferDestinationLevelName = computed(
+  () =>
+    transferSelectedLocation.value?.level_name ||
+    `Level ${transferDestinationLevelId.value || '—'}`,
+);
+
+// Wording follows the caller's own tier — the API enforces the same scopes.
+const transferScopeHint = computed(() => {
+  switch (currentLevelId.value) {
+    case 1:
+      return 'Move this user between a county and its sub-counties. National-level accounts are never moved here.';
+    case 2:
+      return 'Move this user between your county and its sub-counties.';
+    case 3:
+      return 'Move this user within your sub-county.';
+    default:
+      return 'Move this user to another organisation unit inside your scope.';
+  }
+});
+
+const transferLocationPlaceholder = computed(() => {
+  switch (currentLevelId.value) {
+    case 1:
+    case 2:
+      return 'Type 4+ characters — county or sub-county…';
+    case 3:
+      return 'Type 4+ characters — sub-county, ward or location…';
+    default:
+      return 'Type 4+ characters — organisation unit…';
+  }
+});
+
+const transferLocationHint = computed(() => {
+  switch (currentLevelId.value) {
+    case 1:
+      return 'Type at least 4 characters. Only counties and sub-counties are offered — national is never a transfer destination.';
+    case 2:
+      return 'Type at least 4 characters. Only your own county and its sub-counties are offered.';
+    case 3:
+      return 'Type at least 4 characters. Only units inside your sub-county are offered.';
+    default:
+      return 'Type at least 4 characters. Only units inside your own scope are offered.';
+  }
+});
+
+// Empty-state copy for the dropdown: nothing is fetched until 4+ characters
+// are typed, so explain the minimum instead of showing "Not Found".
+const transferLocationNotFound = computed(() => {
+  if (transferLocationsLoading.value) return 'Searching…';
+  if (transferLocationSearchTerm.value.length > 3) return 'No matching locations.';
+  return 'Type at least 4 characters to search.';
+});
 
 const transferInitials = computed(() => {
   const record = transferUser.value || {};
@@ -1132,17 +1232,26 @@ const transferInitials = computed(() => {
 });
 
 const fetchTransferLocations = async (term) => {
+  // Never hit the API without a meaningful term — both the UI and the API
+  // enforce the 4-character minimum to keep this expensive lookup cheap.
+  if (!term || term.length <= 3) return;
+
   transferLocationsLoading.value = true;
   try {
     const { data } = await axios.get('users/transfer_locations', {
       params: {
-        query: term && term.length >= 2 ? term : undefined,
-        limit: 50,
+        query: term,
+        limit: 10,
       },
     });
 
     const list = Array.isArray(data?.data) ? data.data : [];
-    const options = list.map((item) => ({ value: item.id, label: item.label }));
+    const options = list.map((item) => ({
+      value: item.id,
+      label: item.label,
+      level_id: Number(item.level_id),
+      level_name: item.level_name || '',
+    }));
 
     // Keep the current selection visible after a new search so the field never
     // falls back to showing the raw id.
@@ -1161,13 +1270,53 @@ const fetchTransferLocations = async (term) => {
 
 const onTransferLocationSearch = (value) => {
   const term = String(value || '').trim();
+  transferLocationSearchTerm.value = term;
   if (transferSearchTimer) clearTimeout(transferSearchTimer);
+
+  // Selecting an option echoes its label back through @search — do not re-query.
+  if (term && term === transferSelectedLocation.value?.label) return;
+
+  // Only ping the endpoint once the operator has typed more than 3 characters.
+  if (term.length <= 3) return;
+
   transferSearchTimer = setTimeout(() => fetchTransferLocations(term), 300);
+};
+
+// Role catalogue for a destination tier (county = 2, sub-county = 3). The API
+// returns only roles whose org type sits at that level.
+const fetchTransferRoles = async (levelId) => {
+  if (!levelId) return;
+
+  transferRolesLoading.value = true;
+  try {
+    const { data } = await axios.get('users/transfer_roles', {
+      params: { level_id: levelId },
+    });
+
+    const list = Array.isArray(data?.data) ? data.data : [];
+    transferRoleOptions.value = list.map((role) => ({
+      value: role.id,
+      label: role.orgtype_name ? `${role.name} (${role.orgtype_name})` : role.name,
+    }));
+  } catch (error) {
+    notifyError('Unable to load roles for the destination level', error);
+  } finally {
+    transferRolesLoading.value = false;
+  }
 };
 
 const onTransferLocationChange = (value) => {
   transferSelectedLocation.value =
     transferLocationOptions.value.find((option) => option.value === value) || null;
+
+  // Reset any role picked for a previous destination, then load the catalogue
+  // for the new level only when the move actually changes the user's tier.
+  transferRoleId.value = undefined;
+  transferRoleOptions.value = [];
+
+  if (transferRequiresRole.value) {
+    fetchTransferRoles(transferDestinationLevelId.value);
+  }
 };
 
 const resetTransferState = () => {
@@ -1178,6 +1327,10 @@ const resetTransferState = () => {
   transferSelectedLocation.value = null;
   transferLocationOptions.value = [];
   transferLocationsLoading.value = false;
+  transferLocationSearchTerm.value = '';
+  transferRoleId.value = undefined;
+  transferRoleOptions.value = [];
+  transferRolesLoading.value = false;
   transferSaving.value = false;
 };
 
@@ -1185,8 +1338,7 @@ const openTransferModal = (record) => {
   resetTransferState();
   transferUser.value = record;
   transferModalOpen.value = true;
-  // Prime the dropdown with the first page of in-scope units.
-  fetchTransferLocations('');
+  // Nothing is fetched until the operator types 4+ characters.
 };
 
 const closeTransferModal = () => {
@@ -1197,12 +1349,15 @@ const closeTransferModal = () => {
 const confirmTransfer = async () => {
   const record = transferUser.value;
   if (!record || !transferLocationId.value || transferSaving.value) return;
+  // Tier-changing moves must carry the role for the destination level.
+  if (transferRequiresRole.value && !transferRoleId.value) return;
 
   transferSaving.value = true;
   try {
-    const { data } = await axios.post(`users/${record.id}/transfer`, {
-      location_id: transferLocationId.value,
-    });
+    const payload = { location_id: transferLocationId.value };
+    if (transferRoleId.value) payload.role_id = transferRoleId.value;
+
+    const { data } = await axios.post(`users/${record.id}/transfer`, payload);
 
     notification.success({
       message: 'Transfer complete',
