@@ -106,9 +106,9 @@
                   <td>
                     <span
                       class="ev-fund-chip"
-                      :class="fundingChipClass(record.funding_source, record.funding_id)"
+                      :class="fundingChipClass(record.funding_source, record.funding_source)"
                     >
-                      {{ fundingLabel(record.funding_source, record.funding_id) }}
+                      {{ fundingLabel(record.funding_source, record.funding_source) }}
                     </span>
                   </td>
                 </template>
@@ -131,7 +131,7 @@
                                   name: record.name,
                                   event_code: record.event_code,
                                   event_host_id: record.event_host_id,
-                                  funding_id: record.funding_id,
+                                  funding_source: record.funding_source,
                                   start_date: record.start_date,
                                   event_list_id: record.event_list_id,
                                   location: record.county,
@@ -175,7 +175,7 @@
                                   name: record.name,
                                   event_code: record.event_code,
                                   event_host_id: record.event_host_id,
-                                  funding_id: record.funding_id,
+                                  funding_source: record.funding_source,
                                   start_date: record.start_date,
                                   event_list_id: record.event_list_id,
                                   location: record.county,
@@ -236,9 +236,9 @@
                     <span class="val">
                       <span
                         class="ev-fund-chip"
-                        :class="fundingChipClass(record.funding_source, record.funding_id)"
+                        :class="fundingChipClass(record.funding_source, record.funding_source)"
                       >
-                        {{ fundingLabel(record.funding_source, record.funding_id) }}
+                        {{ fundingLabel(record.funding_source, record.funding_source) }}
                       </span>
                     </span>
                   </div>
@@ -272,7 +272,7 @@
                               name: record.name,
                               event_code: record.event_code,
                               event_host_id: record.event_host_id,
-                              funding_id: record.funding_id,
+                              funding_source: record.funding_source,
                               start_date: record.start_date,
                               event_list_id: record.event_list_id,
                               location: record.county,
@@ -316,7 +316,7 @@
                               name: record.name,
                               event_code: record.event_code,
                               event_host_id: record.event_host_id,
-                              funding_id: record.funding_id,
+                              funding_source: record.funding_source,
                               start_date: record.start_date,
                               event_list_id: record.event_list_id,
                               location: record.county,
@@ -469,7 +469,7 @@ const currentPage = ref(1);
 const pageSize = ref(100);
 const datatotal = ref(0);
 
-// The list API returns BOTH `funding_id` (FK to funding_sources) and
+// The list API returns BOTH `funding_source` (FK to funding_sources) and
 // `funding_source` (the resolved NAME — "GF" / "PMI" / "GOK"). Render the name
 // so the column always matches what the funding source is called; the numeric
 // id is only a fallback for legacy payloads that predate the relation.

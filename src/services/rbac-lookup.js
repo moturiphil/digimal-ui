@@ -12,8 +12,10 @@ import axios from "@/Axiosconfig";
  *   GET /organizations  → { success, data: [{ id, name, description, level_id }] }
  *
  * NOTE: gate evaluation in the sidebar never depends on this store — gates
- * match ROLE NAMES against the logged-in user's session `role.name`, so users
- * who lack the `roles_list` / `organization_list` permissions are unaffected.
+ * match PERMISSION NAMES (role permissions ∪ direct grants) from the logged-in
+ * user's session, so users who lack the `roles_list` / `organization_list`
+ * permissions are unaffected. The store only feeds role / org-type metadata to
+ * the Access Control admin screens.
  */
 
 const roles = ref([]); // [{ id, orgtype_id, name, orgtype_name }]

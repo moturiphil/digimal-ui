@@ -3,9 +3,16 @@
  *
  * Access to every sidebar entry is governed here — NOT by scattered role-ID
  * arrays inside Aside.vue. A user passes a gate when they hold ANY listed
- * `permissions` (backend `role_permission` middleware names) OR ANY listed
- * `roles` (legacy fallback kept for areas that don't expose dedicated
- * permission names yet).
+ * `permissions` — the permission NAMES the backend `role_permission:`
+ * middleware enforces (role permissions ∪ direct user grants).
+ *
+ * IMPORTANT — evaluation is PERMISSION-ONLY (see satisfiesGate in
+ * src/services/user-role.js). The `roles` arrays in GATE_DEFINITIONS are kept
+ * purely as documentation of the audience the grants were seeded to; a role
+ * NAME alone never satisfies a gate. That is deliberate: when role-name
+ * fallbacks exist, revoking a permission in Access Control leaves the menu
+ * visible, which is exactly the "permissions were assigned/removed but the
+ * menu did not change" class of bug.
  *
  * The same registry powers the "Access Control" admin page
  * (view/pages/admin/AccessControl.vue), so the list of UI pages shown there
