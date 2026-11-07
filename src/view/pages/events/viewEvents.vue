@@ -106,9 +106,9 @@
                   <td>
                     <span
                       class="ev-fund-chip"
-                      :class="record.funding_source === 1 ? 'gf' : 'pmi'"
+                      :class="fundingChipClass(record.funding_source, record.funding_id)"
                     >
-                      {{ fundingLabel(record.funding_source) }}
+                      {{ fundingLabel(record.funding_source, record.funding_id) }}
                     </span>
                   </td>
                 </template>
@@ -131,7 +131,7 @@
                                   name: record.name,
                                   event_code: record.event_code,
                                   event_host_id: record.event_host_id,
-                                  funding_id: record.funding_source,
+                                  funding_id: record.funding_id,
                                   start_date: record.start_date,
                                   event_list_id: record.event_list_id,
                                   location: record.county,
@@ -175,7 +175,7 @@
                                   name: record.name,
                                   event_code: record.event_code,
                                   event_host_id: record.event_host_id,
-                                  funding_id: record.funding_source,
+                                  funding_id: record.funding_id,
                                   start_date: record.start_date,
                                   event_list_id: record.event_list_id,
                                   location: record.county,
@@ -236,9 +236,9 @@
                     <span class="val">
                       <span
                         class="ev-fund-chip"
-                        :class="record.funding_source === 1 ? 'gf' : 'pmi'"
+                        :class="fundingChipClass(record.funding_source, record.funding_id)"
                       >
-                        {{ fundingLabel(record.funding_source) }}
+                        {{ fundingLabel(record.funding_source, record.funding_id) }}
                       </span>
                     </span>
                   </div>
@@ -272,7 +272,7 @@
                               name: record.name,
                               event_code: record.event_code,
                               event_host_id: record.event_host_id,
-                              funding_id: record.funding_source,
+                              funding_id: record.funding_id,
                               start_date: record.start_date,
                               event_list_id: record.event_list_id,
                               location: record.county,
@@ -316,7 +316,7 @@
                               name: record.name,
                               event_code: record.event_code,
                               event_host_id: record.event_host_id,
-                              funding_id: record.funding_source,
+                              funding_id: record.funding_id,
                               start_date: record.start_date,
                               event_list_id: record.event_list_id,
                               location: record.county,
@@ -469,8 +469,35 @@ const currentPage = ref(1);
 const pageSize = ref(100);
 const datatotal = ref(0);
 
-const fundingLabel = (source) =>
-  Number(source) === 1 ? "GF" : Number(source) === 2 ? "PMI" : "—";
+// The list API returns BOTH `funding_id` (FK to funding_sources) and
+// `funding_source` (the resolved NAME — "GF" / "PMI" / "GOK"). Render the name
+// so the column always matches what the funding source is called; the numeric
+// id is only a fallback for legacy payloads that predate the relation.
+const fundingName = (source) =>
+  source == null ? "" : String(source).trim();
+
+const fundingId = (source, fallbackId) => {
+  const name = fundingName(source);
+  return name !== "" && !Number.isNaN(Number(name)) ? Number(name) : Number(fallbackId);
+};
+
+const fundingLabel = (source, fallbackId) => {
+  const name = fundingName(source);
+  // A non-numeric value is the funding source NAME — show it as-is.
+  if (name !== "" && Number.isNaN(Number(name))) return name;
+  const id = fundingId(source, fallbackId);
+  return id === 1 ? "GF" : id === 2 ? "PMI" : "—";
+};
+
+const fundingChipClass = (source, fallbackId) => {
+  const name = fundingName(source);
+  if (name !== "" && Number.isNaN(Number(name))) {
+    const lower = name.toLowerCase();
+    return lower === "gf" ? "gf" : lower === "pmi" ? "pmi" : "";
+  }
+  const id = fundingId(source, fallbackId);
+  return id === 1 ? "gf" : id === 2 ? "pmi" : "";
+};
 
 const filterOption = (input, option) =>
   String(option?.label ?? option?.children ?? "")
