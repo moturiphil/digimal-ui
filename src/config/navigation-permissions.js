@@ -102,7 +102,16 @@ export const GATE_DEFINITIONS = Object.freeze({
   canCreateCampaign: { permissions: ["create_campaign"], roles: ["Super Admin", "Vector Unit Head"] },
   canViewCampaign: { permissions: ["campaigns_list", "get_campaign"], roles: ["Super Admin"] },
   canCreateEvent: { permissions: ["create_events", "event_with_facilitator_list"], roles: ["Super Admin", "SCMCC", "CMCC"] },
-  canViewEvent: { permissions: ["event_list", "list_events", "events_dashboard"], roles: ["Super Admin"] },
+  // Events → List Events. The page loads `events/all`, which the API enforces
+  // with `role_permission:list_events`; `event_list` covers the legacy
+  // event-list / venue endpoints.
+  canViewEvent: { permissions: ["event_list", "list_events"], roles: ["Super Admin"] },
+  // Events → Events Dashboard. The page is identified by the `events_dashboard`
+  // route name, while GET events/dashboard is enforced with `list_events` (see
+  // DigiMalBackend/routes/api.php). Accept both so an Access Control grant of
+  // either name exposes the page in the sidebar — the page mapping below
+  // grants both together.
+  canViewEventsDashboard: { permissions: ["events_dashboard", "list_events"], roles: ["Super Admin"] },
   canCreateActivity: { permissions: ["create_activity", "create_activity_with_facilitator"], roles: ["Super Admin"] },
   canViewActivities: { permissions: ["activity_list", "pmi_activities", "gf_activities"], roles: ["Super Admin"] },
   canViewOrgUnits: { permissions: ["counties_list", "list_subcounties", "sub_counties_list", "location_list", "sublocation_list", "wards_list"], roles: ADMIN_UNIT_OVERSIGHT },
@@ -443,13 +452,18 @@ export const NAV_MODULES = Object.freeze([
     key: "events",
     label: "Events",
     pages: compact([
-      { label: "Events Dashboard", path: "/events/dashboard", permissions: ["events_dashboard"] },
+      // `events_dashboard` is the route name the UI gate matches; the API
+      // endpoint itself is enforced with `list_events`, so ticking this page
+      // must grant BOTH or the dashboard loads its data with a 403.
+      { label: "Events Dashboard", path: "/events/dashboard", permissions: ["events_dashboard", "list_events"] },
       // The sidebar "Create Event" gate accepts BOTH names; expose both here so
       // deselecting really hides the menu (a role can otherwise keep the menu
       // open via the legacy event_with_facilitator_list grant with no checkbox
       // to revoke it).
       { label: "Create Event", path: "/events/event-create", permissions: ["create_events", "event_with_facilitator_list"] },
-      { label: "List Events", path: "/events/event-view", permissions: ["event_list", "list_events", "events_dashboard"] },
+      // `events/all` (loaded by the List Events page) is enforced with
+      // `list_events`; `event_list` covers the legacy list/venue endpoints.
+      { label: "List Events", path: "/events/event-view", permissions: ["event_list", "list_events"] },
     ]),
   },
   {
