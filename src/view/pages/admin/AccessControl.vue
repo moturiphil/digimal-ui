@@ -533,6 +533,13 @@ const saveRolePermissions = async () => {
       description: `Updates applied to ${selectedRoleName.value}.`,
     });
     await loadRolePermissions();
+    // The sidebar / route gates read an access snapshot cached in
+    // sessionStorage (role name + permission names, captured at login). When
+    // the admin edits their OWN role the grants would otherwise only apply on
+    // the next poll (up to 30 s) or re-login — the classic "permissions were
+    // assigned but the menu did not change" report. Force a refresh so every
+    // gate (`satisfiesGate`) re-evaluates immediately.
+    await syncNow({ force: true });
   } catch (error) {
     notification.error({
       message: "Error",
