@@ -184,35 +184,33 @@
           <router-link to="/procurement/lsos">LSOs / LPOs</router-link>
         </a-menu-item>
       </a-sub-menu>
-      <a-sub-menu key="events" v-if="isLevelOne || isAIEHolder && canCreateCampaign">
+      <!-- Events. Visibility is permission-first: any Events permission
+           granted through Access Control exposes the menu — including for CHW
+           roles such as Ward Health Care Worker, which used to be hidden
+           behind isCommunityHealthWorker regardless of their grants. The
+           national (level 1) oversight and the AIE Holder keep their historic
+           visibility. -->
+      <a-sub-menu
+        key="events"
+        v-if="isLevelOne || (isAIEHolder && canCreateCampaign) || canAccessEvents"
+      >
         <template v-slot:title>
           <sdFeatherIcons type="twitch" /><span>Events</span>
         </template>
-        <a-menu-item key="widgetEventsDashboard" v-if="isOversightUser">
+        <a-menu-item
+          key="widgetEventsDashboard"
+          v-if="isOversightUser || canViewEventsDashboard"
+        >
           <router-link to="/events/dashboard"> Events Dashboard </router-link>
         </a-menu-item>
         <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
           <router-link to="/events/event-create"> Create Event </router-link>
         </a-menu-item>
-        <!-- <a-menu-item key="widgetEventVenues" v-if="canCreateEvent">
-          <router-link to="/events/venue"> Event Venues</router-link>
-        </a-menu-item> -->
-        <a-menu-item key="widgetListEvents">
+        <a-menu-item
+          key="widgetListEvents"
+          v-if="isLevelOne || isAIEHolder || canViewEvent"
+        >
           <router-link to="/events/event-view"> List Events </router-link>
-        </a-menu-item>
-      </a-sub-menu>
-      <a-sub-menu key="events" v-if="!isLevelOne && !isCommunityHealthWorker">
-        <template v-slot:title>
-          <sdFeatherIcons type="twitch" /><span>Events</span>
-        </template>
-        <a-menu-item key="widgetCreateEvent" v-if="canCreateEvent">
-          <router-link to="/events/event-create"> Create Event </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetGFevents">
-          <router-link to="/events/event-view"> List Events </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetEventsDashboardScoped" v-if="isOversightUser">
-          <router-link to="/events/dashboard"> Events Dashboard </router-link>
         </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
@@ -672,6 +670,21 @@ export default defineComponent({
     );
     const canCreateEvent = satisfiesGate(GATE_DEFINITIONS.canCreateEvent);
     const canViewEvent = satisfiesGate(GATE_DEFINITIONS.canViewEvent);
+    // Events → Events Dashboard. Permission-first: the grant alone exposes the
+    // item, so ward-level roles (e.g. Ward Health Care Worker) are no longer
+    // blocked by the level-only isOversightUser fallback.
+    const canViewEventsDashboard = satisfiesGate(
+      GATE_DEFINITIONS.canViewEventsDashboard
+    );
+    // Any Events permission surfaces the Events submenu, which is how roles
+    // outside the historic audiences (notably the CHW group) get the menu once
+    // an admin grants it in Access Control.
+    const canAccessEvents = computed(
+      () =>
+        canCreateEvent.value ||
+        canViewEvent.value ||
+        canViewEventsDashboard.value
+    );
     const canCreateActivity = satisfiesGate(GATE_DEFINITIONS.canCreateActivity);
     const canViewActivities = satisfiesGate(GATE_DEFINITIONS.canViewActivities);
     // The single merged "List Activities" page is available to anyone who can
@@ -857,6 +870,8 @@ export default defineComponent({
       canCompleteMeStages,
       canCreateEvent,
       canViewEvent,
+      canViewEventsDashboard,
+      canAccessEvents,
       canCreateActivity,
       canViewOrgUnits,
       canViewActivities,
