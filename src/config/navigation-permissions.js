@@ -191,6 +191,21 @@ export const GATE_DEFINITIONS = Object.freeze({
   canViewDropOffPoint: { permissions: ["drop_off_points_list", "drop_off_receipts"], roles: DROPOFF_VIEW },
   canCreateDistributionPost: { permissions: ["create_distribution_post"], roles: POST_CREATE },
   canViewDistributitionPostRole: { permissions: ["posts_data", "post_order_summary"], roles: POST_VIEW },
+  /**
+   * Campaign post selection — which existing posts take part in the ACTIVE
+   * campaign (backend `ft-campaign-post-selection`, PR #194):
+   *   GET  posts_data?status=unconfirmed   posts that can be carried over
+   *   POST campaign_posts/confirm          carry the selected posts in
+   *   POST campaign_posts/deactivate       stop a post (refused while it holds
+   *                                        stock or has unserved households)
+   *   POST campaign_posts/activate         restart a stopped post
+   * All three writes sit behind `role_permission:confirm_campaign_posts`.
+   */
+  canManageCampaignPosts: { permissions: ["confirm_campaign_posts"], roles: ["SCMCC", "Super Admin"] },
+  // Reading the posts the selection page lists (GET posts_data →
+  // `distribution_post_list`). Kept separate because the page needs BOTH gates:
+  // the list, then the right to act on it.
+  canViewCampaignPostList: { permissions: ["distribution_post_list", "posts_data"], roles: POST_VIEW },
   canViewInventory: { permissions: ["post_daily_balance", "get_post_nets_distribution_summary"], roles: ["Super Admin"] },
   canViewPayroll: { permissions: ["draft_events_pay_roll", "draft_activity_pay_roll"], roles: ["Super Admin"] },
   canViewGFPayroll: { permissions: ["draft_events_pay_roll"], roles: ["Super Admin"] },
@@ -588,6 +603,8 @@ export const NAV_MODULES = Object.freeze([
       { label: "Warehouses", path: "/nets/warehouses", permissions: ["drop_off_points_list"] },
       { label: "List Drop-off", path: "/nets/distribution-points", permissions: ["drop_off_points_list", "drop_off_receipts"] },
       { label: "Distribution Post", path: "/nets/distribution-post", permissions: ["posts_data", "post_order_summary"] },
+      // Carry last campaign's posts into the active campaign / stop / restart.
+      { label: "Campaign Posts", path: "/nets/campaign-posts", permissions: ["confirm_campaign_posts"] },
       { label: "Inventory", path: "/nets/distribution-point-nets", permissions: ["post_daily_balance", "get_post_nets_distribution_summary"] },
     ]),
   },

@@ -12,6 +12,12 @@
               Manage post inventory, supervisors &amp; net distribution
             </p>
           </div>
+          <div v-if="canManageCampaignPosts" class="ph-actions">
+            <router-link to="/nets/campaign-posts" class="dp-link">
+              <sdFeatherIcons type="check-square" size="13" />
+              <span>Campaign posts</span>
+            </router-link>
+          </div>
         </header>
 
         <!-- Filter panel -->
@@ -103,6 +109,14 @@
                 row-key="id"
                 size="middle"
               >
+                <template #campaign="{ record }">
+                  <span
+                    class="dp-badge"
+                    :class="record.is_active ? 'dp-badge-on' : 'dp-badge-off'"
+                  >
+                    {{ record.is_active ? "In use" : "Stopped" }}
+                  </span>
+                </template>
                 <template #activities="{ record }">
                   <td>
                     <div class="dp-row-actions">
@@ -147,6 +161,12 @@
                 <div class="dp-card-head">
                   <div class="dp-card-title">{{ record.name }}</div>
                   <span class="dp-card-code">{{ record.post_code }}</span>
+                  <span
+                    class="dp-badge"
+                    :class="record.is_active ? 'dp-badge-on' : 'dp-badge-off'"
+                  >
+                    {{ record.is_active ? "In use" : "Stopped" }}
+                  </span>
                 </div>
                 <div class="dp-card-meta">
                   <div>
@@ -264,6 +284,11 @@ import { Main } from "../../styled";
 import { onMounted, ref, reactive, watch } from "vue";
 import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
+import { useCampaignPostPermissions } from "@/services/campaign-post/usePermissions";
+
+// Campaign post selection (campaign_posts/*) is a separate SCMCC/Admin grant
+// from the post listing itself — the shortcut only shows for users who can act.
+const { canManageCampaignPosts } = useCampaignPostPermissions();
 
 const columns = [
   {
@@ -290,6 +315,15 @@ const columns = [
     title: "Supervisor Name",
     dataIndex: "post_supervisor_user_id",
     key: "post_supervisor_user_id",
+  },
+  {
+    // Campaign state of the post (posts_data returns in_campaign / is_active /
+    // deactivated_at). "Stopped" posts stay listed and can be restarted from
+    // Distribution Post → Campaign Posts.
+    title: "Campaign",
+    dataIndex: "is_active",
+    key: "campaign",
+    slots: { customRender: "campaign" },
   },
   {
     title: "",
@@ -869,6 +903,55 @@ const handleSubmit = async () => {
       display: inline-flex;
       align-items: center;
       color: inherit;
+    }
+  }
+
+  /* campaign state badge (In use / Stopped) */
+  .dp-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .dp-badge-on {
+    background: #eafff5;
+    color: #15693c;
+    border: 1px solid #c9e6d3;
+  }
+
+  .dp-badge-off {
+    background: #f5f6f8;
+    color: #6b7480;
+    border: 1px solid #e6ecef;
+  }
+
+  /* shortcut to the campaign selection page */
+  .dp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid #d9f0e2;
+    background: #fff;
+    color: #15693c;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      background: #f3fcf6;
+      border-color: #9ad8b4;
+      color: #15693c;
     }
   }
 

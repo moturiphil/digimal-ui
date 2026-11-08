@@ -389,7 +389,7 @@
 
       <a-sub-menu
         key="nets-distribution"
-        v-if="canCreateDistributionPost || canViewDistributitionPostRole || isOversightUser"
+        v-if="canCreateDistributionPost || canViewDistributitionPostRole || canAccessCampaignPosts || isOversightUser"
       >
         <template v-slot:title>
           <sdFeatherIcons type="share-2" /><span>Distribution Post</span>
@@ -411,6 +411,14 @@
         >
           <router-link to="/nets/distribution-post">
             Distribution Posts
+          </router-link>
+        </a-menu-item>
+        <a-menu-item
+          key="widgetCampaignPosts"
+          v-if="canAccessCampaignPosts"
+        >
+          <router-link to="/nets/campaign-posts">
+            Campaign Posts
           </router-link>
         </a-menu-item>
         <a-menu-item
@@ -706,6 +714,14 @@ export default defineComponent({
     const canViewDropOffPoint = satisfiesGate(GATE_DEFINITIONS.canViewDropOffPoint);
     const canCreateDistributionPost = satisfiesGate(GATE_DEFINITIONS.canCreateDistributionPost);
     const canViewDistributitionPostRole = satisfiesGate(GATE_DEFINITIONS.canViewDistributitionPostRole);
+    // Campaign post selection (carry last campaign's posts over / stop / restart).
+    // The page needs both: the post list (distribution_post_list) AND the right
+    // to act on it (confirm_campaign_posts).
+    const canViewCampaignPostList = satisfiesGate(GATE_DEFINITIONS.canViewCampaignPostList);
+    const canManageCampaignPosts = satisfiesGate(GATE_DEFINITIONS.canManageCampaignPosts);
+    const canAccessCampaignPosts = computed(
+      () => canViewCampaignPostList.value && canManageCampaignPosts.value
+    );
     const canViewInventory = satisfiesGate(GATE_DEFINITIONS.canViewInventory);
     const canViewPayroll = satisfiesGate(GATE_DEFINITIONS.canViewPayroll);
     const canViewGFPayroll = satisfiesGate(GATE_DEFINITIONS.canViewGFPayroll);
@@ -886,6 +902,7 @@ export default defineComponent({
       canViewDropOffPoint,
       canCreateDistributionPost,
       canViewDistributitionPostRole,
+      canAccessCampaignPosts,
       canViewInventory,
       canViewPayroll,
       canViewUsers,
