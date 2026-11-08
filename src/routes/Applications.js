@@ -32,6 +32,16 @@ export default [
           ),
       },
       {
+        // Which posts take part in the ACTIVE campaign — carry over last
+        // campaign's posts, stop / restart a post (campaign_posts/*).
+        name: "campaign-post-selection",
+        path: "campaign-posts",
+        component: () =>
+          import(
+            /* webpackChunkName: "CampaignPostSelection" */ "../view/pages/net-distribution/CampaignPostSelection.vue"
+          ),
+      },
+      {
         name: "delivered",
         path: "nets-delivered",
         component: () =>
