@@ -157,40 +157,6 @@
                         <sdFeatherIcons type="user-plus" size="12" /> Register
                       </sdButton>
                       <sdButton
-                        v-if="needsBudgetLink(record)"
-                        size="extra-small"
-                        type="light"
-                        outlined
-                        class="ev-action-btn ev-link-start"
-                        title="Link this event to a budget template before starting it."
-                      >
-                        <router-link
-                          :to="{
-                            name: `view-details`,
-                            params: { id: record.id },
-                            query: {
-                              encryptedData: encodeURIComponent(
-                                encrypt({
-                                  id: record.id,
-                                  name: record.name,
-                                  event_code: record.event_code,
-                                  event_host_id: record.event_host_id,
-                                  funding_source: record.funding_source,
-                                  start_date: record.start_date,
-                                  event_list_id: record.event_list_id,
-                                  location: record.county,
-                                  payroll_status: record.payroll_status,
-                                  status: record.status,
-                                  payroll_submitted: record.payroll_submitted,
-                                })
-                              ),
-                            },
-                          }"
-                        >
-                          <sdFeatherIcons type="link" size="12" /> Link Budget to Start
-                        </router-link>
-                      </sdButton>
-                      <sdButton
                         v-if="canStart(record)"
                         size="extra-small"
                         type="success"
@@ -296,40 +262,6 @@
                     @click="openRegisterModal(record)"
                   >
                     <sdFeatherIcons type="user-plus" size="12" /> Register
-                  </sdButton>
-                  <sdButton
-                    v-if="needsBudgetLink(record)"
-                    size="extra-small"
-                    type="light"
-                    outlined
-                    class="ev-action-btn ev-link-start"
-                    title="Link this event to a budget template before starting it."
-                  >
-                    <router-link
-                      :to="{
-                        name: `view-details`,
-                        params: { id: record.id },
-                        query: {
-                          encryptedData: encodeURIComponent(
-                            encrypt({
-                              id: record.id,
-                              name: record.name,
-                              event_code: record.event_code,
-                              event_host_id: record.event_host_id,
-                              funding_source: record.funding_source,
-                              start_date: record.start_date,
-                              event_list_id: record.event_list_id,
-                              location: record.county,
-                              payroll_status: record.payroll_status,
-                              status: record.status,
-                              payroll_submitted: record.payroll_submitted,
-                            })
-                          ),
-                        },
-                      }"
-                    >
-                      <sdFeatherIcons type="link" size="12" /> Link Budget to Start
-                    </router-link>
                   </sdButton>
                   <sdButton
                     v-if="canStart(record)"
@@ -591,16 +523,6 @@ const canStart = (record) =>
   !record.payroll_submitted &&
   isPending(record) &&
   (!!record.budget_line_item_id || !!record.is_national);
-
-// True when an otherwise ready-to-start sub-county/county event still needs a
-// budget template link. National events (is_national) are exempt — they start
-// and run without a budget link.
-const needsBudgetLink = (record) =>
-  !record.status &&
-  !record.payroll_submitted &&
-  isPending(record) &&
-  !record.budget_line_item_id &&
-  !record.is_national;
 
 // Closing is available while the event is currently running.
 const canClose = (record) => !!record.status;
