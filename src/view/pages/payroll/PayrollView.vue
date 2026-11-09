@@ -42,7 +42,6 @@ import {
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useStore } from "vuex";
-import { notification } from "ant-design-vue";
 import Styled from "vue3-styled-components";
 
 const CardWrapper = Styled.figure`
@@ -177,28 +176,6 @@ export default defineComponent({
           console.error(error);
         });
     });
-    const handleVerify = (record) => {
-      console.log(record);
-      axios
-        .get(`${process.env.VUE_APP_BASE_URL}/verify_house_hold/${record}`, {
-          headers: authHeader(),
-        })
-        .then(({ status }) => {
-          console.log(status);
-          if (status == 200) {
-            location.reload();
-            notification["success"]({
-              message: "HouseHold Verified",
-              description: `HouseHold has been verified successfully`,
-              duration: 5.5,
-            });
-          }
-        })
-        .catch((error) => {
-          // handle error
-          console.log(error);
-        });
-    };
 
     // handleChange(tab) {
     //   if (tab === 'all') {
@@ -225,7 +202,6 @@ export default defineComponent({
       filteredData,
       handleChange,
       activeClass,
-      handleVerify,
       id,
       title,
       content,
