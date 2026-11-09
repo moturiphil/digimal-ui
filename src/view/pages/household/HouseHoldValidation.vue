@@ -834,8 +834,8 @@
                     <a-select-option
                       v-for="item in villages"
                       :key="item.id"
-                      :value="item.id"
-                      :disabled="item.id === activeHousehold?.location_id"
+                      :value="item.village_id"
+                      :disabled="item.village_id === activeHousehold?.location_id"
                     >
                       {{ item.name }}
                     </a-select-option>
@@ -1025,7 +1025,7 @@
           <a-col :span="12">
             <a-form-item label="Location">
               <a-select v-model:value="createForm.location_id" style="width: 100%" @change="fetchCreatePosts">
-                <a-select-option v-for="item in villages" :key="item.id" :value="item.id">{{ item.name }}</a-select-option>
+                <a-select-option v-for="item in villages" :key="item.id" :value="item.village_id">{{ item.name }}</a-select-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -1911,7 +1911,9 @@ const fetchVillages = async (page = 1) => {
   });
 
   if (villages.value.length) {
-    createForm.value.location_id = villages.value[0].id;
+    // `location_id` on a household (and the create-request payload) is an
+    // `org_units` id, which is what `villages/list` exposes as `village_id`.
+    createForm.value.location_id = villages.value[0].village_id;
   }
 };
 
@@ -2065,7 +2067,20 @@ const ensureTransferVillages = async () => {
   return transferVillagesById.value;
 };
 
-const transferVillageRow = (villageId) => transferVillagesById.value[Number(villageId) || 0] || null;
+// Households (and the transfer history) store the village's `org_units` id in
+// `location_id`, while `villages/list` / `administrative_unit` rows are keyed by
+// `administrative_units.id`. Accept either id and resolve the cached row.
+const transferVillageRow = (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return null;
+  if (transferVillagesById.value[id]) return transferVillagesById.value[id];
+  return (
+    Object.values(transferVillagesById.value).find(
+      (village) => Number(village.village_id) === id
+    ) || null
+  );
+};
+
 
 // Destination villages of the sub-location currently being transferred into,
 // cached so searching a household and then opening the modal costs one request.
@@ -2124,9 +2139,10 @@ const transferVillageLabel = (record) => {
 };
 
 /**
- * Village name for an `administrative_units.id` that is not in the scoped list —
- * `village_hh` resolves a village by exactly that id, so the household card and
- * the queue can still show a name instead of "Village #1234".
+ * Village name for a village `org_units` id (what household and transfer rows
+ * store in `location_id`) that is not in the scoped list — `village_hh` resolves
+ * a village by exactly that id, so the household card and the queue can still
+ * show a name instead of "Village #1234".
  */
 const fetchTransferVillageName = async (villageId) => {
   const id = Number(villageId) || 0;
@@ -2391,11 +2407,15 @@ const loadTransferDestinationVillages = async (household = null) => {
     }
 
     transferModal.villageOptions = rows
-      .filter((village) => Number(village.id) > 0 && Number(village.id) !== currentVillageId)
+      // `village_id` is the `org_units` id a household's `location_id` stores, so
+      // both the filter and the value the request carries must use it.
+      .filter(
+        (village) =>
+          Number(village.village_id) > 0 && Number(village.village_id) !== currentVillageId
+      )
       .map((village) => ({
-        // administrative_units.id — the id a household's `location_id` stores.
-        value: Number(village.id),
-        label: village.name || `Village #${village.id}`,
+        value: Number(village.village_id),
+        label: village.name || `Village #${village.village_id}`,
       }));
 
     return rows;
@@ -2459,8 +2479,8 @@ const submitTransfer = async () => {
   try {
     await axios.post("transfers", {
       household_id: Number(household.id),
-      // Destination village as administrative_units.id — the id a household's
-      // `location_id` (and this history table) stores.
+      // Destination village as the `org_units` id (`villages/list` → `village_id`),
+      // which is what a household's `location_id` stores.
       location_id: Number(transferModal.villageId),
       post_id: Number(transferModal.postId),
       transfer_reason: String(transferModal.reason).trim(),
@@ -2601,6 +2621,17 @@ const resetDrilldown = async () => {
   await refreshAll();
 };
 
+// Households store their village as an `org_units` id (`location_id`), while
+// `villages/list` rows are keyed by `administrative_units.id` (`village.id`).
+// The two id spaces overlap, so every household request has to go out with the
+// row's `village_id` (org_units id) — the page keeps caching by `village.id`.
+const villageOrgId = (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return 0;
+  const village = villages.value.find((v) => Number(v.id) === id);
+  return Number(village?.village_id) || id;
+};
+
 const ensureVillageLoaded = async (villageId, page = 1, { force = false } = {}) => {
   const cacheKey = `${villageId}_${page}`;
   if (!force && householdsByVillage.value[cacheKey]) {
@@ -2618,7 +2649,9 @@ const ensureVillageLoaded = async (villageId, page = 1, { force = false } = {}) 
   villageLoading.value = { ...villageLoading.value, [villageId]: true };
   try {
     const pageSize = HOUSEHOLDS_PAGE_SIZE;
-    const { data } = await axios.get(`village_hh?village_id=${villageId}&page=${page}&per_page=${pageSize}`);
+    const { data } = await axios.get(
+      `village_hh?village_id=${villageOrgId(villageId)}&page=${page}&per_page=${pageSize}`
+    );
     const allRows = data?.data || [];
     const rows = allRows.map((row, index) => ({
       ...row,
@@ -3134,7 +3167,13 @@ const submitVillage = async (villageId) => {
   }
   submittingVillage.value = { ...submittingVillage.value, [villageId]: true };
   try {
-    const { data } = await axios.post("village_hh/submit", { village_id: villageId });
+    // Send the same id the household endpoints are keyed by — `villages/list`
+    // exposes it as `village_id` (the `org_units` id), while `id` is the
+    // administrative_units PK and refers to a different village.
+    const { data } = await axios.post("village_hh/submit", {
+      village_id: villageOrgId(villageId),
+    });
+
     villageSubmission.value = {
       ...villageSubmission.value,
       [villageId]: {
@@ -3165,7 +3204,7 @@ const resetCreateForm = () => {
     id_no: "",
     phone_no: "",
     hh_size: 1,
-    location_id: villages.value[0]?.id || null,
+    location_id: villages.value[0]?.village_id || null,
     post_id: null,
     campaign_id: 1,
     notes: "",
