@@ -83,7 +83,6 @@
                         show-search
                         option-filter-prop="label"
                         v-model:value="formState.name"
-                        @change="onEventTypeChange"
                         @blur="validate('name')"
                         @keypress="validate('name')"
                       >
@@ -300,7 +299,7 @@
                         </span>
                         <div>
                           <h4 class="pb-title">Procurement</h4>
-                          <p class="pb-sub">Link the order this event runs against and flag the resources being procured.</p>
+                          <p class="pb-sub">Link the order this event runs against.</p>
                         </div>
                       </div>
 
@@ -340,28 +339,9 @@
                           <span v-else>No LSO/LPOs found. Procurement must register one before linking it here.</span>
                         </p>
                       </a-form-item>
-
-                      <div class="pb-checkboxes">
-                        <label class="pb-check" :class="{ 'is-on': formState.requires_paid_venue }">
-                          <a-checkbox v-model:checked="formState.requires_paid_venue">
-                            <span class="pb-check-label">Venue</span>
-                          </a-checkbox>
-                          <span class="pb-check-hint">Tick if a paid venue is used (a venue invoice will be required at closure).</span>
-                        </label>
-                        <label class="pb-check" :class="{ 'is-on': formState.requires_fuel }">
-                          <a-checkbox v-model:checked="formState.requires_fuel">
-                            <span class="pb-check-label">Fuel</span>
-                          </a-checkbox>
-                          <span class="pb-check-hint">Tick if vehicle fuel is used (work ticket and ETR receipts will be required).</span>
-                        </label>
-                      </div>
                     </div>
 
-                    <a-form-item
-                      name="venue"
-                      :label="showProcurementSection && formState.requires_paid_venue ? 'Venue name' : 'Venue'"
-                      v-if="!showProcurementSection || formState.requires_paid_venue"
-                    >
+                    <a-form-item name="venue" label="Venue">
                       <a-select
                         v-model:value="formState.venue"
                         :options="venueAutoCompleteOptions"
@@ -663,8 +643,6 @@ const AddNew = defineComponent({
       no_of_days: null,
       venue: "",
       vendor_lso_id: null,
-      requires_paid_venue: false,
-      requires_fuel: false,
     });
 
     // Tracks whether the event has been successfully submitted. Used to
@@ -788,15 +766,6 @@ const AddNew = defineComponent({
     };
 
     const onLsoChange = (lsoId) => {
-      if (!lsoId) {
-        // Clearing the LSO releases the venue field for manual edits.
-        return;
-      }
-
-      // Selecting an LSO/LPO implies a paid venue, so always tick the venue
-      // checkbox. For procurement users this also reveals the venue field.
-      formState.requires_paid_venue = true;
-
       // Match loosely so an id type mismatch (string vs number) coming from
       // the select does not prevent the lookup.
       const lso = openLsos.value.find(
@@ -815,36 +784,13 @@ const AddNew = defineComponent({
       }
 
       if (lso) {
-        // Use the vendor (e.g. the hotel) name as the venue for now, falling
-        // back to the LSO event description when no vendor name is present.
+        // Selecting an LSO/LPO implies a paid venue. Use the vendor (e.g. the
+        // hotel) name as the venue for now, falling back to the LSO event
+        // description when no vendor name is present.
         const venueName = lso.vendor?.name || lso.event_description || "";
         if (venueName) {
-          // The venue field only renders once requires_paid_venue is true, so
-          // defer the assignment until after that render to guarantee the
-          // input reflects the auto-filled venue.
-          nextTick(() => {
-            formState.venue = venueName;
-          });
+          formState.venue = venueName;
         }
-      }
-    };
-
-    // Event types carry their template's default fuel requirement (`has_fuel`).
-    // Mirror it onto the Fuel checkbox when the type changes so procurement
-    // users see from the start that fuel documents (fuel receipt + work
-    // ticket) will be required at closure. The checkbox can still be
-    // unticked before saving when the event will not use fuel.
-    const onEventTypeChange = (eventListId) => {
-      if (!showProcurementSection.value) return;
-      const list = Array.isArray(this.events_list) ? this.events_list : [];
-      const selected = list.find(
-        (event) => String(event.id) === String(eventListId)
-      );
-      if (
-        selected &&
-        Object.prototype.hasOwnProperty.call(selected, "has_fuel")
-      ) {
-        formState.requires_fuel = !!Number(selected.has_fuel);
       }
     };
 
@@ -893,7 +839,7 @@ const AddNew = defineComponent({
         .min(1, "No of days must be greater than 0")
         .required("No of days is required"),
       venue: Yup.string().when([], {
-        is: () => showProcurementSection.value && !formState.requires_paid_venue,
+        is: () => showProcurementSection.value && !formState.vendor_lso_id,
         then: (schema) => schema.notRequired().nullable(),
         otherwise: (schema) => schema.required("Venue is required"),
       }),
@@ -949,8 +895,10 @@ const AddNew = defineComponent({
       };
       if (showProcurementSection.value) {
         data.vendor_lso_id = formState.vendor_lso_id || null;
-        data.requires_paid_venue = !!formState.requires_paid_venue;
-        data.requires_fuel = !!formState.requires_fuel;
+        // Selecting an LSO/LPO means the venue is paid, so its invoice will
+        // be required at closure. The fuel requirement is derived by the
+        // backend from the event type's has_fuel flag.
+        data.requires_paid_venue = !!formState.vendor_lso_id;
       }
       console.log(data);
       ArticleSchema.validate(this.formState, { abortEarly: false })
@@ -1131,7 +1079,6 @@ const AddNew = defineComponent({
       venueAutoCompleteOptions,
       filterVenueOption,
       onLsoChange,
-      onEventTypeChange,
       isExpiredLso,
       disabledStartDate,
       onStartDateChange,
@@ -1394,41 +1341,5 @@ export default AddNew;
   display: inline-flex;
   align-items: center;
   gap: 5px;
-}
-.pb-checkboxes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 4px;
-}
-.pb-check {
-  display: block;
-  background: #fff;
-  border: 1px solid #e6ecef;
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  &.is-on {
-    background: #f4fcf6;
-    border-color: #c9e6d3;
-  }
-}
-.pb-check-label {
-  margin-left: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1f2437;
-}
-.pb-check-hint {
-  display: block;
-  margin-left: 24px;
-  margin-top: 4px;
-  font-size: 11px;
-  color: #8a9399;
-  line-height: 1.4;
-}
-@media (max-width: 600px) {
-  .pb-checkboxes { grid-template-columns: 1fr; }
 }
 </style>
