@@ -235,23 +235,6 @@
             <sdFeatherIcons type="award" size="extra-small" />
           </sdButton>
           <sdButton
-            v-if="!isNationalEvent"
-            class="btn-import"
-            type="success"
-            @click="openBudgetLinkModal"
-            size="extra-small"
-          >
-            <sdFeatherIcons type="link" size="13" />
-            &nbsp;
-            {{
-              !liveEvent.budget_category_id
-                ? "Link Budget"
-                : canRelinkBudget
-                  ? "Re-link Budget"
-                  : "View Budget Link"
-            }}
-          </sdButton>
-          <sdButton
             v-if="canViewBudgetParams && !isNationalEvent"
             class="btn-import"
             type="success"
@@ -1080,18 +1063,7 @@
         </div>
       </a-modal>
 
-      <!-- Budget template linking -->
-      <BudgetTemplateLinkModal
-        v-model:visible="isBudgetLinkModalOpen"
-        target-type="event"
-        :target-id="plainquery.id"
-        :target-name="event_name"
-        :current-link="eventBudgetLink"
-        :allow-relink="canRelinkBudget"
-        @linked="onBudgetLinked"
-      />
-
-      <!-- Budget category parameters (read-only, after linking) -->
+      <!-- Budget category parameters (read-only, for the automatically linked template) -->
       <BudgetCategoryParametersModal
         v-if="budgetParamsModalState"
         v-model:visible="isBudgetParamsModalOpen"
@@ -1117,7 +1089,6 @@ import store from "../../../vuex/store";
 import { decrypt } from "@/cryptoHelper";
 import { notification } from "ant-design-vue";
 import EventSubmitPayrollModal from "./components/EventSubmitPayrollModal.vue";
-import BudgetTemplateLinkModal from "../../../components/budget/BudgetTemplateLinkModal.vue";
 import BudgetCategoryParametersModal from "./components/BudgetCategoryParametersModal.vue";
 
 const columns = [
@@ -1319,41 +1290,13 @@ const lsoUpload = reactive({
   saving: false,
 });
 
-// ── Budget template linking ──
+// ── Budget template (linked automatically when the event is created) ──
 const isNationalEvent = computed(() => !!liveEvent.value?.is_national);
-const isBudgetLinkModalOpen = ref(false);
-const openBudgetLinkModal = () => {
-  isBudgetLinkModalOpen.value = true;
-};
 const eventBudgetLink = computed(() => ({
   campaign_budget_id: liveEvent.value?.campaign_budget_id ?? null,
   budget_category_id: liveEvent.value?.budget_category_id ?? null,
   budget_category_name: liveEvent.value?.budget_category_name ?? null,
 }));
-const onBudgetLinked = async () => {
-  // Refresh the live event so the UI reflects the newly linked template AND so
-  // the budget params modal is driven by the authoritative stored pair (from
-  // Event::format()) rather than the raw link response.
-  await fetchLiveEvent();
-  const b = eventBudgetLink.value;
-  if (b?.campaign_budget_id && b?.budget_category_id) {
-    budgetParamsModalState.value = {
-      budget_id: b.campaign_budget_id,
-      category_id: b.budget_category_id,
-      name: b.budget_category_name || null,
-    };
-    isBudgetParamsModalOpen.value = true;
-  }
-};
-
-// Only super admin / accountant may re-link to a different budget template.
-// Mirrors BudgetDeductionService::canRelinkBudget() (super-admin set 1,53,63,
-// 64,59,4 + the Accountant role — id 65 used across the payroll screens).
-const canRelinkBudget = computed(() => {
-  const u = JSON.parse(sessionStorage.getItem("user"));
-  const rid = Number(u?.user?.role_id);
-  return [1, 53, 63, 64, 59, 4, 65].includes(rid);
-});
 
 // ── Budget category parameters (read-only) ──
 const isBudgetParamsModalOpen = ref(false);
