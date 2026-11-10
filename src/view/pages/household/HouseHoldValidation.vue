@@ -163,22 +163,37 @@
         </div>
 
         <div class="panel panel-full">
-          <div class="table-title">Demographics per village</div>
+          <div class="table-title village-panel-head">
+            <span>Demographics per village</span>
+            <div class="village-view-toggle" role="group" aria-label="Toggle village view">
+              <button
+                type="button"
+                class="village-toggle-btn"
+                :class="{ active: viewMode === 'cards' }"
+                @click="setViewMode('cards')"
+              >
+                <sdFeatherIcons type="grid" size="13" /><span>Cards</span>
+              </button>
+              <button
+                type="button"
+                class="village-toggle-btn"
+                :class="{ active: viewMode === 'table' }"
+                @click="setViewMode('table')"
+              >
+                <sdFeatherIcons type="list" size="13" /><span>Table</span>
+              </button>
+            </div>
+          </div>
+
           <a-table
+            v-if="viewMode === 'table'"
             :columns="villageColumns"
             :data-source="villageSummaryRows"
-            :pagination="{
-              current: villagesPaginationMeta.current,
-              pageSize: villagesPaginationMeta.pageSize,
-              total: villagesPaginationMeta.total,
-              showSizeChanger: true,
-              pageSizeOptions: [25, 50, 100],
-              showTotal: (total) => `Total ${total} villages`,
-            }"
+            :pagination="false"
+            :scroll="{ x: 720 }"
             :loading="isLoading"
             row-key="id"
             size="small"
-            @change="handleVillagePageChange"
           >
             <template #verifiedTotal="{ record }">
               <div class="verified-cell">
@@ -188,14 +203,79 @@
                   <span>{{ record.total_households }}</span>
                 </span>
                 <a-tag :color="record.verified_percent >= 100 ? 'green' : record.verified_percent > 0 ? 'blue' : 'default'">
-                  {{ record.verified_percent }}% verified
+                  {{ record.verified_percent }}% validated
                 </a-tag>
               </div>
             </template>
             <template #action="{ record }">
-              <a @click="openVillage(record.id)">View households</a>
+              <a @click="openVillage(record.id)">Open village</a>
             </template>
           </a-table>
+
+          <div v-else class="village-card-grid">
+            <article
+              v-for="village in villageSummaryRows"
+              :key="village.id"
+              class="village-card"
+            >
+              <div class="village-card-head">
+                <div class="village-card-title">{{ village.name }}</div>
+                <span v-if="isVillageSubmitted(village.id)" class="village-chip submitted">
+                  Submitted
+                </span>
+                <span
+                  v-else
+                  class="village-chip"
+                  :class="{ complete: village.verified_percent >= 100 }"
+                >
+                  {{ village.verified_percent }}%
+                </span>
+              </div>
+
+              <div class="village-progress">
+                <span
+                  class="village-progress-fill"
+                  :style="{ width: village.verified_percent + '%' }"
+                ></span>
+              </div>
+
+              <div class="village-card-meta">
+                <div>
+                  <span class="label">Validated</span>
+                  <span class="value">{{ village.verified_households }} / {{ village.total_households }}</span>
+                </div>
+                <div>
+                  <span class="label">Reviewed</span>
+                  <span class="value">{{ village.reviewed_households }} / {{ village.total_households }}</span>
+                </div>
+                <div>
+                  <span class="label">Population</span>
+                  <span class="value">{{ village.population }}</span>
+                </div>
+              </div>
+
+              <div class="village-card-actions">
+                <a-button type="primary" size="small" block @click="openVillage(village.id)">
+                  View households
+                </a-button>
+              </div>
+            </article>
+
+            <div v-if="!villageSummaryRows.length" class="village-empty">No villages found.</div>
+          </div>
+
+          <div class="village-pagination-wrap">
+            <a-pagination
+              :current="villagesPaginationMeta.current"
+              :page-size="villagesPaginationMeta.pageSize"
+              :total="villagesPaginationMeta.total"
+              :show-size-changer="true"
+              :page-size-options="[25, 50, 100]"
+              :show-total="(total) => `Total ${total} villages`"
+              @change="handleVillagePageChange"
+              @showSizeChange="handleVillagePageSizeChange"
+            />
+          </div>
         </div>
       </section>
 
@@ -205,14 +285,51 @@
             <h2>Household Register</h2>
             <p>Review every household per village. Confirm, Change, or Mute each one.</p>
           </div>
-          <a-space>
-            <a-input v-model:value="searchText" placeholder="Search household name or phone" style="width: 260px" />
+          <!-- <a-space>
+            <a-input v-model:value="searchText" placeholder="Search household name or phone" class="household-search" />
             <a-button
               type="primary"
               :disabled="isActiveVillageSubmitted"
               @click="openCreateModal"
             >New household request</a-button>
-          </a-space>
+          </a-space> -->
+        </div>
+
+        <!-- Village switcher: jump straight to any village (phone-friendly) and
+             step to the next/previous one without scrolling the accordion. -->
+        <div class="village-switcher">
+          <div class="village-switcher-picker">
+            <span class="switcher-label">Village</span>
+            <a-select
+              v-model:value="jumpVillageId"
+              class="village-switcher-select"
+              show-search
+              allow-clear
+              placeholder="Jump to a village"
+              :options="villageJumpOptions"
+              :filter-option="filterVillageOption"
+              @change="jumpToVillage"
+            />
+          </div>
+          <div class="village-stepper" role="group" aria-label="Previous / next village">
+            <a-button
+              size="small"
+              :disabled="activeVillageIndex <= 0"
+              @click="stepVillage(-1)"
+            >
+              <LeftOutlined /><span class="stepper-text">Previous</span>
+            </a-button>
+            <span class="stepper-count">
+              {{ activeVillageIndex >= 0 ? activeVillageIndex + 1 : "–" }} / {{ villages.length }}
+            </span>
+            <a-button
+              size="small"
+              :disabled="activeVillageIndex < 0 || activeVillageIndex >= villages.length - 1"
+              @click="stepVillage(1)"
+            >
+              <span class="stepper-text">Next</span><RightOutlined />
+            </a-button>
+          </div>
         </div>
 
         <a-collapse v-model:activeKey="activeVillageKeys" accordion>
@@ -225,14 +342,26 @@
               <div class="village-header">
                 <div class="left">
                   <div class="title">{{ village.name }}</div>
-                  <div class="sub">CHP: {{ village.no_of_chp_registered > 0 ? 'Assigned' : 'No CHP assigned' }}</div>
+                  <div class="sub">
+                    CHP: {{ village.no_of_chp_registered > 0 ? 'Assigned' : 'No CHP assigned' }}
+                    <span class="sep-dot">•</span>
+                    {{ reviewedCount(village.id) }} / {{ householdCount(village.id) }} reviewed
+                  </div>
+                  <div class="village-progress village-progress-inline">
+                    <span
+                      class="village-progress-fill"
+                      :style="{ width: villageValidatedPercent(village.id) + '%' }"
+                    ></span>
+                  </div>
                 </div>
                 <div class="right">
                   <a-tag
                     v-if="isVillageSubmitted(village.id)"
                     color="cyan"
                   >Submitted</a-tag>
-                  <a-tag>{{ reviewedCount(village.id) }} / {{ householdCount(village.id) }} reviewed</a-tag>
+                  <a-tag
+                    :color="villageValidatedPercent(village.id) >= 100 ? 'green' : 'default'"
+                  >{{ validatedCount(village.id) }} / {{ householdCount(village.id) }} validated</a-tag>
                   <a-button
                     v-if="!isVillageSubmitted(village.id)"
                     type="primary"
@@ -251,32 +380,102 @@
             >
               <a-skeleton active :paragraph="{ rows: 4 }" />
             </div>
-            <a-table
-              v-else
-              :columns="householdColumns"
-              :data-source="filteredHouseholds(village.id)"
-              :pagination="{
-                current: getCurrentHouseholdPage(village.id),
-                pageSize: HOUSEHOLDS_PAGE_SIZE,
-                total: householdCount(village.id),
-                showSizeChanger: false,
-                showTotal: (total) => `Total ${total} households`,
-              }"
-              :loading="villageLoading[village.id]"
-              row-key="id"
-              size="small"
-              @change="(pagination) => handleHouseholdPageChange(village.id, pagination.current)"
-            >
-              <template #status="{ record }">
-                <a-tag :color="statusColor(record)">{{ statusLabel(record) }}</a-tag>
-              </template>
-              <template #phone="{ record }">
-                {{ maskPhone(record.phone_no) }}
-              </template>
-              <template #action="{ record }">
-                <a @click="openHouseholdModal(village.id, record.id)">View</a>
-              </template>
-            </a-table>
+            <template v-else>
+              <!-- Phones get stacked household cards (the table cannot be read
+                   on a narrow screen); desktop keeps the table. -->
+              <div v-if="isMobileViewport" class="household-card-list">
+                <article
+                  v-for="record in filteredHouseholds(village.id)"
+                  :key="record.id"
+                  class="household-card"
+                >
+                  <div class="household-card-head">
+                    <span class="household-serial">{{ record.serial }}</span>
+                    <span class="household-name">{{ record.head || "—" }}</span>
+                  </div>
+                  <div class="household-card-meta">
+                    <div>
+                      <span class="label">Phone</span>
+                      <span class="value">{{ maskPhone(record.phone_no) || "—" }}</span>
+                    </div>
+                    <div>
+                      <span class="label">Status</span>
+                      <span class="value status-cell">
+                        <a-tag :color="statusColor(record)">{{ statusLabel(record) }}</a-tag>
+                        <a-tag
+                          v-if="pendingRequestLabel(record)"
+                          color="warning"
+                          class="pending-tag"
+                        >
+                          Pending: {{ pendingRequestLabel(record) }}
+                        </a-tag>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="household-card-actions">
+                    <a-button
+                      type="primary"
+                      size="small"
+                      block
+                      @click="openHouseholdModal(village.id, record.id)"
+                    >
+                      Review household
+                    </a-button>
+                  </div>
+                </article>
+
+                <div v-if="!filteredHouseholds(village.id).length" class="village-empty">
+                  No households found for this village.
+                </div>
+
+                <div class="village-pagination-wrap">
+                  <a-pagination
+                    :current="getCurrentHouseholdPage(village.id)"
+                    :page-size="HOUSEHOLDS_PAGE_SIZE"
+                    :total="householdCount(village.id)"
+                    :show-size-changer="false"
+                    :show-total="(total) => `Total ${total} households`"
+                    @change="(page) => handleHouseholdPageChange(village.id, page)"
+                  />
+                </div>
+              </div>
+
+              <a-table
+                v-else
+                :columns="householdColumns"
+                :data-source="filteredHouseholds(village.id)"
+                :pagination="{
+                  current: getCurrentHouseholdPage(village.id),
+                  pageSize: HOUSEHOLDS_PAGE_SIZE,
+                  total: householdCount(village.id),
+                  showSizeChanger: false,
+                  showTotal: (total) => `Total ${total} households`,
+                }"
+                :loading="villageLoading[village.id]"
+                row-key="id"
+                size="small"
+                @change="(pagination) => handleHouseholdPageChange(village.id, pagination.current)"
+              >
+                <template #status="{ record }">
+                  <div class="status-cell">
+                    <a-tag :color="statusColor(record)">{{ statusLabel(record) }}</a-tag>
+                    <a-tag
+                      v-if="pendingRequestLabel(record)"
+                      color="warning"
+                      class="pending-tag"
+                    >
+                      Pending: {{ pendingRequestLabel(record) }}
+                    </a-tag>
+                  </div>
+                </template>
+                <template #phone="{ record }">
+                  {{ maskPhone(record.phone_no) }}
+                </template>
+                <template #action="{ record }">
+                  <a @click="openHouseholdModal(village.id, record.id)">View</a>
+                </template>
+              </a-table>
+            </template>
           </a-collapse-panel>
         </a-collapse>
 
@@ -620,6 +819,22 @@
           class="modal-note"
         />
         <a-alert
+          v-else-if="hasPendingReview"
+          type="warning"
+          show-icon
+          class="modal-note pending-note"
+        >
+          <template #message>
+            Pending SCMCC review — {{ pendingReviewLabel }} request
+          </template>
+          <template #description>
+            <span v-if="isAlreadyValidated">This household is already validated. </span>
+            It has a {{ pendingReviewLabel.toLowerCase() }} request waiting for
+            SCMCC approval. Mute, Request change and Switch HH head are disabled
+            until the reviewer approves or rejects it.
+          </template>
+        </a-alert>
+        <a-alert
           v-else-if="isAlreadyValidated"
           message="This household has already been validated."
           type="success"
@@ -655,7 +870,7 @@
             <a-button
               size="large"
               danger
-              :disabled="isActiveVillageSubmitted"
+              :disabled="isActiveVillageSubmitted || hasPendingReview"
               @click="toggleMutePanel"
             >
               <template #icon><StopOutlined /></template>
@@ -663,7 +878,7 @@
             </a-button>
             <a-button
               size="large"
-              :disabled="isActiveVillageSubmitted"
+              :disabled="isActiveVillageSubmitted || hasPendingReview"
               @click="toggleChangePanel"
             >
               <template #icon><EditOutlined /></template>
@@ -671,7 +886,7 @@
             </a-button>
             <a-button
               size="large"
-              :disabled="isActiveVillageSubmitted"
+              :disabled="isActiveVillageSubmitted || hasPendingReview"
               @click="toggleSwitchHeadPanel"
             >
               <template #icon><SwapOutlined /></template>
@@ -681,7 +896,7 @@
               type="primary"
               size="large"
               class="confirm-cta"
-              :disabled="isAlreadyValidated || isActiveVillageSubmitted"
+              :disabled="isAlreadyValidated || isActiveVillageSubmitted || hasPendingReview"
               @click="confirmHousehold"
             >
               <template #icon><CheckOutlined /></template>
@@ -909,83 +1124,126 @@
             </button>
           </header>
 
-          <div class="panel-body">
-            <div class="field-grid two-col">
-              <div class="field">
-                <label class="field-label">First name <span class="req">*</span></label>
-                <a-input v-model:value="switchHeadForm.first_name" placeholder="Head's first name" autocomplete="off" />
-              </div>
-              <div class="field">
-                <label class="field-label">Middle name <span class="hint">(optional)</span></label>
-                <a-input v-model:value="switchHeadForm.middle_name" placeholder="Head's middle name" autocomplete="off" />
+          <div class="panel-body switch-head-body">
+            <div class="switch-head-layout">
+              <!-- Current (old) head — read-only reference beside the form -->
+              <aside class="switch-current">
+                <h5 class="switch-current-title">Current household head</h5>
+                <dl class="switch-current-facts">
+                  <div>
+                    <dt>Name</dt>
+                    <dd>{{ activeHouseholdFullName || '—' }}</dd>
+                  </div>
+                  <div>
+                    <dt>National ID</dt>
+                    <dd>{{ activeHousehold.id_no || '—' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Phone</dt>
+                    <dd>{{ activeHousehold.phone_no || '—' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Members</dt>
+                    <dd>{{ activeHousehold.hh_size || '—' }}</dd>
+                  </div>
+                  <div>
+                    <dt>CHP</dt>
+                    <dd>
+                      {{ activeHousehold.chw_id || '—' }}
+                      <span v-if="activeHousehold.chw_phone_no" class="fact-sub">
+                        {{ activeHousehold.chw_phone_no }}
+                      </span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Post of collection</dt>
+                    <dd>{{ currentPostLabel || '—' }}</dd>
+                  </div>
+                </dl>
+                <p class="switch-current-note">
+                  These details stay on record until SCMCC approves the switch.
+                </p>
+              </aside>
+
+              <!-- New head — everything is keyed in, nothing is prefilled -->
+              <div class="switch-form">
+                <h5 class="switch-form-title">New household head</h5>
+
+                <div class="field-grid two-col">
+                  <div class="field">
+                    <label class="field-label">First name <span class="req">*</span></label>
+                    <a-input v-model:value="switchHeadForm.first_name" placeholder="Head's first name" autocomplete="off" />
+                  </div>
+                  <div class="field">
+                    <label class="field-label">Middle name <span class="hint">(optional)</span></label>
+                    <a-input v-model:value="switchHeadForm.middle_name" placeholder="Head's middle name" autocomplete="off" />
+                  </div>
+                </div>
+
+                <div class="field-grid two-col">
+                  <div class="field">
+                    <label class="field-label">Last name <span class="req">*</span></label>
+                    <a-input v-model:value="switchHeadForm.last_name" placeholder="Head's last name" autocomplete="off" />
+                  </div>
+                  <div class="field">
+                    <label class="field-label">National ID number <span class="req">*</span></label>
+                    <a-input v-model:value="switchHeadForm.id_no" placeholder="Full national ID of the new head" autocomplete="off" />
+                  </div>
+                </div>
+
+                <div class="field-grid two-col">
+                  <div class="field">
+                    <label class="field-label">Phone number <span class="req">*</span></label>
+                    <a-input
+                      v-model:value="switchHeadForm.phone_no"
+                      placeholder="e.g. 0712 345 678"
+                      :maxlength="10"
+                      autocomplete="off"
+                    />
+                    <p v-if="switchPhoneFormatError" class="hint field-error">{{ switchPhoneFormatError }}</p>
+                  </div>
+                  <div class="field">
+                    <label class="field-label">Confirm phone number <span class="req">*</span></label>
+                    <a-input
+                      v-model:value="switchHeadForm.phone_no_confirm"
+                      placeholder="Re-enter the phone number"
+                      :maxlength="10"
+                      autocomplete="off"
+                      @paste.prevent
+                    />
+                    <p v-if="switchPhoneMismatchError" class="hint field-error">{{ switchPhoneMismatchError }}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="field-grid two-col">
-              <div class="field">
-                <label class="field-label">Last name <span class="req">*</span></label>
-                <a-input v-model:value="switchHeadForm.last_name" placeholder="Head's last name" autocomplete="off" />
-              </div>
-              <div class="field">
-                <label class="field-label">National ID number <span class="req">*</span></label>
-                <a-input v-model:value="switchHeadForm.id_no" placeholder="Full national ID of the head" autocomplete="off" />
-                <p v-if="activeHousehold && activeHousehold.id_no" class="hint">
-                  Currently on record: {{ activeHousehold.id_no }}
-                </p>
-              </div>
-            </div>
-
-            <div class="field-grid two-col">
-              <div class="field">
-                <label class="field-label">Phone number <span class="req">*</span></label>
-                <a-input
-                  v-model:value="switchHeadForm.phone_no"
-                  placeholder="e.g. 0712 345 678"
-                  :maxlength="10"
-                  autocomplete="off"
-                />
-                <p v-if="switchPhoneFormatError" class="hint field-error">{{ switchPhoneFormatError }}</p>
-                <p v-else-if="activeHousehold && activeHousehold.phone_no" class="hint">
-                  Currently on record: {{ activeHousehold.phone_no }}
-                </p>
-              </div>
-              <div class="field">
-                <label class="field-label">Confirm phone number <span class="req">*</span></label>
-                <a-input
-                  v-model:value="switchHeadForm.phone_no_confirm"
-                  placeholder="Re-enter the phone number"
-                  :maxlength="10"
-                  autocomplete="off"
-                  @paste.prevent
-                />
-                <p v-if="switchPhoneMismatchError" class="hint field-error">{{ switchPhoneMismatchError }}</p>
-              </div>
-            </div>
-
-            <div class="field-grid">
-              <div class="field">
-                <label class="field-label">Post of collection <span class="req">*</span></label>
-                <a-radio-group v-model:value="switchHeadForm.post_mode" button-style="solid">
-                  <a-radio-button value="keep">Keep current post</a-radio-button>
-                  <a-radio-button value="change">Switch to another post</a-radio-button>
-                </a-radio-group>
-                <p v-if="switchHeadForm.post_mode === 'keep'" class="hint">
-                  The household stays on its current post{{ currentPostLabel ? `: ${currentPostLabel}` : '' }}.
-                </p>
-                <a-select
-                  v-else
-                  v-model:value="switchHeadForm.post_id"
-                  show-search
-                  :filter-option="filterPostOption"
-                  :options="switchPostOptions"
-                  :loading="switchPostsLoading"
-                  :not-found-content="switchPostsLoading ? undefined : 'No posts are mapped to this village'"
-                  placeholder="Pick the new post of collection"
-                  style="width: 100%"
-                />
-                <p v-if="switchHeadForm.post_mode === 'change' && !switchHeadForm.post_id" class="hint">
-                  Pick the post the household will collect from.
-                </p>
+            <div class="switch-post">
+              <h5 class="switch-form-title">Post of collection</h5>
+              <div class="field-grid">
+                <div class="field">
+                  <label class="field-label">Where should the household collect nets? <span class="req">*</span></label>
+                  <a-radio-group v-model:value="switchHeadForm.post_mode" button-style="solid">
+                    <a-radio-button value="keep">Keep current post</a-radio-button>
+                    <a-radio-button value="change">Switch to another post</a-radio-button>
+                  </a-radio-group>
+                  <p v-if="switchHeadForm.post_mode === 'keep'" class="hint">
+                    The household stays on its current post{{ currentPostLabel ? `: ${currentPostLabel}` : '' }}.
+                  </p>
+                  <a-select
+                    v-else
+                    v-model:value="switchHeadForm.post_id"
+                    show-search
+                    :filter-option="filterPostOption"
+                    :options="switchPostOptions"
+                    :loading="switchPostsLoading"
+                    :not-found-content="switchPostsLoading ? undefined : 'No posts are mapped to this village'"
+                    placeholder="Pick the new post of collection"
+                    style="width: 100%"
+                  />
+                  <p v-if="switchHeadForm.post_mode === 'change' && !switchHeadForm.post_id" class="hint">
+                    Pick the post the household will collect from.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1121,7 +1379,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onBeforeUnmount, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Modal, notification } from "ant-design-vue";
 import {
@@ -1198,6 +1456,59 @@ const historyRows = ref([]);
 const pendingByHousehold = ref({});
 const activeVillageKeys = ref([]);
 const searchText = ref("");
+
+// ── Village list presentation ────────────────────────────────────────────────
+// The villages table is unreadable on a phone, so mobile defaults to cards and
+// desktop defaults to the table — with a toggle either way (the same pattern
+// the MassNet Events list uses). The explicit choice is remembered.
+const VILLAGE_CARDS_QUERY = "(max-width: 991px)";
+const VILLAGE_VIEW_STORAGE_KEY = "hhValidationVillageView";
+
+const isMobileViewport = ref(
+  typeof window !== "undefined"
+    ? window.matchMedia(`(max-width: 767px)`).matches
+    : false
+);
+
+const storedVillageView = (() => {
+  if (typeof window === "undefined") return null;
+  const saved = window.localStorage.getItem(VILLAGE_VIEW_STORAGE_KEY);
+  return saved === "cards" || saved === "table" ? saved : null;
+})();
+
+const viewMode = ref(
+  typeof window !== "undefined" &&
+  window.matchMedia(VILLAGE_CARDS_QUERY).matches
+    ? "cards"
+    : storedVillageView || "table"
+);
+
+const setViewMode = (mode) => {
+  if (mode !== "cards" && mode !== "table") return;
+  viewMode.value = mode;
+  try {
+    window.localStorage.setItem(VILLAGE_VIEW_STORAGE_KEY, mode);
+  } catch (error) {
+    // Private mode / storage disabled — the toggle still works for this visit.
+  }
+};
+
+// The village the Household Register should pre-select when the user jumps
+// from one village to another (table/card "View households", the picker and
+// the prev/next stepper all drive this).
+const jumpVillageId = ref(null);
+
+const handleViewportChange = () => {
+  isMobileViewport.value = window.matchMedia(`(max-width: 767px)`).matches;
+  // Crossing the card/table breakpoint swaps the list to the layout that fits:
+  // cards when the screen is narrow, the remembered preference when there is
+  // room again.
+  if (window.matchMedia(VILLAGE_CARDS_QUERY).matches) {
+    viewMode.value = "cards";
+  } else {
+    viewMode.value = storedVillageView || "table";
+  }
+};
 
 const isHouseholdModalOpen = ref(false);
 const activeVillageId = ref(null);
@@ -1422,14 +1733,10 @@ const openSwitchHeadPanel = async () => {
   showChangePanel.value = false;
   showSwitchHeadPanel.value = true;
 
-  // Names come from the row (stored with trailing spaces) — they are the only
-  // fields the list payload returns unmasked. The ID and phone are masked
-  // there, so the CHA keys them in (the masked values are shown as hints) and
-  // the post options are loaded lazily.
+  // The form captures the NEW head's details only. Nothing is prefilled from the
+  // current head (the old household details are shown read-only beside the form
+  // so the CHA can compare without accidentally resubmitting them).
   resetSwitchHeadForm();
-  switchHeadForm.value.first_name = String(hh.first_name || "").trim();
-  switchHeadForm.value.middle_name = String(hh.middle_name || "").trim();
-  switchHeadForm.value.last_name = String(hh.last_name || "").trim();
 
   await loadSwitchPostOptions();
 };
@@ -1475,19 +1782,17 @@ const submitSwitchHead = async () => {
 
     closeSwitchHeadPanel();
     bumpActiveVillageSummary("reviewed");
+    // The head-switch request is a separate workflow (hh_head_change_requests)
+    // but it still locks the household until SCMCC decides.
+    markHouseholdPending(hh.id, "head_change", "head_change");
     advanceToNextHousehold();
     fetchVillages(villagesPaginationMeta.value.current || 1).catch(() => {});
     fetchHistory().catch(() => {});
   } catch (error) {
-    const fieldError = error?.response?.data?.errors
-      ? Object.values(error.response.data.errors)[0]?.[0]
-      : null;
     notification.error({
       message: "Failed to submit switch request",
-      description:
-        fieldError ||
-        error?.response?.data?.message ||
-        "Please check your input and try again.",
+      description: apiErrorMessage(error, "Please check your input and try again."),
+      duration: 10,
     });
   } finally {
     switchHeadSubmitting.value = false;
@@ -1520,10 +1825,10 @@ const fetchCreatePosts = async (villageId) => {
     createPostsLoading.value = false;
   }
 };
-const openCreateModal = () => {
-  createModalOpen.value = true;
-  if (createForm.value.location_id) fetchCreatePosts(createForm.value.location_id);
-};
+// const openCreateModal = () => {
+//   createModalOpen.value = true;
+//   if (createForm.value.location_id) fetchCreatePosts(createForm.value.location_id);
+// };
 const createForm = ref({
   first_name: "",
   last_name: "",
@@ -1599,7 +1904,7 @@ const sectionTitle = computed(() => {
 const villageColumns = [
   { title: "Village", dataIndex: "name", key: "name" },
   {
-    title: "Verified / Total households",
+    title: "Validated / Total households",
     key: "verified_total",
     slots: { customRender: "verifiedTotal" },
   },
@@ -1672,6 +1977,35 @@ const bumpActiveVillageSummary = (kind) => {
   };
 };
 
+// Mirror a freshly submitted change request onto the cached household row so
+// re-opening it in the same session keeps Mute / Request change / Switch head
+// disabled until the SCMCC decides.
+const markHouseholdPending = (householdId, actionType, workflow = "change_request") => {
+  const villageId = activeVillageId.value;
+  if (!villageId) return;
+  const cacheKey = getCurrentHouseholdCacheKey(villageId);
+  const rows = householdsByVillage.value[cacheKey];
+  if (!Array.isArray(rows)) return;
+
+  const index = rows.findIndex((row) => row.id === householdId);
+  if (index === -1) return;
+
+  const updated = [...rows];
+  updated[index] = {
+    ...updated[index],
+    pending_request: {
+      action_type: actionType,
+      workflow,
+      status: "pending",
+      requested_at: new Date().toISOString(),
+    },
+  };
+  householdsByVillage.value = {
+    ...householdsByVillage.value,
+    [cacheKey]: updated,
+  };
+};
+
 const activeHousehold = computed(() =>
   activeHouseholds.value.find((item) => item.id === activeHouseholdId.value) || null
 );
@@ -1682,8 +2016,56 @@ const isAlreadyValidated = computed(() => {
   return hh.validated === 1 || hh.validated === true;
 });
 
-const isVillageSubmitted = (villageId) =>
-  Boolean(villageSubmission.value[villageId]?.submitted);
+// A household can only have one open SCMCC review at a time. `village_hh`
+// reports it as `pending_request` (mute / phone change / head change / switch
+// head); the locally loaded change-request history is used as a fallback for
+// rows cached before that server flag existed, or right after a submission.
+const activePendingRequest = computed(() => {
+  const hh = activeHousehold.value;
+  if (!hh) return null;
+
+  // `village_hh` is authoritative once it ships `pending_request` (even when it
+  // is null — that means nothing is open). Only fall back to the locally loaded
+  // history for rows cached before that field existed.
+  if (Object.prototype.hasOwnProperty.call(hh, "pending_request")) {
+    const serverPending = hh.pending_request;
+    if (!serverPending) return null;
+    return (serverPending.status || "pending") === "pending" ? serverPending : null;
+  }
+
+  const local = latestRequest(hh.id);
+  if (local && local.status === "pending") {
+    return {
+      action_type: local.action_type,
+      workflow: "change_request",
+      status: "pending",
+      requested_at: local.created_at,
+    };
+  }
+
+  return null;
+});
+
+const hasPendingReview = computed(() => Boolean(activePendingRequest.value));
+
+const pendingReviewLabel = computed(() => {
+  const pending = activePendingRequest.value;
+  if (!pending) return "";
+  return pending.action_type === "head_change" &&
+    pending.workflow === "head_change"
+    ? "Switch HH head"
+    : prettyAction(pending.action_type);
+});
+
+// The per-village load returns the authoritative flag; until a village is
+// opened, `villages/list` carries the same `submitted` boolean so the dashboard
+// can show the lock state straight away.
+const isVillageSubmitted = (villageId) => {
+  const loaded = villageSubmission.value[villageId];
+  if (loaded && loaded.submitted !== undefined) return Boolean(loaded.submitted);
+  const village = villages.value.find((v) => Number(v.id) === Number(villageId));
+  return Boolean(village?.submitted);
+};
 
 const isActiveVillageSubmitted = computed(() =>
   isVillageSubmitted(activeVillageId.value)
@@ -1852,6 +2234,31 @@ const normalizeOrgUnitResponse = (payload) => {
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.message)) return payload.message;
   return [];
+};
+
+// Surface the backend's own error text — including Laravel validation messages —
+// instead of hiding it behind a generic "Please try again". Used by every write
+// action on this page so the SCMCC/CHA sees the exact reason a request failed.
+const apiErrorMessage = (error, fallback = "Please try again.") => {
+  const data = error?.response?.data;
+
+  if (data && typeof data === "object") {
+    if (data.errors && typeof data.errors === "object") {
+      const first = Object.keys(data.errors)
+        .map((key) => data.errors[key])
+        .find((messages) =>
+          Array.isArray(messages) ? messages.length > 0 : Boolean(messages)
+        );
+      if (Array.isArray(first) && first.length) return String(first[0]);
+      if (typeof first === "string") return first;
+    }
+    if (typeof data.message === "string" && data.message.trim()) return data.message;
+    if (typeof data.error === "string" && data.error.trim()) return data.error;
+  }
+
+  if (typeof data === "string" && data.trim()) return data;
+  if (error?.message) return error.message;
+  return fallback;
 };
 
 const filterOption = (input, option) =>
@@ -2294,7 +2701,7 @@ const fetchTransfers = async (page = 1) => {
         "The transfer list could not be loaded. New transfers can still be raised below — refresh in a moment.";
     } else {
       transfersError.value =
-        error?.response?.data?.message || "Could not load the transfer list.";
+        apiErrorMessage(error, "Could not load the transfer list.");
     }
   } finally {
     transfersLoading.value = false;
@@ -2370,7 +2777,7 @@ const searchTransferHousehold = async () => {
       }
     }
   } catch (error) {
-    transferSearch.error = error?.response?.data?.message || "Could not search for that household.";
+    transferSearch.error = apiErrorMessage(error, "Could not search for that household.");
   } finally {
     transferSearch.loading = false;
   }
@@ -2507,7 +2914,8 @@ const submitTransfer = async () => {
   } catch (error) {
     notification.error({
       message: "Transfer failed",
-      description: error?.response?.data?.message || "Could not submit the transfer.",
+      description: apiErrorMessage(error, "Could not submit the transfer."),
+      duration: 10,
     });
   } finally {
     transferModal.saving = false;
@@ -2533,7 +2941,8 @@ const decideTransfer = (record, decision) => {
       } catch (error) {
         notification.error({
           message: approving ? "Approval failed" : "Rejection failed",
-          description: error?.response?.data?.message || "Please try again.",
+          description: apiErrorMessage(error),
+          duration: 10,
         });
       }
     },
@@ -2562,7 +2971,8 @@ const fetchCounties = async () => {
     counties.value = [];
     notification.error({
       message: "Failed to load counties",
-      description: error?.response?.data?.message || "Please try again.",
+      description: apiErrorMessage(error),
+      duration: 10,
     });
   }
 };
@@ -2703,7 +3113,8 @@ const ensureVillageLoaded = async (villageId, page = 1, { force = false } = {}) 
   } catch (error) {
     notification.error({
       message: "Failed to load village households",
-      description: error?.response?.data?.message || "Please try again.",
+      description: apiErrorMessage(error),
+      duration: 10,
     });
   } finally {
     villageLoading.value = { ...villageLoading.value, [villageId]: false };
@@ -2722,6 +3133,18 @@ const handleVillagePageChange = async (pagination) => {
     pageSize: nextSize,
   };
   await fetchVillages(nextPage);
+};
+
+// Standalone <a-pagination> (used under both the table and the card grid) emits
+// (page, pageSize) rather than the table's pagination object.
+const handleVillagePageSizeChange = async (current, size) => {
+  const nextSize = Number(size) || villagesPaginationMeta.value.pageSize || 100;
+  villagesPaginationMeta.value = {
+    ...villagesPaginationMeta.value,
+    current: 1,
+    pageSize: nextSize,
+  };
+  await fetchVillages(1);
 };
 
 const handleHouseholdPageChange = async (villageId, page) => {
@@ -2776,15 +3199,59 @@ const refreshAll = async () => {
   }
 };
 
+// Village navigation: the drawer picker and the ‹ › stepper both route through
+// here so the Household Register opens on one explicit village, loads its
+// households and scrolls the section into view. Without the load call,
+// "View households" used to land on an empty panel (only a header click ever
+// triggered the fetch).
+const activeVillageIndex = computed(() => {
+  const id = Number(activeVillageKeys.value?.[0] || jumpVillageId.value || 0);
+  if (!id) return -1;
+  return villages.value.findIndex((v) => Number(v.id) === id);
+});
+
+const villageJumpOptions = computed(() =>
+  villages.value.map((v) => ({ value: v.id, label: v.name }))
+);
+
+const scrollToHouseholdSection = () => {
+  nextTick(() => {
+    const section = document.querySelector(".household-section");
+    if (section && typeof section.scrollIntoView === "function") {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+};
+
+const jumpToVillage = (villageId) => {
+  const id = Number(villageId) || 0;
+  if (!id) return;
+  jumpVillageId.value = id;
+  activeVillageId.value = id;
+  // Setting the accordion key is enough: the `activeVillageKeys` watcher calls
+  // ensureVillageLoaded(), which is a no-op when the page is already cached.
+  activeVillageKeys.value = [String(id)];
+  scrollToHouseholdSection();
+};
+
+const stepVillage = (direction) => {
+  if (!villages.value.length) return;
+  const current = activeVillageIndex.value;
+  const start = current < 0 ? 0 : current;
+  const next = Math.min(Math.max(start + direction, 0), villages.value.length - 1);
+  if (next === current) return;
+  jumpToVillage(villages.value[next].id);
+};
+
 const openVillage = (villageId) => {
   rt.push("/household/validation/households");
-  activeVillageKeys.value = [String(villageId)];
+  jumpToVillage(villageId);
 };
 
 const householdCount = (villageId) => {
   const total = householdsPaginationMeta.value[villageId]?.total;
   if (total !== undefined) return total;
-  const village = villages.value.find((v) => v.id === villageId);
+  const village = villages.value.find((v) => Number(v.id) === Number(villageId));
   if (
     village &&
     village.no_of_registered_hh !== undefined &&
@@ -2794,6 +3261,31 @@ const householdCount = (villageId) => {
   }
   const cacheKey = getCurrentHouseholdCacheKey(villageId);
   return (householdsByVillage.value[cacheKey] || []).length;
+};
+
+// Confirmed (validated) households per village — the figure the CHA reports
+// upward, so every village row can show "validated / total".
+const validatedCount = (villageId) => {
+  const summary = villageSummaryByVillage.value[villageId];
+  if (summary && summary.verified !== undefined) return Number(summary.verified);
+  const village = villages.value.find((v) => Number(v.id) === Number(villageId));
+  if (
+    village &&
+    village.no_of_verified_hh !== undefined &&
+    village.no_of_verified_hh !== null
+  ) {
+    return Number(village.no_of_verified_hh);
+  }
+  const cacheKey = getCurrentHouseholdCacheKey(villageId);
+  return (householdsByVillage.value[cacheKey] || []).filter(
+    (row) => row.validated === 1 || row.validated === true
+  ).length;
+};
+
+const villageValidatedPercent = (villageId) => {
+  const total = householdCount(villageId);
+  if (!total) return 0;
+  return Math.min(Math.round((validatedCount(villageId) / total) * 100), 100);
 };
 
 // Server-authoritative "reviewed" count per village (validated OR muted) —
@@ -2811,7 +3303,13 @@ const reviewedCount = (villageId) => {
     return Number(village.no_of_reviewed_hh);
   }
   const cacheKey = getCurrentHouseholdCacheKey(villageId);
-  return (householdsByVillage.value[cacheKey] || []).filter((row) => statusLabel(row) !== "Pending Review").length;
+  return (householdsByVillage.value[cacheKey] || []).filter(
+    (row) =>
+      row.validated === 1 ||
+      row.validated === true ||
+      row.is_muted === 1 ||
+      row.is_muted === true
+  ).length;
 };
 
 const getCurrentHouseholdPage = (villageId) => {
@@ -2842,19 +3340,33 @@ const latestRequest = (householdId) => {
   return rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
 };
 
+// Name of the open SCMCC review for a household ("" when nothing is pending).
+// The server flag (`village_hh.pending_request`) covers every workflow —
+// mute / phone change / head change / transfer AND the head-switch request —
+// while the locally loaded history is only a fallback for old cached rows.
 const pendingRequestLabel = (record) => {
+  if (!record) return "";
+
+  if (Object.prototype.hasOwnProperty.call(record, "pending_request")) {
+    const pending = record.pending_request;
+    if (!pending) return "";
+    if ((pending.status || "pending") !== "pending") return "";
+    return pending.action_type === "head_change" && pending.workflow === "head_change"
+      ? "Switch HH head"
+      : prettyAction(pending.action_type);
+  }
+
   const req = latestRequest(record.id);
   if (!req || req.status !== "pending") return "";
   return prettyAction(req.action_type);
 };
 
+// The household's actual state. Validation wins over an open review: a
+// household that is already validated stays "Validated" while SCMCC reviews a
+// later mute / phone / head change / switch request — the pending action is
+// shown beside it by `pendingRequestLabel()`.
 const statusLabel = (record) => {
-  const req = latestRequest(record.id);
-  // A pending mute request should already surface as "Muted" so reviewers can
-  // see at a glance which households have been requested for muting.
-  if (req?.status === "pending" && req?.action_type === "mute") return "Muted";
-  if (req?.status === "pending") return "Pending Review";
-  if (req?.status === "approved" && req?.action_type === "mute") return "Muted";
+  if (!record) return "Pending Review";
   if (record.is_muted === 1 || record.is_muted === true) return "Muted";
   if (record.validated === 1 || record.validated === true) return "Validated";
   return "Pending Review";
@@ -2862,8 +3374,9 @@ const statusLabel = (record) => {
 
 const statusColor = (record) => {
   const status = statusLabel(record);
-  if (status === "Validated") return "gold";
+  if (status === "Validated") return "green";
   if (status === "Muted") return "default";
+  if (status === "Pending Review") return "orange";
   return "blue";
 };
 
@@ -2900,7 +3413,9 @@ const openHouseholdModal = async (villageId, householdId) => {
   // page 1 and the household id from a later page would be missing from
   // `activeHouseholds`, leaving the modal grayed out with no body.
   const page = getCurrentHouseholdPage(villageId);
-  await ensureVillageLoaded(villageId, page);
+  // Force-refresh so `pending_request` / `validated` are current — the SCMCC
+  // may have approved or rejected a request since the page was cached.
+  await ensureVillageLoaded(villageId, page, { force: true });
   activeVillageId.value = villageId;
   activeHouseholdId.value = householdId;
   isHouseholdModalOpen.value = true;
@@ -3027,7 +3542,8 @@ const confirmHousehold = async () => {
   } catch (error) {
     notification.error({
       message: "Failed to confirm household",
-      description: error?.response?.data?.message || "Please try again.",
+      description: apiErrorMessage(error),
+      duration: 10,
     });
   }
 };
@@ -3069,9 +3585,10 @@ const advanceToNextHousehold = () => {
 
 const submitMute = async () => {
   if (!activeHousehold.value) return;
+  const householdId = activeHousehold.value.id;
   try {
     await axios.post("hh_change_request/mute", {
-      household_id: activeHousehold.value.id,
+      household_id: householdId,
       mute_reason: muteForm.value.mute_reason,
       notes: muteForm.value.notes,
     });
@@ -3079,6 +3596,9 @@ const submitMute = async () => {
     // The household is now "reviewed" (validated OR mute-requested) — bump the
     // local progress snapshot immediately.
     bumpActiveVillageSummary("reviewed");
+    // Keep the row in lock-step with the server: the household now has an open
+    // SCMCC review, so its action buttons stay disabled when re-opened.
+    markHouseholdPending(householdId, "mute");
     muteForm.value.notes = "";
     advanceToNextHousehold();
     // Refresh village-level progress + history in the background so the
@@ -3088,7 +3608,8 @@ const submitMute = async () => {
   } catch (error) {
     notification.error({
       message: "Failed to submit mute request",
-      description: error?.response?.data?.message || "Please check your input and try again.",
+      description: apiErrorMessage(error, "Please check your input and try again."),
+      duration: 10,
     });
   }
 };
@@ -3104,9 +3625,10 @@ const submitChange = async () => {
   }
 
   const type = changeForm.value.type;
+  const householdId = activeHousehold.value.id;
   let endpoint = "";
   let payload = {
-    household_id: activeHousehold.value.id,
+    household_id: householdId,
     notes: changeForm.value.notes,
   };
 
@@ -3130,6 +3652,7 @@ const submitChange = async () => {
     // The household is now "reviewed" (a request is in flight) — bump the
     // local progress snapshot immediately.
     bumpActiveVillageSummary("reviewed");
+    markHouseholdPending(householdId, type === "transfer" ? "transfer_in" : type);
     resetChangeForm();
     advanceToNextHousehold();
     fetchVillages(villagesPaginationMeta.value.current || 1).catch(() => {});
@@ -3137,7 +3660,8 @@ const submitChange = async () => {
   } catch (error) {
     notification.error({
       message: "Failed to submit change request",
-      description: error?.response?.data?.message || "Please check your input and try again.",
+      description: apiErrorMessage(error, "Please check your input and try again."),
+      duration: 10,
     });
   }
 };
@@ -3152,7 +3676,8 @@ const submitCreate = async () => {
   } catch (error) {
     notification.error({
       message: "Failed to submit creation request",
-      description: error?.response?.data?.message || "Please check required fields.",
+      description: apiErrorMessage(error, "Please check required fields."),
+      duration: 10,
     });
   }
 };
@@ -3189,7 +3714,8 @@ const submitVillage = async (villageId) => {
   } catch (error) {
     notification.error({
       message: "Failed to submit village",
-      description: error?.response?.data?.message || "Please try again.",
+      description: apiErrorMessage(error),
+      duration: 10,
     });
   } finally {
     submittingVillage.value = { ...submittingVillage.value, [villageId]: false };
@@ -3216,6 +3742,8 @@ watch(
   (keys) => {
     const villageId = Number(keys?.[0] || 0);
     if (villageId) {
+      // Keep the jump picker/stepper in sync when a panel is opened directly.
+      jumpVillageId.value = villageId;
       ensureVillageLoaded(villageId);
     }
   }
@@ -3231,10 +3759,12 @@ onMounted(async () => {
   }
   await refreshAll();
   window.addEventListener("keydown", handleModalKeydown);
+  window.addEventListener("resize", handleViewportChange);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleModalKeydown);
+  window.removeEventListener("resize", handleViewportChange);
 });
 
 const handleModalKeydown = (event) => {
@@ -3534,6 +4064,11 @@ const handleModalKeydown = (event) => {
     gap: 10px;
   }
 
+  .village-header .left {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
   .village-header .title {
     font-size: 14px;
     font-weight: 700;
@@ -3543,12 +4078,319 @@ const handleModalKeydown = (event) => {
   .village-header .sub {
     font-size: 11px;
     color: #7a8a82;
+
+    .sep-dot {
+      margin: 0 6px;
+      color: #b6c4bd;
+    }
   }
 
   .village-header .right {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Village list: cards / table toggle (same pattern as MassNet Events) ── */
+  .village-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .village-view-toggle {
+    display: inline-flex;
+    background: #f0f7f3;
+    border: 1px solid #d9f0e2;
+    border-radius: 22px;
+    padding: 3px;
+    gap: 2px;
+
+    .village-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 0;
+      background: transparent;
+      color: #5f7268;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+
+      &.active {
+        background: #fff;
+        color: #15693c;
+        box-shadow: 0 2px 6px rgba(28, 122, 72, 0.12);
+      }
+    }
+  }
+
+  .village-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    padding: 2px;
+  }
+
+  .village-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+  }
+
+  .village-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .village-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #15693c;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .village-chip {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2f6746;
+    background: #eef7f1;
+    border: 1px solid #cfe6d9;
+    border-radius: 12px;
+    padding: 2px 9px;
+
+    &.complete {
+      color: #15693c;
+      background: #daf4e4;
+      border-color: #9ad8b4;
+    }
+
+    &.submitted {
+      color: #0958d9;
+      background: #e6f4ff;
+      border-color: #91caff;
+    }
+  }
+
+  .village-progress {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: #eef5f1;
+    overflow: hidden;
+    margin-bottom: 12px;
+
+    .village-progress-fill {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #20c997, #12b886);
+      transition: width 0.3s ease;
+    }
+  }
+
+  .village-progress.village-progress-inline {
+    height: 4px;
+    max-width: 240px;
+    margin: 6px 0 0;
+  }
+
+  .village-card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    margin-bottom: 12px;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7a8a82;
+      font-weight: 600;
+    }
+
+    .value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2f3a35;
+      word-break: break-word;
+    }
+  }
+
+  .village-card-actions {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px dashed #e1efe6;
+  }
+
+  .village-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 26px 0;
+    color: #7a8a82;
+    font-size: 13px;
+  }
+
+  /* Status column: the household's state plus any open SCMCC review beside it. */
+  .status-cell {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .status-cell .pending-tag {
+    margin-inline-end: 0;
+    font-size: 11px;
+  }
+
+  /* ── Village jump picker + previous / next stepper ── */
+  .village-switcher {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: #f7fdf9;
+    border: 1px solid #d9f0e2;
+    border-radius: 10px;
+  }
+
+  .village-switcher-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 240px;
+    min-width: 0;
+
+    .switcher-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7a8a82;
+    }
+  }
+
+  .village-switcher-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 420px;
+  }
+
+  .village-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+
+    .stepper-count {
+      font-size: 12px;
+      font-weight: 700;
+      color: #2f6746;
+      white-space: nowrap;
+    }
+
+    :deep(.ant-btn) {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  .household-search {
+    width: 260px;
+  }
+
+  /* ── Household cards (phones) ── */
+  .household-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 2px;
+  }
+
+  .household-card {
+    background: #fff;
+    border: 1px solid #e1efe6;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 8px rgba(28, 122, 72, 0.05);
+  }
+
+  .household-card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    .household-serial {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      color: #2f6746;
+      background: #eef7f1;
+      border: 1px solid #cfe6d9;
+      border-radius: 10px;
+      padding: 1px 7px;
+    }
+
+    .household-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f2437;
+      word-break: break-word;
+    }
+  }
+
+  .household-card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    margin-bottom: 10px;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7a8a82;
+      font-weight: 600;
+    }
+
+    .value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2f3a35;
+    }
   }
 
   .loading-wrap {
@@ -3940,6 +4782,22 @@ const handleModalKeydown = (event) => {
     margin: 14px 28px 0;
     border-radius: 10px;
   }
+  /* Open SCMCC review — amber note above the action bar. */
+  .modal-note.pending-note {
+    border-color: #f5c26b;
+    background: #fff9ec;
+
+    :deep(.ant-alert-message) {
+      font-weight: 700;
+      color: #8a5a00;
+    }
+
+    :deep(.ant-alert-description) {
+      color: #7a5316;
+    }
+  }
+
+
 
   // ── Action bar ──
   .action-bar {
@@ -4273,6 +5131,46 @@ const handleModalKeydown = (event) => {
     .chips { grid-template-columns: 1fr 1fr; gap: 6px; }
     .chips span { font-size: 10.5px; padding: 5px 6px; }
     .scope-meta { font-size: 10.5px; }
+
+    /* Village cards / table toggle */
+    .village-panel-head { align-items: flex-start; }
+    .village-view-toggle {
+      width: 100%;
+      justify-content: center;
+    }
+    .village-card-grid { grid-template-columns: 1fr; }
+    .village-card { padding: 12px 14px; }
+    .village-header .right {
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .village-pagination-wrap { justify-content: center; }
+
+    /* Village jump picker + stepper */
+    .village-switcher {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .village-switcher-picker { flex: 1 1 auto; }
+    .village-switcher-select { max-width: none; width: 100%; }
+    .village-stepper {
+      margin-left: 0;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .stepper-text { display: none; }
+
+    /* Household register */
+    .section-head :deep(.ant-space) {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .section-head :deep(.ant-space-item) { flex: 1 1 100%; }
+    .household-search { width: 100% !important; }
+    .household-card-meta { grid-template-columns: 1fr 1fr; }
   }
 
   @media (max-width: 480px) {
@@ -4280,6 +5178,8 @@ const handleModalKeydown = (event) => {
     .nav-item { padding: 5px 9px; font-size: 11px; }
     .value-row { font-size: 16px; }
     .chips { grid-template-columns: 1fr; }
+    .village-card-meta { grid-template-columns: 1fr; }
+    .household-card-meta { grid-template-columns: 1fr; }
   }
 }
 </style>
@@ -4634,6 +5534,22 @@ const handleModalKeydown = (event) => {
     margin: 14px 28px 0;
     border-radius: 10px;
   }
+  /* Open SCMCC review — amber note above the action bar. */
+  .modal-note.pending-note {
+    border-color: #f5c26b;
+    background: #fff9ec;
+
+    .ant-alert-message {
+      font-weight: 700;
+      color: #8a5a00;
+    }
+
+    .ant-alert-description {
+      color: #7a5316;
+    }
+  }
+
+
 
   // ── Action bar ──
   .action-bar {
@@ -4871,6 +5787,94 @@ const handleModalKeydown = (event) => {
     gap: 14px;
   }
 
+  /* ── Switch HH head: current head (read-only) beside the new-head form ── */
+  .form-panel .panel-body.switch-head-body {
+    padding-bottom: 14px;
+  }
+
+  .switch-head-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.35fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  .switch-current {
+    background: #f7fdf9;
+    border: 1px solid #d9f0e2;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .switch-current-title,
+  .switch-form-title {
+    margin: 0 0 10px;
+    font-size: 11.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #2f6746;
+  }
+
+  .switch-current-facts {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    dt {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #7a8a82;
+    }
+
+    dd {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1f2437;
+      word-break: break-word;
+    }
+
+    .fact-sub {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #7a8a82;
+    }
+  }
+
+  .switch-current-note {
+    margin: 12px 0 0;
+    padding-top: 10px;
+    border-top: 1px dashed #d9f0e2;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #7a8a82;
+  }
+
+  .switch-form {
+    background: #fff;
+    border: 1px solid #edf3ef;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .switch-post {
+    border-top: 1px solid #eef3f0;
+    padding-top: 14px;
+  }
+
   .form-panel .field-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -5045,6 +6049,11 @@ const handleModalKeydown = (event) => {
     .form-panel .panel-footer .ant-btn { flex: 1 1 auto; min-width: 0; }
     .form-panel .panel-cta { flex-basis: 100%; order: -1; }
     .form-panel .field-grid.two-col { grid-template-columns: 1fr; }
+
+    /* Current head stacks above the new-head form on phones. */
+    .switch-head-layout { grid-template-columns: 1fr; }
+    .switch-current,
+    .switch-form { padding: 12px 14px; }
 
     .action-bar {
       flex-direction: column;

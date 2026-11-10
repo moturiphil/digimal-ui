@@ -272,31 +272,6 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-sub-menu key="widgetHouseholdValidation" v-if="canValidateHH && !isLevelOne && !isCountyLevel">
-          <template v-slot:title>
-            HouseHolds Validation
-          </template>
-          <a-menu-item key="widgetHouseholdValidationDashboard">
-            <router-link to="/household/validation/dashboard">
-              Dashboard
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="widgetHouseholdValidationHouseholds">
-            <router-link to="/household/validation/households">
-              Households
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="widgetHouseholdValidationTransfers" v-if="canTransferHouseholds">
-            <router-link to="/household/validation/transfers">
-              Transfers
-            </router-link>
-          </a-menu-item>
-          <a-menu-item key="widgetMyHHChangeRequests" v-if="canSubmitHHChanges">
-            <router-link to="/household/my-change-requests">
-              My Change Requests
-            </router-link>
-          </a-menu-item>
-        </a-sub-menu>
         <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges && isSchmtSubcountyUser">
           <router-link to="/household/change-requests/review">
             Change Request Review
@@ -307,16 +282,16 @@
             Change Requests Overview
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
+        <!-- <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
           <router-link to="/household/irs">
             Household IRS
           </router-link>
-        </a-menu-item>
-        <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="hh-registration">
+        </a-menu-item> -->
+        <!-- <a-menu-item v-if="isCommunityHealthWorker || isAdmin" key="hh-registration">
         <router-link to="/add-household">
           Register HouseHold
         </router-link>
-      </a-menu-item>
+      </a-menu-item> -->
         <!-- <a-menu-item key="widgetIncompleteHouseholdReg">
           <router-link to="/households-registrations/incomplete">
             Incomplete HouseHolds Registration
@@ -327,6 +302,38 @@
             Nets Distributed
           </router-link>
         </a-menu-item> -->
+      </a-sub-menu>
+      <!-- HouseHolds Validation is its own top-level menu, directly below
+           HouseHolds, so CHAs reach the validation workflow in one click
+           instead of opening HouseHolds first. -->
+      <a-sub-menu
+        key="household-validation"
+        v-if="canValidateHH && !isLevelOne && !isCountyLevel"
+      >
+        <template v-slot:title>
+          <sdFeatherIcons type="check-square" />
+          <span>HH Validation</span></template
+        >
+        <a-menu-item key="widgetHouseholdValidationDashboard">
+          <router-link to="/household/validation/dashboard">
+            Dashboard
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetHouseholdValidationHouseholds">
+          <router-link to="/household/validation/households">
+            Households
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetHouseholdValidationTransfers" v-if="canTransferHouseholds">
+          <router-link to="/household/validation/transfers">
+            Transfers
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetMyHHChangeRequests" v-if="canSubmitHHChanges">
+          <router-link to="/household/my-change-requests">
+            My Change Requests
+          </router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu
         key="distribution"
