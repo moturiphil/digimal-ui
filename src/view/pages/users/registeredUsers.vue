@@ -43,6 +43,15 @@
               <sdFeatherIcons type="clipboard" size="13" /> Check Masterlist
             </sdButton>
 
+            <sdButton
+              v-if="canChangePhone"
+              size="small"
+              class="pill-btn"
+              @click="openPhoneChangeModal"
+            >
+              <sdFeatherIcons type="smartphone" size="13" /> Change Phone Number
+            </sdButton>
+
             <router-link to="/users/add-user" class="us-create-btn">
               <sdFeatherIcons type="user-plus" size="14" /> Add User
             </router-link>
@@ -674,6 +683,222 @@
           </div>
         </div>
       </a-modal>
+
+      <!-- Change phone number modal -->
+      <a-modal
+        :visible="phoneChangeModalOpen"
+        :footer="null"
+        :closable="false"
+        :mask-closable="false"
+        :destroy-on-close="true"
+        width="600px"
+        wrap-class-name="user-phone-change-modal-wrap"
+        @cancel="closePhoneChangeModal"
+      >
+        <div class="pc-shell">
+          <header class="pc-head">
+            <div class="pc-head-left">
+              <span class="pc-icon">
+                <sdFeatherIcons type="smartphone" size="16" />
+              </span>
+              <div>
+                <h3 class="pc-title">Change Phone Number</h3>
+                <p class="pc-sub">
+                  {{
+                    phoneChangeStep === "details"
+                      ? "Verify the record, then send a one-time code to the new number."
+                      : "Enter the one-time code sent to the new number to finish."
+                  }}
+                </p>
+              </div>
+            </div>
+            <button type="button" class="pc-close" @click="closePhoneChangeModal">
+              <sdFeatherIcons type="x" size="15" />
+            </button>
+          </header>
+
+          <div class="pc-body">
+            <template v-if="phoneChangeStep === 'details'">
+              <div class="pc-field">
+                <span class="pc-label">ID number</span>
+                <a-input
+                  v-model:value="phoneChangeForm.id_no"
+                  :maxlength="20"
+                  inputmode="numeric"
+                  placeholder="e.g. 12345678"
+                  :class="{ 'pc-input-error': phoneChangeErrors.id_no }"
+                  @input="onIdNoInput"
+                />
+                <p class="pc-hint">
+                  The national ID number on the masterlist record.
+                </p>
+                <p v-if="phoneChangeErrors.id_no" class="pc-error">
+                  {{ phoneChangeErrors.id_no }}
+                </p>
+              </div>
+
+              <div class="pc-row">
+                <div class="pc-field">
+                  <span class="pc-label">Current phone number</span>
+                  <a-input
+                    v-model:value="phoneChangeForm.phone_no"
+                    inputmode="numeric"
+                    placeholder="e.g. 0745 450 770"
+                    :class="{ 'pc-input-error': phoneChangeErrors.phone_no }"
+                    @input="onPhoneChangeInput('phone_no', $event)"
+                    @blur="onPhoneChangeBlur"
+                  />
+                  <p v-if="phoneChangeErrors.phone_no" class="pc-error">
+                    {{ phoneChangeErrors.phone_no }}
+                  </p>
+                </div>
+
+                <div class="pc-field">
+                  <span class="pc-label">New phone number</span>
+                  <a-input
+                    v-model:value="phoneChangeForm.new_phone_no"
+                    inputmode="numeric"
+                    placeholder="e.g. 0745 450 770"
+                    :class="{ 'pc-input-error': phoneChangeErrors.new_phone_no }"
+                    @input="onPhoneChangeInput('new_phone_no', $event)"
+                    @blur="onPhoneChangeBlur"
+                  />
+                  <p v-if="phoneChangeErrors.new_phone_no" class="pc-error">
+                    {{ phoneChangeErrors.new_phone_no }}
+                  </p>
+                </div>
+              </div>
+
+              <p class="pc-hint pc-phone-hint">
+                Accepts 0745…, 745…, 254745… or +254745… — stored as 254745450770.
+              </p>
+
+              <div class="pc-field">
+                <span class="pc-label">Confirm new phone number</span>
+                <a-input
+                  v-model:value="phoneChangeForm.confirm_phone_no"
+                  inputmode="numeric"
+                  placeholder="Re-enter the new phone number"
+                  :class="{ 'pc-input-error': phoneChangeErrors.confirm_phone_no }"
+                  @input="onPhoneChangeInput('confirm_phone_no', $event)"
+                  @blur="onPhoneChangeBlur"
+                />
+                <p v-if="phoneChangeErrors.confirm_phone_no" class="pc-error">
+                  {{ phoneChangeErrors.confirm_phone_no }}
+                </p>
+              </div>
+
+              <div class="pc-field">
+                <span class="pc-label">Reason (optional)</span>
+                <a-input
+                  v-model:value="phoneChangeForm.reason"
+                  :maxlength="255"
+                  placeholder="e.g. Lost SIM"
+                  :class="{ 'pc-input-error': phoneChangeErrors.reason }"
+                />
+                <p v-if="phoneChangeErrors.reason" class="pc-error">
+                  {{ phoneChangeErrors.reason }}
+                </p>
+              </div>
+
+              <div class="pc-note">
+                <sdFeatherIcons type="info" size="13" />
+                <span>
+                  A 6-digit code is sent to the new number. The change is applied
+                  only after that code is confirmed.
+                </span>
+              </div>
+
+              <footer class="pc-foot">
+                <sdButton size="small" class="pill-btn" @click="closePhoneChangeModal">
+                  Cancel
+                </sdButton>
+                <sdButton
+                  type="success"
+                  :loading="phoneChangeAction === 'request'"
+                  :disabled="phoneChangeSaving"
+                  @click="requestPhoneChangeOtp"
+                >
+                  <sdFeatherIcons type="send" size="13" /> Send OTP
+                </sdButton>
+              </footer>
+            </template>
+
+            <template v-else>
+              <div class="pc-current">
+                <div>
+                  <span class="lbl">ID number</span>
+                  <span class="val">{{ phoneChangeForm.id_no || "—" }}</span>
+                </div>
+                <div>
+                  <span class="lbl">Current phone</span>
+                  <span class="val">{{ phoneChangeForm.phone_no || "—" }}</span>
+                </div>
+                <div>
+                  <span class="lbl">New phone</span>
+                  <span class="val">{{ phoneChangeForm.new_phone_no || "—" }}</span>
+                </div>
+                <div>
+                  <span class="lbl">Reason</span>
+                  <span class="val">{{ phoneChangeForm.reason || "—" }}</span>
+                </div>
+              </div>
+
+              <div class="pc-field pc-otp-field">
+                <span class="pc-label">One-time code</span>
+                <a-input
+                  v-model:value="phoneChangeForm.otp"
+                  :maxlength="6"
+                  inputmode="numeric"
+                  placeholder="000000"
+                  class="pc-otp-input"
+                  :class="{ 'pc-input-error': phoneChangeErrors.otp }"
+                  @input="onOtpInput"
+                  @pressEnter="submitPhoneChange"
+                />
+                <p class="pc-hint">
+                  A 6-digit code was sent to {{ phoneChangeForm.new_phone_no }}. It
+                  expires in 10 minutes.
+                </p>
+                <p v-if="phoneChangeErrors.otp" class="pc-error">
+                  {{ phoneChangeErrors.otp }}
+                </p>
+              </div>
+
+              <div class="pc-note">
+                <sdFeatherIcons type="info" size="13" />
+                <span>
+                  Did not receive the code? Resend it, or go back and check the
+                  numbers you entered.
+                </span>
+              </div>
+
+              <footer class="pc-foot">
+                <sdButton size="small" class="pill-btn" @click="backToPhoneChangeDetails">
+                  Back
+                </sdButton>
+                <sdButton
+                  size="small"
+                  class="pill-btn"
+                  :loading="phoneChangeAction === 'request'"
+                  :disabled="phoneChangeSaving"
+                  @click="requestPhoneChangeOtp"
+                >
+                  Resend code
+                </sdButton>
+                <sdButton
+                  type="success"
+                  :loading="phoneChangeAction === 'confirm'"
+                  :disabled="phoneChangeSaving"
+                  @click="submitPhoneChange"
+                >
+                  <sdFeatherIcons type="check" size="13" /> Confirm change
+                </sdButton>
+              </footer>
+            </template>
+          </div>
+        </div>
+      </a-modal>
     </Main>
   </RecordViewWrapper>
 </template>
@@ -741,6 +966,16 @@ const canTransferRecord = (record) => {
   }
   return true;
 };
+
+// "Change phone number" — PR #239: an OTP goes to the NEW number and the
+// masterlist (plus the linked users row) is only updated once that code is
+// confirmed. The operator types the record's ID number and current phone into
+// the modal; there is no separate search step.
+const canRequestPhoneChange = hasPermission('request_phone_change_otp');
+const canConfirmPhoneChange = hasPermission('confirm_phone_change');
+const canChangePhone = computed(
+  () => canRequestPhoneChange.value && canConfirmPhoneChange.value,
+);
 
 const fmt = (value) => (value == null ? '0' : Number(value).toLocaleString());
 const fullName = (record) =>
@@ -1370,6 +1605,252 @@ const confirmTransfer = async () => {
     notifyError('Unable to transfer the user', error);
   } finally {
     transferSaving.value = false;
+  }
+};
+
+// ── Change phone number modal ─────────────────────────────────────────────
+// PR #239: POST phone_change/request_otp sends a 6-digit code to the NEW
+// number; POST phone_change/confirm checks it and updates both the masterlist
+// and the linked users row. There is no search step — the operator enters the
+// target record's ID number and current phone inside the modal.
+const PHONE_NO_REGEX = /^254[0-9]{9}$/;
+const ID_NO_REGEX = /^[0-9]{1,20}$/;
+
+const phoneChangeModalOpen = ref(false);
+const phoneChangeStep = ref('details'); // 'details' → 'otp'
+const phoneChangeAction = ref(''); // '' | 'request' | 'confirm'
+const phoneChangeSaving = computed(() => !!phoneChangeAction.value);
+const phoneChangeForm = reactive({
+  id_no: '',
+  phone_no: '',
+  new_phone_no: '',
+  confirm_phone_no: '',
+  reason: '',
+  otp: '',
+});
+const phoneChangeErrors = reactive({
+  id_no: '',
+  phone_no: '',
+  new_phone_no: '',
+  confirm_phone_no: '',
+  reason: '',
+  otp: '',
+});
+
+const clearPhoneChangeErrors = () => {
+  Object.keys(phoneChangeErrors).forEach((key) => {
+    phoneChangeErrors[key] = '';
+  });
+};
+
+const resetPhoneChangeState = () => {
+  phoneChangeStep.value = 'details';
+  phoneChangeAction.value = '';
+  Object.assign(phoneChangeForm, {
+    id_no: '',
+    phone_no: '',
+    new_phone_no: '',
+    confirm_phone_no: '',
+    reason: '',
+    otp: '',
+  });
+  clearPhoneChangeErrors();
+};
+
+const openPhoneChangeModal = () => {
+  resetPhoneChangeState();
+  phoneChangeModalOpen.value = true;
+};
+
+const closePhoneChangeModal = () => {
+  phoneChangeModalOpen.value = false;
+  resetPhoneChangeState();
+};
+
+// Formatting is deliberately deferred until the operator leaves the field (or
+// submits): rewriting the value while typing used to turn a partial 9-digit
+// entry into "254…" mid-keystroke and made full 254… numbers impossible to type.
+const normalizePhoneChange = (value) => {
+  const digits = String(value || '').replace(/\D/g, '');
+
+  // Local format: 0745 450 770 → 254745450770
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `254${digits.slice(1)}`;
+  }
+
+  // Subscriber-only format: 745 450 770 → 254745450770
+  // (a 9-digit value starting with 254 is an incomplete international number,
+  // not a subscriber number — leave it untouched)
+  if (digits.length === 9 && !digits.startsWith('254')) {
+    return `254${digits}`;
+  }
+
+  // Already international (254…), or still incomplete — keep the digits as-is.
+  return digits.slice(0, 12);
+};
+
+const onIdNoInput = (event) => {
+  phoneChangeForm.id_no = String(event?.target?.value || '')
+    .replace(/\D/g, '')
+    .slice(0, 20);
+  phoneChangeErrors.id_no = '';
+};
+
+const onPhoneChangeInput = (field, event) => {
+  // Keep digits only while typing — the 254 conversion is applied on blur and
+  // again on submit, never mid-keystroke.
+  phoneChangeForm[field] = String(event?.target?.value || '')
+    .replace(/\D/g, '')
+    .slice(0, 12);
+  phoneChangeErrors[field] = '';
+};
+
+const onPhoneChangeBlur = () => {
+  phoneChangeForm.phone_no = normalizePhoneChange(phoneChangeForm.phone_no);
+  phoneChangeForm.new_phone_no = normalizePhoneChange(phoneChangeForm.new_phone_no);
+  phoneChangeForm.confirm_phone_no = normalizePhoneChange(
+    phoneChangeForm.confirm_phone_no,
+  );
+};
+
+const onOtpInput = (event) => {
+  phoneChangeForm.otp = String(event?.target?.value || '')
+    .replace(/\D/g, '')
+    .slice(0, 6);
+  phoneChangeErrors.otp = '';
+};
+
+const validatePhoneChangeDetails = () => {
+  clearPhoneChangeErrors();
+
+  // Format whatever is still in the fields (e.g. the operator clicked Send OTP
+  // without blurring the last input) before validating.
+  phoneChangeForm.phone_no = normalizePhoneChange(phoneChangeForm.phone_no);
+  phoneChangeForm.new_phone_no = normalizePhoneChange(phoneChangeForm.new_phone_no);
+  phoneChangeForm.confirm_phone_no = normalizePhoneChange(
+    phoneChangeForm.confirm_phone_no,
+  );
+
+  const { id_no: idNo, phone_no: phone, new_phone_no: newPhone } = phoneChangeForm;
+
+  if (!idNo) {
+    phoneChangeErrors.id_no = 'Enter the ID number.';
+  } else if (!ID_NO_REGEX.test(idNo)) {
+    phoneChangeErrors.id_no = 'The ID number must contain digits only.';
+  }
+
+  if (!phone) {
+    phoneChangeErrors.phone_no = 'Enter the current phone number.';
+  } else if (!PHONE_NO_REGEX.test(phone)) {
+    phoneChangeErrors.phone_no =
+      'Enter a valid Kenyan phone number (e.g. 0745 450 770).';
+  }
+
+  if (!newPhone) {
+    phoneChangeErrors.new_phone_no = 'Enter the new phone number.';
+  } else if (!PHONE_NO_REGEX.test(newPhone)) {
+    phoneChangeErrors.new_phone_no =
+      'Enter a valid Kenyan phone number (e.g. 0745 450 770).';
+  } else if (newPhone === phone) {
+    phoneChangeErrors.new_phone_no =
+      'The new phone number must be different from the current one.';
+  }
+
+  if (!phoneChangeErrors.new_phone_no) {
+    if (!phoneChangeForm.confirm_phone_no) {
+      phoneChangeErrors.confirm_phone_no = 'Confirm the new phone number.';
+    } else if (phoneChangeForm.confirm_phone_no !== newPhone) {
+      phoneChangeErrors.confirm_phone_no = 'The phone numbers do not match.';
+    }
+  }
+
+  return !Object.values(phoneChangeErrors).some(Boolean);
+};
+
+const validatePhoneChangeOtp = () => {
+  phoneChangeErrors.otp =
+    phoneChangeForm.otp.length === 6
+      ? ''
+      : 'Enter the 6-digit code sent to the new phone number.';
+  return !phoneChangeErrors.otp;
+};
+
+// The API reports validation failures under `errors`; surface them on the
+// matching inputs in addition to the notification.
+const applyPhoneChangeApiErrors = (error) => {
+  const apiErrors = error?.response?.data?.errors || {};
+  Object.keys(phoneChangeErrors).forEach((key) => {
+    if (Array.isArray(apiErrors[key]) && apiErrors[key].length) {
+      phoneChangeErrors[key] = apiErrors[key][0];
+    }
+  });
+};
+
+const requestPhoneChangeOtp = async () => {
+  if (phoneChangeSaving.value) return;
+  // On the OTP step this is a resend — the details were already validated.
+  if (phoneChangeStep.value === 'details' && !validatePhoneChangeDetails()) return;
+
+  phoneChangeAction.value = 'request';
+  try {
+    const { data } = await axios.post('phone_change/request_otp', {
+      id_no: phoneChangeForm.id_no,
+      phone_no: phoneChangeForm.phone_no,
+      new_phone_no: phoneChangeForm.new_phone_no,
+    });
+
+    phoneChangeForm.otp = '';
+    phoneChangeErrors.otp = '';
+    phoneChangeStep.value = 'otp';
+
+    notification.success({
+      message: 'OTP sent',
+      description:
+        data?.message ||
+        `A 6-digit code was sent to ${phoneChangeForm.new_phone_no}.`,
+    });
+  } catch (error) {
+    applyPhoneChangeApiErrors(error);
+    notifyError('Unable to send the OTP', error);
+  } finally {
+    phoneChangeAction.value = '';
+  }
+};
+
+const backToPhoneChangeDetails = () => {
+  phoneChangeStep.value = 'details';
+  phoneChangeForm.otp = '';
+  phoneChangeErrors.otp = '';
+};
+
+const submitPhoneChange = async () => {
+  if (phoneChangeSaving.value || !validatePhoneChangeOtp()) return;
+
+  phoneChangeAction.value = 'confirm';
+  try {
+    const payload = {
+      id_no: phoneChangeForm.id_no,
+      phone_no: phoneChangeForm.phone_no,
+      new_phone_no: phoneChangeForm.new_phone_no,
+      otp: phoneChangeForm.otp,
+    };
+    const reason = phoneChangeForm.reason.trim();
+    if (reason) payload.reason = reason;
+
+    const { data } = await axios.post('phone_change/confirm', payload);
+
+    notification.success({
+      message: 'Phone number changed',
+      description: data?.message || 'The phone number was updated successfully.',
+    });
+
+    closePhoneChangeModal();
+    fetchUsers();
+  } catch (error) {
+    applyPhoneChangeApiErrors(error);
+    notifyError('Unable to change the phone number', error);
+  } finally {
+    phoneChangeAction.value = '';
   }
 };
 
@@ -2149,6 +2630,159 @@ onMounted(async () => {
   border-top: 1px solid #eef2f7;
 }
 
+/* ── Change phone number modal ─────────────────────────────────────────── */
+.pc-shell {
+  display: flex;
+  flex-direction: column;
+}
+.pc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  background: linear-gradient(90deg, #f3fcf6 0%, #f9fffb 45%, #f4fcf6 100%);
+  border-bottom: 1px solid #d9f0e2;
+}
+.pc-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.pc-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eefaf2;
+  color: #15693c;
+  border: 1px solid #cbeedb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pc-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2437;
+}
+.pc-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #8a90a6;
+  line-height: 1.5;
+}
+.pc-close {
+  border: 0;
+  background: transparent;
+  color: #7a8a82;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  line-height: 1;
+  &:hover { background: #eefaf2; color: #15693c; }
+}
+.pc-body {
+  padding: 18px 22px 22px;
+}
+.pc-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 14px;
+}
+.pc-phone-hint {
+  margin-top: 6px;
+}
+.pc-otp-field {
+  max-width: 260px;
+}
+.pc-otp-input {
+  letter-spacing: 0.5em;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.pc-current {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px dashed #d9f0e2;
+  border-radius: 12px;
+  background: #fbfffd;
+  .lbl {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #7a8a82;
+    font-weight: 600;
+  }
+  .val {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2f3a35;
+    word-break: break-word;
+  }
+}
+.pc-field {
+  margin-top: 16px;
+  :deep(.ant-input) {
+    border-radius: 8px;
+  }
+  :deep(.pc-input-error) {
+    border-color: #ff7875 !important;
+    box-shadow: 0 0 0 2px rgba(255, 120, 117, 0.12) !important;
+  }
+}
+.pc-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #7a8a82;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.pc-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #8a9399;
+  line-height: 1.5;
+}
+.pc-error {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: #d4380d;
+  line-height: 1.4;
+}
+.pc-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #f3fcf6;
+  border: 1px solid #d9f0e2;
+  color: #2f6746;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.pc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
+}
+
 /* ── Edit modal ────────────────────────────────────────────────────────── */
 .um-shell {
   display: flex;
@@ -2224,6 +2858,8 @@ onMounted(async () => {
   .us-card-meta { grid-template-columns: 1fr; }
   .us-card-foot { flex-direction: column; align-items: stretch; }
   .us-actions { justify-content: flex-start; }
+  .pc-row { grid-template-columns: 1fr; }
+  .pc-otp-field { max-width: 100%; }
 }
 </style>
 
@@ -2250,6 +2886,14 @@ onMounted(async () => {
   box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
 }
 .user-transfer-modal-wrap .ant-modal-body {
+  padding: 0;
+}
+.user-phone-change-modal-wrap .ant-modal-content {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(20, 60, 38, 0.18);
+}
+.user-phone-change-modal-wrap .ant-modal-body {
   padding: 0;
 }
 </style>
