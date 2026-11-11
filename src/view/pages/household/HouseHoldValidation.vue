@@ -561,7 +561,7 @@
                 <span class="value">{{ transferSearch.result.village_name || "Not set" }}</span>
               </div>
               <div class="transfer-fact">
-                <span class="label">Sub-location</span>
+                <span class="label">Destination sub-location</span>
                 <span class="value">{{ transferSearch.result.sublocation_name || "Not set" }}</span>
               </div>
             </div>
@@ -585,8 +585,11 @@
                 v-else-if="transferSearch.result.destination_count"
                 class="transfer-hint"
               >
-                {{ transferSearch.result.destination_count }} village(s) in this sub-location
+                {{ transferSearch.result.destination_count }} village(s) in your sub-location
                 available as the destination.
+              </span>
+              <span v-else-if="transferSearch.result.can_transfer" class="transfer-hint">
+                Choose the sub-location and destination village in the transfer dialog.
               </span>
             </div>
           </div>
@@ -1334,29 +1337,59 @@
           </div>
         </div>
 
+        <a-alert
+          v-if="transferModal.scopeError"
+          class="transfer-alert"
+          type="warning"
+          show-icon
+          :message="transferModal.scopeError"
+        />
+
         <a-form layout="vertical" class="transfer-form">
-          <a-form-item label="Destination village (inside your sub-location)" required>
+          <a-form-item
+            v-if="transferModal.sublocationOptions.length > 1 || !transferModal.sublocationId"
+            label="Sub-location to move the household to"
+            required
+          >
+            <a-select
+              v-model:value="transferModal.sublocationId"
+              show-search
+              :filter-option="filterVillageOption"
+              :options="transferModal.sublocationOptions"
+              :loading="transferModal.scopeLoading"
+              :not-found-content="transferModal.scopeLoading ? undefined : 'No sub-locations are available for your account'"
+              placeholder="Select a sub-location"
+              @change="onTransferSublocationChange"
+            />
+          </a-form-item>
+
+          <a-form-item v-else label="Sub-location">
+            <a-input :value="transferModal.sublocationName || '—'" disabled />
+          </a-form-item>
+
+          <a-form-item label="Destination village (in that sub-location)" required>
             <a-select
               v-model:value="transferModal.villageId"
               show-search
               :filter-option="filterVillageOption"
               :options="transferModal.villageOptions"
-              :loading="transferModal.villagesLoading"
-              :not-found-content="transferModal.villagesLoading ? undefined : 'No villages found for this sub-location'"
+              :loading="transferModal.scopeLoading"
+              :disabled="!transferModal.sublocationId"
+              :not-found-content="transferModal.scopeLoading ? undefined : 'No other villages are available in this sub-location'"
               placeholder="Select a village"
               @change="onTransferVillageChange"
             />
           </a-form-item>
 
-          <a-form-item label="Post (mapped to the same sub-location)" required>
+          <a-form-item label="Post (mapped to that sub-location)" required>
             <a-select
               v-model:value="transferModal.postId"
               show-search
               :filter-option="filterVillageOption"
               :options="transferModal.postOptions"
-              :loading="transferModal.postsLoading"
+              :loading="transferModal.scopeLoading"
               :disabled="!transferModal.villageId"
-              :not-found-content="transferModal.postsLoading ? undefined : 'No posts are mapped to this sub-location'"
+              :not-found-content="transferModal.scopeLoading ? undefined : 'No posts are mapped to this sub-location'"
               placeholder="Select the post the household will be assigned to"
             />
           </a-form-item>
@@ -2328,10 +2361,11 @@ const fetchVillages = async (page = 1) => {
 // Step 1: search a verified household (by the household head's ID number). The
 //         lookup is not limited to the caller's area of coverage: a CHA may
 //         request a transfer for any household registered in the system.
-// Step 2: pick a destination village inside the household's sub-location, so
-//         the move always stays within the sub-location it already belongs to.
-// Step 3: pick one of the posts mapped to that village's sub-location
-//         (post_sublocation_mapping, via sublocation_posts) and give a reason.
+// Step 2: pick a destination village from the caller's own sub-location
+//         (`administrative_units.sublocation_id`). A sub-county user first picks
+//         which sub-location of their sub-county the household moves into.
+// Step 3: pick one of the posts mapped to that sub-location
+//         (`post_sublocation_mapping`) and give a reason.
 // The request stays pending until an approver accepts it; the household keeps
 // its current location until then.
 const TRANSFERS_PAGE_SIZE = 10;
@@ -2342,14 +2376,24 @@ const transferModal = reactive({
   open: false,
   saving: false,
   household: null,
-  villagesLoading: false,
-  postsLoading: false,
+  scopeLoading: false,
+  scope: "",
+  sublocationOptions: [],
+  sublocationId: null,
+  sublocationName: "",
+  villages: [],
+  posts: [],
   villageOptions: [],
   postOptions: [],
   villageId: null,
   postId: null,
   reason: "",
+  scopeError: "",
 });
+
+// Last `transfers/destinations` payload, so searching a household and then
+// opening the modal only costs one request.
+let transferScopePayload = null;
 
 const transfers = ref([]);
 const transfersLoading = ref(false);
@@ -2488,10 +2532,6 @@ const transferVillageRow = (villageId) => {
   );
 };
 
-
-// Destination villages of the sub-location currently being transferred into,
-// cached so searching a household and then opening the modal costs one request.
-const transferDestinationCache = reactive({ sublocationId: null, rows: [] });
 
 /**
  * Villages that sit in one sub-location (`administrative_unit?sublocation_id=`).
@@ -2732,23 +2772,20 @@ const searchTransferHousehold = async () => {
 
     // The lookup is intentionally NOT limited to the caller's area of coverage:
     // a CHA may request a transfer for any verified household in the system.
-    // The destination always stays inside the household's own sub-location.
-    const householdSubLocationId = Number(household.hh_sublocation_id) || 0;
-
+    // The destination villages, however, always come from the caller's own
+    // sub-location (or the sub-location a sub-county user picks), never from
+    // the household's current sub-location.
     transferSearch.result = {
       ...household,
       village_name: household.location_id ? `Village #${household.location_id}` : null,
       sublocation_name: null,
       destination_count: 0,
-      can_transfer: householdSubLocationId > 0,
-      cannot_transfer_reason: householdSubLocationId
-        ? ""
-        : "This household has no sub-location recorded, so the villages to move it to cannot be resolved.",
+      can_transfer: true,
+      cannot_transfer_reason: "",
     };
     rememberTransferHousehold(household);
 
-    // Resolve the current village name, then load the destination villages of
-    // the household's sub-location (the transfer modal reuses that response).
+    // Resolve the household's current village name.
     const scopedVillages = await ensureTransferVillages();
     const currentVillage = scopedVillages[Number(household.location_id)];
 
@@ -2760,20 +2797,42 @@ const searchTransferHousehold = async () => {
       if (resolvedName) transferSearch.result.village_name = resolvedName;
     }
 
-    if (householdSubLocationId) {
-      const destinations = await loadTransferDestinationVillages(household);
+    // Load the villages the caller may move the household to. The same
+    // response feeds the modal, so opening it costs no extra request.
+    try {
+      transferScopePayload = await fetchTransferScope();
+    } catch (error) {
+      transferScopePayload = null;
+    }
+
+    if (!transferScopePayload) {
+      transferSearch.result.can_transfer = false;
+      transferSearch.result.cannot_transfer_reason =
+        "Could not load the villages you can transfer to. Check that your account is mapped to a sub-location.";
+    } else {
+      const destinations = destinationVillages(transferScopePayload, household);
 
       transferSearch.result.sublocation_name =
-        destinations.find((village) => village.sublocation)?.sublocation || null;
+        transferScopePayload.sublocation_name ||
+        (transferScopePayload.sublocations?.length ? "Choose in the transfer dialog" : null);
+      transferSearch.result.destination_count = destinations.length;
 
-      transferSearch.result.destination_count = destinations.filter(
-        (village) => Number(village.id) > 0 && Number(village.id) !== Number(household.location_id)
-      ).length;
-
-      if (!transferSearch.result.destination_count) {
+      if (!transferScopePayload.sublocations?.length && !transferScopePayload.sublocation_id) {
         transferSearch.result.can_transfer = false;
         transferSearch.result.cannot_transfer_reason =
-          "No other village was found in this household's sub-location, so there is nowhere to transfer it to.";
+          transferScopePayload.message ||
+          "No sub-location is mapped to your account, so there is nowhere to transfer the household to.";
+      } else if (!transferScopePayload.requires_sublocation && !destinations.length) {
+        transferSearch.result.can_transfer = false;
+        transferSearch.result.cannot_transfer_reason =
+          "No other village was found in your sub-location, so there is nowhere to transfer this household to.";
+      } else if (
+        transferScopePayload.requires_sublocation &&
+        !(transferScopePayload.sublocations || []).some((row) => Number(row.village_count) > 0)
+      ) {
+        transferSearch.result.can_transfer = false;
+        transferSearch.result.cannot_transfer_reason =
+          "No villages are recorded in the sub-locations you can move households to.";
       }
     }
   } catch (error) {
@@ -2784,74 +2843,119 @@ const searchTransferHousehold = async () => {
 };
 
 /**
- * Step 2 — the village picker. Destination villages are the villages of the
- * household's own sub-location, so the move always stays within the sub-location
- * the household already belongs to (any CHA may raise the transfer, not only one
- * whose area of coverage contains the household). Returns the rows so callers
- * can tell whether the sub-location even has somewhere to move to.
+ * Villages a household can be moved to, excluding the village it already sits
+ * in. `village_id` is the `org_units` id the household's `location_id` stores.
  */
-const loadTransferDestinationVillages = async (household = null) => {
-  const target = household || transferModal.household;
-  const sublocationId = Number(target?.hh_sublocation_id) || 0;
-  const currentVillageId = Number(target?.location_id) || 0;
+const destinationVillages = (scope, household = transferModal.household) => {
+  const currentVillageId = Number(household?.location_id) || 0;
 
-  transferModal.villagesLoading = true;
-  try {
-    let rows = [];
+  return (scope?.villages || []).filter(
+    (village) => Number(village.village_id) > 0 && Number(village.village_id) !== currentVillageId
+  );
+};
 
-    if (sublocationId) {
-      rows =
-        transferDestinationCache.sublocationId === sublocationId
-          ? transferDestinationCache.rows
-          : await fetchTransferSublocationVillages(sublocationId);
+/**
+ * Destination villages + posts the caller may use:
+ *   - CHA: the villages of the sub-location(s) they supervise;
+ *   - sub-county user: the villages of the sub-location they pass;
+ *   - national user: the sub-location chosen in the page drilldown.
+ * `transfers/destinations` reads `administrative_units` for villages and
+ * `post_sublocation_mapping` for the posts of that sub-location.
+ */
+const fetchTransferScope = async (sublocationId = null) => {
+  const params = {};
+  const id = Number(sublocationId) || 0;
 
-      transferDestinationCache.sublocationId = sublocationId;
-      transferDestinationCache.rows = rows;
-    } else {
-      // No sub-location recorded on the household: fall back to every village
-      // the caller may see (`villages/list` is scoped to their own location).
-      rows = Object.values(await ensureTransferVillages());
+  if (id) {
+    params.sublocation_id = id;
+  } else if (isNationalUser.value) {
+    if (Number(drilldown.value.sub_location_id) > 0) {
+      params.sublocation_id = Number(drilldown.value.sub_location_id);
+    } else if (Number(drilldown.value.sub_county_id) > 0) {
+      params.subcounty_id = Number(drilldown.value.sub_county_id);
     }
+  }
 
-    transferModal.villageOptions = rows
-      // `village_id` is the `org_units` id a household's `location_id` stores, so
-      // both the filter and the value the request carries must use it.
-      .filter(
-        (village) =>
-          Number(village.village_id) > 0 && Number(village.village_id) !== currentVillageId
-      )
-      .map((village) => ({
-        value: Number(village.village_id),
-        label: village.name || `Village #${village.village_id}`,
-      }));
+  const { data } = await axios.get("transfers/destinations", { params });
+  return data?.data || null;
+};
 
-    return rows;
-  } catch (error) {
-    transferModal.villageOptions = [];
-    return [];
-  } finally {
-    transferModal.villagesLoading = false;
+/** Paint a `transfers/destinations` payload onto the transfer modal. */
+const applyTransferScope = (scope, household = transferModal.household) => {
+  transferModal.scope = String(scope?.scope || "");
+  transferModal.scopeError = scope?.message || "";
+  transferModal.sublocationOptions = (scope?.sublocations || []).map((row) => ({
+    value: Number(row.id),
+    label: `${row.name || `Sub-location #${row.id}`}${
+      Number(row.village_count) ? ` · ${row.village_count} village(s)` : ""
+    }`,
+  }));
+  transferModal.sublocationId = Number(scope?.sublocation_id) || null;
+  transferModal.sublocationName = scope?.sublocation_name || "";
+  transferModal.villages = scope?.villages || [];
+  transferModal.posts = (scope?.posts || []).map((post) => ({
+    value: Number(post.id),
+    label: post.name || `Post #${post.id}`,
+  }));
+
+  transferModal.villageOptions = destinationVillages(scope, household).map((village) => ({
+    value: Number(village.village_id),
+    label: village.name || `Village #${village.village_id}`,
+  }));
+
+  // Posts are mapped to the sub-location, not to a single village, so the
+  // same list applies to every destination village.
+  transferModal.postOptions = transferModal.posts;
+
+  if (!transferModal.villageOptions.some((option) => option.value === transferModal.villageId)) {
+    transferModal.villageId = null;
+    transferModal.postId = null;
   }
 };
 
-/** Step 3 — the post picker: posts mapped to the village's sub-location. */
-const onTransferVillageChange = async (villageId) => {
-  transferModal.postId = null;
-  transferModal.postOptions = [];
-  const id = Number(villageId) || 0;
-  if (!id) return;
+/** Fetch + apply the caller's transfer scope, handling loading and errors. */
+const refreshTransferScope = async (sublocationId = null) => {
+  transferModal.scopeLoading = true;
+  transferModal.scopeError = "";
 
-  transferModal.postsLoading = true;
   try {
-    transferModal.postOptions = await ensureTransferPosts(id);
+    transferScopePayload = await fetchTransferScope(sublocationId);
+    applyTransferScope(transferScopePayload, transferModal.household);
+    return transferScopePayload;
+  } catch (error) {
+    transferScopePayload = null;
+    transferModal.scopeError = apiErrorMessage(
+      error,
+      "Could not load the villages you can transfer to."
+    );
+    transferModal.villageOptions = [];
+    transferModal.postOptions = [];
+    return null;
   } finally {
-    transferModal.postsLoading = false;
+    transferModal.scopeLoading = false;
   }
+};
+
+/** Sub-county level: load the villages + posts of the chosen sub-location. */
+const onTransferSublocationChange = async (sublocationId) => {
+  transferModal.villageId = null;
+  transferModal.postId = null;
+  transferModal.villageOptions = [];
+  transferModal.postOptions = [];
+
+  await refreshTransferScope(sublocationId);
+};
+
+/** Step 3 — the posts already arrived with the sub-location's scope. */
+const onTransferVillageChange = () => {
+  transferModal.postId = null;
+  transferModal.postOptions = transferModal.posts;
 };
 
 const canSubmitTransfer = computed(
   () =>
     Boolean(transferModal.household) &&
+    Boolean(transferModal.sublocationId) &&
     Boolean(transferModal.villageId) &&
     Boolean(transferModal.postId) &&
     String(transferModal.reason || "").trim().length > 0
@@ -2869,7 +2973,13 @@ const openTransferModal = async () => {
   transferModal.postOptions = [];
   transferModal.reason = "";
 
-  await loadTransferDestinationVillages();
+  // Searching already loaded the caller's scope; re-apply it so the current
+  // village is excluded and any stale selection is cleared.
+  if (transferScopePayload) {
+    applyTransferScope(transferScopePayload, household);
+  } else {
+    await refreshTransferScope();
+  }
 };
 
 const submitTransfer = async () => {
@@ -2877,28 +2987,31 @@ const submitTransfer = async () => {
   if (!household || !canSubmitTransfer.value) {
     notification.warning({
       message: "Incomplete transfer",
-      description: "Pick the destination village and post, and give a reason.",
+      description: "Pick the sub-location, destination village and post, and give a reason.",
     });
     return;
   }
+
+  const village = transferModal.villages.find(
+    (row) => Number(row.village_id) === Number(transferModal.villageId)
+  );
 
   transferModal.saving = true;
   try {
     await axios.post("transfers", {
       household_id: Number(household.id),
-      // Destination village as the `org_units` id (`villages/list` → `village_id`),
+      // Destination village as the `org_units` id (`administrative_units.village_id`),
       // which is what a household's `location_id` stores.
       location_id: Number(transferModal.villageId),
       post_id: Number(transferModal.postId),
       transfer_reason: String(transferModal.reason).trim(),
-      // The destination is inside the same sub-location as the household (the
-      // picker only offers those villages), so the household's recorded chain
-      // stays valid for the new record and is sent as-is.
-      hh_county_id: household.hh_county_id ?? null,
-      hh_subcounty_id: household.hh_subcounty_id ?? null,
-      hh_ward_id: household.hh_ward_id ?? null,
-      hh_location_id: household.hh_location_id ?? null,
-      hh_sublocation_id: household.hh_sublocation_id ?? null,
+      // The backend re-derives this chain from `administrative_units`; sending
+      // the destination village's ids keeps the payload explicit.
+      hh_county_id: village?.hh_county_id ?? null,
+      hh_subcounty_id: village?.hh_subcounty_id ?? null,
+      hh_ward_id: village?.hh_ward_id ?? null,
+      hh_location_id: village?.hh_location_id ?? null,
+      hh_sublocation_id: village?.hh_sublocation_id ?? null,
     });
 
     transferModal.open = false;
