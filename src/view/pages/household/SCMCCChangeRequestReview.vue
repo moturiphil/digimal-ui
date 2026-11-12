@@ -89,13 +89,6 @@
               show-icon
               :message="loadWarning"
             />
-            <a-alert
-              v-else-if="hiddenScopeNotice"
-              class="transfer-load-alert"
-              type="info"
-              show-icon
-              :message="hiddenScopeNotice"
-            />
 
             <!-- Desktop / tablet: table -->
             <a-table
@@ -805,7 +798,6 @@ const sessionUser = ref(
 );
 
 const transfersError = ref("");
-const transferOutOfScope = ref(0);
 
 // administrative_units.id → { id, village_id, name } for a destination village.
 const transferVillagesById = ref({});
@@ -831,7 +823,6 @@ const isOwnTransfer = (record) =>
 // The workflow has its own table + approve/reject endpoints, so those rows are
 // fetched separately and merged in under the `head_change` action type.
 const headChangesError = ref("");
-const headChangesOutOfScope = ref(0);
 
 const isHeadChangeRecord = (record) => Boolean(record) && record.kind === "head_change";
 
@@ -856,42 +847,20 @@ const headChangePostLabel = (record) => {
   return post.name || `Post #${record.post_id}`;
 };
 
-// Head-change rows carry the household, whose `hh_subcounty_id` equals the
-// reviewer's own sub-county (same rule the transfer queue uses). Not scoped
-// server-side, so it is applied here. National scope (id 1) sees all.
-const headChangeInReviewerScope = (row) => {
-  const u = (sessionUser.value && sessionUser.value.user) || sessionUser.value || {};
-  const scopeId = Number(u.location_id || (u.location && u.location.id) || 0);
-  if (!scopeId || scopeId === 1) return true;
-  if (Number(u.level_id) === 1) return true;
-  return Number((row && row.household && row.household.hh_subcounty_id) || 0) === scopeId;
-};
-
-// One notice for both queues: load failures first, then rows hidden by scope.
+// Load failures for either queue are surfaced in a single warning.
 const loadWarning = computed(() =>
   [transfersError.value, headChangesError.value].filter(Boolean).join(" ")
 );
 
-const hiddenScopeNotice = computed(() => {
-  const parts = [];
-  if (transferOutOfScope.value) parts.push(`${transferOutOfScope.value} household transfer(s)`);
-  if (headChangesOutOfScope.value) parts.push(`${headChangesOutOfScope.value} head change request(s)`);
-  return parts.length
-    ? `${parts.join(" and ")} fall outside your sub-county and are hidden.`
-    : "";
-});
-
 /**
  * Pending head-change requests mapped into the row shape this page renders.
+ * The endpoint's rows are shown as returned (no client-side scope filtering).
  */
 const fetchPendingHeadChanges = async () => {
   headChangesError.value = "";
-  headChangesOutOfScope.value = 0;
   try {
     const { data } = await axios.get("household-head-changes?status=pending");
-    const allRows = Array.isArray(data?.data) ? data.data : [];
-    const rows = allRows.filter(headChangeInReviewerScope);
-    headChangesOutOfScope.value = allRows.length - rows.length;
+    const rows = Array.isArray(data?.data) ? data.data : [];
 
     return rows.map((row) => ({
       ...row,
@@ -911,20 +880,6 @@ const fetchPendingHeadChanges = async () => {
         : "Pending head change requests could not be loaded. Refresh to try again.";
     return [];
   }
-};
-
-// Transfers are scoped by sub-county: the history row carries the destination
-// sub-county, and a transfer always keeps the household inside the sub-location
-// it already belongs to, so the destination sub-county is the reviewer's own.
-// (Any CHA may raise the request, including one whose area of coverage does not
-// contain the household.) The transfer endpoint has no server-side scoping, so
-// it is applied here. National scope (id 1) sees all.
-const transferInReviewerScope = (row) => {
-  const u = (sessionUser.value && sessionUser.value.user) || sessionUser.value || {};
-  const scopeId = Number(u.location_id || (u.location && u.location.id) || 0);
-  if (!scopeId || scopeId === 1) return true;
-  if (Number(u.level_id) === 1) return true;
-  return Number(row && row.hh_subcounty_id) === scopeId;
 };
 
 const rowKey = (record) => (record && record.uid) || String((record && record.id) || "");
@@ -1078,17 +1033,14 @@ const prefetchTransferLabels = async (rows) => {
 /**
  * Pending transfers mapped into the row shape this page renders. The endpoint
  * caps a page at 25 rows and returns the newest first, so the first page holds
- * every pending transfer in practice. Rows outside the reviewer's sub-county are
- * dropped here (the endpoint is not scoped) and counted for the notice.
+ * every pending transfer in practice. Rows are shown as returned (no
+ * client-side scope filtering).
  */
 const fetchPendingTransfers = async () => {
   transfersError.value = "";
-  transferOutOfScope.value = 0;
   try {
     const { data } = await axios.get("transfers?approval_status=pending");
-    const allRows = Array.isArray(data?.data) ? data.data : [];
-    const rows = allRows.filter(transferInReviewerScope);
-    transferOutOfScope.value = allRows.length - rows.length;
+    const rows = Array.isArray(data?.data) ? data.data : [];
 
     await prefetchTransferLabels(rows);
 
@@ -1440,7 +1392,7 @@ const highlightRowClass = (record) =>
     margin-bottom: 14px;
     box-shadow: 0 4px 12px rgba(28, 122, 72, 0.06);
   }
-  /* Notice shown when the transfer queue could not be loaded / is scoped out. */
+  /* Warning shown when a pending queue could not be loaded. */
   .transfer-load-alert {
     margin-bottom: 10px;
   }
