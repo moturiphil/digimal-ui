@@ -3,7 +3,7 @@
     <Main>
       <BudgetPageWrapper class="minimal-dashboard users-page">
         <!-- Page heading -->
-        <header class="page-heading">
+        <header class="page-heading users-heading">
           <div class="ph-left">
             <h3 class="ph-title">
               <span class="ph-icon">👥</span> Registered Users
@@ -13,8 +13,8 @@
               county and sub-county levels.
             </p>
           </div>
-          <div class="ph-actions">
-            <div class="us-view-toggle" role="group" aria-label="Toggle view">
+          <div class="ph-actions us-toolbar">
+            <div class="us-view-toggle" role="group" aria-label="View mode">
               <button
                 type="button"
                 class="us-toggle-btn"
@@ -35,29 +35,42 @@
               </button>
             </div>
 
-            <sdButton size="small" class="pill-btn" :disabled="isLoading" @click="refresh">
-              <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
-            </sdButton>
+            <span class="us-toolbar-sep" aria-hidden="true"></span>
 
-            <sdButton size="small" class="pill-btn" @click="openMasterlistModal">
-              <sdFeatherIcons type="clipboard" size="13" /> Check Masterlist
-            </sdButton>
+            <div class="us-toolbar-group">
+              <sdButton
+                size="small"
+                class="pill-btn"
+                :disabled="isLoading"
+                @click="refresh"
+              >
+                <sdFeatherIcons type="refresh-cw" size="13" /> Refresh
+              </sdButton>
 
-            <sdButton
-              v-if="canChangePhone"
-              size="small"
-              class="pill-btn"
-              @click="openPhoneChangeModal"
-            >
-              <sdFeatherIcons type="smartphone" size="13" /> Change Phone Number
-            </sdButton>
+              <sdButton size="small" class="pill-btn" @click="openMasterlistModal">
+                <sdFeatherIcons type="clipboard" size="13" /> Check Masterlist
+              </sdButton>
 
-            <router-link to="/users/add-user" class="us-create-btn">
-              <sdFeatherIcons type="user-plus" size="14" /> Add User
-            </router-link>
-            <router-link to="/users/add-chp-ve" class="us-create-btn secondary">
-              <sdFeatherIcons type="users" size="14" /> Add CHP &amp; VE
-            </router-link>
+              <sdButton
+                v-if="canChangePhone"
+                size="small"
+                class="pill-btn"
+                @click="openPhoneChangeModal"
+              >
+                <sdFeatherIcons type="smartphone" size="13" /> Change Phone Number
+              </sdButton>
+            </div>
+
+            <span class="us-toolbar-sep" aria-hidden="true"></span>
+
+            <div class="us-toolbar-group">
+              <router-link to="/users/add-user" class="us-create-btn">
+                <sdFeatherIcons type="user-plus" size="14" /> Add User
+              </router-link>
+              <router-link to="/users/add-chp-ve" class="us-create-btn secondary">
+                <sdFeatherIcons type="users" size="14" /> Add CHP &amp; VE
+              </router-link>
+            </div>
           </div>
         </header>
 
@@ -1917,27 +1930,77 @@ onMounted(async () => {
 }
 
 /* ── Header actions ────────────────────────────────────────────────────── */
+.page-heading.users-heading {
+  align-items: center;
+
+  .ph-left {
+    flex: 1 1 320px;
+  }
+}
+
+.us-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  row-gap: 10px;
+  flex-wrap: wrap;
+
+  /* sdButton renders an ant-btn — keep icon + label on one centred baseline */
+  :deep(.ant-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+
+.us-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.us-toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background: #e1e9e4;
+  border-radius: 1px;
+  flex: 0 0 1px;
+}
+
 .us-view-toggle {
   display: inline-flex;
+  align-items: center;
+  height: 40px;
+  box-sizing: border-box;
   background: #f0f7f3;
   border: 1px solid #d9f0e2;
-  border-radius: 22px;
+  border-radius: 20px;
   padding: 3px;
   gap: 2px;
+  flex-shrink: 0;
 }
 .us-toggle-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  height: 32px;
   border: 0;
   background: transparent;
   color: #5f7268;
   font-size: 12px;
   font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 18px;
+  padding: 0 16px;
+  min-width: 92px;
+  border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  &:hover {
+    color: #15693c;
+  }
   &.active {
     background: #fff;
     color: #15693c;
@@ -1947,6 +2010,7 @@ onMounted(async () => {
 .us-create-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   height: 40px;
   padding: 0 16px;
@@ -2842,10 +2906,14 @@ onMounted(async () => {
 
 @media (max-width: 1200px) {
   .sum-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .us-toolbar-sep { display: none; }
 }
 @media (max-width: 991px) {
   .sum-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ph-actions { width: 100%; }
+  .page-heading.users-heading { align-items: flex-start; }
+  .us-toolbar { width: 100%; justify-content: flex-start; }
+  .us-toolbar-sep { display: none; }
   .us-search { width: 100%; margin-left: 0; }
   .us-search :deep(.ant-input),
   .us-search :deep(.ant-input-affix-wrapper) { width: 100%; }
@@ -2855,6 +2923,8 @@ onMounted(async () => {
   .sum-row { grid-template-columns: 1fr; }
   .filter-grid { grid-template-columns: 1fr; }
   .us-view-toggle { width: 100%; justify-content: center; }
+  .us-toolbar-group { width: 100%; }
+  .us-toolbar-group .us-create-btn { flex: 1 1 0; }
   .us-card-meta { grid-template-columns: 1fr; }
   .us-card-foot { flex-direction: column; align-items: stretch; }
   .us-actions { justify-content: flex-start; }

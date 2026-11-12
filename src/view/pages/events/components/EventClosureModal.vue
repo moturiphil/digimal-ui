@@ -8,17 +8,40 @@
     @cancel="onCancel"
   >
     <div class="ec-modal">
-      <div v-if="loading" class="ec-loading">
+      <div v-if="loading || (!statusLoaded && !loadError)" class="ec-loading">
         <a-spin />
         <span>Loading closure requirements…</span>
+      </div>
+
+      <!-- The status request failed (e.g. the caller is not the event host).
+           Never fall through to the "no documents required" state below:
+           that would incorrectly enable the Close Event button. -->
+      <div v-else-if="loadError" class="ec-load-error">
+        <a-alert
+          type="error"
+          show-icon
+          class="ec-blockers"
+          message="Could not load closure requirements"
+        >
+          <template #description>{{ loadError }}</template>
+        </a-alert>
+        <div class="ec-actions">
+          <sdButton size="small" type="light" outlined @click="onCancel">
+            Cancel
+          </sdButton>
+          <sdButton size="small" type="primary" @click="fetchStatus">
+            Retry
+          </sdButton>
+        </div>
       </div>
 
       <template v-else>
         <!-- Intro -->
         <p class="ec-intro">
-          Closing an event finalises attendance. Provide the required documents
-          below, then close the event. Payroll generation remains disabled until
-          you submit the closed event for payroll.
+          Closing an event finalises attendance. Procurement documents become
+          mandatory when you close the event on its final day. Payroll
+          generation remains disabled until you submit the closed event for
+          payroll.
         </p>
 
         <!-- Blockers -->
@@ -33,6 +56,21 @@
             <ul class="ec-blocker-list">
               <li v-for="(b, i) in blockers" :key="i">{{ b.message }}</li>
             </ul>
+          </template>
+        </a-alert>
+
+        <a-alert
+          v-else-if="requiresUploads && !status.complete && !status.is_final_day"
+          type="info"
+          show-icon
+          class="ec-blockers"
+        >
+          <template #message>Documents are due on the final day</template>
+          <template #description>
+            This event's procurement documents are only required when you close
+            it on its final day<span v-if="status.final_day"> ({{ status.final_day }})</span>.
+            You can close today's session directly; upload the documents before
+            the final-day close.
           </template>
         </a-alert>
 
@@ -172,7 +210,7 @@
           <p class="ec-hint">
             Add each vehicle's license plate, fuel amount, the fuel receipt
             (ETR) and the work ticket. Both documents are required for every
-            vehicle before the event can be closed.
+            vehicle when the event is closed on its final day.
           </p>
 
           <!-- Existing vehicles -->
@@ -296,6 +334,11 @@ const emit = defineEmits(["update:visible", "closed"]);
 const loading = ref(false);
 const saving = ref(false);
 const closing = ref(false);
+// True once the backend status payload has loaded successfully. The Close
+// Event button stays disabled until then, so a failed request can never be
+// mistaken for "this event needs no documents".
+const statusLoaded = ref(false);
+const loadError = ref("");
 const status = reactive({
   requires_uploads: false,
   requires_lso: false,
@@ -309,7 +352,28 @@ const status = reactive({
   complete: false,
   uploads: [],
   vehicles: [],
+  // Closure documents are only enforced on/after the final scheduled day.
+  is_final_day: false,
+  final_day: null,
+  documents_required_now: false,
 });
+const resetStatus = () => {
+  Object.assign(status, {
+    requires_uploads: false,
+    requires_lso: false,
+    has_lso: false,
+    lso_delinked: false,
+    requires_fuel: false,
+    fuel: null,
+    missing_types: [],
+    complete: false,
+    uploads: [],
+    vehicles: [],
+    is_final_day: false,
+    final_day: null,
+    documents_required_now: false,
+  });
+};
 const blockers = ref([]);
 const openLsos = ref([]);
 const lsoLoading = ref(false);
@@ -345,10 +409,10 @@ const hasVenueInvoiceUploaded = computed(() =>
 );
 
 const canClose = computed(() => {
-  if (!props.event) return false;
-  // Complete when backend says closure requirements are satisfied,
-  // or when there were no uploads required at all.
-  return status.complete || !status.requires_uploads;
+  if (!props.event || !statusLoaded.value || loadError.value) return false;
+  // Complete when backend says closure requirements are satisfied, or when
+  // documents are not yet due (earlier daily closes need no documents).
+  return status.complete || !status.documents_required_now;
 });
 
 const canUploadFuel = computed(
@@ -363,9 +427,14 @@ watch(
   () => props.visible,
   (open) => {
     if (open && props.event) {
-      // Reset any stale LSO state from a previous open.
+      // Reset any stale state from a previous open so a failed load never
+      // reuses the previous event's requirements.
       lsoForm.vendor_lso_id = null;
       openLsos.value = [];
+      blockers.value = [];
+      loadError.value = "";
+      statusLoaded.value = false;
+      resetStatus();
       fetchStatus();
     }
   }
@@ -374,14 +443,23 @@ watch(
 const fetchStatus = async () => {
   if (!props.event) return;
   loading.value = true;
+  loadError.value = "";
+  statusLoaded.value = false;
+  blockers.value = [];
+  resetStatus();
   try {
     const res = await axios.get(`get_vendor_uploads/event/${props.event.id}`);
     applyStatus(res.data?.data || {});
-    blockers.value = [];
+    statusLoaded.value = true;
   } catch (e) {
+    const data = e?.response?.data;
+    loadError.value = data?.message || "Could not load closure requirements.";
     notification.error({
-      message: "Error",
-      description: "Could not load closure requirements.",
+      message:
+        e?.response?.status === 401 || e?.response?.status === 403
+          ? "Not allowed"
+          : "Error",
+      description: loadError.value,
     });
   } finally {
     loading.value = false;
@@ -399,6 +477,9 @@ const applyStatus = (data) => {
   status.complete = !!data.complete;
   status.uploads = data.uploads || [];
   status.vehicles = data.vehicles || [];
+  status.is_final_day = !!data.is_final_day;
+  status.final_day = data.final_day || null;
+  status.documents_required_now = !!data.documents_required_now;
 
   // Load the replacement-LSO options as soon as we know the host must pick
   // one (paid venue with no LSO, or the previous LSO was delinked).

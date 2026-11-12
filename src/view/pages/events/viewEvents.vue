@@ -514,20 +514,48 @@ const registrationCode = ref("");
 // has not yet been generated or paid.
 const isPending = (record) => record.payroll_status === "Pending";
 
+// The backend only lets the event host — the event_facilitators row with
+// `isTrainer = NULL` — start/close an event and manage its closure uploads.
+// Apply the same rule here so non-hosts never open a closure modal whose
+// status request the API will reject.
+const currentUserId = (() => {
+  try {
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    return user?.user?.id ?? null;
+  } catch (e) {
+    return null;
+  }
+})();
+
+const isEventHost = (record) =>
+  currentUserId != null &&
+  record?.event_host_id != null &&
+  Number(currentUserId) === Number(record.event_host_id);
+
 // The host starts the event each day. Starting is available whenever the
 // event is not currently running and has not yet been submitted for payroll.
 // An event MUST be linked to a budget template first — see the backend guard
 // in EventsController::eventStart().
 const canStart = (record) =>
+  isEventHost(record) &&
   !record.status &&
   !record.payroll_submitted &&
   isPending(record) &&
   (!!record.budget_line_item_id || !!record.is_national);
 
-// Closing is available while the event is currently running.
-const canClose = (record) => !!record.status;
+// Closing is available while the event is currently running and only to the
+// event host (EventsController::eventClose() enforces the same rule).
+const canClose = (record) => isEventHost(record) && !!record.status;
 
 const startEvent = async (record) => {
+  if (!isEventHost(record)) {
+    notification.error({
+      message: "Not allowed",
+      description: "Only the event host can start this event.",
+    });
+    return;
+  }
+
   try {
     isStarting.value = true;
     const response = await axios.get(`event_start_trigger/${record.id}`, {
@@ -557,6 +585,14 @@ const startEvent = async (record) => {
 };
 
 const openCloseModal = (record) => {
+  if (!isEventHost(record)) {
+    notification.error({
+      message: "Not allowed",
+      description: "Only the event host can close this event.",
+    });
+    return;
+  }
+
   activeEvent.value = record;
   isCloseModalOpen.value = true;
 };

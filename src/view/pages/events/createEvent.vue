@@ -895,10 +895,9 @@ const AddNew = defineComponent({
       };
       if (showProcurementSection.value) {
         data.vendor_lso_id = formState.vendor_lso_id || null;
-        // Selecting an LSO/LPO means the venue is paid, so its invoice will
-        // be required at closure. The fuel requirement is derived by the
-        // backend from the event type's has_fuel flag.
-        data.requires_paid_venue = !!formState.vendor_lso_id;
+        // Closure requirements come from the event-list template's
+        // has_vendor / has_fuel flags, so no per-event requirement flags are
+        // sent from the form.
       }
       console.log(data);
       ArticleSchema.validate(this.formState, { abortEarly: false })
