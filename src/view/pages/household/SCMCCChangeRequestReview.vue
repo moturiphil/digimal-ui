@@ -449,36 +449,6 @@
             placeholder="e.g. Phone number doesn't match household head"
           />
         </a-modal>
-
-        <!-- Approval error modal (e.g. a national ID already claimed by another household) -->
-        <a-modal
-          v-model:visible="approveErrorOpen"
-          title="Request cannot be approved"
-          :footer="null"
-          :width="480"
-          centered
-        >
-          <div class="approve-error">
-            <ExclamationCircleFilled class="approve-error-icon" />
-            <div>
-              <p class="approve-error-message">{{ approveErrorMessage }}</p>
-              <p class="approve-error-hint">
-                The request is still pending. Reject it to let the CHA resubmit
-                with the correct details.
-              </p>
-            </div>
-          </div>
-          <div class="approve-error-actions">
-            <a-button @click="approveErrorOpen = false">Close</a-button>
-            <a-button
-              v-if="approveErrorRecord"
-              danger
-              @click="rejectFromApproveError"
-            >
-              Reject request
-            </a-button>
-          </div>
-        </a-modal>
       </BudgetPageWrapper>
     </Main>
   </RecordViewWrapper>
@@ -497,7 +467,6 @@ import {
   ArrowRightOutlined,
   LeftOutlined,
   RightOutlined,
-  ExclamationCircleFilled,
 } from "@ant-design/icons-vue";
 
 const loading = ref(false);
@@ -523,13 +492,6 @@ const detailRequest = ref(null);
 const rejectOpen = ref(false);
 const rejectReason = ref("");
 const rejectTarget = ref(null);
-
-// Approval failures are surfaced in a modal (see template) rather than a
-// transient toast: the reviewer needs to read the reason — e.g. a national ID
-// that was claimed by another household while the request was pending.
-const approveErrorOpen = ref(false);
-const approveErrorMessage = ref("");
-const approveErrorRecord = ref(null);
 
 const columns = [
   { title: "Action", key: "action_type", width: 130 },
@@ -1173,27 +1135,6 @@ const gotoNext = () => {
   detailRequest.value = filteredRequests.value[currentDetailIndex.value + 1];
 };
 
-/**
- * Show an approval failure in the dedicated modal. Laravel returns 422
- * validation responses as { message, errors }; prefer the field message when
- * present so the reviewer sees the actionable reason (e.g. the ID clash).
- */
-const showApproveError = (record, err) => {
-  const data = (err && err.response && err.response.data) || {};
-  const fieldErrors = data.errors ? Object.values(data.errors).flat() : [];
-  approveErrorRecord.value = record || null;
-  approveErrorMessage.value =
-    fieldErrors[0] || data.message || "Failed to approve request.";
-  approveErrorOpen.value = true;
-};
-
-/** Close the error modal and take the reviewer straight to the reject flow. */
-const rejectFromApproveError = () => {
-  const record = approveErrorRecord.value;
-  approveErrorOpen.value = false;
-  if (record) openReject(record);
-};
-
 const approve = (record) => {
   if (!record) return;
   if (isOwnRecord(record)) {
@@ -1243,7 +1184,13 @@ const approve = (record) => {
           detailOpen.value = false;
         }
       } catch (err) {
-        showApproveError(record, err);
+        message.error(
+          (err &&
+            err.response &&
+            err.response.data &&
+            err.response.data.message) ||
+            "Failed to approve request."
+        );
       } finally {
         actingId.value = null;
         actingType.value = null;
@@ -1812,43 +1759,6 @@ const highlightRowClass = (record) =>
       .ph-actions { justify-content: flex-end; }
     }
   }
-}
-
-/* ── Approval error modal ───────────────────────────────────────────
-   Modal content is teleported to <body>, so these selectors stay at the
-   top level (outside .hh-review-dashboard) to keep the scoped attribute
-   match working. */
-.approve-error {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 4px 0 14px;
-
-  .approve-error-icon {
-    flex: none;
-    margin-top: 2px;
-    color: #cf1322;
-    font-size: 22px;
-    line-height: 1;
-  }
-  .approve-error-message {
-    margin: 0;
-    color: #272b41;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.55;
-  }
-  .approve-error-hint {
-    margin: 8px 0 0;
-    color: #7a8a82;
-    font-size: 12.5px;
-    line-height: 1.5;
-  }
-}
-.approve-error-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
 }
 </style>
 
