@@ -54,7 +54,7 @@
             <a-empty description="No campaign is currently active">
               <p class="cps-empty-note">
                 Posts are selected per campaign. An administrator must activate a
-                campaign before posts can be carried over, stopped or restarted.
+                campaign before posts can be carried over, deactivated or restarted.
               </p>
               <router-link to="/campaigns/view-campaign">
                 <a-button type="primary">Go to campaigns</a-button>
@@ -76,7 +76,7 @@
                   In campaign ({{ counts.inCampaign }})
                 </a-radio-button>
                 <a-radio-button value="stopped">
-                  Stopped ({{ counts.stopped }})
+                  Deactivated ({{ counts.stopped }})
                 </a-radio-button>
               </a-radio-group>
 
@@ -102,10 +102,10 @@
             <p v-if="activeTab === 'carry'" class="cps-hint">
               Only posts that are published and were
               <strong>active in the last campaign</strong> can be carried over.
-              Stopped or unpublished posts never appear here.
+              Deactivated or unpublished posts never appear here.
             </p>
             <p v-else-if="activeTab === 'in-campaign'" class="cps-hint">
-              Posts taking part in this campaign. A post can only be stopped while
+              Posts taking part in this campaign. A post can only be deactivated while
               it holds no stock and has no unserved households.
             </p>
             <p v-else class="cps-hint">
@@ -129,7 +129,7 @@
                     class="cps-badge"
                     :class="record.is_active ? 'cps-badge-on' : 'cps-badge-off'"
                   >
-                    {{ record.is_active ? "In use" : "Stopped" }}
+                    {{ record.is_active ? "In use" : "Deactivated" }}
                   </span>
                 </template>
                 <template #actions="{ record }">
@@ -266,7 +266,7 @@ const emptyText = computed(() => {
   if (activeTab.value === "in-campaign") {
     return "No posts have been confirmed for this campaign yet.";
   }
-  return "No posts have been stopped in this campaign.";
+  return "No posts have been deactivated in this campaign.";
 });
 
 const columns = computed(() => {
@@ -308,7 +308,7 @@ const columns = computed(() => {
     { title: "Sub County", dataIndex: "distribution_sub_county", key: "sub_county" },
     { title: "Supervisor", dataIndex: "post_supervisor_user_id", key: "supervisor" },
     {
-      title: "Stopped",
+      title: "Deactivated",
       dataIndex: "deactivated_at",
       key: "deactivated_at",
       customRender: ({ text }) => formatDate(text),

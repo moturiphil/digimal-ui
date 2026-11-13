@@ -272,16 +272,6 @@
             HouseHolds Registered
           </router-link>
         </a-menu-item>
-        <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges && isSchmtSubcountyUser">
-          <router-link to="/household/change-requests/review">
-            Change Request Review
-          </router-link>
-        </a-menu-item>
-        <a-menu-item key="widgetHouseholdChangeOverview" v-if="isOversightUser">
-          <router-link to="/household/change-requests/overview">
-            Change Requests Overview
-          </router-link>
-        </a-menu-item>
         <!-- <a-menu-item key="widgetHouseholdIRS" v-if="canValidateHH">
           <router-link to="/household/irs">
             Household IRS
@@ -317,6 +307,16 @@
         <a-menu-item key="widgetHouseholdValidationDashboard">
           <router-link to="/household/validation/dashboard">
             Dashboard
+          </router-link>
+        </a-menu-item>
+         <a-menu-item key="widgetHouseholdChangeReview" v-if="canReviewHHChanges && isSchmtSubcountyUser">
+          <router-link to="/household/change-requests/review">
+            Change Request Review
+          </router-link>
+        </a-menu-item>
+        <a-menu-item key="widgetHouseholdChangeOverview" v-if="isOversightUser">
+          <router-link to="/household/change-requests/overview">
+            Change Requests Overview
           </router-link>
         </a-menu-item>
         <a-menu-item key="widgetHouseholdValidationHouseholds">

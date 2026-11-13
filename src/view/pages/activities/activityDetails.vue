@@ -128,6 +128,17 @@
                 : "View Budget Link"
           }}
         </sdButton>
+        &nbsp;&nbsp;
+        <sdButton
+          v-if="canShowCloseButton"
+          class="btn-import"
+          type="danger"
+          size="extra-small"
+          @click="isCloseModalOpen = true"
+        >
+          <sdFeatherIcons type="x-circle" size="12" />
+          &nbsp; Close Activity
+        </sdButton>
       </div>
         </div>
       </div>
@@ -653,6 +664,13 @@
           </a-col>
         </a-row>
       </SearchResultWrapper>
+
+      <!-- Activity closure: required documents + comment, then close. -->
+      <ActivityClosureModal
+        v-model:visible="isCloseModalOpen"
+        :activity="closureActivity"
+        @closed="onActivityClosed"
+      />
     </Main>
   </div>
 </template>
@@ -669,6 +687,7 @@ import store from "../../../vuex/store";
 import { notification } from "ant-design-vue";
 import authHeader from "../../../services/auth-header";
 import BudgetTemplateLinkModal from "../../../components/budget/BudgetTemplateLinkModal.vue";
+import ActivityClosureModal from "./components/ActivityClosureModal.vue";
 
 const columns = [
   {
@@ -1235,6 +1254,46 @@ const isCreator = computed(() => {
     return false;
   }
 });
+
+// ── Activity closure (documents + comment, then close) ──
+const isCloseModalOpen = ref(false);
+const closureStatus = ref(null);
+
+const closureActivity = computed(() => ({
+  id: query.id,
+  activity_code: activity_code.value,
+  name: event_name.value,
+}));
+
+// The creator owns the closure. Hide the action only when we know the
+// activity is already closed; if the status request fails, keep it visible so
+// the modal can explain what went wrong.
+const canShowCloseButton = computed(() => {
+  if (!isCreator.value) return false;
+  return closureStatus.value ? !closureStatus.value.is_closed : true;
+});
+
+const fetchClosureStatus = async () => {
+  if (!isCreator.value || !query.id) return;
+  try {
+    const res = await axios.get(`activity_closure_status/${query.id}`);
+    closureStatus.value = res.data?.data || null;
+  } catch (e) {
+    closureStatus.value = null;
+  }
+};
+
+const onActivityClosed = () => {
+  isCloseModalOpen.value = false;
+  if (closureStatus.value) {
+    closureStatus.value = { ...closureStatus.value, is_closed: true };
+  }
+  // Refresh the page so the activity status and payroll actions reflect the
+  // closure (the same pattern used after payroll generation).
+  setTimeout(() => location.reload(), 800);
+};
+
+onMounted(fetchClosureStatus);
 
 const generatePayroll = async () => {
   store.commit("setIsGenerating", true);

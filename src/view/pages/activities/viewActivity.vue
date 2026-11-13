@@ -179,6 +179,15 @@
                           <sdFeatherIcons type="eye" size="12" /> Activity Details
                         </router-link>
                       </sdButton>
+                      <sdButton
+                        v-if="canCloseActivity(record)"
+                        size="extra-small"
+                        type="danger"
+                        class="ac-action-btn"
+                        @click="openCloseModal(record)"
+                      >
+                        <sdFeatherIcons type="x-circle" size="12" /> Close
+                      </sdButton>
                     </div>
                   </td>
                 </template>
@@ -241,6 +250,15 @@
                       <sdFeatherIcons type="eye" size="12" /> Activity Details
                     </router-link>
                   </sdButton>
+                  <sdButton
+                    v-if="canCloseActivity(record)"
+                    size="extra-small"
+                    type="danger"
+                    class="ac-action-btn"
+                    @click="openCloseModal(record)"
+                  >
+                    <sdFeatherIcons type="x-circle" size="12" /> Close
+                  </sdButton>
                 </div>
               </article>
               <div v-if="!dataSource.length" class="ac-empty">
@@ -260,6 +278,12 @@
           </div>
         </section>
       </BudgetPageWrapper>
+
+      <ActivityClosureModal
+        v-model:visible="isCloseModalOpen"
+        :activity="activeClosureActivity"
+        @closed="onActivityClosed"
+      />
     </Main>
   </RecordViewWrapper>
 </template>
@@ -269,6 +293,7 @@ import { RecordViewWrapper } from "../style";
 import { BudgetPageWrapper } from "../budget/style";
 import { Main } from "../../styled";
 import { computed, onMounted, ref, watch } from "vue";
+import ActivityClosureModal from "./components/ActivityClosureModal.vue";
 
 const columns = [
   { title: "Activity Name", dataIndex: "name", key: "id" },
@@ -305,7 +330,7 @@ const columns = [
     dataIndex: "",
     key: "actions",
     fixed: "right",
-    width: 180,
+    width: 240,
     slots: { customRender: "actions" },
   },
 ];
@@ -365,6 +390,31 @@ const userLevelId = Number(profile.level_id ?? profile.level?.id ?? 0);
 const userLocationId = Number(profile.location_id ?? profile.location?.id ?? 0);
 const userRoleName = profile.role?.name || "";
 const userLocationName = profile.location?.name || "";
+
+// ── Activity closure (creator-only) ─────────────────────────────────────────
+// The creator sees a Close action on their own active activities. The modal
+// loads the closure requirements, accepts the LSO/fuel documents and comment,
+// then calls activity_close_trigger.
+const currentUserId = Number(profile.id ?? 0);
+const isCloseModalOpen = ref(false);
+const activeClosureActivity = ref(null);
+
+const canCloseActivity = (record) =>
+  !!record && Number(record.created_by) === currentUserId && !!record.status;
+
+const openCloseModal = (record) => {
+  activeClosureActivity.value = {
+    id: record.id,
+    activity_code: record.activity_code,
+    name: record.name,
+  };
+  isCloseModalOpen.value = true;
+};
+
+const onActivityClosed = () => {
+  isCloseModalOpen.value = false;
+  fetchActivities();
+};
 
 // Role-based access — the "Create Activity" shortcut is gated by the user's
 // role NAME (stable key from the API roles table), not a hard-coded role id.
