@@ -65,12 +65,6 @@ const routes = [
     name: "activity-confirm",
     component: () => import("@/view/authentication/ActivityConfirm.vue"),
   },
-  {
-    path: "/maintenance", 
-    name: "maintenance",
-    component: () =>
-      import(/* webpackChunkName: "404" */ "@/view/pages/403.vue"),
-  },
 ];
 
 export default routes;

@@ -21,6 +21,18 @@ const routes = [
     children: [...authRoutes],
     meta: { auth: false },
   },
+  {
+    // Full-screen maintenance screen. It lives outside the Admin/Auth layouts
+    // so it can take over the whole viewport. App.vue also renders it directly
+    // whenever APP_STATE resolves to `maintenance`.
+    name: "maintenance",
+    path: "/maintenance",
+    component: () =>
+      import(
+        /* webpackChunkName: "maintenance" */ "@/view/pages/Maintenance.vue"
+      ),
+    meta: { auth: false },
+  },
 ];
 
 const router = createRouter({

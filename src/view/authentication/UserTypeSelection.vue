@@ -96,7 +96,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AuthWrapper } from "./style";
 import { notification } from "ant-design-vue";
-import { fetchAppEnvironment } from "../../services/app-environment";
+import { loadAppEnvironment } from "../../services/app-environment";
 
 export default {
   name: "UserTypeSelection",
@@ -124,7 +124,7 @@ export default {
 
     const get_env = async () => {
       try {
-        const appEnvironment = await fetchAppEnvironment();
+        const appEnvironment = await loadAppEnvironment();
         if (appEnvironment.maintenance) {
           router.push("/maintenance");
           return;

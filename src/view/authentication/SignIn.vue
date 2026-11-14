@@ -161,7 +161,7 @@ import { useRouter } from "vue-router";
 import { AuthWrapper } from "./style";
 import store from "../../vuex/store";
 import { notification } from "ant-design-vue";
-import { fetchAppEnvironment } from "../../services/app-environment";
+import { loadAppEnvironment } from "../../services/app-environment";
 import { IdcardOutlined, LockOutlined } from "@ant-design/icons-vue";
 
 export default {
@@ -302,7 +302,7 @@ export default {
 
     const get_env = async () => {
       try {
-        const appEnvironment = await fetchAppEnvironment();
+        const appEnvironment = await loadAppEnvironment();
         if (appEnvironment.maintenance) {
           router.push("/maintenance");
           return;
