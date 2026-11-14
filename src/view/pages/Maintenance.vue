@@ -331,7 +331,6 @@
           </g>
 
         </svg>
-        <span class="emblem__caption">Malaria-free starts with us</span>
       </div>
 
       <p class="eyebrow">
@@ -342,13 +341,6 @@
       <h1 class="headline">
         <span class="headline__accent">Scheduled Maintenance</span>
       </h1>
-
-      <p class="lede">
-        We&rsquo;re strengthening DigiMal-KE so every county, every net and
-        every household stays on track. The platform will be back shortly.
-        Thank you for your patience as we keep working towards
-        <strong>a malaria-free Kenya, together.</strong>
-      </p>
 
       <!-- <ul class="promises" aria-label="What we are protecting">
         <li>
@@ -379,7 +371,7 @@
           {{
             checking
               ? "Checking platform status…"
-              : `This screen re-checks automatically every ${pollSeconds} seconds. For your security, cached session data is cleared — you'll sign in again when we're back.`
+              : `This screen re-checks automatically every ${pollSeconds} seconds. For your security, cached session data is cleared, you'll sign in again when we're back.`
           }}
         </p>
       </div>
@@ -776,11 +768,15 @@ export default {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #ad4e00;
-  border: 1px solid #ffd591;
+  color: #0cab7c;
+  border: 1px solid rgba(32, 201, 151, 0.35);
   border-radius: 999px;
-  background: linear-gradient(90deg, #fff7e6 0%, #fff1cc 100%);
-  box-shadow: 0 4px 12px rgba(250, 139, 12, 0.12);
+  background: linear-gradient(
+    100deg,
+    rgba(32, 201, 151, 0.12) 0%,
+    rgba(32, 201, 151, 0.05) 100%
+  );
+  box-shadow: 0 4px 12px rgba(32, 201, 151, 0.1);
   animation:
     dm-rise 0.7s ease-out 0.2s both,
     dm-badge-glow 3.2s ease-in-out 1s infinite;
@@ -789,7 +785,7 @@ export default {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #fa8b0c;
+  background: #20c997;
   animation: dm-status-pulse 2s ease-out infinite;
 }
 .headline {
@@ -808,15 +804,17 @@ export default {
   margin-top: 0.08em;
   background: linear-gradient(
     100deg,
-    #12b886 0%,
-    #20c997 42%,
-    #0cab7c 78%,
-    #20c997 100%
+    #a85a00 0%,
+    #b45309 25%,
+    #d47407 55%,
+    #b45309 80%,
+    #a85a00 100%
   );
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 8px 24px rgba(32, 201, 151, 0.22));
   animation: dm-shine 9s linear infinite;
 }
 .lede {
@@ -1225,22 +1223,24 @@ export default {
 @keyframes dm-badge-glow {
   0%,
   100% {
-    box-shadow: 0 4px 12px rgba(250, 139, 12, 0.12);
+    box-shadow: 0 4px 12px rgba(32, 201, 151, 0.1);
   }
   50% {
-    box-shadow: 0 4px 20px rgba(250, 139, 12, 0.28);
+    box-shadow:
+      0 4px 18px rgba(32, 201, 151, 0.2),
+      0 0 0 1px rgba(250, 139, 12, 0.05);
   }
 }
 
 @keyframes dm-status-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(250, 139, 12, 0.55);
+    box-shadow: 0 0 0 0 rgba(32, 201, 151, 0.55);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(250, 139, 12, 0);
+    box-shadow: 0 0 0 10px rgba(32, 201, 151, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(250, 139, 12, 0);
+    box-shadow: 0 0 0 0 rgba(32, 201, 151, 0);
   }
 }
 
