@@ -336,12 +336,11 @@
 
       <p class="eyebrow">
         <span class="eyebrow__dot" aria-hidden="true"></span>
-        Scheduled maintenance
+        Malaria Free Kenya
       </p>
 
       <h1 class="headline">
-        Towards a
-        <span class="headline__accent">Malaria-free Kenya</span>
+        <span class="headline__accent">Scheduled Maintenance</span>
       </h1>
 
       <p class="lede">
@@ -380,7 +379,7 @@
           {{
             checking
               ? "Checking platform status…"
-              : `This screen re-checks automatically every ${pollSeconds} seconds. No action is required.`
+              : `This screen re-checks automatically every ${pollSeconds} seconds. For your security, cached session data is cleared — you'll sign in again when we're back.`
           }}
         </p>
       </div>

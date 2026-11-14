@@ -77,6 +77,14 @@ async function refreshUserData() {
       const data = Array.isArray(body.data) ? body.data[0] : body.data;
       if (data && (data.id || data.role || data.role_id)) {
         const raw = sessionStorage.getItem("user");
+
+        // The session may have been cleared while `/me` was in flight (logout
+        // or maintenance-mode cache purge). Never resurrect a cached profile
+        // in that case — just clear the reactive refs.
+        if (!raw) {
+          return fetchUserData();
+        }
+
         let session = null;
         try {
           session = JSON.parse(raw) || {};

@@ -77,14 +77,14 @@ import {
   loadAppEnvironment,
   resolveAppEnvironment,
 } from "./services/app-environment";
+import { clearClientCaches } from "./services/maintenance-cache";
 
 /**
- * Periodic APP_STATE probes. Live instances are checked once a minute (the
- * value only changes when an operator switches mode); a maintenance instance
- * is rechecked every 30 seconds so the UI recovers as soon as the backend is
- * back.
+ * Periodic APP_STATE probes. A live instance is checked every 30 seconds so
+ * maintenance activation is picked up quickly; while in maintenance the probe
+ * is also 30 seconds so the UI recovers as soon as the backend is back.
  */
-const APP_STATE_POLL_SECONDS = 60;
+const APP_STATE_POLL_SECONDS = 30;
 const MAINTENANCE_RECHECK_SECONDS = 30;
 
 export default defineComponent({
@@ -135,7 +135,33 @@ export default defineComponent({
     const resolveAppState = async ({ refresh = false } = {}) => {
       isCheckingAppState.value = true;
       try {
-        appEnv.value = await loadAppEnvironment({ refresh });
+        const environment = await loadAppEnvironment({ refresh });
+        const wasInMaintenance = isMaintenance.value;
+
+        // Entering maintenance (on boot or mid-session): wipe persisted
+        // identity/data caches BEFORE the maintenance screen renders, so no
+        // cached page, profile or API data can be reused. The recovery watcher
+        // below sends the user to sign in again once maintenance ends.
+        if (environment.maintenance && !wasInMaintenance) {
+          await clearClientCaches();
+        }
+
+        // Leaving maintenance: the session was wiped on entry. Navigate to the
+        // login screen BEFORE the gate lifts so the previously open protected
+        // route can never mount even for one frame.
+        if (wasInMaintenance && !environment.maintenance) {
+          const hasSession = !!sessionStorage.getItem("user");
+          if (!hasSession && router.currentRoute.value.name !== "login") {
+            try {
+              await router.replace("/auth/login");
+            } catch (err) {
+              // Navigation failure (e.g. superseded) — the router guard will
+              // still bounce the protected route once the gate lifts.
+            }
+          }
+        }
+
+        appEnv.value = environment;
       } catch (err) {
         if (!appEnv.value) {
           appEnv.value = resolveAppEnvironment("");
@@ -161,32 +187,56 @@ export default defineComponent({
       }, seconds * 1000);
     };
 
+    // Returning to a tab (focus / visibility change / bfcache restore) must
+    // not leave a stale page alive: re-read APP_STATE immediately so
+    // maintenance activation and its cache purge happen as soon as the user
+    // looks at the app again.
+    const refreshIfVisible = () => {
+      if (isBootstrapping.value) return;
+      if (document.visibilityState === "hidden") return;
+      resolveAppState({ refresh: true });
+    };
+
     onMounted(async () => {
       // provide('apiEndpoint', apiEndpoint)
       dispatch("firebaseAuthGetUid");
       await resolveAppState();
       scheduleNextPoll();
+      window.addEventListener("focus", refreshIfVisible);
+      window.addEventListener("pageshow", refreshIfVisible);
+      document.addEventListener("visibilitychange", refreshIfVisible);
     });
 
     onBeforeUnmount(() => {
       if (pollTimer) {
         clearTimeout(pollTimer);
       }
+      window.removeEventListener("focus", refreshIfVisible);
+      window.removeEventListener("pageshow", refreshIfVisible);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
     });
 
-    // If maintenance ends while the user is parked on the standalone
-    // /maintenance route (e.g. an auth screen redirected them there), move on
-    // to the real landing page. When App.vue itself took over, the route was
-    // never changed, so the user simply lands back on the page they opened.
+    // When maintenance ends the session was already wiped on entry, so never
+    // let the pre-maintenance protected route mount again. Send the user to
+    // sign in; if a session somehow survived, land them on the dashboard.
     watch(isMaintenance, (inMaintenance, wasInMaintenance) => {
       if (!wasInMaintenance || inMaintenance) {
         return;
       }
-      if (router.currentRoute.value.name !== "maintenance") {
+
+      const hasSession = !!sessionStorage.getItem("user");
+      const currentRoute = router.currentRoute.value;
+
+      if (!hasSession) {
+        if (currentRoute.name !== "login") {
+          router.replace("/auth/login");
+        }
         return;
       }
-      const hasSession = !!sessionStorage.getItem("user");
-      router.replace(hasSession ? "/" : "/auth/login");
+
+      if (currentRoute.name === "maintenance") {
+        router.replace("/");
+      }
     });
 
     return {
