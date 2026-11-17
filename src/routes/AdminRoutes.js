@@ -1042,6 +1042,25 @@ const routes = [
       ),
   },
   {
+    // GOK payrolls: same validation / approval chain as Global Fund, but paid
+    // from a bank upload instead of the ERP.
+    path: "/gok-event-payroll",
+    name: "gok-event-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/EventPayroll.vue"
+      ),
+  },
+  {
+    path: "/gok/events/:mode",
+    name: "gok-event-payroll-list",
+    props: true,
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/EventPayrolls.vue"
+      ),
+  },
+  {
     path: "/gf-activities-payroll",
     name: "global-fund-activity-payroll",
     component: () =>

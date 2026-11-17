@@ -18,6 +18,15 @@
       </p>
       <p><b>Total Records: </b> {{ records }}</p>
 
+      <a-alert
+        v-if="isGok"
+        type="info"
+        show-icon
+        message="GOK payroll"
+        description="After approval this payroll is not synced to the ERP. Download the bank upload to pay it."
+        style="margin-bottom: 12px"
+      />
+
       <sdButton
         class="btn-import"
         type="success"
@@ -53,11 +62,26 @@
       <sdButton
         size="extra-small"
         type="primary"
-        v-if="approved_status == 'Approved'"
+        v-if="approved_status == 'Approved' && !isGok"
         :disabled="syncing"
         @click="handleSync()"
       >
         {{ syncing ? "Syncing..." : "Sync to ERP" }} &nbsp; &nbsp;
+      </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        size="extra-small"
+        type="primary"
+        v-if="isGok && approved_status == 'Approved'"
+        :disabled="downloadingBankUpload"
+        @click="downloadBankUpload()"
+      >
+        {{
+          downloadingBankUpload
+            ? "Downloading..."
+            : "Download Bank Upload"
+        }}
+        &nbsp; &nbsp;
       </sdButton>
       &nbsp;&nbsp;
       <sdButton
@@ -274,12 +298,7 @@
 <script setup>
 import { Main } from "../../styled";
 import { SearchResultWrapper } from "./../style";
-import {
-  onMounted,
-  ref,
-  reactive,
-  watchEffect,
-} from "vue";
+import { computed, onMounted, ref, reactive, watchEffect } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 import { useRoute } from "vue-router";
@@ -355,6 +374,12 @@ const export_pay_list_url = `${process.env.VUE_APP_BASE_URL}/event_pay_export?id
 const validate_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_validation`;
 const approve_payroll = `${process.env.VUE_APP_BASE_URL}/event_payroll_approval`;
 const sync_payroll_url = `${process.env.VUE_APP_BASE_URL}/event_payroll_sync`;
+const bank_download_url = `${process.env.VUE_APP_BASE_URL}/event_pay_roll_list_download`;
+const isGok = computed(
+  () =>
+    Number(query.funding_id) === 3 || query.funding_source === "GOK"
+);
+const downloadingBankUpload = ref(false);
 const isModalOpen = ref(false);
 const isPayModalOpen = ref(false);
 const syncing = ref(false);
@@ -394,6 +419,60 @@ const exportPayrollList = async () => {
     console.error(error);
   }
 };
+// GOK payrolls are paid from a bank upload instead of being synced to the ERP.
+const downloadBankUpload = async () => {
+  downloadingBankUpload.value = true;
+
+  try {
+    const response = await fetch(
+      `${bank_download_url}?event_payroll_id=${query.id}`,
+      { headers: authHeader() }
+    );
+
+    if (!response.ok) {
+      let message = "Unable to download the approved bank upload.";
+
+      try {
+        const payload = await response.json();
+        if (payload.message) {
+          message = payload.message;
+        }
+      } catch (parseError) {
+        // Non-JSON error body — keep the generic message.
+      }
+
+      throw new Error(message);
+    }
+
+    const fileBlob = await response.blob();
+    const fileUrl = window.URL.createObjectURL(fileBlob);
+    const link = document.createElement("a");
+
+    link.href = fileUrl;
+    link.setAttribute(
+      "download",
+      `gok_event_payroll_${query.id}_bank_upload.txt`
+    );
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(fileUrl);
+
+    notification.success({
+      message: "Download ready",
+      description: "The approved GOK bank upload has been downloaded.",
+    });
+  } catch (error) {
+    notification.error({
+      message: "Download failed",
+      description: error.message,
+    });
+  } finally {
+    downloadingBankUpload.value = false;
+  }
+};
+
+
 
 const handleValidation = () => {
   try {
