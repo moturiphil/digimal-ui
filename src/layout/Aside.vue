@@ -511,6 +511,16 @@
             </router-link>
           </a-menu-item>
         </a-sub-menu>
+        <a-sub-menu key="gok-payroll" v-if="canViewGOKPayroll">
+          <template v-slot:title>
+            <sdFeatherIcons type="flag" /><span>GOK</span>
+          </template>
+          <a-menu-item key="gok-event-payroll">
+            <router-link to="/gok-event-payroll">
+              Event Payroll
+            </router-link>
+          </a-menu-item>
+        </a-sub-menu>
         <a-sub-menu key="pmi-payroll" v-if="canViewPMIPayroll">
           <template v-slot:title>
             <sdFeatherIcons type="radio" /><span>PMI</span>
@@ -732,6 +742,7 @@ export default defineComponent({
     const canViewInventory = satisfiesGate(GATE_DEFINITIONS.canViewInventory);
     const canViewPayroll = satisfiesGate(GATE_DEFINITIONS.canViewPayroll);
     const canViewGFPayroll = satisfiesGate(GATE_DEFINITIONS.canViewGFPayroll);
+    const canViewGOKPayroll = satisfiesGate(GATE_DEFINITIONS.canViewGOKPayroll);
     const canViewPMIPayroll = satisfiesGate(GATE_DEFINITIONS.canViewPMIPayroll);
     const canViewUsers = satisfiesGate(GATE_DEFINITIONS.canViewUsers);
     const canViewMasterlist = satisfiesGate(GATE_DEFINITIONS.canViewMasterlist);
@@ -919,6 +930,7 @@ export default defineComponent({
       canViewAccessControl,
       canManageSpecialAreaCost,
       canViewGFPayroll,
+      canViewGOKPayroll,
       canViewPMIPayroll
     };
   },

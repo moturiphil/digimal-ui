@@ -207,8 +207,32 @@ export const GATE_DEFINITIONS = Object.freeze({
   // the list, then the right to act on it.
   canViewCampaignPostList: { permissions: ["distribution_post_list", "posts_data"], roles: POST_VIEW },
   canViewInventory: { permissions: ["post_daily_balance", "get_post_nets_distribution_summary"], roles: ["Super Admin"] },
-  canViewPayroll: { permissions: ["draft_events_pay_roll", "draft_activity_pay_roll"], roles: ["Super Admin"] },
+  // Payroll is the parent menu. GOK payrolls are validated / approved by roles
+  // that do not necessarily generate payrolls, so their workflow permissions
+  // must surface the parent menu too.
+  canViewPayroll: {
+    permissions: [
+      "draft_events_pay_roll",
+      "draft_activity_pay_roll",
+      "event_payroll_validation",
+      "approve_event_payroll",
+      "event_pay_roll_list_download",
+    ],
+    roles: ["Super Admin"],
+  },
   canViewGFPayroll: { permissions: ["draft_events_pay_roll"], roles: ["Super Admin"] },
+  // GOK payrolls follow the GF validation → approval chain, but are settled
+  // from a bank upload instead of the ERP. Visible to the generator plus the
+  // validator / approver who need the approved download.
+  canViewGOKPayroll: {
+    permissions: [
+      "draft_events_pay_roll",
+      "event_payroll_validation",
+      "approve_event_payroll",
+      "event_pay_roll_list_download",
+    ],
+    roles: ["Super Admin", "Accountant", "Program Accountant", "Finance Officer", "GF Manager", "DNMP GF Manager"],
+  },
   canViewPMIPayroll: { permissions: ["draft_activity_pay_roll"], roles: ["Super Admin"] },
   canViewUsers: { permissions: ["users_list", "view_user_details"], roles: USER_VIEW },
   canViewMasterlist: { permissions: ["export_masterlist", "sync_masterlist"], roles: ["Technical Support", "Program officer - MOH", "Program officer - DNMP"] },
@@ -615,6 +639,18 @@ export const NAV_MODULES = Object.freeze([
     pages: compact([
       { label: "Activity Payroll (GF)", path: "/gf-activities-payroll", permissions: ["draft_activity_pay_roll"] },
       { label: "Event Payroll (GF)", path: "/gf-event-payroll", permissions: ["draft_events_pay_roll"] },
+      // GOK event payrolls: validate → approve → download the bank upload
+      // (no ERP sync). The same permissions gate the sidebar and the API.
+      {
+        label: "Event Payroll (GOK)",
+        path: "/gok-event-payroll",
+        permissions: [
+          "draft_events_pay_roll",
+          "event_payroll_validation",
+          "approve_event_payroll",
+          "event_pay_roll_list_download",
+        ],
+      },
       { label: "PMI Payroll", path: "/pmi-activities-payroll", permissions: ["draft_activity_pay_roll"] },
     ]),
   },
