@@ -394,7 +394,7 @@ const requiresUploads = computed(() => !!status.requires_uploads);
  * from its vendor (delinked orders are rejected by the backend).
  */
 const needsLsoLink = computed(
-  () => (status.requires_lso && !status.has_lso) || status.lso_delinked
+  () => status.requires_lso && (!status.has_lso || status.lso_delinked)
 );
 
 const fuelComplete = computed(() => status.fuel?.complete !== false);
