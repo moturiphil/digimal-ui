@@ -1052,6 +1052,23 @@ const routes = [
       ),
   },
   {
+    path: "/gok-activity-payroll",
+    name: "gok-activity-payroll",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/ActivityPayroll.vue"
+      ),
+  },
+  {
+    path: "/gok/activities/:mode",
+    name: "gok-activity-payroll-list",
+    props: true,
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/ActivityPayrolls.vue"
+      ),
+  },
+  {
     path: "/gok/events/:mode",
     name: "gok-event-payroll-list",
     props: true,

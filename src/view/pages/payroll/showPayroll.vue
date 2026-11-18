@@ -7,6 +7,16 @@
         {{ `${start_date}` }} || <b>Duration:</b> {{ `${no_of_days} days` }}
       </p>
       <p><b>Total Records: </b> {{ records }}</p>
+
+      <a-alert
+        v-if="isGok"
+        type="info"
+        show-icon
+        message="GOK payroll"
+        description="After approval this payroll is not synced to the ERP. Download the bank upload to pay it."
+        style="margin-bottom: 12px"
+      />
+
       <sdButton
         class="btn-import"
         type="success"
@@ -15,6 +25,22 @@
       >
         Download List &nbsp; &nbsp;
         <sdFeatherIcons type="download-cloud" size="extra-small" />
+      </sdButton>
+      &nbsp;&nbsp;
+      <sdButton
+        v-if="isGok && approval_status == 'Approved'"
+        class="btn-import"
+        type="primary"
+        :disabled="downloadingBankUpload"
+        @click="downloadBankUpload()"
+        size="extra-small"
+      >
+        {{
+          downloadingBankUpload
+            ? "Downloading..."
+            : "Download Bank Upload"
+        }}
+        &nbsp; &nbsp;
       </sdButton>
       &nbsp;&nbsp;
       <sdButton
@@ -321,7 +347,13 @@ const records = ref("");
 const { query } = useRoute();
 const activity_name = query.activity;
 const validate_status = query.validate_status;
+const approval_status = query.approval_status;
 const API_URL = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list?payroll_id=${query.id}`;
+const bank_download_url = `${process.env.VUE_APP_BASE_URL}/activity_payroll_list_download`;
+const isGok = computed(
+  () => Number(query.funding_id) === 3 || query.funding_source === "GOK"
+);
+const downloadingBankUpload = ref(false);
 const county = query.county;
 const start_date = query.start_date;
 const no_of_days = query.no_of_days;
@@ -367,6 +399,59 @@ const exportPayrollList = async () => {
     link.parentNode.removeChild(link);
   } catch (error) {
     console.error(error);
+  }
+};
+
+// GOK activity payrolls are paid from a bank upload instead of the ERP.
+const downloadBankUpload = async () => {
+  downloadingBankUpload.value = true;
+
+  try {
+    const response = await fetch(
+      `${bank_download_url}?activity_payroll_id=${query.id}`,
+      { headers: authHeader() }
+    );
+
+    if (!response.ok) {
+      let message = "Unable to download the approved bank upload.";
+
+      try {
+        const payload = await response.json();
+        if (payload.message) {
+          message = payload.message;
+        }
+      } catch (parseError) {
+        // Non-JSON error body — keep the generic message.
+      }
+
+      throw new Error(message);
+    }
+
+    const fileBlob = await response.blob();
+    const fileUrl = window.URL.createObjectURL(fileBlob);
+    const link = document.createElement("a");
+
+    link.href = fileUrl;
+    link.setAttribute(
+      "download",
+      `gok_activity_payroll_${query.id}_bank_upload.txt`
+    );
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(fileUrl);
+
+    notification.success({
+      message: "Download ready",
+      description: "The approved GOK bank upload has been downloaded.",
+    });
+  } catch (error) {
+    notification.error({
+      message: "Download failed",
+      description: error.message,
+    });
+  } finally {
+    downloadingBankUpload.value = false;
   }
 };
 
