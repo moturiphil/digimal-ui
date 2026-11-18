@@ -6,6 +6,42 @@ import {
   SCHMT_ORG_TYPE_ID,
 } from "@/config/navigation-permissions";
 
+const payrollDashboardRoute = (path, name, props) => ({
+  path,
+  name,
+  props,
+  component: () =>
+    import(
+      /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/workflow/PayrollDashboard.vue"
+    ),
+});
+
+const payrollListRoute = (path, name, props) => ({
+  path,
+  name,
+  props,
+  component: () =>
+    import(
+      /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/workflow/PayrollList.vue"
+    ),
+});
+
+const payrollListProps = (
+  mode,
+  payrollType,
+  fundingId,
+  fundingName,
+  erpSync = false,
+  bankDownload = false
+) => ({
+  mode,
+  payrollType,
+  fundingId,
+  fundingName,
+  erpSync,
+  bankDownload,
+});
+
 const routes = [
   {
     path: "/",
@@ -515,30 +551,21 @@ const routes = [
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
-      {
-        path: "all-payrolls",
-        name: "gf-all-payrolls",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfEventPayrolls.vue"
-          ),
-      },
-      {
-        path: "payroll-validation",
-        name: "gf-payroll-validation",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnvalidatedEventsPayrolls.vue"
-          ),
-      },
-      {
-        path: "payroll-approval",
-        name: "gf-payroll-approvals",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gfUnapprovedEventsPayrolls.vue"
-          ),
-      },
+      payrollListRoute(
+        "all-payrolls",
+        "gf-all-payrolls",
+        payrollListProps("all-payrolls", "event", 1, "Global Fund", true)
+      ),
+      payrollListRoute(
+        "payroll-validation",
+        "gf-payroll-validation",
+        payrollListProps("payroll-validation", "event", 1, "Global Fund", true)
+      ),
+      payrollListRoute(
+        "payroll-approval",
+        "gf-payroll-approvals",
+        payrollListProps("payroll-approval", "event", 1, "Global Fund", true)
+      ),
       {
         path: "payroll-pending-payments",
         name: "gf-payroll-pending-payments",
@@ -573,30 +600,21 @@ const routes = [
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
-      {
-        path: "all-payrolls",
-        name: "pmi-all-payrolls",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiEventPayrolls.vue"
-          ),
-      },
-      {
-        path: "payroll-validation",
-        name: "pmi-payroll-validation",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiUnvalidatedEventsPayrolls.vue"
-          ),
-      },
-      {
-        path: "payroll-approval",
-        name: "pmi-payroll-approvals",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/pmiUnapprovedEventsPayrolls.vue"
-          ),
-      },
+      payrollListRoute(
+        "all-payrolls",
+        "pmi-all-payrolls",
+        payrollListProps("all-payrolls", "event", 2, "PMI", true)
+      ),
+      payrollListRoute(
+        "payroll-validation",
+        "pmi-payroll-validation",
+        payrollListProps("payroll-validation", "event", 2, "PMI", true)
+      ),
+      payrollListRoute(
+        "payroll-approval",
+        "pmi-payroll-approvals",
+        payrollListProps("payroll-approval", "event", 2, "PMI", true)
+      ),
       {
         path: "payroll-pending-payments",
         name: "payroll-pending-payments",
@@ -616,6 +634,31 @@ const routes = [
     ],
   },
   {
+    path: "/pmi/activities",
+    name: "pmi-activities",
+    component: () =>
+      import(
+        /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
+      ),
+    children: [
+      payrollListRoute(
+        "all-payrolls",
+        "pmi-activity-payrolls",
+        payrollListProps("all-payrolls", "activity", 2, "PMI", true)
+      ),
+      payrollListRoute(
+        "payroll-validation",
+        "pmi-activity-payroll-validation",
+        payrollListProps("payroll-validation", "activity", 2, "PMI", true)
+      ),
+      payrollListRoute(
+        "payroll-approval",
+        "pmi-activity-payroll-approvals",
+        payrollListProps("payroll-approval", "activity", 2, "PMI", true)
+      ),
+    ],
+  },
+  {
     path: "/gf/activities",
     name: "global-fund-activities",
     component: () =>
@@ -623,30 +666,21 @@ const routes = [
         /* webpackChunkName: "fireStore" */ "@/view/crud/fireStore/Index.vue"
       ),
     children: [
-      {
-        path: "all-payrolls",
-        name: "gf-activity-payrolls",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/AllPayrolls.vue"
-          ),
-      },
-      {
-        path: "payroll-validation",
-        name: "gf-activity-payroll-validation",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingValidationPayrolls.vue"
-          ),
-      },
-      {
-        path: "payroll-approval",
-        name: "gf-activity-payroll-approvals",
-        component: () =>
-          import(
-            /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/activities/gf/PendingApprovalPayrolls.vue"
-          ),
-      },
+      payrollListRoute(
+        "all-payrolls",
+        "gf-activity-payrolls",
+        payrollListProps("all-payrolls", "activity", 1, "Global Fund", true)
+      ),
+      payrollListRoute(
+        "payroll-validation",
+        "gf-activity-payroll-validation",
+        payrollListProps("payroll-validation", "activity", 1, "Global Fund", true)
+      ),
+      payrollListRoute(
+        "payroll-approval",
+        "gf-activity-payroll-approvals",
+        payrollListProps("payroll-approval", "activity", 1, "Global Fund", true)
+      ),
       {
         path: "payroll-pending-payments",
         name: "gf-activity-payroll-pending-payments",
@@ -1033,66 +1067,101 @@ const routes = [
         /* webpackChunkName: "Search" */ "@/view/pages/payroll/pmiActivityPayroll.vue"
       ),
   },
-  {
-    path: "/gf-event-payroll",
-    name: "global-fund-event-payroll",
-    component: () =>
-      import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/gfEventPayroll.vue"
-      ),
-  },
-  {
-    // GOK payrolls: same validation / approval chain as Global Fund, but paid
-    // from a bank upload instead of the ERP.
-    path: "/gok-event-payroll",
-    name: "gok-event-payroll",
-    component: () =>
-      import(
-        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/EventPayroll.vue"
-      ),
-  },
-  {
-    path: "/gok-activity-payroll",
-    name: "gok-activity-payroll",
-    component: () =>
-      import(
-        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/ActivityPayroll.vue"
-      ),
-  },
-  {
-    path: "/gok/activities/:mode",
-    name: "gok-activity-payroll-list",
-    props: true,
-    component: () =>
-      import(
-        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/ActivityPayrolls.vue"
-      ),
-  },
-  {
-    path: "/gok/events/:mode",
-    name: "gok-event-payroll-list",
-    props: true,
-    component: () =>
-      import(
-        /* webpackChunkName: "fireStore-view" */ "@/view/pages/payroll/gok/EventPayrolls.vue"
-      ),
-  },
-  {
-    path: "/gf-activities-payroll",
-    name: "global-fund-activity-payroll",
-    component: () =>
-      import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/activities/gf/Payrolls.vue"
-      ),
-  },
-  {
-    path: "/pmi-event-payroll",
-    name: "pmi-event-payroll",
-    component: () =>
-      import(
-        /* webpackChunkName: "Search" */ "@/view/pages/payroll/pmiEventPayroll.vue"
-      ),
-  },
+  payrollDashboardRoute("/gf-event-payroll", "global-fund-event-payroll", {
+    title: "Global Fund Event Payroll",
+    fundingName: "Global Fund",
+    payrollType: "event",
+    basePath: "/gf/events",
+    showPaymentCards: true,
+    pendingPaymentRoles: [1, 53],
+    matrixPath: "/event-payroll-matrix",
+    matrixLabel: "Event Payroll Matrix",
+    notice:
+      "Validate and approve Global Fund event payrolls. Participant records are synced to the ERP before approval, then the normal payment screens handle payment.",
+  }),
+  payrollDashboardRoute("/gf-activities-payroll", "global-fund-activity-payroll", {
+    title: "Global Fund Activity Payroll",
+    fundingName: "Global Fund",
+    payrollType: "activity",
+    basePath: "/gf/activities",
+    showPaymentCards: true,
+    pendingPaymentRoles: [1, 53],
+    matrixPath: "/activity-payroll-matrix",
+    matrixLabel: "Activity Payroll Matrix",
+    notice:
+      "Validate and approve Global Fund activity payrolls. Participant records are synced to the ERP before approval, then the normal payment screens handle payment.",
+  }),
+  payrollDashboardRoute("/pmi-event-payroll", "pmi-event-payroll", {
+    title: "PMI Event Payroll",
+    fundingName: "PMI",
+    payrollType: "event",
+    basePath: "/pmi/events",
+    showPaymentCards: true,
+    pendingPaymentRoles: [65, 53],
+    matrixPath: "/event-payroll-matrix",
+    matrixLabel: "Event Payroll Matrix",
+    notice:
+      "Validate and approve PMI event payrolls. Participant records follow the standard approval and payment workflow.",
+  }),
+  payrollDashboardRoute(
+    "/pmi-activities-payroll",
+    "pmi-activity-payroll-dashboard",
+    {
+      title: "PMI Activity Payroll",
+      fundingName: "PMI",
+      payrollType: "activity",
+      basePath: "/pmi/activities",
+      showPaymentCards: false,
+      matrixPath: "/activity-payroll-matrix",
+      matrixLabel: "Activity Payroll Matrix",
+      notice:
+        "Validate and approve PMI activity payrolls. Payment and history remain available from the Payments & History card.",
+      extraCards: [
+        {
+          title: "Payments & History",
+          path: "/pmi-activity-payroll",
+          description: "Open the PMI activity payment and history screen.",
+        },
+      ],
+    }
+  ),
+  payrollDashboardRoute("/gok-event-payroll", "gok-event-payroll", {
+    title: "GOK Event Payroll",
+    fundingName: "GOK",
+    payrollType: "event",
+    basePath: "/gok/events",
+    showDownloadCard: true,
+    notice:
+      "Validate and approve GOK event payrolls. Approved payrolls are paid from a bank upload and are never synced to the ERP.",
+  }),
+  payrollDashboardRoute("/gok-activity-payroll", "gok-activity-payroll", {
+    title: "GOK Activity Payroll",
+    fundingName: "GOK",
+    payrollType: "activity",
+    basePath: "/gok/activities",
+    showDownloadCard: true,
+    notice:
+      "Validate and approve GOK activity payrolls. Approved payrolls are paid from a bank upload and are never synced to the ERP.",
+  }),
+  payrollListRoute(
+    "/gok/activities/:mode",
+    "gok-activity-payroll-list",
+    (route) =>
+      payrollListProps(
+        route.params.mode,
+        "activity",
+        3,
+        "GOK",
+        false,
+        true
+      )
+  ),
+  payrollListRoute(
+    "/gok/events/:mode",
+    "gok-event-payroll-list",
+    (route) =>
+      payrollListProps(route.params.mode, "event", 3, "GOK", false, true)
+  ),
   {
     path: "/activity/matrix/:id",
     name: "assign-activity-matrix",

@@ -687,7 +687,8 @@ export const NAV_MODULES = Object.freeze([
           "event_pay_roll_list_download",
         ],
       },
-      { label: "PMI Payroll", path: "/pmi-activities-payroll", permissions: ["draft_activity_pay_roll"] },
+      { label: "Activity Payroll (PMI)", path: "/pmi-activities-payroll", permissions: ["draft_activity_pay_roll"] },
+      { label: "Event Payroll (PMI)", path: "/pmi-event-payroll", permissions: ["draft_events_pay_roll"] },
     ]),
   },
   {
