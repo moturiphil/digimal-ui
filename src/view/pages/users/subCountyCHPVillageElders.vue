@@ -362,11 +362,13 @@ const DragAndDropTable = defineComponent({
     };
 
     const openModal = async (id) => {
+      // A selection made for the previous village must not be reused for this one.
+      formState.post_id = null;
+      posts.value = [];
       isModalOpen.value = true;
       village_id.value = id;
 
       try {
-        console.log(village_id.value);
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/location_posts?village_id=${village_id.value}`,
           {
@@ -378,23 +380,23 @@ const DragAndDropTable = defineComponent({
           }
         );
 
+        const payload = await response.json().catch(() => ({}));
+
         if (!response.ok) {
-          // Handle error if the response status is not OK
-          console.error(`Error: ${response.statusText}`);
+          notification.error({
+            message: "Error",
+            description: payload?.message || response.statusText,
+          });
           return;
         }
 
-        const data = await response.json();
-        console.log(data);
-
-        // Assuming posts is an array, you may need to adjust accordingly
-        posts.value = data.data;
-
-
-        // this.loading = false;
+        // Posts taking part in the current campaign.
+        posts.value = payload.data || [];
       } catch (error) {
-        console.error("Error fetching data:", error);
-        // Handle error
+        notification.error({
+          message: "Error",
+          description: `Could not load the posts for this village: ${error}`,
+        });
       }
     };
 
@@ -427,13 +429,19 @@ const DragAndDropTable = defineComponent({
     // getPosts();
 
     const handleSubmit = async () => {
+      if (!formState.post_id) {
+        notification.error({
+          message: "Error",
+          description: "Select a post before submitting.",
+        });
+        return;
+      }
+
       try {
         const data = {
           post_id: formState.post_id,
           village_id: village_id.value,
         };
-
-        console.log(data);
 
         const response = await fetch(
           `${process.env.VUE_APP_BASE_URL}/assign_village_post`,
@@ -447,26 +455,29 @@ const DragAndDropTable = defineComponent({
           }
         );
 
-        console.log(response);
+        const payload = await response.json().catch(() => ({}));
 
-        const { success, data: responseData, status } = await response.json();
-
-        if (success) {
+        if (response.ok && payload.success) {
           notification.success({
             message: "Success",
-            description: responseData,
+            description: payload.data,
           });
           isModalOpen.value = false;
           setTimeout(function () {
             window.location.reload();
           }, 3000);
         } else {
+          // The API explains why the assignment was rejected (no households in
+          // the village, orders already generated, ...) — surface that instead
+          // of a bare "undefined".
           notification.error({
             message: "Error",
-            description: `${status}`,
+            description:
+              payload?.message ||
+              payload?.error ||
+              `The post could not be assigned (${response.status}).`,
           });
         }
-        isModalOpen.value = false;
       } catch (error) {
         notification.error({
           message: "Error",
@@ -532,6 +543,9 @@ const DragAndDropTable = defineComponent({
 
     const formState = reactive({
       searchItem: "",
+      // Selected post in the "Assign Post" modal. Declared here so the v-model
+      // binds to a known property and the selection can be reset per village.
+      post_id: null,
     });
 
     const onSelectChange = (selectedRowKey) => {
