@@ -368,11 +368,22 @@
             <TableWrapper class="table-responsive">
               <a-table
                 :dataSource="filteredPending"
-                :columns="hhColumns"
+                :columns="pendingHhColumns"
                 :pagination="{ pageSize: 5, showSizeChanger: false }"
                 size="small"
                 row-key="hh_id"
-              />
+              >
+                <template #action="{ record }">
+                  <sdButton
+                    type="success"
+                    size="extra-small"
+                    :disabled="isNotifying(record.hh_id)"
+                    @click="notifyHousehold(record)"
+                  >
+                    {{ isNotifying(record.hh_id) ? "Sending..." : "Notify" }}
+                  </sdButton>
+                </template>
+              </a-table>
             </TableWrapper>
           </div>
           <div class="hh-table-block served">
@@ -400,6 +411,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
+import { notification } from "ant-design-vue";
 import axios from "@/Axiosconfig";
 import { TableWrapper } from "../../styled";
 
@@ -454,6 +466,56 @@ const hhColumns = [
   { title: "Name", dataIndex: "hh_name", key: "hh_name" },
   { title: "Phone Number", dataIndex: "hh_phone_number", key: "hh_phone_number" },
 ];
+
+// Only unserved (pending) households can be notified, so the action column is
+// kept separate from the shared hhColumns used by the served table.
+const pendingHhColumns = [
+  ...hhColumns,
+  {
+    title: "Action",
+    key: "action",
+    slots: { customRender: "action" },
+    width: 100,
+  },
+];
+
+// Household ids with an in-flight notify request, used to prevent double sends.
+const notifyingIds = ref([]);
+const isNotifying = (id) => notifyingIds.value.includes(id);
+
+const notifyHousehold = async (household) => {
+  const householdId = household.hh_id;
+  if (!householdId || isNotifying(householdId)) return;
+
+  notifyingIds.value = [...notifyingIds.value, householdId];
+  try {
+    const { data } = await axios.post("web/notify_household", {
+      household_id: householdId,
+    });
+    if (data && data.success === false) {
+      notification.error({
+        message: "Notification failed",
+        description:
+          data.message ||
+          `Could not notify ${household.hh_name || "the household"}.`,
+      });
+      return;
+    }
+    notification.success({
+      message: "Household notified",
+      description: `${household.hh_name || "The household"} has been notified.`,
+    });
+  } catch (e) {
+    notification.error({
+      message: "Notification failed",
+      description:
+        e?.response?.data?.message ||
+        "Could not send the notification. Please try again.",
+    });
+  } finally {
+    notifyingIds.value = notifyingIds.value.filter((id) => id !== householdId);
+  }
+};
 
 // Plain object accessor for the budget-style summary panel
 const distSummary = computed(() => distributionSummary.value || {});

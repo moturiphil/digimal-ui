@@ -1276,6 +1276,8 @@ const isEventHost = computed(
 const lsoMissing = computed(() => {
   if (!liveEventLoaded.value) return false;
   const live = liveEvent.value || {};
+  // An LSO/LPO is only required when the event actually requires a venue.
+  if (live.requires_lso !== true) return false;
   if (live.has_lso_attached === false) return true;
   if (live.has_lso_attached === true) return false;
   return !live.vendor_lso_id;
