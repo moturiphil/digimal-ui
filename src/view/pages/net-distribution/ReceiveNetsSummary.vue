@@ -110,9 +110,9 @@
         <section v-if="activeTransaction === 'balances'" class="embed-section">
           <PostDailyBalance />
         </section>
-        <section v-if="activeTransaction === 'closure'" class="embed-section">
+        <!-- <section v-if="activeTransaction === 'closure'" class="embed-section">
           <PostClosureReport />
-        </section>
+        </section> -->
         <section v-if="activeTransaction === 'log'" class="embed-section">
           <PostStockLog />
         </section>
@@ -1269,7 +1269,7 @@ import DropOffReturns from "./DropOffReturns.vue";
 import BaleVerification from "./BaleVerification.vue";
 import ViewWorker from "./ViewWorker.vue";
 import PostDailyBalance from "./PostDailyBalance.vue";
-import PostClosureReport from "./PostClosureReport.vue";
+// import PostClosureReport from "./PostClosureReport.vue";
 import PostDashboard from "./PostDashboard.vue";
 import PostStockLog from "./PostStockLog.vue";
 import authHeader from "../../../services/auth-header";
@@ -1286,7 +1286,7 @@ const primaryTabs = [
   { key: "transfer", label: "Nets Transfer" },
   { key: "bale", label: "Bale Verification" },
   { key: "balances", label: "Daily Balances" },
-  { key: "closure", label: "Closure Report" },
+  // { key: "closure", label: "Closure Report" },
   { key: "log", label: "Log" },
 ];
 const receiveSubTabs = [

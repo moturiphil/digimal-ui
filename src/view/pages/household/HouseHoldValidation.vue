@@ -195,6 +195,14 @@
             row-key="id"
             size="small"
           >
+            <template #villageName="{ record }">
+              <div class="village-name-cell">
+                <span class="village-name-text">{{ record.name }}</span>
+                <span v-if="record.org_id" class="village-org-id" :title="`Village Org ID: ${record.org_id}`">
+                  Org ID: {{ record.org_id }}
+                </span>
+              </div>
+            </template>
             <template #verifiedTotal="{ record }">
               <div class="verified-cell">
                 <span class="verified-counts">
@@ -219,7 +227,12 @@
               class="village-card"
             >
               <div class="village-card-head">
-                <div class="village-card-title">{{ village.name }}</div>
+                <div class="village-card-title">
+                  <span class="village-name-text">{{ village.name }}</span>
+                  <span v-if="village.org_id" class="village-org-id" :title="`Village Org ID: ${village.org_id}`">
+                    Org ID: {{ village.org_id }}
+                  </span>
+                </div>
                 <span v-if="isVillageSubmitted(village.id)" class="village-chip submitted">
                   Submitted
                 </span>
@@ -341,7 +354,12 @@
             <template #header>
               <div class="village-header">
                 <div class="left">
-                  <div class="title">{{ village.name }}</div>
+                  <div class="title">
+                    <span class="village-name-text">{{ village.name }}</span>
+                    <span v-if="village.org_id" class="village-org-id" :title="`Village Org ID: ${village.org_id}`">
+                      Org ID: {{ village.org_id }}
+                    </span>
+                  </div>
                   <div class="sub">
                     CHP: {{ village.no_of_chp_registered > 0 ? 'Assigned' : 'No CHP assigned' }}
                     <span class="sep-dot">•</span>
@@ -754,7 +772,12 @@
                 </p>
                 <h3 class="name">{{ activeHouseholdFullName || 'Unknown household' }}</h3>
                 <div class="meta-row">
-                  <span class="meta-chip"><EnvironmentOutlined /> {{ activeVillageName }}</span>
+                  <span class="meta-chip">
+                    <EnvironmentOutlined /> {{ activeVillageName }}
+                    <span v-if="activeVillageOrgId" class="village-org-id" :title="`Village Org ID: ${activeVillageOrgId}`">
+                      Org ID: {{ activeVillageOrgId }}
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
@@ -1935,7 +1958,7 @@ const sectionTitle = computed(() => {
 });
 
 const villageColumns = [
-  { title: "Village", dataIndex: "name", key: "name" },
+  { title: "Village", dataIndex: "name", key: "name", slots: { customRender: "villageName" } },
   {
     title: "Validated / Total households",
     key: "verified_total",
@@ -2115,6 +2138,10 @@ const activeVillageName = computed(() =>
   villages.value.find((v) => v.id === activeVillageId.value)?.name || "Village"
 );
 
+const activeVillageOrgId = computed(
+  () => villages.value.find((v) => v.id === activeVillageId.value)?.org_id || ""
+);
+
 const activeHouseholdFullName = computed(() => {
   const hh = activeHousehold.value;
   if (!hh) return "";
@@ -2158,6 +2185,7 @@ const villageSummaryRows = computed(() =>
     );
     return {
       id: village.id,
+      org_id: village.org_id || "",
       name: village.name,
       total_households: total,
       verified_households: verified,
@@ -3324,7 +3352,12 @@ const activeVillageIndex = computed(() => {
 });
 
 const villageJumpOptions = computed(() =>
-  villages.value.map((v) => ({ value: v.id, label: v.name }))
+  villages.value.map((v) => ({
+    value: v.id,
+    // Keep the Org ID in the label so the picker's search matches either the
+    // village name or its official org code.
+    label: v.org_id ? `${v.name} · Org ID ${v.org_id}` : v.name,
+  }))
 );
 
 const scrollToHouseholdSection = () => {
@@ -4186,6 +4219,36 @@ const handleModalKeydown = (event) => {
     font-size: 14px;
     font-weight: 700;
     color: #1f2437;
+  }
+
+  /* Village Org ID shown beside the village name (cards, table, register
+     headers and the household review modal). */
+  .village-org-id {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid #cfe6d9;
+    background: #eef7f1;
+    color: #2f6746;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .village-name-cell {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .village-name-cell .village-org-id {
+    margin-left: 0;
   }
 
   .village-header .sub {
