@@ -1,7 +1,13 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="pageTitle">
-      <template #buttons>
+    <Main>
+      <header class="payroll-page-header">
+        <div class="payroll-page-heading">
+          <sdButton size="small" class="pill-btn" @click="goBack">
+            <sdFeatherIcons type="arrow-left" size="13" /> Back
+          </sdButton>
+          <h2 class="payroll-page-title">{{ pageTitle }}</h2>
+        </div>
         <div class="search-box">
           <a-input
             v-model:value="searchItem"
@@ -10,10 +16,8 @@
             placeholder="Search by payroll details..."
           />
         </div>
-      </template>
-    </sdPageHeader>
+      </header>
 
-    <Main>
       <a-alert
         v-if="showWorkflowNotice"
         type="info"
@@ -241,6 +245,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import axios from "axios";
 import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
 import authHeader from "../../../../services/auth-header";
 import { Main } from "../../../styled";
 import { SearchResultWrapper } from "../../style";
@@ -258,8 +263,30 @@ const props = defineProps({
 
 const BASE_URL = process.env.VUE_APP_BASE_URL;
 
+const router = useRouter();
+
 const isActivity = computed(() => props.payrollType === "activity");
 const typeLabel = computed(() => (isActivity.value ? "Activity" : "Event"));
+
+// Parent screen for the Back button: the dashboard (cards page) for this
+// funding source and payroll type, which is what links into this list.
+const dashboardPath = computed(() => {
+  const dashboards = {
+    1: { event: "/gf-event-payroll", activity: "/gf-activities-payroll" },
+    2: { event: "/pmi-event-payroll", activity: "/pmi-activities-payroll" },
+    3: { event: "/gok-event-payroll", activity: "/gok-activity-payroll" },
+  };
+
+  return dashboards[Number(props.fundingId)]?.[props.payrollType] ?? null;
+});
+
+const goBack = () => {
+  if (dashboardPath.value) {
+    router.push(dashboardPath.value);
+  } else if (window.history.state && window.history.state.back) {
+    router.back();
+  }
+};
 const nameField = computed(() => (isActivity.value ? "activity_id" : "event_id"));
 
 const config = computed(() => {
@@ -851,6 +878,48 @@ const handleDownload = async (record) => {
 </script>
 
 <style scoped>
+.payroll-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.payroll-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.payroll-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1b3b2a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.payroll-page-header .pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.payroll-page-header .pill-btn:hover,
+.payroll-page-header .pill-btn:focus {
+  border-color: #9ad8b4 !important;
+  color: #15693c !important;
+}
+
 .table-actions {
   white-space: nowrap;
 }

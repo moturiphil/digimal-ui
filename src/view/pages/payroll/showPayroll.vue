@@ -1,7 +1,14 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="`${activity_name} Payroll`" />
     <Main>
+      <header class="payroll-page-header">
+        <div class="payroll-page-heading">
+          <sdButton size="small" class="pill-btn" @click="goBack">
+            <sdFeatherIcons type="arrow-left" size="13" /> Back
+          </sdButton>
+          <h2 class="payroll-page-title">{{ activity_name }} Payroll</h2>
+        </div>
+      </header>
       <p class="detail-info">
         <b>County:</b> {{ ` ${county}` }} || <b>Start Date:</b>
         {{ `${start_date}` }} || <b>Duration:</b> {{ `${no_of_days} days` }}
@@ -289,7 +296,7 @@ import { computed, onMounted, ref, reactive } from "vue";
 import authHeader from "../../../services/auth-header";
 import axios from "axios";
 // import { notification } from "ant-design-vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { notification } from "ant-design-vue";
 
 const columns = [
@@ -345,6 +352,28 @@ const dataSource = ref([]);
 const activeClass = ref("all");
 const records = ref("");
 const { query } = useRoute();
+const router = useRouter();
+
+// Back to the payroll list this detail page was opened from. A direct visit
+// falls back to the matching funding source's All Payrolls screen.
+const goBack = () => {
+  if (window.history.state && window.history.state.back) {
+    router.back();
+    return;
+  }
+
+  const lists = {
+    1: "/gf/activities/all-payrolls",
+    2: "/pmi/activities/all-payrolls",
+    3: "/gok/activities/all-payrolls",
+  };
+
+  const listPath = lists[Number(query.funding_id)];
+
+  if (listPath) {
+    router.push(listPath);
+  }
+};
 const activity_name = query.activity;
 const validate_status = query.validate_status;
 const approval_status = query.approval_status;
@@ -695,3 +724,48 @@ const handleSubmit = async () => {
   padding-left: 20px;
 }
 </style>
+
+<style scoped>
+.payroll-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.payroll-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.payroll-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1b3b2a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.payroll-page-header .pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.payroll-page-header .pill-btn:hover,
+.payroll-page-header .pill-btn:focus {
+  border-color: #9ad8b4 !important;
+  color: #15693c !important;
+}
+</style>
+
