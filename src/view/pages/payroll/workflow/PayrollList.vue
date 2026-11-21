@@ -113,6 +113,19 @@
                                 </div>
                               </td>
                             </template>
+
+                            <template #paid="{ record }">
+                              <a-checkbox
+                                :checked="isPaid(record)"
+                                :disabled="
+                                  isPaid(record) ||
+                                  markingPaidId === record.id
+                                "
+                                @change="showMarkPaidModal(record)"
+                              >
+                                Paid
+                              </a-checkbox>
+                            </template>
                           </a-table>
 
                           <br />
@@ -160,6 +173,29 @@
             ? 'The approved payroll is paid from the bank upload. The approver and validator can download it from the Approved Payrolls page.'
             : 'The payroll is approved directly and paid through its normal payment workflow.'
         "
+      />
+    </a-modal>
+
+    <!-- GOK payrolls are settled from the bank upload. Ticking the checkbox on
+         the Approved Payrolls screen records the payment against the payroll. -->
+    <a-modal
+      :visible="markPaidModalVisible"
+      title="Confirm Payroll Payment"
+      :confirm-loading="markingPaid"
+      ok-text="Mark as Paid"
+      @ok="actionMarkPaid"
+      @cancel="markPaidModalVisible = false"
+    >
+      <p>
+        Confirm that payroll
+        <b>{{ markPaidPayroll ? markPaidPayroll.name : "" }}</b> has been paid
+        from the bank upload?
+      </p>
+      <a-alert
+        type="info"
+        show-icon
+        message="This records the payment against the approved payroll."
+        description="Payment mode: BANK. You will be recorded as the user who marked the payroll as paid."
       />
     </a-modal>
 
@@ -292,12 +328,20 @@ const syncPayrollId = ref(null);
 const voidModalVisible = ref(false);
 const voidPayroll = ref(null);
 const voiding = ref(false);
+const markPaidModalVisible = ref(false);
+const markPaidPayroll = ref(null);
+const markingPaidId = ref(null);
 let searchTimer = null;
 
 const pageTitle = computed(() => config.value.title);
 const showWorkflowNotice = computed(() => true);
 const workflowNoticeTitle = "Payroll workflow";
 const workflowNoticeDescription = computed(() => config.value.notice);
+const markingPaid = computed(() => markingPaidId.value !== null);
+
+// A GOK payroll is paid once the bank upload has been settled. The checkbox is
+// disabled afterwards so the original payer cannot be overwritten.
+const isPaid = (record) => Number(record.payment_status) === 1;
 
 const actionColumn = {
   title: "",
@@ -338,6 +382,21 @@ const columns = computed(() => {
     dataIndex: "payment_label",
     key: "payment_status",
   };
+  const paidBy = {
+    title: "Paid By",
+    dataIndex: "paid_by",
+    key: "paid_by",
+  };
+  const paid = {
+    title: "Paid",
+    key: "paid",
+    slots: { customRender: "paid" },
+  };
+  const paymentMode = {
+    title: "Payment Mode",
+    dataIndex: "payment_mode_label",
+    key: "payment_mode",
+  };
   const amount = {
     title: "Amount Generated",
     dataIndex: "total_amount",
@@ -353,7 +412,19 @@ const columns = computed(() => {
   }
 
   if (isDownloadsMode.value) {
-    return [name, validated, validator, approved, approver, approvalTime, amount, actionColumn];
+    return [
+      name,
+      validated,
+      validator,
+      approved,
+      approver,
+      approvalTime,
+      paidBy,
+      paid,
+      paymentMode,
+      amount,
+      actionColumn,
+    ];
   }
 
   return [name, generatedBy, validated, validator, approved, approver, amount, actionColumn];
@@ -367,12 +438,15 @@ const normalise = (items) =>
     approved_label:
       Number(item.approval_status) === 1 ? "Approved" : "Not Approved",
     payment_label: props.bankDownload
-      ? Number(item.approval_status) === 1
+      ? Number(item.payment_status) === 1
+        ? "Paid"
+        : Number(item.approval_status) === 1
         ? "Ready for Bank Upload"
         : "Awaiting Approval"
       : Number(item.payment_status) === 1
       ? "Paid"
       : "Not Paid",
+    payment_mode_label: item.payment_mode || "—",
   }));
 
 const listUrl = (query = "") => {
@@ -654,6 +728,60 @@ const actionVoidPayroll = async () => {
     });
   } finally {
     voiding.value = false;
+  }
+};
+
+const showMarkPaidModal = (record) => {
+  if (isPaid(record)) {
+    return;
+  }
+
+  markPaidPayroll.value = record;
+  markPaidModalVisible.value = true;
+};
+
+// Record the GOK bank payment against the approved payroll. The backend sets
+// payment_status, paid_by and payment_mode (BANK).
+const actionMarkPaid = async () => {
+  if (!markPaidPayroll.value) {
+    return;
+  }
+
+  const payrollId = markPaidPayroll.value.id;
+  markingPaidId.value = payrollId;
+
+  try {
+    const endpoint = isActivity.value
+      ? "activity_payroll_mark_paid"
+      : "event_payroll_mark_paid";
+    const { data } = await axios.post(
+      `${BASE_URL}/${endpoint}`,
+      { payroll_id: payrollId },
+      { headers: authHeader() }
+    );
+
+    if (data.success === true) {
+      notification.success({
+        message: "Payroll marked as paid",
+        description: data.message,
+      });
+      markPaidModalVisible.value = false;
+      fetchPayrolls();
+    } else {
+      notification.error({
+        message: "Unable to mark payroll as paid",
+        description: data.message,
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description:
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message,
+    });
+  } finally {
+    markingPaidId.value = null;
   }
 };
 
