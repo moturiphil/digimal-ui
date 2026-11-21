@@ -47,8 +47,32 @@
             <a-select
               v-model:value="fundingSource"
               allow-clear
-              placeholder="Funding Source (GF / PMI)"
+              placeholder="Funding Source (GF / PMI / GoK)"
               :options="funding_source_options"
+              @change="handleFilterChange"
+            ></a-select>
+            <a-select
+              v-if="allowedLevels.includes('county')"
+              v-model:value="countyFilter"
+              allow-clear
+              show-search
+              :placeholder="countyPlaceholder"
+              :options="countyOptions"
+              :filter-option="filterOption"
+              :loading="countiesLoading"
+              :disabled="userLevelId === 2"
+              @change="handleCountyChange"
+            ></a-select>
+            <a-select
+              v-if="allowedLevels.includes('subcounty')"
+              v-model:value="subCountyFilter"
+              allow-clear
+              show-search
+              placeholder="Sub County"
+              :options="subCountyOptions"
+              :filter-option="filterOption"
+              :loading="subCountiesLoading"
+              :disabled="!countyFilter"
               @change="handleFilterChange"
             ></a-select>
             <a-select
@@ -381,6 +405,7 @@ const payroll_status_options = [
 const funding_source_options = [
   { value: 1, label: "GF (Global Fund)" },
   { value: 2, label: "PMI" },
+  { value: 3, label: "GoK (Government of Kenya)" },
 ];
 
 const isLoading = ref(true);
@@ -396,6 +421,108 @@ const campaignFilter = ref(null);
 const campaignOptions = ref([]);
 const campaignsLoading = ref(false);
 const payrollStatus = ref(null);
+const countyFilter = ref(null);
+const countyOptions = ref([]);
+const countiesLoading = ref(false);
+const subCountyFilter = ref(null);
+const subCountyOptions = ref([]);
+const subCountiesLoading = ref(false);
+
+// ── Role & location aware filters ───────────────────────────────────────────
+// The logged-in user lives in sessionStorage as { user: { level, location,
+// level_id, location_id, ... } }. Used to scope the listing:
+//   level 1 (national)   → filters for any county / sub-county
+//   level 2 (county)     → pinned to their own county, may drill into sub-counties
+//   level 3 (sub-county) → backend scopes data to their location, no pickers
+let userSession = null;
+try {
+  userSession = JSON.parse(sessionStorage.getItem("user") || "null");
+} catch (e) {
+  userSession = null;
+}
+const profile = userSession?.user || userSession || {};
+const userLevelId = Number(profile.level_id ?? profile.level?.id ?? 0);
+const userLocationId = Number(profile.location_id ?? profile.location?.id ?? 0);
+const userLocationName = profile.location?.name || "";
+
+const allowedLevels = ref(["county", "subcounty"]);
+const countyPlaceholder = userLevelId === 2 ? "Your County" : "County";
+
+// Decide which location pickers are rendered based on the user's level.
+const updateFilters = () => {
+  if (userLevelId === 1) {
+    allowedLevels.value = ["county", "subcounty"];
+  } else if (userLevelId === 2) {
+    // County users are pinned to their own county (the backend enforces the
+    // same scope) but can still drill down into sub-counties below it.
+    allowedLevels.value = ["county", "subcounty"];
+    countyFilter.value = userLocationId || null;
+    if (countyFilter.value) {
+      countyOptions.value = [
+        { value: countyFilter.value, label: userLocationName || "My County" },
+      ];
+    }
+  } else {
+    allowedLevels.value = [];
+  }
+};
+
+// Load sub-counties that belong to the selected county (numeric org_units id).
+const fetchSubCounties = async (countyId) => {
+  subCountyOptions.value = [];
+  if (!countyId) return;
+  subCountiesLoading.value = true;
+  try {
+    const res = await axios.get("event_activity_subcounties", {
+      params: { county_id: countyId },
+    });
+    const json = res.data;
+    const list = Array.isArray(json)
+      ? json
+      : Array.isArray(json?.data)
+        ? json.data
+        : [];
+    subCountyOptions.value = list
+      .filter((s) => s && s.id != null && s.name != null)
+      .map((s) => ({ value: s.id, label: s.name }));
+  } catch (error) {
+    console.error(error);
+    subCountyOptions.value = [];
+  } finally {
+    subCountiesLoading.value = false;
+  }
+};
+
+const fetchCounties = async () => {
+  // County (2) & sub-county (3) users never load the full county list — their
+  // scope is derived from their own location instead.
+  if (userLevelId !== 1) return;
+  countiesLoading.value = true;
+  try {
+    const res = await axios.get("event_activity_counties");
+    const json = res.data;
+    const list = Array.isArray(json)
+      ? json
+      : Array.isArray(json?.data)
+        ? json.data
+        : [];
+    countyOptions.value = list
+      .filter((c) => c && c.id != null && c.name != null)
+      .map((c) => ({ value: c.id, label: c.name }));
+  } catch (error) {
+    console.error(error);
+    countyOptions.value = [];
+  } finally {
+    countiesLoading.value = false;
+  }
+};
+
+const handleCountyChange = () => {
+  subCountyFilter.value = null;
+  subCountyOptions.value = [];
+  if (countyFilter.value) fetchSubCounties(countyFilter.value);
+  handleFilterChange();
+};
 
 const currentPage = ref(1);
 const pageSize = ref(100);
@@ -416,19 +543,21 @@ const fundingId = (source, fallbackId) => {
 const fundingLabel = (source, fallbackId) => {
   const name = fundingName(source);
   // A non-numeric value is the funding source NAME — show it as-is.
-  if (name !== "" && Number.isNaN(Number(name))) return name;
+  if (name !== "" && Number.isNaN(Number(name))) {
+    return name.toUpperCase() === "GOK" ? "GoK" : name;
+  }
   const id = fundingId(source, fallbackId);
-  return id === 1 ? "GF" : id === 2 ? "PMI" : "—";
+  return id === 1 ? "GF" : id === 2 ? "PMI" : id === 3 ? "GoK" : "—";
 };
 
 const fundingChipClass = (source, fallbackId) => {
   const name = fundingName(source);
   if (name !== "" && Number.isNaN(Number(name))) {
     const lower = name.toLowerCase();
-    return lower === "gf" ? "gf" : lower === "pmi" ? "pmi" : "";
+    return lower === "gf" ? "gf" : lower === "pmi" ? "pmi" : lower === "gok" ? "gok" : "";
   }
   const id = fundingId(source, fallbackId);
-  return id === 1 ? "gf" : id === 2 ? "pmi" : "";
+  return id === 1 ? "gf" : id === 2 ? "pmi" : id === 3 ? "gok" : "";
 };
 
 const filterOption = (input, option) =>
@@ -445,6 +574,10 @@ const buildQuery = (page = currentPage.value) => {
     params.append("funding_source", fundingSource.value);
   if (payrollStatus.value != null && payrollStatus.value !== "")
     params.append("payroll_status", payrollStatus.value);
+  if (countyFilter.value != null && countyFilter.value !== "")
+    params.append("county", countyFilter.value);
+  if (subCountyFilter.value != null && subCountyFilter.value !== "")
+    params.append("sub_county", subCountyFilter.value);
   if (campaignFilter.value != null && campaignFilter.value !== "")
     params.append("campaign_id", campaignFilter.value);
   return params.toString();
@@ -648,6 +781,11 @@ watch(
 );
 
 onMounted(() => {
+  // Scope the location filters to the logged-in user's level & location.
+  updateFilters();
+  if (userLevelId === 1) fetchCounties();
+  if (userLevelId === 2 && countyFilter.value)
+    fetchSubCounties(countyFilter.value);
   getEvents();
   fetchCampaigns();
 });
@@ -803,6 +941,11 @@ onMounted(() => {
       background: #e0ecff;
       color: #1d4ed8;
       border: 1px solid #b3ccff;
+    }
+    &.gok {
+      background: #fff4e0;
+      color: #b45309;
+      border: 1px solid #fcd9a0;
     }
   }
 

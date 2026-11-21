@@ -1,17 +1,22 @@
 <template>
   <div>
-    <sdPageHeader :title="`${event_name} Event`">
-      <template #buttons>
+    <Main>
+      <header class="payroll-page-header">
+        <div class="payroll-page-heading">
+          <sdButton size="small" class="pill-btn" @click="goBack">
+            <sdFeatherIcons type="arrow-left" size="13" /> Back
+          </sdButton>
+          <h2 class="payroll-page-title">{{ event_name }} Event</h2>
+        </div>
         <div class="search-box">
           <a-input
             v-model:value="searchItem"
             type="text"
             name="dataSource"
             placeholder="Search by name, phone no, village or CHP"
-          /></div
-      ></template>
-    </sdPageHeader>
-    <Main>
+          />
+        </div>
+      </header>
       <p class="detail-info">
         <b>Location:</b> {{ ` ${venue}` }} || <b>Start Date:</b>
         {{ `${date}` }} || <b>Duration:</b> {{ `${duration} days` }}
@@ -385,6 +390,27 @@ const isPayModalOpen = ref(false);
 const syncing = ref(false);
 const records = ref("");
 const router = useRouter();
+
+// Back to the payroll list this detail page was opened from. A direct visit
+// falls back to the matching funding source's All Payrolls screen.
+const goBack = () => {
+  if (window.history.state && window.history.state.back) {
+    router.back();
+    return;
+  }
+
+  const lists = {
+    1: "/gf/events/all-payrolls",
+    2: "/pmi/events/all-payrolls",
+    3: "/gok/events/all-payrolls",
+  };
+
+  const listPath = lists[Number(query.funding_id)];
+
+  if (listPath) {
+    router.push(listPath);
+  }
+};
 const isDisabled = ref(true);
 const countdown = ref(60);
 const recordId = ref(null);
@@ -814,3 +840,48 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
+<style scoped>
+.payroll-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.payroll-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.payroll-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1b3b2a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.payroll-page-header .pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.payroll-page-header .pill-btn:hover,
+.payroll-page-header .pill-btn:focus {
+  border-color: #9ad8b4 !important;
+  color: #15693c !important;
+}
+</style>
+

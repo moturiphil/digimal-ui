@@ -105,6 +105,7 @@
               :options="subCountyOptions"
               :filter-option="filterOption"
               :loading="subCountiesLoading"
+              :disabled="!countyFilter"
               @change="handleFilterChange"
             ></a-select>
           </div>
@@ -317,9 +318,10 @@ const payroll_status_options = [
 ];
 
 const funding_options = [
-  { value: "all", label: "All (GF + PMI)" },
+  { value: "all", label: "All (GF + PMI + GoK)" },
   { value: "gf", label: "GF (Global Fund)" },
   { value: "pmi", label: "PMI" },
+  { value: "gok", label: "GoK (Government of Kenya)" },
 ];
 
 const isLoading = ref(true);
@@ -407,7 +409,7 @@ const fetchSubCounties = async (countyId) => {
   if (!countyId) return;
   subCountiesLoading.value = true;
   try {
-    const res = await axios.get("get_subcounties", {
+    const res = await axios.get("event_activity_subcounties", {
       params: { county_id: countyId },
     });
     const json = res.data;
@@ -449,19 +451,21 @@ const fundingId = (source, fallbackId) => {
 const fundingLabel = (source, fallbackId) => {
   const name = fundingName(source);
   // A non-numeric value is the funding source NAME — show it as-is.
-  if (name !== "" && Number.isNaN(Number(name))) return name;
+  if (name !== "" && Number.isNaN(Number(name))) {
+    return name.toUpperCase() === "GOK" ? "GoK" : name;
+  }
   const id = fundingId(source, fallbackId);
-  return id === 1 ? "GF" : id === 2 ? "PMI" : "—";
+  return id === 1 ? "GF" : id === 2 ? "PMI" : id === 3 ? "GoK" : "—";
 };
 
 const fundingChipClass = (source, fallbackId) => {
   const name = fundingName(source);
   if (name !== "" && Number.isNaN(Number(name))) {
     const lower = name.toLowerCase();
-    return lower === "gf" ? "gf" : lower === "pmi" ? "pmi" : "";
+    return lower === "gf" ? "gf" : lower === "pmi" ? "pmi" : lower === "gok" ? "gok" : "";
   }
   const id = fundingId(source, fallbackId);
-  return id === 1 ? "gf" : id === 2 ? "pmi" : "";
+  return id === 1 ? "gf" : id === 2 ? "pmi" : id === 3 ? "gok" : "";
 };
 
 const filterOption = (input, option) =>
@@ -511,10 +515,10 @@ const buildQuery = (page = currentPage.value) => {
   if (searchItem.value) params.append("query", searchItem.value);
   if (payrollStatus.value != null && payrollStatus.value !== "")
     params.append("payroll_status", payrollStatus.value);
-  // County (level 2) users are already scoped to their own county by the
-  // backend. Sending the county param as well would additionally require a
-  // sub-county relation and drop county-level activities, so we only append
-  // it for national (level 1) users who actually pick a county.
+  // County users are already scoped to their own county by the backend, and
+  // the legacy gf/pmi endpoints filter a county selection through the
+  // activity_sub_counties pivot — sending the pinned county would drop
+  // activities stored only at county level. So only national users pass it.
   if (
     countyFilter.value != null &&
     countyFilter.value !== "" &&
@@ -523,6 +527,8 @@ const buildQuery = (page = currentPage.value) => {
     params.append("county", countyFilter.value);
   if (subCountyFilter.value != null && subCountyFilter.value !== "")
     params.append("sub_county", subCountyFilter.value);
+  // GoK has no dedicated endpoint: the merged list filters it by funding id 3.
+  if (fundingSource.value === "gok") params.append("funding_source", 3);
   if (activityType.value != null && activityType.value !== "")
     params.append("activity_list", activityType.value);
   if (campaignFilter.value != null && campaignFilter.value !== "")
@@ -533,8 +539,8 @@ const buildQuery = (page = currentPage.value) => {
 const fetchActivities = async () => {
   isLoading.value = true;
   try {
-    // "all" → main activity endpoint (both funding sources); gf/pmi →
-    // the respective funding-scoped endpoints.
+    // "all" and "gok" → the merged activity endpoint (gok adds
+    // funding_source=3); gf/pmi → the funding-scoped endpoints.
     const fund = fundingSource.value || "all";
     const endpoint =
       fund === "gf"
@@ -570,7 +576,7 @@ const fetchCounties = async () => {
   if (userLevelId !== 1) return;
   countiesLoading.value = true;
   try {
-    const res = await axios.get("get_counties");
+    const res = await axios.get("event_activity_counties");
     const json = res.data;
     const list = Array.isArray(json)
       ? json
@@ -817,6 +823,11 @@ onMounted(() => {
       background: #e0ecff;
       color: #1d4ed8;
       border: 1px solid #b3ccff;
+    }
+    &.gok {
+      background: #fff4e0;
+      color: #b45309;
+      border: 1px solid #fcd9a0;
     }
   }
 

@@ -1,7 +1,13 @@
 <template>
   <div>
-    <sdPageHeader ghost :title="pageTitle">
-      <template #buttons>
+    <Main>
+      <header class="payroll-page-header">
+        <div class="payroll-page-heading">
+          <sdButton size="small" class="pill-btn" @click="goBack">
+            <sdFeatherIcons type="arrow-left" size="13" /> Back
+          </sdButton>
+          <h2 class="payroll-page-title">{{ pageTitle }}</h2>
+        </div>
         <div class="search-box">
           <a-input
             v-model:value="searchItem"
@@ -10,10 +16,8 @@
             placeholder="Search by payroll details..."
           />
         </div>
-      </template>
-    </sdPageHeader>
+      </header>
 
-    <Main>
       <a-alert
         v-if="showWorkflowNotice"
         type="info"
@@ -113,6 +117,19 @@
                                 </div>
                               </td>
                             </template>
+
+                            <template #paid="{ record }">
+                              <a-checkbox
+                                :checked="isPaid(record)"
+                                :disabled="
+                                  isPaid(record) ||
+                                  markingPaidId === record.id
+                                "
+                                @change="showMarkPaidModal(record)"
+                              >
+                                Paid
+                              </a-checkbox>
+                            </template>
                           </a-table>
 
                           <br />
@@ -163,6 +180,29 @@
       />
     </a-modal>
 
+    <!-- GOK payrolls are settled from the bank upload. Ticking the checkbox on
+         the Approved Payrolls screen records the payment against the payroll. -->
+    <a-modal
+      :visible="markPaidModalVisible"
+      title="Confirm Payroll Payment"
+      :confirm-loading="markingPaid"
+      ok-text="Mark as Paid"
+      @ok="actionMarkPaid"
+      @cancel="markPaidModalVisible = false"
+    >
+      <p>
+        Confirm that payroll
+        <b>{{ markPaidPayroll ? markPaidPayroll.name : "" }}</b> has been paid
+        from the bank upload?
+      </p>
+      <a-alert
+        type="info"
+        show-icon
+        message="This records the payment against the approved payroll."
+        description="Payment mode: BANK. You will be recorded as the user who marked the payroll as paid."
+      />
+    </a-modal>
+
     <!-- GF payrolls are synced to the ERP before they can be approved. -->
     <PayrollErpSyncModal
       v-if="erpSync"
@@ -205,6 +245,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import axios from "axios";
 import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
 import authHeader from "../../../../services/auth-header";
 import { Main } from "../../../styled";
 import { SearchResultWrapper } from "../../style";
@@ -222,8 +263,30 @@ const props = defineProps({
 
 const BASE_URL = process.env.VUE_APP_BASE_URL;
 
+const router = useRouter();
+
 const isActivity = computed(() => props.payrollType === "activity");
 const typeLabel = computed(() => (isActivity.value ? "Activity" : "Event"));
+
+// Parent screen for the Back button: the dashboard (cards page) for this
+// funding source and payroll type, which is what links into this list.
+const dashboardPath = computed(() => {
+  const dashboards = {
+    1: { event: "/gf-event-payroll", activity: "/gf-activities-payroll" },
+    2: { event: "/pmi-event-payroll", activity: "/pmi-activities-payroll" },
+    3: { event: "/gok-event-payroll", activity: "/gok-activity-payroll" },
+  };
+
+  return dashboards[Number(props.fundingId)]?.[props.payrollType] ?? null;
+});
+
+const goBack = () => {
+  if (dashboardPath.value) {
+    router.push(dashboardPath.value);
+  } else if (window.history.state && window.history.state.back) {
+    router.back();
+  }
+};
 const nameField = computed(() => (isActivity.value ? "activity_id" : "event_id"));
 
 const config = computed(() => {
@@ -292,12 +355,20 @@ const syncPayrollId = ref(null);
 const voidModalVisible = ref(false);
 const voidPayroll = ref(null);
 const voiding = ref(false);
+const markPaidModalVisible = ref(false);
+const markPaidPayroll = ref(null);
+const markingPaidId = ref(null);
 let searchTimer = null;
 
 const pageTitle = computed(() => config.value.title);
 const showWorkflowNotice = computed(() => true);
 const workflowNoticeTitle = "Payroll workflow";
 const workflowNoticeDescription = computed(() => config.value.notice);
+const markingPaid = computed(() => markingPaidId.value !== null);
+
+// A GOK payroll is paid once the bank upload has been settled. The checkbox is
+// disabled afterwards so the original payer cannot be overwritten.
+const isPaid = (record) => Number(record.payment_status) === 1;
 
 const actionColumn = {
   title: "",
@@ -338,6 +409,21 @@ const columns = computed(() => {
     dataIndex: "payment_label",
     key: "payment_status",
   };
+  const paidBy = {
+    title: "Paid By",
+    dataIndex: "paid_by",
+    key: "paid_by",
+  };
+  const paid = {
+    title: "Paid",
+    key: "paid",
+    slots: { customRender: "paid" },
+  };
+  const paymentMode = {
+    title: "Payment Mode",
+    dataIndex: "payment_mode_label",
+    key: "payment_mode",
+  };
   const amount = {
     title: "Amount Generated",
     dataIndex: "total_amount",
@@ -353,7 +439,19 @@ const columns = computed(() => {
   }
 
   if (isDownloadsMode.value) {
-    return [name, validated, validator, approved, approver, approvalTime, amount, actionColumn];
+    return [
+      name,
+      validated,
+      validator,
+      approved,
+      approver,
+      approvalTime,
+      paidBy,
+      paid,
+      paymentMode,
+      amount,
+      actionColumn,
+    ];
   }
 
   return [name, generatedBy, validated, validator, approved, approver, amount, actionColumn];
@@ -367,12 +465,15 @@ const normalise = (items) =>
     approved_label:
       Number(item.approval_status) === 1 ? "Approved" : "Not Approved",
     payment_label: props.bankDownload
-      ? Number(item.approval_status) === 1
+      ? Number(item.payment_status) === 1
+        ? "Paid"
+        : Number(item.approval_status) === 1
         ? "Ready for Bank Upload"
         : "Awaiting Approval"
       : Number(item.payment_status) === 1
       ? "Paid"
       : "Not Paid",
+    payment_mode_label: item.payment_mode || "—",
   }));
 
 const listUrl = (query = "") => {
@@ -657,6 +758,60 @@ const actionVoidPayroll = async () => {
   }
 };
 
+const showMarkPaidModal = (record) => {
+  if (isPaid(record)) {
+    return;
+  }
+
+  markPaidPayroll.value = record;
+  markPaidModalVisible.value = true;
+};
+
+// Record the GOK bank payment against the approved payroll. The backend sets
+// payment_status, paid_by and payment_mode (BANK).
+const actionMarkPaid = async () => {
+  if (!markPaidPayroll.value) {
+    return;
+  }
+
+  const payrollId = markPaidPayroll.value.id;
+  markingPaidId.value = payrollId;
+
+  try {
+    const endpoint = isActivity.value
+      ? "activity_payroll_mark_paid"
+      : "event_payroll_mark_paid";
+    const { data } = await axios.post(
+      `${BASE_URL}/${endpoint}`,
+      { payroll_id: payrollId },
+      { headers: authHeader() }
+    );
+
+    if (data.success === true) {
+      notification.success({
+        message: "Payroll marked as paid",
+        description: data.message,
+      });
+      markPaidModalVisible.value = false;
+      fetchPayrolls();
+    } else {
+      notification.error({
+        message: "Unable to mark payroll as paid",
+        description: data.message,
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: "Error",
+      description:
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message,
+    });
+  } finally {
+    markingPaidId.value = null;
+  }
+};
+
 const handleDownload = async (record) => {
   if (downloadingIds.value.includes(record.id)) {
     return;
@@ -723,6 +878,48 @@ const handleDownload = async (record) => {
 </script>
 
 <style scoped>
+.payroll-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.payroll-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.payroll-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1b3b2a;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.payroll-page-header .pill-btn {
+  background: #fff !important;
+  border: 1px solid #e1e6ec !important;
+  color: #4d5661 !important;
+  border-radius: 999px !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.payroll-page-header .pill-btn:hover,
+.payroll-page-header .pill-btn:focus {
+  border-color: #9ad8b4 !important;
+  color: #15693c !important;
+}
+
 .table-actions {
   white-space: nowrap;
 }

@@ -496,9 +496,9 @@
                                   <a-select-option value="1"
                                     >KEMSA</a-select-option
                                   >
-                                  <a-select-option value="2"
+                                  <!-- <a-select-option value="2"
                                     >MEDS</a-select-option
-                                  >
+                                  > -->
                                 </a-select>
                               </a-form-item>
                               <a-form-item
